@@ -1,22 +1,24 @@
 # STIG Manager
 
-STIG Manager is an open source project maintained by the Naval Undersea Warfarce Center Division Newport, RI (NUWCDIVNPT). It provides software for managing the assessment of information systems against security checklists published by the US Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists published as either a Security Technical Implmentation Guide (STIG) or a Security Requirement Guide (SRG).
+STIG Manager is software for managing the assessment of Information Systems for compliance with security checklists published by the United States (US) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists published as a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG).
+
+This open source project is maintained by the US Naval Undersea Warfare Center Division Newport, RI (NUWCDIVNPT). Our initial goal is to "modernize" the original software to provide STIG Management features through a REST API.  
 
 Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 - How you can get involved in the project and contribute
 - How to set up a development environment to work with the project's code 
 
+## Status
 
-You may also be interested in our [Roadmap](docs/roadmap.md) document. It explains:
-- The project's history, mission and feature summary
+This repository is under construction as we begin the project. The master branch is likely to be rebased the next couple of days, so we don't recommend cloning at this point. We are editing the initial documentation and preparing the existing codebase for public release. We will also be committing our initial "modernized" API code to the repository in another few days.
+
+If you want to test out STIG Manager right away, SOON you can switch to the [Classic branch](https://github.com/NUWCDIVNPT/stig-manager/tree/classic) and read how to do that. Please note: The Classic codebase uses technologies we have abandoned. It will be provided as a reference implementation until this project's API achieves parity with it.
+
+All new contributions to the project will be directed towards a stable production release of the software in accordance with our [Roadmap](docs/roadmap.md).
+
+## Roadmap
+
+We will have a [Roadmap](docs/roadmap.md) document. It will include:
+- The project's history and objectives
+- A feature summary
 - The timeline for project milestones
-
-If you want to run STIG Manager in a production or real-world scenario, we recommend you wait until the project releases it's first new stable version (3.0.0). We'll celebrate that milestone by updating this README as soon as it happens!
-
-#### [Classic branch](../classic)
-
-The STIG Manager project began in 2012 as closed source software to support NUWCDIVNPT workflows and processes. 
-
-We have modified the final version of the original software (version 2.0) so it can execute in a Docker enviorment and have committed it to the [Classic branch](../classic) in this repository. STIG Manager Classic is provided "as-is" and we recommend using it in development environments only as a reference for modernizing the project. 
-
-
