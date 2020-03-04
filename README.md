@@ -11,7 +11,7 @@ You may also be interested in our [Roadmap](docs/roadmap.md) document. It explai
 - The project's history, mission and feature summary
 - The timeline for project milestones
 
-If you want to run STIG Manager in a production or real-world scenario, we recommend you wait until the project releases it's first new stable version (3.0.0). We'll celebrate that milestone by updating this README as soon as it happens!
+If you want to run STIG Manager in a production or real-world scenario, we recommend you visit the classic branch (please see below).   Future contributions will work towards a master brach for a stable production releases at version (3.0.0). We'll celebrate that milestone by updating this README as soon as it happens!
 
 #### [Classic branch](../classic)
 
