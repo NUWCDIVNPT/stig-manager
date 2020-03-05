@@ -6,16 +6,17 @@ Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 - How you can get involved in the project and contribute
 - How to set up a development environment to work with the project's code 
 
-You may also be interested in our [Roadmap](docs/roadmap.md) document. It explains:
-- The project's history, mission and feature summary
+## Status
+
+This repository is under construction as we begin the project. We are editing the initial documentation and preparing the Classic codebase (see below) for release. We will also be committing the initial Modern API code to the repository in another several days.
+
+If you want to test out STIG Manager right away, you can switch to the [Classic branch](https://github.com/NUWCDIVNPT/stig-manager/tree/classic) and read how to do that. Please note, however, that the Classic codebase uses technologies we have abandoned. It will remain useful as a reference until we finish modernizing the API.
+
+All new contributions to the project will be directed towards a stable production release of version 3.0.0 in accordance with our [Roadmap](docs/roadmap.md).
+
+## Roadmap
+
+We will have a [Roadmap](docs/roadmap.md) document. It will include:
+- The project's history and objectives
+- A feature summary
 - The timeline for project milestones
-
-If you want to run STIG Manager in a production or real-world scenario, we recommend you visit the classic branch (please see below).   Future contributions will work towards a master brach for a stable production releases at version (3.0.0). We'll celebrate that milestone by updating this README as soon as it happens!
-
-#### [Classic branch](../classic)
-
-The STIG Manager project began in 2012 as closed source software to support NUWCDIVNPT workflows and processes. 
-
-We have modified the final version of the original software (version 2.0) so it can execute in a Docker enviorment and have committed it to the [Classic branch](../classic) in this repository. STIG Manager Classic is provided "as-is" and we recommend using it in development environments only as a reference for modernizing the project. 
-
-
