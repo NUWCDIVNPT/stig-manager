@@ -1,6 +1,6 @@
 # STIG Manager
 
-STIG Manager is an open source project maintained by the Naval Undersea Warface Center Division Newport, RI (NUWCDIVNPT). It provides software for managing the assessment of information systems against security checklists published by the US Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists published as either a Security Technical Implmentation Guide (STIG) or a Security Requirement Guide (SRG).
+STIG Manager is an open source project maintained by the Naval Undersea Warfare Center Division Newport, RI (NUWCDIVNPT). It provides software for managing the assessment of information systems against security checklists published by the US Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists published as either a Security Technical Implmentation Guide (STIG) or a Security Requirement Guide (SRG).
 
 Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 - How you can get involved in the project and contribute
