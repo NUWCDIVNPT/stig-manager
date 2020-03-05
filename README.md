@@ -6,7 +6,6 @@ Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 - How you can get involved in the project and contribute
 - How to set up a development environment to work with the project's code 
 
-
 You may also be interested in our [Roadmap](docs/roadmap.md) document. It explains:
 - The project's history, mission and feature summary
 - The timeline for project milestones
