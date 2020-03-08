@@ -74,37 +74,19 @@ By making a contribution to this project, I certify that:
 
 ## Getting Started
 
-Code.mil is a static website generated using [Jekyll](https://jekyllrb.com), a static website generator written in the [Ruby](https://ruby-lang.org) programming language. Development dependences are managed using the [Bundler](https://bundler.io) gem.
+During the Project's initial phase we are migratating features of the original "classic" API (implemented as Perl CGI scripts) to a REST API. We're excited about this but also understand the effort requires a good understanding of the classic API. We expect most contributions during this phase will be made by the Project Team. However, if you wish to help please read our [Roadmap document](docs/roadmap.md). It explains the technologies we are abandoning and those we are using and will make the discussion below easier to follow.
 
-This project uses Ruby version 2.6.2 which may be installed using a Ruby version manager like [rbenv](https://github.com/rbenv/rbenv), [chruby](https://github.com/postmodern/chruby), or [rvm](https://github.com/rvm/rvm).
+### Required tools
 
-```sh
-rbenv install 2.6.2
-```
+You will need the following tools installed on your development workstation:
+- [Docker](https://www.docker.com/)
+- [Node.js](https://nodejs.org/en/download/)
 
-Once you've installed Ruby 2.6.2 and the Bundler gem (`gem install bundler`), install the project's gems by running::
+### Software components
 
-```sh
-bundle install
-```
+STIG Manager provides an SPA client that consumes an API service which queries a database. During API modernization, the SPA is being iteratively refactored and for a period it will interact with both the classic and new APIs at the same time. This requires that both APIs are querying a common data source. The classic API only supports an Oracle backend, so during the modernization phase Oracle is the required database.
 
-### Making Changes
-
-Now you're ready to [clone the repository](https://help.github.com/articles/cloning-a-repository/) locally and start making changes. The website's source code is in the `src` folder which contains content pages authored in the [Markdown text format](https://daringfireball.net/projects/markdown/syntax). Jekyll configuration is defined in the `src/_config.yml` file. Additional configuration files are located in the `src/_data` folder.
-
-Once you've installed the project's dependencies as outlined above, you're ready to run Jekyll and browse the website locally:
-
-```sh
-./scripts/serve
-```
-
-This command will build the website to the `public` folder and start up a local server, making the website available at `http://localhost:4000` (or `http://127.0.0.1:4000`). Fire up your favorite Web browser to view the website locally!
-
-### Code Style
-
-Code formatting conventions are defined in the `.editorconfig` file which uses the [EditorConfig syntax](http://editorconfig.org). There are plugins for a variety of editors that utilize the settings in the `.editorconfig` file. It is recommended that you install the EditorConfig plugin for your editor of choice.
-
-Your bug fix or feature addition won't be rejected if it runs afoul of any (or all) of these guidelines, but following the guidelines will definitely make everyone's lives a little easier.
+Endpoints implemented by either the classic or new API require an OpenID Connect bearer token. For API development, the recommended IdP is [Keycloak](https://www.keycloak.org/) running in a Docker container with a Project-specific Realm. At this time, Keycloak is the only IdP supported by the SPA.
 
 ## Submitting an Issue
 
@@ -120,67 +102,3 @@ When submitting a bug report on the website, please be sure to include accurate 
 * What actually happend (or didn't happen), and
 * Technical details including your Operating System name and version and Web browser name and version number.
 
-## Submitting Code
-
-When making your changes, it is highly encouraged that you use a [branch in Git](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging), then submit a [pull request](https://github.com/Code-dot-mil/code.mil/pulls) (PR) on GitHub. Your pull request will go through some automated checks using [Travis CI](https://travis-ci.com/Code-dot-mil/code.mil/), a continuous integration and deployment tool.
-
-After review by the Code.mil team, your PR will either be commented on with a request for more information or changes, or it will be merged into the `master` branch and deployed to a URL for testing purposes.
-
-Assuming everything checks out, the Code.mil team will merge the `master` branch into the `production` branch which will be automatically deployed to the production hosting environment, making your changes available on [code.mil](https://code.mil).
-
-Note that if you're updating content on policy-specific pages (e.g. Getting Started, How to Open Source, Frequently Asked Questions), be sure to update the `updated_at` value in the file's YAML Front Matter (in the format `YYYY-MM-DD`):
-
-```yaml
----
-title: Getting Started
-updated_at: 2018-04-03
----
-```
-
-### Check Your Changes
-
-Before submitting your pull request, you should run the build process locally first to ensure things are working as expected.
-
-```sh
-./scripts/build
-```
-
-You should also run the testing script against your local build. This script will check the built website using the [html-proofer](https://github.com/gjtorikian/html-proofer) Ruby gem. You may run the test script using the following command:
-
-```sh
-./scripts/test
-```
-
-## Submitting Your Open Source Project
-
-If you have a project that you have open sourced, then you need to add (or update) your project in the [code inventory](https://code.mil/code.json) file that the DoD uses to comply with [OMB Policy (M-16-21)](https://sourcecode.cio.gov/OSS/). You can read more about the format of the [code inventory format](https://code.gov/about/compliance/inventory-code) on the Code.gov website.
-
-To add your project you will need to submit a Pull Request to this project on GitHub. You can follow the instructions here for doing so, but if you are not familiar with GitHub, you can also just [tell us about your project](https://code.mil/tell-us-about-your-code.html) and we can get the process started.
-
-### Understand the format of the JSON file
-
-Each open sourced project is represented by a JSON object block in the final [code.json file](https://code.mil/code.json). In order to make it easy for us to manage the JSON data, each project is represented as a separate file in our code repository. You can see an [example of a project](https://github.com/Code-dot-mil/code.mil/blob/master/src/_releases/github.com/USArmyResearchLab/DCCSO.json) for the US Army Research Lab in the repo.
-
-### Create your JSON file
-
-Start by [forking our repository](https://help.github.com/en/github/getting-started-with-github/fork-a-repo), and then creating a file within the ["_releases" directory](https://github.com/Code-dot-mil/code.mil/tree/master/src/_releases). This file should have a name that matches your project and should be a JSON file with a single object (`{ ... }`) at the root. For example, your file might be called "foobar.json" with this content:
-
-```
-{
-  "name": "FooBar",
-  "organization": "DoD FooBar",
-  "description": "A project to track all the foobars in the DoD.",
-  "tags": [ "foo", "bar", ... ],
-  ...
-}
-```
-
-Note the file structure in the repo! It starts at "_releases" and then goes to the domain it is hosted on such as "github.com" or "gitlab.com". Under that each organization or user account is represented, followed by the project's json file. For example, our "FooBar" project above may be located here:
-
-`src/_releases/github.com/MyOrg/foobar.json`
-
-### Test it out, then submit your pull request
-
-Once you have your JSON file created you should build and run the site locally to ensure everything works, then submit your pull request. To test the site, run the commands listed above for "[Getting Started](#getting-started)" and for "[Making Chnages](#making-changes)". You should now be able to see the compiled JSON file at `http://0.0.0.0:4000/code.json`. Look through that file to find your project. If it shows up, you should be good!
-
-Now you need to submit your [Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) to the base Code.mil website repository. Be sure to fill out the description of why this change is being done and that you tested things! We'll check the work and then merge the code into our base and it will be live in minutes.
