@@ -2,4 +2,7 @@
 
 Some text here
 
-![](http://neo:3000/nuwc/stig-manager-oss/raw/branch/master/docs/API.svg)
+![1](./API.svg)
+![2](./API.png)
+![3](./docs/API.svg)
+![4](./docs/API.png)
