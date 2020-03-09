@@ -8,8 +8,6 @@ services:
     image: store/oracle/database-enterprise:12.2.0.1-slim
     volumes:
       - ./stigman-init:/stigman-init
-    ports:
-      - "1521:1521"
   web:
     image: stigman-classic:basic
     build:
