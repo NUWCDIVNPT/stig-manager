@@ -6,8 +6,8 @@ This branch provides STIG Manager Classic for Docker and is made available so yo
 
 The technologies used by the Classic version have been abandoned and the Project's intent is to use this version for reference while modernizing the API and refactoring the UI.
 
-## Orchestration documents
-- The [orchestration and initialization steps](./docker/README.md) for STIG Manager Classic  
+## Docker orchestration documents
+- Please read the [orchestration and initialization steps](./docker/README.md) for STIG Manager Classic  
 
 
 
