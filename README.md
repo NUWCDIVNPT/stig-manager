@@ -12,7 +12,7 @@ Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 
 This repository is under construction as we begin the project. The master branch is likely to be rebased the next couple of days, so we don't recommend cloning at this point. We are editing the initial documentation and preparing the existing codebase for public release. We will also be committing our initial modernized API code to the repository in another few days.
 
-If you want to test out STIG Manager features right away, SOON you can switch to the [Classic branch](https://github.com/NUWCDIVNPT/stig-manager/tree/classic) and read how to do that. Please note: The Classic codebase uses technologies we have abandoned. However, it will be provided as a reference until our new API achieves parity with it.
+If you want to test out STIG Manager features right away, you can switch to the [Classic branch](https://github.com/NUWCDIVNPT/stig-manager/tree/classic) and read how to do that. Please note: The Classic codebase uses technologies we have abandoned. However, it will be provided as a reference until our new API achieves parity with it.
 
 All additions to the Project will be directed towards a stable production release of the software in accordance with our [Roadmap](docs/roadmap.md).
 
