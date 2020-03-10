@@ -48,12 +48,23 @@ if ask "Import demonstration data?" Y; then
 fi
 
 if ask "Download the current STIG Library Compilation [~215MB] to ./stigs?" Y; then
-    wget -P ./stigs "https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_SRG-STIG_Library_2020_01v4.zip"
-    echo -e "\nFinished attempt to download STIGs.\n"
+    echo "Retreiving list of Compilation files from public.cyber.mil..."
+    files=$(curl -s "https://public.cyber.mil/stigs/compilations/" | \
+    sed -n 's/.*<a href=\"\(https:\/\/dl.dod.cyber.mil\/wp-content\/uploads\/stigs\/zip\/.*\)\" target=.*$/\1/p')
+    while IFS= read -r line ; do wget -nc -P ./stigs $line; done <<< "$files"
+    echo -e "\nFinished attempt to download STIG Library Compilation.\n"
+fi
+
+if ask "Download the current SCAP Benchmarks to ./stigs?" Y; then
+    echo "Retreiving list of SCAP files from public.cyber.mil..."
+    files=$(curl -s "https://public.cyber.mil/stigs/scap/" | \
+    sed -n 's/.*<a href=\"\(https:\/\/dl.dod.cyber.mil\/wp-content\/uploads\/stigs\/zip\/.*\)\" target=.*$/\1/p')
+    while IFS= read -r line ; do wget -nc -P ./stigs $line; done <<< "$files"
+    echo -e "\nFinished attempt to download current SCAP content.\n"
 fi
 
 if ask "Import the contents of ./stigs [might take several minutes]?" Y; then
-    docker exec -it docker_web_1 bash -l -c "./stigman-init/stigs/importStigs.pl /stigman-init/stigs; exit;"
+    docker exec -it docker_web_1 bash -l -c "./stigman-init/stigs/importStigs.pl --scap /stigman-init/stigs; exit;"
     echo -e "\nFinished attempt to import STIGs.\n"
 fi
 

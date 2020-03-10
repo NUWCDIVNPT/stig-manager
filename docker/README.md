@@ -61,8 +61,9 @@ You will now run a script that will initialize and populate the STIG Manager Cla
 The initialization script will ask to perform the following functions:
 - Create the STIG Manager Classic schemas
 - Import demonstration data
-- Download the current STIG Compilation Library from DISA (over 360 STIGs)
-- Import the STIG Compilation Library
+- Download the current STIG Compilation Library from https://public.cyber.mil (over 360 STIGs)
+- Download the current SCAP content from https://public.cyber.mil
+- Import the STIG Compilation Library and SCAP content
 
 If you want to provide your own collection of STIGS, they are available for [individual download](https://public.cyber.mil/stigs/downloads). The Zipped files should be placed in the `docker/stigman-init/stigs` directory before you run the script. Check out the `stigman-init` script for how to run the STIGs import manually in the future. Please note that importing the STIG Complilation Library can take quite a while (~30 mins).
 

@@ -14,7 +14,7 @@ use IO::String;
 use Encode qw(encode decode);
 use XML::TreePP;
 use Data::Dumper;
-use grip;
+#use grip;
 use Text::Unidecode;
 # use stigImport;
 use Log::Log4perl qw(:easy);
@@ -460,7 +460,7 @@ sub processStigZip {
 		############################################################
 		# Process any XCCDF files found
 		############################################################
-		if ($memberName =~ /xccdf.*\.xml$/i) { # Process the XCCDF file
+		if ($memberName =~ /xccdf.*\.xml$/i || $memberName =~ /Benchmark.*\.xml$/i) { # Process the XCCDF file
 			$errHash->{'xccdfFn'} = $memberName;
 			print "EXTRACTING XCCDF: $memberName...\n";
 			# initialize a string to extract the zip archive into
@@ -1051,7 +1051,7 @@ sub utf8_to_ascii {
 }
 
 sub importBenchmarkRules{
-	my ($hash,$stigTitle,$sql,$releaseInfo,$version,$status,$statusDate,$description,$stigId,$profileArrayRef,$profileHashRef,$profileId,$selectArrayRef,$groupArrayRef,$groupHashRef,$groupId,$groupTitle,$ruleArrayRef,$ruleId,$ruleVersion,$ruleTitle,$ruleSeverity,$ruleWeight,$fixtextArrayRef,$fixFixRef,$fixText,$checkArrayRef,$checkId,$checkContent,$xmlContent);
+	my ($hash,$releaseInfo,$groupArrayRef,$groupHashRef,$groupId,$ruleArrayRef,$ruleId,$checkArrayRef,$xmlContent);
 	
 	$xmlContent=$_[0];
 	my $sqlInsertRuleOvalMap =<<END;
@@ -1065,24 +1065,29 @@ END
 	$xmlContent = utf8_to_ascii($xmlContent);
 	$hash = $xml->parse( $xmlContent );
 
-	my $benchmarkId = $hash->{'Benchmark'}[0]->{'-id'};
-	return "XML file is not a STIG. Can't find title." unless ($benchmarkId);
-	$releaseInfo = $hash->{'Benchmark'}[0]->{'plain-text'}[0]->{'#text'};
-	print "Importing Benchmark: $benchmarkId\n";
-	#Process Groups
-	$groupArrayRef = $hash->{'Benchmark'}[0]->{'Group'};
-	foreach $groupHashRef (@$groupArrayRef){
-		$groupId = $groupHashRef->{'-id'};
-		$ruleArrayRef = $groupHashRef->{'Rule'};
-		foreach my $ruleHashRef (@$ruleArrayRef) {
-			$ruleId = $ruleHashRef->{'-id'};
-			$checkArrayRef = $ruleHashRef->{'check'};
-			foreach my $checkHashRef (@$checkArrayRef){
-				my $checkContentRefArrayRef = $checkHashRef->{'check-content-ref'};
-				foreach my $checkContentRefHashRef (@$checkContentRefArrayRef) {
-					my $checkContentRefName = $checkContentRefHashRef->{'-name'};
-					if ($DEBUG) { print "$ruleId\t$checkContentRefName\t$benchmarkId\t$releaseInfo\n"; }
-					$sthInsertRuleOvalMap->execute(($ruleId,$checkContentRefName,$benchmarkId,$releaseInfo));
+	my $components = $hash->{'data-stream-collection'}[0]->{'component'};
+	foreach my $component (@$components) {
+		if ($component->{'-id'} =~ /benchmark-xccdf/i) {
+			my $benchmarkId = $component->{'xccdf:Benchmark'}[0]->{'-id'};
+			$benchmarkId =~ s/xccdf_mil.disa.stig_benchmark_//;
+			$releaseInfo = $component->{'xccdf:Benchmark'}[0]->{'xccdf:plain-text'}[0]->{'#text'};
+			#Process Groups
+			$groupArrayRef = $component->{'xccdf:Benchmark'}[0]->{'xccdf:Group'};
+			foreach $groupHashRef (@$groupArrayRef){
+				$groupId = $groupHashRef->{'-id'};
+				$ruleArrayRef = $groupHashRef->{'xccdf:Rule'};
+				foreach my $ruleHashRef (@$ruleArrayRef) {
+					$ruleId = $ruleHashRef->{'-id'};
+					$ruleId =~ s/xccdf_mil.disa.stig_rule_//;
+					$checkArrayRef = $ruleHashRef->{'xccdf:check'};
+					foreach my $checkHashRef (@$checkArrayRef){
+						my $checkContentRefArrayRef = $checkHashRef->{'xccdf:check-content-ref'};
+						foreach my $checkContentRefHashRef (@$checkContentRefArrayRef) {
+							my $checkContentRefName = $checkContentRefHashRef->{'-name'};
+							if ($DEBUG) { print "$ruleId\t$checkContentRefName\t$benchmarkId\t$releaseInfo\n"; }
+							$sthInsertRuleOvalMap->execute(($ruleId,$checkContentRefName,$benchmarkId,$releaseInfo));
+						}
+					}
 				}
 			}
 		}
