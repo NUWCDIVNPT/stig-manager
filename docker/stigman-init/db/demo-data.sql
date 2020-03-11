@@ -6,8 +6,11 @@ SET ECHO ON
 
 DEFINE sys_pw=Oradoc_db1
 DEFINE container_name=orclpdb1
+DEFINE our_service=@db/orclcdb.localdomain
 
-connect sys/&&sys_pw as sysdba;
+SET DEFINE ON;
+
+connect sys/&&sys_pw&&our_service as sysdba;
 alter session set container=&&container_name;
 
 set sqlbl on;

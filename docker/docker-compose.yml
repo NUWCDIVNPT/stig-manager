@@ -8,6 +8,8 @@ services:
     image: store/oracle/database-enterprise:12.2.0.1-slim
     volumes:
       - ./stigman-init:/stigman-init
+      ports:
+        - "1521:1521"      
   web:
     image: stigman-classic:basic
     build:
@@ -19,6 +21,6 @@ services:
       - SM_ORACLE_HOST=db
     init: true
     ports:
-      - "50443:443"
+      - "55443:443"
     depends_on:
       - db
