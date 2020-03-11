@@ -63,7 +63,7 @@ if ask "Download the current SCAP Benchmarks to ./stigs?" Y; then
     echo -e "\nFinished attempt to download current SCAP content.\n"
 fi
 
-if ask "Import the contents of ./stigs [might take several minutes]?" Y; then
+if ask "Import the contents of ./stigman-init/stigs [might take several minutes]?" Y; then
     ./stigman-init/stigs/importStigs.pl --scap /stigman-init/stigs
     echo -e "\nFinished attempt to import STIGs.\n"
 fi
