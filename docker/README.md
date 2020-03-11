@@ -12,7 +12,7 @@ To run the orchestration, you must:
 - Have an account on Docker Hub
 - Pull the Oracle Database 12.2.0.1 image using your Docker Hub account
 
-*The initialization process has dependencies requiring you to run the orchestration on a Linux host. We will remove this dependency shortly you can use Docker Desktop for Windows and Mac.*
+*The initialization process has dependencies requiring you to run the orchestration on a Linux host. We will remove this dependency shortly and will support Docker Desktop for Windows and Mac.*
 
 ## Limitations of the Classic orchestration
 - The Apache server is configured to perform Basic Authentication
