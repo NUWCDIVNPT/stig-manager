@@ -26,7 +26,7 @@ The orchestration starts two containers:
 - Apache 2.4 serving the API and web client UI on TCP port 50443
 - An Oracle 12.2.0.1 database with no network ports exposed
 
-The orchestration bind mounts the `./stigman-init` directory in both containers. The STIG Manager Classic initialization prcess described here expects the Docker container names will be `docker_db_1` and `docker_web_1`, which are the default values when running the orchestration from the `docker` directory. 
+The orchestration bind mounts the `./stigman-init` directory in both containers. The STIG Manager Classic initialization process described here expects the Docker container names will be `docker_db_1` and `docker_web_1`, which are the default values when running the orchestration from the `docker` directory. 
 
 ### 1. Checkout and pull the Oracle Database image from DockerHub
 STIG Manager Classic only supports an Oracle Database backend. The orchestration makes use of the official Oracle Database 12.2.0.1 image available from Docker Hub. Because Oracle Database is not open source, you will need to login to Docker Hub and agree to Oracle's license terms before checking out the image. [Go here and click "Proceed to Checkout" to agree to Oracle's terms.](https://hub.docker.com/_/oracle-database-enterprise-edition)
@@ -91,5 +91,13 @@ We are revising our User Guide to remove sensitive screen shots and features. Pl
 
 ## Troubleshooting
 
-In some Windows environments, Hyper-V may have reserved port 50443. If you have trouble bringing up the Docker orchestration because of a conflict on that port, change the docker-compose.yml file from - "50443:443" to, for example, - "55443:443" and try again.
+In some Windows environments, Hyper-V may have reserved port 50443. If you have a conflict on that port, edit  `docker-compose.yml` and change the line:
+
+ `- "50443:443"`
+ 
+ to an appropriate value for your environment, for example 
+ 
+ `- "55443:443"`
+ 
+ and try again.
 
