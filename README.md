@@ -87,3 +87,9 @@ Switching between users will help you understand how STIG Manager Classic suppor
 
 ## STIG Manager Classic User Guide
 We are revising our User Guide to remove sensitive screen shots and features. Please visit again very soon for updates.
+
+
+## Troubleshooting
+
+In some Windows environments, Hyper-V may have reserved port 50443. If you have trouble bringing up the Docker orchestration because of a conflict on that port, change the docker-compose.yml file from - "50443:443" to, for example, - "55443:443" and try again.
+
