@@ -16,7 +16,7 @@ To run the orchestration, you must:
 
 ## Limitations of the Classic orchestration
 - The Apache server is configured to perform Basic Authentication
-- You cannot reliably logout of Basic Authentication without closing the browser. The logout function in STIG Manager may not work with all browsers when using Basic Authentication. It does seem to work with the latest Chrome browser.
+- You cannot reliably logout of Basic Authentication without closing the browser. The logout function in STIG Manager does not work with all browsers when using Basic Authentication. The new API and client use OpenID Connect tokens and the logout feature works as designed.
 - Only a closed source database (Oracle) is supported
 
 ## Orchestration overview and instructions
