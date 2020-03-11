@@ -37,7 +37,6 @@ ask() {
 }
 
 if ask "Create STIG Manager schemas?" Y; then
-    #sqlplus sys/Oradoc_db1@$SM_ORACLE_HOST/orclcdb.localdomain as sysdba  @/stigman-init/db/inits.sql
     sqlplus sys/Oradoc_db1@db/orclcdb.localdomain as sysdba @/stigman-init/db/inits.sql
     echo -e "\nFinsihed attempt to create schemas.\n"
 fi
