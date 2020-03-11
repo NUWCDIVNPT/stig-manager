@@ -2,7 +2,7 @@
 
 The Docker orchestration creates a demonstration instance of STIG Manager Classic so you can become familiar with the interface and features. We hope you will agree the software is useful and this encourages you to contribute to our Project.
 
-The technologies used by the Classic version are deprecated and the Project's intent is to use this version for reference while modernizing the API and refactoring the UI. 
+The technologies used by the Classic version are deprecated and the Project's intent is to use this orchestration for reference while modernizing the API and refactoring the UI. 
 
 
 ## Requirements
