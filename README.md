@@ -26,7 +26,11 @@ The orchestration starts two containers:
 - Apache 2.4 serving the API and web client UI on TCP port 50443
 - An Oracle 12.2.0.1 database with no network ports exposed
 
-The orchestration bind mounts the `./stigman-init` directory in both containers. The STIG Manager Classic initialization process described here expects the Docker container names will be `docker_db_1` and `docker_web_1`, which are the default values when running the orchestration from the `docker` directory. 
+The orchestration bind mounts the `./stigman-init` directory on the Docker host into both containers, allowing the containers to share data.
+
+The STIG Manager Classic initialization process documented below expects the Docker container names will be `docker_db_1` and `docker_web_1`, which are the default values when running the orchestration from the `docker` directory.
+
+**The steps below are performed from the command line for your platform.** 
 
 ### 1. Checkout and pull the Oracle Database image from DockerHub
 STIG Manager Classic only supports an Oracle Database backend. The orchestration makes use of the official Oracle Database 12.2.0.1 image available from Docker Hub. Because Oracle Database is not open source, you will need to login to Docker Hub and agree to Oracle's license terms before checking out the image. [Go here and click "Proceed to Checkout" to agree to Oracle's terms.](https://hub.docker.com/_/oracle-database-enterprise-edition)
@@ -57,9 +61,14 @@ Once you see this line, you can exit the log output by typing `Ctrl-C`.
 
 ### 5. Initialize STIG Manager Classic with demonstration data
 
-You will now run a few commands that will prepare the containers and run a script on the web container to populate the STIG Manager Classic database with demonstration data and STIGs. **By default, data is not persisted when the Oracle container is destroyed.** If you wish to persist data, you must edit `docker-compose.yml` to mount a volume to `/ORCL` in the Oracle container.
+You will now run two Docker commands to initialize the STIG Manager Classic database with demonstration data and STIGs. **By default, data is not persisted when the Oracle container is destroyed.** If you wish to persist data, you must edit `docker-compose.yml` to mount a volume to `/ORCL` in the Oracle container.
 
-    docker cp docker_db_1:/u01/app/oracle/product/12.2.0/dbhome_1/rdbms/admin/utl32k.sql stigman-init/db/utl32k.sql  
+First, copy Oracle's extended data type configuration script `utl32k.sql` from `docker_db_1` into the shared directory. This makes that scripts accessible to `docker_web_1` and complies with Oracle's license terms which prohibit us from including the file directly in our repository.
+
+    docker cp docker_db_1:/u01/app/oracle/product/12.2.0/dbhome_1/rdbms/admin/utl32k.sql stigman-init/db/utl32k.sql 
+
+Next, run the initialization script interactively within the `docker_web_` container:
+
     docker exec -it docker_web_1 bash ./stigman-init/stigman-init.sh
 
 The initialization script will ask to perform the following functions:
