@@ -1,0 +1,64 @@
+diff --git a/node_modules/oas-tools/src/index.js b/node_modules/oas-tools/src/index.js
+index e413588..1798406 100644
+--- a/node_modules/oas-tools/src/index.js
++++ b/node_modules/oas-tools/src/index.js
+@@ -358,23 +358,23 @@ function registerPaths(specDoc, app) {
+       }
+     }
+   }
+-  if (config.docs && config.docs.apiDocs) {
+-    if (!config.docs.apiDocsPrefix) {
+-      config.docs.apiDocsPrefix = '';
+-    }
+-    app.use(config.docs.apiDocsPrefix + config.docs.apiDocs, function (req, res) {
+-      res.send(specDoc);
+-    });
+-    if (config.docs.swaggerUi) {
+-      var uiHtml = fs.readFileSync(pathModule.join(__dirname, '../swagger-ui/index.html'), 'utf8');
+-      uiHtml = uiHtml.replace(/url: "[^"]*"/, 'url: "' + config.docs.apiDocsPrefix + config.docs.apiDocs + '"');
+-      fs.writeFileSync(pathModule.join(__dirname, '../swagger-ui/index.html'), uiHtml, 'utf8');
+-      if (!config.docs.swaggerUiPrefix) {
+-        config.docs.swaggerUiPrefix = '';
+-      }
+-      app.use(config.docs.swaggerUiPrefix + config.docs.swaggerUi, express.static(pathModule.join(__dirname, '../swagger-ui')));
+-    }
+-  }
++  // if (config.docs && config.docs.apiDocs) {
++  //   if (!config.docs.apiDocsPrefix) {
++  //     config.docs.apiDocsPrefix = '';
++  //   }
++  //   app.use(config.docs.apiDocsPrefix + config.docs.apiDocs, function (req, res) {
++  //     res.send(specDoc);
++  //   });
++  //   if (config.docs.swaggerUi) {
++  //     var uiHtml = fs.readFileSync(pathModule.join(__dirname, '../swagger-ui/index.html'), 'utf8');
++  //     uiHtml = uiHtml.replace(/url: "[^"]*"/, 'url: "' + config.docs.apiDocsPrefix + config.docs.apiDocs + '"');
++  //     fs.writeFileSync(pathModule.join(__dirname, '../swagger-ui/index.html'), uiHtml, 'utf8');
++  //     if (!config.docs.swaggerUiPrefix) {
++  //       config.docs.swaggerUiPrefix = '';
++  //     }
++  //     app.use(config.docs.swaggerUiPrefix + config.docs.swaggerUi, express.static(pathModule.join(__dirname, '../swagger-ui')));
++  //   }
++  // }
+   config.pathsDict = dictionary;
+ }
+ 
+diff --git a/node_modules/oas-tools/src/middleware/oas-validator.js b/node_modules/oas-tools/src/middleware/oas-validator.js
+index b4d17e3..a627c72 100644
+--- a/node_modules/oas-tools/src/middleware/oas-validator.js
++++ b/node_modules/oas-tools/src/middleware/oas-validator.js
+@@ -326,13 +326,8 @@ function convertValue(value, schema, type) { // eslint-disable-line
+ 
+     case 'boolean':
+       if (!_.isBoolean(value)) {
+-        if (['false', 'true'].indexOf(value) === -1) {
+-          value = original; // eslint-disable-line
+-        } else {
+-          value = value === 'true' || value; // eslint-disable-line
+-        }
++          value = value === 'true'; // eslint-disable-line
+       }
+-
+       break;
+ 
+     case 'integer':

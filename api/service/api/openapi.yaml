@@ -1,0 +1,1750 @@
+openapi: 3.0.1
+info:
+  title: STIG Management API
+  description: An API for managing evaluations of Security Technical Implementation
+    Guide (STIG) assessments.
+  contact:
+    name: Carl Smigielski
+    email: carl.smigielski.ctr@navy.mil
+  version: 1.0.0
+servers:
+- url: http://localhost:54000/stig-manager/api
+paths:
+  /packages:
+    get:
+      tags:
+      - Package
+      summary: Return a list of Packages accessible to the user
+      operationId: getPackages
+      parameters:
+      - name: projection
+        in: query
+        description: |
+          Additional properties to include in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - assets
+            - stigs
+      - name: elevate
+        in: query
+        description: Elevate the user context for this request if user is permitted
+          (canAdmin)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Package response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageProjected'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+      x-classic:
+      - getPackages
+      - getPackageProps
+      x-swagger-router-controller: Package
+    post:
+      tags:
+      - Package
+      summary: Create a Package
+      operationId: createPackage
+      parameters:
+      - name: projection
+        in: query
+        description: |
+          Additional properties to include in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - assets
+            - stigs
+      - name: elevate
+        in: query
+        description: Elevate the user context for this request if user is permitted
+          (canAdmin)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageAssign'
+        x-name: body
+      responses:
+        "200":
+          description: Package response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageProjected'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+      x-swagger-router-controller: Package
+  /packages/{packageId}:
+    get:
+      tags:
+      - Package
+      summary: Return a Package
+      operationId: getPackage
+      parameters:
+      - name: packageId
+        in: path
+        description: A path parameter that indentifies a Package
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: projection
+        in: query
+        description: |
+          Additional properties to include in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - assets
+            - stigs
+      - name: elevate
+        in: query
+        description: Elevate the user context for this request if user is permitted
+          (canAdmin)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Package response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+      x-swagger-router-controller: Package
+    delete:
+      tags:
+      - Package
+      summary: Delete a Package
+      operationId: deletePackage
+      parameters:
+      - name: packageId
+        in: path
+        description: A path parameter that indentifies a Package
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: projection
+        in: query
+        description: |
+          Additional properties to include in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - assets
+            - stigs
+      - name: elevate
+        in: query
+        description: Elevate the user context for this request if user is permitted
+          (canAdmin)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Package response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+      x-swagger-router-controller: Package
+    patch:
+      tags:
+      - Package
+      summary: Merge updates to a Package
+      operationId: updatePackage
+      parameters:
+      - name: packageId
+        in: path
+        description: A path parameter that indentifies a Package
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: projection
+        in: query
+        description: |
+          Additional properties to include in the response.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - assets
+            - stigs
+      - name: elevate
+        in: query
+        description: Elevate the user context for this request if user is permitted
+          (canAdmin)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageAssign'
+      responses:
+        "200":
+          description: Package response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+      x-swagger-router-controller: Package
+  /assets:
+    get:
+      tags:
+      - Asset
+      summary: Return a list of Assets accessible to the user
+      operationId: getAssets
+      parameters:
+      - name: packageId
+        in: query
+        description: Selects Assets mapped to a Package
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: dept
+        in: query
+        description: Selects Assets exactly matching a department string
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Asset response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetDetail'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+      x-swagger-router-controller: Asset
+    post:
+      tags:
+      - Asset
+      summary: Create an Asset
+      operationId: createAsset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        "200":
+          description: Package response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+      x-swagger-router-controller: Asset
+  /assets/{assetId}:
+    get:
+      tags:
+      - Asset
+      summary: Return an Asset
+      operationId: getAsset
+      parameters:
+      - name: assetId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Asset response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDetail'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+      x-swagger-router-controller: Asset
+    delete:
+      tags:
+      - Asset
+      summary: Delete an Asset
+      operationId: deleteAsset
+      parameters:
+      - name: assetId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Asset response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+      x-swagger-router-controller: Asset
+    patch:
+      tags:
+      - Asset
+      summary: Merge updates to an Asset
+      operationId: updateAsset
+      parameters:
+      - name: assetId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        "200":
+          description: Asset response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDetail'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+      x-swagger-router-controller: Asset
+  /stigs:
+    get:
+      tags:
+      - STIG
+      summary: Return a list of available STIGs
+      operationId: getSTIGs
+      parameters:
+      - name: packageId
+        in: query
+        description: Package identifier
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: assetId
+        in: query
+        description: Asset identifier
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: title
+        in: query
+        description: A string found anywhere in a STIG title
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: os
+        in: query
+        description: An operating system TOE
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - windows
+          - linux
+          - macos
+          - ios
+          - android
+          - other
+          - none
+      responses:
+        "200":
+          description: STIG response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+    post:
+      tags:
+      - STIG
+      summary: Import a new STIG
+      operationId: addSTIG
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/body'
+      responses:
+        "200":
+          description: The added STIG
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig
+      x-rbac:
+      - admin
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}:
+    get:
+      tags:
+      - STIG
+      summary: Return properties of the specified STIG
+      operationId: getStigById
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: STIG response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+    delete:
+      tags:
+      - STIG
+      summary: Deletes a STIG (*** and all revisions ***)
+      operationId: deleteStigById
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The deleted STIG
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig
+      x-rbac:
+      - admin
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}/revisions:
+    get:
+      tags:
+      - STIG
+      summary: Return a list of revisions for the specified STIG
+      operationId: getRevisionsByBenchmarkId
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Revision'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}/revisions/{revisionStr}:
+    get:
+      tags:
+      - STIG
+      summary: Return metadata for the specified revision of a STIG
+      operationId: getRevisionByString
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      responses:
+        "200":
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revision'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+    delete:
+      tags:
+      - STIG
+      summary: Deletes the specified revision of a STIG
+      operationId: deleteRevisionByString
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      responses:
+        "200":
+          description: The deleted Revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revision'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig
+      x-rbac:
+      - admin
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}/revisions/{revisionStr}/groups:
+    get:
+      tags:
+      - STIG
+      summary: Return the list of groups for the specified revision of a STIG.
+      description: Can optionally specify profile filters.
+      operationId: getGroupsByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: profile
+        in: query
+        description: Filter by profile
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - MAC-1_Classified
+            - MAC-1_Sensitive
+            - MAC-1_Public
+            - MAC-2_Classified
+            - MAC-2_Sensitive
+            - MAC-2_Public
+            - MAC-3_Classified
+            - MAC-3_Sensitive
+            - MAC-3_Public
+      responses:
+        "200":
+          description: Group response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupList'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}/revisions/{revisionStr}/groups/{groupId}:
+    get:
+      tags:
+      - STIG
+      summary: Return the rules, checks and fixes for a Group from a specified revision
+        of a STIG.
+      description: None
+      operationId: getGroupByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: groupId
+        in: path
+        description: A path parameter that indentifies a Group
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Group response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupObj'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}/revisions/{revisionStr}/rules:
+    get:
+      tags:
+      - STIG
+      summary: Return rule data for the specified revision of a STIG.
+      description: Can optionally specify profile filters.
+      operationId: getRulesByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: profile
+        in: query
+        description: Filter by profile
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - MAC-1_Classified
+            - MAC-1_Sensitive
+            - MAC-1_Public
+            - MAC-2_Classified
+            - MAC-2_Sensitive
+            - MAC-2_Public
+            - MAC-3_Classified
+            - MAC-3_Sensitive
+            - MAC-3_Public
+      responses:
+        "200":
+          description: Rule response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rule'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /stigs/rules/{ruleId}:
+    get:
+      tags:
+      - STIG
+      summary: Return the defintion and associated checks and fixes for the specified
+        Rule
+      operationId: getRuleByRuleId
+      parameters:
+      - name: ruleId
+        in: path
+        description: A path parameter that indentifies a Rule
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Rule response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rule'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /stigs/{benchmarkId}/revisions/{revisionStr}/ccis:
+    get:
+      tags:
+      - STIG
+      summary: Return a list of CCIs from a STIG revision
+      operationId: getCcisByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      responses:
+        "200":
+          description: CCI response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CciListItem'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /stigs/ccis/{cci}:
+    get:
+      tags:
+      - STIG
+      summary: Return data for the specified CCI
+      operationId: getCci
+      parameters:
+      - name: cci
+        in: path
+        description: A path parameter that indentifies a CCI
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: CCI response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cci'
+                x-content-type: application/json
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+      x-swagger-router-controller: STIG
+  /version:
+    get:
+      tags:
+      - Version
+      summary: Return version information
+      operationId: getVersion
+      responses:
+        "200":
+          description: Version response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiVersion'
+      x-swagger-router-controller: Version
+components:
+  schemas:
+    Error:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    STIG:
+      required:
+      - benchmarkId
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        title:
+          type: string
+        lastRevisionStr:
+          type: string
+        lastRevisionDate:
+          type: string
+      example:
+        lastRevisionDate: lastRevisionDate
+        title: title
+        benchmarkId: benchmarkId
+        lastRevisionStr: lastRevisionStr
+    Revision:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          type: string
+        version:
+          type: string
+        release:
+          type: string
+        benchmarkDate:
+          type: string
+        status:
+          type: string
+        statusDate:
+          type: string
+        description:
+          type: string
+      example:
+        statusDate: statusDate
+        revisionStr: revisionStr
+        release: release
+        description: description
+        benchmarkDate: benchmarkDate
+        version: version
+        benchmarkId: benchmarkId
+        status: status
+    GroupList:
+      type: array
+      items:
+        $ref: '#/components/schemas/GroupList_inner'
+    GroupObj:
+      type: object
+      properties:
+        groupId:
+          type: string
+        title:
+          type: string
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Profile'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+      example:
+        groupId: groupId
+        profiles:
+        - MAC-1_Classified
+        - MAC-1_Classified
+        rules:
+        - severity: severity
+          vulnDiscussion: vulnDiscussion
+          thirdPartyTools: thirdPartyTools
+          falseNegatives: falseNegatives
+          documentable: documentable
+          cci:
+          - cci
+          - cci
+          weight: weight
+          falsePositives: falsePositives
+          potentialImpacts: potentialImpacts
+          title: title
+          version: version
+          mitigations: mitigations
+          fixes:
+          - text: text
+            fixId: fixId
+          - text: text
+            fixId: fixId
+          mitigationControl: mitigationControl
+          checks:
+          - checkId: checkId
+            content: content
+          - checkId: checkId
+            content: content
+          responsibility: responsibility
+          securityOverrideGuidance: securityOverrideGuidance
+          ruleId: ruleId
+        - severity: severity
+          vulnDiscussion: vulnDiscussion
+          thirdPartyTools: thirdPartyTools
+          falseNegatives: falseNegatives
+          documentable: documentable
+          cci:
+          - cci
+          - cci
+          weight: weight
+          falsePositives: falsePositives
+          potentialImpacts: potentialImpacts
+          title: title
+          version: version
+          mitigations: mitigations
+          fixes:
+          - text: text
+            fixId: fixId
+          - text: text
+            fixId: fixId
+          mitigationControl: mitigationControl
+          checks:
+          - checkId: checkId
+            content: content
+          - checkId: checkId
+            content: content
+          responsibility: responsibility
+          securityOverrideGuidance: securityOverrideGuidance
+          ruleId: ruleId
+        title: title
+    Profile:
+      type: string
+      enum:
+      - MAC-1_Classified
+      - MAC-1_Sensitive
+      - MAC-1_Public
+      - MAC-2_Classified
+      - MAC-2_Sensitive
+      - MAC-2_Public
+      - MAC-3_Classified
+      - MAC-3_Sensitive
+      - MAC-3_Public
+    Rule:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+        weight:
+          type: string
+        vulnDiscussion:
+          type: string
+        falsePositives:
+          type: string
+        falseNegatives:
+          type: string
+        documentable:
+          type: string
+        mitigations:
+          type: string
+        securityOverrideGuidance:
+          type: string
+        potentialImpacts:
+          type: string
+        thirdPartyTools:
+          type: string
+        mitigationControl:
+          type: string
+        responsibility:
+          type: string
+        cci:
+          type: array
+          items:
+            type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+        fixes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fix'
+      example:
+        severity: severity
+        vulnDiscussion: vulnDiscussion
+        thirdPartyTools: thirdPartyTools
+        falseNegatives: falseNegatives
+        documentable: documentable
+        cci:
+        - cci
+        - cci
+        weight: weight
+        falsePositives: falsePositives
+        potentialImpacts: potentialImpacts
+        title: title
+        version: version
+        mitigations: mitigations
+        fixes:
+        - text: text
+          fixId: fixId
+        - text: text
+          fixId: fixId
+        mitigationControl: mitigationControl
+        checks:
+        - checkId: checkId
+          content: content
+        - checkId: checkId
+          content: content
+        responsibility: responsibility
+        securityOverrideGuidance: securityOverrideGuidance
+        ruleId: ruleId
+    RuleAbbr:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+      example:
+        ruleId: ruleId
+        title: title
+        version: version
+    Check:
+      type: object
+      properties:
+        checkId:
+          type: string
+        content:
+          type: string
+      example:
+        checkId: checkId
+        content: content
+    Fix:
+      type: object
+      properties:
+        fixId:
+          type: string
+        text:
+          type: string
+      example:
+        text: text
+        fixId: fixId
+    CciReferenceItem:
+      type: object
+      properties:
+        creator:
+          type: string
+        title:
+          type: string
+        version:
+          type: string
+        location:
+          type: string
+        indexDisa:
+          type: string
+        textRefNist:
+          type: string
+        parentControl:
+          type: string
+      example:
+        parentControl: parentControl
+        creator: creator
+        indexDisa: indexDisa
+        textRefNist: textRefNist
+        location: location
+        title: title
+        version: version
+    CciListItem:
+      type: object
+      properties:
+        cci:
+          type: string
+        type:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceItem'
+      example:
+        references:
+        - parentControl: parentControl
+          creator: creator
+          indexDisa: indexDisa
+          textRefNist: textRefNist
+          location: location
+          title: title
+          version: version
+        - parentControl: parentControl
+          creator: creator
+          indexDisa: indexDisa
+          textRefNist: textRefNist
+          location: location
+          title: title
+          version: version
+        cci: cci
+        type: type
+    Cci:
+      type: object
+      properties:
+        cci:
+          type: string
+        status:
+          type: string
+        publishdate:
+          type: string
+        contributor:
+          type: string
+        type:
+          type: string
+        defintion:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceItem'
+        current_revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Revision'
+      example:
+        defintion: defintion
+        contributor: contributor
+        references:
+        - parentControl: parentControl
+          creator: creator
+          indexDisa: indexDisa
+          textRefNist: textRefNist
+          location: location
+          title: title
+          version: version
+        - parentControl: parentControl
+          creator: creator
+          indexDisa: indexDisa
+          textRefNist: textRefNist
+          location: location
+          title: title
+          version: version
+        cci: cci
+        publishdate: publishdate
+        type: type
+        current_revisions:
+        - statusDate: statusDate
+          revisionStr: revisionStr
+          release: release
+          description: description
+          benchmarkDate: benchmarkDate
+          version: version
+          benchmarkId: benchmarkId
+          status: status
+        - statusDate: statusDate
+          revisionStr: revisionStr
+          release: release
+          description: description
+          benchmarkDate: benchmarkDate
+          version: version
+          benchmarkId: benchmarkId
+          status: status
+        status: status
+    ApiVersion:
+      type: object
+      properties:
+        branch:
+          type: string
+        commit:
+          type: string
+        nearest-tag:
+          type: string
+      example:
+        nearest-tag: nearest-tag
+        commit: commit
+        branch: branch
+    MacCl:
+      type: string
+      enum:
+      - MAC-1_Classified
+      - MAC-1_Sensitive
+      - MAC-1_Public
+      - MAC-2_Classified
+      - MAC-2_Sensitive
+      - MAC-2_Public
+      - MAC-3_Classified
+      - MAC-3_Sensitive
+      - MAC-3_Public
+    Package:
+      type: object
+      properties:
+        packageId:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        emassId:
+          type: string
+        pocName:
+          type: string
+        pocEmail:
+          type: string
+        pocPhone:
+          type: string
+        reqRar:
+          type: boolean
+        macCl:
+          $ref: '#/components/schemas/MacCl'
+    PackageProjected:
+      allOf:
+      - $ref: '#/components/schemas/Package'
+      - type: object
+        properties:
+          assets:
+            type: array
+            items:
+              $ref: '#/components/schemas/AssetBasic'
+          stigs:
+            type: array
+            items:
+              $ref: '#/components/schemas/STIG'
+    PackageAssign:
+      allOf:
+      - $ref: '#/components/schemas/Package'
+      - type: object
+        properties:
+          assetIds:
+            type: array
+            items:
+              type: integer
+    Asset:
+      required:
+      - assetId
+      - assetName
+      type: object
+      properties:
+        assetId:
+          type: integer
+          readOnly: true
+        assetName:
+          type: string
+        dept:
+          type: string
+        nonnetwork:
+          type: boolean
+        scanexempt:
+          type: boolean
+        ip:
+          type: string
+          nullable: true
+        profile:
+          $ref: '#/components/schemas/MacCl'
+        packageIds:
+          type: array
+          description: The Packages mapped to this Asset
+          items:
+            type: integer
+        benchmarkIds:
+          type: array
+          description: The benchmarkIds of STIGs mapped to this Asset
+          items:
+            type: string
+      example:
+        scanexempt: true
+        assetId: 0
+        ip: ip
+        profile: MAC-1_Classified
+        assetName: assetName
+        benchmarkIds:
+        - benchmarkIds
+        - benchmarkIds
+        dept: dept
+        nonnetwork: true
+        packageIds:
+        - 6
+        - 6
+    AssetBasic:
+      type: object
+      properties:
+        assetId:
+          type: integer
+        assetName:
+          type: string
+    AssetDetail:
+      allOf:
+      - $ref: '#/components/schemas/Asset'
+      - type: object
+        properties:
+          stigNum:
+            type: integer
+            readOnly: true
+          packageNames:
+            type: array
+            readOnly: true
+            items:
+              type: string
+          stigAssetIds:
+            type: array
+            readOnly: true
+            items:
+              $ref: '#/components/schemas/StigAssignedToAsset'
+    StigAssignedToAsset:
+      type: object
+      properties:
+        saId:
+          type: integer
+        benchmarkId:
+          type: string
+    AssetAssignedToStig:
+      type: object
+      properties:
+        saId:
+          type: integer
+        assetId:
+          type: string
+    StigAssetAssigned:
+      type: object
+      properties:
+        saId:
+          type: integer
+        benchmarkId:
+          type: string
+        assetId:
+          type: string
+    body:
+      properties:
+        source:
+          type: string
+          description: An XCCDF file
+          format: binary
+    GroupList_inner:
+      type: object
+      properties:
+        groupId:
+          type: string
+        title:
+          type: string
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Profile'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleAbbr'
+      example:
+        groupId: groupId
+        profiles:
+        - MAC-1_Classified
+        - MAC-1_Classified
+        rules:
+        - ruleId: ruleId
+          title: title
+          version: version
+        - ruleId: ruleId
+          title: title
+          version: version
+        title: title
+  parameters:
+    ElevateQuery:
+      name: elevate
+      in: query
+      description: Elevate the user context for this request if user is permitted
+        (canAdmin)
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    PackageProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - assets
+          - stigs
+    BenchmarkIdPath:
+      name: benchmarkId
+      in: path
+      description: A path parameter that indentifies a STIG
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    BenchmarkIdQuery:
+      name: benchmarkId
+      in: query
+      description: A query parameter that indentifies a STIG
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    GroupIdPath:
+      name: groupId
+      in: path
+      description: A path parameter that indentifies a Group
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    RuleIdPath:
+      name: ruleId
+      in: path
+      description: A path parameter that indentifies a Rule
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    CciPath:
+      name: cci
+      in: path
+      description: A path parameter that indentifies a CCI
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    RevisionStrPath:
+      name: revisionStr
+      in: path
+      description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+        | 'latest' ]
+      required: true
+      style: simple
+      explode: false
+      schema:
+        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+        type: string
+    ChecklistProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Optional properties to return. Selecting "checks" or "fixes" will also select "fullrules"
+      required: false
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - profiles
+          - cci
+          - fullrules
+          - checks
+          - fixes
+    ProfileQuery:
+      name: profile
+      in: query
+      description: Filter by profile
+      required: false
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - MAC-1_Classified
+          - MAC-1_Sensitive
+          - MAC-1_Public
+          - MAC-2_Classified
+          - MAC-2_Sensitive
+          - MAC-2_Public
+          - MAC-3_Classified
+          - MAC-3_Sensitive
+          - MAC-3_Public
+  securitySchemes:
+    oauth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://localhost:8080/auth/realms/cmsat/protocol/openid-connect/auth
+          scopes:
+            stig-manager: Top-level scope
+            stig-manager:stig: Full access to the STIG collection
+            stig-manager:stig:read: Read access to the STIG collection
+            stig-manager:package: Full access to the Package collection
+            stig-manager:package:read: Read-only access to the Package collection

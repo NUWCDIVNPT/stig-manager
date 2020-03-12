@@ -1,0 +1,1745 @@
+openapi: 3.0.1
+info:
+  title: STIG Management API
+  description: An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.
+  contact:
+    name: Carl Smigielski
+    email: carl.smigielski.ctr@navy.mil
+  version: 1.0.0
+servers:
+- url: http://localhost:54000/stig-manager/api
+paths:
+  /packages:
+    parameters:
+      - $ref: '#/components/parameters/PackageProjectionQuery'
+    get:
+      tags:
+      - Package
+      summary: Return a list of Packages accessible to the requester
+      operationId: getPackages
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+      x-classic:
+        - getPackages
+        - getPackageProps
+    post:
+      tags:
+      - Package
+      summary: Create a Package
+      operationId: createPackage
+      requestBody:
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageAssign'
+      responses:
+        '201':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+  /packages/{packageId}:
+    parameters:
+      - name: packageId
+        in: path
+        description: A path parameter that indentifies a Package
+        required: true
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/PackageProjectionQuery'
+    get:
+      tags:
+      - Package
+      summary: Return a Package
+      operationId: getPackage
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+    patch:
+      tags:
+      - Package
+      summary: Merge updates to a Package
+      operationId: updatePackage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageAssign'
+      responses:
+        '200':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+    delete:
+      tags:
+      - Package
+      summary: Delete a Package
+      operationId: deletePackage
+      responses:
+        '200':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+  
+  /assets:
+    parameters:
+      - $ref: '#/components/parameters/AssetProjectionQuery'
+    get:
+      tags:
+      - Asset
+      summary: Return a list of Assets accessible to the requester
+      operationId: getAssets
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - name: packageId
+          in: query
+          description: Selects Assets mapped to a Package
+          schema:
+            type: integer
+        - name: benchmarkId
+          in: query
+          description: Selects Assets mapped to a STIG
+          schema:
+            type: string
+        - name: dept
+          in: query
+          description: Selects Assets exactly matching a department string
+          schema:
+            type: string
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+    post:
+      tags:
+      - Asset
+      summary: Create an Asset
+      operationId: createAsset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetAssign'
+      responses:
+        '201':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+  /assets/{assetId}:
+    parameters:
+      - name: assetId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/AssetProjectionQuery'
+    get:
+      tags:
+      - Asset
+      summary: Return an Asset
+      operationId: getAsset
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+    patch:
+      tags:
+      - Asset
+      summary: Merge updates to an Asset
+      operationId: updateAsset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetAssign'
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+    delete:
+      tags:
+      - Asset
+      summary: Delete an Asset
+      operationId: deleteAsset
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+
+  /reviews:
+    parameters:
+      - $ref: '#/components/parameters/ReviewProjectionQuery'
+    get:
+      tags:
+      - Review
+      summary: Return a list of Reviews accessible to the requester
+      operationId: getReviews
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/ReviewStateQuery'
+        - $ref: '#/components/parameters/ReviewActionQuery'
+        - $ref: '#/components/parameters/ReviewStatusQuery'
+        - name: ruleId
+          in: query
+          description: Selects Reviews of a Rule
+          schema:
+            type: string
+        - name: benchmarkId
+          in: query
+          description: Selects Reviews mapped to a STIG
+          schema:
+            type: string
+        - name: assetId
+          in: query
+          description: Selects Reviews mapped to an Asset
+          schema:
+            type: string
+        - name: packageId
+          in: query
+          description: Selects Reviews mapped to a Package
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+    post:
+      tags:
+      - Review
+      summary: Create a Review
+      operationId: createReview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+  /reviews/{reviewId}:
+    parameters:
+      - name: reviewId
+        in: path
+        description: A path parameter that indentifies a Review
+        required: true
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/ReviewProjectionQuery'
+    get:
+      tags:
+      - Review
+      summary: Return a Review
+      operationId: getReview
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+    patch:
+      tags:
+      - Review
+      summary: Merge updates to a Review
+      operationId: updateReview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetAssign'
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+    delete:
+      tags:
+      - Review
+      summary: Delete a Review
+      operationId: deleteReview
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+    
+  /users:
+    parameters:
+      - $ref: '#/components/parameters/UserProjectionQuery'
+    get:
+      tags:
+      - User
+      summary: Return a list of Users accessible to the requester
+      operationId: getUsers
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserRoleQuery'
+        - name: packageId
+          in: query
+          description: Selects Users mapped to a Package
+          schema:
+            type: integer
+        - name: benchmarkId
+          in: query
+          description: Selects Users mapped to a STIG
+          schema:
+            type: string
+        - name: dept
+          in: query
+          description: Selects Users exactly matching a department string
+          schema:
+            type: string
+        - name: canAdmin
+          in: query
+          description: Selects Users matching the condition
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:user:read
+    post:
+      tags:
+      - User
+      summary: Create a User
+      operationId: createUser
+      requestBody:
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAssign'
+      responses:
+        '201':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:user
+
+  /stigs:
+    get:
+      tags:
+      - STIG
+      summary: Return a list of available STIGs
+      operationId: getSTIGs
+      parameters:
+      - name: packageId
+        in: query
+        description: Package identifier
+        schema:
+          type: integer
+      - name: assetId
+        in: query
+        description: Asset identifier
+        schema:
+          type: integer
+      - name: title
+        in: query
+        description: A string found anywhere in a STIG title
+        schema:
+          type: string
+      - name: os
+        in: query
+        description: An operating system TOE
+        schema:
+          type: string
+          enum:
+          - windows
+          - linux
+          - macos
+          - ios
+          - android
+          - other
+          - none
+      responses:
+        '200':
+          description: STIG response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+    post:
+      tags:
+      - STIG
+      summary: Import a new STIG
+      operationId: addSTIG
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                source:
+                  type: string
+                  description: An XCCDF file
+                  format: binary
+      responses:
+        200:
+          description: The added STIG
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig
+      x-rbac:
+      - admin
+  /stigs/{benchmarkId}:
+    get:
+      tags:
+      - STIG
+      summary: Return properties of the specified STIG
+      operationId: getStigById
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: STIG response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+    delete:
+      tags:
+      - STIG
+      summary: Deletes a STIG (*** and all revisions ***)
+      operationId: deleteStigById
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: The deleted STIG
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig
+      x-rbac:
+      - admin
+  /stigs/{benchmarkId}/revisions:
+    get:
+      tags:
+      - STIG
+      summary: Return a list of revisions for the specified STIG
+      operationId: getRevisionsByBenchmarkId
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Revision'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/{benchmarkId}/revisions/{revisionStr}:
+    get:
+      tags:
+      - STIG
+      summary: Return metadata for the specified revision of a STIG
+      operationId: getRevisionByString
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      responses:
+        200:
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revision'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+    delete:
+      tags:
+      - STIG
+      summary: Deletes the specified revision of a STIG
+      operationId: deleteRevisionByString
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      responses:
+        200:
+          description: The deleted Revision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revision'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig
+      x-rbac:
+      - admin
+  /stigs/{benchmarkId}/revisions/{revisionStr}/groups:
+    get:
+      tags:
+      - STIG
+      summary: Return the list of groups for the specified revision of a STIG.
+      description: Can optionally specify profile filters.
+      operationId: getGroupsByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: profile
+        in: query
+        description: Filter by profile
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - MAC-1_Classified
+            - MAC-1_Sensitive
+            - MAC-1_Public
+            - MAC-2_Classified
+            - MAC-2_Sensitive
+            - MAC-2_Public
+            - MAC-3_Classified
+            - MAC-3_Sensitive
+            - MAC-3_Public
+      responses:
+        200:
+          description: Group response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupList'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/{benchmarkId}/revisions/{revisionStr}/groups/{groupId}:
+    get:
+      tags:
+      - STIG
+      summary: Return the rules, checks and fixes for a Group from a specified revision
+        of a STIG.
+      description: None
+      operationId: getGroupByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: groupId
+        in: path
+        description: A path parameter that indentifies a Group
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Group response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupObj'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/{benchmarkId}/revisions/{revisionStr}/rules:
+    get:
+      tags:
+      - STIG
+      summary: Return rule data for the specified revision of a STIG.
+      description: Can optionally specify profile filters.
+      operationId: getRulesByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: profile
+        in: query
+        description: Filter by profile
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - MAC-1_Classified
+            - MAC-1_Sensitive
+            - MAC-1_Public
+            - MAC-2_Classified
+            - MAC-2_Sensitive
+            - MAC-2_Public
+            - MAC-3_Classified
+            - MAC-3_Sensitive
+            - MAC-3_Public
+      responses:
+        200:
+          description: Rule response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rule'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/rules/{ruleId}:
+    get:
+      tags:
+      - STIG
+      summary: Return the defintion and associated checks and fixes for the specified
+        Rule
+      operationId: getRuleByRuleId
+      parameters:
+      - name: ruleId
+        in: path
+        description: A path parameter that indentifies a Rule
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Rule response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rule'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/{benchmarkId}/revisions/{revisionStr}/ccis:
+    get:
+      tags:
+      - STIG
+      summary: Return a list of CCIs from a STIG revision
+      operationId: getCcisByRevision
+      parameters:
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      responses:
+        200:
+          description: CCI response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CciListItem'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/ccis/{cci}:
+    get:
+      tags:
+      - STIG
+      summary: Return data for the specified CCI
+      operationId: getCci
+      parameters:
+      - name: cci
+        in: path
+        description: A path parameter that indentifies a CCI
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: CCI response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cci'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+
+  /version:
+    get:
+      tags:
+      - Version
+      summary: Return version information
+      operationId: getVersion
+      responses:
+        200:
+          description: Version response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiVersion'
+components:
+  schemas:
+    Error:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    STIG:
+      required:
+      - benchmarkId
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        title:
+          type: string
+        lastRevisionStr:
+          type: string
+        lastRevisionDate:
+          type: string
+    Revision:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          type: string
+        version:
+          type: string
+        release:
+          type: string
+        benchmarkDate:
+          type: string
+        status:
+          type: string
+        statusDate:
+          type: string
+        description:
+          type: string
+    GroupList:
+      type: array
+      items:
+        type: object
+        properties:
+          groupId:
+            type: string
+          title:
+            type: string
+          profiles:
+            type: array
+            items:
+              $ref: '#/components/schemas/Profile'
+          rules:
+            type: array
+            items:
+              $ref: '#/components/schemas/RuleAbbr'
+    GroupObj:
+      type: object
+      properties:
+        groupId:
+          type: string
+        title:
+          type: string
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Profile'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+    Profile:
+      type: string
+      enum:
+      - MAC-1_Classified
+      - MAC-1_Sensitive
+      - MAC-1_Public
+      - MAC-2_Classified
+      - MAC-2_Sensitive
+      - MAC-2_Public
+      - MAC-3_Classified
+      - MAC-3_Sensitive
+      - MAC-3_Public
+    Rule:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+        weight:
+          type: string
+        vulnDiscussion:
+          type: string
+        falsePositives:
+          type: string
+        falseNegatives:
+          type: string
+        documentable:
+          type: string
+        mitigations:
+          type: string
+        securityOverrideGuidance:
+          type: string
+        potentialImpacts:
+          type: string
+        thirdPartyTools:
+          type: string
+        mitigationControl:
+          type: string
+        responsibility:
+          type: string
+        cci:
+          type: array
+          items:
+            type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+        fixes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fix'
+    RuleAbbr:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+    Check:
+      type: object
+      properties:
+        checkId:
+          type: string
+        content:
+          type: string
+    Fix:
+      type: object
+      properties:
+        fixId:
+          type: string
+        text:
+          type: string
+    CciReferenceItem:
+      type: object
+      properties:
+        creator:
+          type: string
+        title:
+          type: string
+        version:
+          type: string
+        location:
+          type: string
+        indexDisa:
+          type: string
+        textRefNist:
+          type: string
+        parentControl:
+          type: string
+    CciListItem:
+      type: object
+      properties:
+        cci:
+          type: string
+        type:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceItem'
+    Cci:
+      type: object
+      properties:
+        cci:
+          type: string
+        status:
+          type: string
+        publishdate:
+          type: string
+        contributor:
+          type: string
+        type:
+          type: string
+        defintion:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceItem'
+        current_revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Revision'
+    ApiVersion:
+      type: object
+      properties:
+        branch:
+          type: string
+        commit:
+          type: string
+        nearest-tag:
+          type: string
+    MacCl:
+      type: string
+      enum:
+      - MAC-1_Classified
+      - MAC-1_Sensitive
+      - MAC-1_Public
+      - MAC-2_Classified
+      - MAC-2_Sensitive
+      - MAC-2_Public
+      - MAC-3_Classified
+      - MAC-3_Sensitive
+      - MAC-3_Public      
+
+    Package:
+      type: object
+      required:
+        - packageId
+        - name
+      properties:
+        packageId:
+          readOnly: true
+          type: integer
+          nullable: false
+        name:
+          type: string
+          nullable: false
+        emassId:
+          type: string
+          nullable: true
+        pocName:
+          type: string
+          nullable: true
+        pocEmail:
+          type: string
+          nullable: true
+        pocPhone:
+          type: string
+          nullable: true
+        reqRar:
+          type: boolean
+          nullable: true
+        macCl:
+          $ref: '#/components/schemas/MacCl'
+    PackageBasic:
+      type: object
+      properties:
+        packageId:
+          type: integer
+        name:
+          type: string
+    PackageProjected:
+      allOf:
+        - $ref: '#/components/schemas/Package'
+        - type: object
+          properties:
+            assets:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
+                $ref: '#/components/schemas/STIG'
+    PackageAssign:
+      allOf:
+        - $ref: '#/components/schemas/Package'
+        - type: object
+          properties:
+            assetIds:
+              type: array
+              items:
+                type: integer
+
+    Asset:
+      type: object
+      required:
+        - assetId
+        - name
+        - dept
+      properties:
+        assetId:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+          nullable: false
+        dept:
+          type: string
+          nullable: false
+        ip:
+          type: string
+          nullable: true
+        nonnetwork:
+          type: boolean
+          nullable: true
+        scanexempt:
+          type: boolean
+          nullable: true
+        profile:
+          $ref: '#/components/schemas/MacCl'
+    AssetProjected:
+      allOf:
+        - $ref: '#/components/schemas/Asset'
+        - type: object
+          properties:
+            packages:
+              type: array
+              description: The Packages mapped to this Asset
+              items:
+                $ref: '#/components/schemas/PackageBasic'
+            stigs:
+              type: array
+              description: The benchmarkIds of STIGs mapped to this Asset
+              items:
+                $ref: '#/components/schemas/StigAssigned'
+    AssetBasic:
+      type: object
+      properties:
+        assetId:
+          type: integer
+        name:
+          type: string
+        dept:
+          type: string
+    AssetAssign:
+      allOf:
+        - $ref: '#/components/schemas/Asset'
+        - type: object
+          properties:
+            packageIds:
+              description: The packageIds mapped to this Asset
+              type: array
+              items:
+                type: integer
+            benchmarkIds:
+              description: The benchmarkIds of STIGs mapped to this Asset
+              type: array
+              items:
+                type: string
+    StigAssigned:
+      type: object
+      properties:
+        saId:
+          type: integer
+        benchmarkId:
+          type: string
+
+    UserRole:
+      type: string
+      enum:
+        - "IA Staff"
+        - "IA Officer"
+        - "IA Workforce"
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+        displayName:
+          type: string
+        dept:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        canAdmin:
+          type: boolean
+    UserProjected:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            stigAssets:
+              type: array
+              items:
+                $ref: '#/components/schemas/StigAssetAssigned'
+    UserBasic:
+      type: object
+      properties:
+        userId:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+    UserAssign:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            saIds:
+              description: The STIG/Asset pairs (saIds) mapped to this Asset
+              type: array
+              items:
+                type: integer
+
+
+    ReviewState:
+      description: The Review state
+      type: string
+      enum:
+        - "0"
+        - "NF"
+        - "NA"
+    ReviewAction:
+      type: string
+      enum:
+        - "Remediate"
+        - "Mitigate"
+        - "Exception"
+    ReviewStatus:
+      type: string
+      enum:
+        - "Saved"
+        - "Submitted"
+        - "Approved"
+        - "Rejected"
+    Review:
+      type: object
+      properties:
+        reviewId:
+          type: integer
+          readOnly: true
+        assetId:
+          type: integer
+        ruleId:
+          type: string
+        state:
+          $ref: '#/components/schemas/ReviewState'
+        stateComment:
+          type: string
+        autoState:
+          type: boolean
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+        reqDoc:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
+        userId:
+          type: integer
+          readOnly: true
+        ts:
+          type: string
+          readOnly: true
+        rejectText:
+          type: string
+        rejectUserId:
+          type: integer
+    ReviewProjected:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            history:
+              type: array
+              items:
+                type: string
+            asset:
+              $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
+                type: string
+            rule:
+              $ref: '#/components/schemas/RuleAbbr'
+
+    AssetAssigned:
+      type: object
+      properties:
+        saId:
+          type: integer
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+    StigAssetAssigned:
+      type: object
+      properties:
+        saId:
+          type: integer
+        benchmarkId:
+          type: string
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+  parameters:
+    ElevateQuery:
+      name: elevate
+      in: query
+      description: Elevate the user context for this request if user is permitted (canAdmin)
+      schema:
+        type: boolean
+    PackageProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - assets
+          - stigs
+    AssetProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - packages
+          - stigs
+    ReviewProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - asset
+          - history
+          - rule
+          - stigs
+    ReviewStateQuery:
+      name: state
+      in: query
+      schema:
+        $ref: '#/components/schemas/ReviewState'    
+    ReviewStatusQuery:
+      name: status
+      in: query
+      schema:
+        $ref: '#/components/schemas/ReviewStatus'    
+    ReviewActionQuery:
+      name: action
+      in: query
+      schema:
+        $ref: '#/components/schemas/ReviewAction'    
+    UserProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - stigAssets
+    UserRoleQuery:
+      name: role
+      in: query
+      schema:
+        $ref: '#/components/schemas/UserRole'    
+        
+    BenchmarkIdPath:
+      name: benchmarkId
+      in: path
+      description: A path parameter that indentifies a STIG
+      required: true
+      schema:
+        type: string
+    BenchmarkIdQuery:
+      name: benchmarkId
+      in: query
+      description: A query parameter that indentifies a STIG
+      schema:
+        type: string
+    GroupIdPath:
+      name: groupId
+      in: path
+      description: A path parameter that indentifies a Group
+      required: true
+      schema:
+        type: string
+    RuleIdPath:
+      name: ruleId
+      in: path
+      description: A path parameter that indentifies a Rule
+      required: true
+      schema:
+        type: string
+    CciPath:
+      name: cci
+      in: path
+      description: A path parameter that indentifies a CCI
+      required: true
+      schema:
+        type: string
+    RevisionStrPath:
+      name: revisionStr
+      in: path
+      description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+        | 'latest' ]
+      required: true
+      schema:
+        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+        type: string
+    ChecklistProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Optional properties to return. Selecting "checks" or "fixes" will also select "fullrules"
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - profiles
+          - cci
+          - fullrules
+          - checks
+          - fixes
+    ProfileQuery:
+      name: profile
+      in: query
+      description: Filter by profile
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - MAC-1_Classified
+          - MAC-1_Sensitive
+          - MAC-1_Public
+          - MAC-2_Classified
+          - MAC-2_Sensitive
+          - MAC-2_Public
+          - MAC-3_Classified
+          - MAC-3_Sensitive
+          - MAC-3_Public
+  securitySchemes:
+    oauth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://localhost:8080/auth/realms/cmsat/protocol/openid-connect/auth
+          scopes:
+            stig-manager: Top-level scope
+            stig-manager:stig: Full access to the STIG collection
+            stig-manager:stig:read: Read access to the STIG collection
+            stig-manager:package: Full access to the Package collection
+            stig-manager:package:read: Read-only access to the Package collection
+            stig-manager:user: Full access to the Users collection
+            stig-manager:user:read: Read-only access to the Users collection
