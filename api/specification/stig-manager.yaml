@@ -4,7 +4,7 @@ info:
   description: An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.
   contact:
     name: Carl Smigielski
-    email: carl.smigielski.ctr@navy.mil
+    email: carl.a.smigielski@saic.com
   version: 1.0.0
 servers:
 - url: http://localhost:54000/stig-manager/api

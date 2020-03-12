@@ -7,7 +7,8 @@ services:
   db:
     image: store/oracle/database-enterprise:12.2.0.1-slim
     volumes:
-      - ./stigman-data:/ORCL
+      - ./stigman-init:/stigman-init
+      - stigman-data:/ORCL
     ports:
       - "1521:1521"
   api-classic:
@@ -19,12 +20,49 @@ services:
       - STIGMAN_KEYCLOAK_REALM
       - STIGMAN_KEYCLOAK_AUTH
       - STIGMAN_KEYCLOAK_CLIENTID
+      - STIGMAN_SWAGGER_ENABLED
+      - STIGMAN_SWAGGER_SERVER
+      - STIGMAN_SWAGGER_REDIRECT
+    volumes:
+      - ./stigman-init:/stigman-init
+    ports:
+      - "50081:80"
+    # depends_on:
+    #   - db
+  api:
+    image: ${STIGMAN_DOCKER_REPO}/api:${STIGMAN_DOCKER_TAG}
+    build: ../api/service
+    environment:
+      - STIGMAN_ORACLE_HOST
+      - STIGMAN_API_AUTHORITY
+      - STIGMAN_KEYCLOAK_REALM
+      - STIGMAN_KEYCLOAK_AUTH
+      - STIGMAN_KEYCLOAK_CLIENTID
+      - STIGMAN_SWAGGER_ENABLED
+      - STIGMAN_SWAGGER_SERVER
+      - STIGMAN_SWAGGER_REDIRECT
     init: true
     ports:
-      - "50080:80"
-    depends_on:
-      - db
-      
-# volumes:
-#   stigman-data:
-#     external: true
+      - "50082:54000"
+    # depends_on:
+    #   - db
+  client:
+    image: ${STIGMAN_DOCKER_REPO}/client:${STIGMAN_DOCKER_TAG}
+    build: ../clients
+    environment:
+      - STIGMAN_ORACLE_HOST
+      - STIGMAN_API_AUTHORITY
+      - STIGMAN_KEYCLOAK_REALM
+      - STIGMAN_KEYCLOAK_AUTH
+      - STIGMAN_KEYCLOAK_CLIENTID
+      - STIGMAN_SWAGGER_ENABLED
+      - STIGMAN_SWAGGER_SERVER
+      - STIGMAN_SWAGGER_REDIRECT
+    ports:
+      - "50083:80"
+    # depends_on:
+    #   - db
+         
+volumes:
+  stigman-data:
+    external: true
