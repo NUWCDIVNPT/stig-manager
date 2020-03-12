@@ -51,6 +51,7 @@ services:
     build: ../clients
     environment:
       - STIGMAN_ORACLE_HOST
+      - STIGMAN_API_BASE
       - STIGMAN_API_AUTHORITY
       - STIGMAN_KEYCLOAK_REALM
       - STIGMAN_KEYCLOAK_AUTH

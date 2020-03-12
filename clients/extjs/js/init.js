@@ -27,6 +27,7 @@ function loadScripts() {
         'ext/adapter/ext/ext-base-debug.js',
         'ext/ext-all-debug-w-comments.js',
         "ext/ux/GroupSummary.js",
+        "js/Env.js",
         "js/FileUploadField.js",
         "js/overrides.js",
         "js/RowEditor.js",

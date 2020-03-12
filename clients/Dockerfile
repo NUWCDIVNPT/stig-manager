@@ -18,5 +18,6 @@ COMMIT_BRANCH=${COMMIT_BRANCH} \
 COMMIT_TAG=${COMMIT_TAG}
 
 # Run envsubst against client template files for: keycloak.json and Env.js
-CMD ["/bin/bash", "-c", "envsubst < /usr/share/nginx/html/js/ADDM/Env.js.template > /usr/share/nginx/html/js/ADDM/Env.js && \
+CMD ["/bin/bash", "-c", "envsubst < /usr/share/nginx/html/js/keycloak.json.template > /usr/share/nginx/html/js/keycloak.json && \
+envsubst < /usr/share/nginx/html/js/Env.js.template > /usr/share/nginx/html/js/Env.js && \
 nginx -g \"daemon off;\""]
