@@ -1,5 +1,5 @@
 set define on;
-connect sys/&&sys_pw as sysdba;
+connect sys/&&sys_pw&&our_service as sysdba;
 alter session set container=&&container_name;
 
 grant &&stigs_role to stigman;

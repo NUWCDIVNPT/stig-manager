@@ -14,8 +14,6 @@ To run the orchestration, you must:
 - Have an account on Docker Hub
 - Pull the Oracle Database 12.2.0.1 image using your Docker Hub account
 
-*The initialization process has dependencies requiring you to run the orchestration on a Linux host. We will remove this dependency shortly and will support Docker Desktop for Windows and Mac.*
-
 ## Limitations of the Classic orchestration
 - The Apache server is configured to perform Basic Authentication
 - You cannot reliably logout of Basic Authentication without closing the browser. The logout function in STIG Manager does not work with all browsers when using Basic Authentication. The new API and client use OpenID Connect tokens and the logout feature works as designed.
@@ -28,7 +26,7 @@ The orchestration starts two containers:
 - Apache 2.4 serving the API and web client UI on TCP port 50443
 - An Oracle 12.2.0.1 database with no network ports exposed
 
-The orchestration bind mounts the `./stigman-init` directory in both containers. The STIG Manager Classic initialization script in this directory expects the Docker container names will be `docker_db_1` and `docker_web_1`, which are the default values when running the orchestration from the `docker` directory. 
+The orchestration bind mounts the `./stigman-init` directory in both containers. The STIG Manager Classic initialization process described here expects the Docker container names will be `docker_db_1` and `docker_web_1`, which are the default values when running the orchestration from the `docker` directory. 
 
 ### 1. Checkout and pull the Oracle Database image from DockerHub
 STIG Manager Classic only supports an Oracle Database backend. The orchestration makes use of the official Oracle Database 12.2.0.1 image available from Docker Hub. Because Oracle Database is not open source, you will need to login to Docker Hub and agree to Oracle's license terms before checking out the image. [Go here and click "Proceed to Checkout" to agree to Oracle's terms.](https://hub.docker.com/_/oracle-database-enterprise-edition)
@@ -58,12 +56,11 @@ Verify the Oracle container is ready for STIG Manager Classic to initialize, whi
 Once you see this line, you can exit the log output by typing `Ctrl-C`.
 
 ### 5. Initialize STIG Manager Classic with demonstration data
-*The initialization process has dependencies requiring you to run the orchestration on a Linux host. We will remove this dependency shortly.*
 
-You will now run a script that will initialize and populate the STIG Manager Classic database with demonstration data and STIGs. **By default, data is not persisted when the Oracle container is destroyed.** If you wish to persist data, you must edit `docker-compose.yml` to mount a volume to `/ORCL` in the Oracle container.
+You will now run a few commands that will prepare the containers and run a script on the web container to populate the STIG Manager Classic database with demonstration data and STIGs. **By default, data is not persisted when the Oracle container is destroyed.** If you wish to persist data, you must edit `docker-compose.yml` to mount a volume to `/ORCL` in the Oracle container.
 
-    cd stigman-init
-    ./stigman-init.sh
+    docker cp docker_db_1:/u01/app/oracle/product/12.2.0/dbhome_1/rdbms/admin/utl32k.sql stigman-init/db/utl32k.sql  
+    docker exec -it docker_web_1 bash ./stigman-init/stigman-init.sh
 
 The initialization script will ask to perform the following functions:
 - Create the STIG Manager Classic schemas
@@ -72,7 +69,7 @@ The initialization script will ask to perform the following functions:
 - Download the current SCAP content from https://public.cyber.mil/stigs/scap/
 - Import the STIG Compilation Library and SCAP content
 
-If you want to provide your own collection of STIGS, they are available for [individual download](https://public.cyber.mil/stigs/downloads). The Zipped files should be placed in the `docker/stigman-init/stigs` directory before you run the script. Check out the `stigman-init` script for how to run the STIGs import manually in the future. Please note that importing the STIG Compilation Library can take quite a while (~30 mins).
+If you want to provide your own collection of STIGS, they are available for [individual download](https://public.cyber.mil/stigs/downloads). The Zipped files should be placed in the `docker/stigman-init/stigs` directory before you run the script. Check out the `stigman-init` script for how to run the STIGs import manually in the future. Please note that importing the STIG Compilation Library can take quite a while, but will depend on your environment(10~30 mins).
 
 ### 6. Browse to `https://localhost:50443` and login
 
@@ -90,3 +87,17 @@ Switching between users will help you understand how STIG Manager Classic suppor
 
 ## STIG Manager Classic User Guide
 We are revising our User Guide to remove sensitive screen shots and features. Please visit again very soon for updates.
+
+
+## Troubleshooting
+
+In some Windows environments, Hyper-V may have reserved port 50443. If you have a conflict on that port, edit  `docker-compose.yml` and change the line:
+
+ `- "50443:443"`
+ 
+ to an appropriate value for your environment, for example 
+ 
+ `- "55443:443"`
+ 
+ and try again.
+

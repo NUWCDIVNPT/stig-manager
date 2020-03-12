@@ -3,10 +3,10 @@
 --------------------------------------------------------
 SET ECHO ON
 
-DEFINE sys_pw=Oradoc_db1
-DEFINE container_name=orclpdb1
+-- DEFINE sys_pw=Oradoc_db1
+-- DEFINE container_name=orclpdb1
 
-connect sys/&&sys_pw as sysdba;
+connect sys/&&sys_pw&&our_service as sysdba;
 alter session set container=&&container_name;
 
 -- prompt connecting to stigman

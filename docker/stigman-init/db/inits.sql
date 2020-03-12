@@ -9,8 +9,10 @@ DEFINE stig_import_jobs_password=stig_import_jobs
 DEFINE stig_import_jobs_role=role_stig_import_jobs
 DEFINE stigs_password=stigs
 DEFINE stigs_role=role_stigs
+DEFINE our_service=@db/orclcdb.localdomain
+DEFINE our_container_service=@db/orclpdb1.localdomain
 
-connect sys/&&sys_pw as sysdba;
+connect sys/&&sys_pw&&our_service as sysdba;
 alter session set container=&&container_name;
 
 @@enable_extended_dataTypes.sql

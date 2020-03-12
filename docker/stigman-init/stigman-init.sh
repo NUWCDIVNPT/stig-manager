@@ -1,4 +1,3 @@
-#!/bin/bash
 
 ask() {
     # https://djm.me/ask
@@ -38,12 +37,12 @@ ask() {
 }
 
 if ask "Create STIG Manager schemas?" Y; then
-    docker exec -it docker_db_1 bash -l -c "sqlplus sys/Oradoc_db1 as sysdba @/stigman-init/db/inits.sql; exit"
+    sqlplus sys/Oradoc_db1@db/orclcdb.localdomain as sysdba @/stigman-init/db/inits.sql
     echo -e "\nFinsihed attempt to create schemas.\n"
 fi
 
 if ask "Import demonstration data?" Y; then
-    docker exec -it docker_db_1 bash -l -c "sqlplus sys/Oradoc_db1 as sysdba @/stigman-init/db/demo-data.sql; exit"
+    sqlplus sys/Oradoc_db1@db/orclcdb.localdomain as sysdba @/stigman-init/db/demo-data.sql
     echo -e "\nFinished attempt to import demonstration data.\n"
 fi
 
@@ -51,7 +50,7 @@ if ask "Download the current STIG Library Compilation [~215MB] to ./stigs?" Y; t
     echo "Retreiving list of Compilation files from public.cyber.mil..."
     files=$(curl -s "https://public.cyber.mil/stigs/compilations/" | \
     sed -n 's/.*<a href=\"\(https:\/\/dl.dod.cyber.mil\/wp-content\/uploads\/stigs\/zip\/.*\)\" target=.*$/\1/p')
-    while IFS= read -r line ; do wget -nc -P ./stigs $line; done <<< "$files"
+    while IFS= read -r line ; do wget -nc -P /stigman-init/stigs $line; done <<< "$files"
     echo -e "\nFinished attempt to download STIG Library Compilation.\n"
 fi
 
@@ -59,12 +58,12 @@ if ask "Download the current SCAP Benchmarks to ./stigs?" Y; then
     echo "Retreiving list of SCAP files from public.cyber.mil..."
     files=$(curl -s "https://public.cyber.mil/stigs/scap/" | \
     sed -n 's/.*<a href=\"\(https:\/\/dl.dod.cyber.mil\/wp-content\/uploads\/stigs\/zip\/.*\)\" target=.*$/\1/p')
-    while IFS= read -r line ; do wget -nc -P ./stigs $line; done <<< "$files"
+    while IFS= read -r line ; do wget -nc -P /stigman-init/stigs $line; done <<< "$files"
     echo -e "\nFinished attempt to download current SCAP content.\n"
 fi
 
-if ask "Import the contents of ./stigs [might take several minutes]?" Y; then
-    docker exec -it docker_web_1 bash -l -c "./stigman-init/stigs/importStigs.pl --scap /stigman-init/stigs; exit;"
+if ask "Import the contents of ./stigman-init/stigs [might take several minutes]?" Y; then
+    ./stigman-init/stigs/importStigs.pl --scap /stigman-init/stigs
     echo -e "\nFinished attempt to import STIGs.\n"
 fi
 
