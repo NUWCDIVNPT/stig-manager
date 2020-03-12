@@ -1,0 +1,30 @@
+version: '3.7'
+
+# STIG Manager docker-compose orchestration
+# Maintainer: carl.a.smigielski@saic.com
+
+services:
+  db:
+    image: store/oracle/database-enterprise:12.2.0.1-slim
+    volumes:
+      - ./stigman-data:/ORCL
+    ports:
+      - "1521:1521"
+  api-classic:
+    image: ${STIGMAN_DOCKER_REPO}/api-classic:${STIGMAN_DOCKER_TAG}
+    build: ../api/classic      
+    environment:
+      - STIGMAN_ORACLE_HOST
+      - STIGMAN_API_AUTHORITY
+      - STIGMAN_KEYCLOAK_REALM
+      - STIGMAN_KEYCLOAK_AUTH
+      - STIGMAN_KEYCLOAK_CLIENTID
+    init: true
+    ports:
+      - "50080:80"
+    depends_on:
+      - db
+      
+# volumes:
+#   stigman-data:
+#     external: true
