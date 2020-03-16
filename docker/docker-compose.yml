@@ -17,12 +17,6 @@ services:
     environment:
       - STIGMAN_ORACLE_HOST
       - STIGMAN_API_AUTHORITY
-      - STIGMAN_KEYCLOAK_REALM
-      - STIGMAN_KEYCLOAK_AUTH
-      - STIGMAN_KEYCLOAK_CLIENTID
-      - STIGMAN_SWAGGER_ENABLED
-      - STIGMAN_SWAGGER_SERVER
-      - STIGMAN_SWAGGER_REDIRECT
     volumes:
       - ./stigman-init:/stigman-init
     ports:
@@ -35,9 +29,6 @@ services:
     environment:
       - STIGMAN_ORACLE_HOST
       - STIGMAN_API_AUTHORITY
-      - STIGMAN_KEYCLOAK_REALM
-      - STIGMAN_KEYCLOAK_AUTH
-      - STIGMAN_KEYCLOAK_CLIENTID
       - STIGMAN_SWAGGER_ENABLED
       - STIGMAN_SWAGGER_SERVER
       - STIGMAN_SWAGGER_REDIRECT
@@ -50,15 +41,10 @@ services:
     image: ${STIGMAN_DOCKER_REPO}/client:${STIGMAN_DOCKER_TAG}
     build: ../clients
     environment:
-      - STIGMAN_ORACLE_HOST
       - STIGMAN_API_BASE
-      - STIGMAN_API_AUTHORITY
       - STIGMAN_KEYCLOAK_REALM
       - STIGMAN_KEYCLOAK_AUTH
       - STIGMAN_KEYCLOAK_CLIENTID
-      - STIGMAN_SWAGGER_ENABLED
-      - STIGMAN_SWAGGER_SERVER
-      - STIGMAN_SWAGGER_REDIRECT
     ports:
       - "50083:80"
     # depends_on:

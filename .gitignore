@@ -15,6 +15,7 @@ test/*.log
 # ZIP archives #
 *.zip
 
-# Database persistence #
+# Database #
 stigman-data/
+utl32k.sql
 
