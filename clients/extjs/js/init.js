@@ -9,7 +9,7 @@ async function authorizeViaKeycloak() {
             onLoad: 'login-required',
             checkLoginIframe: false,
             defaultLoginOptions: {
-                scope: "cmsat"
+                scope: "stig-manager"
                 // ,prompt: "login"
             },
             promiseType: 'native'

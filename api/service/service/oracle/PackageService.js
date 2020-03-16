@@ -24,7 +24,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
 
   let columns = [
     'p.PACKAGEID as "packageId"',
-    'p.NAME as "packageName"',
+    'p.NAME as "name"',
     'p.EMASSID as "emassId"',
     'p.POCNAME as "pocName"',
     'p.POCEMAIL as "pocEmail"',
@@ -40,10 +40,13 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('assets')) {
-    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'assetId' VALUE a.assetId, KEY 'assetName' VALUE a.name ABSENT ON NULL), ',')) || ']' as "assets"`)
+    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'assetId' VALUE a.assetId, KEY 'name' VALUE a.name, KEY 'dept' VALUE a.dept ABSENT ON NULL), ',')) || ']' as "assets"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
-      columns.push(`'[' || strdagg_param(param_array('"' || sa.stigId || '"', ',')) || ']' as "stigs"`)
+    joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
+    joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
+    // Issue: API spec says to use lastRevisionStr, not revId
+    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'benchmarkId' VALUE cr.stigId, KEY 'lastRevisionStr' VALUE 'V'||cr.version||'R'||cr.release, KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
   }
 
   // PREDICATES
@@ -75,7 +78,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
   sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
-  
+  sql += ' order by p.name'
   try {
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
@@ -87,11 +90,19 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     //Oracle doesn't support a JSON type, so manually parse strings into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      if (inProjection && inProjection.includes('assets'))
+      if (inProjection && inProjection.includes('assets')) {
        // Check for "empty" arrays 
         record['assets'] = record['assets'] == '[{}]' ? [] : JSON.parse(result.rows[x]["assets"])
-      if (inProjection && inProjection.includes('stigs'))
+        record['assets'].sort((a,b) => {
+          let c = 0
+          if (a.name > b.name) { c= 1}
+          if (a.name < b.name) { c = -1}
+          return c
+        })
+      }
+      if (inProjection && inProjection.includes('stigs')) {
         record['stigs'] = record['stigs'] == '[""]' ? [] : JSON.parse(result.rows[x]["stigs"])
+      }
     }
     return (result.rows)
   }

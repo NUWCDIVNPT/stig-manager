@@ -1,7 +1,38 @@
-/* 
-$Id: overrides.js 807 2017-07-27 13:04:19Z csmig $
-*/
 
+// Promisfied Ajax.request() method
+// Source: Carl Smigielski
+Ext.override(Ext.Ajax, {
+    requestPromise : function (options) {
+        return new Promise ( (resolve, reject) => {
+            this.request({
+                url: options.url,
+                params: options.params,
+                method: options.method,
+                callback: options.callback,
+                scope: options.scope,
+                timeout: options.timeout,
+                form: options.form,
+                isUpload: options.isUpload,
+                headers: options.headers,
+                xmlData: options.xmlData,
+                jsonData: options.jsonData,
+                disableCaching: options.disableCaching,        
+                success: function (response, options) {
+                    resolve ({
+                        response: response,
+                        options: options
+                    })
+                },
+                failure: function (response, options) {
+                    reject ({
+                        response: response,
+                        options: options
+                    })
+                },
+            })
+        })
+    }
+})
 
 // custom Vtype for vtype:'IPAddress'
 Ext.apply(Ext.form.VTypes, {

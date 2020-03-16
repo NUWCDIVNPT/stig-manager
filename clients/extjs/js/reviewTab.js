@@ -109,8 +109,8 @@ function getReviewItems() {
 			expanded: true
 		},
 		loader: new Ext.tree.TreeLoader ({
-      dataUrl: 'pl/reviewsNavTree.pl'
-			//directFn: loadTree
+      //dataUrl: 'pl/reviewsNavTree.pl'
+			directFn: loadTree
 		}),
 		rootVisible: false,
 		loadMask: 'Loading...',
@@ -212,9 +212,105 @@ function getReviewItems() {
 	}];
 }
 
-function loadTree (node, cb) {
-  if (node === 'reviews-root') {
-    let result = 1
+async function loadTree (node, cb) {
+  try {
+    let match
+    // Root node
+    if (node === 'reviews-root') {
+      let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/packages`,
+        method: 'GET'
+      })
+      let r = JSON.parse(result.response.responseText)
+      let content = r.map( package => ({
+          id: `${package.packageId}-package-node`,
+          node: 'package',
+          text: package.name,
+          packageId: package.packageId,
+          packageName: package.name,
+          iconCls: 'sm-package-icon',
+          reqRar: package.reqRar,
+          children: [{
+            id: `${package.packageId}-import-result-node`,
+            text: 'Import STIG results...',
+            packageId: package.packageId,
+            packageName: package.name,
+            iconCls: 'sm-import-icon',
+            action: 'import',
+            leaf: true
+          },{
+            id: `${package.packageId}-assets-node`,
+            node: 'assets',
+            text: 'Assets',
+            iconCls: 'sm-asset-icon'
+          },{
+            id: `${package.packageId}-stigs-node`,
+            node: 'stigs',
+            text: 'STIGs',
+            iconCls: 'sm-stig-icon'
+          }]
+        })
+      )
+      cb(content, {status: true})
+      return
+    }
+    // Package-Assets node
+    match = node.match(/(\d+)-assets-node/)
+    if (match) {
+      let packageId = match[1]
+      let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+        method: 'GET',
+        params: {
+          projection: 'assets'
+        }
+      })
+      let r = JSON.parse(result.response.responseText)
+      let content = r.assets.map( asset => ({
+          id: `${packageId}-${asset.assetId}-assets-asset-node`,
+          text: asset.name,
+          report: 'asset',
+          packageId: packageId,
+          assetId: asset.assetId,
+          iconCls: 'sm-asset-icon',
+          qtip: asset.name
+        })
+      )
+      cb(content, {status: true})
+      return
+    }
+    // Package-STIGs node
+    match = node.match(/(\d+)-stigs-node/)
+    if (match) {
+      let packageId = match[1]
+      let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+        method: 'GET',
+        params: {
+          projection: 'stigs'
+        }
+      })
+      let r = JSON.parse(result.response.responseText)
+      let content = r.stigs.map( stig => ({
+          packageId: packageId,
+          text: stig.benchmarkId,
+          packageName: r.name,
+          report: 'stig',
+          iconCls: 'sm-stig-icon',
+          reqRar: r.reqRar,
+          revId: `${stig.benchmarkId}-`,
+          id: `${packageId}-${stig.benchmarkId}-stigs-stig-node`,
+          stigId: stig.benchmarkId,
+          qtip: stig.title
+        })
+      )
+      cb(content, {status: true})
+      return
+    }
+
+  }
+  catch (e) {
+    Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
   }
 }
 

@@ -26,7 +26,7 @@ set define on
 --  DDL for Type PARAM_ARRAY
 --------------------------------------------------------
 
-  CREATE OR REPLACE EDITIONABLE TYPE "STIGMAN"."PARAM_ARRAY" AS table OF VARCHAR2(100);
+  CREATE OR REPLACE EDITIONABLE TYPE "STIGMAN"."PARAM_ARRAY" AS table OF VARCHAR2(10000);
 
 /
 --------------------------------------------------------
