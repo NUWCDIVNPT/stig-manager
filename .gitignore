@@ -7,8 +7,15 @@ package-lock.json
 test/*.log
 
 # VS Code #
-#.vscode
+.vscode
 
 # docker-compose #
 .env
+
+# ZIP archives #
+*.zip
+
+# Database #
+stigman-data/
+utl32k.sql
 
