@@ -1,9 +1,8 @@
 {
-    "realm": "stigman",
-    "auth-server-url": "http://localhost:8080/auth",
-    "ssl-required": "external",
-    "resource": "stig-manager",
-    "public-client": true,
-    "confidential-port": 0
-  }
-  
+  "realm": "stigman",
+  "auth-server-url": "http://192.168.1.155:8080/auth",
+  "ssl-required": "external",
+  "resource": "stig-manager",
+  "public-client": true,
+  "confidential-port": 0
+}

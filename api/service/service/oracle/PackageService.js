@@ -1,7 +1,7 @@
 'use strict';
 const oracledb = require('oracledb')
-const utils = require('../../utils/writer.js')
-const db = require('./utils')
+const writer = require('../../utils/writer.js')
+const dbUtils = require('./utils')
 
 
 /**
@@ -121,7 +121,7 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
           `UPDATE
               stigman.packages
             SET
-              ${db.objectBind(packageFields, binds)}
+              ${dbUtils.objectBind(packageFields, binds)}
             WHERE
               packageId = :packageId`
           binds.push(packageId)
@@ -177,7 +177,7 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
     return row
   }
   catch (err) {
-    throw ( utils.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
 
@@ -193,7 +193,7 @@ exports.createPackage = async function(body, projection, userObject) {
     return (row)
   }
   catch (err) {
-    throw ( utils.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
 
@@ -218,7 +218,7 @@ exports.deletePackage = async function(packageId, projection, userObject) {
     return (row)
   }
   catch (err) {
-    throw ( utils.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
 
@@ -237,7 +237,7 @@ exports.getPackage = async function(packageId, projection, elevate, userObject) 
   return (rows[0])
   }
   catch (err) {
-    throw ( utils.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
 
@@ -253,7 +253,7 @@ exports.getPackages = async function(projection, elevate, userObject) {
     return (rows)
   }
   catch (err) {
-    throw ( utils.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
 
@@ -271,7 +271,7 @@ exports.updatePackage = async function( packageId, body, projection, userObject)
     return (row)
   } 
   catch (err) {
-    throw ( utils.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
 

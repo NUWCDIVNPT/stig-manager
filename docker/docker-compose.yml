@@ -40,6 +40,8 @@ services:
   client:
     image: ${STIGMAN_DOCKER_REPO}/client:${STIGMAN_DOCKER_TAG}
     build: ../clients
+    volumes:
+      - ../clients/extjs:/usr/share/nginx/html
     environment:
       - STIGMAN_API_BASE
       - STIGMAN_KEYCLOAK_REALM

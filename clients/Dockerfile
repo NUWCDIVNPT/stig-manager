@@ -10,7 +10,7 @@ LABEL tag=${COMMIT_TAG}
 # Basic nginx config
 COPY ./nginx.conf /etc/nginx/nginx.conf
 # The STIG Manager SPA
-COPY ./extjs /usr/share/nginx/html
+# COPY ./extjs /usr/share/nginx/html
 
 # Default values for the environment
 ENV COMMIT_SHA=${COMMIT_SHA} \

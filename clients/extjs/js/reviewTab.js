@@ -109,15 +109,8 @@ function getReviewItems() {
 			expanded: true
 		},
 		loader: new Ext.tree.TreeLoader ({
-			dataUrl: 'pl/reviewsNavTree.pl'
-			// listeners: {
-				// beforeload: function (l,n,c) {
-					// Ext.getCmp('reviews-nav-tree').setTitle("<img src='img/loadingTree.gif' height=12 width=12> Loading your reviews...");
-				// },
-				// load : function(l,n,r) {
-					// Ext.getCmp('reviews-nav-tree').setTitle('STIG Manager Reviews');
-				// }
-			// }
+      dataUrl: 'pl/reviewsNavTree.pl'
+			//directFn: loadTree
 		}),
 		rootVisible: false,
 		loadMask: 'Loading...',
@@ -217,6 +210,12 @@ function getReviewItems() {
 		},
 		items: []
 	}];
+}
+
+function loadTree (node, cb) {
+  if (node === 'reviews-root') {
+    let result = 1
+  }
 }
 
 function addReviewHome() {
