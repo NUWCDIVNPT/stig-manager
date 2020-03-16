@@ -12,8 +12,6 @@ Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 
 This repository is receiving several commits each day as we work [Phase 1 of the Project](docs/roadmap.md). During Phase 1, the `master` branch will contain buildable, development-quaity code. Daily commits are being made to the `phase-1-dev` branch and some of these commits may include unbuildable code.
 
-Our original code is stable and available in the [`classic` branch](https://github.com/NUWCDIVNPT/stig-manager/tree/classic)
-
 
 ## STIG Manager Classic for Docker
 
