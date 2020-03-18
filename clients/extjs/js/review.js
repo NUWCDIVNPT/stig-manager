@@ -22,7 +22,11 @@ function addReview(leaf,selectedRule,selectedResource) {
 		}
 	*/
 
-	//if (leaf.report != 'review') { return; } //not necessary, handled in reviewTab.js
+	// Classic compatability. Remove after modernization
+	if (leaf.stigRevStr) {
+		let match = leaf.stigRevStr.match(/V(\d+)R(\d+)/)
+		leaf.revId = `${leaf.stigId}-${match[1]}-${match[2]}`
+	}
 	var idAppend = '-' + leaf.assetId + '-' + leaf.stigId.replace(".","_");
 	var TEMPLATE_STR = '!_TEMPLATE';
 	var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';

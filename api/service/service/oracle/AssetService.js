@@ -23,27 +23,31 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   }
 
   let columns = [
-    'p.PACKAGEID as "packageId"',
-    'p.NAME as "packageName"',
-    'p.EMASSID as "emassId"',
-    'p.POCNAME as "pocName"',
-    'p.POCEMAIL as "pocEmail"',
-    'p.POCPHONE as "pocPhone"',
-    'p.REQRAR as "reqRar"'
+    'a.ASSETID as "assetId"',
+    'a.NAME as "name"',
+    'a.DEPT as "dept"',
+    'a.IP as "ip"',
+    'a.NONNETWORK as "nonnetwork"',
+    'a.SCANEXEMPT as "scanexempt"',
+    'a.PROFILE as "profile"'
   ]
   let joins = [
-    'stigman.packages p',
-    'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
-    'left join stigman.assets a on ap.assetId = a.assetId',
+    'stigman.assets a',
+    'left join stigman.asset_package_map ap on a.assetId=ap.assetId',
+    'left join stigman.packages p on ap.packageId=ap.packageId',
     'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
   ]
 
   // PROJECTIONS
-  if (inProjection && inProjection.includes('assets')) {
-    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'assetId' VALUE a.assetId, KEY 'assetName' VALUE a.name ABSENT ON NULL), ',')) || ']' as "assets"`)
+  if (inProjection && inProjection.includes('packages')) {
+    // joins.push('left join stigman.asset_package_map ap on a.assetId=ap.assetId')
+    // joins.push('left join stigman.packages p on ap.packageId=ap.packageId')
+    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'packageId' VALUE p.packageId, KEY 'name' VALUE p.name ABSENT ON NULL), ',')) || ']' as "packages"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
-      columns.push(`'[' || strdagg_param(param_array('"' || sa.stigId || '"', ',')) || ']' as "stigs"`)
+    joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
+    joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
+    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'benchmarkId' VALUE cr.stigId, KEY 'lastRevisionStr' VALUE 'V'||cr.version||'R'||cr.release, KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
   }
 
   // PREDICATES
@@ -51,9 +55,21 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     statements: [],
     binds: []
   }
+  if (inPredicates.assetId) {
+    predicates.statements.push('a.assetId = :assetId')
+    predicates.binds.push( inPredicates.assetId )
+  }
   if (inPredicates.packageId) {
-    predicates.statements.push('p.packageId = :packageId')
+    predicates.statements.push('ap.packageId = :packageId')
     predicates.binds.push( inPredicates.packageId )
+  }
+  if (inPredicates.benchmarkId) {
+    predicates.statements.push('sa.stigId = :stigId')
+    predicates.binds.push( inPredicates.benchmarkId )
+  }
+  if (inPredicates.dept) {
+    predicates.statements.push('a.dept = :dept')
+    predicates.binds.push( inPredicates.dept )
   }
   if (context == STIGMAN_CONTEXT.DEPT) {
     predicates.statements.push('a.dept = :dept')
@@ -74,7 +90,8 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
+  sql += ' group by a.assetId, a.name, a.dept, a.ip, a.nonnetwork, a.scanexempt, a.profile'
+  sql += ' order by a.name'
   
   try {
     let  options = {
@@ -87,7 +104,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     //Oracle doesn't support a JSON type, so manually parse strings into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      if (inProjection && inProjection.includes('assets'))
+      if (inProjection && inProjection.includes('packages'))
        // Check for "empty" arrays 
         record['assets'] = record['assets'] == '[{}]' ? [] : JSON.parse(result.rows[x]["assets"])
       if (inProjection && inProjection.includes('stigs'))
@@ -165,16 +182,16 @@ exports.deleteAsset = function(assetId) {
  * assetId Integer A path parameter that indentifies an Asset
  * returns AssetDetail
  **/
-exports.getAsset = function(assetId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = "";
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getAsset = async function(assetId, projection, elevate, userObject) {
+  try {
+    let rows = await this.queryAssets(projection, {
+      assetId: assetId
+    }, elevate, userObject)
+  return (rows[0])
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -182,19 +199,22 @@ exports.getAsset = function(assetId) {
  * Return a list of Assets accessible to the user
  *
  * packageId Integer Selects Assets mapped to a Package (optional)
+ * benchmarkId String Selects Assets mapped to a STIG (optional)
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = function(packageId,dept) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ "", "" ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getAssets = async function(packageId, benchmarkId, dept, projection, elevate, userObject) {
+  try {
+    let rows = await this.queryAssets(projection, {
+      packageId: packageId,
+      benchmarkId: benchmarkId,
+      dept: dept
+    }, elevate, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 

@@ -279,7 +279,39 @@ async function loadTree (node, cb) {
       cb(content, {status: true})
       return
     }
-    // Package-STIGs node
+    // Package-Assets-STIG node
+    match = node.match(/(\d+)-(\d+)-assets-asset-node/)
+    if (match) {
+      let packageId = match[1]
+      let assetId = match[2]
+      let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
+        method: 'GET',
+        params: {
+          projection: 'stigs'
+        }
+      })
+      let r = JSON.parse(result.response.responseText)
+      let content = r.stigs.map( stig => ({
+          id: `${packageId}-${assetId}-${stig.benchmarkId}-leaf`,
+          text: stig.benchmarkId,
+          leaf: true,
+          report: 'review',
+          iconCls: 'sm-stig-icon',
+          stigName: stig.benchmarkId,
+          assetName: r.name,
+          stigRevStr: stig.latestRevStr,
+          assetId: r.assetId,
+          stigId: stig.benchmarkId,
+          assetGroup: null,
+          qtip: stig.title
+        })
+      )
+      cb(content, {status: true})
+      return
+    }
+	
+	  // Package-STIGs node
     match = node.match(/(\d+)-stigs-node/)
     if (match) {
       let packageId = match[1]
@@ -306,7 +338,42 @@ async function loadTree (node, cb) {
       )
       cb(content, {status: true})
       return
-    }
+	  }
+	  // Package-STIGs-STIG node
+    match = node.match(/(\d+)-(.*)-stigs-stig-node/)
+    if (match) {
+      // TODO: Call API /stigs endpoint when it is implemented
+      let packageId = match[1]
+      let benchmarkId = match[2]
+      let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/assets`,
+        method: 'GET',
+        params: {
+          packageId: packageId,
+          benchmarkId: benchmarkId,
+          projection: 'stigs'
+        }
+      })
+      let r = JSON.parse(result.response.responseText)
+      let content = r.map( asset => ({
+          id: `${packageId}-${asset.assetId}-${benchmarkId}-leaf`,
+          text: asset.name,
+          leaf: true,
+          report: 'review',
+          iconCls: 'sm-asset-icon',
+          stigName: benchmarkId,
+          assetName: asset.name,
+          stigRevStr: asset.stigs[0].latestRevStr, // BUG: relies on exclusion of other assigned stigs from /assets
+          assetId: asset.assetId,
+          stigId: benchmarkId,
+          assetGroup: null,
+          qtip: asset.name
+        })
+      )
+      cb(content, {status: true})
+      return
+	  }
+	
 
   }
   catch (e) {
