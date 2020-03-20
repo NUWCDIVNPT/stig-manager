@@ -45,7 +45,9 @@ paths:
       - Package
       summary: Create a Package
       operationId: createPackage
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
         x-name: body
         content:
           application/json:
@@ -106,7 +108,10 @@ paths:
       - Package
       summary: Merge updates to a Package
       operationId: updatePackage
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
+        x-name: body
         content:
           application/json:
             schema:
@@ -197,7 +202,10 @@ paths:
       - Asset
       summary: Create an Asset
       operationId: createAsset
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
+        x-name: body
         content:
           application/json:
             schema:
@@ -255,7 +263,10 @@ paths:
       - Asset
       summary: Merge updates to an Asset
       operationId: updateAsset
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
+        x-name: body
         content:
           application/json:
             schema:
@@ -354,7 +365,10 @@ paths:
       - Review
       summary: Create a Review
       operationId: createReview
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
+        x-name: body
         content:
           application/json:
             schema:
@@ -412,7 +426,10 @@ paths:
       - Review
       summary: Merge updates to a Review
       operationId: updateReview
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
+        x-name: body
         content:
           application/json:
             schema:
@@ -509,7 +526,9 @@ paths:
       - User
       summary: Create a User
       operationId: createUser
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
         x-name: body
         content:
           application/json:
@@ -592,7 +611,10 @@ paths:
       - STIG
       summary: Import a new STIG
       operationId: addSTIG
+      x-codegen-request-body-name: body
       requestBody:
+        required: true
+        x-name: body
         content:
           multipart/form-data:
             schema:

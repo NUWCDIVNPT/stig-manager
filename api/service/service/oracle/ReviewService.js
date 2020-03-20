@@ -1,23 +1,24 @@
 'use strict';
+const oracledb = require('oracledb')
+const writer = require('../../utils/writer.js')
+const dbUtils = require('./utils')
 
 
 /**
  * Create a Review
  *
- * body Review  (optional)
+ * body Review 
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.createReview = function(body,projection) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = "";
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.createReview = async function(body, projection, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -28,16 +29,14 @@ exports.createReview = function(body,projection) {
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.deleteReview = function(reviewId,projection) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = "";
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.deleteReview = async function(reviewId, projection, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -49,16 +48,14 @@ exports.deleteReview = function(reviewId,projection) {
  * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
  * returns AssetProjected
  **/
-exports.getReview = function(reviewId,projection,elevate) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = "";
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getReview = async function(reviewId, projection, elevate, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -76,36 +73,32 @@ exports.getReview = function(reviewId,projection,elevate) {
  * packageId Integer Selects Reviews mapped to a Package (optional)
  * returns List
  **/
-exports.getReviews = function(projection,elevate,state,action,status,ruleId,benchmarkId,assetId,packageId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ "", "" ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getReviews = async function(projection, elevate, state, action, status, ruleId, benchmarkId, assetId, packageId, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
 /**
  * Merge updates to a Review
  *
- * body AssetAssign  (optional)
- * projection List Additional properties to include in the response.  (optional)
  * reviewId Integer A path parameter that indentifies a Review
+ * body AssetAssign 
+ * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.updateReview = function(body,projection,reviewId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = "";
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.updateReview = async function(reviewId, body, projection, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 

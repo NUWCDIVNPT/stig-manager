@@ -8,7 +8,7 @@ module.exports.createPackage = async function createPackage (req, res, next) {
   if ( req.userObject.canAdmin  || req.userObject.role == 'Staff' ) {
     try {
       let projection = req.swagger.params['projection'].value
-      let body = req.body
+      let body = req.swagger.params['body'].value
       let response = await Package.createPackage( body, projection, req.userObject)
       writer.writeJson(res, response)
     }

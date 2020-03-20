@@ -1,4 +1,7 @@
 'use strict';
+const oracledb = require('oracledb')
+const writer = require('../../utils/writer.js')
+const dbUtils = require('./utils')
 
 
 /**
@@ -6,19 +9,13 @@
  *
  * returns ApiVersion
  **/
-exports.getVersion = function() {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "nearest-tag" : "nearest-tag",
-  "commit" : "commit",
-  "branch" : "branch"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getVersion = async function(userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 

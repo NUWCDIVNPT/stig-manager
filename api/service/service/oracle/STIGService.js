@@ -1,27 +1,23 @@
 'use strict';
+const oracledb = require('oracledb')
+const writer = require('../../utils/writer.js')
+const dbUtils = require('./utils')
 
 
 /**
  * Import a new STIG
  *
- * source byte[]  (optional)
+ * source File An XCCDF file (optional)
  * returns STIG
  **/
-exports.addSTIG = function(source) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "lastRevisionDate" : "lastRevisionDate",
-  "title" : "title",
-  "benchmarkId" : "benchmarkId",
-  "lastRevisionStr" : "lastRevisionStr"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.addSTIG = async function(source, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -32,25 +28,14 @@ exports.addSTIG = function(source) {
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns Revision
  **/
-exports.deleteRevisionByString = function(benchmarkId,revisionStr) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "statusDate" : "statusDate",
-  "revisionStr" : "revisionStr",
-  "release" : "release",
-  "description" : "description",
-  "benchmarkDate" : "benchmarkDate",
-  "version" : "version",
-  "benchmarkId" : "benchmarkId",
-  "status" : "status"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -60,21 +45,14 @@ exports.deleteRevisionByString = function(benchmarkId,revisionStr) {
  * benchmarkId String A path parameter that indentifies a STIG
  * returns STIG
  **/
-exports.deleteStigById = function(benchmarkId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "lastRevisionDate" : "lastRevisionDate",
-  "title" : "title",
-  "benchmarkId" : "benchmarkId",
-  "lastRevisionStr" : "lastRevisionStr"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.deleteStigById = async function(benchmarkId, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -84,102 +62,14 @@ exports.deleteStigById = function(benchmarkId) {
  * cci String A path parameter that indentifies a CCI
  * returns List
  **/
-exports.getCci = function(cci) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "defintion" : "defintion",
-  "contributor" : "contributor",
-  "references" : [ {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  }, {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  } ],
-  "cci" : "cci",
-  "publishdate" : "publishdate",
-  "type" : "type",
-  "current_revisions" : [ {
-    "statusDate" : "statusDate",
-    "revisionStr" : "revisionStr",
-    "release" : "release",
-    "description" : "description",
-    "benchmarkDate" : "benchmarkDate",
-    "version" : "version",
-    "benchmarkId" : "benchmarkId",
-    "status" : "status"
-  }, {
-    "statusDate" : "statusDate",
-    "revisionStr" : "revisionStr",
-    "release" : "release",
-    "description" : "description",
-    "benchmarkDate" : "benchmarkDate",
-    "version" : "version",
-    "benchmarkId" : "benchmarkId",
-    "status" : "status"
-  } ],
-  "status" : "status"
-}, {
-  "defintion" : "defintion",
-  "contributor" : "contributor",
-  "references" : [ {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  }, {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  } ],
-  "cci" : "cci",
-  "publishdate" : "publishdate",
-  "type" : "type",
-  "current_revisions" : [ {
-    "statusDate" : "statusDate",
-    "revisionStr" : "revisionStr",
-    "release" : "release",
-    "description" : "description",
-    "benchmarkDate" : "benchmarkDate",
-    "version" : "version",
-    "benchmarkId" : "benchmarkId",
-    "status" : "status"
-  }, {
-    "statusDate" : "statusDate",
-    "revisionStr" : "revisionStr",
-    "release" : "release",
-    "description" : "description",
-    "benchmarkDate" : "benchmarkDate",
-    "version" : "version",
-    "benchmarkId" : "benchmarkId",
-    "status" : "status"
-  } ],
-  "status" : "status"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getCci = async function(cci, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -190,56 +80,14 @@ exports.getCci = function(cci) {
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns List
  **/
-exports.getCcisByRevision = function(benchmarkId,revisionStr) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "references" : [ {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  }, {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  } ],
-  "cci" : "cci",
-  "type" : "type"
-}, {
-  "references" : [ {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  }, {
-    "parentControl" : "parentControl",
-    "creator" : "creator",
-    "indexDisa" : "indexDisa",
-    "textRefNist" : "textRefNist",
-    "location" : "location",
-    "title" : "title",
-    "version" : "version"
-  } ],
-  "cci" : "cci",
-  "type" : "type"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -252,83 +100,14 @@ exports.getCcisByRevision = function(benchmarkId,revisionStr) {
  * groupId String A path parameter that indentifies a Group
  * returns GroupObj
  **/
-exports.getGroupByRevision = function(benchmarkId,revisionStr,groupId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "groupId" : "groupId",
-  "profiles" : [ "MAC-1_Classified", "MAC-1_Classified" ],
-  "rules" : [ {
-    "severity" : "severity",
-    "vulnDiscussion" : "vulnDiscussion",
-    "thirdPartyTools" : "thirdPartyTools",
-    "falseNegatives" : "falseNegatives",
-    "documentable" : "documentable",
-    "cci" : [ "cci", "cci" ],
-    "weight" : "weight",
-    "falsePositives" : "falsePositives",
-    "potentialImpacts" : "potentialImpacts",
-    "title" : "title",
-    "version" : "version",
-    "mitigations" : "mitigations",
-    "fixes" : [ {
-      "text" : "text",
-      "fixId" : "fixId"
-    }, {
-      "text" : "text",
-      "fixId" : "fixId"
-    } ],
-    "mitigationControl" : "mitigationControl",
-    "checks" : [ {
-      "checkId" : "checkId",
-      "content" : "content"
-    }, {
-      "checkId" : "checkId",
-      "content" : "content"
-    } ],
-    "responsibility" : "responsibility",
-    "securityOverrideGuidance" : "securityOverrideGuidance",
-    "ruleId" : "ruleId"
-  }, {
-    "severity" : "severity",
-    "vulnDiscussion" : "vulnDiscussion",
-    "thirdPartyTools" : "thirdPartyTools",
-    "falseNegatives" : "falseNegatives",
-    "documentable" : "documentable",
-    "cci" : [ "cci", "cci" ],
-    "weight" : "weight",
-    "falsePositives" : "falsePositives",
-    "potentialImpacts" : "potentialImpacts",
-    "title" : "title",
-    "version" : "version",
-    "mitigations" : "mitigations",
-    "fixes" : [ {
-      "text" : "text",
-      "fixId" : "fixId"
-    }, {
-      "text" : "text",
-      "fixId" : "fixId"
-    } ],
-    "mitigationControl" : "mitigationControl",
-    "checks" : [ {
-      "checkId" : "checkId",
-      "content" : "content"
-    }, {
-      "checkId" : "checkId",
-      "content" : "content"
-    } ],
-    "responsibility" : "responsibility",
-    "securityOverrideGuidance" : "securityOverrideGuidance",
-    "ruleId" : "ruleId"
-  } ],
-  "title" : "title"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -339,44 +118,16 @@ exports.getGroupByRevision = function(benchmarkId,revisionStr,groupId) {
  * benchmarkId String A path parameter that indentifies a STIG
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * profile List Filter by profile (optional)
- * returns GroupList
+ * returns List
  **/
-exports.getGroupsByRevision = function(benchmarkId,revisionStr,profile) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "groupId" : "groupId",
-  "profiles" : [ "MAC-1_Classified", "MAC-1_Classified" ],
-  "rules" : [ {
-    "ruleId" : "ruleId",
-    "title" : "title",
-    "version" : "version"
-  }, {
-    "ruleId" : "ruleId",
-    "title" : "title",
-    "version" : "version"
-  } ],
-  "title" : "title"
-}, {
-  "groupId" : "groupId",
-  "profiles" : [ "MAC-1_Classified", "MAC-1_Classified" ],
-  "rules" : [ {
-    "ruleId" : "ruleId",
-    "title" : "title",
-    "version" : "version"
-  }, {
-    "ruleId" : "ruleId",
-    "title" : "title",
-    "version" : "version"
-  } ],
-  "title" : "title"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getGroupsByRevision = async function(benchmarkId, revisionStr, profile, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -387,25 +138,14 @@ exports.getGroupsByRevision = function(benchmarkId,revisionStr,profile) {
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns Revision
  **/
-exports.getRevisionByString = function(benchmarkId,revisionStr) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "statusDate" : "statusDate",
-  "revisionStr" : "revisionStr",
-  "release" : "release",
-  "description" : "description",
-  "benchmarkDate" : "benchmarkDate",
-  "version" : "version",
-  "benchmarkId" : "benchmarkId",
-  "status" : "status"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getRevisionByString = async function(benchmarkId, revisionStr, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -415,34 +155,14 @@ exports.getRevisionByString = function(benchmarkId,revisionStr) {
  * benchmarkId String A path parameter that indentifies a STIG
  * returns List
  **/
-exports.getRevisionsByBenchmarkId = function(benchmarkId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "statusDate" : "statusDate",
-  "revisionStr" : "revisionStr",
-  "release" : "release",
-  "description" : "description",
-  "benchmarkDate" : "benchmarkDate",
-  "version" : "version",
-  "benchmarkId" : "benchmarkId",
-  "status" : "status"
-}, {
-  "statusDate" : "statusDate",
-  "revisionStr" : "revisionStr",
-  "release" : "release",
-  "description" : "description",
-  "benchmarkDate" : "benchmarkDate",
-  "version" : "version",
-  "benchmarkId" : "benchmarkId",
-  "status" : "status"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -452,47 +172,14 @@ exports.getRevisionsByBenchmarkId = function(benchmarkId) {
  * ruleId String A path parameter that indentifies a Rule
  * returns Rule
  **/
-exports.getRuleByRuleId = function(ruleId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "severity" : "severity",
-  "vulnDiscussion" : "vulnDiscussion",
-  "thirdPartyTools" : "thirdPartyTools",
-  "falseNegatives" : "falseNegatives",
-  "documentable" : "documentable",
-  "cci" : [ "cci", "cci" ],
-  "weight" : "weight",
-  "falsePositives" : "falsePositives",
-  "potentialImpacts" : "potentialImpacts",
-  "title" : "title",
-  "version" : "version",
-  "mitigations" : "mitigations",
-  "fixes" : [ {
-    "text" : "text",
-    "fixId" : "fixId"
-  }, {
-    "text" : "text",
-    "fixId" : "fixId"
-  } ],
-  "mitigationControl" : "mitigationControl",
-  "checks" : [ {
-    "checkId" : "checkId",
-    "content" : "content"
-  }, {
-    "checkId" : "checkId",
-    "content" : "content"
-  } ],
-  "responsibility" : "responsibility",
-  "securityOverrideGuidance" : "securityOverrideGuidance",
-  "ruleId" : "ruleId"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getRuleByRuleId = async function(ruleId, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -505,78 +192,14 @@ exports.getRuleByRuleId = function(ruleId) {
  * profile List Filter by profile (optional)
  * returns List
  **/
-exports.getRulesByRevision = function(benchmarkId,revisionStr,profile) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "severity" : "severity",
-  "vulnDiscussion" : "vulnDiscussion",
-  "thirdPartyTools" : "thirdPartyTools",
-  "falseNegatives" : "falseNegatives",
-  "documentable" : "documentable",
-  "cci" : [ "cci", "cci" ],
-  "weight" : "weight",
-  "falsePositives" : "falsePositives",
-  "potentialImpacts" : "potentialImpacts",
-  "title" : "title",
-  "version" : "version",
-  "mitigations" : "mitigations",
-  "fixes" : [ {
-    "text" : "text",
-    "fixId" : "fixId"
-  }, {
-    "text" : "text",
-    "fixId" : "fixId"
-  } ],
-  "mitigationControl" : "mitigationControl",
-  "checks" : [ {
-    "checkId" : "checkId",
-    "content" : "content"
-  }, {
-    "checkId" : "checkId",
-    "content" : "content"
-  } ],
-  "responsibility" : "responsibility",
-  "securityOverrideGuidance" : "securityOverrideGuidance",
-  "ruleId" : "ruleId"
-}, {
-  "severity" : "severity",
-  "vulnDiscussion" : "vulnDiscussion",
-  "thirdPartyTools" : "thirdPartyTools",
-  "falseNegatives" : "falseNegatives",
-  "documentable" : "documentable",
-  "cci" : [ "cci", "cci" ],
-  "weight" : "weight",
-  "falsePositives" : "falsePositives",
-  "potentialImpacts" : "potentialImpacts",
-  "title" : "title",
-  "version" : "version",
-  "mitigations" : "mitigations",
-  "fixes" : [ {
-    "text" : "text",
-    "fixId" : "fixId"
-  }, {
-    "text" : "text",
-    "fixId" : "fixId"
-  } ],
-  "mitigationControl" : "mitigationControl",
-  "checks" : [ {
-    "checkId" : "checkId",
-    "content" : "content"
-  }, {
-    "checkId" : "checkId",
-    "content" : "content"
-  } ],
-  "responsibility" : "responsibility",
-  "securityOverrideGuidance" : "securityOverrideGuidance",
-  "ruleId" : "ruleId"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getRulesByRevision = async function(benchmarkId, revisionStr, profile, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -589,26 +212,14 @@ exports.getRulesByRevision = function(benchmarkId,revisionStr,profile) {
  * os String An operating system TOE (optional)
  * returns List
  **/
-exports.getSTIGs = function(packageId,assetId,title,os) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ {
-  "lastRevisionDate" : "lastRevisionDate",
-  "title" : "title",
-  "benchmarkId" : "benchmarkId",
-  "lastRevisionStr" : "lastRevisionStr"
-}, {
-  "lastRevisionDate" : "lastRevisionDate",
-  "title" : "title",
-  "benchmarkId" : "benchmarkId",
-  "lastRevisionStr" : "lastRevisionStr"
-} ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getSTIGs = async function(packageId, assetId, title, os, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -618,20 +229,13 @@ exports.getSTIGs = function(packageId,assetId,title,os) {
  * benchmarkId String A path parameter that indentifies a STIG
  * returns STIG
  **/
-exports.getStigById = function(benchmarkId) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = {
-  "lastRevisionDate" : "lastRevisionDate",
-  "title" : "title",
-  "benchmarkId" : "benchmarkId",
-  "lastRevisionStr" : "lastRevisionStr"
-};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getStigById = async function(benchmarkId, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 

@@ -1,55 +1,74 @@
 'use strict';
 
-var utils = require('../utils/writer.js');
-var config = require('../utils/config')
-var Review = require(`../service/${config.database.type}/ReviewService`);
+const writer = require('../utils/writer.js')
+const config = require('../utils/config')
+const Review = require(`../service/${config.database.type}/ReviewService`)
 
-module.exports.createReview = function createReview (req, res, next, body, projection) {
-  Review.createReview(body, projection)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
+module.exports.createReview = async function createReview (req, res, next) {
+  let body = req.swagger.params['body'].value
+  let projection = req.swagger.params['projection'].value
+  try {
+    let response = await Review.createReview(body, projection, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.deleteReview = function deleteReview (req, res, next, reviewId, projection) {
-  Review.deleteReview(reviewId, projection)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
+module.exports.deleteReview = async function deleteReview (req, res, next) {
+  let reviewId = req.swagger.params['reviewId'].value
+  let projection = req.swagger.params['projection'].value
+  try {
+    let response = await Review.deleteReview(reviewId, projection, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getReview = function getReview (req, res, next, reviewId, projection, elevate) {
-  Review.getReview(reviewId, projection, elevate)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
+module.exports.getReview = async function getReview (req, res, next) {
+  let reviewId = req.swagger.params['reviewId'].value
+  let projection = req.swagger.params['projection'].value
+  let elevate = req.swagger.params['elevate'].value
+  try {
+    let response = await Review.getReview(reviewId, projection, elevate, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getReviews = function getReviews (req, res, next, projection, elevate, state, action, status, ruleId, benchmarkId, assetId, packageId) {
-  Review.getReviews(projection, elevate, state, action, status, ruleId, benchmarkId, assetId, packageId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
+module.exports.getReviews = async function getReviews (req, res, next) {
+  let projection = req.swagger.params['projection'].value
+  let elevate = req.swagger.params['elevate'].value
+  let state = req.swagger.params['state'].value
+  let action = req.swagger.params['action'].value
+  let status = req.swagger.params['status'].value
+  let ruleId = req.swagger.params['ruleId'].value
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let assetId = req.swagger.params['assetId'].value
+  let packageId = req.swagger.params['packageId'].value
+  try {
+    let response = await Review.getReviews(projection, elevate, state, action, status, ruleId, benchmarkId, assetId, packageId, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.updateReview = function updateReview (req, res, next, body, projection, reviewId) {
-  Review.updateReview(body, projection, reviewId)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
+module.exports.updateReview = async function updateReview (req, res, next) {
+  let reviewId = req.swagger.params['reviewId'].value
+  let body = req.swagger.params['body'].value
+  let projection = req.swagger.params['projection'].value
+  try {
+    let response = await Review.updateReview(reviewId, body, projection, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}

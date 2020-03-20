@@ -1,23 +1,24 @@
 'use strict';
+const oracledb = require('oracledb')
+const writer = require('../../utils/writer.js')
+const dbUtils = require('./utils')
 
 
 /**
  * Create a User
  *
- * body UserAssign  (optional)
+ * body UserAssign 
  * projection List Additional properties to include in the response.  (optional)
  * returns List
  **/
-exports.createUser = function(body,projection) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ "", "" ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.createUser = async function(body, projection, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 
@@ -33,15 +34,13 @@ exports.createUser = function(body,projection) {
  * canAdmin Boolean Selects Users matching the condition (optional)
  * returns List
  **/
-exports.getUsers = function(projection,elevate,role,packageId,benchmarkId,dept,canAdmin) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ "", "" ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getUsers = async function(projection, elevate, role, packageId, benchmarkId, dept, canAdmin, userObject) {
+  try {
+    let rows = await this.METHOD()
+    return (rows)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 

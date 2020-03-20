@@ -1,135 +1,160 @@
 'use strict';
 
-var writer = require('../utils/writer.js');
-var config = require('../utils/config')
-var STIG = require(`../service/${config.database.type}/STIGService`);
+const writer = require('../utils/writer.js')
+const config = require('../utils/config')
+const STIG = require(`../service/${config.database.type}/STIGService`)
 
-module.exports.addSTIG = function addSTIG (req, res, next, source) {
-  STIG.addSTIG(source)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.addSTIG = async function addSTIG (req, res, next) {
+  let source = req.swagger.params['source'].value
+  try {
+    let response = await STIG.addSTIG(source, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.deleteRevisionByString = function deleteRevisionByString (req, res, next, benchmarkId, revisionStr) {
-  STIG.deleteRevisionByString(benchmarkId, revisionStr)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.deleteRevisionByString = async function deleteRevisionByString (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  try {
+    let response = await STIG.deleteRevisionByString(benchmarkId, revisionStr, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.deleteStigById = function deleteStigById (req, res, next, benchmarkId) {
-  STIG.deleteStigById(benchmarkId)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.deleteStigById = async function deleteStigById (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  try {
+    let response = await STIG.deleteStigById(benchmarkId, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getCci = function getCci (req, res, next, cci) {
-  STIG.getCci(cci)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getCci = async function getCci (req, res, next) {
+  let cci = req.swagger.params['cci'].value
+  try {
+    let response = await STIG.getCci(cci, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getCcisByRevision = function getCcisByRevision (req, res, next, benchmarkId, revisionStr) {
-  STIG.getCcisByRevision(benchmarkId, revisionStr)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getCcisByRevision = async function getCcisByRevision (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  try {
+    let response = await STIG.getCcisByRevision(benchmarkId, revisionStr, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getGroupByRevision = function getGroupByRevision (req, res, next, benchmarkId, revisionStr, groupId) {
-  STIG.getGroupByRevision(benchmarkId, revisionStr, groupId)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getGroupByRevision = async function getGroupByRevision (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  let groupId = req.swagger.params['groupId'].value
+  try {
+    let response = await STIG.getGroupByRevision(benchmarkId, revisionStr, groupId, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getGroupsByRevision = function getGroupsByRevision (req, res, next, benchmarkId, revisionStr, profile) {
-  STIG.getGroupsByRevision(benchmarkId, revisionStr, profile)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getGroupsByRevision = async function getGroupsByRevision (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  let profile = req.swagger.params['profile'].value
+  try {
+    let response = await STIG.getGroupsByRevision(benchmarkId, revisionStr, profile, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getRevisionByString = function getRevisionByString (req, res, next, benchmarkId, revisionStr) {
-  STIG.getRevisionByString(benchmarkId, revisionStr)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getRevisionByString = async function getRevisionByString (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  try {
+    let response = await STIG.getRevisionByString(benchmarkId, revisionStr, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getRevisionsByBenchmarkId = function getRevisionsByBenchmarkId (req, res, next, benchmarkId) {
-  STIG.getRevisionsByBenchmarkId(benchmarkId)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getRevisionsByBenchmarkId = async function getRevisionsByBenchmarkId (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  try {
+    let response = await STIG.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getRuleByRuleId = function getRuleByRuleId (req, res, next, ruleId) {
-  STIG.getRuleByRuleId(ruleId)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getRuleByRuleId = async function getRuleByRuleId (req, res, next) {
+  let ruleId = req.swagger.params['ruleId'].value
+  try {
+    let response = await STIG.getRuleByRuleId(ruleId, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getRulesByRevision = function getRulesByRevision (req, res, next, benchmarkId, revisionStr, profile) {
-  STIG.getRulesByRevision(benchmarkId, revisionStr, profile)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getRulesByRevision = async function getRulesByRevision (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  let profile = req.swagger.params['profile'].value
+  try {
+    let response = await STIG.getRulesByRevision(benchmarkId, revisionStr, profile, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getSTIGs = function getSTIGs (req, res, next, packageId, assetId, title, os) {
-  STIG.getSTIGs(packageId, assetId, title, os)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getSTIGs = async function getSTIGs (req, res, next) {
+  let packageId = req.swagger.params['packageId'].value
+  let assetId = req.swagger.params['assetId'].value
+  let title = req.swagger.params['title'].value
+  let os = req.swagger.params['os'].value
+  try {
+    let response = await STIG.getSTIGs(packageId, assetId, title, os, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
 
-module.exports.getStigById = function getStigById (req, res, next, benchmarkId) {
-  STIG.getStigById(benchmarkId)
-    .then(function (response) {
-      writer.writeJson(res, response);
-    })
-    .catch(function (response) {
-      writer.writeJson(res, response);
-    });
-};
+module.exports.getStigById = async function getStigById (req, res, next) {
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  try {
+    let response = await STIG.getStigById(benchmarkId, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
