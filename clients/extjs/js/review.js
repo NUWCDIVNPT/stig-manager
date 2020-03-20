@@ -435,7 +435,7 @@ function addReview(leaf,selectedRule,selectedResource) {
 		minWidth: 340,
 		hideMode: 'offsets',
 		filterType: 'All', // STIG Manager defined property
-		titleColumnDataIndex: 'groupTitle', // STIG Manager defined property
+		titleColumnDataIndex: 'ruleTitle', // STIG Manager defined property
 		title: 'Checklist',
 		split:true,
 		store: groupStore,
