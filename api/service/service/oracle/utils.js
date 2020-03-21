@@ -6,9 +6,13 @@ module.exports.initializeDatabase = async function () {
         let pool = await oracledb.createPool({
             user: config.database.username,
             password: config.database.password,
-            connectString: `${config.database.host}/orclpdb1.localdomain`
+            connectString: `${config.database.host}:${config.database.port}/${config.database.service}`
         })
-        console.log('Connection pool created')
+        console.log(`Checking Oracle connection to ${config.database.host}:${config.database.port}/${config.database.service} ...`)
+        let connection = await oracledb.getConnection()
+        await connection.close()
+            
+        console.log('Oracle connection pool created')
         process.on('SIGTERM', closePoolAndExit)
         process.on('SIGINT',  closePoolAndExit)
         return pool

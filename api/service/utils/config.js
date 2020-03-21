@@ -7,6 +7,7 @@ let config = {
         "type": process.env.STIGMAN_DB_TYPE || "oracle",
         "host": process.env.STIGMAN_DB_HOST || "db",
         "port": process.env.STIGMAN_DB_PORT || 1521,
+        "service": process.env.STIGMAN_DB_SERVICE || "orclpdb1.localdomain",
         "username": process.env.STIGMAN_DB_USER || "stigman",
         "password": process.env.STIGMAN_DB_PASSWORD || "stigman"
     },
