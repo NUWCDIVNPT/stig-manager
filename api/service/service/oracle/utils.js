@@ -1,41 +1,60 @@
 const oracledb = require('oracledb')
 const config = require('../../utils/config')
 
-module.exports.initializeDatabase = async function () {
-    try {
-        let pool = await oracledb.createPool({
+module.exports.initializeDatabase = function () {
+    return new Promise ((resolve, reject) => {
+        // Try to create the connection pool
+        oracledb.createPool({
             user: config.database.username,
             password: config.database.password,
             connectString: `${config.database.host}:${config.database.port}/${config.database.service}`
-        })
-        console.log(`Checking Oracle connection to ${config.database.host}:${config.database.port}/${config.database.service} ...`)
-        let connection = await oracledb.getConnection()
-        await connection.close()
+        }, (error, pool) => {
+            if (error) {
+                // Could not create pool, invoke reject cb
+                reject(error)
+            }
+            // Pool was created
+            console.log('Oracle connection pool created')
             
-        console.log('Oracle connection pool created')
-        process.on('SIGTERM', closePoolAndExit)
-        process.on('SIGINT',  closePoolAndExit)
-        return pool
-    }
-    catch (err) {
-        throw err
-    }
-
-    async function closePoolAndExit() {
-        console.log('\nTerminating');
-        try {
-          // Get the pool from the pool cache and close it when no
-          // connections are in use, or force it closed after 10 seconds
-          // If this hangs, you may need DISABLE_OOB=ON in a sqlnet.ora file
-          await oracledb.getPool().close(10);
-          console.log('Pool closed');
-          process.exit(0);
-        } catch(err) {
-          console.error(err.message);
-          process.exit(1);
-        }
-    }   
+            // Call the pool destruction methods on SIGTERM and SEGINT
+            process.on('SIGTERM', closePoolAndExit)
+            process.on('SIGINT',  closePoolAndExit)
+ 
+            // Check if we can make a connection. Will recurse until success.
+            testConnection()
+    
+            function testConnection() {
+                console.log (`Testing Oracle connection to ${config.database.host}:${config.database.port}/${config.database.service}`)
+                oracledb.getConnection((error, connection) => {
+                    if (error) {
+                        console.log(`Oracle connection failed. Retry in 5 seconds...`)
+                        setTimeout(testConnection, 5000)
+                        return
+                    }
+                    console.log(`Oracle connection succeeded.`)
+                    connection.close()
+                    resolve()
+                })
+            }
+        })
+    })
 }
+
+async function closePoolAndExit() {
+    console.log('\nTerminating');
+    try {
+      // Get the pool from the pool cache and close it when no
+      // connections are in use, or force it closed after 10 seconds
+      // If this hangs, you may need DISABLE_OOB=ON in a sqlnet.ora file
+      await oracledb.getPool().close(10);
+      console.log('Pool closed');
+      process.exit(0);
+    } catch(err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+}   
+
 
 module.exports.getUserObject = async function (username) {
     let connection, sql, binds, options, result
