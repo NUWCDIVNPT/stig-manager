@@ -46,8 +46,6 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
 
 const verifyAndDecodeToken = promisify(jwt.verify)
 
-
-
 const getBearerToken = req => {
     if (!req.headers.authorization) return
     const headerParts = req.headers.authorization.split(' ')
@@ -65,30 +63,32 @@ function getKey(header, callback){
     })
 }
 
-function getJwks() {
-    let wellKnown = config.oauth.authority + "/.well-known/openid-configuration"
-    console.info("Trying OpenID discovery at " + wellKnown)
-    request(wellKnown, function(err, res, body) {
-        if (err) {
-            console.info("Couldn't get jwks_uri. Try again in 5 seconds...")
-            setTimeout(getJwks, 5000)
-        } else {
-            let openidConfig = JSON.parse(body)
-            jwksUri = openidConfig.jwks_uri
-            client = jwksClient({
-                jwksUri: jwksUri
-            })
-            console.info("Got jwks_uri")
-        }
-    })
-}
+function initializeAuth() {
+    return new Promise ((resolve, reject) => {
+        getJwks()
 
-if (config.oauth.disable == 'true') {
-    console.log("OAuth2 support is disabled")
-} else {
-    getJwks()
+        function getJwks() {
+            let wellKnown = config.oauth.authority + "/.well-known/openid-configuration"
+            console.info("Trying OpenID discovery at " + wellKnown)
+            request(wellKnown, function(err, res, body) {
+                if (err) {
+                    console.info("Couldn't get jwks_uri. Try again in 5 seconds...")
+                    setTimeout(getJwks, 5000)
+                    return
+                } else {
+                    let openidConfig = JSON.parse(body)
+                    jwksUri = openidConfig.jwks_uri
+                    client = jwksClient({
+                        jwksUri: jwksUri
+                    })
+                    console.info("Got jwks_uri")
+                    resolve()
+                }
+            })
+        }       
+    })
 }
 
 // OpenID Connect Discovery
 
-module.exports = {verifyRequest}
+module.exports = {verifyRequest, initializeAuth}

@@ -52,7 +52,7 @@ async function startServer(app) {
   try {
     // Initialize database connection pool
     let db = require(`./service/${config.database.type}/utils`)
-    await db.initializeDatabase()
+    await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
 
     // Start the server
     http.createServer(app).listen(config.http.port, function () {
