@@ -106,7 +106,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       let record = result.rows[x]
       if (inProjection && inProjection.includes('packages'))
        // Check for "empty" arrays 
-        record['assets'] = record['assets'] == '[{}]' ? [] : JSON.parse(result.rows[x]["assets"])
+        record['packages'] = record['packages'] == '[{}]' ? [] : JSON.parse(result.rows[x]["packages"])
       if (inProjection && inProjection.includes('stigs'))
         record['stigs'] = record['stigs'] == '[""]' ? [] : JSON.parse(result.rows[x]["stigs"])
     }
