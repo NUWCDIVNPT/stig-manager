@@ -2204,9 +2204,6 @@ components:
           type: boolean
         macCl:
           $ref: '#/components/schemas/MacCl'
-      required:
-      - name
-      - packageId
       type: object
     PackageBasic:
       properties:

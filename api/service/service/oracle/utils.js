@@ -96,3 +96,54 @@ module.exports.objectBind = function (object, binds) {
     }
     return sqlStubs.join(',')
 }
+
+module.exports.CONTEXT_ALL = 'all'
+module.exports.CONTEXT_DEPT = 'department'
+module.exports.CONTEXT_USER = 'user'
+module.exports.MAC_CL = {
+    'MAC-1_Classified': {
+        macClId: 1,
+        longname: 'MAC I Classified',
+        shortname: 'MAC I - CL'
+    },
+    'MAC-1_Sensitive': {
+        macClId: 2,
+        longname: 'MAC I Sensitive',
+        shortname: 'MAC I - S'
+    },
+    'MAC-1_Public': {
+        macClId: 3,
+        longname: 'MAC I Public',
+        shortname: 'MAC I - P'
+    },
+    'MAC-2_Classified': {
+        macClId: 4,
+        longname: 'MAC II Classified',
+        shortname: 'MAC II - CL'
+    },
+    'MAC-2_Sensitive': {
+        macClId: 5,
+        longname: 'MAC II Sensitive',
+        shortname: 'MAC II - S'
+    },
+    'MAC-2_Public': {
+        macClId: 6,
+        longname: 'MAC II Public',
+        shortname: 'MAC II - P'
+    },
+    'MAC-3_Classified': {
+        macClId: 7,
+        longname: 'MAC III Classified',
+        shortname: 'MAC III - CL',
+    },
+    'MAC-3_Sensitive': {
+        macClId: 8,
+        longname: 'MAC III Sensitive',
+        shortname: 'MAC III - S'
+    },
+    'MAC-3_Public': {
+        macClId: 9,
+        longname: 'MAC III Public',
+        shortname: 'MAC III - P'
+    }
+}

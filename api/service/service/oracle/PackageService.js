@@ -8,18 +8,13 @@ const dbUtils = require('./utils')
 Generalized queries for package(s).
 **/
 exports.queryPackages = async function (inProjection, inPredicates, elevate, userObject) {
-  const STIGMAN_CONTEXT = { // TODO: Move this somewhere else for reuse?
-    ALL: 'all',
-    DEPT: 'department',
-    USER: 'user'
-  }
   let context
   if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
-    context = STIGMAN_CONTEXT.ALL
+    context = dbUtils.CONTEXT_ALL
   } else if (userObject.role == "IAO") {
-    context = STIGMAN_CONTEXT.DEPT
+    context = dbUtils.CONTEXT_DEPT
   } else {
-    context = STIGMAN_CONTEXT.USER
+    context = dbUtils.CONTEXT_USER
   }
 
   let columns = [
@@ -29,10 +24,12 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     'p.POCNAME as "pocName"',
     'p.POCEMAIL as "pocEmail"',
     'p.POCPHONE as "pocPhone"',
-    'p.REQRAR as "reqRar"'
+    'p.REQRAR as "reqRar"',
+    'mc.PROFILENAME as "macCl"'
   ]
   let joins = [
     'stigman.packages p',
+    'left join iacontrols.mac_cl mc on p.macClId = mc.macClId',
     'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
     'left join stigman.assets a on ap.assetId = a.assetId',
     'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
@@ -62,11 +59,11 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     predicates.statements.push('p.packageId = :packageId')
     predicates.binds.push( inPredicates.packageId )
   }
-  if (context == STIGMAN_CONTEXT.DEPT) {
+  if (context == dbUtils.CONTEXT_DEPT) {
     predicates.statements.push('a.dept = :dept')
     predicates.binds.push( userObject.dept )
   } 
-  else if (context == STIGMAN_CONTEXT.USER) {
+  else if (context == dbUtils.CONTEXT_USER) {
     joins.push('left join stigman.user_stig_asset_map usa on sa.saId = usa.saId')
     predicates.statements.push('usa.userId = :userId')
     predicates.binds.push( userObject.id )
@@ -81,7 +78,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
+  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar, mc.profilename'
   sql += ' order by p.name'
   try {
     let  options = {
@@ -91,23 +88,55 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     let result = await connection.execute(sql, predicates.binds, options)
     await connection.close()
 
-    //Oracle doesn't support a JSON type, so manually parse strings into objects
+    // Post-process each row, unfortunately.
+    // * Oracle doesn't have a BOOLEAN data type, so we must cast the column 'reqRar'
+    // * Oracle doesn't support a JSON type, so we parse string values from 'assets' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      if (inProjection && inProjection.includes('assets')) {
-       // Check for "empty" arrays 
-        record['assets'] = record['assets'] == '[{}]' ? [] : JSON.parse(result.rows[x]["assets"])
-        record['assets'].sort((a,b) => {
+      // Handle 'reqRar'
+      record.reqRar = record.reqRar == 1 ? true : false
+      // Handle 'assests'
+      if (record.assets) {
+        // Check for "empty" arrays 
+        record.assets = record.assets == '[{}]' ? [] : JSON.parse(record.assets)
+        // Sort by asset name
+        record.assets.sort((a,b) => {
           let c = 0
-          if (a.name > b.name) { c= 1}
-          if (a.name < b.name) { c = -1}
+          if (a.name > b.name) { c= 1 }
+          if (a.name < b.name) { c = -1 }
           return c
         })
       }
-      if (inProjection && inProjection.includes('stigs')) {
-        record['stigs'] = record['stigs'] == '[{}]' ? [] : JSON.parse(result.rows[x]["stigs"])
+      // Handle 'stigs'
+      if (record.stigs) {
+        record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
+        // Sort by benchmarkId
+        record.stigs.sort((a,b) => {
+          let c = 0
+          if (a.benchmarkId > b.benchmarkId) { c = 1 }
+          if (a.benchmarkId < b.benchmarkId) { c = -1 }
+          return c
+        })
       }
     }
+
+    // result.rows.toJSON = function() {
+    //   for (let x = 0, l = this.length; x < l; x++) {
+    //     let record = this[x]
+    //     record.reqRar = record.reqRar == 1 ? true : false
+    //     if (record.assets) {
+    //       record.assets = record.assets == '[{}]' ? [] : JSON.parse(record.assets)
+    //       record.assets.sort((a,b) => {
+    //         let c = 0
+    //         if (a.name > b.name) { c= 1}
+    //         if (a.name < b.name) { c = -1}
+    //         return c
+    //       })
+    //     }
+    //   }
+    //   return this
+    // }
+
     return (result.rows)
   }
   catch (err) {
@@ -121,6 +150,16 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
 
   // Assign packageFields as body without assets
   const { assetIds, ...packageFields } = body
+  
+  // Pre-process reqRar and macCl
+  if (packageFields.hasOwnProperty('reqRar')) {
+    packageFields.reqRar = packageFields.reqRar ? 1 : 0
+  }
+  if (packageFields.hasOwnProperty('macCl')) {
+    packageFields.macClId = dbUtils.MAC_CL[packageFields.macCl].macClId
+    delete packageFields.macCl
+  }
+  
   let connection
   try {
     let options = {
@@ -147,7 +186,7 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
               stigman.packages
               (name, emassId, pocName, pocEmail, pocPhone, reqRar, macClId)
             VALUES
-              (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar, 5)
+              (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar, :macClId)
             RETURNING
               packageId into :packageId`
           let binds = [
@@ -156,7 +195,8 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
             packageFields.pocName,
             packageFields.pocEmail,
             packageFields.pocPhone,
-            packageFields.reqRar ? 1 : 0,
+            packageFields.reqRar,
+            packageFields.macClId,
             { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
           ]
           let result = await connection.execute(sqlInsert, binds, options)
