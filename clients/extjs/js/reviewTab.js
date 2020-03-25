@@ -330,7 +330,7 @@ async function loadTree (node, cb) {
           report: 'stig',
           iconCls: 'sm-stig-icon',
           reqRar: r.reqRar,
-          revId: `${stig.benchmarkId}-`,
+          stigRevStr: stig.lastRevisionStr,
           id: `${packageId}-${stig.benchmarkId}-stigs-stig-node`,
           stigId: stig.benchmarkId,
           qtip: stig.title
@@ -339,7 +339,7 @@ async function loadTree (node, cb) {
       cb(content, {status: true})
       return
 	  }
-	  // Package-STIGs-STIG node
+	  // Package-STIGs-Asset node
     match = node.match(/(\d+)-(.*)-stigs-stig-node/)
     if (match) {
       // TODO: Call API /stigs endpoint when it is implemented

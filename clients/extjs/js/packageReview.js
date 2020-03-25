@@ -17,7 +17,11 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 		}
 	*/
 
-	//if (leaf.report != 'review') { return; } //not necessary, handled in reviewTab.js
+	// Classic compatability. Remove after modernization
+	if (leaf.stigRevStr) {
+		let match = leaf.stigRevStr.match(/V(\d+)R(\d+)/)
+		leaf.revId = `${leaf.stigId}-${match[1]}-${match[2]}`
+	}
 	var idAppend = '-package_review-' + leaf.packageId + '-' + leaf.stigId.replace(".","_");
 	var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 	
