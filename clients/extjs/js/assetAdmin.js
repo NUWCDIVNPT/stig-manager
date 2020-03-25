@@ -55,9 +55,6 @@ function addAssetAdmin() {
 			name: 'name',
 			type: 'string'
 		},{
-			name: 'profile',
-			type: 'string'
-		},{
 			name: 'group',
 			type: 'string'
 		},{
@@ -145,11 +142,6 @@ function addAssetAdmin() {
 				header: "IP",
 				width: 10,
 				dataIndex: 'ip',
-				sortable: true
-			},{ 	
-				header: "Profile",
-				width: 10,
-				dataIndex: 'profile',
 				sortable: true
 			},{ 	
 				header: "Packages",
@@ -574,22 +566,6 @@ function addAssetAdmin() {
 							vtype: 'IPAddress',
 							name: 'ip'
 						}
-						// ,{
-							// xtype: 'combo',
-							// fieldLabel: 'STIG profile',
-							// width: 150,
-							// emptyText: 'Choose a profile...',
-							// allowBlank: false,
-							// editable: false,
-							// name: 'profile',
-							// mode: 'local',
-							// triggerAction: 'all',
-							// displayField:'profile',
-							// store: new Ext.data.SimpleStore({
-								// fields: ['profile'],
-								// data : [['MAC-1_Public'],['MAC-1_Sensitive'],['MAC-1_Classified'],['MAC-2_Public'],['MAC-2_Sensitive'],['MAC-2_Classified'],['MAC-3_Public'],['MAC-3_Sensitive'],['MAC-3_Classified']]
-							// })
-						// }
 						] // end column #1 items
 					},// end column #1 config
 					{ // column #2 config

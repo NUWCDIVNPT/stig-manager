@@ -28,8 +28,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     'a.DEPT as "dept"',
     'a.IP as "ip"',
     'a.NONNETWORK as "nonnetwork"',
-    'a.SCANEXEMPT as "scanexempt"',
-    'a.PROFILE as "profile"'
+    'a.SCANEXEMPT as "scanexempt"'
   ]
   let joins = [
     'stigman.assets a',
@@ -90,7 +89,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by a.assetId, a.name, a.dept, a.ip, a.nonnetwork, a.scanexempt, a.profile'
+  sql += ' group by a.assetId, a.name, a.dept, a.ip, a.nonnetwork, a.scanexempt'
   sql += ' order by a.name'
   
   try {
@@ -131,7 +130,6 @@ exports.createAsset = function(body) {
   "scanexempt" : true,
   "assetId" : 0,
   "ip" : "ip",
-  "profile" : "MAC-1_Classified",
   "assetName" : "assetName",
   "benchmarkIds" : [ "benchmarkIds", "benchmarkIds" ],
   "dept" : "dept",
@@ -160,7 +158,6 @@ exports.deleteAsset = function(assetId) {
   "scanexempt" : true,
   "assetId" : 0,
   "ip" : "ip",
-  "profile" : "MAC-1_Classified",
   "assetName" : "assetName",
   "benchmarkIds" : [ "benchmarkIds", "benchmarkIds" ],
   "dept" : "dept",

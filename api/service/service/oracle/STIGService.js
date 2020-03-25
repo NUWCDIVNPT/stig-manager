@@ -113,14 +113,12 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, u
 
 /**
  * Return the list of groups for the specified revision of a STIG.
- * Can optionally specify profile filters.
  *
  * benchmarkId String A path parameter that indentifies a STIG
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
- * profile List Filter by profile (optional)
  * returns List
  **/
-exports.getGroupsByRevision = async function(benchmarkId, revisionStr, profile, userObject) {
+exports.getGroupsByRevision = async function(benchmarkId, revisionStr, userObject) {
   try {
     let rows = await this.METHOD()
     return (rows)
@@ -185,14 +183,12 @@ exports.getRuleByRuleId = async function(ruleId, userObject) {
 
 /**
  * Return rule data for the specified revision of a STIG.
- * Can optionally specify profile filters.
  *
  * benchmarkId String A path parameter that indentifies a STIG
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
- * profile List Filter by profile (optional)
  * returns List
  **/
-exports.getRulesByRevision = async function(benchmarkId, revisionStr, profile, userObject) {
+exports.getRulesByRevision = async function(benchmarkId, revisionStr, userObject) {
   try {
     let rows = await this.METHOD()
     return (rows)

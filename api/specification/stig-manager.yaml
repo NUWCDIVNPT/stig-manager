@@ -811,7 +811,6 @@ paths:
       tags:
       - STIG
       summary: Return the list of groups for the specified revision of a STIG.
-      description: Can optionally specify profile filters.
       operationId: getGroupsByRevision
       parameters:
       - name: benchmarkId
@@ -828,25 +827,6 @@ paths:
         schema:
           pattern: ^(V\d+R\d+(\.\d+)?|latest)$
           type: string
-      - name: profile
-        in: query
-        description: Filter by profile
-        style: form
-        explode: false
-        schema:
-          type: array
-          items:
-            type: string
-            enum:
-            - MAC-1_Classified
-            - MAC-1_Sensitive
-            - MAC-1_Public
-            - MAC-2_Classified
-            - MAC-2_Sensitive
-            - MAC-2_Public
-            - MAC-3_Classified
-            - MAC-3_Sensitive
-            - MAC-3_Public
       responses:
         200:
           description: Group response
@@ -913,7 +893,6 @@ paths:
       tags:
       - STIG
       summary: Return rule data for the specified revision of a STIG.
-      description: Can optionally specify profile filters.
       operationId: getRulesByRevision
       parameters:
       - name: benchmarkId
@@ -930,25 +909,6 @@ paths:
         schema:
           pattern: ^(V\d+R\d+(\.\d+)?|latest)$
           type: string
-      - name: profile
-        in: query
-        description: Filter by profile
-        style: form
-        explode: false
-        schema:
-          type: array
-          items:
-            type: string
-            enum:
-            - MAC-1_Classified
-            - MAC-1_Sensitive
-            - MAC-1_Public
-            - MAC-2_Classified
-            - MAC-2_Sensitive
-            - MAC-2_Public
-            - MAC-3_Classified
-            - MAC-3_Sensitive
-            - MAC-3_Public
       responses:
         200:
           description: Rule response
@@ -1135,10 +1095,6 @@ components:
             type: string
           title:
             type: string
-          profiles:
-            type: array
-            items:
-              $ref: '#/components/schemas/Profile'
           rules:
             type: array
             items:
@@ -1150,26 +1106,10 @@ components:
           type: string
         title:
           type: string
-        profiles:
-          type: array
-          items:
-            $ref: '#/components/schemas/Profile'
         rules:
           type: array
           items:
             $ref: '#/components/schemas/Rule'
-    Profile:
-      type: string
-      enum:
-      - MAC-1_Classified
-      - MAC-1_Sensitive
-      - MAC-1_Public
-      - MAC-2_Classified
-      - MAC-2_Sensitive
-      - MAC-2_Public
-      - MAC-3_Classified
-      - MAC-3_Sensitive
-      - MAC-3_Public
     Rule:
       type: object
       properties:
@@ -1300,19 +1240,6 @@ components:
           type: string
         nearest-tag:
           type: string
-    MacCl:
-      type: string
-      enum:
-      - MAC-1_Classified
-      - MAC-1_Sensitive
-      - MAC-1_Public
-      - MAC-2_Classified
-      - MAC-2_Sensitive
-      - MAC-2_Public
-      - MAC-3_Classified
-      - MAC-3_Sensitive
-      - MAC-3_Public      
-
     Package:
       type: object
       required:
@@ -1341,8 +1268,6 @@ components:
         reqRar:
           type: boolean
           nullable: true
-        macCl:
-          $ref: '#/components/schemas/MacCl'
     PackageBasic:
       type: object
       properties:
@@ -1398,8 +1323,6 @@ components:
         scanexempt:
           type: boolean
           nullable: true
-        profile:
-          $ref: '#/components/schemas/MacCl'
     AssetProjected:
       allOf:
         - $ref: '#/components/schemas/Asset'
@@ -1726,31 +1649,10 @@ components:
         items:
           type: string
           enum:
-          - profiles
           - cci
           - fullrules
           - checks
           - fixes
-    ProfileQuery:
-      name: profile
-      in: query
-      description: Filter by profile
-      style: form
-      explode: false
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - MAC-1_Classified
-          - MAC-1_Sensitive
-          - MAC-1_Public
-          - MAC-2_Classified
-          - MAC-2_Sensitive
-          - MAC-2_Public
-          - MAC-3_Classified
-          - MAC-3_Sensitive
-          - MAC-3_Public
   securitySchemes:
     oauth:
       type: oauth2

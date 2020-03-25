@@ -3,32 +3,6 @@ $Id: packageAdmin.js 807 2017-07-27 13:04:19Z csmig $
 */
 
 function addPackageAdmin() {
-
-	// Set up store for the MAC_CL combo box used in package properties
-	var macClFields = Ext.data.Record.create([
-		{	name:'macClId',
-			type: 'number'
-		},{
-			name: 'longName',
-			type: 'string'
-		},{
-			name: 'shortName',
-			type: 'string'
-		},{
-			name: 'profileName',
-			type: 'string'
-		}
-	]);
-	
-	var macClStore = new Ext.data.ArrayStore({
-		fields: macClFields,
-		idProperty: 'macClId',
-		sortInfo: {
-			field: 'macClId',
-			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-		}
-	});
-	
 	var assetFields = Ext.data.Record.create([
 		{	name:'assetId',
 			type: 'number'
@@ -86,9 +60,6 @@ function addPackageAdmin() {
 			name: 'pocPhone',
 			type: 'string'
 		},{
-			name: 'macCl',
-			type: 'string'
-		},{
 			name: 'repositoryName',
 			type: 'string'
 		}
@@ -131,11 +102,6 @@ function addPackageAdmin() {
 				header: "eMASS ID",
 				width: 100,
 				dataIndex: 'emassId',
-				sortable: true
-			},{ 	
-				header: "MAC and CL",
-				width: 100,
-				dataIndex: 'macCl',
 				sortable: true
 			},{ 	
 				header: "RAR?",
@@ -402,21 +368,6 @@ function addPackageAdmin() {
 							name: 'emassId'
 						}
 						,{
-							xtype: 'combo',
-							fieldLabel: 'MAC and CL',
-							width: 220,
-							emptyText: 'Choose the MAC/CL...',
-							allowBlank: false,
-							editable: false,
-							name: 'macCl',
-							mode: 'local',
-							triggerAction: 'all',
-							displayField:'longName',
-							valueField: 'macClId',
-							hiddenName: 'macClId',
-							store: macClStore
-						}
-						,{
 							xtype: 'checkbox',
 							name: 'reqRar',
 							boxLabel: 'Requires RAR'
@@ -452,24 +403,6 @@ function addPackageAdmin() {
 							allowBlank: true,
 							name: 'pocPhone'
 						}
-						// ,
-						// {
-						// 	xtype: 'combo',
-						// 	id: 'pkgProps-repo',
-						// 	fieldLabel: 'SC Repository',
-						// 	width: 220,
-						// 	emptyText: 'Choose the repository...',
-						// 	allowBlank: true,
-						// 	editable: true,
-						// 	name: 'repositoryId',
-						// 	mode: 'local',
-						// 	triggerAction: 'all',
-						// 	displayField:'repositoryName',
-						// 	valueField: 'repositoryId',
-						// 	hiddenName: 'repositoryId',
-						// 	store: repoStore
-						// }
-
 						]// end column #2 items
 					} // end column #2 config
 					]// end asset column items
@@ -600,12 +533,7 @@ function addPackageAdmin() {
 		});
 	thisTab.show();
 	
-	packageGrid.getStore().load({
-		callback: function (r,o,s) {
-			// repoStore.loadData(this.reader.jsonData.repositories);
-			macClStore.loadData(this.reader.jsonData.macCls);
-		}		
-	});
+	packageGrid.getStore().load();
 
 	
 } // end addPackageAdmin()

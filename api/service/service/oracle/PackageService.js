@@ -24,12 +24,10 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     'p.POCNAME as "pocName"',
     'p.POCEMAIL as "pocEmail"',
     'p.POCPHONE as "pocPhone"',
-    'p.REQRAR as "reqRar"',
-    'mc.PROFILENAME as "macCl"'
+    'p.REQRAR as "reqRar"'
   ]
   let joins = [
     'stigman.packages p',
-    'left join iacontrols.mac_cl mc on p.macClId = mc.macClId',
     'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
     'left join stigman.assets a on ap.assetId = a.assetId',
     'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
@@ -78,7 +76,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar, mc.profilename'
+  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
   sql += ' order by p.name'
   try {
     let  options = {
@@ -151,13 +149,9 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
   // Assign packageFields as body without assets
   const { assetIds, ...packageFields } = body
   
-  // Pre-process reqRar and macCl
+  // Pre-process reqRar
   if (packageFields.hasOwnProperty('reqRar')) {
     packageFields.reqRar = packageFields.reqRar ? 1 : 0
-  }
-  if (packageFields.hasOwnProperty('macCl')) {
-    packageFields.macClId = dbUtils.MAC_CL[packageFields.macCl].macClId
-    delete packageFields.macCl
   }
   
   let connection
@@ -184,9 +178,9 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
           let sqlInsert =
           `INSERT INTO
               stigman.packages
-              (name, emassId, pocName, pocEmail, pocPhone, reqRar, macClId)
+              (name, emassId, pocName, pocEmail, pocPhone, reqRar)
             VALUES
-              (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar, :macClId)
+              (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)
             RETURNING
               packageId into :packageId`
           let binds = [
@@ -196,7 +190,6 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
             packageFields.pocEmail,
             packageFields.pocPhone,
             packageFields.reqRar,
-            packageFields.macClId,
             { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
           ]
           let result = await connection.execute(sqlInsert, binds, options)

@@ -77,9 +77,8 @@ module.exports.getGroupByRevision = async function getGroupByRevision (req, res,
 module.exports.getGroupsByRevision = async function getGroupsByRevision (req, res, next) {
   let benchmarkId = req.swagger.params['benchmarkId'].value
   let revisionStr = req.swagger.params['revisionStr'].value
-  let profile = req.swagger.params['profile'].value
   try {
-    let response = await STIG.getGroupsByRevision(benchmarkId, revisionStr, profile, req.userObject)
+    let response = await STIG.getGroupsByRevision(benchmarkId, revisionStr, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {
@@ -124,9 +123,8 @@ module.exports.getRuleByRuleId = async function getRuleByRuleId (req, res, next)
 module.exports.getRulesByRevision = async function getRulesByRevision (req, res, next) {
   let benchmarkId = req.swagger.params['benchmarkId'].value
   let revisionStr = req.swagger.params['revisionStr'].value
-  let profile = req.swagger.params['profile'].value
   try {
-    let response = await STIG.getRulesByRevision(benchmarkId, revisionStr, profile, req.userObject)
+    let response = await STIG.getRulesByRevision(benchmarkId, revisionStr, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {
