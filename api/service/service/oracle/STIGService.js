@@ -222,8 +222,36 @@ exports.getGroupsByRevision = async function(benchmarkId, revisionStr, userObjec
  **/
 exports.getRevisionByString = async function(benchmarkId, revisionStr, userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    let ro = dbUtils.parseRevisionStr(revisionStr)
+    let sql = 
+    `SELECT
+      ${ro.table_alias}.stigId as "benchmarkId",
+      'V' || ${ro.table_alias}.version || 'R' || ${ro.table_alias}.release as "revisionStr",
+      ${ro.table_alias}.version as "version",
+      ${ro.table_alias}.release as "release",
+      ${ro.table_alias}.benchmarkDateSql as "benchmarkDate",
+      ${ro.table_alias}.status as "status",
+      ${ro.table_alias}.statusDate as "statusDate",
+      ${ro.table_alias}.description as "description"
+    FROM
+      ${ro.table}  ${ro.table_alias}
+    WHERE
+      ${ro.table_alias}.stigId = :benchmarkId
+      ${ro.predicates}
+    ORDER BY
+      ${ro.table_alias}.benchmarkDateSql desc
+    `
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+    let binds = [benchmarkId]
+    if (ro.version) {
+      binds.push(ro.version, ro.release)
+    }
+    let result = await connection.execute(sql, binds, options)
+    await connection.close()
+    return (result.rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -239,8 +267,30 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
  **/
 exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    let sql = 
+    `SELECT
+      r.stigId as "benchmarkId",
+      'V' || r.version || 'R' || r.release as "revisionStr",
+      r.version as "version",
+      r.release as "release",
+      r.benchmarkDateSql as "benchmarkDate",
+      r.status as "status",
+      r.statusDate as "statusDate",
+      r.description as "description"
+    FROM
+      stigs.revisions r
+    WHERE
+      r.stigId = :benchmarkId
+    ORDER BY
+      r.benchmarkDateSql desc
+    `
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, [benchmarkId], options)
+    await connection.close()
+    return (result.rows)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
