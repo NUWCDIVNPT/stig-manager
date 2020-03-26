@@ -28,14 +28,19 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
 }
 
 module.exports.deleteStigById = async function deleteStigById (req, res, next) {
-  let benchmarkId = req.swagger.params['benchmarkId'].value
-  try {
-    let response = await STIG.deleteStigById(benchmarkId, req.userObject)
-    writer.writeJson(res, response)
+  if ( req.userObject.canAdmin ) {
+    try {
+      let benchmarkId = req.swagger.params['benchmarkId'].value
+      let response = await STIG.deleteStigById(benchmarkId, req.userObject)
+      writer.writeJson(res, response)
+    }
+    catch (err) {
+      writer.writeJson(res, err)
+    }
   }
-  catch(err) {
-    writer.writeJson(res, err)
-  }
+  else {
+    writer.writeJson(res, writer.respondWithCode ( 401, {message: "User has insufficient privilege to complete this request."} ) )
+  } 
 }
 
 module.exports.getCci = async function getCci (req, res, next) {
@@ -133,12 +138,9 @@ module.exports.getRulesByRevision = async function getRulesByRevision (req, res,
 }
 
 module.exports.getSTIGs = async function getSTIGs (req, res, next) {
-  let packageId = req.swagger.params['packageId'].value
-  let assetId = req.swagger.params['assetId'].value
   let title = req.swagger.params['title'].value
-  let os = req.swagger.params['os'].value
   try {
-    let response = await STIG.getSTIGs(packageId, assetId, title, os, req.userObject)
+    let response = await STIG.getSTIGs(title, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {

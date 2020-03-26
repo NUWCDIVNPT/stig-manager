@@ -560,34 +560,11 @@ paths:
       summary: Return a list of available STIGs
       operationId: getSTIGs
       parameters:
-      - name: packageId
-        in: query
-        description: Package identifier
-        schema:
-          type: integer
-      - name: assetId
-        in: query
-        description: Asset identifier
-        schema:
-          type: integer
-      - name: title
-        in: query
-        description: A string found anywhere in a STIG title
-        schema:
-          type: string
-      - name: os
-        in: query
-        description: An operating system TOE
-        schema:
-          type: string
-          enum:
-          - windows
-          - linux
-          - macos
-          - ios
-          - android
-          - other
-          - none
+        - name: title
+          in: query
+          description: A string found anywhere in a STIG title
+          schema:
+            type: string
       responses:
         '200':
           description: STIG response
@@ -1054,183 +1031,6 @@ components:
           format: int32
         message:
           type: string
-    STIG:
-      required:
-      - benchmarkId
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        title:
-          type: string
-        lastRevisionStr:
-          type: string
-        lastRevisionDate:
-          type: string
-    Revision:
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          type: string
-        version:
-          type: string
-        release:
-          type: string
-        benchmarkDate:
-          type: string
-        status:
-          type: string
-        statusDate:
-          type: string
-        description:
-          type: string
-    GroupList:
-      type: array
-      items:
-        type: object
-        properties:
-          groupId:
-            type: string
-          title:
-            type: string
-          rules:
-            type: array
-            items:
-              $ref: '#/components/schemas/RuleAbbr'
-    GroupObj:
-      type: object
-      properties:
-        groupId:
-          type: string
-        title:
-          type: string
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/Rule'
-    Rule:
-      type: object
-      properties:
-        ruleId:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string
-        weight:
-          type: string
-        vulnDiscussion:
-          type: string
-        falsePositives:
-          type: string
-        falseNegatives:
-          type: string
-        documentable:
-          type: string
-        mitigations:
-          type: string
-        securityOverrideGuidance:
-          type: string
-        potentialImpacts:
-          type: string
-        thirdPartyTools:
-          type: string
-        mitigationControl:
-          type: string
-        responsibility:
-          type: string
-        cci:
-          type: array
-          items:
-            type: string
-        checks:
-          type: array
-          items:
-            $ref: '#/components/schemas/Check'
-        fixes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Fix'
-    RuleAbbr:
-      type: object
-      properties:
-        ruleId:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string
-    Check:
-      type: object
-      properties:
-        checkId:
-          type: string
-        content:
-          type: string
-    Fix:
-      type: object
-      properties:
-        fixId:
-          type: string
-        text:
-          type: string
-    CciReferenceItem:
-      type: object
-      properties:
-        creator:
-          type: string
-        title:
-          type: string
-        version:
-          type: string
-        location:
-          type: string
-        indexDisa:
-          type: string
-        textRefNist:
-          type: string
-        parentControl:
-          type: string
-    CciListItem:
-      type: object
-      properties:
-        cci:
-          type: string
-        type:
-          type: string
-        references:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciReferenceItem'
-    Cci:
-      type: object
-      properties:
-        cci:
-          type: string
-        status:
-          type: string
-        publishdate:
-          type: string
-        contributor:
-          type: string
-        type:
-          type: string
-        defintion:
-          type: string
-        references:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciReferenceItem'
-        current_revisions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Revision'
     ApiVersion:
       type: object
       properties:
@@ -1505,6 +1305,200 @@ components:
           type: string
         asset:
           $ref: '#/components/schemas/AssetBasic'
+
+    STIG:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        title:
+          type: string
+        lastRevisionStr:
+          type: string
+        lastRevisionDate:
+          type: string
+    STIGProjected:
+      allOf:
+        - $ref: '#/components/schemas/STIG'
+        - type: object
+          properties:
+            assets:
+              type: array
+              description: The Assets mapped to this STIG
+              items:
+                $ref: '#/components/schemas/AssetBasic'
+            packages:
+              type: array
+              description: The Packages with Assets mapped to this STIG
+              items:
+                $ref: '#/components/schemas/PackageBasic'
+          
+        
+    Revision:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          type: string
+        version:
+          type: string
+        release:
+          type: string
+        benchmarkDate:
+          type: string
+        status:
+          type: string
+        statusDate:
+          type: string
+        description:
+          type: string
+    GroupList:
+      type: array
+      items:
+        type: object
+        properties:
+          groupId:
+            type: string
+          title:
+            type: string
+          rules:
+            type: array
+            items:
+              $ref: '#/components/schemas/RuleAbbr'
+    GroupObj:
+      type: object
+      properties:
+        groupId:
+          type: string
+        title:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+    Rule:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+        weight:
+          type: string
+        vulnDiscussion:
+          type: string
+        falsePositives:
+          type: string
+        falseNegatives:
+          type: string
+        documentable:
+          type: string
+        mitigations:
+          type: string
+        securityOverrideGuidance:
+          type: string
+        potentialImpacts:
+          type: string
+        thirdPartyTools:
+          type: string
+        mitigationControl:
+          type: string
+        responsibility:
+          type: string
+        cci:
+          type: array
+          items:
+            type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+        fixes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fix'
+    RuleAbbr:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+    Check:
+      type: object
+      properties:
+        checkId:
+          type: string
+        content:
+          type: string
+    Fix:
+      type: object
+      properties:
+        fixId:
+          type: string
+        text:
+          type: string
+    CciReferenceItem:
+      type: object
+      properties:
+        creator:
+          type: string
+        title:
+          type: string
+        version:
+          type: string
+        location:
+          type: string
+        indexDisa:
+          type: string
+        textRefNist:
+          type: string
+        parentControl:
+          type: string
+    CciListItem:
+      type: object
+      properties:
+        cci:
+          type: string
+        type:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceItem'
+    Cci:
+      type: object
+      properties:
+        cci:
+          type: string
+        status:
+          type: string
+        publishdate:
+          type: string
+        contributor:
+          type: string
+        type:
+          type: string
+        defintion:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceItem'
+        current_revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Revision'
+
   parameters:
     ElevateQuery:
       name: elevate
@@ -1589,7 +1583,21 @@ components:
       in: query
       schema:
         $ref: '#/components/schemas/UserRole'    
-        
+    STIGProjectionQuery:    
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - assets
+          - packages
+    
     BenchmarkIdPath:
       name: benchmarkId
       in: path

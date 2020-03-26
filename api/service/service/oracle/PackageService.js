@@ -44,7 +44,9 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     columns.push(`'[' || strdagg_param(param_array(json_object(
       KEY 'benchmarkId' VALUE cr.stigId, 
       KEY 'lastRevisionStr' VALUE CASE 
-        WHEN cr.stigId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END, 
+        WHEN cr.stigId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END,
+      KEY 'lastRevisionDate' VALUE CASE
+        WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
       KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
   }
 

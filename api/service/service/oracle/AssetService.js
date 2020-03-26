@@ -40,7 +40,13 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   if (inProjection && inProjection.includes('stigs')) {
     joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
     joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
-    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'benchmarkId' VALUE cr.stigId, KEY 'lastRevisionStr' VALUE 'V'||cr.version||'R'||cr.release, KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
+    columns.push(`'[' || strdagg_param(param_array(json_object(
+      KEY 'benchmarkId' VALUE cr.stigId, 
+      KEY 'lastRevisionStr' VALUE CASE 
+        WHEN cr.stigId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END,
+      KEY 'lastRevisionDate' VALUE CASE
+        WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
+      KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
   }
 
   // PREDICATES

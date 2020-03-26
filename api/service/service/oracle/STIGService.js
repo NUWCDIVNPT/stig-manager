@@ -3,6 +3,82 @@ const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
+/**
+Generalized queries for STIGs
+**/
+exports.queryStigs = async function ( inPredicates ) {
+  let columns = [
+    's.STIGID as "benchmarkId"',
+    's.TITLE as "title"',
+    `'V' || cr.version || 'R' || cr.release as "lastRevisionStr"`,
+    'cr.benchmarkDateSql as "lastRevisionDate"'
+  ]
+  let joins = [
+    'stigs.stigs s',
+    'left join stigs.current_revs cr on s.stigId = cr.stigId'
+  ]
+
+  // NO PROJECTIONS DEFINED
+  // if (inProjection && inProjection.includes('assets')) {
+  //   joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
+  //   joins.push('left join stigman.assets a on sa.assetId = a.assetId' )
+  //   columns.push(`'[' || strdagg_param(param_array(json_object(
+  //     KEY 'assetId' VALUE a.assetId, 
+  //     KEY 'name' VALUE a.name, 
+  //     KEY 'dept' VALUE a.dept ABSENT ON NULL
+  //     ), ',')) || ']' as "packages"`)
+  // }
+  // if (inProjection && inProjection.includes('packages')) {
+  //   if (! inProjection.includes('assets')) {
+  //     // Push dependent table
+  //     joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
+  //   }
+  //   joins.push('left join stigman.asset_package_map ap on sa.assetId = ap.assetId' )
+  //   joins.push('left join stigman.packages p on ap.packageId = p.packageId' )
+  //   columns.push(`'[' || strdagg_param(param_array(json_object(
+  //     KEY 'packageId' VALUE p.packageId, 
+  //     KEY 'name' VALUE p.name ABSENT ON NULL
+  //     ), ',')) || ']' as "stigs"`)
+  // }
+
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: []
+  }
+  if (inPredicates.title) {
+    predicates.statements.push("s.title LIKE '%' || :title || '%'")
+    predicates.binds.push( inPredicates.title )
+  }
+  if (inPredicates.benchmarkId) {
+    predicates.statements.push('s.stigId = :benchmarkId')
+    predicates.binds.push( inPredicates.benchmarkId )
+  }
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += ' order by s.stigId'
+
+  try {
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, predicates.binds, options)
+    await connection.close()
+    return (result.rows)
+  }
+  catch (err) {
+    throw err
+  }  
+}
+
 
 /**
  * Import a new STIG
@@ -47,10 +123,18 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
  **/
 exports.deleteStigById = async function(benchmarkId, userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    let row = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
+    let sqlDelete = `DELETE FROM stigs.stigs where stigId = :benchmarkId`
+    let connection = await oracledb.getConnection()
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      autoCommit: true
+    }
+    await connection.execute(sqlDelete, [benchmarkId], options)
+    await connection.close()
+    return (row)
   }
-  catch(err) {
+  catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
@@ -202,15 +286,14 @@ exports.getRulesByRevision = async function(benchmarkId, revisionStr, userObject
 /**
  * Return a list of available STIGs
  *
- * packageId Integer Package identifier (optional)
- * assetId Integer Asset identifier (optional)
  * title String A string found anywhere in a STIG title (optional)
- * os String An operating system TOE (optional)
  * returns List
  **/
-exports.getSTIGs = async function(packageId, assetId, title, os, userObject) {
+exports.getSTIGs = async function(title, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await this.queryStigs( {
+      title: title
+    }, userObject )
     return (rows)
   }
   catch(err) {
@@ -227,8 +310,10 @@ exports.getSTIGs = async function(packageId, assetId, title, os, userObject) {
  **/
 exports.getStigById = async function(benchmarkId, userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    let rows = await this.queryStigs( {
+      benchmarkId: benchmarkId
+    }, userObject )
+    return (rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
