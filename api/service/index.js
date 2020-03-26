@@ -5,7 +5,7 @@ const http = require('http')
 const express = require('express')
 const cors = require('cors');
 const morgan = require('morgan')
-const swaggerTools = require('oas-tools')
+const oasTools = require('oas-tools')
 const config = require('./utils/config')
 const auth = require('./utils/auth')
 const swaggerUi = require('swagger-ui-express')
@@ -27,23 +27,36 @@ let options = {
   }
 }
 
-// The Swagger document (require it, build it programmatically, fetch it from a URL, ...)
-let spec = fs.readFileSync(path.join(__dirname,'api/openapi.yaml'), 'utf8')
-let swaggerDoc = jsyaml.safeLoad(spec)
+// OpenAPI specification
+//let spec = fs.readFileSync(path.join(__dirname,'api/openapi.yaml'), 'utf8')
+let spec = fs.readFileSync(path.join(__dirname,'../specification/stig-manager.yaml'), 'utf8')
+let oasDoc = jsyaml.safeLoad(spec)
+
+// oas-tools uses x-swagger-router-controller property to route path/method
+// Set x-swagger-router-controller based on the first tag of each path/method
+for (const path in oasDoc.paths) {
+  for (const method in oasDoc.paths[path]) {
+    if (! oasDoc.paths[path][method]['x-swagger-router-controller']) {
+      if (Array.isArray(oasDoc.paths[path][method].tags)) {
+        oasDoc.paths[path][method]['x-swagger-router-controller'] = oasDoc.paths[path][method].tags[0]
+      }  
+    }
+  }
+}
 
 // Replace host with environmental values
-swaggerDoc.servers[0].url = config.swaggerUi.server
-swaggerDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.oauth.authority}/protocol/openid-connect/auth`
+oasDoc.servers[0].url = config.swaggerUi.server
+oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.oauth.authority}/protocol/openid-connect/auth`
 
 // Initialize the Swagger middleware
-swaggerTools.configure(options)
-swaggerTools.initialize(swaggerDoc, app, function () {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc, null, {
+oasTools.configure(options)
+oasTools.initialize(oasDoc, app, function () {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
       oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
     }))
   app.get('/swagger.json', function(req, res) {
       res.setHeader('Content-Type', 'application/json');
-      res.send(swaggerDoc);
+      res.send(oasDoc);
   })
   startServer(app)
  })
