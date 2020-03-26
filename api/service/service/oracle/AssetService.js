@@ -7,18 +7,13 @@ const dbUtils = require('./utils')
 Generalized queries for asset(s).
 **/
 exports.queryAssets = async function (inProjection, inPredicates, elevate, userObject) {
-  const STIGMAN_CONTEXT = { // TODO: Move this somewhere else for reuse?
-    ALL: 'all',
-    DEPT: 'department',
-    USER: 'user'
-  }
   let context
   if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
-    context = STIGMAN_CONTEXT.ALL
+    context = dbUtils.CONTEXT_ALL
   } else if (userObject.role == "IAO") {
-    context = STIGMAN_CONTEXT.DEPT
+    context = dbUtils.CONTEXT_DEPT
   } else {
-    context = STIGMAN_CONTEXT.USER
+    context = dbUtils.CONTEXT_USER
   }
 
   let columns = [
@@ -69,11 +64,11 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     predicates.statements.push('a.dept = :dept')
     predicates.binds.push( inPredicates.dept )
   }
-  if (context == STIGMAN_CONTEXT.DEPT) {
+  if (context == dbUtils.CONTEXT_DEPT) {
     predicates.statements.push('a.dept = :dept')
     predicates.binds.push( userObject.dept )
   } 
-  else if (context == STIGMAN_CONTEXT.USER) {
+  else if (context == dbUtils.CONTEXT_USER) {
     joins.push('left join stigman.user_stig_asset_map usa on sa.saId = usa.saId')
     predicates.statements.push('usa.userId = :userId')
     predicates.binds.push( userObject.id )
