@@ -29,7 +29,7 @@ let options = {
 
 // OpenAPI specification
 //let spec = fs.readFileSync(path.join(__dirname,'api/openapi.yaml'), 'utf8')
-let spec = fs.readFileSync(path.join(__dirname,'../specification/stig-manager.yaml'), 'utf8')
+let spec = fs.readFileSync(path.join(__dirname,'./api/stig-manager.yaml'), 'utf8')
 let oasDoc = jsyaml.safeLoad(spec)
 
 // oas-tools uses x-swagger-router-controller property to route path/method
