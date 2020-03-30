@@ -790,6 +790,7 @@ paths:
       summary: Return the list of groups for the specified revision of a STIG.
       operationId: getGroupsByRevision
       parameters:
+      - $ref: '#/components/parameters/GroupProjectionQuery'
       - name: benchmarkId
         in: path
         description: A path parameter that indentifies a STIG
@@ -810,7 +811,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupList'
+                $ref: '#/components/schemas/GroupProjected'
         default:
           description: unexpected error
           content:
@@ -829,6 +830,7 @@ paths:
       description: None
       operationId: getGroupByRevision
       parameters:
+      - $ref: '#/components/parameters/GroupProjectionQuery'
       - name: benchmarkId
         in: path
         description: A path parameter that indentifies a STIG
@@ -855,7 +857,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupObj'
+                $ref: '#/components/schemas/GroupProjected'
         default:
           description: unexpected error
           content:
@@ -872,6 +874,7 @@ paths:
       summary: Return rule data for the specified revision of a STIG.
       operationId: getRulesByRevision
       parameters:
+      - $ref: '#/components/parameters/RulesProjectionQuery'
       - name: benchmarkId
         in: path
         description: A path parameter that indentifies a STIG
@@ -912,6 +915,7 @@ paths:
         Rule
       operationId: getRuleByRuleId
       parameters:
+      - $ref: '#/components/parameters/RuleProjectionQuery'
       - name: ruleId
         in: path
         description: A path parameter that indentifies a Rule
@@ -924,7 +928,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Rule'
+                $ref: '#/components/schemas/RuleProjected'
         default:
           description: unexpected error
           content:
@@ -1317,23 +1321,6 @@ components:
           type: string
         lastRevisionDate:
           type: string
-    STIGProjected:
-      allOf:
-        - $ref: '#/components/schemas/STIG'
-        - type: object
-          properties:
-            assets:
-              type: array
-              description: The Assets mapped to this STIG
-              items:
-                $ref: '#/components/schemas/AssetBasic'
-            packages:
-              type: array
-              description: The Packages with Assets mapped to this STIG
-              items:
-                $ref: '#/components/schemas/PackageBasic'
-          
-        
     Revision:
       type: object
       properties:
@@ -1353,7 +1340,7 @@ components:
           type: string
         description:
           type: string
-    GroupList:
+    Group:
       type: array
       items:
         type: object
@@ -1362,25 +1349,23 @@ components:
             type: string
           title:
             type: string
-          rules:
-            type: array
-            items:
-              $ref: '#/components/schemas/RuleAbbr'
-    GroupObj:
-      type: object
-      properties:
-        groupId:
-          type: string
-        title:
-          type: string
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/Rule'
+    GroupProjected:
+      allOf:
+        - $ref: '#/components/schemas/Group'
+        - type: object
+          properties:
+            rules:
+              type: array
+              items:
+                $ref: '#/components/schemas/RuleAbbr'
     Rule:
       type: object
       properties:
         ruleId:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
           type: string
         version:
           type: string
@@ -1388,40 +1373,50 @@ components:
           type: string
         severity:
           type: string
-        weight:
-          type: string
-        vulnDiscussion:
-          type: string
-        falsePositives:
-          type: string
-        falseNegatives:
-          type: string
-        documentable:
-          type: string
-        mitigations:
-          type: string
-        securityOverrideGuidance:
-          type: string
-        potentialImpacts:
-          type: string
-        thirdPartyTools:
-          type: string
-        mitigationControl:
-          type: string
-        responsibility:
-          type: string
-        cci:
-          type: array
-          items:
-            type: string
-        checks:
-          type: array
-          items:
-            $ref: '#/components/schemas/Check'
-        fixes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Fix'
+    RuleProjected:
+      allOf:
+        - $ref: '#/components/schemas/Rule'
+        - type: object
+          properties:
+            weight:
+              type: string
+            vulnDiscussion:
+              type: string
+            falsePositives:
+              type: string
+            falseNegatives:
+              type: string
+            documentable:
+              type: string
+            mitigations:
+              type: string
+            securityOverrideGuidance:
+              type: string
+            potentialImpacts:
+              type: string
+            thirdPartyTools:
+              type: string
+            mitigationControl:
+              type: string
+            responsibility:
+              type: string
+    RuleDetailProjected:
+      allOf:
+        - $ref: '#/components/schemas/RuleProjected'
+        - type: object
+          properties:
+            cci:
+              type: array
+              items:
+                type: string
+            checks:
+              type: array
+              items:
+                $ref: '#/components/schemas/Check'
+            fixes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Fix'
     RuleAbbr:
       type: object
       properties:
@@ -1583,21 +1578,6 @@ components:
       in: query
       schema:
         $ref: '#/components/schemas/UserRole'    
-    STIGProjectionQuery:    
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - assets
-          - packages
-    
     BenchmarkIdPath:
       name: benchmarkId
       in: path
@@ -1618,6 +1598,19 @@ components:
       required: true
       schema:
         type: string
+    GroupProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - rules
     RuleIdPath:
       name: ruleId
       in: path
@@ -1625,6 +1618,35 @@ components:
       required: true
       schema:
         type: string
+    RuleProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - cci
+          - checks
+          - fixes
+    RulesProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - details
+    
     CciPath:
       name: cci
       in: path

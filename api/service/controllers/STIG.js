@@ -67,11 +67,12 @@ module.exports.getCcisByRevision = async function getCcisByRevision (req, res, n
 }
 
 module.exports.getGroupByRevision = async function getGroupByRevision (req, res, next) {
+  let projection = req.swagger.params['projection'].value
   let benchmarkId = req.swagger.params['benchmarkId'].value
   let revisionStr = req.swagger.params['revisionStr'].value
   let groupId = req.swagger.params['groupId'].value
   try {
-    let response = await STIG.getGroupByRevision(benchmarkId, revisionStr, groupId, req.userObject)
+    let response = await STIG.getGroupByRevision(benchmarkId, revisionStr, groupId, projection, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {
@@ -80,10 +81,11 @@ module.exports.getGroupByRevision = async function getGroupByRevision (req, res,
 }
 
 module.exports.getGroupsByRevision = async function getGroupsByRevision (req, res, next) {
+  let projection = req.swagger.params['projection'].value
   let benchmarkId = req.swagger.params['benchmarkId'].value
   let revisionStr = req.swagger.params['revisionStr'].value
   try {
-    let response = await STIG.getGroupsByRevision(benchmarkId, revisionStr, req.userObject)
+    let response = await STIG.getGroupsByRevision(benchmarkId, revisionStr, projection, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {
@@ -115,9 +117,10 @@ module.exports.getRevisionsByBenchmarkId = async function getRevisionsByBenchmar
 }
 
 module.exports.getRuleByRuleId = async function getRuleByRuleId (req, res, next) {
+  let projection = req.swagger.params['projection'].value
   let ruleId = req.swagger.params['ruleId'].value
   try {
-    let response = await STIG.getRuleByRuleId(ruleId, req.userObject)
+    let response = await STIG.getRuleByRuleId(ruleId, projection, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {
@@ -126,10 +129,11 @@ module.exports.getRuleByRuleId = async function getRuleByRuleId (req, res, next)
 }
 
 module.exports.getRulesByRevision = async function getRulesByRevision (req, res, next) {
+  let projection = req.swagger.params['projection'].value
   let benchmarkId = req.swagger.params['benchmarkId'].value
   let revisionStr = req.swagger.params['revisionStr'].value
   try {
-    let response = await STIG.getRulesByRevision(benchmarkId, revisionStr, req.userObject)
+    let response = await STIG.getRulesByRevision(benchmarkId, revisionStr, projection, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {

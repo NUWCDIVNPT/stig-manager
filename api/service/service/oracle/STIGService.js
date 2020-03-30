@@ -81,6 +81,273 @@ exports.queryStigs = async function ( inPredicates ) {
 
 
 /**
+Generalized queries for Groups
+**/
+exports.queryGroups = async function ( inProjection, inPredicates ) {
+  let columns = [
+    'g.groupId as "groupId"',
+    'g.title as "title"',
+  ]
+
+  let joins
+  let predicates = {
+    statements: [],
+    binds: {}
+  }
+  
+  predicates.statements.push('r.stigId = :benchmarkId')
+  predicates.binds.benchmarkId = inPredicates.benchmarkId
+  
+  if (inPredicates.revisionStr != 'latest') {
+    joins = ['stigs.revisions r']
+    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+    let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+    predicates.statements.push('r.revId = :revId')
+    predicates.binds.revId = revId
+  } else {
+    joins = ['stigs.current_revs r']
+  }
+  
+  joins.push('left join stigs.rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join stigs.groups g on rg.groupId = g.groupId')
+
+  if (inPredicates.groupId) {
+    predicates.statements.push('g.groupId = :groupId')
+    predicates.binds.groupId = inPredicates.groupId
+  }
+
+  // PROJECTIONS
+  if (inProjection && inProjection.includes('rules')) {
+    joins.push('left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('left join stigs.rules r on rgr.ruleId = r.ruleId' )
+    columns.push(`'[' || strdagg_param(param_array(json_object(
+      KEY 'ruleId' VALUE r.ruleId, 
+      KEY 'version' VALUE r.version, 
+      KEY 'title' VALUE r.title, 
+      KEY 'severity' VALUE r.severity ABSENT ON NULL
+      ), ',')) || ']' as "rules"`)
+  }
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  if (inProjection && inProjection.includes('rules')) {
+    sql += "\nGROUP BY g.groupId, g.title\n"
+  }  
+  sql += ` order by DECODE(substr(g.groupId,1,2),'V-',lpad(substr(g.groupId,3),6,'0'),g.groupId) asc`
+
+  try {
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, predicates.binds, options)
+    await connection.close()
+    if (inProjection && inProjection.includes('rules')) {
+      // Post-process each row, unfortunately.
+      // * Oracle doesn't support a JSON type, so we parse string values from 'rules' into objects
+      for (let x = 0, l = result.rows.length; x < l; x++) {
+        let record = result.rows[x]
+        // Handle packages
+        if (record.rules) {
+        // Check for "empty" arrays 
+          record.rules = record.rules == '[{}]' ? [] : JSON.parse(record.rules)
+          // Sort by package name
+          record.rules.sort((a,b) => {
+            let c = 0
+            if (a.ruleId > b.ruleId) { c= 1 }
+            if (a.ruleId < b.ruleId) { c = -1 }
+            return c
+          })
+        }
+      }
+    }
+    return (result.rows)
+  }
+  catch (err) {
+    throw err
+  }  
+}
+
+
+/**
+Generalized queries for Rules associated with a STIG
+**/
+exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProjection ) {
+  let columns = [
+    'r.ruleId as "ruleId"',
+    'r.title as "title"',
+    'g.groupId as "groupId"',
+    'g.title as "groupTitle"',
+    'r.version as "version"',
+    'r.severity as "severity"'
+  ]
+
+  let joins
+  let predicates = {
+    statements: [],
+    binds: {}
+  }
+  
+  // PREDICATES
+  predicates.statements.push('r.stigId = :benchmarkId')
+  predicates.binds.benchmarkId = benchmarkId
+  
+  if (revisionStr != 'latest') {
+    joins = ['stigs.revisions r']
+    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
+    predicates.statements.push('r.revId = :revId')
+    predicates.binds.revId = revId
+  } else {
+    joins = ['stigs.current_revs r']
+  }
+  
+  joins.push('left join stigs.rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join stigs.groups g on rg.groupId = g.groupId')
+  joins.push('left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+  joins.push('left join stigs.rules r on rgr.ruleId = r.ruleId' )
+
+  // PROJECTIONS
+  // Include extra columns for Rules with details OR individual Rule
+  if ( inProjection && inProjection.includes('details') ) {
+    columns.push(
+      'r.weight as "weight"',
+      'r.vulnDiscussion as "vulnDiscussion"',
+      'r.falsePositives as "falsePositives"',
+      'r.falseNegatives as "falseNegatives"',
+      'r.documentable as "documentable"',
+      'r.mitigations as "mitigations"',
+      'r.securityOverrideGuidance as "securityOverrideGuidance"',
+      'r.potentialImpacts as "potentialImpacts"',
+      'r.thirdPartyTools as "thirdPartyTools"',
+      'r.mitigationControl as "mitigationControl"',
+      'r.responsibility as "responsibility"'
+    )
+  }
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  // if (inProjection && inProjection.includes('rules')) {
+  //   sql += "\nGROUP BY g.groupId, g.title\n"
+  // }  
+  sql += ` order by r.ruleId`
+
+  try {
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, predicates.binds, options)
+    await connection.close()
+
+    // For JSON.stringify(), remove keys with null value
+    result.rows.toJSON = function () {
+      for (let x = 0, l = this.length; x < l; x++) {
+        let record = this[x]
+        Object.keys(record).forEach(key => record[key] == null && delete record[key])
+      }
+      return this
+    }
+
+    return (result.rows)
+  }
+  catch (err) {
+    throw err
+  }  
+}
+
+
+/**
+Generalized queries for a single Rule, optionally with Check and Fix
+**/
+exports.queryRules = async function ( ruleId, inProjection ) {
+  let columns = [
+    'r.ruleId as "ruleId"',
+    'r.title as "title"',
+    'r.version as "version"',
+    'r.severity as "severity"',
+    'r.weight as "weight"',
+    'r.vulnDiscussion as "vulnDiscussion"',
+    'r.falsePositives as "falsePositives"',
+    'r.falseNegatives as "falseNegatives"',
+    'r.documentable as "documentable"',
+    'r.mitigations as "mitigations"',
+    'r.securityOverrideGuidance as "securityOverrideGuidance"',
+    'r.potentialImpacts as "potentialImpacts"',
+    'r.thirdPartyTools as "thirdPartyTools"',
+    'r.mitigationControl as "mitigationControl"',
+    'r.responsibility as "responsibility"'
+]
+
+  let joins = [
+    'stigs.rules r'
+  ]
+  let predicates = {
+    statements: [],
+    binds: {}
+  }
+  
+  // PREDICATES
+  predicates.statements.push('r.ruleId = :ruleId')
+  predicates.binds.ruleId = ruleId
+  
+  // PROJECTIONS
+  // Include extra columns for Rules with details OR individual Rule
+  if ( inProjection && inProjection.includes('cci') ) {
+  }
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  // if (inProjection && inProjection.includes('rules')) {
+  //   sql += "\nGROUP BY g.groupId, g.title\n"
+  // }  
+  sql += ` order by r.ruleId`
+
+  try {
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, predicates.binds, options)
+    await connection.close()
+
+    // For JSON.stringify(), remove keys with null value
+    result.rows.toJSON = function () {
+      for (let x = 0, l = this.length; x < l; x++) {
+        let record = this[x]
+        Object.keys(record).forEach(key => record[key] == null && delete record[key])
+      }
+      return this
+    }
+
+    return (result.rows)
+  }
+  catch (err) {
+    throw err
+  }  
+}
+
+/**
  * Import a new STIG
  *
  * source File An XCCDF file (optional)
@@ -184,9 +451,13 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
  * groupId String A path parameter that indentifies a Group
  * returns GroupObj
  **/
-exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, userObject) {
+exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, projection, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await this.queryGroups( projection, {
+      benchmarkId: benchmarkId,
+      revisionStr: revisionStr,
+      groupId: groupId
+    })
     return (rows)
   }
   catch(err) {
@@ -202,9 +473,12 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, u
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns List
  **/
-exports.getGroupsByRevision = async function(benchmarkId, revisionStr, userObject) {
+exports.getGroupsByRevision = async function(benchmarkId, revisionStr, projection, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await this.queryGroups( projection, {
+      benchmarkId: benchmarkId,
+      revisionStr: revisionStr
+    })
     return (rows)
   }
   catch(err) {
@@ -304,9 +578,9 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
  * ruleId String A path parameter that indentifies a Rule
  * returns Rule
  **/
-exports.getRuleByRuleId = async function(ruleId, userObject) {
+exports.getRuleByRuleId = async function(ruleId, projection, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await this.queryRules( ruleId, projection )
     return (rows)
   }
   catch(err) {
@@ -322,9 +596,9 @@ exports.getRuleByRuleId = async function(ruleId, userObject) {
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns List
  **/
-exports.getRulesByRevision = async function(benchmarkId, revisionStr, userObject) {
+exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await this.queryBenchmarkRules( benchmarkId, revisionStr, projection )
     return (rows)
   }
   catch(err) {
