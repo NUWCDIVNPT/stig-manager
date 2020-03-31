@@ -128,6 +128,20 @@ module.exports.getRuleByRuleId = async function getRuleByRuleId (req, res, next)
   }
 }
 
+module.exports.getRuleByRevision = async function getRulesByRevision (req, res, next) {
+  let projection = req.swagger.params['projection'].value
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  let ruleId = req.swagger.params['ruleId'].value
+  try {
+    let response = await STIG.getRuleByRevision(benchmarkId, revisionStr, ruleId, projection, req.userObject)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
+
 module.exports.getRulesByRevision = async function getRulesByRevision (req, res, next) {
   let projection = req.swagger.params['projection'].value
   let benchmarkId = req.swagger.params['benchmarkId'].value

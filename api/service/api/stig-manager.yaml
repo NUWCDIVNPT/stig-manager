@@ -897,7 +897,53 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Rule'
+                  $ref: '#/components/schemas/RuleProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:stig:read
+  /stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}:
+    get:
+      tags:
+      - STIG
+      summary: Return rule data for the specified Rule in a revision of a STIG.
+      operationId: getRuleByRevision
+      parameters:
+      - $ref: '#/components/parameters/RuleProjectionQuery'
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+      - name: ruleId
+        in: path
+        description: A path parameter that indentifies a Rule
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Rule response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RuleDetailProjected'
         default:
           description: unexpected error
           content:
@@ -1630,6 +1676,7 @@ components:
         items:
           type: string
           enum:
+          - details
           - cci
           - checks
           - fixes
