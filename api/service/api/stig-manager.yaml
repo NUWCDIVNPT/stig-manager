@@ -1318,9 +1318,11 @@ components:
           type: string
           readOnly: true
         rejectText:
+          description: Ignored unless status='Rejected'
           type: string
         rejectUserId:
           type: integer
+          readOnly: true
     ReviewProjected:
       allOf:
         - $ref: '#/components/schemas/Review'
@@ -1454,7 +1456,7 @@ components:
             cci:
               type: array
               items:
-                type: string
+                $ref: '#/components/schemas/CciRuleItem'
             checks:
               type: array
               items:
@@ -1487,6 +1489,17 @@ components:
         fixId:
           type: string
         text:
+          type: string
+    CciRuleItem:
+      type: object
+      properties:
+        cci:
+          type: string
+        ap:
+          description: 'eMASS Assessment Procedure'
+          type: string
+        control:
+          description: 'NIST 800-53r4 control'
           type: string
     CciReferenceItem:
       type: object

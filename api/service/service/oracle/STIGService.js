@@ -260,7 +260,14 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   }
 
   if ( inProjection && inProjection.includes('cci') ) {
-    columns.push('(select json_arrayagg(rc.controlnumber) from stigs.rule_control_map rc where rc.ruleId = r.ruleId) as "ccis"')
+    columns.push(`(select json_arrayagg(json_object(
+      KEY 'cci' VALUE rc.controlnumber,
+      KEY 'ap' VALUE  cci.apacronym,
+      KEY 'control' VALUE  TRIM(cc.control) || ' ' || cc.textref ABSENT ON NULL)) 
+      from stigs.rule_control_map rc 
+      left join iacontrols.cci cci on rc.controlnumber = cci.cci
+      left join iacontrols.cci_control_map cc on rc.controlnumber = cc.cci
+      where rc.ruleId = r.ruleId) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
