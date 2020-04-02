@@ -327,15 +327,26 @@ paths:
           description: Selects Reviews of a Rule
           schema:
             type: string
-        - name: benchmarkId
+        - name: userId
           in: query
-          description: Selects Reviews mapped to a STIG
+          description: Selects Reviews last saved by a User
           schema:
-            type: string
+            type: integer
         - name: assetId
           in: query
           description: Selects Reviews mapped to an Asset
           schema:
+            type: integer
+        - name: benchmarkId
+          in: query
+          description: Selects Reviews mapped to a STIG; requires revisionStr
+          schema:
+            type: string
+        - name: revisionStr
+          in: query
+          description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
         - name: packageId
           in: query
@@ -1271,7 +1282,7 @@ components:
       description: The Review state
       type: string
       enum:
-        - "0"
+        - "O"
         - "NF"
         - "NA"
     ReviewAction:

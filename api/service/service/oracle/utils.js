@@ -119,3 +119,15 @@ module.exports.parseRevisionStr = function (revisionStr) {
 module.exports.CONTEXT_ALL = 'all'
 module.exports.CONTEXT_DEPT = 'department'
 module.exports.CONTEXT_USER = 'user'
+module.exports.REVIEW_STATE_ID = { 
+  1: {state: 'In Progress', abbr: 'IP'},
+  2: {state: 'Not Applicable', abbr: 'NA'},
+  3: {state: 'Not a Finding', abbr: 'NF'},
+  4: {state: 'Open', abbr: 'O'}
+}
+module.exports.REVIEW_STATE_ABBR = { 
+  'IP': {state: 'In Progress', id: 1},
+  'NA': {state: 'Not Applicable', id: 2},
+  'NF': {state: 'Not a Finding', id: 3},
+  'O': {state: 'Open', id: 4}
+}

@@ -49,10 +49,15 @@ module.exports.getReviews = async function getReviews (req, res, next) {
   let status = req.swagger.params['status'].value
   let ruleId = req.swagger.params['ruleId'].value
   let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
   let assetId = req.swagger.params['assetId'].value
   let packageId = req.swagger.params['packageId'].value
   try {
-    let response = await Review.getReviews(projection, elevate, state, action, status, ruleId, benchmarkId, assetId, packageId, req.userObject)
+    let response = await Review.getReviews(
+      projection, elevate, state, action, 
+      status, ruleId, benchmarkId, revisionStr, 
+      assetId, packageId, req.userObject
+    )
     writer.writeJson(res, response)
   }
   catch(err) {
