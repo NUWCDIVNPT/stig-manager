@@ -22,22 +22,24 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'r.assetId as "assetId"',
     'r.ruleId as "ruleId"',
     'state.abbr as "state"',
-    'r.stateComment as "stateComment"',
-    'r.autoState as "autoState"',
-    'action.action as "action"',
-    'r.actionComment as "actionComment"',
-    'r.reqDoc as "reqDoc"',
-    'status.statusStr as "status"',
-    'r.userId as "userId"',
-    'r.ts as "ts"',
-    'r.rejectText as "rejectText"',
-    'r.rejectUserId as "rejectUserId"',
+    // 'r.stateComment as "stateComment"',
+    // 'r.autoState as "autoState"',
+    // 'action.action as "action"',
+    // 'r.actionComment as "actionComment"',
+    // 'r.reqDoc as "reqDoc"',
+    // 'status.statusStr as "status"',
+    // 'r.userId as "userId"',
+    // 'r.ts as "ts"',
+    // 'r.rejectText as "rejectText"',
+    // 'r.rejectUserId as "rejectUserId"'
   ]
   let joins = [
     'stigman.reviews r',
     'left join stigman.states state on r.stateId = state.stateId',
     'left join stigman.statuses status on r.statusId = status.statusId',
-    'left join stigman.actions action on r.actionId = action.actionId'
+    'left join stigman.actions action on r.actionId = action.actionId',
+    // For CONTEXT_USER, joining to assets is unnecessary but harmless(?)
+    'left join stigman.assets asset on r.assetId = asset.assetId'
   ]
 
   // // PROJECTIONS
@@ -62,14 +64,69 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     statements: [],
     binds: {}
   }
+  
+  // Role/Assignment based access control 
+  
   if (context === dbUtils.CONTEXT_USER) {
-    predicates.statements.push('r.userId = :userId')
-    predicates.binds.userId = userObject.id
+    
+    // Construct an 'aclSubquery' to reduce the reviews
+    let aclColumns = [
+      'DISTINCT sa.assetId',
+      'rgr.ruleId'
+    ]
+    let aclPredicates = [
+      'usa.userId = :context_user'
+    ]
+    predicates.binds.context_user = userObject.id
+
+    // Item[2] handles the common case using the current STIG revisions
+    // Will replace this item if another revision is requested
+    let aclJoins = [
+      'stigman.user_stig_asset_map usa',
+      'inner join stigman.stig_asset_map sa on sa.said = usa.said',
+      'inner join stigs.current_revs rev on rev.stigId = sa.stigId',
+      'inner join stigs.rev_group_map rg on rev.revId = rg.revId',
+      'inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
+    ]
+
+    // If predicates include benchmarkId and revisionStr (which must occur together)
+    if (inPredicates.benchmarkId) {
+      aclPredicates.push('sa.stigId = :benchmarkId')
+      predicates.binds.benchmarkId = inPredicates.benchmarkId
+      // Delete property so it is not processed by other flows
+      delete inPredicates.benchmarkId
+    }
+    if (inPredicates.revisionStr && inPredicates.revisionStr !== 'latest') {
+      // Join to revisions so we can specify a revId
+      aclJoins[2] = 'inner join stigs.revisions rev on rev.stigId = sa.stigId'
+      // Calculate the revId
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+      let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+      aclPredicates.push('rev.revId = :revId')
+      predicates.binds.revId = revId
+      // Delete property so it is not processed by other flows
+      delete inPredicates.revisionStr
+    }
+
+    let aclSubquery = `
+    SELECT
+      ${aclColumns.join(",\n")}
+    FROM
+      ${aclJoins.join(" \n")}
+    WHERE
+      ${aclPredicates.join(" and ")}
+    `
+
+    // Push the subquery onto the main query
+    joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
   }
-  if (context === dbUtils.CONTEXT_DEPT) {
-    joins.push('left join stigman.assets asset on r.assetId=asset.assetId')
+  else if (context === dbUtils.CONTEXT_DEPT) {
     predicates.statements.push('asset.dept = :dept')
     predicates.binds.dept = userObject.dept
+  }
+  if (inPredicates.userId) {
+    predicates.statements.push('r.userId = :userId')
+    predicates.binds.userId = inPredicates.userId
   }
   if (inPredicates.assetId) {
     predicates.statements.push('r.assetId = :assetId')
@@ -90,6 +147,20 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
   if (inPredicates.action) {
     predicates.statements.push('action.action = :action')
     predicates.binds.action = inPredicates.action
+  }
+  if (inPredicates.benchmarkId) {
+    predicates.statements.push(`r.ruleId IN (
+      SELECT
+        r2.ruleId
+      FROM
+        stig.current_revs stig
+        left join stigs.rev_group_map rg on r.revId = rg.revId'
+        left join stigs.groups g on rg.groupId = g.groupId'
+        left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
+        left join stigs.rules r2 on rgr.ruleId = r2.ruleId'
+      WHERE
+        stig.stigId = :benchmarkId      
+      )` )
   }
 
   // CONSTRUCT MAIN QUERY
