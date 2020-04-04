@@ -28,6 +28,7 @@ alter session set container=&&container_name;
 @@stig-import-jobs_create.sql
 
 @@stigs_create.sql
+@@stigs_static_data.sql
 
 @@grant_roles.sql
 
