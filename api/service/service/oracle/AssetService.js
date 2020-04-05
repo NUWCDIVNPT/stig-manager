@@ -260,7 +260,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     'r.TITLE as "ruleTitle"',
     'sc.CAT as "cat"',
     'r.DOCUMENTABLE as "documentable"',
-    `NVL(state.abbr,'') as "state"`,
+    `NVL(state.abbr,'') as "stateAbbr"`,
     `NVL(review.statusId,0) as "statusId"`,
     `NVL(review.autoState,0) as "autoState"`,
     `CASE WHEN ra.raId is null THEN 0 ELSE 1 END as "hasAttach"`,
@@ -295,7 +295,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     'left join reviews review on r.ruleId = review.ruleId and review.assetId = :assetId',
     'left join states state on review.stateId=state.stateId',
     'left join review_artifact_map ra on (ra.assetId=review.assetId and ra.ruleId=review.ruleId)',
-    'left join (SELECT distinct ruleId FROM	stigs.rule_oval_map) scap on review.ruleId=scap.ruleId'
+    'left join (SELECT distinct ruleId FROM	stigs.rule_oval_map) scap on r.ruleId=scap.ruleId'
   ]
   // PREDICATES
   let predicates = {
@@ -311,7 +311,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
   }
   if (inPredicates.revisionStr !== 'latest') {
     joins.splice(0, 1, 'stigs.revisions rev')
-    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
     let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
     predicates.statements.push('rev.revId = :revId')
     predicates.binds.revId = revId

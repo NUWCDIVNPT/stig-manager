@@ -4,7 +4,7 @@ $Id: review.js 894 2018-08-15 19:34:58Z csmig $
 
 
 
-function addReview(leaf,selectedRule,selectedResource) {
+function addReview(leaf, selectedRule, selectedResource) {
 	// 'selectedRule' is optional
 	/* Example of 'leaf': 
 		leaf = {
@@ -84,11 +84,15 @@ function addReview(leaf,selectedRule,selectedResource) {
 
 
 	var groupStore = new Ext.data.JsonStore({
-		url: 'pl/getCurrentGroups.pl',
-		root: 'rows',
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.stigId}/latest`,
+			// url: `pl/getCurrentGroups.pl`,
+			method: 'GET'
+		}),		
+		root: '',
 		storeId: 'groupStore' + idAppend,
 		fields: groupFields,
-		idProperty: 'checkId',
+		idProperty: 'ruleId',
 		sortInfo: {
 			field: 'ruleId',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
@@ -98,13 +102,13 @@ function addReview(leaf,selectedRule,selectedResource) {
 				var ourGrid = Ext.getCmp('groupGrid' + idAppend);
 				
 				// Revision menu
-				var revisionObject = getRevisionObj(store.reader.jsonData.revisions,store.lastOptions.params.revId,idAppend);
-				if (Ext.getCmp('revision-menuItem'+idAppend) === undefined) {
-					Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
-				}
+				// var revisionObject = getRevisionObj(store.reader.jsonData.revisions,store.lastOptions.params.revId,idAppend);
+				// if (Ext.getCmp('revision-menuItem'+idAppend) === undefined) {
+				// 	Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
+				// }
 
 				// Grid title
-				ourGrid.setTitle(revisionObject.curRevStr);
+				// ourGrid.setTitle(revisionObject.curRevStr);
 
 				// Filter the store
 				filterGroupStore();
@@ -694,37 +698,63 @@ function addReview(leaf,selectedRule,selectedResource) {
 	});
 	
 	var handleRevisionMenu = function (item,eventObject) {
-		Ext.getCmp('groupGrid' + idAppend).getStore().load({params:{assetId:leaf.assetId, revId:item.revId}});
+		let store = Ext.getCmp('groupGrid' + idAppend).getStore()
+		store.proxy.setUrl(`${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.stigId}/${item.revisionStr}`, true)
+		store.load();
+		loadRevisionMenu(leaf.stigId, item.revId, idAppend)
 	};
 	
-	var getRevisionObj = function (revisions,revId,idAppend) {
-		var returnObject = new Object
-		var menu = new Object;
-		menu.id = 'revision-menuItem' + idAppend,
-		menu.menu = new Object;
-		var itemsArray = new Array;
-		menu.text = 'Revisions';
-		menu.menu.items = itemsArray;
-		menu.hideOnClick = false;
+	async function loadRevisionMenu( benchmarkId, revId, idAppend) {
+		try {
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions`,
+				method: 'GET'
+			})
+			let r = JSON.parse(result.response.responseText)
+			let revisionObject = getRevisionObj(r, revId, idAppend)
+			if (Ext.getCmp('revision-menuItem'+idAppend) === undefined) {
+				Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
+			}
+			groupGrid.setTitle(revisionObject.curRevStr);
+		}
+		catch (e) {
+			alert (e.message)
+		}
+	}
+	
+	let getRevisionObj = function (revisions, curRevId, idAppend) {
+		let returnObject = {}
+		var menu = {
+			id: 'revision-menuItem' + idAppend,
+			text: 'Revisions',
+			hideOnClick: false,
+			menu: {
+				items: []
+			}
+		};
 		for (var i = 0; i < revisions.length; i++) {
-			var item = new Object;
-			item.id = 'revision-submenu' + revisions[i].revId + idAppend;
-			item.text = revisions[i].revisionStr;
-			item.revId = revisions[i].revId;
-			item.group = 'revision-submenu-group' + idAppend;
-			item.handler = handleRevisionMenu;
-			if (revisions[i].revId == revId) {
+			let r = revisions[i]
+			let benchmarkDateJs = new Date (r.benchmarkDate)
+			let item = {
+				id: `revision-submenu${r.benchmarkId}-${r.version}-${r.release}${idAppend}`,
+				text: `Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`,
+				revId: `${r.benchmarkId}-${r.version}-${r.release}`,
+				revisionStr: r.revisionStr,
+				group: 'revision-submenu-group' + idAppend,
+				handler: handleRevisionMenu
+			}
+			if (item.revId == curRevId) {
 				item.checked = true;
-				returnObject.curRevStr = revisions[i].revisionStr;
+				returnObject.curRevStr = item.text;
 			} else {
 				item.checked = false;
 			}
-			itemsArray.push(item);
+			menu.menu.items.push(item);
 		}
 		returnObject.menu = menu;
 		return returnObject;
 	};
-	
+
 	function filterGroupStore () {
 		var filterArray = [];
 		// Filter menu
@@ -2106,7 +2136,9 @@ function addReview(leaf,selectedRule,selectedResource) {
 	});
 	thisTab.show();
 
-	groupGrid.getStore().load({params:{assetId:leaf.assetId, stigId:leaf.stigId, revId:leaf.revId}});
+	// groupGrid.getStore().load({params:{assetId:leaf.assetId, stigId:leaf.stigId, revId:leaf.revId}});
+	groupGrid.getStore().load();
+	loadRevisionMenu(leaf.stigId, leaf.revId, idAppend)
 
 	
 	//function saveReview(saveReviewSource, sm, index){
@@ -2392,7 +2424,7 @@ function addReview(leaf,selectedRule,selectedResource) {
 	
 
 	
-function bulkSubmit(all){
+	function bulkSubmit(all){
 		// groupStore;
 		var ourStore = groupStore;
 		var ruleArray = encodeStoreDone(ourStore,'ruleId')

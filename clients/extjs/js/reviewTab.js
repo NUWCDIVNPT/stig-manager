@@ -300,7 +300,7 @@ async function loadTree (node, cb) {
           iconCls: 'sm-stig-icon',
           stigName: stig.benchmarkId,
           assetName: r.name,
-          stigRevStr: stig.latestRevStr,
+          stigRevStr: stig.lastRevisionStr,
           assetId: r.assetId,
           stigId: stig.benchmarkId,
           assetGroup: null,
@@ -363,7 +363,7 @@ async function loadTree (node, cb) {
           iconCls: 'sm-asset-icon',
           stigName: benchmarkId,
           assetName: asset.name,
-          stigRevStr: asset.stigs[0].latestRevStr, // BUG: relies on exclusion of other assigned stigs from /assets
+          stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
           assetId: asset.assetId,
           stigId: benchmarkId,
           assetGroup: null,
