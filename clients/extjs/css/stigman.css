@@ -153,6 +153,10 @@
 	color:#000000;
 	word-wrap: break-word;
 }
+.cs-home-body-text pre {
+	white-space: pre-wrap;
+	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
+}
 .cs-home-body-table {
 	width:100%;
 	border-collapse: collapse;

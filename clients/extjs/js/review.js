@@ -435,6 +435,8 @@ function addReview(leaf, selectedRule, selectedResource) {
 	var groupGrid = new Ext.grid.GridPanel({
 		region: 'west',
 		id: 'groupGrid' + idAppend,
+		sm_benchmarkId: leaf.stigId,
+		sm_revisionStr: leaf.stigRevStr,
 		width: '35%',
 		minWidth: 340,
 		hideMode: 'offsets',
@@ -510,7 +512,7 @@ function addReview(leaf, selectedRule, selectedResource) {
 				},
 				rowselect: {
 					fn: function(sm,index,record) {
-						handleGroupSelectionForAsset(record,leaf.assetId,idAppend,leaf); // defined in stigmanUtil.js
+						handleGroupSelectionForAsset(record, leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
 					}
 				}
 			}
@@ -821,6 +823,40 @@ function addReview(leaf, selectedRule, selectedResource) {
 /******************************************************/
 // END Group Grid
 /******************************************************/
+
+let contentTpl = new Ext.XTemplate(
+	'<div class=cs-home-header-top>{ruleId}</div>',
+	'<div class=cs-home-header-sub>{title} (Category {severity})</div>',
+	'<div class=cs-home-body-title>Manual Check',
+		'<div class=cs-home-body-text>',
+			'<tpl for="checks">',
+				'<pre>{content}</pre>',
+			'</tpl>',
+		'</div>',
+	'</div>',
+	'<div class=cs-home-body-title>Fix',
+		'<div class=cs-home-body-text>',
+			'<tpl for="fixes">',
+			'<pre>{text}</pre>',
+			'</tpl>',
+		'</div>',
+	'</div>',
+	'<div class=cs-home-header-sub></div>',
+	'<div class=cs-home-body-title>Other Data',
+		'<div class=cs-home-body-text><b>Vulnerability Discussion</b><br><br>',
+			'<pre>{vulnDiscussion}</pre>',
+		'</div>',
+		'<div class=cs-home-body-text><b>Documentable: </b>{documentable}</div>',
+		'<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
+		'<div class=cs-home-body-text><b>Controls: </b><br>',
+			'<table class=cs-home-body-table border="1">',
+				'<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
+				'<tpl for="ccis">',
+					'<tr><td>{cci}</td><td>{ap}</td><td>{control}</td></tr>',
+				'</tpl>',
+			'</table>',
+		'</div>',
+	'</div>')
 
 /******************************************************/
 // START Resources panel
@@ -2065,7 +2101,8 @@ function addReview(leaf, selectedRule, selectedResource) {
 			padding: 20,
 			autoScroll: true,
 			id: 'content-panel' + idAppend,
-			title: 'Rule'
+			title: 'Rule',
+			tpl: contentTpl
 		}
 		,
 		{

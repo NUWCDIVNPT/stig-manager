@@ -1067,13 +1067,25 @@ function encodeStoreDone(store,field){
 	return Ext.util.JSON.encode(myArray);
 }
 
-function handleGroupSelectionForAsset (groupGridRecord,assetId,idAppend,leaf) {
+async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend, benchmarkId, revisionStr) {
 	var contentPanel = Ext.getCmp('content-panel' + idAppend);
-	contentPanel.load({
-		url: 'pl/getCurrentContent.pl',
-		params: {ruleId:groupGridRecord.data.ruleId}
-	});
-	contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId);
+	try {
+		let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
+			method: 'GET',
+			params: {
+				projection: ['details','cci','checks','fixes']
+				// projection: 'details'
+			}
+		})
+		let r = JSON.parse(result.response.responseText)
+		contentPanel.update(r)
+		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId);
+	}
+	catch (e) {
+		alert (e.message)
+	}	
+
 	Ext.getCmp('east-panel' + idAppend).getEl().mask('Loading...');
 	Ext.Ajax.request({
 		url: 'pl/getCurrentReview.pl',

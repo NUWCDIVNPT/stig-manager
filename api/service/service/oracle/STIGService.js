@@ -307,38 +307,34 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     let result = await connection.execute(sql, predicates.binds, options)
     await connection.close()
 
-    // For JSON.stringify()
-    result.rows.toJSON = function () {
-      for (let x = 0, l = this.length; x < l; x++) {
-        let record = this[x]
-        // remove keys with null value
-        Object.keys(record).forEach(key => record[key] == null && delete record[key])
-        // parse projected columns
-        if (record.ccis) {
-          record.ccis = record.ccis == '[""]' ? [] : JSON.parse(record.ccis)
-          record.ccis.sort()
-        }
-        if (record.checks) {
-          record.checks = record.checks == '[""]' ? [] : JSON.parse(record.checks)
-          record.checks.sort((a,b) => {
-            let c = 0
-            if (a.checkId > b.checkId) { c= 1 }
-            if (a.checkId < b.checkId) { c = -1 }
-            return c
-          })
-        }
-        if (record.fixes) {
-          record.fixes = record.fixes == '[""]' ? [] : JSON.parse(record.fixes)
-          record.fixes.sort((a,b) => {
-            let c = 0
-            if (a.fixId > b.fixId) { c= 1 }
-            if (a.fixId < b.fixId) { c = -1 }
-            return c
-          })
-        }
-  
+    for (let x = 0, l = result.rows.length; x < l; x++) {
+      let record = result.rows[x]
+      // remove keys with null value
+      Object.keys(record).forEach(key => record[key] == null && delete record[key])
+      // parse projected columns
+      if (record.ccis) {
+        record.ccis = record.ccis == '[""]' ? [] : JSON.parse(record.ccis)
+        record.ccis.sort()
       }
-      return this
+      if (record.checks) {
+        record.checks = record.checks == '[""]' ? [] : JSON.parse(record.checks)
+        record.checks.sort((a,b) => {
+          let c = 0
+          if (a.checkId > b.checkId) { c= 1 }
+          if (a.checkId < b.checkId) { c = -1 }
+          return c
+        })
+      }
+      if (record.fixes) {
+        record.fixes = record.fixes == '[""]' ? [] : JSON.parse(record.fixes)
+        record.fixes.sort((a,b) => {
+          let c = 0
+          if (a.fixId > b.fixId) { c= 1 }
+          if (a.fixId < b.fixId) { c = -1 }
+          return c
+        })
+      }
+
     }
 
     return (result.rows)
@@ -680,7 +676,7 @@ exports.getRuleByRevision = async function(benchmarkId, revisionStr, ruleId, pro
     let rows = await this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {
       ruleId: ruleId
     })
-    return (rows)
+    return (rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
