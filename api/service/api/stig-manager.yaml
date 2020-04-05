@@ -308,7 +308,51 @@ paths:
       security:
       - oauth:
         - stig-manager:package
-
+  /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}:
+    parameters:
+      - name: assetId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        schema:
+          type: integer
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
+          | 'latest' ]
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+    get:
+      tags:
+      - Asset
+      summary: Return the Checklist for the supplied Asset and STIG
+      operationId: getChecklistByAssetStig
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: Review response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
   /reviews:
     parameters:
       - $ref: '#/components/parameters/ReviewProjectionQuery'

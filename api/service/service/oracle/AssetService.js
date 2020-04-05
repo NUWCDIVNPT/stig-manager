@@ -242,6 +242,107 @@ await connection.commit()
   }  
 }
 
+exports.queryChecklist = async function (inProjection, inPredicates, elevate, userObject) {
+  let context
+  if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    context = dbUtils.CONTEXT_ALL
+  } else if (userObject.role == "IAO") {
+    context = dbUtils.CONTEXT_DEPT
+  } else {
+    context = dbUtils.CONTEXT_USER
+  }
+
+  let columns = [
+    ':assetId as "assetId"',
+    'g.GROUPID as "groupId"',
+    'r.RULEID as "ruleId"',
+    'g.TITLE as "groupTitle"',
+    'r.TITLE as "ruleTitle"',
+    'sc.CAT as "cat"',
+    'r.DOCUMENTABLE as "documentable"',
+    `NVL(state.abbr,'') as "state"`,
+    `NVL(review.statusId,0) as "statusId"`,
+    `NVL(review.autoState,0) as "autoState"`,
+    `CASE WHEN ra.raId is null THEN 0 ELSE 1 END as "hasAttach"`,
+    `CASE
+      WHEN review.ruleId is null
+      THEN 0
+      ELSE
+        CASE WHEN review.stateId != 4
+        THEN
+          CASE WHEN review.stateComment != ' ' and review.stateComment is not null
+            THEN 1
+            ELSE 0 END
+        ELSE
+          CASE WHEN review.actionId is not null and review.actionComment is not null and review.actionComment != ' '
+            THEN 1
+            ELSE 0 END
+        END
+    END as "done"`,
+    `CASE
+      WHEN scap.ruleId is null
+      THEN 'Manual'
+      ELSE 'SCAP'
+    END as "checkType"`
+  ]
+  let joins = [
+    'stigs.current_revs rev',
+    'left join stigs.rev_group_map rg on rev.revId = rg.revId',
+    'left join stigs.groups g on rg.groupId=g.groupId',
+    'left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId',
+    'left join stigs.rules r on rgr.ruleId=r.ruleId',
+    'left join stigs.severity_cat_map sc on r.severity=sc.severity',
+    'left join reviews review on r.ruleId = review.ruleId and review.assetId = :assetId',
+    'left join states state on review.stateId=state.stateId',
+    'left join review_artifact_map ra on (ra.assetId=review.assetId and ra.ruleId=review.ruleId)',
+    'left join (SELECT distinct ruleId FROM	stigs.rule_oval_map) scap on review.ruleId=scap.ruleId'
+  ]
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: {}
+  }
+  if (inPredicates.assetId) {
+    predicates.binds.assetId = inPredicates.assetId
+  }
+  if (inPredicates.benchmarkId) {
+    predicates.statements.push('rev.stigId = :benchmarkId')
+    predicates.binds.benchmarkId = inPredicates.benchmarkId
+  }
+  if (inPredicates.revisionStr !== 'latest') {
+    joins.splice(0, 1, 'stigs.revisions rev')
+    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+    predicates.statements.push('rev.revId = :revId')
+    predicates.binds.revId = revId
+  }
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += `\norder by DECODE(substr(g.groupId,1,2),'V-',lpad(substr(g.groupId,3),6,'0'),g.groupId) asc`
+  
+  try {
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, predicates.binds, options)
+    await connection.close()
+
+    return (result.rows)
+  }
+  catch (err) {
+    throw err
+  }
+
+
+}
+
 /**
  * Create an Asset
  *
@@ -316,6 +417,29 @@ exports.getAssets = async function(packageId, benchmarkId, dept, projection, ele
       packageId: packageId,
       benchmarkId: benchmarkId,
       dept: dept
+    }, elevate, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+
+/**
+ * Return the Checklist for the supplied Asset and STIG
+ *
+ * assetId Integer A path parameter that indentifies an Asset
+ * benchmarkId String A path parameter that indentifies a STIG
+ * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
+ * returns List
+ **/
+exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, projection, elevate, userObject) {
+  try {
+    let rows = await this.queryChecklist(projection, {
+      assetId: assetId,
+      benchmarkId: benchmarkId,
+      revisionStr: revisionStr
     }, elevate, userObject)
     return (rows)
   }

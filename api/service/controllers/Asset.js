@@ -78,6 +78,22 @@ module.exports.getAssets = async function getAssets (req, res, next) {
   }
 }
 
+module.exports.getChecklistByAssetStig = async function getAssets (req, res, next) {
+  try {
+    let assetId = req.swagger.params['assetId'].value
+    let benchmarkId = req.swagger.params['benchmarkId'].value
+    let revisionStr = req.swagger.params['revisionStr'].value
+    // let projection = req.swagger.params['projection'].value
+    let elevate = req.swagger.params['elevate'].value
+    let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, null, elevate, req.userObject )
+    writer.writeJson(res, response)
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }
+}
+
+
 module.exports.updateAsset = async function updateAsset (req, res, next) {
   if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
     try {
