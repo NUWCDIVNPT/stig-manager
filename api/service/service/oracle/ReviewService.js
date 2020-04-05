@@ -20,16 +20,17 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
   let columns = [
     'r.REVIEWID as "reviewId"',
     'r.assetId as "assetId"',
+    'asset.name as "assetName"',
     'r.ruleId as "ruleId"',
     'state.abbr as "state"',
+    'status.statusStr as "status"',
+    'r.ts as "ts"'
     // 'r.stateComment as "stateComment"',
     // 'r.autoState as "autoState"',
     // 'action.action as "action"',
     // 'r.actionComment as "actionComment"',
     // 'r.reqDoc as "reqDoc"',
-    // 'status.statusStr as "status"',
     // 'r.userId as "userId"',
-    // 'r.ts as "ts"',
     // 'r.rejectText as "rejectText"',
     // 'r.rejectUserId as "rejectUserId"'
   ]
@@ -66,10 +67,10 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
   }
   
   // Role/Assignment based access control 
-  
+  // CONTEXT_USER
   if (context === dbUtils.CONTEXT_USER) {
     
-    // Construct an 'aclSubquery' to reduce the reviews
+    // Construct an 'aclSubquery' to determine allowed assetId/ruleId pairs
     let aclColumns = [
       'DISTINCT sa.assetId',
       'rgr.ruleId'
@@ -79,21 +80,40 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     ]
     predicates.binds.context_user = userObject.id
 
-    // Item[2] handles the common case using the current STIG revisions
-    // Will replace this item if another revision is requested
+    // item 2 handles the common case where revisionStr is 'latest'
+    // Will replace aclJoins[2] for other revisionStr values
     let aclJoins = [
       'stigman.user_stig_asset_map usa',
       'inner join stigman.stig_asset_map sa on sa.said = usa.said',
+      'left join stigman.asset_package_map ap on ap.assetId = sa.assetId',
       'inner join stigs.current_revs rev on rev.stigId = sa.stigId',
       'inner join stigs.rev_group_map rg on rev.revId = rg.revId',
       'inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
     ]
 
+    if (inPredicates.assetId) {
+      aclPredicates.push('sa.assetId = :assetId')
+      predicates.binds.assetId = inPredicates.assetId
+      // Delete property so it is not processed by later code
+      delete inPredicates.assetId
+    }
+    if (inPredicates.ruleId) {
+      aclPredicates.push('rgr.ruleId = :ruleId')
+      predicates.binds.ruleId = inPredicates.ruleId
+      // Delete property so it is not processed by later code
+      delete inPredicates.ruleId
+    }
+    if (inPredicates.packageId) {
+      aclPredicates.push('ap.packageId = :packageId')
+      predicates.binds.packageId = inPredicates.packageId
+      // Delete property so it is not processed by later code
+      delete inPredicates.packageId
+    }
     // If predicates include benchmarkId and revisionStr (which must occur together)
     if (inPredicates.benchmarkId) {
       aclPredicates.push('sa.stigId = :benchmarkId')
       predicates.binds.benchmarkId = inPredicates.benchmarkId
-      // Delete property so it is not processed by other flows
+      // Delete property so it is not processed by later code
       delete inPredicates.benchmarkId
     }
     if (inPredicates.revisionStr && inPredicates.revisionStr !== 'latest') {
@@ -104,7 +124,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
       aclPredicates.push('rev.revId = :revId')
       predicates.binds.revId = revId
-      // Delete property so it is not processed by other flows
+      // Delete property so it is not processed by later code
       delete inPredicates.revisionStr
     }
 
@@ -117,13 +137,17 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       ${aclPredicates.join(" and ")}
     `
 
-    // Push the subquery onto the main query
-    joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
+    // Splice the subquery onto the main query
+    joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join stigman.reviews r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
+    //joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
   }
+  // CONTEXT_DEPT
   else if (context === dbUtils.CONTEXT_DEPT) {
     predicates.statements.push('asset.dept = :dept')
     predicates.binds.dept = userObject.dept
   }
+
+    // COMMON
   if (inPredicates.userId) {
     predicates.statements.push('r.userId = :userId')
     predicates.binds.userId = inPredicates.userId
@@ -155,7 +179,6 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       FROM
         stig.current_revs stig
         left join stigs.rev_group_map rg on r.revId = rg.revId'
-        left join stigs.groups g on rg.groupId = g.groupId'
         left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
         left join stigs.rules r2 on rgr.ruleId = r2.ruleId'
       WHERE
