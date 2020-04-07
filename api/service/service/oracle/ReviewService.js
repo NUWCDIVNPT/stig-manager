@@ -24,15 +24,15 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'r.ruleId as "ruleId"',
     'state.abbr as "state"',
     'status.statusStr as "status"',
-    'r.ts as "ts"'
-    // 'r.stateComment as "stateComment"',
-    // 'r.autoState as "autoState"',
-    // 'action.action as "action"',
-    // 'r.actionComment as "actionComment"',
-    // 'r.reqDoc as "reqDoc"',
-    // 'r.userId as "userId"',
-    // 'r.rejectText as "rejectText"',
-    // 'r.rejectUserId as "rejectUserId"'
+    'r.ts as "ts"',
+    'r.stateComment as "stateComment"',
+    'r.autoState as "autoState"',
+    'action.action as "action"',
+    'r.actionComment as "actionComment"',
+    'r.reqDoc as "reqDoc"',
+    'r.userId as "userId"',
+    'r.rejectText as "rejectText"',
+    'r.rejectUserId as "rejectUserId"'
   ]
   let joins = [
     'stigman.reviews r',
