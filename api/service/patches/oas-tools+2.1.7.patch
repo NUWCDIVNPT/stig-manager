@@ -44,10 +44,10 @@ index e413588..1798406 100644
  }
  
 diff --git a/node_modules/oas-tools/src/middleware/oas-validator.js b/node_modules/oas-tools/src/middleware/oas-validator.js
-index b4d17e3..cff2150 100644
+index b4d17e3..a0b800f 100644
 --- a/node_modules/oas-tools/src/middleware/oas-validator.js
 +++ b/node_modules/oas-tools/src/middleware/oas-validator.js
-@@ -149,48 +149,43 @@ function checkRequestData(oasDoc, requestedSpecPath, method, res, req, next) { /
+@@ -149,48 +149,53 @@ function checkRequestData(oasDoc, requestedSpecPath, method, res, req, next) { /
  
  
      for (var i = 0; i < params.length; i++) {
@@ -70,11 +70,6 @@ index b4d17e3..cff2150 100644
 -        } else { // In case the parameter is indeed present, check type. In the case of array, check also type of its items!
 -          try { // eslint-disable-line
 -            if (schema.type !== 'string') { // eslint-disable-line
--              value = JSON.parse(req[location][name]);
--            } else {
--              value = String(req[location][name]);
--            }
--          } catch (err) {
 +      var name = params[i].name;
 +      var location = params[i].in;
 +      var schema = params[i].schema;
@@ -90,7 +85,20 @@ index b4d17e3..cff2150 100644
 +      } else if (req[location][name] != undefined) { // The parameter is present
 +        try { // eslint-disable-line
 +          if (schema.type !== 'string') { // eslint-disable-line
-+            value = JSON.parse(req[location][name]);
++            if (schema.type == 'array') {
++              if (Array.isArray(req[location][name])) {
++                value = req[location][name]
++              }
++              else {
++                value = [req[location][name]]
++              }
++            }
++            else {
+               value = JSON.parse(req[location][name]);
+-            } else {
+-              value = String(req[location][name]);
+             }
+-          } catch (err) {
 +          } else {
              value = String(req[location][name]);
            }
@@ -130,7 +138,7 @@ index b4d17e3..cff2150 100644
          }
        }
      }
-@@ -326,13 +321,8 @@ function convertValue(value, schema, type) { // eslint-disable-line
+@@ -326,13 +331,8 @@ function convertValue(value, schema, type) { // eslint-disable-line
  
      case 'boolean':
        if (!_.isBoolean(value)) {
