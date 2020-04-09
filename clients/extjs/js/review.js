@@ -247,6 +247,7 @@ function addReview(leaf, selectedRule, selectedResource) {
 							tooltip: 'Download this checklist in DISA STIG Viewer format',
 							handler: function(item,eventObject){
 								var lo = groupStore.lastOptions;
+								let revId = 
 								window.location='pl/getCurrentCkl.pl' + '?revId=' + lo.params.revId + '&assetId=' + lo.params.assetId;
 							}
 						}
@@ -867,7 +868,7 @@ let contentTpl = new Ext.XTemplate(
 	/******************************************************/
 
 	var otherFields = Ext.data.Record.create([
-		{	name:'asset',
+		{	name:'assetName',
 			type: 'string'
 		},{	
 			name:'assetGroup',
@@ -894,7 +895,7 @@ let contentTpl = new Ext.XTemplate(
 			name:'action',
 			type:'string'
 		},{
-			name:'user',
+			name:'username',
 			type:'string'
 		},{
 			name:'stateComment',
@@ -910,11 +911,11 @@ let contentTpl = new Ext.XTemplate(
 	]);
 
 	var otherStore = new Ext.data.JsonStore({
-		root: 'rows',
+		root: '',
 		id: 'otherStore' + idAppend,
 		fields: otherFields,
 		sortInfo: {
-			field: 'asset',
+			field: 'assetName',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
 		listeners: {
@@ -942,10 +943,12 @@ let contentTpl = new Ext.XTemplate(
 	// });
 
 	var expander = new Ext.ux.grid.RowExpander({
-		tpl : new Ext.Template(
-			'<p><b>Reviewer:</b> {user}</p>',
+		tpl : new Ext.XTemplate(
+			'<p><b>Reviewer:</b> {username}</p>',
 			'<p><b>Result Comment:</b> {stateComment}</p>',
-			'<p><b>Action Comment:</b> {actionComment}</p>'
+			'<tpl if="actionComment">',
+			'<p><b>Action Comment:</b> {actionComment}</p>',
+			'</tpl>'
 		)
 	});
 
@@ -1018,7 +1021,7 @@ let contentTpl = new Ext.XTemplate(
 				id:'target' + idAppend,
 				header: "Asset",
 				width: 100,
-				dataIndex: 'asset',
+				dataIndex: 'assetName',
 				sortable: true,
 				align: 'left',
 				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -1035,15 +1038,44 @@ let contentTpl = new Ext.XTemplate(
 				id:'state' + idAppend,
 				header: "Result",
 				width: 80,
-				dataIndex: 'state',
-				sortable: true
+				dataIndex: 'stateId',
+				sortable: true,
+				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+					switch (value) {
+						case 1:
+							return "In Progress"
+							break
+						case 2:
+							return "Not Applicable"
+							break
+						case 3:
+							return "Not a Finding"
+							break
+						case 4:
+							return "Open"
+							break
+					}
+				}
 			},
 			{ 	
 				id:'action' + idAppend,
 				header: "Action", 
 				width: 80,
 				dataIndex: 'action',
-				sortable: true
+				sortable: true,
+				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+					switch (value) {
+						case 1:
+							return "Remediate"
+							break
+						case 2:
+							return "Mitigate"
+							break
+						case 3:
+							return "Exception"
+							break
+					}
+				}
 			}
 		],
 		// width: 300,
@@ -1411,160 +1443,6 @@ let contentTpl = new Ext.XTemplate(
 	/******************************************************/
 	// START History Panel
 	/******************************************************/
-	// var historyFields = Ext.data.Record.create([
-		// {	name:'historyId',
-			// type: 'integer'
-		// }
-		// ,{
-			// name: 'ts',
-			// type: 'date',
-			// dateFormat: 'Y-m-d H:i:s'
-		// }
-		// ,{
-			// name:'activityType',
-			// type: 'string'
-		// }
-		// ,{
-			// name:'columnName',
-			// type:'string'
-		// }
-		// ,{
-			// name:'oldValue',
-			// type:'string'
-		// }
-		// ,{
-			// name:'newValue',
-			// type:'string'
-		// }
-		// ,{
-			// name:'userName',
-			// type:'string'
-		// }		
-	// ]);
-
-	// var historyStore = new Ext.data.JsonStore({
-		// root: 'rows',
-		// storeId: 'historyStore' + idAppend,
-		// fields: historyFields,
-		// sortInfo: {
-			// field: 'ts',
-			// direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-		// },
-		// idProperty: 'historyId'
-	// });
-	
-	// var historyGrid = new Ext.grid.GridPanel({
-		// layout: 'fit',
-		// border: false,
-		// id: 'historyGrid' + idAppend,
-		// store: historyStore,
-		// stripeRows:true,
-		// view: new Ext.grid.GridView({
-			// forceFit:true,
-			// emptyText: 'No history to display.',
-			// deferEmptyText:false
-		// }),
-		// columns: [
-			// { 	
-				// id:'history-ts' + idAppend,
-				// header: "Timestamp",
-				// width: 120,
-				// fixed: true,
-				// resizeable: false,
-				// dataIndex: 'ts',
-				// sortable: true,
-				// align: 'left',
-				// xtype: 'datecolumn',
-				// format:	'Y-m-d H:i:s'
-			// }
-			// ,{ 	
-				// id:'history-activity' + idAppend,
-				// header: "Activity",
-				// width: 60,
-				// dataIndex: 'none',
-				// sortable: false,
-				// align: 'left',
-				// renderer: function(value, metadata, record) {
-					// var returnStr = record.data.userName;
-					// switch (record.data.activityType) {
-						// case 'insert':
-							// returnStr += ' created the review.<br>';
-							// break;
-						// case 'update':
-							// returnStr += ' modified the review.<br>';
-							// break;
-					// }
-					// switch (record.data.columnName) {
-						// case 'stateId':
-							// returnStr += '<b>Result</b> set to <i>';
-							// switch (record.data.newValue) {
-								// case '2':
-									// returnStr += 'Not Applicable';
-									// break;
-								// case '3':
-									// returnStr += 'Not a Finding';
-									// break;
-								// case '4':
-									// returnStr += 'Open';
-									// break;
-								// default:
-									// returnStr += 'Unknown';
-									// break;
-							// }
-							// returnStr += '</i>';
-							// break;
-						// case 'stateComment':
-							// returnStr += '<b>Result comment</b> set to:<br><i>' + record.data.newValue.replace(/\n/g, "<br//>") + '</i>';
-							// break;
-						// case 'actionId':
-							// returnStr += '<b>Action</b> set to <i>';
-								// switch (record.data.newValue) {
-								// case '1':
-									// returnStr += 'Remediate';
-									// break;
-								// case '2':
-									// returnStr += 'Mitigate';
-									// break;
-								// case '3':
-									// returnStr += 'Exception';
-									// break;
-								// default:
-									// returnStr += 'NULL';
-									// break;
-							// }
-							// returnStr += '</i>';
-							// break;
-						// case 'actionComment':
-							// returnStr += '<b>Action comment</b> set to:<br><i>' + record.data.newValue.replace(/\n/g, "<br//>") + '</i>';
-							// break;
-						// case 'statusId':
-							// returnStr += '<b>Status</b> set to <i>';
-								// switch (record.data.newValue) {
-								// case '0':
-									// returnStr += 'In progress';
-									// break;
-								// case '1':
-									// returnStr += 'Submitted';
-									// break;
-								// case '2':
-									// returnStr += 'Rejected';
-									// break;
-								// case '3':
-									// returnStr += 'Approved';
-									// break;
-								// default:
-									// returnStr += 'NULL';
-									// break;
-							// }
-							// returnStr += '</i>';
-							// break;
-					// }
-					// return '<div style="white-space:normal !important;">'+ returnStr +'</div>';
-				// }
-			// }
-		// ],
-		// autoExpandColumn: 'history-activity' + idAppend
-	// });
 	
 	var historyData = new Sm_HistoryData(idAppend);
 		
@@ -1666,8 +1544,8 @@ let contentTpl = new Ext.XTemplate(
 				valueNotFoundText: 'Your result...',
 				//allowBlank: false,
 				disabled: true,
-				name: 'state',
-				hiddenName: 'state',
+				name: 'stateId',
+				hiddenName: 'stateId',
 				mode: 'local',
 				editable: false,
 				store: new Ext.data.SimpleStore({
@@ -1722,8 +1600,8 @@ let contentTpl = new Ext.XTemplate(
 				fieldLabel: 'Action',
 				emptyText: 'Your action...',
 				valueNotFoundText: 'Your action...',
-				name: 'action',
-				hiddenName: 'action',
+				name: 'actionId',
+				hiddenName: 'actionId',
 				mode: 'local',
 				editable: false,
 				store: new Ext.data.SimpleStore({

@@ -18,19 +18,20 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
   }
 
   let columns = [
-    'r.REVIEWID as "reviewId"',
+    'DISTINCT r.REVIEWID as "reviewId"',
     'r.assetId as "assetId"',
     'asset.name as "assetName"',
     'r.ruleId as "ruleId"',
-    'state.abbr as "state"',
-    'status.statusStr as "status"',
-    'r.ts as "ts"',
+    'r.stateId as "stateId"',
     'r.stateComment as "stateComment"',
-    'r.autoState as "autoState"',
-    'action.action as "action"',
+    'r.actionId as "actionId"',
     'r.actionComment as "actionComment"',
+    'r.statusId as "statusId"',
+    'r.ts as "ts"',
+    'r.autoState as "autoState"',
     'r.reqDoc as "reqDoc"',
     'r.userId as "userId"',
+    'ud.name as "username"',
     'r.rejectText as "rejectText"',
     'r.rejectUserId as "rejectUserId"'
   ]
@@ -39,8 +40,9 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'left join stigman.states state on r.stateId = state.stateId',
     'left join stigman.statuses status on r.statusId = status.statusId',
     'left join stigman.actions action on r.actionId = action.actionId',
-    // For CONTEXT_USER, joining to assets is unnecessary but harmless(?)
-    'left join stigman.assets asset on r.assetId = asset.assetId'
+    'left join stigman.user_data ud on r.userId = ud.id',
+    'left join stigman.assets asset on r.assetId = asset.assetId',
+    'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
   ]
 
   // // PROJECTIONS
@@ -172,18 +174,44 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     predicates.statements.push('action.action = :action')
     predicates.binds.action = inPredicates.action
   }
+  if (inPredicates.packageId) {
+    predicates.statements.push('ap.packageId = :packageId')
+    predicates.binds.packageId = inPredicates.packageId
+  }
   if (inPredicates.benchmarkId) {
-    predicates.statements.push(`r.ruleId IN (
-      SELECT
-        r2.ruleId
-      FROM
-        stig.current_revs stig
-        left join stigs.rev_group_map rg on r.revId = rg.revId'
-        left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
-        left join stigs.rules r2 on rgr.ruleId = r2.ruleId'
-      WHERE
-        stig.stigId = :benchmarkId      
-      )` )
+    if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
+      // Calculate the revId
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+      let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+      predicates.statements.push(`r.ruleId IN (
+        SELECT
+          r2.ruleId
+        FROM
+          stigs.revisions rev
+          left join stigs.rev_group_map rg on rev.revId = rg.revId
+          left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          left join stigs.rules r2 on rgr.ruleId = r2.ruleId
+        WHERE
+          rev.stigId = :benchmarkId
+          and rev.revId = :revId    
+        )` )
+        predicates.binds.benchmarkId = inPredicates.benchmarkId
+        predicates.binds.revId = revId
+    } 
+    else { 
+      predicates.statements.push(`r.ruleId IN (
+        SELECT
+          r2.ruleId
+        FROM
+          stigs.current_revs rev
+          left join stigs.rev_group_map rg on rev.revId = rg.revId
+          left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          left join stigs.rules r2 on rgr.ruleId = r2.ruleId
+        WHERE
+          rev.stigId = :benchmarkId      
+        )` )
+      predicates.binds.benchmarkId = inPredicates.benchmarkId
+    }
   }
 
   // CONSTRUCT MAIN QUERY

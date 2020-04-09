@@ -1068,9 +1068,10 @@ function encodeStoreDone(store,field){
 }
 
 async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend, benchmarkId, revisionStr) {
-	var contentPanel = Ext.getCmp('content-panel' + idAppend);
 	try {
-		let result = await Ext.Ajax.requestPromise({
+		// CONTENT
+		let contentPanel = Ext.getCmp('content-panel' + idAppend)
+		let contentReq = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
 			method: 'GET',
 			params: {
@@ -1078,83 +1079,142 @@ async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend,
 				// projection: 'details'
 			}
 		})
-		let r = JSON.parse(result.response.responseText)
-		contentPanel.update(r)
-		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId);
+		let content = JSON.parse(contentReq.response.responseText)
+		contentPanel.update(content)
+		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
+
+		// REVIEW
+		let reviewsReq = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/reviews`,
+			method: 'GET',
+			params: { 
+				ruleId: groupGridRecord.data.ruleId
+			}
+		})
+		let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
+		let review = reviews.filter(review => review.assetId == assetId)[0] || {}
+		let otherReviews = reviews.filter(review => review.assetId != assetId)
+
+		// load review
+		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
+		let form = reviewForm.getForm()
+		form.reset();
+		reviewForm.stopMonitoring()
+		reviewForm.isLoaded = false
+		
+		// Set the legacy editStr property
+		if (review.ts) {
+			let extDate = new Date(review.ts)
+			review.editStr = `${extDate.format('Y-m-d H:i')} by ${review.username}`
+		}
+
+		// Display the review
+		form.setValues(review)
+
+		reviewForm.groupGridRecord = groupGridRecord
+		reviewForm.isLoaded = true
+		let stateCombo = form.findField('state-combo' + idAppend)
+		let stateComment = form.findField('state-comment' + idAppend)
+		let actionCombo = form.findField('action-combo' + idAppend)
+		let actionComment = form.findField('action-comment' + idAppend)
+
+		// Initialize the lastSavedData properties
+		stateCombo.lastSavedData = stateCombo.value
+		if (review.stateComment === null) {
+			stateComment.lastSavedData = ""
+		} else {
+			stateComment.lastSavedData = stateComment.getValue()
+		}
+		actionCombo.lastSavedData = actionCombo.value
+		if (review.actionComment === null) {
+			actionComment.lastSavedData = ""
+		} else {
+			actionComment.lastSavedData = actionComment.getValue()
+		}
+
+		reviewForm.startMonitoring();
+
+		// load others
+		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
+		Ext.getCmp('otherGrid' + idAppend).sm_Filter();
+
 	}
 	catch (e) {
 		alert (e.message)
 	}	
 
-	Ext.getCmp('east-panel' + idAppend).getEl().mask('Loading...');
-	Ext.Ajax.request({
-		url: 'pl/getCurrentReview.pl',
-		params: { 
-			assetId: assetId, 
-			ruleId: groupGridRecord.data.ruleId
-		},
-		success: function(response, request) {                               
-			var responseObj = Ext.util.JSON.decode(response.responseText);
+	// Ext.getCmp('east-panel' + idAppend).getEl().mask('Loading...');
+	// Ext.Ajax.request({
+	// 	// url: 'pl/getCurrentReview.pl',
+	// 	url: `${STIGMAN.Env.apiBase}/reviews`,
+	// 	method: 'GET',
+	// 	params: { 
+	// 		assetId: assetId, 
+	// 		ruleId: groupGridRecord.data.ruleId
+	// 	},
+	// 	success: function(response, request) {                               
+	// 		var review = Ext.util.JSON.decode(response.responseText)[0] || {};
+
 			
-			// load others
-			Ext.getCmp('otherGrid' + idAppend).getStore().loadData(responseObj.others);
-			Ext.getCmp('otherGrid' + idAppend).sm_Filter();
+	// 		// // load others
+	// 		// Ext.getCmp('otherGrid' + idAppend).getStore().loadData(responseObj.others);
+	// 		// Ext.getCmp('otherGrid' + idAppend).sm_Filter();
 			
-			// load attachments
-			Ext.getCmp('attachGrid' + idAppend).groupGridRecord = groupGridRecord;
-			Ext.getCmp('attachGrid' + idAppend).getStore().loadData(responseObj.attachments);
+	// 		// // load attachments
+	// 		// Ext.getCmp('attachGrid' + idAppend).groupGridRecord = groupGridRecord;
+	// 		// Ext.getCmp('attachGrid' + idAppend).getStore().loadData(responseObj.attachments);
 
-			// load history
-			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(responseObj.history);
+	// 		// // load history
+	// 		// Ext.getCmp('historyGrid' + idAppend).getStore().loadData(responseObj.history);
 
 
-			// load review
-			var reviewForm = Ext.getCmp('reviewForm' + idAppend);
-			var form = reviewForm.getForm();
-			form.reset();
-			reviewForm.stopMonitoring();
-			reviewForm.isLoaded = false;
+	// 		// load review
+	// 		var reviewForm = Ext.getCmp('reviewForm' + idAppend);
+	// 		var form = reviewForm.getForm();
+	// 		form.reset();
+	// 		reviewForm.stopMonitoring();
+	// 		reviewForm.isLoaded = false;
 
-			form.setValues(responseObj.review);
+	// 		form.setValues(review);
 
-			reviewForm.groupGridRecord = groupGridRecord;
-			reviewForm.isLoaded = true;
-			var stateCombo = form.findField('state-combo' + idAppend);
-			var stateComment = form.findField('state-comment' + idAppend);
-			var actionCombo = form.findField('action-combo' + idAppend);
-			var actionComment = form.findField('action-comment' + idAppend);
+	// 		reviewForm.groupGridRecord = groupGridRecord;
+	// 		reviewForm.isLoaded = true;
+	// 		var stateCombo = form.findField('state-combo' + idAppend);
+	// 		var stateComment = form.findField('state-comment' + idAppend);
+	// 		var actionCombo = form.findField('action-combo' + idAppend);
+	// 		var actionComment = form.findField('action-comment' + idAppend);
 
-			// Initialize the lastSavedData properties
-			stateCombo.lastSavedData = stateCombo.value;
-			if (responseObj.review.stateComment === null) {
-				stateComment.lastSavedData = "";
-			} else {
-				stateComment.lastSavedData = stateComment.getValue();
-			}
-			actionCombo.lastSavedData = actionCombo.value;
-			if (responseObj.review.actionComment === null) {
-				actionComment.lastSavedData = "";
-			} else {
-				actionComment.lastSavedData = actionComment.getValue();
-			}
+	// 		// Initialize the lastSavedData properties
+	// 		stateCombo.lastSavedData = stateCombo.value;
+	// 		if (review.stateComment === null) {
+	// 			stateComment.lastSavedData = "";
+	// 		} else {
+	// 			stateComment.lastSavedData = stateComment.getValue();
+	// 		}
+	// 		actionCombo.lastSavedData = actionCombo.value;
+	// 		if (review.actionComment === null) {
+	// 			actionComment.lastSavedData = "";
+	// 		} else {
+	// 			actionComment.lastSavedData = actionComment.getValue();
+	// 		}
 
-			reviewForm.startMonitoring();
+	// 		reviewForm.startMonitoring();
 
-			//load feedback
-			var fb = Ext.getCmp('feedback-tab' + idAppend);
-			if (responseObj.rejectHtml == '') {
-				fb.update('<div class="x-grid-empty">No feedback to display.</div>');
-				fb.body.removeClass('sm-feedback-panel-active');
-				fb.body.addClass('sm-feedback-panel-inactive');
-			} else {
-				fb.body.removeClass('sm-feedback-panel-inactive');
-				fb.body.addClass('sm-feedback-panel-active');
-				fb.update(responseObj.rejectHtml);
-			}
+	// 		// //load feedback
+	// 		// var fb = Ext.getCmp('feedback-tab' + idAppend);
+	// 		// if (responseObj.rejectHtml == '') {
+	// 		// 	fb.update('<div class="x-grid-empty">No feedback to display.</div>');
+	// 		// 	fb.body.removeClass('sm-feedback-panel-active');
+	// 		// 	fb.body.addClass('sm-feedback-panel-inactive');
+	// 		// } else {
+	// 		// 	fb.body.removeClass('sm-feedback-panel-inactive');
+	// 		// 	fb.body.addClass('sm-feedback-panel-active');
+	// 		// 	fb.update(responseObj.rejectHtml);
+	// 		// }
 			
-			Ext.getCmp('east-panel' + idAppend).getEl().unmask();
-		}
-	});
+	// 		Ext.getCmp('east-panel' + idAppend).getEl().unmask();
+	// 	}
+	// });
 }	
 
 function checked(val) {
