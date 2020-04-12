@@ -444,11 +444,11 @@ paths:
       security:
       - oauth:
         - stig-manager:package
-  /reviews/{reviewId}:
+  /reviews/{assetId}:
     parameters:
-      - name: reviewId
+      - name: assetId
         in: path
-        description: A path parameter that indentifies a Review
+        description: A path parameter that indentifies an Asset
         required: true
         schema:
           type: integer
@@ -456,17 +456,33 @@ paths:
     get:
       tags:
       - Review
-      summary: Return a Review
-      operationId: getReview
+      summary: Return a list of Reviews for an Asset
+      operationId: getReviewsByAssetId
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/ReviewStateQuery'
+        - $ref: '#/components/parameters/ReviewActionQuery'
+        - $ref: '#/components/parameters/ReviewStatusQuery'
+        - name: benchmarkId
+          in: query
+          description: Selects Reviews mapped to a STIG; requires revisionStr
+          schema:
+            type: string
+        - name: revisionStr
+          in: query
+          description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
       responses:
         '200':
           description: ReviewProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssetProjected'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewProjected'
         default:
           description: unexpected error
           content:
@@ -476,11 +492,51 @@ paths:
       security:
       - oauth:
         - stig-manager:package:read
-    patch:
+  /reviews/{assetId}/{ruleId}:
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - name: assetId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        schema:
+          type: integer
+      - name: ruleId
+        in: path
+        description: A path parameter that indentifies a Rule
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/ReviewProjectionQuery'
+    get:
       tags:
       - Review
-      summary: Merge updates to a Review
-      operationId: updateReview
+      summary: Return the Review for an Asset and Rule
+      operationId: getReviewByAssetRule
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package:read
+    put:
+      tags:
+      - Review
+      summary: Create or update a Review
+      description: Create a new Review, or update all properties of an existing Review, setting missing properties to null
+      operationId: putReview
       x-codegen-request-body-name: body
       requestBody:
         required: true
@@ -488,7 +544,37 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssetAssign'
+              $ref: '#/components/schemas/ReviewAssetRulePut'
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - oauth:
+        - stig-manager:package
+    patch:
+      tags:
+      - Review
+      summary: Merge update a Review
+      description: Update the given properties of a Review, if it exists
+      operationId: patchReview
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAssetRulePatch'
       responses:
         '200':
           description: ReviewProjected response
@@ -1342,6 +1428,43 @@ components:
         - "Submitted"
         - "Approved"
         - "Rejected"
+    ReviewAssetRulePut:
+      type: object
+      required:
+        - state
+        - stateComment
+      properties:
+        state:
+          $ref: '#/components/schemas/ReviewState'
+        stateComment:
+          type: string
+          nullable: true
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        autoState:
+          type: boolean
+        submit:
+          type: boolean
+    ReviewAssetRulePatch:
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/ReviewState'
+        stateComment:
+          type: string
+          nullable: true
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        autoState:
+          type: boolean
+        submit:
+          type: boolean
     Review:
       type: object
       properties:

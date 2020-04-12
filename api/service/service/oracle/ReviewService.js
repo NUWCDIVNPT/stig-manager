@@ -29,7 +29,6 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'r.statusId as "statusId"',
     'r.ts as "ts"',
     'r.autoState as "autoState"',
-    'r.reqDoc as "reqDoc"',
     'r.userId as "userId"',
     'ud.name as "username"',
     'r.rejectText as "rejectText"',
@@ -340,22 +339,138 @@ exports.getReview = async function(reviewId, projection, elevate, userObject) {
  * packageId Integer Selects Reviews mapped to a Package (optional)
  * returns List
  **/
-exports.getReviews = async function(projection, elevate, state, action, status, ruleId, benchmarkId, revisionStr, assetId, packageId, userObject) {
+exports.getReviews = async function(projection, predicates, elevate, userObject) {
   try {
-    let rows = await this.queryReviews(projection, {
-      state: state,
-      action: action,
-      status: status,
-      ruleId: ruleId,
-      benchmarkId: benchmarkId,
-      revisionStr: revisionStr,
-      assetId: assetId,
-      packageid: packageId
-    }, elevate, userObject)
+    let rows = await this.queryReviews(projection, predicates, elevate, userObject)
     return (rows)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+
+/**
+ * Create or update a complete Review
+ *
+ * projection List Additional properties to include in the response.  (optional)
+ * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
+ * ruleId String Selects Reviews of a Rule (optional)
+ * assetId String Selects Reviews mapped to an Asset (optional)
+ * body Object The Review content (required)
+ * returns Review
+ **/
+exports.putReview = async function(projection, assetId, ruleId, body, elevate, userObject) {
+  try {
+    let values = {
+      userId: userObject.id,
+      stateId: dbUtils.REVIEW_STATE_ABBR[body.state].id,
+      stateComment: body.stateComment,
+      actionComment: body.actionComment,
+      statusId: body.submit ? 1 : 0,
+      autoState: body.autoState? 1 : 0
+    }
+    values.actionId = body.action ? dbUtils.REVIEW_STATE_ABBR[body.action] : null
+
+    let binds = {
+      assetId: assetId,
+      ruleId: ruleId
+    }
+    let sqlUpdate = `
+      UPDATE
+        stigman.reviews
+      SET
+        ${dbUtils.objectBindObject(values, binds)}
+      WHERE
+        assetId = :assetId and ruleId = :ruleId`
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
+    if (result.rowsAffected == 0) {
+      let sqlInsert = `
+        INSERT INTO stigman.reviews
+        (assetId, ruleId, stateId, stateComment, actionId, actionComment, statusId, userId)
+        VALUES
+        (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId)
+      `
+      result = await connection.execute(sqlInsert, binds, {autoCommit: true})
+    }
+    await connection.close()
+    let rows = await this.queryReviews(projection, {
+      assetId: assetId,
+      ruleId: ruleId
+    }, elevate, userObject)
+    return (rows[0])
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+
+/**
+ * Merge update a Review, if it exists
+ *
+ * projection List Additional properties to include in the response.  (optional)
+ * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
+ * ruleId String Selects Reviews of a Rule (optional)
+ * assetId String Selects Reviews mapped to an Asset (optional)
+ * body Object The Review content (required)
+ * returns Review
+ **/
+exports.patchReview = async function(projection, assetId, ruleId, body, elevate, userObject) {
+  try {
+    let values = {
+      userId: userObject.id
+    }
+    if (body.state != undefined) {
+      values.stateId = dbUtils.REVIEW_STATE_ABBR[body.state].id
+    }
+    if (body.stateComment != undefined) {
+      values.stateComment = body.stateComment
+    }
+    if (body.action != undefined) {
+      values.actionId = dbUtils.REVIEW_STATE_ABBR[body.action]
+    }
+    if (body.actionComment != undefined) {
+      values.actionComment = body.actionComment
+    }
+    if (body.submit != undefined) {
+      values.statusId = body.submit ? 1 : 0
+    }
+    if (body.autoState != undefined) {
+      values.autoState = body.autoState ? 1 : 0
+    }
+
+    let binds = {
+      assetId: assetId,
+      ruleId: ruleId
+    }
+    let sqlUpdate = `
+      UPDATE
+        stigman.reviews
+      SET
+        ${dbUtils.objectBindObject(values, binds)}
+      WHERE
+        assetId = :assetId and ruleId = :ruleId`
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
+    await connection.close()
+    if (result.rowsAffected == 0) {
+      throw (writer.respondWithCode ( 400, {message: "Review must exist to be patched."}))
+    }
+    let rows = await this.queryReviews(projection, {
+      assetId: assetId,
+      ruleId: ruleId
+    }, elevate, userObject)
+    return (rows[0])
+  }
+  catch(err) {
+    if (err.code == 400) {
+      throw(err)
+    }
+    else {
+      throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    }
   }
 }
 

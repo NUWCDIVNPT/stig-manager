@@ -97,6 +97,15 @@ module.exports.objectBind = function (object, binds) {
   return sqlStubs.join(',')
 }
 
+module.exports.objectBindObject = function (object, binds) {
+  let sqlStubs = []
+  for (const property in object) {
+    sqlStubs.push(`${property} = :${property}`)
+    binds[property] = (object[property])
+  }
+  return sqlStubs.join(',')
+}
+
 module.exports.parseRevisionStr = function (revisionStr) {
   let ro = {}
   if (revisionStr !== 'latest') {
@@ -130,4 +139,58 @@ module.exports.REVIEW_STATE_ABBR = {
   'NA': {state: 'Not Applicable', id: 2},
   'NF': {state: 'Not a Finding', id: 3},
   'O': {state: 'Open', id: 4}
+}
+module.exports.REVIEW_ACTION_ID = { 
+  1: 'Remediate',
+  2: 'Mitigate',
+  3: 'Exception'
+}
+module.exports.REVIEW_ACTION_STR = { 
+  'Remediate': 1,
+  'Mitigate': 2,
+  'Exception': 3
+}
+
+// Returns Boolean
+module.exports.userAllowedAssetRule = async function (assetId, ruleId, elevate, userObject) {
+  try {
+    let context, sql
+    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+      return true
+    } else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+      sql = `
+        SELECT
+          a.assetId
+        FROM
+          stigman.assets a
+        WHERE
+          a.assetId = :assetId and a.dept = :dept
+      `
+      let connection = await oracledb.getConnection()
+      let result = await connection.execute(sql, [assetId, userObject.dept])
+      await connection.close()
+      return result.length > 0   
+    } else {
+      sql = `
+        SELECT
+          sa.assetId,
+          rgr.ruleId
+        FROM
+          stigman.user_stig_asset_map usa
+          inner join stigman.stig_asset_map sa on usa.saId = sa.saId
+          inner join stigs.revisions rev on sa.stigId = rev.stigId
+          inner join stigs.rev_group_map rg on rev.revId = rg.revId
+          inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+        WHERE
+          usa.userId = :userId and assetId = :assetId and ruleId = :ruleId`
+      let connection = await oracledb.getConnection()
+      let result = await connection.execute(sql, [userObject.id, assetId, ruleId])
+      await connection.close()
+      return result.length > 0   
+    }
+  }
+  catch (e) {
+    throw (e)
+  }
 }
