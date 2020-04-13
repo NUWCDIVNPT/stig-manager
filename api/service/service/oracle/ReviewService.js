@@ -22,6 +22,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'r.assetId as "assetId"',
     'asset.name as "assetName"',
     'r.ruleId as "ruleId"',
+    'state.abbr as "state"',
     'r.stateId as "stateId"',
     'r.stateComment as "stateComment"',
     'r.actionId as "actionId"',
@@ -32,7 +33,22 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'r.userId as "userId"',
     'ud.name as "username"',
     'r.rejectText as "rejectText"',
-    'r.rejectUserId as "rejectUserId"'
+    'r.rejectUserId as "rejectUserId"',
+    `CASE
+      WHEN r.ruleId is null
+      THEN 0
+      ELSE
+        CASE WHEN r.stateId != 4
+        THEN
+          CASE WHEN r.stateComment != ' ' and r.stateComment is not null
+            THEN 1
+            ELSE 0 END
+        ELSE
+          CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
+            THEN 1
+            ELSE 0 END
+        END
+    END as "done"`
   ]
   let joins = [
     'stigman.reviews r',
@@ -366,11 +382,11 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
       userId: userObject.id,
       stateId: dbUtils.REVIEW_STATE_ABBR[body.state].id,
       stateComment: body.stateComment,
-      actionComment: body.actionComment,
+      actionComment: body.actionComment || null,
       statusId: body.submit ? 1 : 0,
       autoState: body.autoState? 1 : 0
     }
-    values.actionId = body.action ? dbUtils.REVIEW_STATE_ABBR[body.action] : null
+    values.actionId = body.action ? dbUtils.REVIEW_ACTION_STR[body.action] : null
 
     let binds = {
       assetId: assetId,
@@ -388,9 +404,9 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
     if (result.rowsAffected == 0) {
       let sqlInsert = `
         INSERT INTO stigman.reviews
-        (assetId, ruleId, stateId, stateComment, actionId, actionComment, statusId, userId)
+        (assetId, ruleId, stateId, stateComment, actionId, actionComment, statusId, userId, autoState)
         VALUES
-        (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId)
+        (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId, :autoState)
       `
       result = await connection.execute(sqlInsert, binds, {autoCommit: true})
     }
@@ -429,7 +445,7 @@ exports.patchReview = async function(projection, assetId, ruleId, body, elevate,
       values.stateComment = body.stateComment
     }
     if (body.action != undefined) {
-      values.actionId = dbUtils.REVIEW_STATE_ABBR[body.action]
+      values.actionId = dbUtils.REVIEW_ACTION_STR[body.action]
     }
     if (body.actionComment != undefined) {
       values.actionComment = body.actionComment

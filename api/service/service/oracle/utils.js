@@ -170,7 +170,7 @@ module.exports.userAllowedAssetRule = async function (assetId, ruleId, elevate, 
       let connection = await oracledb.getConnection()
       let result = await connection.execute(sql, [assetId, userObject.dept])
       await connection.close()
-      return result.length > 0   
+      return result.rows.length > 0   
     } else {
       sql = `
         SELECT
@@ -187,7 +187,7 @@ module.exports.userAllowedAssetRule = async function (assetId, ruleId, elevate, 
       let connection = await oracledb.getConnection()
       let result = await connection.execute(sql, [userObject.id, assetId, ruleId])
       await connection.close()
-      return result.length > 0   
+      return result.rows.length > 0   
     }
   }
   catch (e) {
