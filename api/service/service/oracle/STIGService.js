@@ -272,7 +272,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
       KEY 'checkId' VALUE rck.checkId,
-      KEY 'content' VALUE chk.content ABSENT ON NULL))
+      KEY 'content' VALUE convert(chk.content, 'UTF8') ABSENT ON NULL))
       from stigs.rule_check_map rck left join stigs.checks chk on chk.checkId = rck.checkId
       where rck.ruleId = r.ruleId) as "checks"`)
   }
