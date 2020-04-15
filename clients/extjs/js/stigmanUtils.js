@@ -197,18 +197,6 @@ function initProgress (title,text,storeId,iframe) {
 				if (storeId != undefined) {
 					reloadStore(storeId);
 				}
-				try {
-					if(iframe.contentWindow.stop !== undefined) 
-					{
-					  iframe.contentWindow.stop();
-					}
-					else if(iframe.contentDocument.execCommand !== undefined)
-					{
-					  iframe.contentDocument.execCommand("Stop", false);
-					}
-				} finally {
-					iframe.parentNode.removeChild(iframe);
-				}
 			}
 		},
 		buttons: [{
@@ -1551,11 +1539,19 @@ function uploadArchive(n) {
 				if( fp.getForm().isValid() ){
 					let formEl = fp.getForm().getEl().dom
 					let formData = new FormData(formEl)
-					var xhr = new XMLHttpRequest();
-					// Add any event handlers here...
-					xhr.open('POST', `${STIGMAN.Env.apiBase}/reviews`, true);
-					xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
-					xhr.send(formData);
+
+					fetch(`${STIGMAN.Env.apiBase}/reviews`, {
+						method: 'POST',
+						headers: new Headers({
+							'Authorization': `Bearer ${window.keycloak.token}`
+						}),
+						body: formData
+					})
+					// var xhr = new XMLHttpRequest();
+					// // Add any event handlers here...
+					// xhr.open('POST', `${STIGMAN.Env.apiBase}/reviews`, true);
+					// xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
+					// xhr.send(formData);
 				}
 
 				// fp.getForm().submit({

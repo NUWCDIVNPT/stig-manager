@@ -2311,61 +2311,33 @@ function addReview(leaf, selectedRule, selectedResource) {
         icon: 'img/page_white_get.png',
         tooltip: 'Import STIG results',
         formBind: true,
-        handler: function () {
-          if (fp.getForm().isValid()) {
-            // Create two IFRAMEs.
-            // One IFRAME will be the target of the file upload
-            var iframe_upload = document.createElement("iframe");
-            iframe_upload.setAttribute('name', 'frame_upload');
+        handler: async function () {
+          try {
+            if (fp.getForm().isValid()) {
+              let formEl = fp.getForm().getEl().dom
+              let formData = new FormData(formEl)
+              appwindow.close();
+              initProgress("Importing file", "Initializing...", 'groupStore' + idAppend);
 
-            // The other IFRAME will be the target of the import request
-            // and will return progress updates
-            var iframe_import = document.createElement("iframe");
-            var filesize = Ext.getCmp('import-filesize').value;
-            var filename = Ext.getCmp('import-filename').value;
-            var modified = Ext.getCmp('import-modified').value;
-            iframe_import.src = "pl/importResults.pl?"
-              + "assetId=" + leaf.assetId
-              + "&assetName=" + leaf.assetName
-              + "&revId=" + leaf.revId
-              + "&stigName=" + leaf.stigName
-              + "&stigId=" + leaf.stigId
-              + "&filesize=" + filesize
-              + "&filename=" + filename
-              + "&modified=" + modified
-              + "&source=" + 'review';
-
-            // Render the upload frame
-            document.body.appendChild(iframe_upload);
-
-            // Submit to the upload frame, which starts the file upload
-            fp.getForm().getEl().dom.action = 'pl/receiveFileUpload.pl';
-            fp.getForm().getEl().dom.target = 'frame_upload';
-            fp.getForm().getEl().dom.method = 'POST';
-            fp.getForm().submit();
-            window.close();
-            initProgress("Importing file", "Initializing...", 'groupStore' + idAppend, iframe_import);
-            // render the import/progress frame, which will
-            // start the import script on the server
-            document.body.appendChild(iframe_import);
-
-
-            // fp.getForm().submit({
-            // url: 'pl/importResults.pl',
-            // waitMsg: 'Importing results...',
-            // success: function(f, o){
-            // window.close();
-            // Ext.Msg.alert(o.result.status, o.result.message);
-            // if (o.result.success == 'true') {
-            // groupGrid.getStore().reload();
-            // }
-            // },
-            // failure: function(f, o){
-            // window.close();
-            // Ext.Msg.alert(o.result.status, o.result.message);
-            // f.reset();
-            // }
-            // });
+              let response = await fetch(`${STIGMAN.Env.apiBase}/reviews`, {
+                method: 'POST',
+                headers: new Headers({
+                  'Authorization': `Bearer ${window.keycloak.token}`
+                }),
+                body: formData
+              })
+              const reader = response.body.getReader()
+              const td = new TextDecoder("utf-8")
+              let isdone = false
+              do {
+                const {value, done} = await reader.read()
+                updateStatusText (td.decode(value),true)
+                isdone = done
+              } while (!isdone)
+            }
+          }
+          catch (e) {
+            alert (e.message)
           }
         }
       },
@@ -2376,7 +2348,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       ]
     });
 
-    var window = new Ext.Window({
+    var appwindow = new Ext.Window({
       title: 'Import STIG results from CKL or XCCDF',
       modal: true,
       width: 500,
@@ -2390,7 +2362,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       items: fp
     });
 
-    window.show(document.body);
+    appwindow.show(document.body);
 
 
   }; //end uploadResults();

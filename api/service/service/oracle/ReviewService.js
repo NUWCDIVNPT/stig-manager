@@ -2,6 +2,7 @@
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
+const {promises: fs} = require('fs')
 
 
 /**
@@ -293,10 +294,20 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.createReview = async function(body, projection, userObject) {
+exports.importReviews = async function(body, projection, file, userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    let extension = file.originalname.substring(file.originalname.lastIndexOf(".")+1)
+    let buffer = await fs.readFile(file.path)
+    let result
+    switch (extension) {
+      case 'ckl':
+        result = dbUtils.parseCkl(buffer)
+        break
+      case 'xml':
+        result = dbUtils.parseScc(buffer.toString())
+        break
+    }
+    return (result)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

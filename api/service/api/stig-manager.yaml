@@ -437,27 +437,17 @@ paths:
         content:
           multipart/form-data:
             schema:
+              type: object
               properties:
-                # assetId:
-                #   type: integer
-                # benchmarkId:
-                #   type: string
-                # revisionSr:
-                #   type: string
-                # packageId:
-                #   type: integer
-                # source:
-                #   type: string
-                # file:
-                #   type: string
-                #   format: binary
-                filename:
+                assetId:
                   type: string
-                filesize:
+                benchmarkId:
                   type: string
-                modified:
+                revisionSr:
                   type: string
-                uuid:
+                packageId:
+                  type: string
+                source:
                   type: string
                 importFile:
                   type: string

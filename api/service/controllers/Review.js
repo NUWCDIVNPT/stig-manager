@@ -6,13 +6,15 @@ const Review = require(`../service/${config.database.type}/ReviewService`)
 const dbUtils = require(`../service/${config.database.type}/utils`)
 
 module.exports.importReviews = async function importReviews (req, res, next) {
-  let body = req.swagger.params['body'].value
-  let projection = req.swagger.params['projection'].value
   try {
-    let one = 1
-    writer.writeJson(res, {message: 'Returned from importReviews()'})
-    // let response = await Review.createReview(body, projection, req.userObject)
-    // writer.writeJson(res, response)
+    let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
+    if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
+      throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
+    }
+    let body = req.swagger.params['body'].value
+    let projection = req.swagger.params['projection'].value
+    let response = await Review.importReviews(body, projection, req.file, req.userObject)
+    writer.writeJson(res, response)
   }
   catch(err) {
     writer.writeJson(res, err)

@@ -16,7 +16,7 @@ var upload = multer({ dest: 'uploads/' })
 
 const app = express();
 // app.use(upload.fields([{name: "importFile"}]))
-app.use(upload.any()) //TODO: Only attach multer to routes with multipart/form-data
+app.use(upload.single('importFile')) //TODO: Only attach multer to routes with multipart/form-data
 
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
