@@ -1407,7 +1407,7 @@ function getUuid () {
 
 function uploadArchive(n) {
 	var fp = new Ext.FormPanel({
-		standardSubmit: true,
+		standardSubmit: false,
 		fileUpload: true,
 		baseCls: 'x-plain',
 		monitorValid: true,
@@ -1514,68 +1514,76 @@ function uploadArchive(n) {
 			tooltip: 'Import the archive',
 			formBind: true,
 			handler: function(){
-				if(fp.getForm().isValid()){
-					// Create two IFRAMEs.
-					// One IFRAME will be the target of the file upload
-					var iframe_upload = document.createElement("iframe");
-					iframe_upload.setAttribute('name', 'frame_upload');
+				// if(fp.getForm().isValid()){
+				// 	// Create two IFRAMEs.
+				// 	// One IFRAME will be the target of the file upload
+				// 	var iframe_upload = document.createElement("iframe");
+				// 	iframe_upload.setAttribute('name', 'frame_upload');
 
-					// The other IFRAME will be the target of the import request
-					// and will return progress updates
-					var iframe_import = document.createElement("iframe");
-					var filesize = Ext.getCmp('import-filesize').value;
-					var filename = Ext.getCmp('import-filename').value;
-					var modified = Ext.getCmp('import-modified').value;
-					iframe_import.src = "pl/importResults.pl?"
-						+ "packageId=" + n.attributes.packageId
-						+ "&packageName=" + n.attributes.packageName
-						+ "&filesize=" + filesize 
-						+ "&filename=" + filename
-						+ "&modified=" + modified
-						+ "&source=" + 'package';
+				// 	// The other IFRAME will be the target of the import request
+				// 	// and will return progress updates
+				// 	var iframe_import = document.createElement("iframe");
+				// 	var filesize = Ext.getCmp('import-filesize').value;
+				// 	var filename = Ext.getCmp('import-filename').value;
+				// 	var modified = Ext.getCmp('import-modified').value;
+				// 	iframe_import.src = "pl/importResults.pl?"
+				// 		+ "packageId=" + n.attributes.packageId
+				// 		+ "&packageName=" + n.attributes.packageName
+				// 		+ "&filesize=" + filesize 
+				// 		+ "&filename=" + filename
+				// 		+ "&modified=" + modified
+				// 		+ "&source=" + 'package';
 					
-					// Render the upload frame
-					document.body.appendChild(iframe_upload);
+				// 	// Render the upload frame
+				// 	document.body.appendChild(iframe_upload);
 					
-					// Submit to the upload frame, which starts the file upload
-					fp.getForm().getEl().dom.action = 'pl/receiveFileUpload.pl';
-					fp.getForm().getEl().dom.target = 'frame_upload';
-					fp.getForm().getEl().dom.method = 'POST';
-					fp.getForm().submit();
-					window.close();
-					initProgress("Importing file", "Initializing...", null, iframe_import);
-					// render the import/progress frame, which will
-					// start the import script on the server
-					document.body.appendChild(iframe_import);
+				// 	// Submit to the upload frame, which starts the file upload
+				// 	fp.getForm().getEl().dom.action = 'pl/receiveFileUpload.pl';
+				// 	fp.getForm().getEl().dom.target = 'frame_upload';
+				// 	fp.getForm().getEl().dom.method = 'POST';
+				// 	fp.getForm().submit();
+				// 	window.close();
+				// 	initProgress("Importing file", "Initializing...", null, iframe_import);
+				// 	// render the import/progress frame, which will
+				// 	// start the import script on the server
+				// 	document.body.appendChild(iframe_import);
 
+				if( fp.getForm().isValid() ){
+					let formEl = fp.getForm().getEl().dom
+					let formData = new FormData(formEl)
+					var xhr = new XMLHttpRequest();
+					// Add any event handlers here...
+					xhr.open('POST', `${STIGMAN.Env.apiBase}/reviews`, true);
+					xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
+					xhr.send(formData);
+				}
 
 				// fp.getForm().submit({
-						// url: 'pl/importResults.pl',
-						// waitMsg: 'Importing results...',
-						// success: function(f, o){
-							// window.close();
-							// Ext.Msg.alert(o.result.status, o.result.message);
-							// if (o.result.success == 'true') {
-								// groupGrid.getStore().reload();
-							// }
-						// },
-						// failure: function(f, o){
-							// window.close();
-							// Ext.Msg.alert(o.result.status, o.result.message);
-							// f.reset();
-						// }
-					// });
-				}
+				// 	url: `${STIGMAN.Env.apiBase}/reviews`,
+				// 	waitMsg: 'Importing results...',
+				// 	success: function(f, o){
+				// 		window.close();
+				// 		Ext.Msg.alert(o.result.status, o.result.message);
+				// 		if (o.result.success == 'true') {
+				// 			groupGrid.getStore().reload();
+				// 		}
+				// 	},
+				// 	failure: function(f, o){
+				// 		window.close();
+				// 		Ext.Msg.alert(o.result.status, o.result.message);
+				// 		f.reset();
+				// 	}
+				// });
 			}
 		},
 		{
 			text: 'Cancel',
-			handler: function(){window.close();}
+			handler: function(){appwindow.close();}
 		}
 		]
 	});
 
-	var window = new Ext.Window({
+	var appwindow = new Ext.Window({
 		title: 'Import ZIP archive of results in CKL or XCCDF format',
 		modal: true,
 		width: 500,
@@ -1589,7 +1597,7 @@ function uploadArchive(n) {
 		items: fp
 	});
 
-	window.show(document.body);
+	appwindow.show(document.body);
 
 
 }; //end uploadArchive();

@@ -7,14 +7,14 @@ info:
     email: carl.a.smigielski@saic.com
   version: 1.0.0
 servers:
-- url: http://localhost:54000/stig-manager/api
+  - url: 'http://localhost:54000/stig-manager/api'
 paths:
   /packages:
     parameters:
       - $ref: '#/components/parameters/PackageProjectionQuery'
     get:
       tags:
-      - Package
+        - Package
       summary: Return a list of Packages accessible to the requester
       operationId: getPackages
       parameters:
@@ -35,14 +35,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
+        - oauth:
+            - 'stig-manager:package:read'
       x-classic:
         - getPackages
         - getPackageProps
+      x-swagger-router-controller: Package
     post:
       tags:
-      - Package
+        - Package
       summary: Create a Package
       operationId: createPackage
       x-codegen-request-body-name: body
@@ -69,9 +70,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
-  /packages/{packageId}:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Package
+  '/packages/{packageId}':
     parameters:
       - name: packageId
         in: path
@@ -82,7 +84,7 @@ paths:
       - $ref: '#/components/parameters/PackageProjectionQuery'
     get:
       tags:
-      - Package
+        - Package
       summary: Return a Package
       operationId: getPackage
       parameters:
@@ -93,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/PackageProjected'
+                $ref: '#/components/schemas/PackageProjected'
         default:
           description: unexpected error
           content:
@@ -101,11 +103,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Package
     patch:
       tags:
-      - Package
+        - Package
       summary: Merge updates to a Package
       operationId: updatePackage
       x-codegen-request-body-name: body
@@ -122,7 +125,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/PackageProjected'
+                $ref: '#/components/schemas/PackageProjected'
         default:
           description: unexpected error
           content:
@@ -130,11 +133,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Package
     delete:
       tags:
-      - Package
+        - Package
       summary: Delete a Package
       operationId: deletePackage
       responses:
@@ -143,7 +147,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/PackageProjected'
+                $ref: '#/components/schemas/PackageProjected'
         default:
           description: unexpected error
           content:
@@ -151,15 +155,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
-  
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Package
   /assets:
     parameters:
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
-      - Asset
+        - Asset
       summary: Return a list of Assets accessible to the requester
       operationId: getAssets
       parameters:
@@ -195,11 +199,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Asset
     post:
       tags:
-      - Asset
+        - Asset
       summary: Create an Asset
       operationId: createAsset
       x-codegen-request-body-name: body
@@ -224,9 +229,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
-  /assets/{assetId}:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Asset
+  '/assets/{assetId}':
     parameters:
       - name: assetId
         in: path
@@ -237,7 +243,7 @@ paths:
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
-      - Asset
+        - Asset
       summary: Return an Asset
       operationId: getAsset
       parameters:
@@ -256,11 +262,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Asset
     patch:
       tags:
-      - Asset
+        - Asset
       summary: Merge updates to an Asset
       operationId: updateAsset
       x-codegen-request-body-name: body
@@ -285,11 +292,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Asset
     delete:
       tags:
-      - Asset
+        - Asset
       summary: Delete an Asset
       operationId: deleteAsset
       responses:
@@ -306,9 +314,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
-  /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Asset
+  '/assets/{assetId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
       - name: assetId
         in: path
@@ -324,15 +333,14 @@ paths:
           type: string
       - name: revisionStr
         in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
+        description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
         required: true
         schema:
           pattern: ^(V\d+R\d+(\.\d+)?|latest)$
           type: string
     get:
       tags:
-      - Asset
+        - Asset
       summary: Return the Checklist for the supplied Asset and STIG
       operationId: getChecklistByAssetStig
       parameters:
@@ -351,14 +359,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Asset
   /reviews:
     parameters:
       - $ref: '#/components/parameters/ReviewProjectionQuery'
     get:
       tags:
-      - Review
+        - Review
       summary: Return a list of Reviews accessible to the requester
       operationId: getReviews
       parameters:
@@ -388,7 +397,7 @@ paths:
             type: string
         - name: revisionStr
           in: query
-          description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId
+          description: 'Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | ''latest'' ]; requires benchmarkId'
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
@@ -413,21 +422,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Review
     post:
       tags:
-      - Review
-      summary: Create a Review
-      operationId: createReview
+        - Review
+      summary: Import Review(s) from a CKL or XCCDF file or ZIP archive
+      operationId: importReviews
       x-codegen-request-body-name: body
       requestBody:
         required: true
         x-name: body
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Review'
+              properties:
+                # assetId:
+                #   type: integer
+                # benchmarkId:
+                #   type: string
+                # revisionSr:
+                #   type: string
+                # packageId:
+                #   type: integer
+                # source:
+                #   type: string
+                # file:
+                #   type: string
+                #   format: binary
+                filename:
+                  type: string
+                filesize:
+                  type: string
+                modified:
+                  type: string
+                uuid:
+                  type: string
+                importFile:
+                  type: string
+                  format: binary
+
+
       responses:
         '200':
           description: ReviewProjected response
@@ -442,9 +478,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
-  /reviews/{assetId}:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Review
+  '/reviews/{assetId}':
     parameters:
       - name: assetId
         in: path
@@ -455,7 +492,7 @@ paths:
       - $ref: '#/components/parameters/ReviewProjectionQuery'
     get:
       tags:
-      - Review
+        - Review
       summary: Return a list of Reviews for an Asset
       operationId: getReviewsByAssetId
       parameters:
@@ -470,7 +507,7 @@ paths:
             type: string
         - name: revisionStr
           in: query
-          description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId
+          description: 'Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | ''latest'' ]; requires benchmarkId'
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
@@ -490,9 +527,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
-  /reviews/{assetId}/{ruleId}:
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Review
+  '/reviews/{assetId}/{ruleId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - name: assetId
@@ -510,7 +548,7 @@ paths:
       - $ref: '#/components/parameters/ReviewProjectionQuery'
     get:
       tags:
-      - Review
+        - Review
       summary: Return the Review for an Asset and Rule
       operationId: getReviewByAssetRule
       parameters:
@@ -529,13 +567,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package:read
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Review
     put:
       tags:
-      - Review
+        - Review
       summary: Create or update a Review
-      description: Create a new Review, or update all properties of an existing Review, setting missing properties to null
+      description: 'Create a new Review, or update all properties of an existing Review, setting missing properties to null'
       operationId: putReview
       x-codegen-request-body-name: body
       requestBody:
@@ -559,13 +598,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Review
     patch:
       tags:
-      - Review
+        - Review
       summary: Merge update a Review
-      description: Update the given properties of a Review, if it exists
+      description: 'Update the given properties of a Review, if it exists'
       operationId: patchReview
       x-codegen-request-body-name: body
       requestBody:
@@ -589,11 +629,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Review
     delete:
       tags:
-      - Review
+        - Review
       summary: Delete a Review
       operationId: deleteReview
       responses:
@@ -610,15 +651,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:package
-    
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Review
   /users:
     parameters:
       - $ref: '#/components/parameters/UserProjectionQuery'
     get:
       tags:
-      - User
+        - User
       summary: Return a list of Users accessible to the requester
       operationId: getUsers
       parameters:
@@ -660,11 +701,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:user:read
+        - oauth:
+            - 'stig-manager:user:read'
+      x-swagger-router-controller: User
     post:
       tags:
-      - User
+        - User
       summary: Create a User
       operationId: createUser
       x-codegen-request-body-name: body
@@ -691,13 +733,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:user
-
+        - oauth:
+            - 'stig-manager:user'
+      x-swagger-router-controller: User
   /stigs:
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return a list of available STIGs
       operationId: getSTIGs
       parameters:
@@ -722,11 +764,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
     post:
       tags:
-      - STIG
+        - STIG
       summary: Import a new STIG
       operationId: addSTIG
       x-codegen-request-body-name: body
@@ -742,7 +785,7 @@ paths:
                   description: An XCCDF file
                   format: binary
       responses:
-        200:
+        '200':
           description: The added STIG
           content:
             application/json:
@@ -755,25 +798,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig
+        - oauth:
+            - 'stig-manager:stig'
       x-rbac:
-      - admin
-  /stigs/{benchmarkId}:
+        - admin
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return properties of the specified STIG
       operationId: getStigById
       parameters:
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: STIG response
           content:
             application/json:
@@ -786,22 +830,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
     delete:
       tags:
-      - STIG
+        - STIG
       summary: Deletes a STIG (*** and all revisions ***)
       operationId: deleteStigById
       parameters:
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: The deleted STIG
           content:
             application/json:
@@ -814,25 +859,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig
+        - oauth:
+            - 'stig-manager:stig'
       x-rbac:
-      - admin
-  /stigs/{benchmarkId}/revisions:
+        - admin
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return a list of revisions for the specified STIG
       operationId: getRevisionsByBenchmarkId
       parameters:
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: Revision response
           content:
             application/json:
@@ -847,31 +893,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/{benchmarkId}/revisions/{revisionStr}:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions/{revisionStr}':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return metadata for the specified revision of a STIG
       operationId: getRevisionByString
       parameters:
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
       responses:
-        200:
+        '200':
           description: Revision response
           content:
             application/json:
@@ -884,30 +930,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
     delete:
       tags:
-      - STIG
+        - STIG
       summary: Deletes the specified revision of a STIG
       operationId: deleteRevisionByString
       parameters:
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
       responses:
-        200:
+        '200':
           description: The deleted Revision
           content:
             application/json:
@@ -920,34 +966,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig
+        - oauth:
+            - 'stig-manager:stig'
       x-rbac:
-      - admin
-  /stigs/{benchmarkId}/revisions/{revisionStr}/groups:
+        - admin
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions/{revisionStr}/groups':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return the list of groups for the specified revision of a STIG.
       operationId: getGroupsByRevision
       parameters:
-      - $ref: '#/components/parameters/GroupProjectionQuery'
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+        - $ref: '#/components/parameters/GroupProjectionQuery'
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
       responses:
-        200:
+        '200':
           description: Group response
           content:
             application/json:
@@ -960,40 +1006,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/{benchmarkId}/revisions/{revisionStr}/groups/{groupId}:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions/{revisionStr}/groups/{groupId}':
     get:
       tags:
-      - STIG
-      summary: Return the rules, checks and fixes for a Group from a specified revision
-        of a STIG.
+        - STIG
+      summary: 'Return the rules, checks and fixes for a Group from a specified revision of a STIG.'
       description: None
       operationId: getGroupByRevision
       parameters:
-      - $ref: '#/components/parameters/GroupProjectionQuery'
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
-      - name: groupId
-        in: path
-        description: A path parameter that indentifies a Group
-        required: true
-        schema:
-          type: string
+        - $ref: '#/components/parameters/GroupProjectionQuery'
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
+        - name: groupId
+          in: path
+          description: A path parameter that indentifies a Group
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: Group response
           content:
             application/json:
@@ -1006,32 +1051,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/{benchmarkId}/revisions/{revisionStr}/rules:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions/{revisionStr}/rules':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return rule data for the specified revision of a STIG.
       operationId: getRulesByRevision
       parameters:
-      - $ref: '#/components/parameters/RulesProjectionQuery'
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+        - $ref: '#/components/parameters/RulesProjectionQuery'
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
       responses:
-        200:
+        '200':
           description: Rule response
           content:
             application/json:
@@ -1046,38 +1091,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return rule data for the specified Rule in a revision of a STIG.
       operationId: getRuleByRevision
       parameters:
-      - $ref: '#/components/parameters/RuleProjectionQuery'
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
-      - name: ruleId
-        in: path
-        description: A path parameter that indentifies a Rule
-        required: true
-        schema:
-          type: string
+        - $ref: '#/components/parameters/RuleProjectionQuery'
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
+        - name: ruleId
+          in: path
+          description: A path parameter that indentifies a Rule
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: Rule response
           content:
             application/json:
@@ -1092,25 +1137,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/rules/{ruleId}:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/rules/{ruleId}':
     get:
       tags:
-      - STIG
-      summary: Return the defintion and associated checks and fixes for the specified
-        Rule
+        - STIG
+      summary: Return the defintion and associated checks and fixes for the specified Rule
       operationId: getRuleByRuleId
       parameters:
-      - $ref: '#/components/parameters/RuleProjectionQuery'
-      - name: ruleId
-        in: path
-        description: A path parameter that indentifies a Rule
-        required: true
-        schema:
-          type: string
+        - $ref: '#/components/parameters/RuleProjectionQuery'
+        - name: ruleId
+          in: path
+          description: A path parameter that indentifies a Rule
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: Rule response
           content:
             application/json:
@@ -1123,31 +1168,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/{benchmarkId}/revisions/{revisionStr}/ccis:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/revisions/{revisionStr}/ccis':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return a list of CCIs from a STIG revision
       operationId: getCcisByRevision
       parameters:
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-          | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+        - name: benchmarkId
+          in: path
+          description: A path parameter that indentifies a STIG
+          required: true
+          schema:
+            type: string
+        - name: revisionStr
+          in: path
+          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          required: true
+          schema:
+            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            type: string
       responses:
-        200:
+        '200':
           description: CCI response
           content:
             application/json:
@@ -1162,23 +1207,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-  /stigs/ccis/{cci}:
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
+  '/stigs/ccis/{cci}':
     get:
       tags:
-      - STIG
+        - STIG
       summary: Return data for the specified CCI
       operationId: getCci
       parameters:
-      - name: cci
-        in: path
-        description: A path parameter that indentifies a CCI
-        required: true
-        schema:
-          type: string
+        - name: cci
+          in: path
+          description: A path parameter that indentifies a CCI
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
           description: CCI response
           content:
             application/json:
@@ -1193,28 +1239,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       security:
-      - oauth:
-        - stig-manager:stig:read
-
+        - oauth:
+            - 'stig-manager:stig:read'
+      x-swagger-router-controller: STIG
   /version:
     get:
       tags:
-      - Version
+        - Version
       summary: Return version information
       operationId: getVersion
       responses:
-        200:
+        '200':
           description: Version response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiVersion'
+      x-swagger-router-controller: Version
 components:
   schemas:
     Error:
       required:
-      - code
-      - message
+        - code
+        - message
       type: object
       properties:
         code:
@@ -1288,7 +1335,6 @@ components:
               type: array
               items:
                 type: integer
-
     Asset:
       type: object
       properties:
@@ -1356,13 +1402,12 @@ components:
           type: integer
         benchmarkId:
           type: string
-
     UserRole:
       type: string
       enum:
-        - "IA Staff"
-        - "IA Officer"
-        - "IA Workforce"
+        - IA Staff
+        - IA Officer
+        - IA Workforce
     User:
       type: object
       properties:
@@ -1406,28 +1451,26 @@ components:
               type: array
               items:
                 type: integer
-
-
     ReviewState:
       description: The Review state
       type: string
       enum:
-        - "O"
-        - "NF"
-        - "NA"
+        - O
+        - NF
+        - NA
     ReviewAction:
       type: string
       enum:
-        - "Remediate"
-        - "Mitigate"
-        - "Exception"
+        - Remediate
+        - Mitigate
+        - Exception
     ReviewStatus:
       type: string
       enum:
-        - "Saved"
-        - "Submitted"
-        - "Approved"
-        - "Rejected"
+        - Saved
+        - Submitted
+        - Approved
+        - Rejected
     ReviewAssetRulePut:
       type: object
       required:
@@ -1518,7 +1561,6 @@ components:
                 type: string
             rule:
               $ref: '#/components/schemas/RuleAbbr'
-
     AssetAssigned:
       type: object
       properties:
@@ -1535,7 +1577,6 @@ components:
           type: string
         asset:
           $ref: '#/components/schemas/AssetBasic'
-
     STIG:
       type: object
       properties:
@@ -1674,10 +1715,10 @@ components:
         cci:
           type: string
         ap:
-          description: 'eMASS Assessment Procedure'
+          description: eMASS Assessment Procedure
           type: string
         control:
-          description: 'NIST 800-53r4 control'
+          description: NIST 800-53r4 control
           type: string
     CciReferenceItem:
       type: object
@@ -1730,7 +1771,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Revision'
-
   parameters:
     ElevateQuery:
       name: elevate
@@ -1750,8 +1790,8 @@ components:
         items:
           type: string
           enum:
-          - assets
-          - stigs
+            - assets
+            - stigs
     AssetProjectionQuery:
       name: projection
       in: query
@@ -1764,8 +1804,8 @@ components:
         items:
           type: string
           enum:
-          - packages
-          - stigs
+            - packages
+            - stigs
     ReviewProjectionQuery:
       name: projection
       in: query
@@ -1778,25 +1818,25 @@ components:
         items:
           type: string
           enum:
-          - asset
-          - history
-          - rule
-          - stigs
+            - asset
+            - history
+            - rule
+            - stigs
     ReviewStateQuery:
       name: state
       in: query
       schema:
-        $ref: '#/components/schemas/ReviewState'    
+        $ref: '#/components/schemas/ReviewState'
     ReviewStatusQuery:
       name: status
       in: query
       schema:
-        $ref: '#/components/schemas/ReviewStatus'    
+        $ref: '#/components/schemas/ReviewStatus'
     ReviewActionQuery:
       name: action
       in: query
       schema:
-        $ref: '#/components/schemas/ReviewAction'    
+        $ref: '#/components/schemas/ReviewAction'
     UserProjectionQuery:
       name: projection
       in: query
@@ -1809,12 +1849,12 @@ components:
         items:
           type: string
           enum:
-          - stigAssets
+            - stigAssets
     UserRoleQuery:
       name: role
       in: query
       schema:
-        $ref: '#/components/schemas/UserRole'    
+        $ref: '#/components/schemas/UserRole'
     BenchmarkIdPath:
       name: benchmarkId
       in: path
@@ -1847,7 +1887,7 @@ components:
         items:
           type: string
           enum:
-          - rules
+            - rules
     RuleIdPath:
       name: ruleId
       in: path
@@ -1867,10 +1907,10 @@ components:
         items:
           type: string
           enum:
-          - details
-          - cci
-          - checks
-          - fixes
+            - details
+            - cci
+            - checks
+            - fixes
     RulesProjectionQuery:
       name: projection
       in: query
@@ -1883,8 +1923,7 @@ components:
         items:
           type: string
           enum:
-          - details
-    
+            - details
     CciPath:
       name: cci
       in: path
@@ -1895,8 +1934,7 @@ components:
     RevisionStrPath:
       name: revisionStr
       in: path
-      description: A path parameter that indentifies a STIG revision [ V{version_num}R{release_num}
-        | 'latest' ]
+      description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
       required: true
       schema:
         pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1913,21 +1951,21 @@ components:
         items:
           type: string
           enum:
-          - cci
-          - fullrules
-          - checks
-          - fixes
+            - cci
+            - fullrules
+            - checks
+            - fixes
   securitySchemes:
     oauth:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: http://localhost:8080/auth/realms/cmsat/protocol/openid-connect/auth
+          authorizationUrl: 'http://192.168.1.155:8080/auth/realms/stigman/protocol/openid-connect/auth'
           scopes:
             stig-manager: Top-level scope
-            stig-manager:stig: Full access to the STIG collection
-            stig-manager:stig:read: Read access to the STIG collection
-            stig-manager:package: Full access to the Package collection
-            stig-manager:package:read: Read-only access to the Package collection
-            stig-manager:user: Full access to the Users collection
-            stig-manager:user:read: Read-only access to the Users collection
+            'stig-manager:stig': Full access to the STIG collection
+            'stig-manager:stig:read': Read access to the STIG collection
+            'stig-manager:package': Full access to the Package collection
+            'stig-manager:package:read': Read-only access to the Package collection
+            'stig-manager:user': Full access to the Users collection
+            'stig-manager:user:read': Read-only access to the Users collection

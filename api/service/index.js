@@ -11,8 +11,13 @@ const auth = require('./utils/auth')
 const swaggerUi = require('swagger-ui-express')
 const jsyaml = require('js-yaml');
 const fs = require('fs')
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
 
 const app = express();
+// app.use(upload.fields([{name: "importFile"}]))
+app.use(upload.any()) //TODO: Only attach multer to routes with multipart/form-data
+
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
 app.use(morgan('combined', {stream: process.stdout}))

@@ -38,17 +38,18 @@ function myContextMenu (e,t,eOpts) {
 	}
 }
 
+Ext.Ajax.disableCaching = false
 Ext.override(Ext.data.Connection, {
 	requestOriginal: Ext.data.Connection.prototype.request,
 	request: function(o) {
 		let me = this
 		window.keycloak.updateToken(10).then(function (refreshed) {
 			console.info("updateToken() returned success, refreshed: " + refreshed)
-			me.requestOriginal(o);	
+				
 		}).catch(function() {
 			console.info("updateToken() catch error! ")
 		})
-		return 1
+		return me.requestOriginal(o);
 	}
 });
 
