@@ -443,8 +443,6 @@ paths:
                   type: string
                 benchmarkId:
                   type: string
-                revisionSr:
-                  type: string
                 packageId:
                   type: string
                 source:

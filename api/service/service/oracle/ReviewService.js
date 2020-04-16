@@ -294,10 +294,28 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.importReviews = async function(body, projection, file, userObject) {
+exports.importReviews = async function(body, projection, file, userObject, response) {
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
   try {
+    let jobId = await dbUtils.insertJobRecord({
+      userId: userObject.id,
+      assetId: body.assetId,
+      benchmarkId: body.benchmarkId,
+      packageId: body.packageId,
+      sourceStr: body.source,
+      filenameStr: file.originalname,
+      filesize: file.size
+    })
     let extension = file.originalname.substring(file.originalname.lastIndexOf(".")+1)
+    response.setHeader('Content-Type','text/plain')
+    response.write(`Reading file ${file.originalname}\n`)
+    await sleep(3000)
     let buffer = await fs.readFile(file.path)
+    response.write(`Parsing file ${file.originalname}\n`)
+    await sleep(3000)
     let result
     switch (extension) {
       case 'ckl':
@@ -307,6 +325,8 @@ exports.importReviews = async function(body, projection, file, userObject) {
         result = dbUtils.parseScc(buffer.toString())
         break
     }
+    response.write(`Results:\n${JSON.stringify(result, null, 2)}`)
+    response.end()
     return (result)
   }
   catch(err) {

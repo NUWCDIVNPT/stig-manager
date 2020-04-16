@@ -340,3 +340,31 @@ module.exports.parseScc = function (sccFileContent) {
   }
 }
 
+// Returns integer jobId
+module.exports.insertJobRecord = async function (record) {
+	let sql = `
+	insert into imported_jobs (
+    startTime ,userId	,source	,assetId ,stigId
+    ,packageId ,filename ,filesize
+	)
+	VALUES
+		(SYSDATE, :userId, :sourceStr, :assetId, :benchmarkId, :packageId, :filenameStr, :filesize)
+	RETURNING
+		jobId into :jobId
+`
+  try {
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      autoCommit: true
+    }
+    record.jobId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, record, options)
+    jobId = result.outBinds.jobId[0]
+    await connection.close()
+    return jobId
+  }
+  catch (e) {
+    throw (e)
+  }
+}

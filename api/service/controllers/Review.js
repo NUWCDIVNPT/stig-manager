@@ -13,8 +13,8 @@ module.exports.importReviews = async function importReviews (req, res, next) {
     }
     let body = req.swagger.params['body'].value
     let projection = req.swagger.params['projection'].value
-    let response = await Review.importReviews(body, projection, req.file, req.userObject)
-    writer.writeJson(res, response)
+    let response = await Review.importReviews(body, projection, req.file, req.userObject, res)
+    //writer.writeJson(res, response)
   }
   catch(err) {
     writer.writeJson(res, err)
