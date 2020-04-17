@@ -79,8 +79,8 @@ function start () {
 			}
 		}
 	};
-	var varsUrl="pl/getUserObject.pl";
-	varsXmlHttp.open("GET",varsUrl);
+	var userUrl=`${STIGMAN.Env.apiBase}/user`
+	varsXmlHttp.open("GET", userUrl)
 	varsXmlHttp.setRequestHeader("Authorization", `Bearer ${window.keycloak.token}`)
 	varsXmlHttp.send();
 };

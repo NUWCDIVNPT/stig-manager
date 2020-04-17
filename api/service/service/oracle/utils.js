@@ -152,7 +152,7 @@ module.exports.REVIEW_ACTION_STR = {
 }
 
 // Returns Boolean
-module.exports.userAllowedAssetRule = async function (assetId, ruleId, elevate, userObject) {
+module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
   try {
     let context, sql
     if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
@@ -195,150 +195,6 @@ module.exports.userAllowedAssetRule = async function (assetId, ruleId, elevate, 
   }
 }
 
-module.exports.parseCkl = async function (cklData) {
-  const xml2js = require('xml2js')
-
-  function processAsset(assetElement) {
-    return {
-      hostname: assetElement.HOST_NAME[0],
-      hostFqdn: assetElement.HOST_FQDN[0],
-      ip: assetElement.HOST_IP[0],
-      mac: assetElement.HOST_MAC[0],
-    }
-  }
-
-  function processIStig(iStigElement) {
-    let stigArray = []
-    iStigElement.forEach(iStig => {
-      let stigObj = Object.assign({}, processSiData(iStig.STIG_INFO[0].SI_DATA))
-      stigObj.vulns = processVuln(iStig.VULN)
-      stigArray.push(stigObj)
-    })
-    return stigArray
-  }
-
-  function processSiData(siDataElements) {
-    let stigInfo = {}
-    siDataElements.forEach(siData => {
-      if (siData.SID_NAME[0] == 'stigid') {
-        stigInfo.stigId = siData.SID_DATA[0]
-      }
-      if (siData.SID_NAME[0] == 'releaseinfo') {
-        stigInfo.release = siData.SID_DATA[0]
-      }
-    })
-    return stigInfo
-  }
-
-  function processVuln(vulnElements) {
-    // elVuln is an array of this object, all property values are arrays:
-    // {
-    //     COMMENTS [1]
-    //     FINDING_DETAILS [1]
-    //     SEVERITY_JUSTIFICATION [1]
-    //     SEVERITY_OVERRIDE [1]
-    //     STATUS [1]
-    //     STIG_DATA [26]
-    // }
-    let vulnArray = []
-    vulnElements.forEach(vuln => {
-      let finding = {}
-      finding.status = vuln.STATUS[0]
-      // Array.some() stops once a true value is returned
-      vuln.STIG_DATA.some(stigDatum => {
-        if (stigDatum.VULN_ATTRIBUTE[0] == "Rule_ID") {
-          finding.ruleId = stigDatum.ATTRIBUTE_DATA[0]
-          return true
-        }
-      })
-      vulnArray.push(finding)
-    })
-    return vulnArray
-  }
-
-  try {
-    var parser = new xml2js.Parser()
-    let parsed = await parser.parseStringPromise(cklData)
-    if (!parsed.CHECKLIST) throw (new Error("No CHECKLIST element"))
-    if (!parsed.CHECKLIST.ASSET) throw (new Error("No ASSET element"))
-    if (!parsed.CHECKLIST.STIGS) throw (new Error("No STIGS element"))
-    let asset = processAsset(parsed.CHECKLIST.ASSET[0])
-    asset.results = processIStig(parsed.CHECKLIST.STIGS[0].iSTIG)
-
-    return (asset)
-  }
-  catch (e) {
-    throw (e)
-  }
-}
-
-module.exports.parseScc = function (sccFileContent) {
-  const parser = require('fast-xml-parser')
-  try {
-    // Parse the XML
-    var parseOptions = {
-      attributeNamePrefix: "",
-      // attrNodeName: "attr", //default is 'false'
-      // textNodeName : "#text",
-      ignoreAttributes: false,
-      ignoreNameSpace: true,
-      allowBooleanAttributes: false,
-      parseNodeValue: true,
-      parseAttributeValue: true,
-      trimValues: true,
-      cdataTagName: "__cdata", //default is 'false'
-      cdataPositionChar: "\\c",
-      localeRange: "", //To support non english character in tag/attribute values.
-      parseTrueNumberOnly: false,
-      arrayMode: false, //"strict"
-      // attrValueProcessor: (val, attrName) => he.decode(val, {isAttributeValue: true}),//default is a=>a
-      // tagValueProcessor : (val, tagName) => he.decode(val), //default is a=>a
-      // stopNodes: ["parse-me-as-string"]
-    }
-    let parsed = parser.parse(sccFileContent, parseOptions)
-
-    // Baic sanity checks
-    if (!parsed.Benchmark) throw (new Error("No <Benchmark> element"))
-    if (!parsed.Benchmark.TestResult) throw (new Error("No <TestResult> element"))
-    if (!parsed.Benchmark.TestResult['target-facts']) throw (new Error("No <target-facts> element"))
-    if (!parsed.Benchmark.TestResult['rule-result']) throw (new Error("No <rule-result> element"))
-
-    // Process parsed data
-    let target = processTargetFacts(parsed.Benchmark.TestResult['target-facts'].fact)
-    let results = processRuleResults(parsed.Benchmark.TestResult['rule-result'])
-
-    // Return object
-    return ({
-      target: target,
-      results: results
-    })
-  }
-  catch (e) {
-    throw (e)
-  }
-
-  function processRuleResults(ruleResults) {
-    let results = []
-    ruleResults.forEach(ruleResult => {
-      results.push({
-        ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
-        result: ruleResult.result,
-        time: ruleResult.time,
-        checkRef: ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')
-      })
-    })
-    return results
-  }
-
-  function processTargetFacts(facts) {
-    let target = {}
-    facts.forEach(fact => {
-      let name = fact.name.replace('urn:scap:fact:asset:identifier:', '')
-      target[name] = fact['#text']
-    })
-    return target
-  }
-}
 
 // Returns integer jobId
 module.exports.insertJobRecord = async function (record) {
@@ -348,7 +204,7 @@ module.exports.insertJobRecord = async function (record) {
     ,packageId ,filename ,filesize
 	)
 	VALUES
-		(SYSDATE, :userId, :sourceStr, :assetId, :benchmarkId, :packageId, :filenameStr, :filesize)
+		(SYSDATE, :userId, :source, :assetId, :benchmarkId, :packageId, :filename, :filesize)
 	RETURNING
 		jobId into :jobId
 `

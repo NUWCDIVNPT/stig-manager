@@ -364,7 +364,7 @@ paths:
       x-swagger-router-controller: Asset
   /reviews:
     parameters:
-      - $ref: '#/components/parameters/ReviewProjectionQuery'
+      - $ref: '#/components/parameters/ElevateQuery'
     get:
       tags:
         - Review
@@ -450,8 +450,38 @@ paths:
                 importFile:
                   type: string
                   format: binary
-
-
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Review
+    put:
+      tags:
+        - Review
+      summary: Create or update one or more Reviews
+      operationId: putReviews
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReviewPut'
       responses:
         '200':
           description: ReviewProjected response
@@ -642,6 +672,29 @@ paths:
         - oauth:
             - 'stig-manager:package'
       x-swagger-router-controller: Review
+  /user:
+    get:
+      tags:
+        - User
+      summary: Return the requester's user information
+      operationId: getUserObject
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+      x-swagger-router-controller: User
   /users:
     parameters:
       - $ref: '#/components/parameters/UserProjectionQuery'
@@ -1459,6 +1512,30 @@ components:
         - Submitted
         - Approved
         - Rejected
+    ReviewPut:
+      type: object
+      required:
+        - state
+        - stateComment
+      properties:
+        assetId:
+          type: integer
+        ruleId:
+          type: string
+        state:
+          $ref: '#/components/schemas/ReviewState'
+        stateComment:
+          type: string
+          nullable: true
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        autoState:
+          type: boolean
+        submit:
+          type: boolean
     ReviewAssetRulePut:
       type: object
       required:

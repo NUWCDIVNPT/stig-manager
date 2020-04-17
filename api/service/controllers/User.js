@@ -16,6 +16,15 @@ module.exports.createUser = async function createUser (req, res, next) {
   }
 }
 
+module.exports.getUserObject = async function getUserObject (req, res, next) {
+  try {
+    writer.writeJson(res, req.userObject)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
+
 module.exports.getUsers = async function getUsers (req, res, next) {
   let projection = req.swagger.params['projection'].value
   let elevate = req.swagger.params['elevate'].value

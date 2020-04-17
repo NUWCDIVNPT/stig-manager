@@ -1,6 +1,7 @@
 'use strict';
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
+const parsers = require('../../utils/parsers.js')
 const dbUtils = require('./utils')
 const {promises: fs} = require('fs')
 
@@ -288,45 +289,39 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
 
 
 /**
- * Create a Review
+ * Import a Review
  *
  * body Review 
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.importReviews = async function(body, projection, file, userObject, response) {
+exports.importReviews = async function(body, elevate, file, userObject, response) {
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-  
   try {
-    let jobId = await dbUtils.insertJobRecord({
-      userId: userObject.id,
-      assetId: body.assetId,
-      benchmarkId: body.benchmarkId,
-      packageId: body.packageId,
-      sourceStr: body.source,
-      filenameStr: file.originalname,
-      filesize: file.size
-    })
+
+    // let jobId = await dbUtils.insertJobRecord({
+    //   userId: userObject.id,
+    //   assetId: body.assetId,
+    //   benchmarkId: body.benchmarkId,
+    //   packageId: body.packageId,
+    //   source: body.source,
+    //   filename: file.originalname,
+    //   filesize: file.size
+    // })
+    let assetId = parseInt(body.assetId)
     let extension = file.originalname.substring(file.originalname.lastIndexOf(".")+1)
-    response.setHeader('Content-Type','text/plain')
-    response.write(`Reading file ${file.originalname}\n`)
-    await sleep(3000)
     let buffer = await fs.readFile(file.path)
-    response.write(`Parsing file ${file.originalname}\n`)
-    await sleep(3000)
     let result
     switch (extension) {
       case 'ckl':
-        result = dbUtils.parseCkl(buffer)
+        result = await parsers.reviewsFromCkl(buffer, assetId)
         break
       case 'xml':
-        result = dbUtils.parseScc(buffer.toString())
+        result = parsers.reviewsFromScc(buffer, assetId)
         break
     }
-    response.write(`Results:\n${JSON.stringify(result, null, 2)}`)
-    response.end()
     return (result)
   }
   catch(err) {
@@ -386,9 +381,9 @@ exports.getReview = async function(reviewId, projection, elevate, userObject) {
  * packageId Integer Selects Reviews mapped to a Package (optional)
  * returns List
  **/
-exports.getReviews = async function(projection, predicates, elevate, userObject) {
+exports.getReviews = async function(predicates, elevate, userObject) {
   try {
-    let rows = await this.queryReviews(projection, predicates, elevate, userObject)
+    let rows = await this.queryReviews(null, predicates, elevate, userObject)
     return (rows)
   }
   catch(err) {
@@ -443,6 +438,63 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
     }
     await connection.close()
     let rows = await this.queryReviews(projection, {
+      assetId: assetId,
+      ruleId: ruleId
+    }, elevate, userObject)
+    return (rows[0])
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+
+/**
+ * Create or update a complete Review
+ *
+ * projection List Additional properties to include in the response.  (optional)
+ * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
+ * ruleId String Selects Reviews of a Rule (optional)
+ * assetId String Selects Reviews mapped to an Asset (optional)
+ * body Object The Review content (required)
+ * returns Review
+ **/
+exports.putReviews = async function( body, elevate, userObject) {
+  try {
+    let values = {
+      userId: userObject.id,
+      stateId: dbUtils.REVIEW_STATE_ABBR[body.state].id,
+      stateComment: body.stateComment,
+      actionComment: body.actionComment || null,
+      statusId: body.submit ? 1 : 0,
+      autoState: body.autoState? 1 : 0
+    }
+    values.actionId = body.action ? dbUtils.REVIEW_ACTION_STR[body.action] : null
+
+    let binds = {
+      assetId: assetId,
+      ruleId: ruleId
+    }
+    let sqlUpdate = `
+      UPDATE
+        stigman.reviews
+      SET
+        ${dbUtils.objectBindObject(values, binds)}
+      WHERE
+        assetId = :assetId and ruleId = :ruleId`
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
+    if (result.rowsAffected == 0) {
+      let sqlInsert = `
+        INSERT INTO stigman.reviews
+        (assetId, ruleId, stateId, stateComment, actionId, actionComment, statusId, userId, autoState)
+        VALUES
+        (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId, :autoState)
+      `
+      result = await connection.execute(sqlInsert, binds, {autoCommit: true})
+    }
+    await connection.close()
+    let rows = await this.queryReviews(null, {
       assetId: assetId,
       ruleId: ruleId
     }, elevate, userObject)

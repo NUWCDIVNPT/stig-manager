@@ -12,9 +12,9 @@ module.exports.importReviews = async function importReviews (req, res, next) {
       throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
     }
     let body = req.swagger.params['body'].value
-    let projection = req.swagger.params['projection'].value
-    let response = await Review.importReviews(body, projection, req.file, req.userObject, res)
-    //writer.writeJson(res, response)
+    let elevate = req.swagger.params['elevate'].value
+    let response = await Review.importReviews(body, elevate, req.file, req.userObject, res)
+    writer.writeJson(res, response)
   }
   catch(err) {
     writer.writeJson(res, err)
@@ -64,10 +64,9 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
 }
 
 module.exports.getReviews = async function getReviews (req, res, next) {
-  let projection = req.swagger.params['projection'].value
   let elevate = req.swagger.params['elevate'].value
   try {
-    let response = await Review.getReviews( projection, {
+    let response = await Review.getReviews( {
         state: req.swagger.params['state'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
@@ -85,10 +84,9 @@ module.exports.getReviews = async function getReviews (req, res, next) {
 }
 
 module.exports.getReviewsByAssetId = async function (req, res, next) {
-  let projection = req.swagger.params['projection'].value
   let elevate = req.swagger.params['elevate'].value
   try {
-    let response = await Review.getReviews( projection, {
+    let response = await Review.getReviews( {
         state: req.swagger.params['state'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
@@ -111,13 +109,25 @@ module.exports.putReview = async function (req, res, next) {
   let elevate = req.swagger.params['elevate'].value
 
   try {
-    if (await dbUtils.userAllowedAssetRule(assetId, ruleId, elevate, req.userObject)) {
+    if (await dbUtils.userHasAssetRule(assetId, ruleId, elevate, req.userObject)) {
       let response = await Review.putReview( projection, assetId, ruleId, body, elevate, req.userObject)
       writer.writeJson(res, response)
     }
     else {
       throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }  
+}
+
+module.exports.putReviews = async function (req, res, next) {
+  let body = req.swagger.params['body'].value
+  let elevate = req.swagger.params['elevate'].value
+  try {
+    let response = await Review.putReviews(body, elevate, req.userObject)
+    writer.writeJson(res, response)
   }
   catch (err) {
     writer.writeJson(res, err)
@@ -132,7 +142,7 @@ module.exports.patchReview = async function (req, res, next) {
   let elevate = req.swagger.params['elevate'].value
 
   try {
-    if (await dbUtils.userAllowedAssetRule(assetId, ruleId, elevate, req.userObject)) {
+    if (await dbUtils.userHasAssetRule(assetId, ruleId, elevate, req.userObject)) {
       let response = await Review.patchReview( projection, assetId, ruleId, body, elevate, req.userObject)
       writer.writeJson(res, response)
     }
