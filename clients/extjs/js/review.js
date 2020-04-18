@@ -2213,6 +2213,7 @@ function addReview(leaf, selectedRule, selectedResource) {
           id: 'form-file',
           emptyText: 'Browse for a file...',
           name: 'importFile',
+          accept: '.ckl,.xml',
           buttonText: 'Browse...',
           buttonCfg: {
             icon: "img/disc_drive.png"
@@ -2278,7 +2279,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       },
       {
         text: 'Cancel',
-        handler: function () { window.close(); }
+        handler: function () { appwindow.close(); }
       }
       ]
     });
