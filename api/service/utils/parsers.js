@@ -241,12 +241,14 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
     if (!parsed.CHECKLIST) throw (new Error("No CHECKLIST element"))
     if (!parsed.CHECKLIST[0].ASSET) throw (new Error("No ASSET element"))
     if (!parsed.CHECKLIST[0].STIGS) throw (new Error("No STIGS element"))
-    let asset = processAsset(parsed.CHECKLIST[0].ASSET[0])
-    asset.reviews = processIStig(parsed.CHECKLIST[0].STIGS[0].iSTIG)
+
+    let returnObj = {}
+    returnObj.target = processAsset(parsed.CHECKLIST[0].ASSET[0])
+    returnObj.reviews = processIStig(parsed.CHECKLIST[0].STIGS[0].iSTIG)
     hrend = process.hrtime(hrstart)
     console.info('construction execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
 
-    return (asset)
+    return (returnObj)
 
     function processAsset(assetElement) {
       return {
@@ -311,10 +313,11 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
             assetId: assetId,
             ruleId: ruleId,
             state: state,
-            stateComment: vuln.FINDING_DETAILS == "" ? null : vuln.FINDING_DETAILS,
+            stateComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
             action: action,
             actionComment: action ? (vuln.COMMENTS == "" ? null : vuln.COMMENTS) : null,
-            submit: state != 'O'
+            autoState: false,
+            status: state != 'O' ? 'submitted' : 'saved'
           })
         }
       })
@@ -355,12 +358,12 @@ module.exports.reviewsFromScc = function (sccFileContent, assetId) {
 
     // Process parsed data
     let target = processTargetFacts(parsed.Benchmark.TestResult['target-facts'].fact)
-    let results = processRuleResults(parsed.Benchmark.TestResult['rule-result'])
+    let reviews = processRuleResults(parsed.Benchmark.TestResult['rule-result'])
 
     // Return object
     return ({
       target: target,
-      results: results
+      reviews: reviews
     })
   }
   catch (e) {
@@ -374,21 +377,22 @@ module.exports.reviewsFromScc = function (sccFileContent, assetId) {
       fail: 'O',
       notapplicable: 'NA'
     }
-    let results = []
+    let reviews = []
     
     ruleResults.forEach(ruleResult => {
       state = states[ruleResult.result]
       if (state) {
-        results.push({
+        reviews.push({
           assetId: assetId,
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
           state: state,
           stateComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
-          submit: state != 'O'
+          autoState: true,
+          status: state != 'O' ? 'approved' : 'saved'
         })
       }
     })
-    return results
+    return reviews
   }
 
   function processTargetFacts(facts) {

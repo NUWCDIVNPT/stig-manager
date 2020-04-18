@@ -28,8 +28,10 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'r.stateId as "stateId"',
     'r.stateComment as "stateComment"',
     'r.actionId as "actionId"',
+    'action.action as "action"',
     'r.actionComment as "actionComment"',
     'r.statusId as "statusId"',
+    'status.statusStr as "status"',
     'r.ts as "ts"',
     'r.autoState as "autoState"',
     'r.userId as "userId"',
@@ -248,37 +250,15 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     let result = await connection.execute(sql, predicates.binds, options)
     await connection.close()
 
-    // // Post-process each row, unfortunately.
-    // // * Oracle doesn't have a BOOLEAN data type, so we must cast the column 'reqRar'
-    // // * Oracle doesn't support a JSON type, so we parse string values from 'assets' and 'stigs' into objects
-    // for (let x = 0, l = result.rows.length; x < l; x++) {
-    //   let record = result.rows[x]
-    //   // Handle 'reqRar'
-    //   record.reqRar = record.reqRar == 1 ? true : false
-    //   // Handle 'assests'
-    //   if (record.assets) {
-    //     // Check for "empty" arrays 
-    //     record.assets = record.assets == '[{}]' ? [] : JSON.parse(record.assets)
-    //     // Sort by asset name
-    //     record.assets.sort((a,b) => {
-    //       let c = 0
-    //       if (a.name > b.name) { c= 1 }
-    //       if (a.name < b.name) { c = -1 }
-    //       return c
-    //     })
-    //   }
-    //   // Handle 'stigs'
-    //   if (record.stigs) {
-    //     record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
-    //     // Sort by benchmarkId
-    //     record.stigs.sort((a,b) => {
-    //       let c = 0
-    //       if (a.benchmarkId > b.benchmarkId) { c = 1 }
-    //       if (a.benchmarkId < b.benchmarkId) { c = -1 }
-    //       return c
-    //     })
-    //   }
-    // }
+    // Post-process each row, unfortunately.
+    // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'done' and 'autoState'
+    for (let x = 0, l = result.rows.length; x < l; x++) {
+      let record = result.rows[x]
+      // Handle 'done'
+      record.done = record.done == 1 ? true : false
+      // Handle 'autoState'
+      record.autoState = record.autoState == 1 ? true : false
+    }
 
     return (result.rows)
   }
@@ -322,7 +302,7 @@ exports.importReviews = async function(body, elevate, file, userObject, response
         result = parsers.reviewsFromScc(buffer, assetId)
         break
     }
-    return (result)
+    return (this.putReviews(result.reviews, elevate, userObject))
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -408,11 +388,11 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
       userId: userObject.id,
       stateId: dbUtils.REVIEW_STATE_ABBR[body.state].id,
       stateComment: body.stateComment,
+      actionId: body.action ? dbUtils.REVIEW_ACTION_STR[body.action] : null,
       actionComment: body.actionComment || null,
-      statusId: body.submit ? 1 : 0,
+      statusId: body.status ? dbUtils.REVIEW_STATUS_STR[body.status] : null,
       autoState: body.autoState? 1 : 0
     }
-    values.actionId = body.action ? dbUtils.REVIEW_ACTION_STR[body.action] : null
 
     let binds = {
       assetId: assetId,
@@ -461,44 +441,64 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
  **/
 exports.putReviews = async function( body, elevate, userObject) {
   try {
-    let values = {
-      userId: userObject.id,
-      stateId: dbUtils.REVIEW_STATE_ABBR[body.state].id,
-      stateComment: body.stateComment,
-      actionComment: body.actionComment || null,
-      statusId: body.submit ? 1 : 0,
-      autoState: body.autoState? 1 : 0
-    }
-    values.actionId = body.action ? dbUtils.REVIEW_ACTION_STR[body.action] : null
+    let sqlMerge = `
+    MERGE INTO stigman.reviews r USING (
+      SELECT 
+        :assetId as ASSETID,
+        :ruleId as RULEID,
+        :stateId as STATEID,
+        :stateComment as STATECOMMENT,
+        :autoState AS AUTOSTATE,
+        :actionId as ACTIONID,
+        :actionComment AS ACTIONCOMMENT,
+        :statusId AS STATUSID,
+        :userId AS USERID
+      FROM DUAL) i
+      ON (r.assetId = i.assetId AND r.ruleId = i.ruleId)
+      WHEN MATCHED THEN
+        UPDATE SET
+          r.STATEID = i.STATEID,
+          r.STATECOMMENT = i.STATECOMMENT,
+          r.AUTOSTATE = i.AUTOSTATE,
+          r.ACTIONID = i.ACTIONID,
+          r.ACTIONCOMMENT = i.ACTIONCOMMENT,
+          r.STATUSID = i.STATUSID,
+          r.USERID = i.USERID
+      WHEN NOT MATCHED THEN
+      INSERT (r.assetId, r.ruleId, r.stateId, r.stateComment, r.autoState, r.actionId, r.actionComment, r.statusId, r.userId)
+      VALUES (i.assetId, i.ruleId, i.stateId, i.stateComment, i.autoState, i.actionId, i.actionComment, i.statusId, i.userId)
+    `
+    let binds = []
+    let reviewsByStatus = await dbUtils.scrubReviewsByUser(body, elevate, userObject)
+    reviewsByStatus.permitted.forEach(member => {
+      let values = {
+        assetId: member.assetId,
+        ruleId: member.ruleId,
+        stateId: dbUtils.REVIEW_STATE_ABBR[member.state].id,
+        stateComment: member.stateComment,
+        autoState: member.autoState? 1 : 0,
+        actionId: member.action ? dbUtils.REVIEW_ACTION_STR[member.action] : null,
+        actionComment: member.actionComment || null,
+        statusId: member.status ? dbUtils.REVIEW_STATUS_STR[member.status] : 0,
+        userId: userObject.id
+      }
+      binds.push(values)
+    })
 
-    let binds = {
-      assetId: assetId,
-      ruleId: ruleId
-    }
-    let sqlUpdate = `
-      UPDATE
-        stigman.reviews
-      SET
-        ${dbUtils.objectBindObject(values, binds)}
-      WHERE
-        assetId = :assetId and ruleId = :ruleId`
     let connection = await oracledb.getConnection()
-    let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
-    if (result.rowsAffected == 0) {
-      let sqlInsert = `
-        INSERT INTO stigman.reviews
-        (assetId, ruleId, stateId, stateComment, actionId, actionComment, statusId, userId, autoState)
-        VALUES
-        (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId, :autoState)
-      `
-      result = await connection.execute(sqlInsert, binds, {autoCommit: true})
+    let result = await connection.executeMany(sqlMerge, binds, {
+      autoCommit: true,
+      batchErrors: true
+    })
+    reviewsByStatus.errors = []
+    if (result.batchErrors) {
+      result.batchErrors.forEach(e => {
+        reviewsByStatus.errors.push(binds[e.offset])
+      })
+      await connection.commit()
     }
     await connection.close()
-    let rows = await this.queryReviews(null, {
-      assetId: assetId,
-      ruleId: ruleId
-    }, elevate, userObject)
-    return (rows[0])
+    return (reviewsByStatus)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -533,8 +533,8 @@ exports.patchReview = async function(projection, assetId, ruleId, body, elevate,
     if (body.actionComment != undefined) {
       values.actionComment = body.actionComment
     }
-    if (body.submit != undefined) {
-      values.statusId = body.submit ? 1 : 0
+    if (body.status != undefined) {
+      values.statusId = dbUtils.REVIEW_STATUS_STR[body.status]
     }
     if (body.autoState != undefined) {
       values.autoState = body.autoState ? 1 : 0

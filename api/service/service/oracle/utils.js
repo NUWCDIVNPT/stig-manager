@@ -150,6 +150,18 @@ module.exports.REVIEW_ACTION_STR = {
   'Mitigate': 2,
   'Exception': 3
 }
+module.exports.REVIEW_STATUS_ID = { 
+  0: 'saved',
+  1: 'submitted',
+  2: 'rejected',
+  3: 'approved'
+}
+module.exports.REVIEW_STATUS_STR = { 
+  'saved': 0,
+  'submitted': 1,
+  'rejected': 2,
+  'approved': 3
+}
 
 // Returns Boolean
 module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
@@ -195,6 +207,74 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
   }
 }
 
+// @param reviews Array List of Review objects
+// @param elevate Boolean 
+// @param userObject Object
+module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
+  try {
+    let context, sql, permitted = [], rejected = []
+    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+      permitted = reviews
+    } 
+    else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+      sql = `
+        SELECT
+          a.assetId
+        FROM
+          stigman.assets a
+        WHERE
+          a.assetId = :assetId and a.dept = :dept
+      `
+      let connection = await oracledb.getConnection()
+      let allowedAssets = await connection.execute(sql, [assetId, userObject.dept])
+      await connection.close()
+      // result.rows has legal assetIds
+      reviews.forEach(review => {
+        if (allowedAssets.includes(review.assetId)) {
+          permitted.push(review)
+        }
+        else {
+          rejected.push(review)
+        }
+      })
+    } 
+    else {
+      sql = `
+        SELECT
+          sa.assetId || '-' || rgr.ruleId
+        FROM
+          stigman.user_stig_asset_map usa
+          inner join stigman.stig_asset_map sa on usa.saId = sa.saId
+          inner join stigs.revisions rev on sa.stigId = rev.stigId
+          inner join stigs.rev_group_map rg on rev.revId = rg.revId
+          inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+        WHERE
+          usa.userId = :userId`
+      let connection = await oracledb.getConnection()
+      let result = await connection.execute(sql, [userObject.id], {outFormat: oracledb.OUT_FORMAT_ARRAY})
+      let allowedAssetRules = result.rows.flat() // Requires Node 12
+      await connection.close()
+      reviews.forEach(review => {
+        if (allowedAssetRules.includes(`${review.assetId}-${review.ruleId}`)) {
+          permitted.push(review)
+        }
+        else {
+          rejected.push(review)
+        }
+      })
+    }
+    return {
+      permitted: permitted,
+      rejected: rejected
+    }
+
+  }
+  catch (e) {
+    throw (e)
+  }
+
+}
 
 // Returns integer jobId
 module.exports.insertJobRecord = async function (record) {

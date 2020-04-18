@@ -1501,17 +1501,19 @@ components:
         - NA
     ReviewAction:
       type: string
+      nullable: true
       enum:
         - Remediate
         - Mitigate
         - Exception
+        - null
     ReviewStatus:
       type: string
       enum:
-        - Saved
-        - Submitted
-        - Approved
-        - Rejected
+        - saved
+        - submitted
+        - approved
+        - rejected
     ReviewPut:
       type: object
       required:
@@ -1534,8 +1536,9 @@ components:
           nullable: true
         autoState:
           type: boolean
-        submit:
-          type: boolean
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
     ReviewAssetRulePut:
       type: object
       required:
@@ -1554,8 +1557,8 @@ components:
           nullable: true
         autoState:
           type: boolean
-        submit:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
     ReviewAssetRulePatch:
       type: object
       properties:
@@ -1571,8 +1574,8 @@ components:
           nullable: true
         autoState:
           type: boolean
-        submit:
-          type: boolean
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
     Review:
       type: object
       properties:

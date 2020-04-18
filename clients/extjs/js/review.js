@@ -2075,13 +2075,13 @@ function addReview(leaf, selectedRule, selectedResource) {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: {
-              submit: saveParams.type == 'submit' ? true : false
+              status: saveParams.type == 'submit' ? 'submitted' : 'saved'
             }
           })
           reviewFromApi = JSON.parse(result.response.responseText)
           break
         case 'save and unsubmit':
-          jsonData.submit = false
+          jsonData.status = 'saved'
           result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
@@ -2091,7 +2091,7 @@ function addReview(leaf, selectedRule, selectedResource) {
           reviewFromApi = JSON.parse(result.response.responseText)
           break
         case 'save and submit':
-          jsonData.submit = true
+          jsonData.status = 'submitted'
           result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
@@ -2101,7 +2101,7 @@ function addReview(leaf, selectedRule, selectedResource) {
           reviewFromApi = JSON.parse(result.response.responseText)
           break
         case 'save':
-          jsonData.submit = false
+          jsonData.status = 'saved'
           result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
