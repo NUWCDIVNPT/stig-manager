@@ -1461,6 +1461,7 @@ function uploadArchive(n) {
 				emptyText: 'Browse for a file...',
 				//fieldLabel: 'Import',
 				name: 'importFile',
+				accept: '.zip',
 				buttonText: 'Browse...',
 				buttonCfg: {
 					icon: "img/disc_drive.png"
@@ -1501,7 +1502,64 @@ function uploadArchive(n) {
 			icon: 'img/page_white_get.png',
 			tooltip: 'Import the archive',
 			formBind: true,
-			handler: function(){
+			handler: async function(){
+				if(fp.getForm().isValid()){
+					let formEl = fp.getForm().getEl().dom
+					let input = document.getElementById("form-file-file")
+					processZip(input.files[0])
+					// let reader = new FileReader()
+					// reader.onload = function (e) {
+					//   let data = e.target.result
+					//   processZip(data)
+					// //   data = new Uint8Array(data)
+					// }
+					// reader.readAsArrayBuffer(input.files[0])
+				}
+
+				async function processZip (f) {
+					try {
+						let zip = new JSZip()
+						// zip.loadAsync( f /* = file blob */)
+						// .then(function(zip) {
+						// 	// process ZIP file content here
+						// 	alert("OK")
+						// }, function() {alert("Not a valid zip file")}); 
+				   
+						let contents = await zip.loadAsync(f)
+						let members = []
+						Object.keys(contents.files).forEach( filename => {
+							members.push(filename)
+						})
+						for (let x = 0, l = members.length; x < l; x++) {
+							let fn = members[x]
+							console.log(fn)
+							let data = await zip.files[fn].async("blob")
+							let fd = new FormData()
+							fd.append('importFile', data, fn)
+							// fd.append('assetId', null)
+							// fd.append('benchmarkId', null)
+							fd.append('packageId', n.attributes.packageId)
+							fd.append('source', 'package')
+
+							let response = await fetch(`${STIGMAN.Env.apiBase}/reviews`, {
+								method: 'POST',
+								headers: new Headers({
+								  'Authorization': `Bearer ${window.keycloak.token}`
+								}),
+								body: fd
+							  })
+							let one = 1
+
+
+						}
+					}
+					catch (e) {
+						alert(e.message)
+					}
+				  
+				}
+
+				
 				// if(fp.getForm().isValid()){
 				// 	// Create two IFRAMEs.
 				// 	// One IFRAME will be the target of the file upload
@@ -1536,23 +1594,23 @@ function uploadArchive(n) {
 				// 	// start the import script on the server
 				// 	document.body.appendChild(iframe_import);
 
-				if( fp.getForm().isValid() ){
-					let formEl = fp.getForm().getEl().dom
-					let formData = new FormData(formEl)
+				// if( fp.getForm().isValid() ){
+				// 	let formEl = fp.getForm().getEl().dom
+				// 	let formData = new FormData(formEl)
 
-					fetch(`${STIGMAN.Env.apiBase}/reviews`, {
-						method: 'POST',
-						headers: new Headers({
-							'Authorization': `Bearer ${window.keycloak.token}`
-						}),
-						body: formData
-					})
+				// 	fetch(`${STIGMAN.Env.apiBase}/reviews`, {
+				// 		method: 'POST',
+				// 		headers: new Headers({
+				// 			'Authorization': `Bearer ${window.keycloak.token}`
+				// 		}),
+				// 		body: formData
+				// 	})
 					// var xhr = new XMLHttpRequest();
 					// // Add any event handlers here...
 					// xhr.open('POST', `${STIGMAN.Env.apiBase}/reviews`, true);
 					// xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
 					// xhr.send(formData);
-				}
+				// }
 
 				// fp.getForm().submit({
 				// 	url: `${STIGMAN.Env.apiBase}/reviews`,

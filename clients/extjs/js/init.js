@@ -50,6 +50,7 @@ function loadScripts() {
         "js/poamWorkspace.js",
         "js/scanManagement.js",
         "js/ExportButton.js",
+        "js/jszip.min.js",
     ].forEach(function(src) {
         var script = document.createElement('script');
         script.src = src;
