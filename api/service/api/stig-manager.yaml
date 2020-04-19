@@ -345,6 +345,15 @@ paths:
       operationId: getChecklistByAssetStig
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
+        - name: format
+          in: query
+          description: The format of the response. Default if missing is 'json'
+          schema:
+            type: string
+            default: json
+            enum:
+              - json
+              - ckl
       responses:
         '200':
           description: Review response
@@ -352,6 +361,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Review'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ChecklistCkl'
+
         default:
           description: unexpected error
           content:
@@ -1102,7 +1115,7 @@ paths:
       summary: Return rule data for the specified revision of a STIG.
       operationId: getRulesByRevision
       parameters:
-        - $ref: '#/components/parameters/RulesProjectionQuery'
+        - $ref: '#/components/parameters/RuleProjectionQuery'
         - name: benchmarkId
           in: path
           description: A path parameter that indentifies a STIG
@@ -1839,6 +1852,79 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Revision'
+    ChecklistCkl:
+      type: object
+      description: The CKL format generated and read by DISA STIG VIewer
+      xml:
+        name: CHECKLIST
+      properties:
+        ASSET:
+          type: object
+          properties:
+            ASSET_TYPE:
+              type: string
+            HOST_NAME:
+              type: string
+            HOST_IP:
+              type: string
+            HOST_MAC:
+              type: string
+            HOST_GUID:
+              type: string
+            HOST_FQDN:
+              type: string
+            TECH_AREA:
+              type: string
+            TARGET_KEY:
+              type: string
+        STIGS:
+          type: object
+          properties:
+            iSTIG:
+              type: object
+              properties:
+                STIG_INFO:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      SI_DATA:
+                        type: object
+                        properties:
+                          SID_NAME:
+                            type: string
+                          SID_DATA:
+                            type: string
+                VULN:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      STIG_DATA:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            VULN_ATTRIBUTE:
+                              type: string
+                            ATTRIBUTE_DATA:
+                              type: string
+                      STATUS:
+                        type: string
+                        enum:
+                          - Open
+                          - NotAFinding
+                          - Not_Applicable
+                          - Not_Reviewed
+                      FINDING_DETAILS:
+                        type: string
+                      COMMENTS:
+                        type: string
+                      SEVERITY_OVERRIDE:
+                        type: string
+                      SEVERITY_JUSTIFICATION:
+                        type: string
+
   parameters:
     ElevateQuery:
       name: elevate

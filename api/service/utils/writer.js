@@ -45,7 +45,7 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
   response.end(payload);
 }
 
-var writePdf = exports.writePdf = function(response, payload, filename) {
+exports.writePdf = function(response, payload, filename) {
   response.writeHead(200, {
     'Content-Type': 'application/pdf', 
     'Content-Disposition': `inline; filename="${filename}"`,
@@ -54,13 +54,26 @@ var writePdf = exports.writePdf = function(response, payload, filename) {
   response.write(payload)
   response.end()
 }
-var writeCsv = exports.writeCsv = function(response, payload, filename) {
+exports.writeCsv = function(response, payload, filename) {
   response.writeHead(200, {
     'Content-Type': 'text/csv',
     'Content-Disposition': `inline; filename="${filename}"`,
     'Access-Control-Expose-Headers': 'Content-Disposition'
   })
   response.write(payload)
+  response.end()
+}
+exports.writeXml = function(response, payload, filename) {
+  response.writeHead(200, {
+    'Content-Type': 'application/xml',
+    'Content-Disposition': `inline; filename="${filename}"`,
+    'Access-Control-Expose-Headers': 'Content-Disposition'
+  })
+  response.write(payload)
+  response.end()
+}
+exports.writeNoContent = function (response) {
+  response.writeHead(204)
   response.end()
 }
 

@@ -343,6 +343,164 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
 
 }
 
+exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, elevate, userObject) {
+  try {
+    let siData = {
+      SID_NAME: "",
+      SID_DATA: ""
+    }
+    let stigData = {
+      VULN_ATTRIBUTE: "",
+      ATTRIBUTE_DATA: ""
+    }
+    let ckl = {
+      CHECKLIST: {
+        ASSET: {
+          ASSET_TYPE: "",
+          HOST_NAME: "",
+          HOST_IP: "",
+          HOST_MAC: "",
+          HOST_GUID: "",
+          HOST_FQDN: "",
+          TECH_AREA: "",
+          TARGET_KEY: ""
+        },
+        STIGS: {
+          iSTIG: {
+            STIG_INFO:
+              {
+                SI_DATA: []
+              },
+            VULN: [
+              {
+                STIG_DATA: [],
+                STATUS: "",
+                FINDING_DETAILS: "",
+                COMMENTS: "",
+                SEVERITY_OVERRIDE: "",
+                SEVERITY_JUSTIFICATION: ""
+              }
+            ]
+          }
+        }
+      }
+    }
+    let sqlGetBenchmarkId = "select s.stigId,s.title, r.description, r.version, r.release, r.benchmarkDate from stigs.stigs s left join stigs.revisions r on s.stigId=r.stigId where r.revId = :revId"
+    let sqlGetAsset = "select name,profile,ip from stigman.assets where assetId = :assetId"
+    let sqlGetCCI = "select controlnumber from stigs.rule_control_map where ruleId = :ruleId and controltype='CCI'"
+    let sqlGetResults = `
+    select
+      g.groupId as "groupId",
+      r.severity as "severity",
+      g.title as "groupTitle",
+      r.ruleId as "ruleId",
+      r.title as "ruleTitle",
+      r.version as "version",
+      r.vulnDiscussion as "vulnDiscussion",
+      r.iaControls as "iaControls",
+    --  The two lines below are hacks that only display a subset of the content and fix texts.
+    --  We should be doing some type of concatenation
+      MAX(c.content) as "checkContent",
+      MAX(to_char(substr(f.text,0,3999))) as "fixText",
+      r.falsePositives as "falsePositives",
+      r.falseNegatives as "falseNegatives",
+      r.documentable as "documentable",
+      r.mitigations as "mitigations",
+      r.potentialImpacts as "potentialImpacts",
+      r.thirdPartyTools as "thirdPartyTools",
+      r.mitigationControl as "mitigationControl",
+      r.responsibility as "responsibility",
+      r.securityOverrideGuidance as "securityOverrideGuidance",
+      NVL(rev.stateId,0) as "stateId",
+      rev.stateComment as "stateComment",
+      act.action as "action",
+      rev.actionComment as "actionComment",
+      to_char(rev.ts,'yyyy-mm-dd hh24:mi:ss') as "ts"
+    from
+      assets s
+      left join stigs.rev_profile_group_map rpg on s.profile=rpg.profile
+      left join stigs.groups g on rpg.groupId=g.groupId
+      left join stigs.rev_group_map rg on (rpg.groupId=rg.groupId and rpg.revId=rg.revId)
+      left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
+      left join stigs.rules r on rgr.ruleId=r.ruleId
+      left join stigs.rule_check_map rc on r.ruleId=rc.ruleId
+      left join stigs.checks c on rc.checkId=c.checkId
+      left join stigs.rule_fix_map rf on r.ruleId=rf.ruleId
+      left join stigs.fixes f on rf.fixId=f.fixId
+      left join reviews rev on (r.ruleId=rev.ruleId and s.assetId=rev.assetId)
+      left join actions act on act.actionId=rev.actionId
+    where
+      s.assetId = :assetId
+      and rg.revId = :revId
+    group by
+      g.groupId,
+      r.severity,
+      g.title,
+      r.ruleId,
+      r.title,
+      r.version,
+      r.vulnDiscussion,
+      r.iaControls,
+    --	c.content,
+    --	to_char(substr(f.text,0,8000)),
+      r.falsePositives,
+      r.falseNegatives,
+      r.documentable,
+      r.mitigations,
+      r.potentialImpacts,
+      r.thirdPartyTools,
+      r.mitigationControl,
+      r.responsibility,
+      r.securityOverrideGuidance,
+      rev.stateId,
+      rev.stateComment,
+      act.action,
+      rev.actionComment,
+      rev.ts,
+      rg.groupId
+    order by
+      DECODE(substr(g.groupId,1,2),'V-',lpad(substr(g.groupId,3),6,'0'),g.groupId) asc
+    `
+    let stigDataRef = [
+      { Vuln_Num: 'groupId' },
+      { Severity: 'severity' },
+      { Group_Title: 'groupTitle' },
+      { Rule_ID: 'ruleId' },
+      { Rule_Ver: 'version' },
+      { Rule_Title: 'ruleTitle' },
+      { Vuln_Discuss: 'vulnDiscussion' },
+      { IA_Controls: 'iaControls' },
+      { Check_Content: 'checkContent' },
+      { Fix_Text: 'fixText' },
+      { False_Positives: 'falsePositives' },
+      { False_Negatives: 'falseNegatives' },
+      { Documentable: 'documentable' },
+      { Mitigations: 'mitigations' },
+      { Potential_Impact: 'potentialImpacts' },
+      { Third_Party_Tools: 'thirdPartyTools' },
+      { Mitigation_Control: 'mitigationControl' },
+      { Responsibility: 'responsibility' },
+      { Security_Override_Guidance: 'securityOverrideGuidance' }
+    ]
+    let stateStrings = {
+      4: 'Open',
+      3: 'NotAFinding',
+      2: 'Not_Applicable',
+      1: 'Not_Reviewed',
+      0: 'Not_Reviewed'
+    }	
+    
+    
+
+
+
+
+  }
+  catch (e) {
+
+  }
+}
+
 /**
  * Create an Asset
  *
@@ -434,14 +592,53 @@ exports.getAssets = async function(packageId, benchmarkId, dept, projection, ele
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns List
  **/
-exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, projection, elevate, userObject) {
+exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, format, elevate, userObject) {
   try {
-    let rows = await this.queryChecklist(projection, {
-      assetId: assetId,
-      benchmarkId: benchmarkId,
-      revisionStr: revisionStr
-    }, elevate, userObject)
-    return (rows)
+    switch (format) {
+      case 'json':
+        let rows = await this.queryChecklist(null, {
+          assetId: assetId,
+          benchmarkId: benchmarkId,
+          revisionStr: revisionStr
+        }, elevate, userObject)
+        return (rows)
+      case 'ckl':
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<CHECKLIST>
+  <ASSET>
+    <ASSET_TYPE>string</ASSET_TYPE>
+    <HOST_NAME>string</HOST_NAME>
+    <HOST_IP>string</HOST_IP>
+    <HOST_MAC>string</HOST_MAC>
+    <HOST_GUID>string</HOST_GUID>
+    <HOST_FQDN>string</HOST_FQDN>
+    <TECH_AREA>string</TECH_AREA>
+    <TARGET_KEY>string</TARGET_KEY>
+  </ASSET>
+  <STIGS>
+    <iSTIG>
+      <STIG_INFO>
+        <SI_DATA>
+          <SID_NAME>string</SID_NAME>
+          <SID_DATA>string</SID_DATA>
+        </SI_DATA>
+      </STIG_INFO>
+      <VULN>
+        <STIG_DATA>
+          <VULN_ATTRIBUTE>string</VULN_ATTRIBUTE>
+          <ATTRIBUTE_DATA>string</ATTRIBUTE_DATA>
+        </STIG_DATA>
+        <STATUS>Open</STATUS>
+        <FINDING_DETAILS>string</FINDING_DETAILS>
+        <COMMENTS>string</COMMENTS>
+        <SEVERITY_OVERRIDE>string</SEVERITY_OVERRIDE>
+        <SEVERITY_JUSTIFICATION>string</SEVERITY_JUSTIFICATION>
+      </VULN>
+    </iSTIG>
+  </STIGS>
+</CHECKLIST>`
+        return (xml)
+    }
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

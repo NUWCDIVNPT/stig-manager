@@ -3,6 +3,7 @@
 var writer = require('../utils/writer.js');
 var config = require('../utils/config')
 var Asset = require(`../service/${config.database.type}/AssetService`);
+const dbUtils = require(`../service/${config.database.type}/utils`)
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
@@ -83,10 +84,20 @@ module.exports.getChecklistByAssetStig = async function getAssets (req, res, nex
     let assetId = req.swagger.params['assetId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let revisionStr = req.swagger.params['revisionStr'].value
-    // let projection = req.swagger.params['projection'].value
+    let format = req.swagger.params['format'].value || 'json'
     let elevate = req.swagger.params['elevate'].value
-    let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, null, elevate, req.userObject )
-    writer.writeJson(res, response)
+    if (await dbUtils.userHasAssetStig(assetId, benchmarkId, elevate, req.userObject)) {
+      let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, elevate, req.userObject )
+      if (format === 'json') {
+        writer.writeJson(res, response)
+      }
+      else {
+        writer.writeXml(res, response, `${benchmarkId}-${revisionStr}-${assetId}.ckl`)
+      }
+    }
+    else {
+      writer.writeNoContent(res)
+    }
   }
   catch (err) {
     writer.writeJson(res, err)
@@ -100,14 +111,15 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-      let assetToUpdate = await Asset.getAsset(assetId, projection, true, req.userObject)
 
-      // Check if IAO can update this asset
-      if (!req.userObject.canAdmin && req.userObject.role == 'IAO' && !assetToUpdate) {
-        writer.writeJson(res, writer.respondWithCode ( 401, {message: `User has insufficient privilege to complete this request.`} ) )
-        return
+      // Check if IAO role has access to this asset
+      if (request.userObject.role == 'IAO' && !req.userObject.canAdmin) {
+        let assetVerify = await Asset.getAsset(assetId, projection, false, req.userObject)
+        if ( !assetVerify ) {
+          writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+          return
+        }
       }
-
       let response = await Asset.updateAsset( assetId, body, projection, req.userObject )
       writer.writeJson(res, response)
     }
@@ -116,6 +128,6 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
     }
   }
   else {
-    writer.writeJson(res, writer.respondWithCode ( 401, {message: `User has insufficient privilege to complete this request.`} ) )    
+    writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
   }
 }

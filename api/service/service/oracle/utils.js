@@ -207,6 +207,48 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
   }
 }
 
+// Returns Boolean
+module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
+  try {
+    let context, sql
+    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+      return true
+    } else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+      sql = `
+        SELECT
+          a.assetId
+        FROM
+          stigman.assets a
+        WHERE
+          a.assetId = :assetId and a.dept = :dept
+      `
+      let connection = await oracledb.getConnection()
+      let result = await connection.execute(sql, [assetId, userObject.dept])
+      await connection.close()
+      return result.rows.length > 0   
+    } else {
+      sql = `
+        SELECT
+          sa.assetId,
+          sa.stigId
+        FROM
+          stigman.user_stig_asset_map usa
+          inner join stigman.stig_asset_map sa on usa.saId = sa.saId
+        WHERE
+          usa.userId = :userId and assetId = :assetId and stigId = :benchmarkId`
+      let connection = await oracledb.getConnection()
+      let result = await connection.execute(sql, [userObject.id, assetId, benchmarkId])
+      await connection.close()
+      return result.rows.length > 0   
+    }
+  }
+  catch (e) {
+    throw (e)
+  }
+}
+
+
 // @param reviews Array List of Review objects
 // @param elevate Boolean 
 // @param userObject Object
