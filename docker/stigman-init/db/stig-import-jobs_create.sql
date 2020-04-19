@@ -63,6 +63,16 @@ CREATE TABLE stig_import_jobs.import_errors (
 
 
 GRANT ALL ON stig_import_jobs.import_errors TO &&stig_import_jobs_role;
+
+
+
+PROMPT Creating Table stig_import_jobs.stig_aliases ...
+CREATE TABLE stig_import_jobs.stig_aliases (
+  aliasGroup NUMBER(10,0),
+  stigId VARCHAR2(255 CHAR)
+);
+
+GRANT ALL ON stig_import_jobs.stig_aliases TO &&stig_import_jobs_role;
 -- DROP TABLE item_xccdf_map CASCADE CONSTRAINTS;
 
 

@@ -108,7 +108,7 @@ my $sqlContentInJobs = "SELECT sha1 from stig_import_jobs.contents where sha1 = 
 my $sqlContentInRevisions = "SELECT sha1 from revisions where sha1 = ?";
 my $sqlGetXccdfId = "SELECT xccdfId FROM stig_import_jobs.xccdfs WHERE filename = ? and sha1 = ?";
 my $sqlGetAliasGroupByStigId = "SELECT aliasGroup from stig_import_jobs.stig_aliases sa WHERE stigId = ?";
-my $sqlGetNextAliasGroup = "SELECT MAX(aliasGroup) + 1 as nextAliasGroup from stig_import_jobs.stig_aliases sa";
+my $sqlGetNextAliasGroup = "SELECT NVL(MAX(aliasGroup) + 1,1) as nextAliasGroup from stig_import_jobs.stig_aliases sa";
 my $sqlGetAliasesByGroup = "SELECT stigId from stig_import_jobs.stig_aliases sa WHERE aliasGroup = ?";
 my $sqlGetAliasesByStigId = "SELECT stigId from stig_import_jobs.stig_aliases sa WHERE aliasGroup = (SELECT aliasGroup from stig_import_jobs.stig_aliases sa WHERE stigId = ?)";
 
