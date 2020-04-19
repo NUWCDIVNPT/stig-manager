@@ -232,6 +232,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   // Include extra columns for Rules with details OR individual Rule
   if ( inProjection && inProjection.includes('details') ) {
     columns.push(
+      'r.version as "version"',
       'r.weight as "weight"',
       'r.vulnDiscussion as "vulnDiscussion"',
       'r.falsePositives as "falsePositives"',
@@ -242,9 +243,11 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       'r.potentialImpacts as "potentialImpacts"',
       'r.thirdPartyTools as "thirdPartyTools"',
       'r.mitigationControl as "mitigationControl"',
-      'r.responsibility as "responsibility"'
+      'r.responsibility as "responsibility"',
+      'r.iacontrols as "iacontrols"'
     )
     groupBy.push(
+      'r.version',
       'r.weight',
       'r.vulnDiscussion',
       'r.falsePositives',
@@ -255,7 +258,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       'r.potentialImpacts',
       'r.thirdPartyTools',
       'r.mitigationControl',
-      'r.responsibility'
+      'r.responsibility',
+      'r.iacontrols'
     )
   }
 
