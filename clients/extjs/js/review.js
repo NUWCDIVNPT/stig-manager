@@ -245,10 +245,59 @@ function addReview(leaf, selectedRule, selectedResource) {
               text: 'CKL',
               iconCls: 'sm-export-icon',
               tooltip: 'Download this checklist in DISA STIG Viewer format',
-              handler: function (item, eventObject) {
-                var lo = groupStore.lastOptions;
-                let revId =
-                  window.location = 'pl/getCurrentCkl.pl' + '?revId=' + lo.params.revId + '&assetId=' + lo.params.assetId;
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  let ckl = await item.getCkl(leaf)
+                  item.downloadBlob(ckl.blob, ckl.filename)               
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  alert(e.message)
+                }
+              },
+              getCkl: function (leaf) {
+                return new Promise ( (resolve, reject) => {
+                  var xhr = new XMLHttpRequest()
+                  var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.stigName}/${leaf.stigRevStr}?format=ckl`
+                  xhr.open('GET', url)
+                  xhr.responseType = 'blob'
+                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
+                  xhr.onload = function () {
+                      if (this.status >= 200 && this.status < 300) {
+                          var contentDispo = this.getResponseHeader('Content-Disposition')
+                          //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+                          var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]           
+                          resolve({
+                              blob: xhr.response,
+                              filename: fileName
+                          })
+                      } else {
+                          reject({
+                              status: this.status,
+                              statusText: xhr.statusText
+                            })
+                      }
+                  }
+                  xhr.onerror = function () {
+                      reject({
+                          status: this.status,
+                          message: xhr.statusText
+                        })
+                  }
+                  xhr.send()        
+                })
+              },
+              downloadBlob: function (blob, filename) {
+                let a = document.createElement('a')
+                a.style.display= "none"
+                let url =  window.URL.createObjectURL(blob)
+                a.href = url
+                a.download = filename
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url)               
               }
             }
           ]
