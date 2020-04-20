@@ -1334,9 +1334,6 @@ components:
           type: string
     Package:
       type: object
-      required:
-        - packageId
-        - name
       properties:
         packageId:
           readOnly: true
