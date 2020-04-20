@@ -43,6 +43,19 @@ index e413588..1798406 100644
    config.pathsDict = dictionary;
  }
  
+diff --git a/node_modules/oas-tools/src/lib/utils.js b/node_modules/oas-tools/src/lib/utils.js
+index a80e8c1..63bf5d6 100644
+--- a/node_modules/oas-tools/src/lib/utils.js
++++ b/node_modules/oas-tools/src/lib/utils.js
+@@ -24,7 +24,7 @@ var validator = require('validator');
+ 
+ var fixNullable = function(schema) {
+   Object.getOwnPropertyNames(schema).forEach((property) => {
+-    if (typeof schema[property] === 'object') {
++    if (typeof schema[property] === 'object' && schema[property] !== null) {
+       fixNullable(schema[property]);
+     } else if (property === 'type' && typeof schema[property] === 'string' && schema.nullable === true) {
+       schema.type = [schema.type, "null"];
 diff --git a/node_modules/oas-tools/src/middleware/oas-validator.js b/node_modules/oas-tools/src/middleware/oas-validator.js
 index b4d17e3..a0b800f 100644
 --- a/node_modules/oas-tools/src/middleware/oas-validator.js
