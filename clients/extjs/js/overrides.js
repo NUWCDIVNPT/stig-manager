@@ -1,4 +1,34 @@
 
+// Form.getFieldValues
+// Add boolean parameter to return disabled fields
+// Source: carl.a.smigielski@saic.com
+Ext.override(Ext.form.BasicForm, {
+    getFieldValues: function(dirtyOnly, getDisabled){
+        var o = {},
+            n,
+            key,
+            val;
+        this.items.each(function(f) {
+            if ((!f.disabled || getDisabled) && (dirtyOnly !== true || f.isDirty())) {
+                n = f.getName();
+                key = o[n];
+                val = f.getValue();
+
+                if(Ext.isDefined(key)){
+                    if(Ext.isArray(key)){
+                        o[n].push(val);
+                    }else{
+                        o[n] = [key, val];
+                    }
+                }else{
+                    o[n] = val;
+                }
+            }
+        });
+        return o;
+    }
+})
+
 // Promisfied Ajax.request() method
 // Source: Carl Smigielski
 Ext.override(Ext.Ajax, {

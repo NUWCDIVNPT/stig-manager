@@ -2095,7 +2095,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     let fp = Ext.getCmp('reviewForm' + idAppend)
     Ext.getBody().mask('Saving...')
 
-    let fvalues = fp.getForm().getFieldValues()
+    let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
     let jsonData = {}
     let states = [null, null, 'NA', 'NF', 'O']
     let actions = [null, 'Remediate', 'Mitigate', 'Exception']
@@ -2112,7 +2112,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       jsonData.actionComment = fvalues.actionComment === "" ? null : fvalues.actionComment
     }
     if (typeof fvalues.autoState !== 'undefined') {
-      jsonData.autoState = fvalues.autoState === '1' ? true : false
+      jsonData.autoState = fvalues.autoState === 'true' ? true : false
     }
     try {
       let result, reviewFromApi
