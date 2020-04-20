@@ -18,6 +18,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "fast-xml-parser": "^3.16.0",
+    "he": "^1.2.0",
     "js-yaml": "^3.13.1",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.6.2",

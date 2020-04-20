@@ -2,6 +2,8 @@
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
+const J2X = require("fast-xml-parser").j2xParser
+const he = require('he');
 
 /**
 Generalized queries for asset(s).
@@ -343,27 +345,23 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
 
 }
 
-exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, elevate, userObject) {
+exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId, revisionStr, elevate, userObject) {
   try {
-    let siData = {
-      SID_NAME: "",
-      SID_DATA: ""
-    }
-    let stigData = {
-      VULN_ATTRIBUTE: "",
-      ATTRIBUTE_DATA: ""
-    }
-    let ckl = {
+    let cklJs = {
       CHECKLIST: {
         ASSET: {
-          ASSET_TYPE: "",
-          HOST_NAME: "",
-          HOST_IP: "",
-          HOST_MAC: "",
-          HOST_GUID: "",
-          HOST_FQDN: "",
-          TECH_AREA: "",
-          TARGET_KEY: ""
+          ROLE: 'None',
+          ASSET_TYPE: 'Computing',
+          HOST_NAME: null,
+          HOST_IP: null,
+          HOST_MAC: null,
+          HOST_GUID: null,
+          HOST_FQDN: null,
+          TECH_AREA: null,
+          TARGET_KEY: '2777',
+          WEB_OR_DATABASE: 'false',
+          WEB_DB_SITE: null,
+          WEB_DB_INSTANCE: null
         },
         STIGS: {
           iSTIG: {
@@ -371,21 +369,18 @@ exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, el
               {
                 SI_DATA: []
               },
-            VULN: [
-              {
-                STIG_DATA: [],
-                STATUS: "",
-                FINDING_DETAILS: "",
-                COMMENTS: "",
-                SEVERITY_OVERRIDE: "",
-                SEVERITY_JUSTIFICATION: ""
-              }
-            ]
+            VULN: []
           }
         }
       }
     }
-    let sqlGetBenchmarkId = "select s.stigId,s.title, r.description, r.version, r.release, r.benchmarkDate from stigs.stigs s left join stigs.revisions r on s.stigId=r.stigId where r.revId = :revId"
+    let sqlGetBenchmarkId
+    if (revisionStr === 'latest') {
+      sqlGetBenchmarkId = "select cr.stigId, s.title, cr.revId, cr.description, cr.version, cr.release, cr.benchmarkDate from stigs.current_revs cr left join stigs.stigs s on cr.stigId = s.stigId where cr.stigId = :1"
+    }
+    else {
+      sqlGetBenchmarkId = "select r.stigId,s.title, r.description, r.version, r.release, r.benchmarkDate from stigs.stigs s left join stigs.revisions r on s.stigId=r.stigId where r.revId = :1"
+    }
     let sqlGetAsset = "select name,profile,ip from stigman.assets where assetId = :assetId"
     let sqlGetCCI = "select controlnumber from stigs.rule_control_map where ruleId = :ruleId and controltype='CCI'"
     let sqlGetResults = `
@@ -395,6 +390,7 @@ exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, el
       g.title as "groupTitle",
       r.ruleId as "ruleId",
       r.title as "ruleTitle",
+      r.weight as "weight",
       r.version as "version",
       r.vulnDiscussion as "vulnDiscussion",
       r.iaControls as "iaControls",
@@ -415,7 +411,8 @@ exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, el
       rev.stateComment as "stateComment",
       act.action as "action",
       rev.actionComment as "actionComment",
-      to_char(rev.ts,'yyyy-mm-dd hh24:mi:ss') as "ts"
+      to_char(rev.ts,'yyyy-mm-dd hh24:mi:ss') as "ts",
+      listagg(rulectl.controlnumber, ',') within group (order by rulectl.controlnumber) as "ccis"
     from
       assets s
       left join stigs.rev_profile_group_map rpg on s.profile=rpg.profile
@@ -424,6 +421,7 @@ exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, el
       left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
       left join stigs.rules r on rgr.ruleId=r.ruleId
       left join stigs.rule_check_map rc on r.ruleId=rc.ruleId
+      left join stigs.rule_control_map rulectl on (r.ruleId = rulectl.ruleId and rulectl.controltype='CCI')
       left join stigs.checks c on rc.checkId=c.checkId
       left join stigs.rule_fix_map rf on r.ruleId=rf.ruleId
       left join stigs.fixes f on rf.fixId=f.fixId
@@ -438,6 +436,7 @@ exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, el
       g.title,
       r.ruleId,
       r.title,
+      r.weight,
       r.version,
       r.vulnDiscussion,
       r.iaControls,
@@ -461,43 +460,132 @@ exports.cklFromAssetStig = async function (assetId, benchmarkId, revisionStr, el
     order by
       DECODE(substr(g.groupId,1,2),'V-',lpad(substr(g.groupId,3),6,'0'),g.groupId) asc
     `
-    let stigDataRef = [
-      { Vuln_Num: 'groupId' },
-      { Severity: 'severity' },
-      { Group_Title: 'groupTitle' },
-      { Rule_ID: 'ruleId' },
-      { Rule_Ver: 'version' },
-      { Rule_Title: 'ruleTitle' },
-      { Vuln_Discuss: 'vulnDiscussion' },
-      { IA_Controls: 'iaControls' },
-      { Check_Content: 'checkContent' },
-      { Fix_Text: 'fixText' },
-      { False_Positives: 'falsePositives' },
-      { False_Negatives: 'falseNegatives' },
-      { Documentable: 'documentable' },
-      { Mitigations: 'mitigations' },
-      { Potential_Impact: 'potentialImpacts' },
-      { Third_Party_Tools: 'thirdPartyTools' },
-      { Mitigation_Control: 'mitigationControl' },
-      { Responsibility: 'responsibility' },
-      { Security_Override_Guidance: 'securityOverrideGuidance' }
+
+    // Fetch data
+    let oracleOptions = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+
+    // ASSET
+    let resultGetAsset = await connection.execute(sqlGetAsset, {assetId: assetId}, oracleOptions)
+    cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset.rows[0].NAME
+    cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset.rows[0].IP
+
+    // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
+    // Calculate revId
+    let resultGetBenchmarkId, revId
+    if (revisionStr === 'latest') {
+      resultGetBenchmarkId = await connection.execute(sqlGetBenchmarkId, [benchmarkId], oracleOptions)
+      revId = resultGetBenchmarkId.rows[0].REVID
+    }
+    else {
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+      revId =  `${benchmarkId}-${results[1]}-${results[2]}`
+      resultGetBenchmarkId = await connection.execute(sqlGetBenchmarkId, [revId], oracleOptions)
+    }
+
+    let stig = resultGetBenchmarkId.rows[0]
+    let siDataRefs = [
+      { SID_NAME: 'version', SID_DATA: stig.VERSION },
+      { SID_NAME: 'classification' },
+      { SID_NAME: 'customname' },
+      { SID_NAME: 'stigid', SID_DATA: stig.STIGID },
+      { SID_NAME: 'description', SID_DATA: stig.DESCRIPTION },
+      { SID_NAME: 'filename', SID_DATA: 'stig-manager-oss' },
+      { SID_NAME: 'releaseinfo', SID_DATA: `Release: ${stig.RELEASE} Benchmark Date: ${stig.BENCHMARKDATE}`},
+      { SID_NAME: 'title', SID_DATA: stig.TITLE },
+      { SID_NAME: 'uuid', SID_DATA: '391aad33-3cc3-4d9a-b5f7-0d7538b7b5a2' },
+      { SID_NAME: 'notice', SID_DATA: 'terms-of-use' },
+      { SID_NAME: 'source', }
     ]
-    let stateStrings = {
-      4: 'Open',
-      3: 'NotAFinding',
-      2: 'Not_Applicable',
-      1: 'Not_Reviewed',
-      0: 'Not_Reviewed'
-    }	
-    
-    
+    let siDataArray = cklJs.CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
+    siDataRefs.forEach(siDatum => {
+      siDataArray.push(siDatum)
+    })
 
+    // CHECKLIST.STIGS.iSTIG.STIG_INFO.VULN
+    let resultGetResults = await connection.execute(sqlGetResults, {assetId: assetId, revId: revId}, oracleOptions)
+    await connection.close()
 
+    let stigDataRef = [
+      ['Vuln_Num', 'groupId' ],
+      ['Severity',  'severity' ],
+      ['Group_Title',  'groupTitle' ],
+      ['Rule_ID',  'ruleId' ],
+      ['Rule_Ver',  'version' ],
+      ['Rule_Title',  'ruleTitle' ],
+      ['Vuln_Discuss',  'vulnDiscussion' ],
+      ['IA_Controls',  'iaControls' ],
+      ['Check_Content',  'checkContent' ],
+      ['Fix_Text',  'fixText' ],
+      ['False_Positives',  'falsePositives' ],
+      ['False_Negatives',  'falseNegatives' ],
+      ['Documentable', 'documentable' ],
+      ['Mitigations', 'mitigations' ],
+      ['Potential_Impact', 'potentialImpacts' ],
+      ['Third_Party_Tools', 'thirdPartyTools' ],
+      ['Mitigation_Control', 'mitigationControl' ],
+      ['Responsibility', 'responsibility' ],
+      ['Security_Override_Guidance', 'securityOverrideGuidance' ]
+      // ['Check_Content_Ref', 'securityOverrideGuidance' ]
+      // ['Class', 'securityOverrideGuidance' ]
+      // ['STIGRef', 'securityOverrideGuidance' ]
+      // ['STIG_UUID', 'securityOverrideGuidance' ]
+      // ['CCI_REF', 'securityOverrideGuidance' ]
+    ]
+    let stateStrings = ['Not_Reviewed', 'Not_Reviewed', 'Not_Applicable', 'NotAFinding', 'Open']
 
+    let vulnArray = cklJs.CHECKLIST.STIGS.iSTIG.VULN
+    resultGetResults.rows.forEach( r => {
+      let vulnObj = {
+        STIG_DATA: [],
+        STATUS: stateStrings[r.stateId],
+        FINDING_DETAILS: r.stateComment,
+        COMMENTS: r.action ? `${r.action}: ${r.actionComment}` : null,
+        SEVERITY_OVERRIDE: null,
+        SEVERITY_JUSTIFICATION: null
+      }
+      stigDataRef.forEach(stigDatum => {
+        vulnObj.STIG_DATA.push({
+          VULN_ATTRIBUTE: stigDatum[0],
+          ATTRIBUTE_DATA: r[stigDatum[1]]
+        })
+      })
+      // CCI_REFs
+      let ccis = r.ccis.split(',')
+      ccis.forEach( cci=> {
+        vulnObj.STIG_DATA.push({
+          VULN_ATTRIBUTE: 'CCI_REF',
+          ATTRIBUTE_DATA: cci
+        })
+      })
+      vulnArray.push(vulnObj)
+    })
+
+    let defaultOptions = {
+      attributeNamePrefix : "@_",
+      attrNodeName: "@", //default is false
+      textNodeName : "#text",
+      ignoreAttributes : true,
+      cdataTagName: "__cdata", //default is false
+      cdataPositionChar: "\\c",
+      format: false,
+      indentBy: "  ",
+      supressEmptyNode: false,
+      tagValueProcessor: a => {
+        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
+      },// default is a=>a
+      attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})// default is a=>a
+  };
+  
+    const j2x = new J2X(defaultOptions)
+    let xml = j2x.parse(cklJs)
+    return (xml)
 
   }
   catch (e) {
-
+    throw (e)
   }
 }
 
@@ -603,40 +691,7 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
         }, elevate, userObject)
         return (rows)
       case 'ckl':
-        let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<CHECKLIST>
-  <ASSET>
-    <ASSET_TYPE>string</ASSET_TYPE>
-    <HOST_NAME>string</HOST_NAME>
-    <HOST_IP>string</HOST_IP>
-    <HOST_MAC>string</HOST_MAC>
-    <HOST_GUID>string</HOST_GUID>
-    <HOST_FQDN>string</HOST_FQDN>
-    <TECH_AREA>string</TECH_AREA>
-    <TARGET_KEY>string</TARGET_KEY>
-  </ASSET>
-  <STIGS>
-    <iSTIG>
-      <STIG_INFO>
-        <SI_DATA>
-          <SID_NAME>string</SID_NAME>
-          <SID_DATA>string</SID_DATA>
-        </SI_DATA>
-      </STIG_INFO>
-      <VULN>
-        <STIG_DATA>
-          <VULN_ATTRIBUTE>string</VULN_ATTRIBUTE>
-          <ATTRIBUTE_DATA>string</ATTRIBUTE_DATA>
-        </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>string</FINDING_DETAILS>
-        <COMMENTS>string</COMMENTS>
-        <SEVERITY_OVERRIDE>string</SEVERITY_OVERRIDE>
-        <SEVERITY_JUSTIFICATION>string</SEVERITY_JUSTIFICATION>
-      </VULN>
-    </iSTIG>
-  </STIGS>
-</CHECKLIST>`
+        let xml = await this.cklFromAssetStig(assetId,benchmarkId, revisionStr, elevate, userObject)
         return (xml)
     }
   }
