@@ -419,6 +419,7 @@ paths:
           description: Selects Reviews mapped to a Package
           schema:
             type: integer
+        - $ref: '#/components/parameters/ReviewProjectionQuery'
       responses:
         '200':
           description: ReviewProjected response
@@ -1334,6 +1335,9 @@ components:
           type: string
     Package:
       type: object
+      required:
+        - packageId
+        - name
       properties:
         packageId:
           readOnly: true
@@ -1969,10 +1973,10 @@ components:
         items:
           type: string
           enum:
-            - asset
-            - history
             - rule
+            - history
             - stigs
+            - packages
     ReviewStateQuery:
       name: state
       in: query

@@ -60,14 +60,28 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     'left join stigman.statuses status on r.statusId = status.statusId',
     'left join stigman.actions action on r.actionId = action.actionId',
     'left join stigman.user_data ud on r.userId = ud.id',
-    'left join stigman.assets asset on r.assetId = asset.assetId',
-    'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
+    'left join stigman.assets asset on r.assetId = asset.assetId' //,
+    // 'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
   ]
 
-  // // PROJECTIONS
-  // if (inProjection && inProjection.includes('assets')) {
-  //   columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'assetId' VALUE a.assetId, KEY 'name' VALUE a.name, KEY 'dept' VALUE a.dept ABSENT ON NULL), ',')) || ']' as "assets"`)
-  // }
+  // PROJECTIONS
+  if (inProjection && inProjection.includes('packages')) {
+    columns.push(`(select json_arrayagg(json_object(
+      KEY 'packageId' VALUE p.packageId,
+      KEY 'name' VALUE  p.name))
+      from stigman.asset_package_map ap 
+      left join stigman.packages p on ap.packageId = p.packageId
+      where ap.assetId = r.assetId) as "packages"`)
+  }
+  if (inProjection && inProjection.includes('stigs')) {
+    columns.push(`(select json_arrayagg(json_object(
+      KEY 'benchmarkId' VALUE rev.stigId,
+      KEY 'revisionStr' VALUE  'V'||rev.version||'R'||rev.release))
+      from stigs.rev_group_rule_map rgr 
+      left join stigs.rev_group_map rg on rgr.rgId = rg.rgId
+      left join stigs.revisions rev on rg.revId = rev.revId
+      where rgr.ruleId = r.ruleId) as "stigs"`)
+  }
   // if (inProjection && inProjection.includes('stigs')) {
   //   joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
   //   joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
@@ -241,7 +255,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' order by r.reviewId'
+  sql += ' order by r.assetId, r.ruleId'
   try {
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
@@ -252,13 +266,24 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'done' and 'autoState'
+    // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
       // Handle 'done'
       record.done = record.done == 1 ? true : false
       // Handle 'autoState'
       record.autoState = record.autoState == 1 ? true : false
-    }
+      // Handle packages
+      if (record.packages) {
+        // Check for "empty" arrays 
+         record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
+       }
+      // Handle stigs
+      if (record.stigs) {
+        // Check for "empty" arrays 
+         record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
+       }
+     }
 
     return (result.rows)
   }
@@ -276,11 +301,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
  * returns ReviewProjected
  **/
 exports.importReviews = async function(body, elevate, file, userObject, response) {
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
   try {
-
     // let jobId = await dbUtils.insertJobRecord({
     //   userId: userObject.id,
     //   assetId: body.assetId,
@@ -361,9 +382,9 @@ exports.getReview = async function(reviewId, projection, elevate, userObject) {
  * packageId Integer Selects Reviews mapped to a Package (optional)
  * returns List
  **/
-exports.getReviews = async function(predicates, elevate, userObject) {
+exports.getReviews = async function(projection, predicates, elevate, userObject) {
   try {
-    let rows = await this.queryReviews(null, predicates, elevate, userObject)
+    let rows = await this.queryReviews(projection, predicates, elevate, userObject)
     return (rows)
   }
   catch(err) {
@@ -407,6 +428,7 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
         assetId = :assetId and ruleId = :ruleId`
     let connection = await oracledb.getConnection()
     let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
+    let status = 'created'
     if (result.rowsAffected == 0) {
       let sqlInsert = `
         INSERT INTO stigman.reviews
@@ -415,13 +437,17 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
         (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId, :autoState)
       `
       result = await connection.execute(sqlInsert, binds, {autoCommit: true})
+      status = 'updated'
     }
     await connection.close()
     let rows = await this.queryReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
     }, elevate, userObject)
-    return (rows[0])
+    return ({
+      row: rows[0],
+      status: status
+    })
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

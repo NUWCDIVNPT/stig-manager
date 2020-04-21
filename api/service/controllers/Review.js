@@ -65,8 +65,9 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
 
 module.exports.getReviews = async function getReviews (req, res, next) {
   let elevate = req.swagger.params['elevate'].value
+  let projection = req.swagger.params['projection'].value
   try {
-    let response = await Review.getReviews( {
+    let response = await Review.getReviews( projection, {
         state: req.swagger.params['state'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
@@ -85,8 +86,9 @@ module.exports.getReviews = async function getReviews (req, res, next) {
 
 module.exports.getReviewsByAssetId = async function (req, res, next) {
   let elevate = req.swagger.params['elevate'].value
+  let projection = req.swagger.params['projection'].value
   try {
-    let response = await Review.getReviews( {
+    let response = await Review.getReviews( projection, {
         state: req.swagger.params['state'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
@@ -111,7 +113,11 @@ module.exports.putReview = async function (req, res, next) {
   try {
     if (await dbUtils.userHasAssetRule(assetId, ruleId, elevate, req.userObject)) {
       let response = await Review.putReview( projection, assetId, ruleId, body, elevate, req.userObject)
-      writer.writeJson(res, response)
+      if (response.status === 'updated') {
+        writer.writeJson(res, response.row)
+      } else {
+        writer.writeJson(res, writer.respondWithCode ( 201, response.row ))
+      }
     }
     else {
       throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
