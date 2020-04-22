@@ -40,14 +40,12 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   if (inProjection && inProjection.includes('stigs')) {
     joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
     joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
-    // Issue: API spec says to use lastRevisionStr, not revId
-    columns.push(`'[' || strdagg_param(param_array(json_object(
+    columns.push(`'[' || strdagg_param(param_array(
+      CASE WHEN cr.stigId IS NOT NULL THEN json_object(
       KEY 'benchmarkId' VALUE cr.stigId, 
-      KEY 'lastRevisionStr' VALUE CASE 
-        WHEN cr.stigId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END,
-      KEY 'lastRevisionDate' VALUE CASE
-        WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
-      KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
+      KEY 'lastRevisionStr' VALUE 'V'||cr.version||'R'||cr.release,
+      KEY 'lastRevisionDate' VALUE cr.benchmarkDateSql,
+      KEY 'title' VALUE st.title ABSENT ON NULL) END, ',')) || ']' as "stigs"`)
   }
 
   // PREDICATES
