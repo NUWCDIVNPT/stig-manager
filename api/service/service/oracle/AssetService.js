@@ -30,14 +30,19 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     'stigman.assets a',
     'left join stigman.asset_package_map ap on a.assetId=ap.assetId',
     'left join stigman.packages p on ap.packageId=p.packageId',
-    'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
+    'left join stigman.stig_asset_map sa on a.assetId = sa.assetId',
+    'left join stigman.user_stig_asset_map usa on sa.saId = usa.saId'
   ]
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('packages')) {
-    // joins.push('left join stigman.asset_package_map ap on a.assetId=ap.assetId')
-    // joins.push('left join stigman.packages p on ap.packageId=ap.packageId')
     columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'packageId' VALUE p.packageId, KEY 'name' VALUE p.name ABSENT ON NULL), ',')) || ']' as "packages"`)
+  }
+  if (inProjection && inProjection.includes('adminStats')) {
+    columns.push(`json_object(
+      KEY 'stigCount' VALUE COUNT(Distinct sa.saId),
+      KEY 'stigAssignedCount' VALUE COUNT(Distinct usa.saId)
+      ) as "adminStats"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
     joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
@@ -49,7 +54,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       KEY 'lastRevisionDate' VALUE CASE
         WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
       KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
-  }
+    }
 
   // PREDICATES
   let predicates = {
@@ -77,7 +82,6 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     predicates.binds.push( userObject.dept )
   } 
   else if (context == dbUtils.CONTEXT_USER) {
-    joins.push('left join stigman.user_stig_asset_map usa on sa.saId = usa.saId')
     predicates.statements.push('usa.userId = :userId')
     predicates.binds.push( userObject.id )
 
@@ -132,6 +136,10 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
           if (a.benchmarkId < b.benchmarkId) { c = -1 }
           return c
         })
+      }
+      // Handle stigs 
+      if (record.adminStats) {
+        record.adminStats = JSON.parse(record.adminStats)
       }
     }
     return (result.rows)

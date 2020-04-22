@@ -2004,6 +2004,7 @@ components:
           enum:
             - packages
             - stigs
+            - adminStats
     ReviewProjectionQuery:
       name: projection
       in: query
