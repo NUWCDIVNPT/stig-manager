@@ -100,16 +100,6 @@ function addReview(leaf, selectedRule, selectedResource) {
     listeners: {
       load: function (store, records) {
         var ourGrid = Ext.getCmp('groupGrid' + idAppend);
-
-        // Revision menu
-        // var revisionObject = getRevisionObj(store.reader.jsonData.revisions,store.lastOptions.params.revId,idAppend);
-        // if (Ext.getCmp('revision-menuItem'+idAppend) === undefined) {
-        // 	Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
-        // }
-
-        // Grid title
-        // ourGrid.setTitle(revisionObject.curRevStr);
-
         // Filter the store
         filterGroupStore();
 
@@ -259,7 +249,7 @@ function addReview(leaf, selectedRule, selectedResource) {
               getCkl: function (leaf) {
                 return new Promise ( (resolve, reject) => {
                   var xhr = new XMLHttpRequest()
-                  var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.stigName}/${leaf.stigRevStr}?format=ckl`
+                  var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
                   xhr.open('GET', url)
                   xhr.responseType = 'blob'
                   xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
@@ -753,28 +743,29 @@ function addReview(leaf, selectedRule, selectedResource) {
     let store = Ext.getCmp('groupGrid' + idAppend).getStore()
     store.proxy.setUrl(`${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.stigId}/${item.revisionStr}`, true)
     store.load();
-    loadRevisionMenu(leaf.stigId, item.revId, idAppend)
+    loadRevisionMenu(leaf.stigId, item.revisionStr, idAppend)
+    groupGrid.sm_revisionStr = item.revisionStr
   };
 
-  async function loadRevisionMenu(benchmarkId, revId, idAppend) {
+  async function loadRevisionMenu(benchmarkId, activeRevisionStr, idAppend) {
     try {
       let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions`,
         method: 'GET'
       })
-      let r = JSON.parse(result.response.responseText)
-      let revisionObject = getRevisionObj(r, revId, idAppend)
+      let revisions = JSON.parse(result.response.responseText)
+      let revisionObject = getRevisionObj(revisions, activeRevisionStr, idAppend)
       if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
         Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
       }
-      groupGrid.setTitle(revisionObject.curRevStr);
+      groupGrid.setTitle(revisionObject.activeRevisionLabel);
     }
     catch (e) {
       alert(e.message)
     }
   }
 
-  let getRevisionObj = function (revisions, curRevId, idAppend) {
+  let getRevisionObj = function (revisions, activeRevisionStr, idAppend) {
     let returnObject = {}
     var menu = {
       id: 'revision-menuItem' + idAppend,
@@ -790,14 +781,14 @@ function addReview(leaf, selectedRule, selectedResource) {
       let item = {
         id: `revision-submenu${r.benchmarkId}-${r.version}-${r.release}${idAppend}`,
         text: `Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`,
-        revId: `${r.benchmarkId}-${r.version}-${r.release}`,
+        // revId: `${r.benchmarkId}-${r.version}-${r.release}`,
         revisionStr: r.revisionStr,
         group: 'revision-submenu-group' + idAppend,
         handler: handleRevisionMenu
       }
-      if (item.revId == curRevId) {
+      if (item.revisionStr == activeRevisionStr) {
         item.checked = true;
-        returnObject.curRevStr = item.text;
+        returnObject.activeRevisionLabel = item.text;
       } else {
         item.checked = false;
       }
@@ -2080,9 +2071,8 @@ function addReview(leaf, selectedRule, selectedResource) {
   });
   thisTab.show();
 
-  // groupGrid.getStore().load({params:{assetId:leaf.assetId, stigId:leaf.stigId, revId:leaf.revId}});
   groupGrid.getStore().load();
-  loadRevisionMenu(leaf.stigId, leaf.revId, idAppend)
+  loadRevisionMenu(leaf.stigId, leaf.stigRevStr, idAppend)
 
   async function saveReview(saveParams) {
     // saveParams = {
@@ -2213,13 +2203,6 @@ function addReview(leaf, selectedRule, selectedResource) {
       defaults: {
         anchor: '100%',
         allowBlank: false
-      },
-      baseParams: {
-        assetId: leaf.assetId,
-        assetName: leaf.assetName,
-        revId: leaf.revId,
-        stigName: leaf.stigName,
-        stigId: leaf.stigId
       },
       items: [
         {
