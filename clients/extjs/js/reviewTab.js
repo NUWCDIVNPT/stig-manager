@@ -179,6 +179,7 @@ function getReviewItems() {
 	},{
 		region: 'center',
 		xtype: 'tabpanel',
+		plugins: new Ext.ux.TabCloseOnMiddleClick(),
 		id: 'reviews-center-tab',
 		title: 'STIGManager',
 		enableTabScroll:true,
