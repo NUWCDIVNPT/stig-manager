@@ -30,7 +30,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     'stigman.packages p',
     'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
     'left join stigman.assets a on ap.assetId = a.assetId',
-    'inner join stigman.stig_asset_map sa on a.assetId = sa.assetId'
+    'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
   ]
 
   // PROJECTIONS
