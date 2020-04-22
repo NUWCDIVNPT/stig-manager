@@ -80,8 +80,11 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 
 
 	var groupStore = new Ext.data.JsonStore({
-		url: 'pl/getCurrentGroups.pl',
-		root: 'rows',
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.stigId}/latest`,
+			method: 'GET'
+		}),
+		root: '',
 		id: 'groupStore' + idAppend,
 		fields: groupFields,
 		idProperty: 'ruleId',
@@ -93,15 +96,6 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 			load: function (store,records,options) {
 				var ourGrid = Ext.getCmp('groupGrid' + idAppend);
 				
-				// Revision menu
-				var revisionObject = getRevisionObj(store.reader.jsonData.revisions,store.lastOptions.params.revId,idAppend);
-				if (Ext.getCmp('revision-menuItem'+ idAppend) === undefined) {
-					Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
-				}
-				
-				// Grid title
-				ourGrid.setTitle(revisionObject.curRevStr);
-
 				// Preselection
 				if (options.preselect !== undefined) {
 					if (options.preselect.ruleId !== undefined) {
@@ -325,6 +319,10 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 	// Group grid statistics string
 	/******************************************************/
 	var getStatsString = function (store) {
+		let assetCount = function () {
+			let record = store.getAt(0)
+			return record.data.naCnt + record.data.nfCnt + record.data.nrCnt + record.data.oCnt
+		}
 		var totalChecks = store.getCount();
 		var checksManual = 0;
 		var checksSCAP = 0;
@@ -343,11 +341,11 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 			totalWord = ' check';
 		}
 		var assetWord = ' assets';
-		if (store.reader.jsonData.assetCnt == 1) {
+		if (assetCount == 1) {
 			assetWord = ' asset';
 		}
 		
-		return store.reader.jsonData.assetCnt + assetWord + ' assigned ' + totalChecks + totalWord + ' (' + checksManual + ' Manual, ' + checksSCAP + ' SCAP)';
+		return assetCount() + assetWord + ' assigned ' + totalChecks + totalWord + ' (' + checksManual + ' Manual, ' + checksSCAP + ' SCAP)';
 	};
 
 	/******************************************************/
@@ -356,6 +354,8 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 	var groupGrid = new Ext.grid.GridPanel({
 		region: 'north',
 		id: 'groupGrid' + idAppend,
+		sm_benchmarkId: leaf.stigId,
+		sm_revisionStr: leaf.stigRevStr,
 		filterState: 'All',
 		title: 'Checklist',
 		split:true,
@@ -375,7 +375,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 			listeners: {
 				rowselect: {
 					fn: function(sm,index,record) {
-						handleGroupSelectionForPackage(record,idAppend,leaf,thisTab.revId); // defined below
+						handleGroupSelectionForPackage(record, idAppend, leaf, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined below
 					}
 				}
 			}
@@ -453,7 +453,6 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 				align: 'center',
 				dataIndex: 'cat',
 				fixed: true,
-				hidden: true,
 				sortable: true
 			}
 			,{ 	
@@ -474,7 +473,6 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 				renderer:renderCounts,
 				dataIndex: 'nfCnt',
 				fixed: true,
-				hidden: true,
 				sortable: true
 			}
 			,{ 	
@@ -485,7 +483,6 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 				renderer:renderCounts,
 				dataIndex: 'naCnt',
 				fixed: true,
-				hidden: true,
 				sortable: true
 			}
 			,{ 	
@@ -496,7 +493,6 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 				renderer:renderOpen,
 				dataIndex: 'nrCnt',
 				fixed: true,
-				hidden: true,
 				sortable: true
 			}
 			,{ 	
@@ -600,50 +596,65 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 		})
 	});
 	
-	var handleRevisionMenu = function (item,eventObject) {
-		thisTab.revId = item.revId;
-		Ext.getCmp('groupGrid' + idAppend).getStore().load({
-			params:{
-				packageId:leaf.packageId,
-				revId:item.revId,
-				stigId:leaf.stigId
-			},
-			callback: function (records,options,success) {
-				if (success) {
-					thisTab.revId = item.revId;
-				}
-			}
-		});
+	var handleRevisionMenu = function (item, eventObject) {
+		let store = Ext.getCmp('groupGrid' + idAppend).getStore()
+		store.proxy.setUrl(`${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.stigId}/${item.revisionStr}`, true)
+		store.load();
+		loadRevisionMenu(leaf.stigId, item.revisionStr, idAppend)
+		groupGrid.sm_revisionStr = item.revisionStr
 	};
 	
-	var getRevisionObj = function (revisions,revId,idAppend) {
-		var returnObject = new Object
-		var menu = new Object;
-		menu.id = 'revision-menuItem' + idAppend,
-		menu.menu = new Object;
-		var itemsArray = new Array;
-		menu.text = 'Revisions';
-		menu.menu.items = itemsArray;
-		menu.hideOnClick = false;
+	async function loadRevisionMenu(benchmarkId, activeRevisionStr, idAppend) {
+		try {
+		  let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions`,
+			method: 'GET'
+		  })
+		  let revisions = JSON.parse(result.response.responseText)
+		  let revisionObject = getRevisionObj(revisions, activeRevisionStr, idAppend)
+		  if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
+			Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
+		  }
+		  groupGrid.setTitle(revisionObject.activeRevisionLabel);
+		}
+		catch (e) {
+		  alert(e.message)
+		}
+	}
+	
+	let getRevisionObj = function (revisions, activeRevisionStr, idAppend) {
+		let returnObject = {}
+		var menu = {
+		  id: 'revision-menuItem' + idAppend,
+		  text: 'Revisions',
+		  hideOnClick: false,
+		  menu: {
+			items: []
+		  }
+		};
 		for (var i = 0; i < revisions.length; i++) {
-			var item = new Object;
-			item.id = 'revision-submenu' + revisions[i].revId + idAppend;
-			item.text = revisions[i].revisionStr;
-			item.revId = revisions[i].revId;
-			item.group = 'revision-submenu-group' + idAppend;
-			item.handler = handleRevisionMenu;
-			if (revisions[i].revId == revId) {
-				item.checked = true;
-				returnObject.curRevStr = revisions[i].revisionStr;
-			} else {
-				item.checked = false;
-			}
-			itemsArray.push(item);
+		  let r = revisions[i]
+		  let benchmarkDateJs = new Date(r.benchmarkDate)
+		  let item = {
+			id: `revision-submenu${r.benchmarkId}-${r.version}-${r.release}${idAppend}`,
+			text: `Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`,
+			// revId: `${r.benchmarkId}-${r.version}-${r.release}`,
+			revisionStr: r.revisionStr,
+			group: 'revision-submenu-group' + idAppend,
+			handler: handleRevisionMenu
+		  }
+		  if (item.revisionStr == activeRevisionStr) {
+			item.checked = true;
+			returnObject.activeRevisionLabel = item.text;
+		  } else {
+			item.checked = false;
+		  }
+		  menu.menu.items.push(item);
 		}
 		returnObject.menu = menu;
 		return returnObject;
 	};
-	
+		
 	function filterGroupStore () {
 		var filterArray = [];
 		// Filter menu
@@ -1263,6 +1274,40 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 /******************************************************/
 // END Reviews Panel
 /******************************************************/
+
+let contentTpl = new Ext.XTemplate(
+    '<div class=cs-home-header-top>{ruleId}</div>',
+    '<div class=cs-home-header-sub>{title} (Category {severity})</div>',
+    '<div class=cs-home-body-title>Manual Check',
+    '<div class=cs-home-body-text>',
+    '<tpl for="checks">',
+    '<pre>{[values.content.trim()]}</pre>',
+    '</tpl>',
+    '</div>',
+    '</div>',
+    '<div class=cs-home-body-title>Fix',
+    '<div class=cs-home-body-text>',
+    '<tpl for="fixes">',
+    '<pre>{[values.text.trim()]}</pre>',
+    '</tpl>',
+    '</div>',
+    '</div>',
+    '<div class=cs-home-header-sub></div>',
+    '<div class=cs-home-body-title>Other Data',
+    '<div class=cs-home-body-text><b>Vulnerability Discussion</b><br><br>',
+    '<pre>{[values.vulnDiscussion.trim()]}</pre>',
+    '</div>',
+    '<div class=cs-home-body-text><b>Documentable: </b>{documentable}</div>',
+    '<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
+    '<div class=cs-home-body-text><b>Controls: </b><br>',
+    '<table class=cs-home-body-table border="1">',
+    '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
+    '<tpl for="ccis">',
+    '<tr><td>{cci}</td><td>{ap}</td><td>{control}</td></tr>',
+    '</tpl>',
+    '</table>',
+    '</div>',
+    '</div>')
 
 /******************************************************/
 // START Resources Panel
@@ -1914,7 +1959,8 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 					padding: 20,
 					autoScroll: true,
 					id: 'content-panel' + idAppend,
-					title: 'Rule'
+					title: 'Rule',
+					tpl: contentTpl
 				}
 			]
 		},
@@ -1966,6 +2012,8 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 		title: leaf.packageName + " : " + leaf.stigId,
 		packageId: leaf.packageId,
 		revId: leaf.revId,
+		revisionStr: leaf.stigRevStr,
+		benchmarkId: leaf.stigId,
 		stigId: leaf.stigId,
 		closable:true,
 		layout: 'border',
@@ -1982,34 +2030,37 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 	// }
 	
 	groupGrid.getStore().load({
-		params:{
-			revId:leaf.revId,
-			stigId:leaf.stigId,
-			packageId:leaf.packageId
-		},
 		preselect: {
 			ruleId: selectedRule,
 			assetId: selectedAsset
-		}
+		}		
 	});
+	loadRevisionMenu(leaf.stigId, leaf.stigRevStr, idAppend)
+  
 
 }; //end addReview();
 
-function handleGroupSelectionForPackage(record,idAppend,leaf,revId) {
+async function handleGroupSelectionForPackage(record, idAppend, leaf, benchmarkId, revisionStr) {
 	var contentPanel = Ext.getCmp('content-panel' + idAppend);
-	contentPanel.load({
-		url: 'pl/getCurrentContent.pl',
-		params: {ruleId:record.data.ruleId}
-	});
+	let contentReq = await Ext.Ajax.requestPromise({
+		url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${record.data.ruleId}`,
+		method: 'GET',
+		params: {
+			projection: ['details','cci','checks','fixes']
+			// projection: 'details'
+		}
+	})
+	let content = JSON.parse(contentReq.response.responseText)
+	contentPanel.update(content)
 	contentPanel.setTitle('Rule for Group ' + record.data.groupId);
+
 	var reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
 	reviewsGrid.getStore().load({
 		params: {
 			ruleId:record.data.ruleId,
 			packageId:leaf.packageId,
 			stigId:leaf.stigId,
-			revId:revId
-		}
+			revId:leaf.revId		}
 	});
 }
 
