@@ -158,6 +158,49 @@ paths:
         - oauth:
             - 'stig-manager:package'
       x-swagger-router-controller: Package
+  '/packages/{packageId}/checklists/{benchmarkId}/{revisionStr}':
+    parameters:
+      - name: packageId
+        in: path
+        description: A path parameter that indentifies a Package
+        required: true
+        schema:
+          type: integer
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+      - name: revisionStr
+        in: path
+        description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+        required: true
+        schema:
+          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+          type: string
+    get:
+      tags:
+        - Package
+      summary: Return the Checklist for the supplied Package and STIG
+      operationId: getChecklistByPackageStig
+      responses:
+        '200':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+      x-swagger-router-controller: Package
   /assets:
     parameters:
       - $ref: '#/components/parameters/AssetProjectionQuery'

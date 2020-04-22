@@ -17,7 +17,7 @@ module.exports.createPackage = async function createPackage (req, res, next) {
     }
   } 
   else {
-    writer.writeJson(res, writer.respondWithCode ( 401, {message: "User has insufficient privilege to complete this request."} ) )
+    writer.writeJson(res, writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
   }
 }
 
@@ -34,7 +34,20 @@ module.exports.deletePackage = async function deletePackage (req, res, next) {
     }
   }
   else {
-    writer.writeJson(res, writer.respondWithCode ( 401, {message: "User has insufficient privilege to complete this request."} ) )
+    writer.writeJson(res, writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+  }
+}
+
+module.exports.getChecklistByPackageStig = async function getChecklistByPackageStig (req, res, next) {
+  let packageId = req.swagger.params['packageId'].value
+  let benchmarkId = req.swagger.params['benchmarkId'].value
+  let revisionStr = req.swagger.params['revisionStr'].value
+  try {
+    let response = await Package.getChecklistByPackageStig(packageId, benchmarkId, revisionStr, req.userObject )
+    writer.writeJson(res, response)
+  }
+  catch (err) {
+    writer.writeJson(res, err)
   }
 }
 
@@ -77,6 +90,6 @@ module.exports.updatePackage = async function updatePackage (req, res, next) {
     }
   } 
   else {
-    writer.writeJson(res, writer.respondWithCode ( 401, {message: "User has insufficient privilege to complete this request."} ) )
+    writer.writeJson(res, writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
   }
 }

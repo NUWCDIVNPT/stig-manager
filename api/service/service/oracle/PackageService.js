@@ -274,6 +274,119 @@ exports.deletePackage = async function(packageId, projection, userObject) {
 
 
 /**
+ * Return the Checklist for the supplied Package and STIG 
+ *
+ * packageId Integer A path parameter that indentifies a Package
+ * benchmarkId String A path parameter that indentifies a STIG
+ * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
+ * returns PackageChecklist
+ **/
+exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revisionStr, userObject ) {
+  try {
+    // Commond binds
+    let binds = {
+      packageId: packageId,
+      benchmarkId: benchmarkId
+    }
+
+    // Non-current revision
+    if (revisionStr !== 'latest') {
+      joins.splice(0, 1, 'stigs.revisions rev')
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+      binds.version = results[1]
+      binds.release = results[2]
+      let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
+    }
+
+    // Non-staff access control
+    let userAccessControlPredicate = ''
+    if (userObject.role == "IAO") {
+      userAccessControlPredicate = 'and ap.assetId in (select assetId from stigman.assets where dept=:dept)'
+      binds.dept = userObject.dept
+    } 
+    else if (userObject.role != "Staff") { // CSWF
+      userAccessControlPredicate = `and ap.assetId in (
+        select
+            sa.assetId
+        from
+            stigman.user_stig_asset_map usa 
+            left join stigman.stig_asset_map sa on usa.saId=sa.saId
+        where
+            usa.userId=:userId)`
+      binds.userId = userObject.id
+    }
+  
+    let sql = `
+      select
+        r.ruleId as "ruleId"
+        ,r.ruleTitle as "ruleTitle"
+        ,r.groupId as "groupId"
+        ,r.groupTitle as "groupTitle"
+        ,r.severity as "severity"
+        ,r.checkType as "checkType"
+        ,sum(CASE WHEN r.stateId = 4 THEN 1 ELSE 0 END) as "oCnt"
+        ,sum(CASE WHEN r.stateId = 3 THEN 1 ELSE 0 END) as "nfCnt"
+        ,sum(CASE WHEN r.stateId = 2 THEN 1 ELSE 0 END) as "naCnt"
+        ,sum(CASE WHEN r.stateId is null THEN 1 ELSE 0 END) as "nrCnt"
+        ,sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END) as "approveCnt"
+        ,sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END) as "rejectCnt"
+        ,sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END) as "readyCnt"
+      from (
+        select
+          ap.assetId
+          ,rgr.ruleId
+          ,rules.title as ruleTitle
+          ,rules.severity
+          ,rg.groupId
+          ,g.title as groupTitle
+          ,r.stateId
+          ,r.statusId
+          ,CASE WHEN ro.ruleId is null
+            THEN 'Manual'
+            ELSE 'SCAP'
+          END	as checkType
+        from
+          stigman.asset_package_map ap
+          left join stigman.stig_asset_map sa on ap.assetId=sa.assetId
+          left join stigs.current_revs cr on sa.stigId=cr.stigId
+          left join stigs.rev_group_map rg on cr.revId=rg.revId
+          left join stigs.groups g on rg.groupId=g.groupId
+          left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
+          left join stigs.rules rules on rgr.ruleId=rules.ruleId
+          left join stigs.rule_oval_map ro on rgr.ruleId=ro.ruleId
+          left join stigman.reviews r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)
+        where
+          ap.packageId=:packageId
+          and cr.stigId=:benchmarkId
+          ${userAccessControlPredicate}
+        ) r
+      group by
+        r.ruleId
+        ,r.ruleTitle
+        ,r.severity
+        ,r.groupId
+        ,r.groupTitle
+        ,r.checkType
+      order by
+        DECODE(substr(r.groupId,1,2),'V-',lpad(substr(r.groupId,3),6,'0'),r.groupId) asc
+    `
+    // Send query
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
+    let connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, binds, options)
+    await connection.close()
+
+    return (result.rows)
+  }
+  catch (e) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+
+/**
  * Return a Package
  *
  * packageId Integer A path parameter that indentifies a Package
