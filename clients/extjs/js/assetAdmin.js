@@ -5,7 +5,7 @@ $Id: assetAdmin.js 820 2017-08-31 14:14:41Z csmig $
 function addAssetAdmin() {
 
 	var stigFields = Ext.data.Record.create([
-		{	name:'stigId',
+		{	name:'benchmarkId',
 			type: 'string'
 		},{
 			name:'title',
@@ -17,29 +17,29 @@ function addAssetAdmin() {
 		}
 	]);
 	var stigStore = new Ext.data.JsonStore({
-		url: 'pl/getStigsForProps.pl',
+		url: `${STIGMAN.Env.apiBase}/stigs`,
 		fields: stigFields,
 		autoLoad: true,
-		root: 'rows',
+		root: '',
 		sortInfo: {
 			field: 'title',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
-		idProperty: 'stigId'
+		idProperty: 'benchmarkId'
 	});
 		var packageFields = Ext.data.Record.create([
 			{	name:'packageId',
 				type: 'number'
 			},{
-				name:'packageName',
+				name:'name',
 				type: 'string'
 			}
 		]);
 		var packageStore = new Ext.data.JsonStore({
-			url: 'pl/getPackages.pl',
+			url: `${STIGMAN.Env.apiBase}/packages?elevate=true`,
 			autoLoad: true,
 			fields: packageFields,
-			root: 'rows',
+			root: '',
 			sortInfo: {
 				field: 'packageName',
 				direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
@@ -66,13 +66,16 @@ function addAssetAdmin() {
 			type: 'string'
 		},{
 			name: 'packages',
-			type: 'string'
+			type: 'string',
+			convert: (v, r) => v.map(i => i.name).join(', ')
 		},{
-			name: 'stigNum',
-			type: 'string'
+			name: 'stigCount',
+			type: 'integer',
+			mapping: 'adminStats.stigCount'
 		},{
-			name: 'unassigned',
-			type: 'string'
+			name: 'stigUnassignedCount',
+			type: 'integer',
+			convert: (v, r) => r.adminStats.stigCount - r.adminStats.stigAssignedCount
 		},{
 			name: 'nonnetwork',
 			type: 'number'
@@ -83,8 +86,11 @@ function addAssetAdmin() {
 	]);
 
 	var assetStore = new Ext.data.JsonStore({
-		url: 'pl/getAssets.pl',
-		root: 'rows',
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/assets`,
+			method: 'GET'
+		}),
+		root: '',
 		fields: assetFields,
 		totalProperty: 'records',
 		isLoaded: false, // custom property
@@ -102,11 +108,10 @@ function addAssetAdmin() {
 			remove: function (store,record,index) {
 				Ext.getCmp('assetGrid-totalText').setText(store.getCount() + ' records');
 			}
-		},
-		writer:new Ext.data.JsonWriter()
+		}
 	});
 
-	var assetGrid = new Ext.grid.EditorGridPanel({
+	var assetGrid = new Ext.grid.GridPanel({
 		//region: 'center',
 		//split: true,
 		//title: 'Asset administration',
@@ -155,7 +160,7 @@ function addAssetAdmin() {
 				align: "center",
 				tooltip:"Is the asset connected to a network",
 				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-				  return value == 1 ? 'X' : '';
+				  return value ? 'X' : '';
 				},
 				sortable: true
 			},{ 	
@@ -165,20 +170,20 @@ function addAssetAdmin() {
 				align: "center",
 				tooltip:"Is the asset exempt from vulnerability scanning",
 				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-				  return value == 1 ? 'X' : '';
+				  return value ? 'X' : '';
 				},
 				sortable: true
 			},{ 	
 				header: "STIGs",
 				width: 5,
-				dataIndex: 'stigNum',
+				dataIndex: 'stigCount',
 				align: "center",
 				tooltip:"Total STIGs Assigned",
 				sortable: true
 			},{ 	
 				header: "Unassigned",
 				width: 7,
-				dataIndex: 'unassigned',
+				dataIndex: 'stigUnassignedCount',
 				align: "center",
 				tooltip:"STIGs Missing User Assignments",
 				sortable: true
@@ -318,7 +323,7 @@ function addAssetAdmin() {
 				packageSm,
 				{ header: "Packages", 
 					width: 95,
-					dataIndex: 'packageName',
+					dataIndex: 'name',
 					sortable: true
 				}
 			],
@@ -669,7 +674,7 @@ function addAssetAdmin() {
 			buttons: [{
 				text: 'Cancel',
 				handler: function(){
-					window.close();
+					appwindow.close();
 				}
 			},{
 				text: 'Save',
@@ -691,10 +696,10 @@ function addAssetAdmin() {
 								Ext.getCmp('assetGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
 								Ext.getCmp('assetGrid').getStore().reload();
 								//Ext.Msg.alert('Success','Asset ID ' + a.result.id + ' has been updated.');
-								window.close();
+								appwindow.close();
 							} else {
 								Ext.Msg.alert('Failure!','The database update has failed.');
-								window.close();
+								appwindow.close();
 							}
 						},
 						failure: function(form, action){
@@ -716,7 +721,7 @@ function addAssetAdmin() {
 		/******************************************************/
 		// Form window
 		/******************************************************/
-		var window = new Ext.Window({
+		var appwindow = new Ext.Window({
 			id: 'assetPropsWindow',
 			title: 'Asset Properties, ID ' + id,
 			modal: true,
@@ -1068,7 +1073,7 @@ function addAssetAdmin() {
 
 		packageStore.clearFilter();
 		stigStore.clearFilter();
-		window.render(document.body);
+		appwindow.render(document.body);
 		//packageStore.load({
 			//callback: function (r,o,s) {
 				//stigStore.load({
@@ -1096,7 +1101,7 @@ function addAssetAdmin() {
 								}
 								
 								Ext.getBody().unmask();
-								window.show(document.body);
+								appwindow.show(document.body);
 							}
 						});
 					//}
@@ -1120,6 +1125,11 @@ function addAssetAdmin() {
 	// }
 	thisTab.show();
 	
-	assetGrid.getStore().load();
+	assetGrid.getStore().load({
+		params: {
+			projection: ['adminStats', 'packages'],
+			elevate: true
+		}
+	});
 
 } // end addAssetAdmin()
