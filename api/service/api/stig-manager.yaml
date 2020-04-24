@@ -257,7 +257,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssetAssign'
+              $ref: '#/components/schemas/AssetWrite'
       responses:
         '201':
           description: AssetProjected response
@@ -308,36 +308,66 @@ paths:
         - oauth:
             - 'stig-manager:package:read'
       x-swagger-router-controller: Asset
-    patch:
-      tags:
-        - Asset
-      summary: Merge updates to an Asset
-      operationId: updateAsset
-      x-codegen-request-body-name: body
-      requestBody:
-        required: true
-        x-name: body
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AssetAssign'
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package'
-      x-swagger-router-controller: Asset
+    # patch:
+    #   tags:
+    #     - Asset
+    #   summary: Merge updates to an Asset
+    #   operationId: mergeUpdateAsset
+    #   x-codegen-request-body-name: body
+    #   requestBody:
+    #     required: true
+    #     x-name: body
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: '#/components/schemas/AssetWrite'
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/AssetProjected'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:package'
+    #   x-swagger-router-controller: Asset
+    # put:
+    #   tags:
+    #     - Asset
+    #   summary: Replace all properties of an Asset
+    #   operationId: updateAsset
+    #   x-codegen-request-body-name: body
+    #   requestBody:
+    #     required: true
+    #     x-name: body
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: '#/components/schemas/AssetWrite'
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/AssetProjected'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:package'
+    #   x-swagger-router-controller: Asset
     delete:
       tags:
         - Asset
@@ -1459,6 +1489,13 @@ components:
         - $ref: '#/components/schemas/Asset'
         - type: object
           properties:
+            adminStats:
+              type: object
+              properties:
+                stigCount:
+                  type: integer
+                stigAssignedCount:
+                  type: integer
             packages:
               type: array
               description: The Packages mapped to this Asset
@@ -1468,7 +1505,25 @@ components:
               type: array
               description: The benchmarkIds of STIGs mapped to this Asset
               items:
-                $ref: '#/components/schemas/StigAssigned'
+                $ref: '#/components/schemas/STIG'
+            stigReviewers:
+              type: array
+              description: The benchmarkIds of STIGs mapped to this Asset
+              items:
+                type: object
+                properties:
+                  benchmarkId:
+                    type: string
+                  reviewers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: integer
+                        name:
+                          type: string
+                          
     AssetBasic:
       type: object
       properties:
@@ -1478,7 +1533,7 @@ components:
           type: string
         dept:
           type: string
-    AssetAssign:
+    AssetWrite:
       allOf:
         - $ref: '#/components/schemas/Asset'
         - type: object
@@ -1488,11 +1543,23 @@ components:
               type: array
               items:
                 type: integer
-            benchmarkIds:
-              description: The benchmarkIds of STIGs mapped to this Asset
+            stigs:
+              description: The benchmarkIds mapped to this Asset
               type: array
               items:
                 type: string
+            stigReviewers:
+              description: The benchmarkIds and reviewers mapped to this Asset
+              type: array
+              items:
+                type: object
+                properties:
+                  benchmarkId:
+                    type:  string
+                  userIds:
+                    type: array
+                    items:
+                      type: integer
     StigAssigned:
       type: object
       properties:
@@ -1694,24 +1761,31 @@ components:
         asset:
           $ref: '#/components/schemas/AssetBasic'
     StigAssetAssigned:
+      allOf:
+        - $ref: '#/components/schemas/StigAssigned'
       type: object
       properties:
-        saId:
-          type: integer
-        benchmarkId:
-          type: string
         asset:
           $ref: '#/components/schemas/AssetBasic'
+    StigUsersAssigned:
+      allOf:
+        - $ref: '#/components/schemas/StigAssigned'
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBasic'
     STIG:
       type: object
       properties:
         benchmarkId:
           type: string
-        title:
-          type: string
         lastRevisionStr:
           type: string
         lastRevisionDate:
+          type: string
+        title:
           type: string
     Revision:
       type: object
@@ -1968,7 +2042,6 @@ components:
                         type: string
                       SEVERITY_JUSTIFICATION:
                         type: string
-
   parameters:
     ElevateQuery:
       name: elevate
@@ -2004,6 +2077,7 @@ components:
           enum:
             - packages
             - stigs
+            - stigReviewers
             - adminStats
     ReviewProjectionQuery:
       name: projection

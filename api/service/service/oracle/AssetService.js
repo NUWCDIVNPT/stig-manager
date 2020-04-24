@@ -44,6 +44,31 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       KEY 'stigAssignedCount' VALUE COUNT(Distinct usa.saId)
       ) as "adminStats"`)
   }
+  if (inProjection && inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
+    columns.push(`(select
+          replace(
+              replace(
+                  json_arrayagg(
+                      json_object(
+                          KEY 'benchmarkId' VALUE sa.stigId,
+                          KEY 'users' VALUE json_arrayagg(
+                              CASE WHEN u.id IS NOT NULL THEN  json_object(
+                                  KEY 'userId' VALUE u.id,
+                                  KEY 'name' VALUE u.name
+                                  ABSENT ON NULL
+                              ) ELSE NULL END
+                          ) FORMAT JSON
+                      )
+                  )
+              , '"{', '{')
+          , '}"', '}')
+      FROM 
+      stigman.stig_asset_map sa
+      left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
+      left join stigman.user_data u on usa.userId = u.id
+      WHERE sa.assetId = a.assetId
+      group by sa.stigId) as "stigReviewers"`)
+  }
   if (inProjection && inProjection.includes('stigs')) {
     joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
     joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
@@ -54,7 +79,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       KEY 'lastRevisionDate' VALUE CASE
         WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
       KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
-    }
+  }
 
   // PREDICATES
   let predicates = {
@@ -137,9 +162,13 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
           return c
         })
       }
-      // Handle stigs 
+      // Handle adminStats 
       if (record.adminStats) {
         record.adminStats = JSON.parse(record.adminStats)
+      }
+      // Handle stigReviewers 
+      if (record.stigReviewers) {
+        record.stigReviewers = JSON.parse(record.stigReviewers)
       }
     }
     return (result.rows)
