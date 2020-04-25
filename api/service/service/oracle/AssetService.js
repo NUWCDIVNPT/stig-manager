@@ -798,10 +798,11 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
  * Merge updates to an Asset
  *
  * body Asset  (optional)
+ * projection
  * assetId Integer A path parameter that indentifies an Asset
  * returns AssetDetail
  **/
-exports.mergeUpdateAsset = async function( assetId, body, projection, userObject ) {
+exports.updateAsset = async function( assetId, body, projection, userObject ) {
   try {
     let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, userObject)
     return (row)

@@ -308,36 +308,36 @@ paths:
         - oauth:
             - 'stig-manager:package:read'
       x-swagger-router-controller: Asset
-    # patch:
-    #   tags:
-    #     - Asset
-    #   summary: Merge updates to an Asset
-    #   operationId: mergeUpdateAsset
-    #   x-codegen-request-body-name: body
-    #   requestBody:
-    #     required: true
-    #     x-name: body
-    #     content:
-    #       application/json:
-    #         schema:
-    #           $ref: '#/components/schemas/AssetWrite'
-    #   responses:
-    #     '200':
-    #       description: AssetProjected response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/AssetProjected'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:package'
-    #   x-swagger-router-controller: Asset
+    patch:
+      tags:
+        - Asset
+      summary: Merge updates to an Asset
+      operationId: updateAsset
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetWrite'
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Asset
     put:
       tags:
         - Asset

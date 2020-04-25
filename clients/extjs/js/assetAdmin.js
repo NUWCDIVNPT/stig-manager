@@ -294,7 +294,7 @@ function addAssetAdmin() {
 
 
 
-	async function showAssetProps(id) {
+	async function showAssetProps(assetId) {
 		let apiAsset
 		let userAssignments = {}
 		/******************************************************/
@@ -700,12 +700,33 @@ function addAssetAdmin() {
 					try {
 						if (assetPropsFormPanel.getForm().isValid()) {
 							let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-							let one = 1
-							// appwindow.close()
+							// change "packages" to "packageIds"
+							delete Object.assign(values, {['packageIds']: values['packages'] })['packages']
+							let url, method
+							if (assetId) {
+								url = `${STIGMAN.Env.apiBase}/assets/${assetId}`
+								method = 'PUT'
+							}
+							else {
+								url = `${STIGMAN.Env.apiBase}/assets`
+								method = 'POST'
+							}
+							let result = await Ext.Ajax.requestPromise({
+								url: url,
+								method: method,
+								headers: { 'Content-Type': 'application/json;charset=utf-8' },
+								jsonData: values
+							  })
+							apiAsset = JSON.parse(result.response.responseText)
+
+							//TODO: This is expensive, should update the specific record instead of reloading entire set
+							Ext.getCmp('assetGrid').getView().holdPosition = true
+							Ext.getCmp('assetGrid').getStore().reload()
+							appwindow.close()
 						}
 					}
 					catch (e) {
-
+						alert(e.message)
 					}
 				}
 		   }]
@@ -716,7 +737,7 @@ function addAssetAdmin() {
 		/******************************************************/
 		var appwindow = new Ext.Window({
 			id: 'assetPropsWindow',
-			title: 'Asset Properties, ID ' + id,
+			title: 'Asset Properties, ID ' + assetId,
 			modal: true,
 			hidden: true,
 			width: 730,
@@ -1011,7 +1032,7 @@ function addAssetAdmin() {
 		appwindow.render(document.body);
 
 		let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/assets/${id}`,
+			url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
 			params: {
 				elevate: true,
 				projection: ['stigReviewers', 'packages']
