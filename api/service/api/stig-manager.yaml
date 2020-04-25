@@ -2091,7 +2091,7 @@ components:
         items:
           type: string
           enum:
-            - rule
+            - ruleInfo
             - history
             - stigs
             - packages

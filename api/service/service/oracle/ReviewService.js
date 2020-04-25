@@ -82,18 +82,23 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       left join stigs.revisions rev on rg.revId = rev.revId
       where rgr.ruleId = r.ruleId) as "stigs"`)
   }
-  // if (inProjection && inProjection.includes('stigs')) {
-  //   joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
-  //   joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
-  //   // Issue: API spec says to use lastRevisionStr, not revId
-  //   columns.push(`'[' || strdagg_param(param_array(json_object(
-  //     KEY 'benchmarkId' VALUE cr.stigId, 
-  //     KEY 'lastRevisionStr' VALUE CASE 
-  //       WHEN cr.stigId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END,
-  //     KEY 'lastRevisionDate' VALUE CASE
-  //       WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
-  //     KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
-  // }
+  if (inProjection && inProjection.includes('rule')) {
+    columns.push(`(select
+      json_object(
+      KEY 'ruleId' VALUE rule.ruleId
+      ,KEY 'ruleTitle' VALUE rule.title
+      ,KEY 'group' VALUE g.groupId
+      ,KEY 'groupTitle' VALUE g.title
+      ,KEY 'severity' VALUE rule.severity)
+      from
+      stigs.rules rule
+      left join stigs.rev_group_rule_map rgr on rgr.ruleId=rule.ruleId
+      inner join stigs.rev_group_map rg on rgr.rgId=rg.rgId
+      inner join stigs.groups g on rg.groupId=g.groupId
+      where
+      ROWNUM = 1 and
+      rule.ruleId = r.ruleId) as "ruleInfo"`)
+  }
 
   // PREDICATES
   let predicates = {
@@ -269,21 +274,19 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      // Handle 'done'
       record.done = record.done == 1 ? true : false
-      // Handle 'autoState'
       record.autoState = record.autoState == 1 ? true : false
-      // Handle packages
       if (record.packages) {
-        // Check for "empty" arrays 
          record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
        }
-      // Handle stigs
       if (record.stigs) {
-        // Check for "empty" arrays 
          record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
        }
-     }
+      if (record.ruleInfo) {
+        record.ruleInfo = JSON.parse(record.ruleInfo)
+      }
+
+  }
 
     return (result.rows)
   }
