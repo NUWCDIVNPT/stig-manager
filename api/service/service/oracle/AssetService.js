@@ -51,7 +51,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
                   json_arrayagg(
                       json_object(
                           KEY 'benchmarkId' VALUE sa.stigId,
-                          KEY 'users' VALUE json_arrayagg(
+                          KEY 'reviewers' VALUE json_arrayagg(
                               CASE WHEN u.id IS NOT NULL THEN  json_object(
                                   KEY 'userId' VALUE u.id,
                                   KEY 'name' VALUE u.name
@@ -178,100 +178,156 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   }
 }
 
-exports.addOrUpdateAsset = async function (assetId, body, projection, userObject) {
-  // ADD: assetId will be null
-  // UPDATE: assetId is not null
-
-  // Assign assetFields as body without benchmarkIds or packageIds
-  const { benchmarkIds, packageIds, ...assetFields } = body
-
-  // Pre-process booleans
-  if (assetFields.hasOwnProperty('nonnetwork')) {
-    assetFields.nonnetwork = assetFields.nonnetwork ? 1 : 0
-  }
-  if (assetFields.hasOwnProperty('scanexempt')) {
-    assetFields.scanexempt = assetFields.scanexempt ? 1 : 0
-  }
-
-  let connection
+exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, userObject) {
+  let connectVar // available to try, catch, and finally blocks
   try {
-    let options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
+    // CREATE: assetId will be null
+    // REPLACE/UPDATE: assetId is not null
+
+    // Assign assetFields as body without benchmarkIds or packageIds
+    const { stigReviewers, benchmarkIds, packageIds, ...assetFields } = body
+
+    // Pre-process booleans
+    if (assetFields.hasOwnProperty('nonnetwork')) {
+      assetFields.nonnetwork = assetFields.nonnetwork ? 1 : 0
     }
+    if (assetFields.hasOwnProperty('scanexempt')) {
+      assetFields.scanexempt = assetFields.scanexempt ? 1 : 0
+    }
+
+    // Connect to Oracle
+    let connection
+      let options = {
+        outFormat: oracledb.OUT_FORMAT_OBJECT
+      }
     connection = await oracledb.getConnection()
-    // Add or update asset
+    connectVar = connection // make available to catch and finally blocks
+
+    // Process scalar Asset properties
+    let binds = {}
     if (Object.keys(assetFields).length > 0 ) {
-        if (assetId) {
-          // Update an existing asset
-          let binds = []
-          let sqlUpdate =
-          `UPDATE
-              stigman.assets
-            SET
-              ${dbUtils.objectBind(assetFields, binds)}
-            WHERE
-              assetId = :assetId`
-          binds.push(assetId)
-          await connection.execute(sqlUpdate, binds, options)
-        } else {
-          // Insert an asset
-          let sqlInsert =
-          `INSERT INTO
-              stigman.assets
-              (name, ip, dept, nonnetwork, scanexempt)
-            VALUES
-              (:name, :ip, :dept, :nonnetwork, :scanexempt)
-            RETURNING
-              assetId into :assetId`
-          let binds = [
-            assetFields.name,
-            assetFields.ip,
-            assetFields.dept,
-            assetFields.nonnetwork,
-            assetFields.scanexempt,
-            { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
-          ]
-          let result = await connection.execute(sqlInsert, binds, options)
-          assetId = result.outBinds[0][0]
-        }           
+      if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+        let defaults = {
+          name: null,
+          ip: null,
+          dept: null,
+          nonnetwork: 0,
+          scanexempt: 0
+        }
+        binds = { ...defaults, ...assetFields }
+      }
     }
-    // Does body contain a list of packageIds?
+    
+    if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
+    // INSERT into assets
+    let sqlInsert =
+      `INSERT INTO
+          stigman.assets
+          (name, ip, dept, nonnetwork, scanexempt)
+        VALUES
+          (:name, :ip, :dept, :nonnetwork, :scanexempt)
+        RETURNING
+          assetId into :assetId`
+      binds.assetId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
+      let result = await connection.execute(sqlInsert, binds, options)
+      assetId = result.outBinds.assetId[0]
+    }
+    else if (writeAction === dbUtils.WRITE_ACTION.REPLACE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      // UPDATE into assets
+      let sqlUpdate =
+        `UPDATE
+            stigman.assets
+          SET
+            ${dbUtils.objectBindObject(assetFields, binds)}
+          WHERE
+            assetId = :assetId`
+      binds.assetId = assetId
+      await connection.execute(sqlUpdate, binds, options)
+    }
+
+    // Process packageIds if present
     if (packageIds) {
-      let sqlDeletePackages = 'DELETE FROM stigman.asset_package_map where assetId = :assetId'
+      if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+        // DELETE from asset_package_map
+        let sqlDeletePackages = 'DELETE FROM stigman.asset_package_map where assetId = :assetId'
+        await connection.execute(sqlDeletePackages, [assetId])
+      }
       let sqlInsertPackages = `
-        INSERT INTO 
+        INSERT /*+ ignore_row_on_dupkey_index(ASSET_PACKAGE_MAP_INDEX1) */ INTO 
           stigman.asset_package_map (packageId,assetId)
-        VALUES (:packageId, :assetId)`
-      await connection.execute(sqlDeletePackages, [assetId])
+        VALUES (:packageId, :assetId)`      
       if (packageIds.length > 0) {
         let binds = packageIds.map(i => [i, assetId])
+        // INSERT into asset_package_map
         await connection.executeMany(sqlInsertPackages, binds)
       }
     }
-    // Does body contain a list of benchmarkIds?
-    if (benchmarkIds) {
-      let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map where assetId = :assetId'
-      let sqlInsertBenchmarks = `
-        INSERT INTO 
-          stigman.stig_asset_map (stigId,assetId)
-        VALUES (:benchmarkId, :assetId)`
-      await connection.execute(sqlDeleteBenchmarks, [assetId])
-      if (benchmarkIds.length > 0) {
-        let binds = benchmarkIds.map(i => [i, assetId])
-        await connection.executeMany(sqlInsertBenchmarks, binds)
+
+    // Process benchmarkIds and/or stigReviewers if present
+    if (benchmarkIds || stigReviewers) {
+      if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+        let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map where assetId = :assetId'
+        // DELETE from stig_asset_map, will cascade into user_stig_aset_map
+        await connection.execute(sqlDeleteBenchmarks, [assetId])
       }
-  }
-await connection.commit()
+      let sqlInsertBenchmarks = `
+        INSERT /*+ ignore_row_on_dupkey_index(INDEX_2_3_C) */ INTO 
+          stigman.stig_asset_map (stigId,assetId)
+        VALUES
+          (:benchmarkId, :assetId)
+        `
+      let benchmarkBinds = []
+      let stigReviewersBenchmarkBinds = []
+      let userStigAssetBinds = [] 
+      if (benchmarkIds && benchmarkIds.length > 0) {
+        // Bind stig_asset_map values from the request.benchmarkIds
+        benchmarkBinds = benchmarkIds.map(i => [i, assetId])
+      }
+      if (stigReviewers && stigReviewers.length > 0) {
+        // Bind stig_asset_map values from request.stigReviewers.benchmarkId
+        stigReviewersBenchmarkBinds = stigReviewers.map(i => [i.benchmarkId, assetId])
+        // Bind any user_stig_asset_map values
+        stigReviewers.forEach( e => {
+          if (e.userIds && e.userIds.length > 0) {
+            e.userIds.forEach(userId => {
+              userStigAssetBinds.push({
+                userId: userId,
+                benchmarkId: e.benchmarkId,
+                assetId: assetId
+              })
+            })
+          }
+        })
+      }
+
+      // INSERT into stig_asset_map
+      let binds = [...benchmarkBinds, ...stigReviewersBenchmarkBinds]
+      let result = await connection.executeMany(sqlInsertBenchmarks, binds, options)
+
+      if (userStigAssetBinds.length > 0) {
+        // INSERT into user_stig_asset_map 
+        let sqlInsertUserStigAsset = `INSERT /*+ ignore_row_on_dupkey_index(INDEX_2_1_C) */ INTO 
+          stigman.user_stig_asset_map 
+            (userId, saId)
+          VALUES 
+            (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`
+        let result = await connection.executeMany(sqlInsertUserStigAsset, userStigAssetBinds, options)
+      }
+    }
+    // Commit the changes
+    await connection.commit()
   }
   catch (err) {
+    await connectVar.rollback()
     throw err
   }
   finally {
-    if (connection) {
-      await connection.close()
+    if (typeof connectVar !== 'undefined') {
+      await connectVar.close()
     }
   }
 
+  // Fetch the new or updated Asset for the response
   try {
     let row = await this.getAsset(assetId, projection, true, userObject)
     return row
@@ -634,7 +690,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
  **/
 exports.createAsset = async function(body, projection, userObject) {
   try {
-    let row = await this.addOrUpdateAsset(null, body, projection, userObject)
+    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
     return (row)
   }
   catch (err) {
@@ -745,9 +801,27 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
  * assetId Integer A path parameter that indentifies an Asset
  * returns AssetDetail
  **/
-exports.updateAsset = async function( assetId, body, projection, userObject ) {
+exports.mergeUpdateAsset = async function( assetId, body, projection, userObject ) {
   try {
-    let row = await this.addOrUpdateAsset(assetId, body, projection, userObject)
+    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, userObject)
+    return (row)
+  } 
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+/**
+ * Replace an Asset
+ *
+ * body Asset
+ * projection
+ * assetId Integer A path parameter that indentifies an Asset
+ * returns AssetDetail
+ **/
+exports.replaceAsset = async function( assetId, body, projection, userObject ) {
+  try {
+    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.REPLACE, assetId, body, projection, userObject)
     return (row)
   } 
   catch (err) {

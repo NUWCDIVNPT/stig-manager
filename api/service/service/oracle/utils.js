@@ -162,6 +162,11 @@ module.exports.REVIEW_STATUS_STR = {
   'rejected': 2,
   'approved': 3
 }
+module.exports.WRITE_ACTION = { 
+  CREATE: 0,
+  REPLACE: 1,
+  UPDATE: 2
+}
 
 // Returns Boolean
 module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {

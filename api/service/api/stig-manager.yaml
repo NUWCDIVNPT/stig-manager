@@ -338,36 +338,36 @@ paths:
     #     - oauth:
     #         - 'stig-manager:package'
     #   x-swagger-router-controller: Asset
-    # put:
-    #   tags:
-    #     - Asset
-    #   summary: Replace all properties of an Asset
-    #   operationId: updateAsset
-    #   x-codegen-request-body-name: body
-    #   requestBody:
-    #     required: true
-    #     x-name: body
-    #     content:
-    #       application/json:
-    #         schema:
-    #           $ref: '#/components/schemas/AssetWrite'
-    #   responses:
-    #     '200':
-    #       description: AssetProjected response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/AssetProjected'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:package'
-    #   x-swagger-router-controller: Asset
+    put:
+      tags:
+        - Asset
+      summary: Replace all properties of an Asset
+      operationId: replaceAsset
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetWrite'
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Asset
     delete:
       tags:
         - Asset
@@ -1543,7 +1543,7 @@ components:
               type: array
               items:
                 type: integer
-            stigs:
+            benchmarkIds:
               description: The benchmarkIds mapped to this Asset
               type: array
               items:

@@ -294,7 +294,9 @@ function addAssetAdmin() {
 
 
 
-	function showAssetProps(id) {
+	async function showAssetProps(id) {
+		let apiAsset
+		let userAssignments = {}
 		/******************************************************/
 		// Packages
 		/******************************************************/
@@ -334,12 +336,14 @@ function addAssetAdmin() {
 			setValue: function(v) {
 				var selRecords = [];
 				for(y=0;y<v.length;y++) {
-					var record = packageStore.getById(v[y]);
+					var record = packageStore.getById(v[y].packageId);
 					selRecords.push(record);
 				}
 				packageSm.selectRecords(selRecords);
 			},
-			getValue: function() {},
+			getValue: function() {
+				return JSON.parse(encodeSm(packageSm,'packageId'))
+			},
 			markInvalid: function() {},
 			clearInvalid: function() {},
 			validate: function() { return true},
@@ -445,7 +449,7 @@ function addAssetAdmin() {
 						if (columnIndex == 2) {
 							Ext.getBody().mask('Loading IAWF...');
 							var record = grid.getStore().getAt(rowIndex);
-							showStigReviewers(id,record); // defined in this file
+							showStigReviewers(record.data.benchmarkId, userAssignments[record.data.benchmarkId]); // defined in this file
 						}
 					}
 				}
@@ -467,15 +471,27 @@ function addAssetAdmin() {
 				forceFit: true
 			},
 			sm: stigSm,
-			setValue: function(v) {
-				var selRecords = [];
-				for(y=0;y<v.length;y++) {
-					var record = stigStore.getById(v[y]);
-					selRecords.push(record);
-				}
+			setValue: function(stigReviewers) {
+				var selRecords = []
+				stigReviewers.forEach(stig => {
+					let record = stigStore.getById(stig.benchmarkId)
+					selRecords.push(record)
+					// User assignments
+					userAssignments[stig.benchmarkId] = stig.reviewers.map(r => r.userId)
+				})
 				stigSm.selectRecords(selRecords);
 			},
-			getValue: function() {},
+			getValue: function() {
+				let stigReviewers = []
+				let selectedStigs = stigSm.getSelections();
+				selectedStigs.forEach(stigRecord => {
+					stigReviewers.push({
+						benchmarkId: stigRecord.data.benchmarkId,
+						userIds: userAssignments[stigRecord.data.benchmarkId] || []
+					})
+				})
+				return stigReviewers
+			},
 			markInvalid: function() {},
 			clearInvalid: function() {},
 			validate: function() { return true},
@@ -525,7 +541,7 @@ function addAssetAdmin() {
 					}]
 				}]
 			}),
-			name: 'stigs'
+			name: 'stigReviewers'
 		});
 
 
@@ -680,40 +696,17 @@ function addAssetAdmin() {
 				text: 'Save',
 				formBind: true,
 				id: 'submit-button',
-				handler: function(){
-					assetPropsFormPanel.getForm().submit({
-						submitEmptyText: true,
-						params : {
-							id: id,
-							packages: encodeSm(packageSm,'packageId'),
-							stigs: encodeSmExtend(stigSm,'stigId','users'),
-							req: 'update',
-							ipChanged: Ext.getCmp('assetProps-ip').isDirty()
-						},
-						waitMsg: 'Saving changes...',
-						success: function (f,a) {
-							if (a.result.success) {
-								Ext.getCmp('assetGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
-								Ext.getCmp('assetGrid').getStore().reload();
-								//Ext.Msg.alert('Success','Asset ID ' + a.result.id + ' has been updated.');
-								appwindow.close();
-							} else {
-								Ext.Msg.alert('Failure!','The database update has failed.');
-								appwindow.close();
-							}
-						},
-						failure: function(form, action){
-							if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-								Ext.Msg.alert('Error',
-									'Status:'+action.response.status+': '+
-									action.response.statusText);
-							}
-							if (action.failureType === Ext.form.Action.SERVER_INVALID){
-								// server responded with success = false
-								Ext.Msg.alert('Invalid', action.result.errorStr);
-							}
+				handler: async function(){
+					try {
+						if (assetPropsFormPanel.getForm().isValid()) {
+							let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+							let one = 1
+							// appwindow.close()
 						}
-					});
+					}
+					catch (e) {
+
+					}
 				}
 		   }]
 		});
@@ -802,7 +795,7 @@ function addAssetAdmin() {
 		/******************************************************/
 		// showStigReviewers
 		/******************************************************/
-		function showStigReviewers (assetId,record) {
+		function showStigReviewers (benchmarkId, assignedUsers) {
 			var stigUserFields = Ext.data.Record.create([
 				{	name:'userId',
 					type: 'number'
@@ -932,7 +925,7 @@ function addAssetAdmin() {
 			});
 			var stigUserWindow = new Ext.Window({
 				//title: 'Reviewers: ' + record.data['title'],
-				title: record.data['title'],
+				title: benchmarkId,
 				modal: true,
 				width: 280,
 				height:440,
@@ -950,13 +943,12 @@ function addAssetAdmin() {
 					text: 'OK',
 					formBind: true,
 					handler: function(){
-						var myArray = new Array;
-						var selectedUsers = stigUserSm.getSelections();
-						for (var i=0; i < selectedUsers.length; i++) {
-							myArray.push(selectedUsers[i].data['userId']);
-						}
-						record.data['users'] = myArray;
-						stigUserWindow.close();
+						assignedUsers.length = 0
+						let selectedUsers = stigUserSm.getSelections()
+						selectedUsers.forEach(userRecord => {
+							assignedUsers.push(userRecord.data['userId'])
+						})
+						stigUserWindow.close()
 					}
 				}]
 			});
@@ -965,107 +957,50 @@ function addAssetAdmin() {
 				callback: function (r,o,s) {
 					stigUserWindow.show(
 						document.body,
-						function (){ // window.show()callback function
+						function () { // window.show()callback function
 							Ext.getBody().unmask();
 							stigUserWindow.getEl().mask('Loading...');
-							if (typeof record.data.users == 'object') { 
-								// user has already interacted with this, so use their settings
-								stigUserGrid.setValue(record.data.users);
-								// filter has to happen after setting selections
-								stigUserStore.filter([
-									{
-										fn: filterDept
-									}
-								]);
-								stigUserWindow.getEl().unmask();
-							} else {
-								stigUserFormPanel.getForm().load({
-									url: 'pl/getStigUserProps.pl',
-									params: {
-										assetId: assetId,
-										stigId: record.data['stigId']
-									},
-									success: function (){
-										stigUserStore.filter([
-											{
-												fn: filterDept
-											}
-										]);
-										stigUserWindow.getEl().unmask();
-									},
-									failure : function (){
-										stigUserWindow.getEl().unmask();
-									}
-								});
-							}
+							stigUserGrid.setValue(assignedUsers);
+							stigUserStore.filter([
+								{
+									fn: filterDept
+								}
+							]);
+							stigUserWindow.getEl().unmask();
 						}
 					);
 				}
 			});
 
-		function filterStigUserStore () {
-				var value = Ext.getCmp('assets-stigUserGrid-filterField').getValue();
-				var selectionsOnly = Ext.getCmp('assets-stigUserGrid-filterButton').pressed;
-				if (value == '') {
-					if (selectionsOnly) {
-						stigUserStore.filterBy(filterChecked,stigUserSm);
+			function filterStigUserStore () {
+					var value = Ext.getCmp('assets-stigUserGrid-filterField').getValue();
+					var selectionsOnly = Ext.getCmp('assets-stigUserGrid-filterButton').pressed;
+					if (value == '') {
+						if (selectionsOnly) {
+							stigUserStore.filterBy(filterChecked,stigUserSm);
+						} else {
+							stigUserStore.clearFilter();
+						}
 					} else {
-						stigUserStore.clearFilter();
+						if (selectionsOnly) {
+							stigUserStore.filter([
+								{
+									property:'username',
+									value:value,
+									anyMatch:true,
+									caseSensitive:false
+								},{
+									fn: filterChecked,
+									scope: stigUserSm
+								}
+							]);
+						} else {
+							stigUserStore.filter({property:'username',value:value,anyMatch:true,caseSensitive:false});
+						}
 					}
-				} else {
-					if (selectionsOnly) {
-						stigUserStore.filter([
-							{
-								property:'username',
-								value:value,
-								anyMatch:true,
-								caseSensitive:false
-							},{
-								fn: filterChecked,
-								scope: stigUserSm
-							}
-						]);
-					} else {
-						stigUserStore.filter({property:'username',value:value,anyMatch:true,caseSensitive:false});
-					}
-				}
 			};
 		
 		};
-		
-		/******************************************************/
-		// filterStigUserStore ()
-		/******************************************************/
-		// function filterStigUserStore () {
-			// stigUserObj = Ext.getCmp('assets-stigsGrid-usersGrid');
-			// stigUserStore = stigUserObj.store;
-			// stigUserSm = stigUserObj.sm;
-			// var value = Ext.getCmp('assets-stigUserGrid-filterField').getValue();
-			// var selectionsOnly = Ext.getCmp('assets-stigUserGrid-filterButton').pressed;
-			// if (value == '') {
-				// if (selectionsOnly) {
-					// stigUserStore.filterBy(filterChecked,stigUserSm);
-				// } else {
-					// stigUserStore.clearFilter();
-				// }
-			// } else {
-				// if (selectionsOnly) {
-					// stigUserStore.filter([
-						// {
-							// property:'username',
-							// value:value,
-							// anyMatch:true,
-							// caseSensitive:false
-						// },{
-							// fn: filterChecked,
-							// scope: stigUserSm
-						// }
-					// ]);
-				// } else {
-					// stigUserStore.filter({property:'username',value:value,anyMatch:true,caseSensitive:false});
-				// }
-			// }
-		// };
 		
 		/******************************************************/
 		// Load store(s), show window, and get properties
@@ -1074,43 +1009,37 @@ function addAssetAdmin() {
 		packageStore.clearFilter();
 		stigStore.clearFilter();
 		appwindow.render(document.body);
-		//packageStore.load({
-			//callback: function (r,o,s) {
-				//stigStore.load({
-					//callback: function (r,o,s) {
-						assetPropsFormPanel.getForm().load({
-							url: 'pl/getAssetProps.pl',
-							params: {
-								id: id
-							},
-							success: function(form,action) {
-								var cb_scanexempt = Ext.getCmp('assetProps-scanexempt');
-								var nonnetworked = Ext.getCmp('assetProps-nonnetwork').getValue();
-								var tf_ip = Ext.getCmp('assetProps-ip');
-								
-								cb_scanexempt.setDisabled(nonnetworked);
-								tf_ip.setDisabled(nonnetworked);
-								if (nonnetworked == 1){
-									cb_scanexempt.setValue(true);
-									tf_ip.setValue('');
-									tf_ip.allowBlank = true;
-								} else {
-									tf_ip.allowBlank = false;
-									//tf_ip.getEl().dom.labels[0].innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>'
-									tf_ip.label.dom.innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>';
-								}
-								
-								Ext.getBody().unmask();
-								appwindow.show(document.body);
-							}
-						});
-					//}
-				//});
-			//}
-		//});
+
+		let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/assets/${id}`,
+			params: {
+				elevate: true,
+				projection: ['stigReviewers', 'packages']
+			},
+			method: 'GET'
+		})
+		apiAsset = JSON.parse(result.response.responseText)
+		assetPropsFormPanel.getForm().setValues(apiAsset)
+
+		var cb_scanexempt = Ext.getCmp('assetProps-scanexempt');
+		var nonnetworked = Ext.getCmp('assetProps-nonnetwork').getValue();
+		var tf_ip = Ext.getCmp('assetProps-ip');
 		
+		cb_scanexempt.setDisabled(nonnetworked);
+		tf_ip.setDisabled(nonnetworked);
+		if (nonnetworked == 1){
+			cb_scanexempt.setValue(true);
+			tf_ip.setValue('');
+			tf_ip.allowBlank = true;
+		} else {
+			tf_ip.allowBlank = false;
+			//tf_ip.getEl().dom.labels[0].innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>'
+			tf_ip.label.dom.innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>';
+		}
 		
-		} //end showAssetProps
+		Ext.getBody().unmask();
+		appwindow.show(document.body);		
+	} //end showAssetProps
 
 	var thisTab = Ext.getCmp('admin-center-tab').add({
 		id: 'asset-admin-tab',
