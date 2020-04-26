@@ -1,33 +1,31 @@
-/* 
-$Id: stigAdmin.js 807 2017-07-27 13:04:19Z csmig $
-*/
-
 function addStigAdmin() {
-
 	var stigFields = Ext.data.Record.create([
-		{	name:'stigId',
+		{	name:'benchmarkId',
 			type: 'string'
 		},{
 			name: 'title',
 			type: 'string'
 		},{
-			name: 'revision',
+			name: 'lastRevisionStr',
 			type: 'string'
 		},{
-			name: 'benchmarkDateSql',
+			name: 'lastRevisionDate',
 			type: 'date',
 			dateFormat: 'Y-m-d'
 		}
 	]);
 
 	var stigStore = new Ext.data.JsonStore({
-		url: 'pl/getStigs.pl',
-		root: 'rows',
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/stigs`,
+			method: 'GET'
+		}),
+		root: '',
 		fields: stigFields,
 		totalProperty: 'records',
-		idProperty: 'stigId',
+		idProperty: 'benchmarkId',
 		sortInfo: {
-			field: 'stigId',
+			field: 'benchmarkId',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
 		listeners: {
@@ -39,8 +37,7 @@ function addStigAdmin() {
 			remove: function (store,record,index) {
 				Ext.getCmp('stigGrid-totalText').setText(store.getCount() + ' records');
 			}
-		},
-		writer:new Ext.data.JsonWriter()
+		}
 	});
 
 	var stigGrid = new Ext.grid.GridPanel({
@@ -50,8 +47,8 @@ function addStigAdmin() {
 		sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
 		columns: [{ 	
 				header: "Benchmark ID",
-				width: 150,
-				dataIndex: 'stigId',
+				width: 300,
+				dataIndex: 'benchmarkId',
 				sortable: true
 			},{ 	
 				header: "Title",
@@ -62,13 +59,13 @@ function addStigAdmin() {
 			},{ 	
 				header: "Current revision",
 				width: 150,
-				dataIndex: 'revision',
+				dataIndex: 'lastRevisionStr',
 				sortable: true
 			}
 			,{ 	
 				header: "Revision date",
 				width: 150,
-				dataIndex: 'benchmarkDateSql',
+				dataIndex: 'lastRevisionDate',
 				xtype: 'datecolumn',
 				format: 'Y-m-d',
 				sortable: true
@@ -95,8 +92,8 @@ function addStigAdmin() {
 			rowdblclick: {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
-					Ext.getBody().mask('Getting assignments for ' + r.get('stigId') + '...');
-					showStigAssignments(r.get('stigId'));
+					Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
+					showStigAssignments(r.get('benchmarkId'));
 				}
 			}
 		},
@@ -106,8 +103,8 @@ function addStigAdmin() {
 			disabled: false,
 			handler: function() {
 				var r = stigGrid.getSelectionModel().getSelected();
-				Ext.getBody().mask('Getting assignments for ' + r.get('stigId') + '...');
-				showStigAssignments(r.get('stigId'));
+				Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
+				showStigAssignments(r.get('benchmarkId'));
 			}
 		}],
 		bbar: new Ext.Toolbar({
@@ -147,33 +144,29 @@ function addStigAdmin() {
 		});
 
 
-	function showStigAssignments(stigId) {
+	async function showStigAssignments(benchmarkId) {
 
 		var assetFields = Ext.data.Record.create([
 			{
 				name:'assetId',
 				type: 'number'
 			},{
-				name:'assetName',
+				name:'name',
 				type: 'string'
 			},{
 				name:'dept',
 				type: 'string'
-			},{
-				name:'assetGroup',
-				type: 'string'
 			}
 		]);	
 		var assetStore = new Ext.data.JsonStore({
-			url: 'pl/getAssetsForStigAssignments.pl',		
+			url: `${STIGMAN.Env.apiBase}/assets?elevate=true`,
 			fields: assetFields,
-			root: 'rows',
+			root: '',
 			sortInfo: {
-				field: 'assetName',
+				field: 'name',
 				direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 			},
-			idProperty: 'assetId'
-			
+			idProperty: 'assetId'	
 		});
 		var assetSm = new Ext.grid.CheckboxSelectionModel({
 			checkOnly: true,
@@ -200,7 +193,7 @@ function addStigAdmin() {
 				assetSm,
 				{ header: "Assets", 
 					width: 95,
-					dataIndex: 'assetName',
+					dataIndex: 'name',
 					sortable: true
 				}
 				,{ header: "Dept", 
@@ -213,12 +206,12 @@ function addStigAdmin() {
 				forceFit: true
 			},
 			sm: assetSm,
-			setValue: function(v) {
-				var selRecords = [];
-				for(y=0;y<v.length;y++) {
-					var record = assetStore.getById(v[y]);
-					selRecords.push(record);
-				}
+			setValue: function(assets) {
+				var selRecords = []
+				assets.forEach(asset => {
+					let record = assetStore.getById(asset.assetId)
+					selRecords.push(record)
+				})
 				assetSm.selectRecords(selRecords);
 			},
 			getValue: function() {},
@@ -300,7 +293,7 @@ function addStigAdmin() {
 			buttons: [{
 				text: 'Cancel',
 				handler: function(){
-					window.close();
+					appwindow.close();
 				}
 			},{
 				text: 'Save',
@@ -310,7 +303,7 @@ function addStigAdmin() {
 					stigAssignmentsFormPanel.getForm().submit({
 						submitEmptyText: false,
 						params : {
-							stigId: stigId,
+							benchmarkId: benchmarkId,
 							assetIds: encodeSm(assetSm,'assetId'),
 							req: 'update'
 						},
@@ -320,15 +313,15 @@ function addStigAdmin() {
 								Ext.getCmp('stigGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
 								Ext.getCmp('stigGrid').getStore().reload();
 								//Ext.Msg.alert('Success','Asset ID ' + a.result.id + ' has been updated.');
-								window.close();
+								appwindow.close();
 							} else {
 								Ext.Msg.alert('Failure!','The database update has failed.');
-								window.close();
+								appwindow.close();
 							}	
 						},
 						failure: function(f,a) {
 							Ext.Msg.alert('AJAX Failure!','AJAX call has completely failed.');
-							window.close();
+							appwindow.close();
 						}	
 					});
 				}
@@ -338,9 +331,9 @@ function addStigAdmin() {
 		/******************************************************/
 		// Form window
 		/******************************************************/
-		var window = new Ext.Window({
+		var appwindow = new Ext.Window({
 			id: 'stigAssignmentWindow',
-			title: stigId,
+			title: benchmarkId,
 			modal: true,
 			hidden: true,
 			width: 330,
@@ -384,36 +377,32 @@ function addStigAdmin() {
 			}
 		};
 
-		window.render(document.body);
+		appwindow.render(document.body);
 		assetStore.load({
-			callback: function (r,o,s) {
-				stigAssignmentsFormPanel.getForm().load({
-					url: 'pl/getStigAssignments.pl',
-					params: {
-						stigId: stigId
-					},
-					success: function(form,action) {
-						Ext.getBody().unmask();
-						window.show(document.body);
-					},
-					failure: function(form,action) {
-						Ext.getBody().unmask();
-						window.show(document.body);
+			callback: async function (r,o,s) {
+				try {
+					let result = await Ext.Ajax.requestPromise({
+						url: `${STIGMAN.Env.apiBase}/assets`,
+						params: {
+							elevate: true,
+							benchmarkId: benchmarkId
+						},
+						method: 'GET'
+					})
+					let stigProps = {
+						assetAssignments: JSON.parse(result.response.responseText)
 					}
-				});
+					stigAssignmentsFormPanel.getForm().setValues(stigProps)
+					Ext.getBody().unmask();
+					appwindow.show(document.body);
+				}
+				catch (e) {
+					alert (e.message)
+				}
 			}
-		});
-
-
-
-
+		})
 	}
-
-
 	// Show the tab
 	thisTab.show();
 	stigGrid.getStore().load();
-	
-	
-
-} // end addPackageAdmin()
+} // end addStigAdmin()

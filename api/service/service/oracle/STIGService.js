@@ -11,7 +11,7 @@ exports.queryStigs = async function ( inPredicates ) {
     's.STIGID as "benchmarkId"',
     's.TITLE as "title"',
     `'V' || cr.version || 'R' || cr.release as "lastRevisionStr"`,
-    'cr.benchmarkDateSql as "lastRevisionDate"'
+    `to_char(cr.benchmarkDateSql,'yyyy-mm-dd') as "lastRevisionDate"`
   ]
   let joins = [
     'stigs.stigs s',
