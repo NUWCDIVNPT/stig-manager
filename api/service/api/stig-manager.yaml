@@ -896,7 +896,7 @@ paths:
     get:
       tags:
         - User
-      summary: Return the requester's user information
+      summary: Return a User
       operationId: getUserByUserId
       responses:
         '200':
