@@ -823,16 +823,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
         - $ref: '#/components/parameters/UserRoleQuery'
-        - name: packageId
-          in: query
-          description: Selects Users mapped to a Package
-          schema:
-            type: integer
-        - name: benchmarkId
-          in: query
-          description: Selects Users mapped to a STIG
-          schema:
-            type: string
         - name: dept
           in: query
           description: Selects Users exactly matching a department string
@@ -874,7 +864,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserAssign'
+              $ref: '#/components/schemas/UserCreateOrReplace'
       responses:
         '201':
           description: UserProjected response
@@ -894,6 +884,128 @@ paths:
         - oauth:
             - 'stig-manager:user'
       x-swagger-router-controller: User
+  /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserProjectionQuery'
+      - name: userId
+        in: path
+        description: A path parameter that indentifies an Asset
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - User
+      summary: Return the requester's user information
+      operationId: getUserByUserId
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+      x-swagger-router-controller: User
+    patch:
+      tags:
+        - User
+      summary: Merge update a User
+      operationId: updateUser
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
+      x-swagger-router-controller: User
+    put:
+      tags:
+        - User
+      summary: Replace all properties of a User
+      operationId: replaceUser
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateOrReplace'
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
+      x-swagger-router-controller: User
+    delete:
+      tags:
+        - User
+      summary: Delete a User
+      operationId: deleteUser
+      x-codegen-request-body-name: body
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
+      x-swagger-router-controller: User
+    
+    
   /stigs:
     get:
       tags:
@@ -1549,12 +1661,7 @@ components:
                   reviewers:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        userId:
-                          type: integer
-                        name:
-                          type: string
+                      $ref: '#/components/schemas/UserBasic'
     AssetBasic:
       type: object
       properties:
@@ -1596,13 +1703,6 @@ components:
                     type: array
                     items:
                       type: integer
-    StigAssigned:
-      type: object
-      properties:
-        saId:
-          type: integer
-        benchmarkId:
-          type: string
     UserRole:
       type: string
       enum:
@@ -1617,7 +1717,7 @@ components:
           readOnly: true
         username:
           type: string
-        displayName:
+        display:
           type: string
         dept:
           type: string
@@ -1625,6 +1725,22 @@ components:
           $ref: '#/components/schemas/UserRole'
         canAdmin:
           type: boolean
+    UserCreateOrReplace:
+      required:
+        - username
+        - displayName
+        - role
+      allOf:
+        - $ref: '#/components/schemas/UserUpdate'
+    UserUpdate:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            stigAssets:
+              type: array
+              items:
+                $ref: '#/components/schemas/StigAssetSet'
     UserProjected:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -1633,7 +1749,7 @@ components:
             stigAssets:
               type: array
               items:
-                $ref: '#/components/schemas/StigAssetAssigned'
+                $ref: '#/components/schemas/StigAssetGet'
     UserBasic:
       type: object
       properties:
@@ -1642,16 +1758,6 @@ components:
           readOnly: true
         username:
           type: string
-    UserAssign:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            saIds:
-              description: The STIG/Asset pairs (saIds) mapped to this Asset
-              type: array
-              items:
-                type: integer
     ReviewState:
       description: The Review state
       type: string
@@ -1789,29 +1895,20 @@ components:
                 type: string
             rule:
               $ref: '#/components/schemas/RuleAbbr'
-    AssetAssigned:
+    StigAssetGet:
       type: object
       properties:
-        saId:
+        benchmarkId:
+          type: string
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+    StigAssetSet:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        assetId:
           type: integer
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-    StigAssetAssigned:
-      allOf:
-        - $ref: '#/components/schemas/StigAssigned'
-      type: object
-      properties:
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-    StigUsersAssigned:
-      allOf:
-        - $ref: '#/components/schemas/StigAssigned'
-      type: object
-      properties:
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserBasic'
     STIG:
       type: object
       properties:
