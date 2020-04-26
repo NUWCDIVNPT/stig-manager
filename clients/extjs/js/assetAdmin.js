@@ -219,7 +219,7 @@ function addAssetAdmin() {
 			text: 'New asset',
 			handler: function() {
 				Ext.getBody().mask('Loading form...');
-				showAssetProps(0);            
+				showAssetProps();            
 			}
 		}
 		,'-'
@@ -230,15 +230,22 @@ function addAssetAdmin() {
 			text: 'Delete asset',
 			disabled: true,
 			handler: function() {
-				var confirmStr="Deleteing this asset will <b>permanently remove</b> all data associated with the asset. This includes all the asset's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the asset?";
-				Ext.Msg.confirm("Confirm",confirmStr,function (btn,text) {
-					if (btn == 'yes') {
-						var s = assetGrid.getSelectionModel().getSelections();
-						for (var i = 0, r; r = s[i]; i++) {
-							assetStore.remove(r);
+				try {
+					var confirmStr="Deleteing this asset will <b>permanently remove</b> all data associated with the asset. This includes all the asset's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the asset?";
+					Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+						if (btn == 'yes') {
+							let asset = assetGrid.getSelectionModel().getSelected()
+							let result = await Ext.Ajax.requestPromise({
+								url: `${STIGMAN.Env.apiBase}/assets/${asset.data.assetId}`,
+								method: 'DELETE'
+							})
+							assetStore.remove(asset)
 						}
-					}
-				});
+					})
+				}
+				catch (e) {
+					alert(e.message)
+				}
 			}
 		}
 		,'-'
@@ -449,6 +456,10 @@ function addAssetAdmin() {
 						if (columnIndex == 2) {
 							Ext.getBody().mask('Loading IAWF...');
 							var record = grid.getStore().getAt(rowIndex);
+							if (!(record.data.benchmarkId in userAssignments)) {
+								// Initialize if this is a new STIG mapping for the Asset
+								userAssignments[record.data.benchmarkId] = []
+							}
 							showStigReviewers(record.data.benchmarkId, userAssignments[record.data.benchmarkId]); // defined in this file
 						}
 					}
@@ -737,7 +748,7 @@ function addAssetAdmin() {
 		/******************************************************/
 		var appwindow = new Ext.Window({
 			id: 'assetPropsWindow',
-			title: 'Asset Properties, ID ' + assetId,
+			title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
 			modal: true,
 			hidden: true,
 			width: 730,
@@ -1031,31 +1042,33 @@ function addAssetAdmin() {
 		stigStore.clearFilter();
 		appwindow.render(document.body);
 
-		let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
-			params: {
-				elevate: true,
-				projection: ['stigReviewers', 'packages']
-			},
-			method: 'GET'
-		})
-		apiAsset = JSON.parse(result.response.responseText)
-		assetPropsFormPanel.getForm().setValues(apiAsset)
+		if (assetId) {
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
+				params: {
+					elevate: true,
+					projection: ['stigReviewers', 'packages']
+				},
+				method: 'GET'
+			})
+			apiAsset = JSON.parse(result.response.responseText)
+			assetPropsFormPanel.getForm().setValues(apiAsset)
 
-		var cb_scanexempt = Ext.getCmp('assetProps-scanexempt');
-		var nonnetworked = Ext.getCmp('assetProps-nonnetwork').getValue();
-		var tf_ip = Ext.getCmp('assetProps-ip');
-		
-		cb_scanexempt.setDisabled(nonnetworked);
-		tf_ip.setDisabled(nonnetworked);
-		if (nonnetworked == 1){
-			cb_scanexempt.setValue(true);
-			tf_ip.setValue('');
-			tf_ip.allowBlank = true;
-		} else {
-			tf_ip.allowBlank = false;
-			//tf_ip.getEl().dom.labels[0].innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>'
-			tf_ip.label.dom.innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>';
+			var cb_scanexempt = Ext.getCmp('assetProps-scanexempt');
+			var nonnetworked = Ext.getCmp('assetProps-nonnetwork').getValue();
+			var tf_ip = Ext.getCmp('assetProps-ip');
+			
+			cb_scanexempt.setDisabled(nonnetworked);
+			tf_ip.setDisabled(nonnetworked);
+			if (nonnetworked == 1){
+				cb_scanexempt.setValue(true);
+				tf_ip.setValue('');
+				tf_ip.allowBlank = true;
+			} else {
+				tf_ip.allowBlank = false;
+				//tf_ip.getEl().dom.labels[0].innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>'
+				tf_ip.label.dom.innerHTML='IP Address:<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>';
+			}
 		}
 		
 		Ext.getBody().unmask();

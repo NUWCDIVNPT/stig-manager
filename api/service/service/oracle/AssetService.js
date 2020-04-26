@@ -140,9 +140,9 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       record.nonnetwork = record.nonnetwork == 1 ? true : false
       record.scanexempt = record.scanexempt == 1 ? true : false
       // Handle packages
-      if (record.packages) {
+      if ('packages' in record) {
        // Check for "empty" arrays 
-        record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
+        record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages) || []
         // Sort by package name
         record.packages.sort((a,b) => {
           let c = 0
@@ -152,8 +152,8 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
         })
       }
       // Handle stigs 
-      if (record.stigs) {
-        record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
+      if ('stigs' in record) {
+        record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs) || []
         // Sort by benchmarkId
         record.stigs.sort((a,b) => {
           let c = 0
@@ -163,12 +163,12 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
         })
       }
       // Handle adminStats 
-      if (record.adminStats) {
-        record.adminStats = JSON.parse(record.adminStats)
+      if ('adminStats' in record) {
+        record.adminStats = JSON.parse(record.adminStats) || {}
       }
       // Handle stigReviewers 
-      if (record.stigReviewers) {
-        record.stigReviewers = JSON.parse(record.stigReviewers)
+      if ('stigReviewers' in record) {
+        record.stigReviewers = JSON.parse(record.stigReviewers) || []
       }
     }
     return (result.rows)
@@ -302,7 +302,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
 
       // INSERT into stig_asset_map
       let binds = [...benchmarkBinds, ...stigReviewersBenchmarkBinds]
-      let result = await connection.executeMany(sqlInsertBenchmarks, binds, options)
+      if (binds.length > 0) {
+        let result = await connection.executeMany(sqlInsertBenchmarks, binds, options)
+      }
 
       if (userStigAssetBinds.length > 0) {
         // INSERT into user_stig_asset_map 
