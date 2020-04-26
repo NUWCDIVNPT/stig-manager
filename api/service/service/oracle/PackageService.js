@@ -142,81 +142,103 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   }
 }
 
-exports.addOrUpdatePackage = async function(packageId, body, projection, userObject) {
-  // ADD: packageId will be null
-  // UPDATE: packageId is not null
-
-  // Assign packageFields as body without assets
-  const { assetIds, ...packageFields } = body
-  
-  // Pre-process reqRar
-  if (packageFields.hasOwnProperty('reqRar')) {
-    packageFields.reqRar = packageFields.reqRar ? 1 : 0
-  }
-  
-  let connection
+exports.addOrUpdatePackage = async function(writeAction, packageId, body, projection, userObject) {
+  // CREATE: packageId will be null
+  // REPLACE/UPDATE: packageId is not null
+  let connectVar // available to try, catch, and finally blocks
   try {
+    // Extract non-scalar properties to separate variables
+    let { assetIds, ...packageFields } = body
+    if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      // For CREATE/REPLACE, initiialize the non-scalar properties if necessary
+      assetIds = assetIds ? assetIds : []
+    }
+    // Convert boolean scalar values to database values (true=1 or false=0)
+    if ('reqRar' in packageFields) {
+      packageFields.reqRar = packageFields.reqRar ? 1 : 0
+    }
+  
+    // Connect to Oracle
     let options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
-    connection = await oracledb.getConnection()
-    // Does the body contain any fields from contact.contact?
-    if (Object.keys(packageFields).length > 0 ) {
-        if (packageId) {
-          // Update an existing package
-          let binds = []
-          let sqlUpdate =
-          `UPDATE
-              stigman.packages
-            SET
-              ${dbUtils.objectBind(packageFields, binds)}
-            WHERE
-              packageId = :packageId`
-          binds.push(packageId)
-          await connection.execute(sqlUpdate, binds, options)
-        } else {
-          let sqlInsert =
-          `INSERT INTO
-              stigman.packages
-              (name, emassId, pocName, pocEmail, pocPhone, reqRar)
-            VALUES
-              (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)
-            RETURNING
-              packageId into :packageId`
-          let binds = [
-            packageFields.name,
-            packageFields.emassId,
-            packageFields.pocName,
-            packageFields.pocEmail,
-            packageFields.pocPhone,
-            packageFields.reqRar,
-            { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
-          ]
-          let result = await connection.execute(sqlInsert, binds, options)
-          packageId = result.outBinds[0][0]
-        }           
+    let connection = await oracledb.getConnection()
+    connectVar = connection // make available to catch and finally blocks
+
+    // Process scalar properties
+    let binds = {}
+    if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      let defaults = {
+        name: null,
+        emassId: null,
+        pocName: null,
+        pocEmail: null,
+        pocPhone: null,
+        reqRar: 0
+      }
+      binds = { ...defaults, ...packageFields }
     }
-    // Does body contain a list of assetIds?
-    if (body.assetIds) { // try just "assetIds"
-        let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = :packageId'
-        let sqlInsertAssets = `
-          INSERT INTO 
-            stigman.asset_package_map (packageId,assetId)
-          VALUES (:packageId, :assetId)`
-        let resultDelete = await connection.execute(sqlDeleteAssets, [packageId])
-        if (body.assetIds.length > 0) {
-          let binds = body.assetIds.map(i => [packageId, i])
-          await connection.executeMany(sqlInsertAssets, binds)
-        }
+    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE) {
+      binds = { ...packageFields}
     }
+    if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
+      // INSERT into packages
+      let sqlInsert =
+      `INSERT INTO
+          stigman.packages
+          (name, emassId, pocName, pocEmail, pocPhone, reqRar)
+        VALUES
+          (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)
+        RETURNING
+          packageId into :packageId`
+      binds.packageId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
+      let result = await connection.execute(sqlInsert, binds, options)
+      packageId = result.outBinds.packageId[0]
+    }
+    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      if (Object.keys(binds).length > 0) {
+        // UPDATE into packages
+        let sqlUpdate =
+        `UPDATE
+            stigman.packages
+          SET
+            ${dbUtils.objectBindObject(packageFields, binds)}
+          WHERE
+            packageId = :packageId`
+        binds.packageId = packageId
+        await connection.execute(sqlUpdate, binds, options)
+      }
+    }
+    else {
+      throw('Invalid writeAction')
+    }
+
+    // Process assetIds
+    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      // DELETE from asset_package_map
+      let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = :packageId'
+      await connection.execute(sqlDeleteAssets, [packageId])
+    }
+    if (assetIds.length > 0) {
+      let sqlInsertAssets = `
+        INSERT /*+ ignore_row_on_dupkey_index(asset_package_map(packageId, assetId)) */ INTO 
+          stigman.asset_package_map (packageId,assetId)
+        VALUES (:packageId, :assetId)`      
+      let binds = assetIds.map(i => [packageId, i])
+      // INSERT into asset_package_map
+      await connection.executeMany(sqlInsertAssets, binds)
+    }
+
+    // Commit the changes
     await connection.commit()
   }
   catch (err) {
+    await connectVar.rollback()
     throw err
   }
   finally {
-    if (connection) {
-      await connection.close()
+    if (typeof connectVar !== 'undefined') {
+      await connectVar.close()
     }
   }
 
@@ -237,7 +259,7 @@ exports.addOrUpdatePackage = async function(packageId, body, projection, userObj
  **/
 exports.createPackage = async function(body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(null, body, projection, userObject)
+    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
     return (row)
   }
   catch (err) {
@@ -420,6 +442,24 @@ exports.getPackages = async function(projection, elevate, userObject) {
 
 
 /**
+ * Replace all properties of a Package
+ *
+ * body PackageAssign  (optional)
+ * packageId Integer A path parameter that indentifies a Package
+ * returns PackageInfo
+ **/
+exports.replacePackage = async function( packageId, body, projection, userObject) {
+  try {
+    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.REPLACE, packageId, body, projection, userObject)
+    return (row)
+  } 
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+
+/**
  * Merge updates to a Package
  *
  * body PackageAssign  (optional)
@@ -428,7 +468,7 @@ exports.getPackages = async function(projection, elevate, userObject) {
  **/
 exports.updatePackage = async function( packageId, body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(packageId, body, projection, userObject)
+    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.UPDATE, packageId, body, projection, userObject)
     return (row)
   } 
   catch (err) {

@@ -53,7 +53,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PackageAssign'
+              $ref: '#/components/schemas/PackageCreate'
       responses:
         '201':
           description: PackageProjected response
@@ -118,7 +118,37 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PackageAssign'
+              $ref: '#/components/schemas/PackageUpdate'
+      responses:
+        '200':
+          description: PackageProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+      x-swagger-router-controller: Package
+    put:
+      tags:
+        - Package
+      summary: Replace all properties of a Package
+      operationId: replacePackage
+      x-codegen-request-body-name: body
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageCreate'
       responses:
         '200':
           description: PackageProjected response
@@ -1408,9 +1438,6 @@ components:
           type: string
     Package:
       type: object
-      required:
-        - packageId
-        - name
       properties:
         packageId:
           readOnly: true
@@ -1454,7 +1481,18 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/STIG'
-    PackageAssign:
+    PackageCreate:
+      required:
+        - name
+      allOf:
+        - $ref: '#/components/schemas/Package'
+        - type: object
+          properties:
+            assetIds:
+              type: array
+              items:
+                type: integer
+    PackageUpdate:
       allOf:
         - $ref: '#/components/schemas/Package'
         - type: object

@@ -1,13 +1,9 @@
-/* 
-$Id: packageAdmin.js 807 2017-07-27 13:04:19Z csmig $
-*/
-
 function addPackageAdmin() {
 	var assetFields = Ext.data.Record.create([
 		{	name:'assetId',
 			type: 'number'
 		},{
-			name:'assetName',
+			name:'name',
 			type: 'string'
 		},{
 			name:'ip',
@@ -15,34 +11,22 @@ function addPackageAdmin() {
 		}
 	]);
 	var assetStore = new Ext.data.JsonStore({
-		url: 'pl/getAssetsForProps.pl',
+		url: `${STIGMAN.Env.apiBase}/assets?elevate=true`,
 		fields: assetFields,
 		autoLoad: true,
-		root: 'rows',
+		root: '',
 		sortInfo: {
-			field: 'assetName',
+			field: 'name',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
 		idProperty: 'assetId'
 	});
-	/******************************************************/
-	// Repositories
-	/******************************************************/
-	var repoStore = new Ext.data.ArrayStore({
-		fields: ['repositoryId','repositoryName'],
-		sortInfo: {
-			field: 'repositoryName',
-			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-		},
-		idProperty: 'repositoryId'
-	});
-
 		
 	var packageFields = Ext.data.Record.create([
 		{	name:'packageId',
 			type: 'number'
 		},{
-			name: 'packageName',
+			name: 'name',
 			type: 'string'
 		},{
 			name: 'emassId',
@@ -66,13 +50,16 @@ function addPackageAdmin() {
 	]);
 
 	var packageStore = new Ext.data.JsonStore({
-		url: 'pl/getPackages.pl',
-		root: 'rows',
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/packages`,
+			method: 'GET'
+		}),
+		root: '',
 		fields: packageFields,
 		totalProperty: 'records',
 		idProperty: 'packageId',
 		sortInfo: {
-			field: 'packageName',
+			field: 'name',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
 		listeners: {
@@ -84,8 +71,7 @@ function addPackageAdmin() {
 			remove: function (store,record,index) {
 				Ext.getCmp('packageGrid-totalText').setText(store.getCount() + ' records');
 			}
-		},
-		writer:new Ext.data.JsonWriter()
+		}
 	});
 
 	var packageGrid = new Ext.grid.EditorGridPanel({
@@ -96,7 +82,7 @@ function addPackageAdmin() {
 		columns: [{ 	
 				header: "Package",
 				width: 300,
-				dataIndex: 'packageName',
+				dataIndex: 'name',
 				sortable: true
 			},{ 	
 				header: "eMASS ID",
@@ -120,23 +106,18 @@ function addPackageAdmin() {
 				width: 150,
 				dataIndex: 'pocName',
 				sortable: true
-			},{ 	
-				header: "SC Repository",
+			}
+			,{ 	
+				header: "POC Email",
 				width: 150,
-				dataIndex: 'repositoryName',
+				dataIndex: 'pocEmail',
+				sortable: true
+			},{ 	
+				header: "POC Phone",
+				width: 150,
+				dataIndex: 'pocPhone',
 				sortable: true
 			}
-			// ,{ 	
-				// header: "POC Email",
-				// width: 150,
-				// dataIndex: 'pocEmail',
-				// sortable: true
-			// },{ 	
-				// header: "POC Phone",
-				// width: 150,
-				// dataIndex: 'pocPhone',
-				// sortable: true
-			// }
 		],
 		view: new Ext.grid.GridView({
 			forceFit:false,
@@ -158,7 +139,7 @@ function addPackageAdmin() {
 			rowdblclick: {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
-					Ext.getBody().mask('Getting properties of ' + r.get('packageName') + '...');
+					Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
 					showPackageProps(r.get('packageId'));
 				}
 			}
@@ -176,22 +157,29 @@ function addPackageAdmin() {
 			text: 'Delete package',
 			disabled: !(curUser.canAdmin),
 			handler: function() {
-				var confirmStr="Deleteing this package will <b>permanently remove</b> all data associated with the package. This includes all the package's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the package?";
-				Ext.Msg.confirm("Confirm",confirmStr,function (btn,text) {
-					if (btn == 'yes') {
-						var s = packageGrid.getSelectionModel().getSelections();
-						for (var i = 0, r; r = s[i]; i++) {
-							packageStore.remove(r);
+				try {
+					var confirmStr="Deleteing this package will <b>permanently remove</b> all data associated with the package. This includes all the package's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the package?";
+					Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+						if (btn == 'yes') {
+							var package = packageGrid.getSelectionModel().getSelected();
+							let result = await Ext.Ajax.requestPromise({
+								url: `${STIGMAN.Env.apiBase}/packages/${package.data.packageId}`,
+								method: 'DELETE'
+							})
+							packageStore.remove(package);
 						}
-					}
-				});
+					})
+				}
+				catch (e) {
+					alert(e.message)
+				}
 			}
 		},'-',{
 			iconCls: 'sm-package-icon',
 			text: 'Modify package properties',
 			handler: function() {
 				var r = packageGrid.getSelectionModel().getSelected();
-				Ext.getBody().mask('Getting properties of ' + r.get('packageName') + '...');
+				Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
 				showPackageProps(r.get('packageId'));
 			}
 		}],
@@ -224,7 +212,8 @@ function addPackageAdmin() {
 
 
 
-	function showPackageProps(id) {
+	async function showPackageProps(packageId) {
+		let apiPackage
 		/******************************************************/
 		// Assets
 		/******************************************************/
@@ -253,7 +242,7 @@ function addPackageAdmin() {
 				assetSm,
 				{ header: "Asset", 
 					width: 95,
-					dataIndex: 'assetName',
+					dataIndex: 'name',
 					sortable: true
 				},
 				{ header: "IP", 
@@ -266,15 +255,17 @@ function addPackageAdmin() {
 				forceFit: true
 			},
 			sm: assetSm,
-			setValue: function(v) {
-				var selRecords = [];
-				for(y=0;y<v.length;y++) {
-					var record = assetStore.getById(v[y]);
-					selRecords.push(record);
-				}
+			setValue: function(assets) {
+				var selRecords = []
+				assets.forEach(asset => {
+					let record = assetStore.getById(asset.assetId)
+					selRecords.push(record)
+				})
 				assetSm.selectRecords(selRecords);
 			},
-			getValue: function() {},
+			getValue: function() {
+				return JSON.parse(encodeSm(assetSm,'assetId'))
+			},
 			markInvalid: function() {},
 			clearInvalid: function() {},
 			validate: function() { return true},
@@ -334,7 +325,6 @@ function addPackageAdmin() {
 		var packagePropsFormPanel = new Ext.form.FormPanel({
 			baseCls: 'x-plain',
 			labelWidth: 95,
-			url:'pl/updatePackageProps.pl',
 			monitorValid: true,
 			items: [
 			{ // start fieldset config
@@ -357,7 +347,7 @@ function addPackageAdmin() {
 							anchor: '-20',
 							emptyText: 'Enter package name...',
 							allowBlank: false,
-							name: 'packageName'
+							name: 'name'
 						}
 						,{
 							xtype: 'textfield',
@@ -414,17 +404,50 @@ function addPackageAdmin() {
 			buttons: [{
 				text: 'Cancel',
 				handler: function(){
-					window.close();
+					appwindow.close();
 				}
 			},{
 				text: 'Save',
 				formBind: true,
 				id: 'submit-button',
-				handler: function(){
+				handler: async function(){
+					try {
+						if (packagePropsFormPanel.getForm().isValid()) {
+							let values = packagePropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+							// change "assets" to "assetIds"
+							delete Object.assign(values, {['assetIds']: values['assets'] })['assets']
+							let url, method
+							if (packageId) {
+								url = `${STIGMAN.Env.apiBase}/packages/${packageId}`
+								method = 'PUT'
+							}
+							else {
+								url = `${STIGMAN.Env.apiBase}/packages`
+								method = 'POST'
+							}
+							let result = await Ext.Ajax.requestPromise({
+								url: url,
+								method: method,
+								headers: { 'Content-Type': 'application/json;charset=utf-8' },
+								jsonData: values
+							  })
+							apiPackage = JSON.parse(result.response.responseText)
+
+							//TODO: This is expensive, should update the specific record instead of reloading entire set
+							Ext.getCmp('packageGrid').getView().holdPosition = true
+							Ext.getCmp('packageGrid').getStore().reload()
+							appwindow.close()
+						}
+					}
+					catch (e) {
+						alert(e.message)
+					}
+				},
+				handlerOriginal: function(){
 					packagePropsFormPanel.getForm().submit({
 						submitEmptyText: false,
 						params : {
-							id: id,
+							id: packageid,
 							assets: encodeSm(assetSm,'assetId'),
 							req: 'update'
 						},
@@ -433,7 +456,7 @@ function addPackageAdmin() {
 							Ext.getCmp('packageGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
 							Ext.getCmp('packageGrid').getStore().reload();
 							Ext.Msg.alert('Success','Package ID ' + a.result.id + ' has been updated.');
-							window.close();
+							appwindow.close();
 						},
 						failure: function(form, action){
 							if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
@@ -454,9 +477,9 @@ function addPackageAdmin() {
 		/******************************************************/
 		// Form window
 		/******************************************************/
-		var window = new Ext.Window({
+		var appwindow = new Ext.Window({
 			id: 'packagePropsWindow',
-			title: 'Package Properties, ID ' + id,
+			title: packageId ? 'Package Properties, ID ' + packageId : 'Create new Package',
 			modal: true,
 			hidden: true,
 			width: 730,
@@ -485,7 +508,7 @@ function addPackageAdmin() {
 				if (selectionsOnly) {
 					assetStore.filter([
 						{
-							property:'assetName',
+							property:'name',
 							value:value,
 							anyMatch:true,
 							caseSensitive:false
@@ -495,7 +518,7 @@ function addPackageAdmin() {
 						}
 					]);
 				} else {
-					assetStore.filter({property:'assetName',value:value,anyMatch:true,caseSensitive:false});
+					assetStore.filter({property:'name',value:value,anyMatch:true,caseSensitive:false});
 				}
 			}
 		};
@@ -503,37 +526,40 @@ function addPackageAdmin() {
 		/******************************************************/
 		// Load store(s), show window, and get properties
 		/******************************************************/
+		assetStore.clearFilter()
+		appwindow.render(document.body)
 
-		window.render(document.body);
-		//assetStore.load({
-			//callback: function (r,o,s) {
-				packagePropsFormPanel.getForm().load({
-					url: 'pl/getPackageProps.pl',
-					params: {
-						id: id
-					},
-					success: function(form,action) {
-						Ext.getBody().unmask();
-						window.show(document.body);
-					}
-				});
-			//}
-		//});
-		
-		
-		} //end showAssetProps
+		if (packageId) {
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+				params: {
+					elevate: true,
+					projection: ['assets']
+				},
+				method: 'GET'
+			})
+			apiPackage = JSON.parse(result.response.responseText)
+			packagePropsFormPanel.getForm().setValues(apiPackage)
+		}
+		Ext.getBody().unmask()
+		appwindow.show(document.body)	
+	} //end showPackageProps
 
 	var thisTab = Ext.getCmp('admin-center-tab').add({
 		id: 'package-admin-tab',
 		iconCls: 'sm-package-icon',
-		title: 'C&A packages',
+		title: 'Packages',
 		closable:true,
 		layout: 'fit',
 		items: [packageGrid]
 		});
 	thisTab.show();
 	
-	packageGrid.getStore().load();
+	packageGrid.getStore().load({
+		params: {
+			elevate: true
+		}
+	});
 
 	
 } // end addPackageAdmin()

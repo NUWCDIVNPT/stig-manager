@@ -76,6 +76,25 @@ module.exports.getPackages = async function getPackages (req, res, next) {
   }
 }
 
+module.exports.replacePackage = async function updatePackage (req, res, next) {
+  if ( req.userObject.canAdmin  || req.userObject.role == 'Staff' ) {
+    try {
+      let packageId = req.swagger.params['packageId'].value
+      let projection = req.swagger.params['projection'].value
+      let body = req.body
+      let response = await Package.replacePackage(packageId, body, projection, req.userObject)
+      writer.writeJson(res, response)
+    }
+    catch (err) {
+      writer.writeJson(res, err)
+    }
+  } 
+  else {
+    writer.writeJson(res, writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+  }
+}
+
+
 module.exports.updatePackage = async function updatePackage (req, res, next) {
   if ( req.userObject.canAdmin  || req.userObject.role == 'Staff' ) {
     try {
