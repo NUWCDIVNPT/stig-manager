@@ -147,12 +147,10 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
   // REPLACE/UPDATE: packageId is not null
   let connectVar // available to try, catch, and finally blocks
   try {
-    // Extract non-scalar properties to separate variables
+    // Extract or initialize non-scalar properties to separate variables
     let { assetIds, ...packageFields } = body
-    if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      // For CREATE/REPLACE, initiialize the non-scalar properties if necessary
-      assetIds = assetIds ? assetIds : []
-    }
+    assetIds = assetIds ? assetIds : []
+    
     // Convert boolean scalar values to database values (true=1 or false=0)
     if ('reqRar' in packageFields) {
       packageFields.reqRar = packageFields.reqRar ? 1 : 0

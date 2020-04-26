@@ -53,7 +53,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PackageCreate'
+              $ref: '#/components/schemas/PackageCreateOrReplace'
       responses:
         '201':
           description: PackageProjected response
@@ -148,7 +148,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PackageCreate'
+              $ref: '#/components/schemas/PackageCreateOrReplace'
       responses:
         '200':
           description: PackageProjected response
@@ -287,7 +287,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssetWrite'
+              $ref: '#/components/schemas/AssetCreateOrReplace'
       responses:
         '201':
           description: AssetProjected response
@@ -350,7 +350,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssetWrite'
+              $ref: '#/components/schemas/AssetUpdate'
       responses:
         '200':
           description: AssetProjected response
@@ -380,7 +380,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssetWrite'
+              $ref: '#/components/schemas/AssetCreateOrReplace'
       responses:
         '200':
           description: AssetProjected response
@@ -1481,17 +1481,11 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/STIG'
-    PackageCreate:
+    PackageCreateOrReplace:
       required:
         - name
       allOf:
-        - $ref: '#/components/schemas/Package'
-        - type: object
-          properties:
-            assetIds:
-              type: array
-              items:
-                type: integer
+        - $ref: '#/components/schemas/PackageUpdate'
     PackageUpdate:
       allOf:
         - $ref: '#/components/schemas/Package'
@@ -1561,7 +1555,6 @@ components:
                           type: integer
                         name:
                           type: string
-                          
     AssetBasic:
       type: object
       properties:
@@ -1571,7 +1564,12 @@ components:
           type: string
         dept:
           type: string
-    AssetWrite:
+    AssetCreateOrReplace:
+      required:
+        - name
+      allOf:
+        - $ref: '#/components/schemas/AssetUpdate'
+    AssetUpdate:
       allOf:
         - $ref: '#/components/schemas/Asset'
         - type: object
