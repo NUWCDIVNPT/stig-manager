@@ -5,7 +5,7 @@ function getAdministrationItems() {
 		region: 'west',
 		xtype: 'treepanel',
 		id: 'admin-nav-tree',
-		rootVisible: false,
+		rootVisible: true,
 		autoScroll: true,
 		split: true,
 		collapsible: true,
@@ -13,11 +13,7 @@ function getAdministrationItems() {
 		bodyStyle:'padding:5px;',
 		width: 220,
 		minSize: 160,
-		root: {
-			nodeType: 'async',
-			text: 'Administration'
-		},
-		dataUrl: 'pl/adminNavTree.pl',
+		root: getTree(),
 		listeners: {
 			click: adminTreeClick
 		}
@@ -67,5 +63,45 @@ function addAdminTab(adminAttributes) {
 			break;
 	}	
 
-} //end addAdminTab();
+}
+
+function getTree() {
+	let children = [{
+		id: 'user-admin',
+		text: 'Users',
+		leaf: true,
+		iconCls: 'sm-users-icon'
+	},{
+		id: 'asset-admin',
+		text: 'Assets',
+		leaf: true,
+		iconCls: 'sm-asset-icon'
+	},{
+		id: 'artifact-admin',
+		text: 'Artifacts',
+		leaf: true,
+		iconCls: 'sm-artifact-icon'
+	},{
+		id: 'stig-admin',
+		text: 'STIG checklists',
+		leaf: true,
+		iconCls: 'sm-stig-icon'
+	}]
+
+	if (curUser.canAdmin || curUser.role === 'Staff') {
+		children.push({
+			id: 'package-admin',
+			text: 'Packages',
+			leaf: true,
+			iconCls: 'sm-package-icon'
+		})
+	}
+	return new Ext.tree.AsyncTreeNode({
+		id: 'global-admin',
+		text: 'Administration areas',
+		icon: 'img/Settings-icon-16.png',
+		expanded: true,
+		children: children
+	})
+}
 
