@@ -54,7 +54,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
                           KEY 'reviewers' VALUE json_arrayagg(
                               CASE WHEN u.id IS NOT NULL THEN  json_object(
                                   KEY 'userId' VALUE u.id,
-                                  KEY 'name' VALUE u.name
+                                  KEY 'username' VALUE u.name
                                   ABSENT ON NULL
                               ) ELSE NULL END
                           ) FORMAT JSON
@@ -68,6 +68,27 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       left join stigman.user_data u on usa.userId = u.id
       WHERE sa.assetId = a.assetId
       group by sa.stigId) as "stigReviewers"`)
+  }
+  if (inProjection && inProjection.includes('reviewers') && context !== dbUtils.CONTEXT_USER) {
+    // Subquery relies on predicate :stigId to be set
+    columns.push(`(select
+        replace(
+          replace(
+            json_arrayagg(
+              CASE WHEN u.id IS NOT NULL THEN json_object(
+                  KEY 'userId' VALUE u.id,
+                  KEY 'username' VALUE u.name
+                  ABSENT ON NULL
+              ) ELSE NULL END
+            )
+          , '"{', '{')
+        , '}"', '}')  
+      FROM 
+        stigman.stig_asset_map sa
+        left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
+        left join stigman.user_data u on usa.userId = u.id
+      WHERE sa.assetId = a.assetId and sa.stigId = :benchmarkId
+      group by sa.stigId) as "reviewers"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
     joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
@@ -84,31 +105,31 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   // PREDICATES
   let predicates = {
     statements: [],
-    binds: []
+    binds: {}
   }
   if (inPredicates.assetId) {
     predicates.statements.push('a.assetId = :assetId')
-    predicates.binds.push( inPredicates.assetId )
+    predicates.binds.assetId = inPredicates.assetId
   }
   if (inPredicates.packageId) {
     predicates.statements.push('ap.packageId = :packageId')
-    predicates.binds.push( inPredicates.packageId )
+    predicates.binds.packageId = inPredicates.packageId
   }
   if (inPredicates.benchmarkId) {
-    predicates.statements.push('sa.stigId = :stigId')
-    predicates.binds.push( inPredicates.benchmarkId )
+    predicates.statements.push('sa.stigId = :benchmarkId')
+    predicates.binds.benchmarkId = inPredicates.benchmarkId
   }
   if (inPredicates.dept) {
     predicates.statements.push('a.dept = :dept')
-    predicates.binds.push( inPredicates.dept )
+    predicates.binds.dept = inPredicates.dept
   }
   if (context == dbUtils.CONTEXT_DEPT) {
     predicates.statements.push('a.dept = :dept')
-    predicates.binds.push( userObject.dept )
+    predicates.binds.dept = userObject.dept
   } 
   else if (context == dbUtils.CONTEXT_USER) {
     predicates.statements.push('usa.userId = :userId')
-    predicates.binds.push( userObject.id )
+    predicates.binds.userId = userObject.id
 
   }
 
@@ -139,7 +160,6 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       // Handle booleans
       record.nonnetwork = record.nonnetwork == 1 ? true : false
       record.scanexempt = record.scanexempt == 1 ? true : false
-      // Handle packages
       if ('packages' in record) {
        // Check for "empty" arrays 
         record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages) || []
@@ -151,7 +171,6 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
           return c
         })
       }
-      // Handle stigs 
       if ('stigs' in record) {
         record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs) || []
         // Sort by benchmarkId
@@ -162,13 +181,14 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
           return c
         })
       }
-      // Handle adminStats 
       if ('adminStats' in record) {
         record.adminStats = JSON.parse(record.adminStats) || {}
       }
-      // Handle stigReviewers 
       if ('stigReviewers' in record) {
         record.stigReviewers = JSON.parse(record.stigReviewers) || []
+      }
+      if ('reviewers' in record) {
+        record.reviewers = JSON.parse(record.reviewers) || []
       }
     }
     return (result.rows)
@@ -769,6 +789,18 @@ exports.getAssets = async function(packageId, benchmarkId, dept, projection, ele
   }
 }
 
+
+exports.getAssetsByBenchmarkId = async function( benchmarkId, projection, elevate, userObject) {
+  try {
+    let rows = await this.queryAssets(projection, {
+      benchmarkId: benchmarkId,
+    }, elevate, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
 
 /**
  * Return the Checklist for the supplied Asset and STIG

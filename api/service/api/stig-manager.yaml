@@ -1100,6 +1100,7 @@ paths:
         - admin
   '/stigs/{benchmarkId}/assets':
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/StigAssetProjectionQuery'
       - name: benchmarkId
         in: path
@@ -1134,8 +1135,8 @@ paths:
       tags:
         - Asset
       summary: Set the targets of evaluation against a STIG
-      description: Invoking this endpoint will retain previously configured Reviewer assignments 
-      operationId: createStigAssetsByBenchmarkId
+      description: Invoking this endpoint will retain any previously configured Reviewer assignments 
+      operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
         x-name: body
@@ -1915,7 +1916,7 @@ components:
               $ref: '#/components/schemas/RuleAbbr'
     StigAssetProjected:
        allOf:
-        - $ref: '#/components/schemas/StigAsset'
+        - $ref: '#/components/schemas/AssetBasic'
         - type: object
           properties:
             reviewers:
