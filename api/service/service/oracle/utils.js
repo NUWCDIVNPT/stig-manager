@@ -215,11 +215,10 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
 // Returns Boolean
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {
-    let context, sql
+    let sql
     if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
       return true
     } else if (userObject.role == "IAO") {
-      context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT
           a.assetId
