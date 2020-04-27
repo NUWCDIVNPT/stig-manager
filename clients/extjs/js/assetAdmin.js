@@ -562,7 +562,6 @@ function addAssetAdmin() {
 		var assetPropsFormPanel = new Ext.form.FormPanel({
 			baseCls: 'x-plain',
 			labelWidth: 70,
-			url:'pl/updateAssetProps.pl',
 			monitorValid: true,
 			trackResetOnLoad: true,
 			items: [
@@ -626,24 +625,6 @@ function addAssetAdmin() {
 								data : [['10'],['15'],['25'],['34'],['40'],['60'],['70'],['85']]
 							})
 						},
-						// {
-							// xtype: 'combo',
-							// fieldLabel: 'Asset group',
-							// width: 150,
-							// emptyText: 'Choose a group...',
-							// allowBlank: true,
-							// editable: true,
-							// name: 'group',
-							// mode: 'remote',
-							// triggerAction: 'all',
-							// displayField:'groupId',
-							// store: new Ext.data.JsonStore({
-								// url: 'pl/getGroupsForProps.pl',
-								// fields: [{name: 'groupId'}, {name: 'groupName'}],
-								// root: 'rows',
-								// idProperty: 'groupId'
-							// })
-						// },
 						{
 							xtype: 'checkbox',
 							id: 'assetProps-nonnetwork',

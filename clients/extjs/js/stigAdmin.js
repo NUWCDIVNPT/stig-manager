@@ -214,7 +214,9 @@ function addStigAdmin() {
 				})
 				assetSm.selectRecords(selRecords);
 			},
-			getValue: function() {},
+			getValue: function() {
+				return JSON.parse(encodeSm(assetSm,'assetId'))
+			},
 			markInvalid: function() {},
 			clearInvalid: function() {},
 			validate: function() { return true},
@@ -299,32 +301,76 @@ function addStigAdmin() {
 				text: 'Save',
 				formBind: true,
 				id: 'submit-button',
-				handler: function(){
-					stigAssignmentsFormPanel.getForm().submit({
-						submitEmptyText: false,
-						params : {
-							benchmarkId: benchmarkId,
-							assetIds: encodeSm(assetSm,'assetId'),
-							req: 'update'
-						},
-						waitMsg: 'Saving changes...',
-						success: function (f,a) {
-							if (a.result.success == 'true') {
-								Ext.getCmp('stigGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
-								Ext.getCmp('stigGrid').getStore().reload();
-								//Ext.Msg.alert('Success','Asset ID ' + a.result.id + ' has been updated.');
-								appwindow.close();
-							} else {
-								Ext.Msg.alert('Failure!','The database update has failed.');
-								appwindow.close();
-							}	
-						},
-						failure: function(f,a) {
-							Ext.Msg.alert('AJAX Failure!','AJAX call has completely failed.');
-							appwindow.close();
-						}	
-					});
-				}
+				handler: async function(){
+					try {
+						if (stigAssignmentsFormPanel.getForm().isValid()) {
+							let values = stigAssignmentsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+							// TODO: Replace loop with dedivcated endpoint PUT /stigs/{benchmarkId}/assets
+							let requests = []
+							values.assetAssignments.forEach( sa => {
+								Ext.Ajax.requestPromise({
+									url: `${STIGMAN.Env.apiBase}/assets/${sa}`,
+									method: method,
+									headers: { 'Content-Type': 'application/json;charset=utf-8' },
+									jsonData: values
+								  })
+							})
+							// change "assets" to "assetIds"
+							delete Object.assign(values, {['assetIds']: values['assets'] })['assets']
+							let url, method
+							if (packageId) {
+								url = `${STIGMAN.Env.apiBase}/packages/${packageId}`
+								method = 'PUT'
+							}
+							else {
+								url = `${STIGMAN.Env.apiBase}/packages`
+								method = 'POST'
+							}
+							let result = await Ext.Ajax.requestPromise({
+								url: url,
+								method: method,
+								headers: { 'Content-Type': 'application/json;charset=utf-8' },
+								jsonData: values
+							  })
+							apiPackage = JSON.parse(result.response.responseText)
+
+							//TODO: This is expensive, should update the specific record instead of reloading entire set
+							Ext.getCmp('packageGrid').getView().holdPosition = true
+							Ext.getCmp('packageGrid').getStore().reload()
+							appwindow.close()
+						}
+					}
+					catch (e) {
+						alert(e.message)
+					}
+				},
+				
+				// handler: function(){
+				// 	stigAssignmentsFormPanel.getForm().submit({
+				// 		submitEmptyText: false,
+				// 		params : {
+				// 			benchmarkId: benchmarkId,
+				// 			assetIds: encodeSm(assetSm,'assetId'),
+				// 			req: 'update'
+				// 		},
+				// 		waitMsg: 'Saving changes...',
+				// 		success: function (f,a) {
+				// 			if (a.result.success == 'true') {
+				// 				Ext.getCmp('stigGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
+				// 				Ext.getCmp('stigGrid').getStore().reload();
+				// 				//Ext.Msg.alert('Success','Asset ID ' + a.result.id + ' has been updated.');
+				// 				appwindow.close();
+				// 			} else {
+				// 				Ext.Msg.alert('Failure!','The database update has failed.');
+				// 				appwindow.close();
+				// 			}	
+				// 		},
+				// 		failure: function(f,a) {
+				// 			Ext.Msg.alert('AJAX Failure!','AJAX call has completely failed.');
+				// 			appwindow.close();
+				// 		}	
+				// 	});
+				// }
 		   }]
 		});
 

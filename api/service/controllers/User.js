@@ -101,7 +101,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
   }
 }
 
-module.exports.updateUser = async function updateUser (req, res, next) {)
+module.exports.updateUser = async function updateUser (req, res, next) {
   if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
     let userId = req.swagger.params['userId'].value
     let body = req.swagger.params['body'].value

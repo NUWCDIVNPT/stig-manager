@@ -37,10 +37,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-classic:
-        - getPackages
-        - getPackageProps
-      x-swagger-router-controller: Package
     post:
       tags:
         - Package
@@ -72,7 +68,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Package
   '/packages/{packageId}':
     parameters:
       - name: packageId
@@ -105,7 +100,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Package
     patch:
       tags:
         - Package
@@ -135,7 +129,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Package
     put:
       tags:
         - Package
@@ -165,7 +158,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Package
     delete:
       tags:
         - Package
@@ -187,7 +179,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Package
   '/packages/{packageId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
       - name: packageId
@@ -230,7 +221,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Package
   /assets:
     parameters:
       - $ref: '#/components/parameters/AssetProjectionQuery'
@@ -274,7 +264,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Asset
     post:
       tags:
         - Asset
@@ -304,7 +293,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Asset
   '/assets/{assetId}':
     parameters:
       - name: assetId
@@ -337,7 +325,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Asset
     patch:
       tags:
         - Asset
@@ -367,7 +354,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Asset
     put:
       tags:
         - Asset
@@ -397,7 +383,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Asset
     delete:
       tags:
         - Asset
@@ -419,7 +404,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Asset
   '/assets/{assetId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
       - name: assetId
@@ -477,7 +461,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Asset
   /reviews:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -541,7 +524,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Review
     post:
       tags:
         - Review
@@ -583,7 +565,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Review
     put:
       tags:
         - Review
@@ -615,7 +596,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Review
   '/reviews/{assetId}':
     parameters:
       - name: assetId
@@ -664,7 +644,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Review
   '/reviews/{assetId}/{ruleId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -704,7 +683,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-      x-swagger-router-controller: Review
     put:
       tags:
         - Review
@@ -735,7 +713,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Review
     patch:
       tags:
         - Review
@@ -766,7 +743,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Review
     delete:
       tags:
         - Review
@@ -788,7 +764,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
-      x-swagger-router-controller: Review
   /user:
     get:
       tags:
@@ -811,7 +786,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
-      x-swagger-router-controller: User
   /users:
     parameters:
       - $ref: '#/components/parameters/UserProjectionQuery'
@@ -851,7 +825,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
-      x-swagger-router-controller: User
     post:
       tags:
         - User
@@ -883,7 +856,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-      x-swagger-router-controller: User
   /users/{userId}:
     parameters:
       - $ref: '#/components/parameters/UserProjectionQuery'
@@ -914,7 +886,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
-      x-swagger-router-controller: User
     patch:
       tags:
         - User
@@ -946,7 +917,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-      x-swagger-router-controller: User
     put:
       tags:
         - User
@@ -978,7 +948,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-      x-swagger-router-controller: User
     delete:
       tags:
         - User
@@ -1003,7 +972,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-      x-swagger-router-controller: User
     
     
   /stigs:
@@ -1036,7 +1004,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
     post:
       tags:
         - STIG
@@ -1072,7 +1039,6 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}':
     get:
       tags:
@@ -1102,7 +1068,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
     delete:
       tags:
         - STIG
@@ -1133,7 +1098,71 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
-      x-swagger-router-controller: STIG
+  '/stigs/{benchmarkId}/assets':
+    parameters:
+      - $ref: '#/components/parameters/StigAssetProjectionQuery'
+      - name: benchmarkId
+        in: path
+        description: A path parameter that indentifies a STIG
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Asset
+      summary: Return Assets that are targets of evaluation against a STIG
+      operationId: getAssetsByBenchmarkId
+      responses:
+        '200':
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StigAssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+    put:
+      tags:
+        - Asset
+      summary: Set the targets of evaluation against a STIG
+      description: Invoking this endpoint will retain previously configured Reviewer assignments 
+      operationId: createStigAssetsByBenchmarkId
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+      responses:
+        '200':
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StigAssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
   '/stigs/{benchmarkId}/revisions':
     get:
       tags:
@@ -1165,7 +1194,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}/revisions/{revisionStr}':
     get:
       tags:
@@ -1202,7 +1230,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
     delete:
       tags:
         - STIG
@@ -1240,7 +1267,6 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}/revisions/{revisionStr}/groups':
     get:
       tags:
@@ -1278,7 +1304,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}/revisions/{revisionStr}/groups/{groupId}':
     get:
       tags:
@@ -1323,7 +1348,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}/revisions/{revisionStr}/rules':
     get:
       tags:
@@ -1363,7 +1387,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}':
     get:
       tags:
@@ -1409,7 +1432,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/rules/{ruleId}':
     get:
       tags:
@@ -1440,7 +1462,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/{benchmarkId}/revisions/{revisionStr}/ccis':
     get:
       tags:
@@ -1479,7 +1500,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   '/stigs/ccis/{cci}':
     get:
       tags:
@@ -1511,7 +1531,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-swagger-router-controller: STIG
   /version:
     get:
       tags:
@@ -1525,7 +1544,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiVersion'
-      x-swagger-router-controller: Version
 components:
   schemas:
     Error:
@@ -1740,7 +1758,7 @@ components:
             stigAssets:
               type: array
               items:
-                $ref: '#/components/schemas/StigAssetSet'
+                $ref: '#/components/schemas/UserStigAssetSet'
     UserProjected:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -1749,7 +1767,7 @@ components:
             stigAssets:
               type: array
               items:
-                $ref: '#/components/schemas/StigAssetGet'
+                $ref: '#/components/schemas/UserStigAssetGet'
     UserBasic:
       type: object
       properties:
@@ -1895,14 +1913,28 @@ components:
                 type: string
             rule:
               $ref: '#/components/schemas/RuleAbbr'
-    StigAssetGet:
+    StigAssetProjected:
+       allOf:
+        - $ref: '#/components/schemas/StigAsset'
+        - type: object
+          properties:
+            reviewers:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserBasic'
+    StigAsset:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+    UserStigAssetGet:
       type: object
       properties:
         benchmarkId:
           type: string
         asset:
           $ref: '#/components/schemas/AssetBasic'
-    StigAssetSet:
+    UserStigAssetSet:
       type: object
       properties:
         benchmarkId:
@@ -2243,6 +2275,19 @@ components:
       in: query
       schema:
         $ref: '#/components/schemas/ReviewAction'
+    StigAssetProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - reviewers
     UserProjectionQuery:
       name: projection
       in: query
