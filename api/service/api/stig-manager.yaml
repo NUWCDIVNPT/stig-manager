@@ -11,14 +11,13 @@ servers:
 paths:
   /packages:
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/PackageProjectionQuery'
     get:
       tags:
         - Package
       summary: Return a list of Packages accessible to the requester
       operationId: getPackages
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: PackageProjected response
@@ -42,7 +41,6 @@ paths:
         - Package
       summary: Create a Package
       operationId: createPackage
-      x-codegen-request-body-name: body
       requestBody:
         required: true
         x-name: body
@@ -70,6 +68,7 @@ paths:
             - 'stig-manager:package'
   '/packages/{packageId}':
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - name: packageId
         in: path
         description: A path parameter that indentifies a Package
@@ -82,8 +81,6 @@ paths:
         - Package
       summary: Return a Package
       operationId: getPackage
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: PackageProjected response
