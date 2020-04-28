@@ -33,6 +33,10 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
             if (req.userObject) {
                 req.access_token = decoded
                 req.bearer = token
+                if ('elevate' in req.query && (req.query.elevate === 'true' && !req.userObject.canAdmin)) {
+                    writer.writeJson(req.res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) ) 
+                    return
+                }
                 cb()
             } else {
                 writer.writeJson(req.res, {status: 403, message: `User ${decoded.preferred_username} not found`}, 403)
