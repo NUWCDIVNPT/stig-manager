@@ -36,7 +36,12 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
     code = 200;
   }
   if(typeof payload === 'object') {
-    payload = JSON.stringify(payload, null, 2);
+    if (payload instanceof Error) {
+      payload = JSON.stringify(payload, Object.getOwnPropertyNames(payload), 2);
+    }
+    else {
+      payload = JSON.stringify(payload, null, 2);
+    }
   }
   response.writeHead(code, {
     'Content-Type': 'application/json',
