@@ -6,48 +6,49 @@ var Asset = require(`../service/${config.database.type}/AssetService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 
 module.exports.createAsset = async function createAsset (req, res, next) {
-  if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
-    try {
+  try {
+    let elevate = req.swagger.params['elevate'].value
+    if ( elevate || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-      if ((!req.userObject.canAdmin) && req.userObject.role == 'IAO' && body.dept != req.userObject.dept) {
-        writer.writeJson(res, writer.respondWithCode ( 401, {message: `User has insufficient privilege to create asset with dept: ${body.dept}.`} ) )
+      if (req.userObject.role == 'IAO' && !elevate && body.dept != req.userObject.dept) {
+        // IAO can only create assets for their department
+        writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with dept: ${body.dept}.`} ) )
         return
       }
       let response = await Asset.createAsset( body, projection, req.userObject)
       writer.writeJson(res, response)
     }
-    catch (err) {
-      writer.writeJson(res, err)
+    else {
+      writer.writeJson(res, writer.respondWithCode ( 401, {message: "User has insufficient privilege to complete this request."} ) )
     }
-  } 
-  else {
-    writer.writeJson(res, writer.respondWithCode ( 401, {message: "User has insufficient privilege to complete this request."} ) )
+  }
+  catch (err) {
+    writer.writeJson(res, err)
   }
 }
 
 module.exports.deleteAsset = async function deleteAsset (req, res, next) {
-  if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
-    try {
+  try {
+    let elevate = req.swagger.params['elevate'].value
+    if ( elevate || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
+      // Must be elevated or IAO or Staff
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
-      let assetToDelete = await Asset.getAsset(assetId, projection, true, req.userObject)
-
-      // Check if IAO can delete this asset
-      if (!req.userObject.canAdmin && req.userObject.role == 'IAO' && !assetToDelete) {
-        writer.writeJson(res, writer.respondWithCode ( 401, {message: `User has insufficient privilege to complete this request.`} ) )
-        return
+      if (req.userObject.role == 'IAO' && !elevate) {
+        // Unelevated IAO, check if IAO can retreive Asset
+        let assetToDelete = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+        if (!asssetToDelete) {
+          writer.writeJson(res, writer.respondWithCode ( 401, {message: `User has insufficient privilege to complete this request.`} ) )
+          return    
+        }
       }
-
-      await Asset.deleteAsset( assetId )
-      writer.writeJson(res, assetToDelete)
-    }
-    catch (err) {
-      writer.writeJson(res, err)
+      let row = await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
+      writer.writeJson(res, r)
     }
   }
-  else {
-    writer.writeJson(res, writer.respondWithCode ( 401, {message: `User has insufficient privilege to complete this request.`} ) )    
+  catch (err) {
+    writer.writeJson(res, err)
   }
 }
 
@@ -148,16 +149,17 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
 }
 
 module.exports.updateAsset = async function updateAsset (req, res, next) {
-  if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
-    try {
+  try {
+    let elevate = req.swagger.params['elevate'].value
+    if ( elevate || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-
-      // Check if IAO role has access to this asset
-      if (req.userObject.role == 'IAO' && !req.userObject.canAdmin) {
-        let assetVerify = await Asset.getAsset(assetId, projection, false, req.userObject)
-        if ( !assetVerify ) {
+      if (req.userObject.role == 'IAO' && !elevate) {
+        // IAO can only update assets they can fetch
+        let assetVerify = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+        if ( !assetVerify || assetVerify.dept !=  req.userObject.dept) {
+          // Asset can't be fetched OR IAO is trying to set different department
           writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
           return
         }
@@ -165,26 +167,27 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
       let response = await Asset.updateAsset( assetId, body, projection, req.userObject )
       writer.writeJson(res, response)
     }
-    catch (err) {
-      writer.writeJson(res, err)
-    }
+    else {
+      writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+    }    
   }
-  else {
-    writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+  catch (err) {
+    writer.writeJson(res, err)
   }
 }
 
-module.exports.replaceAsset = async function updateAsset (req, res, next) {
-  if ( req.userObject.canAdmin || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
-    try {
+module.exports.replaceAsset = async function replaceAsset (req, res, next) {
+  try {
+    let elevate = req.swagger.params['elevate'].value
+    if ( elevate || req.userObject.role == 'IAO' || req.userObject.role == 'Staff') {
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-
-      // Check if IAO role has access to this asset
-      if (req.userObject.role == 'IAO' && !req.userObject.canAdmin) {
-        let assetVerify = await Asset.getAsset(assetId, projection, false, req.userObject)
-        if ( !assetVerify ) {
+      if (req.userObject.role == 'IAO' && !elevate) {
+        // IAO can only update assets they can fetch
+        let assetVerify = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+        if ( !assetVerify || assetVerify.dept !=  req.userObject.dept) {
+          // Asset can't be fetched OR IAO is trying to set different department
           writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
           return
         }
@@ -192,11 +195,11 @@ module.exports.replaceAsset = async function updateAsset (req, res, next) {
       let response = await Asset.replaceAsset( assetId, body, projection, req.userObject )
       writer.writeJson(res, response)
     }
-    catch (err) {
-      writer.writeJson(res, err)
-    }
+    else {
+      writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+    }    
   }
-  else {
-    writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+  catch (err) {
+    writer.writeJson(res, err)
   }
 }

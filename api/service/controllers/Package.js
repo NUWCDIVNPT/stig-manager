@@ -28,7 +28,7 @@ module.exports.deletePackage = async function deletePackage (req, res, next) {
     if ( elevate ) {
       let packageId = req.swagger.params['packageId'].value
       let projection = req.swagger.params['projection'].value
-      let response = await Package.deletePackage(packageId, projection, req.userObject)
+      let response = await Package.deletePackage(packageId, projection, elevate, req.userObject)
       writer.writeJson(res, response)
     }
     else {

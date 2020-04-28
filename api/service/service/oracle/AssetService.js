@@ -10,7 +10,7 @@ Generalized queries for asset(s).
 **/
 exports.queryAssets = async function (inProjection, inPredicates, elevate, userObject) {
   let context
-  if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+  if (userObject.role == 'Staff' || elevate) {
     context = dbUtils.CONTEXT_ALL
   } else if (userObject.role == "IAO") {
     context = dbUtils.CONTEXT_DEPT
@@ -730,8 +730,9 @@ exports.createAsset = async function(body, projection, userObject) {
  * assetId Integer A path parameter that indentifies an Asset
  * returns Asset
  **/
-exports.deleteAsset = async function(assetId) {
+exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   try {
+    let row = await this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
     let sqlDelete = `DELETE FROM stigman.assets where assetId = :assetId`
     let connection = await oracledb.getConnection()
     let  options = {
@@ -740,7 +741,7 @@ exports.deleteAsset = async function(assetId) {
     }
     await connection.execute(sqlDelete, [assetId], options)
     await connection.close()
-    return
+    return (row)
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

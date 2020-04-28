@@ -272,9 +272,9 @@ exports.createPackage = async function(body, projection, userObject) {
  * packageId Integer A path parameter that indentifies a Package
  * returns PackageInfo
  **/
-exports.deletePackage = async function(packageId, projection, userObject) {
+exports.deletePackage = async function(packageId, projection, elevate, userObject) {
   try {
-    let row = await this.queryPackages(projection, {packageId: packageId}, true, userObject)
+    let row = await this.queryPackages(projection, { packageId: packageId }, elevate, userObject)
     let sqlDelete = `DELETE FROM stigman.packages where packageId = :packageId`
     let connection = await oracledb.getConnection()
     let  options = {
