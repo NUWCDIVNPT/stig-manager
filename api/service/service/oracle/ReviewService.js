@@ -10,264 +10,267 @@ const {promises: fs} = require('fs')
 Generalized queries for review(s).
 **/
 exports.queryReviews = async function (inProjection, inPredicates, elevate, userObject) {
-  let context
-  if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
-    context = dbUtils.CONTEXT_ALL
-  } else if (userObject.role == "IAO") {
-    context = dbUtils.CONTEXT_DEPT
-  } else {
-    context = dbUtils.CONTEXT_USER
-  }
+  let connection
+  try {
+    let context
+    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+      context = dbUtils.CONTEXT_ALL
+    } else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+    } else {
+      context = dbUtils.CONTEXT_USER
+    }
 
-  let columns = [
-    'DISTINCT r.REVIEWID as "reviewId"',
-    'r.assetId as "assetId"',
-    'asset.name as "assetName"',
-    'r.ruleId as "ruleId"',
-    'state.abbr as "state"',
-    'r.stateId as "stateId"',
-    'r.stateComment as "stateComment"',
-    'r.actionId as "actionId"',
-    'action.action as "action"',
-    'r.actionComment as "actionComment"',
-    'r.statusId as "statusId"',
-    'status.statusStr as "status"',
-    'r.ts as "ts"',
-    'r.autoState as "autoState"',
-    'r.userId as "userId"',
-    'ud.name as "username"',
-    'r.rejectText as "rejectText"',
-    'r.rejectUserId as "rejectUserId"',
-    `CASE
-      WHEN r.ruleId is null
-      THEN 0
-      ELSE
-        CASE WHEN r.stateId != 4
-        THEN
-          CASE WHEN r.stateComment != ' ' and r.stateComment is not null
-            THEN 1
-            ELSE 0 END
+    let columns = [
+      'DISTINCT r.REVIEWID as "reviewId"',
+      'r.assetId as "assetId"',
+      'asset.name as "assetName"',
+      'r.ruleId as "ruleId"',
+      'state.abbr as "state"',
+      'r.stateId as "stateId"',
+      'r.stateComment as "stateComment"',
+      'r.actionId as "actionId"',
+      'action.action as "action"',
+      'r.actionComment as "actionComment"',
+      'r.statusId as "statusId"',
+      'status.statusStr as "status"',
+      'r.ts as "ts"',
+      'r.autoState as "autoState"',
+      'r.userId as "userId"',
+      'ud.name as "username"',
+      'r.rejectText as "rejectText"',
+      'r.rejectUserId as "rejectUserId"',
+      `CASE
+        WHEN r.ruleId is null
+        THEN 0
         ELSE
-          CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
-            THEN 1
-            ELSE 0 END
-        END
-    END as "done"`
-  ]
-  let joins = [
-    'stigman.reviews r',
-    'left join stigman.states state on r.stateId = state.stateId',
-    'left join stigman.statuses status on r.statusId = status.statusId',
-    'left join stigman.actions action on r.actionId = action.actionId',
-    'left join stigman.user_data ud on r.userId = ud.id',
-    'left join stigman.assets asset on r.assetId = asset.assetId' //,
-    // 'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
-  ]
+          CASE WHEN r.stateId != 4
+          THEN
+            CASE WHEN r.stateComment != ' ' and r.stateComment is not null
+              THEN 1
+              ELSE 0 END
+          ELSE
+            CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
+              THEN 1
+              ELSE 0 END
+          END
+      END as "done"`
+    ]
+    let joins = [
+      'stigman.reviews r',
+      'left join stigman.states state on r.stateId = state.stateId',
+      'left join stigman.statuses status on r.statusId = status.statusId',
+      'left join stigman.actions action on r.actionId = action.actionId',
+      'left join stigman.user_data ud on r.userId = ud.id',
+      'left join stigman.assets asset on r.assetId = asset.assetId' //,
+      // 'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
+    ]
 
-  // PROJECTIONS
-  if (inProjection && inProjection.includes('packages')) {
-    columns.push(`(select json_arrayagg(json_object(
-      KEY 'packageId' VALUE p.packageId,
-      KEY 'name' VALUE  p.name))
-      from stigman.asset_package_map ap 
-      left join stigman.packages p on ap.packageId = p.packageId
-      where ap.assetId = r.assetId) as "packages"`)
-  }
-  if (inProjection && inProjection.includes('stigs')) {
-    columns.push(`(select json_arrayagg(json_object(
-      KEY 'benchmarkId' VALUE rev.stigId,
-      KEY 'revisionStr' VALUE  'V'||rev.version||'R'||rev.release))
-      from stigs.rev_group_rule_map rgr 
-      left join stigs.rev_group_map rg on rgr.rgId = rg.rgId
-      left join stigs.revisions rev on rg.revId = rev.revId
-      where rgr.ruleId = r.ruleId) as "stigs"`)
-  }
-  if (inProjection && inProjection.includes('rule')) {
-    columns.push(`(select
-      json_object(
-      KEY 'ruleId' VALUE rule.ruleId
-      ,KEY 'ruleTitle' VALUE rule.title
-      ,KEY 'group' VALUE g.groupId
-      ,KEY 'groupTitle' VALUE g.title
-      ,KEY 'severity' VALUE rule.severity)
-      from
-      stigs.rules rule
-      left join stigs.rev_group_rule_map rgr on rgr.ruleId=rule.ruleId
-      inner join stigs.rev_group_map rg on rgr.rgId=rg.rgId
-      inner join stigs.groups g on rg.groupId=g.groupId
-      where
-      ROWNUM = 1 and
-      rule.ruleId = r.ruleId) as "ruleInfo"`)
-  }
+    // PROJECTIONS
+    if (inProjection && inProjection.includes('packages')) {
+      columns.push(`(select json_arrayagg(json_object(
+        KEY 'packageId' VALUE p.packageId,
+        KEY 'name' VALUE  p.name))
+        from stigman.asset_package_map ap 
+        left join stigman.packages p on ap.packageId = p.packageId
+        where ap.assetId = r.assetId) as "packages"`)
+    }
+    if (inProjection && inProjection.includes('stigs')) {
+      columns.push(`(select json_arrayagg(json_object(
+        KEY 'benchmarkId' VALUE rev.stigId,
+        KEY 'revisionStr' VALUE  'V'||rev.version||'R'||rev.release))
+        from stigs.rev_group_rule_map rgr 
+        left join stigs.rev_group_map rg on rgr.rgId = rg.rgId
+        left join stigs.revisions rev on rg.revId = rev.revId
+        where rgr.ruleId = r.ruleId) as "stigs"`)
+    }
+    if (inProjection && inProjection.includes('rule')) {
+      columns.push(`(select
+        json_object(
+        KEY 'ruleId' VALUE rule.ruleId
+        ,KEY 'ruleTitle' VALUE rule.title
+        ,KEY 'group' VALUE g.groupId
+        ,KEY 'groupTitle' VALUE g.title
+        ,KEY 'severity' VALUE rule.severity)
+        from
+        stigs.rules rule
+        left join stigs.rev_group_rule_map rgr on rgr.ruleId=rule.ruleId
+        inner join stigs.rev_group_map rg on rgr.rgId=rg.rgId
+        inner join stigs.groups g on rg.groupId=g.groupId
+        where
+        ROWNUM = 1 and
+        rule.ruleId = r.ruleId) as "ruleInfo"`)
+    }
 
-  // PREDICATES
-  let predicates = {
-    statements: [],
-    binds: {}
-  }
-  
-  // Role/Assignment based access control 
-  // CONTEXT_USER
-  if (context === dbUtils.CONTEXT_USER) {
+    // PREDICATES
+    let predicates = {
+      statements: [],
+      binds: {}
+    }
     
-    // Construct an 'aclSubquery' to determine allowed assetId/ruleId pairs
-    let aclColumns = [
-      'DISTINCT sa.assetId',
-      'rgr.ruleId'
-    ]
-    let aclPredicates = [
-      'usa.userId = :context_user'
-    ]
-    predicates.binds.context_user = userObject.id
+    // Role/Assignment based access control 
+    // CONTEXT_USER
+    if (context === dbUtils.CONTEXT_USER) {
+      
+      // Construct an 'aclSubquery' to determine allowed assetId/ruleId pairs
+      let aclColumns = [
+        'DISTINCT sa.assetId',
+        'rgr.ruleId'
+      ]
+      let aclPredicates = [
+        'usa.userId = :context_user'
+      ]
+      predicates.binds.context_user = userObject.id
 
-    // item 2 handles the common case where revisionStr is 'latest'
-    // Will replace aclJoins[2] for other revisionStr values
-    let aclJoins = [
-      'stigman.user_stig_asset_map usa',
-      'inner join stigman.stig_asset_map sa on sa.said = usa.said',
-      'left join stigman.asset_package_map ap on ap.assetId = sa.assetId',
-      'inner join stigs.current_revs rev on rev.stigId = sa.stigId',
-      'inner join stigs.rev_group_map rg on rev.revId = rg.revId',
-      'inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
-    ]
+      // item 2 handles the common case where revisionStr is 'latest'
+      // Will replace aclJoins[2] for other revisionStr values
+      let aclJoins = [
+        'stigman.user_stig_asset_map usa',
+        'inner join stigman.stig_asset_map sa on sa.said = usa.said',
+        'left join stigman.asset_package_map ap on ap.assetId = sa.assetId',
+        'inner join stigs.current_revs rev on rev.stigId = sa.stigId',
+        'inner join stigs.rev_group_map rg on rev.revId = rg.revId',
+        'inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
+      ]
 
+      if (inPredicates.assetId) {
+        aclPredicates.push('sa.assetId = :assetId')
+        predicates.binds.assetId = inPredicates.assetId
+        // Delete property so it is not processed by later code
+        delete inPredicates.assetId
+      }
+      if (inPredicates.ruleId) {
+        aclPredicates.push('rgr.ruleId = :ruleId')
+        predicates.binds.ruleId = inPredicates.ruleId
+        // Delete property so it is not processed by later code
+        delete inPredicates.ruleId
+      }
+      if (inPredicates.packageId) {
+        aclPredicates.push('ap.packageId = :packageId')
+        predicates.binds.packageId = inPredicates.packageId
+        // Delete property so it is not processed by later code
+        delete inPredicates.packageId
+      }
+      // If predicates include benchmarkId and revisionStr (which must occur together)
+      if (inPredicates.benchmarkId) {
+        aclPredicates.push('sa.stigId = :benchmarkId')
+        predicates.binds.benchmarkId = inPredicates.benchmarkId
+        // Delete property so it is not processed by later code
+        delete inPredicates.benchmarkId
+      }
+      if (inPredicates.revisionStr && inPredicates.revisionStr !== 'latest') {
+        // Join to revisions so we can specify a revId
+        aclJoins[2] = 'inner join stigs.revisions rev on rev.stigId = sa.stigId'
+        // Calculate the revId
+        let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+        let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+        aclPredicates.push('rev.revId = :revId')
+        predicates.binds.revId = revId
+        // Delete property so it is not processed by later code
+        delete inPredicates.revisionStr
+      }
+
+      let aclSubquery = `
+      SELECT
+        ${aclColumns.join(",\n")}
+      FROM
+        ${aclJoins.join(" \n")}
+      WHERE
+        ${aclPredicates.join(" and ")}
+      `
+
+      // Splice the subquery onto the main query
+      joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join stigman.reviews r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
+      //joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
+    }
+    // CONTEXT_DEPT
+    else if (context === dbUtils.CONTEXT_DEPT) {
+      predicates.statements.push('asset.dept = :dept')
+      predicates.binds.dept = userObject.dept
+    }
+
+      // COMMON
+    if (inPredicates.userId) {
+      predicates.statements.push('r.userId = :userId')
+      predicates.binds.userId = inPredicates.userId
+    }
     if (inPredicates.assetId) {
-      aclPredicates.push('sa.assetId = :assetId')
+      predicates.statements.push('r.assetId = :assetId')
       predicates.binds.assetId = inPredicates.assetId
-      // Delete property so it is not processed by later code
-      delete inPredicates.assetId
     }
     if (inPredicates.ruleId) {
-      aclPredicates.push('rgr.ruleId = :ruleId')
+      predicates.statements.push('r.ruleId = :ruleId')
       predicates.binds.ruleId = inPredicates.ruleId
-      // Delete property so it is not processed by later code
-      delete inPredicates.ruleId
+    }
+    if (inPredicates.state) {
+      predicates.statements.push('state.abbr = :stateAbbr')
+      predicates.binds.stateAbbr = inPredicates.state
+    }
+    if (inPredicates.status) {
+      predicates.statements.push('status.statusStr = :statusStr')
+      predicates.binds.statusStr = inPredicates.status
+    }
+    if (inPredicates.action) {
+      predicates.statements.push('action.action = :action')
+      predicates.binds.action = inPredicates.action
     }
     if (inPredicates.packageId) {
-      aclPredicates.push('ap.packageId = :packageId')
+      predicates.statements.push('ap.packageId = :packageId')
       predicates.binds.packageId = inPredicates.packageId
-      // Delete property so it is not processed by later code
-      delete inPredicates.packageId
     }
-    // If predicates include benchmarkId and revisionStr (which must occur together)
     if (inPredicates.benchmarkId) {
-      aclPredicates.push('sa.stigId = :benchmarkId')
-      predicates.binds.benchmarkId = inPredicates.benchmarkId
-      // Delete property so it is not processed by later code
-      delete inPredicates.benchmarkId
-    }
-    if (inPredicates.revisionStr && inPredicates.revisionStr !== 'latest') {
-      // Join to revisions so we can specify a revId
-      aclJoins[2] = 'inner join stigs.revisions rev on rev.stigId = sa.stigId'
-      // Calculate the revId
-      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-      let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
-      aclPredicates.push('rev.revId = :revId')
-      predicates.binds.revId = revId
-      // Delete property so it is not processed by later code
-      delete inPredicates.revisionStr
-    }
-
-    let aclSubquery = `
-    SELECT
-      ${aclColumns.join(",\n")}
-    FROM
-      ${aclJoins.join(" \n")}
-    WHERE
-      ${aclPredicates.join(" and ")}
-    `
-
-    // Splice the subquery onto the main query
-    joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join stigman.reviews r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
-    //joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
-  }
-  // CONTEXT_DEPT
-  else if (context === dbUtils.CONTEXT_DEPT) {
-    predicates.statements.push('asset.dept = :dept')
-    predicates.binds.dept = userObject.dept
-  }
-
-    // COMMON
-  if (inPredicates.userId) {
-    predicates.statements.push('r.userId = :userId')
-    predicates.binds.userId = inPredicates.userId
-  }
-  if (inPredicates.assetId) {
-    predicates.statements.push('r.assetId = :assetId')
-    predicates.binds.assetId = inPredicates.assetId
-  }
-  if (inPredicates.ruleId) {
-    predicates.statements.push('r.ruleId = :ruleId')
-    predicates.binds.ruleId = inPredicates.ruleId
-  }
-  if (inPredicates.state) {
-    predicates.statements.push('state.abbr = :stateAbbr')
-    predicates.binds.stateAbbr = inPredicates.state
-  }
-  if (inPredicates.status) {
-    predicates.statements.push('status.statusStr = :statusStr')
-    predicates.binds.statusStr = inPredicates.status
-  }
-  if (inPredicates.action) {
-    predicates.statements.push('action.action = :action')
-    predicates.binds.action = inPredicates.action
-  }
-  if (inPredicates.packageId) {
-    predicates.statements.push('ap.packageId = :packageId')
-    predicates.binds.packageId = inPredicates.packageId
-  }
-  if (inPredicates.benchmarkId) {
-    if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
-      // Calculate the revId
-      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-      let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
-      predicates.statements.push(`r.ruleId IN (
-        SELECT
-          r2.ruleId
-        FROM
-          stigs.revisions rev
-          left join stigs.rev_group_map rg on rev.revId = rg.revId
-          left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
-          left join stigs.rules r2 on rgr.ruleId = r2.ruleId
-        WHERE
-          rev.stigId = :benchmarkId
-          and rev.revId = :revId    
-        )` )
+      if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
+        // Calculate the revId
+        let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+        let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+        predicates.statements.push(`r.ruleId IN (
+          SELECT
+            r2.ruleId
+          FROM
+            stigs.revisions rev
+            left join stigs.rev_group_map rg on rev.revId = rg.revId
+            left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+            left join stigs.rules r2 on rgr.ruleId = r2.ruleId
+          WHERE
+            rev.stigId = :benchmarkId
+            and rev.revId = :revId    
+          )` )
+          predicates.binds.benchmarkId = inPredicates.benchmarkId
+          predicates.binds.revId = revId
+      } 
+      else { 
+        predicates.statements.push(`r.ruleId IN (
+          SELECT
+            r2.ruleId
+          FROM
+            stigs.current_revs rev
+            left join stigs.rev_group_map rg on rev.revId = rg.revId
+            left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+            left join stigs.rules r2 on rgr.ruleId = r2.ruleId
+          WHERE
+            rev.stigId = :benchmarkId      
+          )` )
         predicates.binds.benchmarkId = inPredicates.benchmarkId
-        predicates.binds.revId = revId
-    } 
-    else { 
-      predicates.statements.push(`r.ruleId IN (
-        SELECT
-          r2.ruleId
-        FROM
-          stigs.current_revs rev
-          left join stigs.rev_group_map rg on rev.revId = rg.revId
-          left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
-          left join stigs.rules r2 on rgr.ruleId = r2.ruleId
-        WHERE
-          rev.stigId = :benchmarkId      
-        )` )
-      predicates.binds.benchmarkId = inPredicates.benchmarkId
+      }
     }
-  }
 
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ' order by r.assetId, r.ruleId'
-  try {
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += ' order by r.assetId, r.ruleId'
+
+
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
-    let connection = await oracledb.getConnection()
+    connection = await oracledb.getConnection()
     let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
+  //     await connection.close()
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'done' and 'autoState'
@@ -285,13 +288,43 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       if (record.ruleInfo) {
         record.ruleInfo = JSON.parse(record.ruleInfo)
       }
+    }
 
-  }
-
+    // History hack, for now
+    if (inProjection && inProjection.includes('history') && result.rows.length === 1) {
+      if (inPredicates.assetId && inPredicates.ruleId) {
+        let sqlHistory = `
+        select
+          TO_CHAR(rh.ts,'yyyy-mm-dd hh24:mi:ss') as "ts",
+          rh.activityType as "activityType",
+          rh.columnName as "columnName",
+          rh.oldValue as "oldValue",
+          rh.newValue as "newValue",
+          rh.userId as "userId",
+          ud.name as "username"
+        FROM
+          reviews_history rh
+          left join user_data ud on ud.id=rh.userId
+        where
+          rh.ruleId = :ruleId and
+          rh.assetId = :assetId
+          -- don't want to handle 'rejectText' yet
+          and rh.columnName != 'rejectText'
+        order by 
+          rh.ts asc,rh.columnName desc`
+        let historyResult = await connection.execute(sqlHistory, [inPredicates.ruleId, inPredicates.assetId], options)
+        result.rows[0].history = historyResult.rows
+      }
+    }
     return (result.rows)
   }
   catch (err) {
     throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
   }
 }
 

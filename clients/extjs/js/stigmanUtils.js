@@ -745,13 +745,13 @@ function Sm_HistoryData (idAppend) {
 			type:'string'
 		}
 		,{
-			name:'userName',
+			name:'username',
 			type:'string'
 		}		
 	]);
 
 	this.store = new Ext.data.JsonStore({
-		root: 'rows',
+		root: '',
 		storeId: 'historyStore' + idAppend,
 		fields: this.fields,
 		sortInfo: {
@@ -793,7 +793,7 @@ function Sm_HistoryData (idAppend) {
 				sortable: false,
 				align: 'left',
 				renderer: function(value, metadata, record) {
-					var returnStr = record.data.userName;
+					var returnStr = record.data.username;
 					switch (record.data.activityType) {
 						case 'insert':
 							returnStr += ' created the review.<br>';
@@ -1125,6 +1125,22 @@ async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend,
 		// load others
 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
 		Ext.getCmp('otherGrid' + idAppend).sm_Filter();
+
+		// History
+		let historyReq = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
+			method: 'GET',
+			params: { 
+				projection: 'history'
+			}
+		})
+		let reviewWithHistory = Ext.util.JSON.decode(historyReq.response.responseText)
+		if (! reviewWithHistory) {
+			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
+		}
+		else if (reviewWithHistory.history) {
+			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewWithHistory.history)
+		}
 
 	}
 	catch (e) {

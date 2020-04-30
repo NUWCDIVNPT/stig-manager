@@ -655,7 +655,7 @@ paths:
         required: true
         schema:
           type: string
-      - $ref: '#/components/parameters/ReviewProjectionQuery'
+      - $ref: '#/components/parameters/ReviewIndividualProjectionQuery'
     get:
       tags:
         - Review
@@ -669,7 +669,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewWithHistoryProjected'
         default:
           description: unexpected error
           content:
@@ -699,7 +699,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewWithHistoryProjected'
         default:
           description: unexpected error
           content:
@@ -729,7 +729,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewWithHistoryProjected'
         default:
           description: unexpected error
           content:
@@ -750,7 +750,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewWithHistoryProjected'
         default:
           description: unexpected error
           content:
@@ -1894,7 +1894,24 @@ components:
         rejectUserId:
           type: integer
           readOnly: true
-    ReviewProjected:
+    ReviewHistory:
+      type: object
+      properties:
+        ts:
+          type: string
+        activityType:
+          type: string
+        columnName:
+          type: string
+        oldValue:
+          type: string
+        newValue:
+          type: string
+        userId:
+          type: integer
+        username:
+          type: string
+    ReviewWithHistoryProjected:
       allOf:
         - $ref: '#/components/schemas/Review'
         - type: object
@@ -1902,7 +1919,20 @@ components:
             history:
               type: array
               items:
+                $ref: '#/components/schemas/ReviewHistory'
+            asset:
+              $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
                 type: string
+            rule:
+              $ref: '#/components/schemas/RuleAbbr'
+    ReviewProjected:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
             asset:
               $ref: '#/components/schemas/AssetBasic'
             stigs:
@@ -2243,6 +2273,21 @@ components:
             - stigReviewers
             - adminStats
     ReviewProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - ruleInfo
+            - stigs
+            - packages
+    ReviewIndividualProjectionQuery:
       name: projection
       in: query
       description: |
