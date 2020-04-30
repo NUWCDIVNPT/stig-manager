@@ -11,8 +11,10 @@ const auth = require('./utils/auth')
 const swaggerUi = require('swagger-ui-express')
 const jsyaml = require('js-yaml');
 const fs = require('fs')
-var multer  = require('multer')
-var upload = multer({ dest: 'uploads/' })
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
+const writer = require('./utils/writer.js')
+
 
 const app = express();
 // app.use(upload.fields([{name: "importFile"}]))
@@ -63,6 +65,15 @@ oasTools.initialize(oasDoc, app, function () {
       res.setHeader('Content-Type', 'application/json');
       res.send(oasDoc);
   })
+  app.use((err, req, res, next) => {
+    if (err) {
+      console.log('Invalid Request data')
+      writer.writeJson(res, writer.respondWithCode ( 400, {message: err.message} ))
+    } else {
+      next()
+    }
+  })
+  
   startServer(app)
  })
 

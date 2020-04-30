@@ -5,29 +5,26 @@
 //AUTHOR(S):	BRANDON MASSEY
 //PURPOSE: 		Displays and manages user information and their Asset-STIG assignments 
 //=======================================================================================
-function showUserProperties(id, grid){
+async function showUserProperties(id, grid){
 	//==========================================================
 	//The structure for records in the record store for 
 	//assignments. We use it to create new records as well as 
 	//defining the fields in the JSON Store.
 	//==========================================================
 	var assignmentFieldArray = [
-		{name: 'saId', type: 'string'},
-		{name: 'stigId', type: 'string'},
-		{name: 'title', type: 'string'},
-		//{name: 'assetId', type: 'number'},
-		{name: 'name', type: 'string'}
+		{name: 'benchmarkId', type: 'string'},
+		{name: 'assetId', type: 'integer'},
+		{name: 'assetName', type: 'string'}
 	];
 	var assignmentStore = new Ext.data.JsonStore({
 		//===========================================================
 		//ASSIGNMENTS DATA STORE
 		//===========================================================
-		url: 'pl/getUserProperties.pl',
 		fields: assignmentFieldArray,
-		root: 'rows',
-		idProperty: 'saId',
+		root: '',
+		idProperty: v => `${v.benchmarkId}-${v.assetId}`,
 		sortInfo: {
-			field: 'stigId',
+			field: 'benchmarkId',
 			direction: 'ASC'
 		},
 		listeners: {
@@ -77,10 +74,15 @@ function showUserProperties(id, grid){
 	//===========================================================
 	var assignmentGrid= new Ext.grid.GridPanel({
 		id:'assignmentGrid',
-		name: 'currentAssignments',
+		name: 'stigReviews',
 		isFormField: true,
-		setValue: function(v) {
-			assignmentStore.loadData(v);
+		setValue: function(stigAssets) {
+			let assignmentData = stigAssets.map(stigAsset => ({
+				benchmarkId: stigAsset.benchmarkId,
+				assetId: stigAsset.asset.assetId,
+				assetName: stigAsset.asset.name
+			}))
+			assignmentStore.loadData(assignmentData);
 		},
 		getValue: function() {},
 		markInvalid: function() {},
@@ -112,14 +114,14 @@ function showUserProperties(id, grid){
 			{
 				id:'assetColumn',
 				header: "Asset", 
-				dataIndex: 'name',
+				dataIndex: 'assetName',
 				sortable: true,
 				width: 250
 			},
 			{
 				id:'stigColumn',
 				header: "STIG", 
-				dataIndex: 'title',
+				dataIndex: 'benchmarkId',
 				sortable: true,
 				width: 350
 			}
@@ -155,14 +157,14 @@ function showUserProperties(id, grid){
 						disabled: !(curUser.canAdmin),
 						emptyText: 'Enter account name...',
 						allowBlank: false,
-						name: 'cn'
+						name: 'username'
 					},{
 						xtype: 'textfield',
 						fieldLabel: 'Display',
 						width: 250,
 						emptyText: 'Enter display name...',
 						allowBlank: false,
-						name: 'name'
+						name: 'display'
 					},{
 						xtype: 'checkbox',
 						name: 'canAdmin',
@@ -205,19 +207,19 @@ function showUserProperties(id, grid){
 						allowBlank: false,
 						editable: false,
 						forceSelection: true,
-						name: 'roleId',
-						hiddenName: 'roleId',
+						name: 'role',
+						hiddenName: 'role',
 						mode: 'local',
 						triggerAction: 'all',
 						displayField:'roleDisplay',
-						valueField:'roleId',
+						valueField:'role',
 						store: new Ext.data.ArrayStore({
-							fields: ['roleId','roleDisplay'],
-							data : [['2','IA Workforce'],['3','IA Officer'],['4','IA Staff']]
+							fields: ['role','roleDisplay'],
+							data : [['IAWF','IA Workforce'],['IAO','IA Officer'],['Staff','IA Staff']]
 						}),
 						listeners: {
 							select: function ( combo, record, index ) {
-								toggleAssignmentAccess(record.data.roleId);
+								toggleAssignmentAccess(record.data.role);
 							}
 							
 						}
@@ -307,7 +309,9 @@ function showUserProperties(id, grid){
 						id: 'assignment-root',
 						text: ''
 					},
-					dataUrl: 'pl/assignmentNavTree.pl',
+					loader: new Ext.tree.TreeLoader ({
+						directFn: loadTree
+					}),
 					listeners: {
 						contextmenu: function(node, e) {
 							node.select();
@@ -444,10 +448,11 @@ function showUserProperties(id, grid){
 		//=========================================================================
 		//END OF STIG-ASSET ASSIGNMENT SECTION
 		//=========================================================================	
-		}], buttons: [{
+		}],
+		buttons: [{
 			text: 'Cancel',
 			handler: function(){
-				window.close();
+				appwindow.close();
 			}
 		},{
 			text: 'Save',
@@ -459,7 +464,7 @@ function showUserProperties(id, grid){
 				//STIG-ASSET assignments as parameters. The field values (i.e. "cn")
 				//are sent automatically by ExtJs.
 				//==============================================================
-				//window.getEl().mask("Saving...");
+				//appwindow.getEl().mask("Saving...");
 				userPropsFormPanel.getForm().submit({
 					params : {
 						id: id,
@@ -472,30 +477,192 @@ function showUserProperties(id, grid){
 							grid.getView().holdPosition = true; //sets variable used in override in varsUtils.js
 							grid.getStore().reload();
 							Ext.Msg.alert('Success', a.result.response);
-							window.close();
+							appwindow.close();
 						}
 					},
 					failure: function(f,a) {
 						Ext.Msg.alert('Update Failed!', a.result.response);
-						window.close();
+						appwindow.close();
 					}	
 				});
 			}
 	   }]
 	   
-});
-	
-	function getPendingAssignments(){
-	//===========================================================
-	//Gathers all assignments in the assignment grid and returns 
-	//an array of STIG-ASSET ID values 
-	//===========================================================
-	var saIdArray = [];
-	assignmentStore.each(function(theRecord){
-		saIdArray.push(theRecord.get("saId"));
 	});
-	return Ext.util.JSON.encode(saIdArray);
-}
+	
+	async function loadTree (node, cb) {
+		try {
+		let match
+		// Root node
+		if (node === 'assignment-root') {
+			let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/packages`,
+			method: 'GET'
+			})
+			let r = JSON.parse(result.response.responseText)
+			let content = r.map( package => ({
+				id: `${package.packageId}-assignment-package-node`,
+				node: 'package',
+				text: package.name,
+				packageId: package.packageId,
+				packageName: package.name,
+				iconCls: 'sm-package-icon',
+				reqRar: package.reqRar,
+				children: [{
+					id: `${package.packageId}-assignment-assets-node`,
+					node: 'assets',
+					text: 'Assets',
+					iconCls: 'sm-asset-icon'
+				},{
+					id: `${package.packageId}-assignment-stigs-node`,
+					node: 'stigs',
+					text: 'STIGs',
+					iconCls: 'sm-stig-icon'
+				}]
+			})
+			)
+			cb(content, {status: true})
+			return
+		}
+		// Package-Assets node
+		match = node.match(/(\d+)-assignment-assets-node/)
+		if (match) {
+			let packageId = match[1]
+			let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			method: 'GET',
+			params: {
+				projection: 'assets'
+			}
+			})
+			let r = JSON.parse(result.response.responseText)
+			let content = r.assets.map( asset => ({
+				id: `${packageId}-${asset.assetId}-assignment-assets-asset-node`,
+				text: asset.name,
+				node: 'assets-asset',
+				packageId: packageId,
+				assetId: asset.assetId,
+				iconCls: 'sm-asset-icon',
+				qtip: asset.name
+			})
+			)
+			cb(content, {status: true})
+			return
+		}
+		// Package-Assets-STIG node
+		match = node.match(/(\d+)-(\d+)-assignment-assets-asset-node/)
+		if (match) {
+			let packageId = match[1]
+			let assetId = match[2]
+			let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
+			method: 'GET',
+			params: {
+				projection: 'stigs'
+			}
+			})
+			let r = JSON.parse(result.response.responseText)
+			let content = r.stigs.map( stig => ({
+				id: `${packageId}-${assetId}-${stig.benchmarkId}-assignment-leaf`,
+				text: stig.benchmarkId,
+				leaf: true,
+				node: 'asset-stig',
+				iconCls: 'sm-stig-icon',
+				stigName: stig.benchmarkId,
+				assetName: r.name,
+				stigRevStr: stig.lastRevisionStr,
+				assetId: r.assetId,
+				stigId: stig.benchmarkId,
+				assetGroup: null,
+				qtip: stig.title
+			})
+			)
+			cb(content, {status: true})
+			return
+		}
+		
+			// Package-STIGs node
+		match = node.match(/(\d+)-assignment-stigs-node/)
+		if (match) {
+			let packageId = match[1]
+			let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			method: 'GET',
+			params: {
+				projection: 'stigs'
+			}
+			})
+			let r = JSON.parse(result.response.responseText)
+			let content = r.stigs.map( stig => ({
+				packageId: packageId,
+				text: stig.benchmarkId,
+				node: 'stigs-stig',
+				packageName: r.name,
+				report: 'stig',
+				iconCls: 'sm-stig-icon',
+				reqRar: r.reqRar,
+				stigRevStr: stig.lastRevisionStr,
+				id: `${packageId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
+				stigId: stig.benchmarkId,
+				qtip: stig.title
+			})
+			)
+			cb(content, {status: true})
+			return
+			}
+			// Package-STIGs-Asset node
+		match = node.match(/(\d+)-(.*)-assignment-stigs-stig-node/)
+		if (match) {
+			// TODO: Call API /stigs endpoint when it is implemented
+			let packageId = match[1]
+			let benchmarkId = match[2]
+			let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/assets`,
+			method: 'GET',
+			params: {
+				packageId: packageId,
+				benchmarkId: benchmarkId,
+				projection: 'stigs'
+			}
+			})
+			let r = JSON.parse(result.response.responseText)
+			let content = r.map( asset => ({
+				id: `${packageId}-${benchmarkId}-${asset.assetId}-assignment-leaf`,
+				text: asset.name,
+				leaf: true,
+				node: 'stig-asset',
+				iconCls: 'sm-asset-icon',
+				stigName: benchmarkId,
+				assetName: asset.name,
+				stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
+				assetId: asset.assetId,
+				stigId: benchmarkId,
+				assetGroup: null,
+				qtip: asset.name
+			})
+			)
+			cb(content, {status: true})
+			return
+			}
+		
+	
+		}
+		catch (e) {
+		Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
+		}
+	}
+
+	function getPendingAssignments(){
+		//===========================================================
+		//Gathers all assignments in the assignment grid and returns 
+		//an array of STIG-ASSET ID values 
+		//===========================================================
+		var saIdArray = [];
+		assignmentStore.each(function(theRecord){
+			saIdArray.push(theRecord.get("saId"));
+		});
+		return Ext.util.JSON.encode(saIdArray);
+	}
 
 	function assignPackage(theNode){
 		//=======================================================================
@@ -554,8 +721,8 @@ function showUserProperties(id, grid){
 		}
 	});
 }
-	function toggleAssignmentAccess(p_roleId){
-		if (p_roleId == 2) {
+	function toggleAssignmentAccess(role){
+		if (role == 'IAWF') {
 			Ext.getCmp('userProps_assignment_box').enable();
 		} else {
 			Ext.getCmp('userProps_assignment_box').disable();
@@ -600,14 +767,11 @@ function showUserProperties(id, grid){
 				//A STIG under the ASSETS node was selected or 
 				//an ASSET under the STIG node was selected
 				//=================================================
-				var newAssignmentRecord = {rows:[
-					{
-						saId:selectedNode.attributes.saId,
-						stigId:selectedNode.attributes.stigId, 
-						title:selectedNode.attributes.stigId, 
-						name: selectedNode.attributes.assetName,
-					}
-				]};
+				var newAssignmentRecord = {
+					benchmarkId:selectedNode.attributes.stigId, 
+					assetId:selectedNode.attributes.assetId, 
+					assetName: selectedNode.attributes.assetName,
+				}
 				assignmentStore.loadData(newAssignmentRecord, true);
 				break;
 		}	
@@ -616,7 +780,7 @@ function showUserProperties(id, grid){
 	//CREATES THE DIALOG WINDOW THAT CONTAINS ALL OF THE 
 	//USER PROPERTY COMPONENTS
 	//===================================================
-	var window = new Ext.Window({
+	let appwindow = new Ext.Window({
 		id: 'userPropsWindow',
 		title: 'User Properties (ID: ' + id + ')',
 		modal: true,
@@ -630,26 +794,24 @@ function showUserProperties(id, grid){
 		items: userPropsFormPanel
 	});		
 
-	window.render(document.body);
+	appwindow.render(document.body);
 	//===================================================
 	//LOAD THE FORM WITH THE USER PROPERTIES
 	//===================================================
-	userPropsFormPanel.getForm().load({
-		url: 'pl/getUserProperties.pl',
-		params: {
-			id: id
-		},
-		success: function(f, action) {
-			//=============================================
-			//ASSIGNMENTS AND DISPLAY THE PROPERTIES WINDOW	
-			//=============================================				
-			Ext.getBody().unmask();
-			window.show(document.body);
-			//=============================================
-			//LOCK ASSIGNMENT SECTION BASED VALUE OF 
-			//MODIFIED USER'S SELECTED ROLE
-			//=============================================	
-			toggleAssignmentAccess(action.result.data.roleId);
-		}
-	});
+
+	if (id) {
+		let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/users/${id}`,
+			params: {
+				elevate: curUser.canAdmin,
+				projection: ['stigReviews']
+			},
+			method: 'GET'
+		})
+		apiUser = JSON.parse(result.response.responseText)
+		userPropsFormPanel.getForm().setValues(apiUser)
+		toggleAssignmentAccess(apiUser.role)
+	}
+	Ext.getBody().unmask();
+	appwindow.show(document.body);
 }

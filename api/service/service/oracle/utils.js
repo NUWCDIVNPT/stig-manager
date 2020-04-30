@@ -167,6 +167,17 @@ module.exports.WRITE_ACTION = {
   REPLACE: 1,
   UPDATE: 2
 }
+module.exports.USER_ROLE_ID = {
+  2: {role: "IAWF", display: "IA Workforce"},
+  3: {role: "IAO", display: "IA Officer"},
+  4: {role: "Staff", display: "IA Staff"}
+}
+module.exports.USER_ROLE = {
+  IAWF: {id: 2, display: "IA Workforce"},
+  IAO: {id: 3, display: "IA Officer"},
+  Staff: {id: 4, display: "IA Staff"}
+}
+
 
 // Returns Boolean
 module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {

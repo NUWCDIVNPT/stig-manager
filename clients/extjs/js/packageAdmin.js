@@ -11,7 +11,7 @@ function addPackageAdmin() {
 		}
 	]);
 	var assetStore = new Ext.data.JsonStore({
-		url: `${STIGMAN.Env.apiBase}/assets?elevate=true`,
+		url: `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.canAdmin}`,
 		fields: assetFields,
 		autoLoad: true,
 		root: '',
@@ -533,7 +533,7 @@ function addPackageAdmin() {
 			let result = await Ext.Ajax.requestPromise({
 				url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
 				params: {
-					elevate: true,
+					elevate: curUser.canAdmin,
 					projection: ['assets']
 				},
 				method: 'GET'
@@ -557,7 +557,7 @@ function addPackageAdmin() {
 	
 	packageGrid.getStore().load({
 		params: {
-			elevate: true
+			elevate: curUser.canAdmin
 		}
 	});
 

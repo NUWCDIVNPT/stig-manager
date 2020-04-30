@@ -290,32 +290,29 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     }
 
     // Process benchmarkIds and/or stigReviewers
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map where assetId = :assetId'
-      // DELETE from stig_asset_map, will cascade into user_stig_aset_map
-      await connection.execute(sqlDeleteBenchmarks, [assetId])
-    }
     let sqlInsertBenchmarks = `
       INSERT /*+ ignore_row_on_dupkey_index(stig_asset_map(stigId, assetId)) */ INTO 
         stigman.stig_asset_map (stigId,assetId)
       VALUES
         (:benchmarkId, :assetId)
       `
-    let benchmarkBinds = []
-    let stigReviewersBenchmarkBinds = []
-    let userStigAssetBinds = [] 
+    let benchmarkInsertBinds = []
+    let stigReviewersBenchmarkInsertBinds = []
+    let stigReviewersBenchmarkNotDeleteBinds = []
+    let userStigAssetInsertBinds = [] 
     if (benchmarkIds.length > 0) {
       // Bind stig_asset_map values from the request.benchmarkIds
-      benchmarkBinds = benchmarkIds.map(i => [i, assetId])
+      benchmarkInsertBinds = benchmarkIds.map(i => [i, assetId])
     }
     if (stigReviewers.length > 0) {
       // Bind stig_asset_map values from request.stigReviewers.benchmarkId
-      stigReviewersBenchmarkBinds = stigReviewers.map(i => [i.benchmarkId, assetId])
+      stigReviewersBenchmarkInsertBinds = stigReviewers.map(i => [i.benchmarkId, assetId])
+      stigReviewersBenchmarkNotDeleteBinds = stigReviewers.map(i => i.benchmarkId)
       // Bind any user_stig_asset_map values
       stigReviewers.forEach( e => {
         if (e.userIds && e.userIds.length > 0) {
           e.userIds.forEach(userId => {
-            userStigAssetBinds.push({
+            userStigAssetInsertBinds.push({
               userId: userId,
               benchmarkId: e.benchmarkId,
               assetId: assetId
@@ -324,20 +321,32 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
         }
       })
     }
-    // Reassign binds as an Array
-    binds = [...benchmarkBinds, ...stigReviewersBenchmarkBinds]
-    if (binds.length > 0) {
-      // INSERT into stig_asset_map
-      let result = await connection.executeMany(sqlInsertBenchmarks, binds, options)
+    // Binds for insert into stig_asset_map
+    let insertBinds = [...benchmarkInsertBinds, ...stigReviewersBenchmarkInsertBinds]
+    // Binds for deleting from stig_asset_map while leaving requested benchmarkIds
+    let notDeleteBinds = [...benchmarkIds, ...stigReviewersBenchmarkNotDeleteBinds]
+
+    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map WHERE assetId = :assetId'
+      if (notDeleteBinds.length > 0) {
+        sqlDeleteBenchmarks += ` AND stigId NOT IN (${notDeleteBinds.map((name, index) => `:${index}`).join(", ")})`
+      }
+      // DELETE from stig_asset_map, will cascade into user_stig_aset_map
+      await connection.execute(sqlDeleteBenchmarks, [assetId, ...notDeleteBinds])
     }
-    if (userStigAssetBinds.length > 0) {
+
+    if (insertBinds.length > 0) {
+      // INSERT into stig_asset_map
+      let result = await connection.executeMany(sqlInsertBenchmarks, insertBinds, options)
+    }
+    if (userStigAssetInsertBinds.length > 0) {
       // INSERT into user_stig_asset_map 
       let sqlInsertUserStigAsset = `INSERT /*+ ignore_row_on_dupkey_index(user_stig_asset_map(userId, saId)) */ INTO 
         stigman.user_stig_asset_map 
           (userId, saId)
         VALUES 
           (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`
-      let result = await connection.executeMany(sqlInsertUserStigAsset, userStigAssetBinds, options)
+      let result = await connection.executeMany(sqlInsertUserStigAsset, userStigAssetInsertBinds, options)
     }
     // Commit the changes
     await connection.commit()

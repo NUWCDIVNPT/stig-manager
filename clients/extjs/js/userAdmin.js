@@ -12,10 +12,10 @@ function addUserAdmin() {
 		{	name:'userId',
 			type: 'number'
 		},{
-			name:'cn',
+			name:'username',
 			type: 'string'
 		},{
-			name: 'name',
+			name: 'display',
 			type: 'string'
 		},{
 			name: 'dept',
@@ -37,14 +37,13 @@ function addUserAdmin() {
 	]);
 
 	var userStore = new Ext.data.JsonStore({
-		url: 'pl/getUsers.pl',
-		root: 'rows',
+		url: `${STIGMAN.Env.apiBase}/users?elevate=${curUser.canAdmin}`,
+		root: '',
 		fields: userFields,
-		totalProperty: 'records',
 		isLoaded: false, // custom property
 		idProperty: 'userId',
 		sortInfo: {
-			field: 'cn',
+			field: 'username',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
 		listeners: {
@@ -56,8 +55,7 @@ function addUserAdmin() {
 			remove: function (store,record,index) {
 				Ext.getCmp('userGrid-totalText').setText(store.getCount() + ' records');
 			}
-		},
-		writer:new Ext.data.JsonWriter()
+		}
 	});
 
 	var userGrid = new Ext.grid.EditorGridPanel({
@@ -74,19 +72,19 @@ function addUserAdmin() {
 				id:'cn',
 				header: "Account Name", 
 				width: 250,
-				dataIndex: 'cn',
+				dataIndex: 'username',
 				sortable: true
 			},
 			{ 	
 				header: "Display Name",
 				width: 150,
-				dataIndex: 'name',
+				dataIndex: 'display',
 				sortable: true
 			},
 			{ 	
 				header: "Role",
 				width: 150,
-				dataIndex: 'roleDisplay',
+				dataIndex: 'role',
 				sortable: true
 			},
 			{ 	
@@ -101,21 +99,17 @@ function addUserAdmin() {
 				dataIndex: 'canAdmin',
 				sortable: true,
 				renderer: function (val) {
-					if (val == 1) {
-						return 'Yes';
-					} else {
-						return '';
-					}
+					return val ? "Yes" : "No"
 				}
-			},
-			{
-				header: "Last Active",
-				width: 150,
-				dataIndex: 'lastActiveTime',
-				xtype: 'datecolumn',
-				format:'Y-m-d H:i',
-				sortable: true
 			}
+			// ,{
+			// 	header: "Last Active",
+			// 	width: 150,
+			// 	dataIndex: 'lastActiveTime',
+			// 	xtype: 'datecolumn',
+			// 	format:'Y-m-d H:i',
+			// 	sortable: true
+			// }
 		],
 		view: new Ext.grid.GridView({
 			forceFit:false,
@@ -150,7 +144,7 @@ function addUserAdmin() {
 			rowdblclick: {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
-					Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+					Ext.getBody().mask('Getting properties of ' + r.get('display') + '...');
 					showUserProperties(r.get('userId'), userGrid);
 				}
 			}
@@ -171,15 +165,21 @@ function addUserAdmin() {
 			handler: function() {
 				//var confirmStr="Delete this user?";
 				
-				var s = userGrid.getSelectionModel().getSelections();
-				var confirmStr="Delete user, " + s[0].data.name + "?";
+				let user = userGrid.getSelectionModel().getSelected();
+				let confirmStr="Delete user, " + user.data.display + "?";
 				
-				Ext.Msg.confirm("Confirm",confirmStr,function (btn,text) {
-					if (btn == 'yes') {
-						/*var s = userGrid.getSelectionModel().getSelections();*/
-						for (var i = 0, r; r = s[i]; i++) {
-							userStore.remove(r);
+				Ext.Msg.confirm("Confirm",confirmStr,async function (btn,text) {
+					try {
+						if (btn == 'yes') {
+							let result = await Ext.Ajax.requestPromise({
+								url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}`,
+								method: 'DELETE'
+							})
+							userStore.remove(user);
 						}
+					}
+					catch (e) {
+						alert(e)
 					}
 				});
 			}

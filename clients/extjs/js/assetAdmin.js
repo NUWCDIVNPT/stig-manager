@@ -36,12 +36,12 @@ function addAssetAdmin() {
 			}
 		]);
 		var packageStore = new Ext.data.JsonStore({
-			url: `${STIGMAN.Env.apiBase}/packages?elevate=true`,
+			url: `${STIGMAN.Env.apiBase}/packages?elevate=${curUser.canAdmin}`,
 			autoLoad: true,
 			fields: packageFields,
 			root: '',
 			sortInfo: {
-				field: 'packageName',
+				field: 'name',
 				direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 			},
 			idProperty: 'packageId'
@@ -789,7 +789,7 @@ function addAssetAdmin() {
 				if (selectionsOnly) {
 					packageStore.filter([
 						{
-							property:'packageName',
+							property:'name',
 							value:value,
 							anyMatch:true,
 							caseSensitive:false
@@ -799,7 +799,7 @@ function addAssetAdmin() {
 						}
 					]);
 				} else {
-					packageStore.filter({property:'packageName',value:value,anyMatch:true,caseSensitive:false});
+					packageStore.filter({property:'name',value:value,anyMatch:true,caseSensitive:false});
 				}
 			}
 		};
@@ -1027,7 +1027,7 @@ function addAssetAdmin() {
 			let result = await Ext.Ajax.requestPromise({
 				url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
 				params: {
-					elevate: true,
+					elevate: curUser.canAdmin,
 					projection: ['stigReviewers', 'packages']
 				},
 				method: 'GET'
@@ -1072,7 +1072,7 @@ function addAssetAdmin() {
 	assetGrid.getStore().load({
 		params: {
 			projection: ['adminStats', 'packages'],
-			elevate: true
+			elevate: curUser.canAdmin
 		}
 	});
 

@@ -35,6 +35,9 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
     // if no response code given, we default to 200
     code = 200;
   }
+  if (typeof payload == 'undefined') {
+    code = 204
+  }
   if(typeof payload === 'object') {
     if (payload instanceof Error) {
       payload = JSON.stringify(payload, Object.getOwnPropertyNames(payload), 2);
