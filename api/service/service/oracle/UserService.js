@@ -132,7 +132,16 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     }
     // Convert role to roleId
     if ('role' in userFields) {
-      userFields.role = dbUtils.USER_ROLE[userFields.role].id
+      userFields.roleId = dbUtils.USER_ROLE[userFields.role].id
+      delete userFields.role
+    }
+    if ('username' in userFields) {
+      userFields.cn = userFields.username
+      delete userFields.username
+    }
+    if ('display' in userFields) {
+      userFields.name = userFields.display
+      delete userFields.display
     }
 
     // Connect to Oracle
@@ -150,7 +159,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
             stigman.user_data
             (cn, name, dept, roleId, canAdmin)
           VALUES
-            (:username, :display, :dept, :role, :canAdmin)
+            (:cn, :name, :dept, :roleId, :canAdmin)
           RETURNING
             id into :userId`
       binds = {...userFields}
@@ -304,7 +313,7 @@ exports.getUsers = async function(role, dept, canAdmin, projection, elevate, use
   }
 }
 
-exports.replaceUser = async function( userId, body, projection, userObject ) {
+exports.replaceUser = async function( userId, body, projection, elevate, userObject ) {
   try {
     let row = await this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject)
     return (row)

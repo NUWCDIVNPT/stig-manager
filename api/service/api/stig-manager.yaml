@@ -1686,8 +1686,6 @@ components:
           type: integer
         name:
           type: string
-        dept:
-          type: string
     AssetCreateOrReplace:
       required:
         - name
@@ -1764,10 +1762,10 @@ components:
         - $ref: '#/components/schemas/User'
         - type: object
           properties:
-            stigAssets:
+            stigReviews:
               type: array
               items:
-                $ref: '#/components/schemas/StigAssetBasic'
+                $ref: '#/components/schemas/StigAssetExtended'
     UserBasic:
       type: object
       properties:

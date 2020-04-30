@@ -28,9 +28,6 @@ async function showUserProperties(id, grid){
 			direction: 'ASC'
 		},
 		listeners: {
-			datachanged: function(){
-				assignmentGrid.setTitle('Asset-STIG Assignments (' + assignmentStore.getCount() + ')');
-			},
 			add: function(){
 				assignmentGrid.setTitle('Asset-STIG Assignments (' + assignmentStore.getCount() + ')');
 			}, 
@@ -84,7 +81,16 @@ async function showUserProperties(id, grid){
 			}))
 			assignmentStore.loadData(assignmentData);
 		},
-		getValue: function() {},
+		getValue: function() {
+			let stigReviews = [];
+			assignmentStore.each(function(record){
+				stigReviews.push({
+					benchmarkId: record.data.benchmarkId,
+					assetId: record.data.assetId
+				})
+			})
+			return stigReviews
+		},
 		markInvalid: function() {},
 		clearInvalid: function() {},
 		isValid: function() { return true},
@@ -129,10 +135,9 @@ async function showUserProperties(id, grid){
 		
 	});
 	
-	var userPropsFormPanel = new Ext.form.FormPanel({
+	let userPropsFormPanel = new Ext.form.FormPanel({
 		baseCls: 'x-plain',
-		labelWidth: 65,
-		url:'pl/updateUserProperties.pl',
+		labelWidth: 70,
 		monitorValid: true,
 		items: [
 		{ // start fieldset config
@@ -458,37 +463,38 @@ async function showUserProperties(id, grid){
 			text: 'Save',
 			formBind: true,
 			id: 'submit-button',
-			handler: function(){
-				//==============================================================
-				//Submit the form.  Send the user ID, the assignments and the 
-				//STIG-ASSET assignments as parameters. The field values (i.e. "cn")
-				//are sent automatically by ExtJs.
-				//==============================================================
-				//appwindow.getEl().mask("Saving...");
-				userPropsFormPanel.getForm().submit({
-					params : {
-						id: id,
-						saIds: getPendingAssignments(),
-						req: 'update'
-					},
-					waitMsg: 'Saving changes...',
-					success: function (f,a) {
-						if (a.result.success == true) {
-							grid.getView().holdPosition = true; //sets variable used in override in varsUtils.js
-							grid.getStore().reload();
-							Ext.Msg.alert('Success', a.result.response);
-							appwindow.close();
-						}
-					},
-					failure: function(f,a) {
-						Ext.Msg.alert('Update Failed!', a.result.response);
-						appwindow.close();
-					}	
-				});
+			handler: async function(){
+				try {
+					let values = userPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+					let url, method
+					if (id) {
+						url = `${STIGMAN.Env.apiBase}/users/${id}?elevate=${curUser.canAdmin}`
+						method = 'PUT'
+					}
+					else {
+						url = `${STIGMAN.Env.apiBase}/users?elevate=${curUser.canAdmin}`
+						method = 'POST'
+					}
+					let result = await Ext.Ajax.requestPromise({
+						url: url,
+						method: method,
+						headers: { 'Content-Type': 'application/json;charset=utf-8' },
+						jsonData: values
+					})
+					userAsset = JSON.parse(result.response.responseText)
+
+					//TODO: This is expensive, should update the specific record instead of reloading entire set
+					grid.getView().holdPosition = true
+					grid.getStore().reload()
+					appwindow.close()
+				}
+				catch (e) {
+					alert(e.response.statusText)
+					// appwindow.close()
+				}
 			}
 	   }]
-	   
-	});
+	})
 	
 	async function loadTree (node, cb) {
 		try {
@@ -572,7 +578,7 @@ async function showUserProperties(id, grid){
 				assetName: r.name,
 				stigRevStr: stig.lastRevisionStr,
 				assetId: r.assetId,
-				stigId: stig.benchmarkId,
+				benchmarkId: stig.benchmarkId,
 				assetGroup: null,
 				qtip: stig.title
 			})
@@ -603,7 +609,7 @@ async function showUserProperties(id, grid){
 				reqRar: r.reqRar,
 				stigRevStr: stig.lastRevisionStr,
 				id: `${packageId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
-				stigId: stig.benchmarkId,
+				benchmarkId: stig.benchmarkId,
 				qtip: stig.title
 			})
 			)
@@ -636,7 +642,7 @@ async function showUserProperties(id, grid){
 				assetName: asset.name,
 				stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
 				assetId: asset.assetId,
-				stigId: benchmarkId,
+				benchmarkId: benchmarkId,
 				assetGroup: null,
 				qtip: asset.name
 			})
@@ -652,75 +658,101 @@ async function showUserProperties(id, grid){
 		}
 	}
 
-	function getPendingAssignments(){
-		//===========================================================
-		//Gathers all assignments in the assignment grid and returns 
-		//an array of STIG-ASSET ID values 
-		//===========================================================
-		var saIdArray = [];
-		assignmentStore.each(function(theRecord){
-			saIdArray.push(theRecord.get("saId"));
-		});
-		return Ext.util.JSON.encode(saIdArray);
-	}
-
-	function assignPackage(theNode){
+	async function assignPackage(theNode){
 		//=======================================================================
 		//Assigns the whole package to a user
 		//=======================================================================
-		Ext.Ajax.request({
-			url: 'pl/getStigAssetPairs.pl',
-			params: { 
-				level: 'package',
-				packageId: theNode.attributes.packageId
-			},				
-			success: function(response, params) {                               
-				var responseObj = Ext.util.JSON.decode(response.responseText);
-				assignmentStore.loadData(responseObj.data, true);
-			}
-		});
+		try {
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/assets/`,
+				method: 'GET',
+				params: { 
+					elevate: `${curUser.canAdmin}`,
+					packageId: theNode.attributes.packageId,
+					projection: 'stigs'
+				}
+			})
+			let assets = Ext.util.JSON.decode(result.response.responseText)
+			let assignments = []
+			assets.forEach(asset => {
+				asset.stigs.forEach(stig => {
+					assignments.push({
+						benchmarkId: stig.benchmarkId,
+						assetName: asset.name,
+						assetId: asset.assetId
+					})
+				})
+			})
+			assignmentStore.loadData(assignments, true)	
+		}
+		catch(e) {
+			alert(e.message)
+		}
 	}
 	
-	function assignAsset(theNode){
-	//=======================================================
-	// Assigns all of the STIGS of a specific Asset (in a)
-	// specific package to a user.
-	//=======================================================
-	var assetIdMatches = theNode.id.match(/\d+-(\d+)-assignment-assets-asset-node/);
-	var assetId = assetIdMatches[1];
-	Ext.Ajax.request({
-		url: 'pl/getStigAssetPairs.pl',
-		params: { 
-			level: 'asset',
-			assetId: assetId
-		},				
-		success: function(response, params) {                               
-			var responseObj = Ext.util.JSON.decode(response.responseText);
-			assignmentStore.loadData(responseObj.data, true);
+	async function assignAsset(theNode){
+		//=======================================================
+		// Assigns all of the STIGS of a specific Asset (in a)
+		// specific package to a user.
+		//=======================================================
+		try {
+			let assetIdMatches = theNode.id.match(/\d+-(\d+)-assignment-assets-asset-node/);
+			let assetId = assetIdMatches[1];
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
+				method: 'GET',
+				params: { 
+					elevate: `${curUser.canAdmin}`,
+					projection: 'stigs'
+				}
+			})
+			let asset = Ext.util.JSON.decode(result.response.responseText)
+			let assignments = asset.stigs.map(stig => ({
+				benchmarkId: stig.benchmarkId,
+				assetName: asset.name,
+				assetId: assetId
+			}))
+			assignmentStore.loadData(assignments, true);	
 		}
-	});
-}
+		catch(e) {
+			alert(e.message)
+		}
+	}	
 	
-	function assignStig(theNode){
-	//=======================================================
-	// Assigns all of the ASSETS associated to this STIG IN a
-	// specific package to a user.
-	//=======================================================
-	// var assetIdMatches = theNode.id.match(/\d+-(\d+)-assignment-assets-asset-node/);
-	// var assetId = assetIdMatches[1];
-	Ext.Ajax.request({
-		url: 'pl/getStigAssetPairs.pl',
-		params: { 
-			level: 'stig',
-			stigId: theNode.attributes.stigId,
-			packageId: theNode.attributes.packageId
-		},				
-		success: function(response, params) {                               
-			var responseObj = Ext.util.JSON.decode(response.responseText);
-			assignmentStore.loadData(responseObj.data, true);
+	async function assignStig(theNode){
+		//=======================================================
+		// Assigns all of the ASSETS associated to this STIG IN a
+		// specific package to a user.
+		//=======================================================
+		try {
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/assets/`,
+				method: 'GET',
+				params: { 
+					elevate: `${curUser.canAdmin}`,
+					packageId: theNode.attributes.packageId,
+					benchmarkId: theNode.attributes.benchmarkId,
+					projection: 'stigs'
+				}
+			})
+			let assets = Ext.util.JSON.decode(result.response.responseText)
+			let assignments = []
+			assets.forEach(asset => {
+				asset.stigs.forEach(stig => {
+					assignments.push({
+						benchmarkId: stig.benchmarkId,
+						assetName: asset.name,
+						assetId: asset.assetId
+					})
+				})
+			})
+			assignmentStore.loadData(assignments, true)	
 		}
-	});
-}
+		catch(e) {
+			alert(e.message)
+		}
+	}
+
 	function toggleAssignmentAccess(role){
 		if (role == 'IAWF') {
 			Ext.getCmp('userProps_assignment_box').enable();
@@ -768,7 +800,7 @@ async function showUserProperties(id, grid){
 				//an ASSET under the STIG node was selected
 				//=================================================
 				var newAssignmentRecord = {
-					benchmarkId:selectedNode.attributes.stigId, 
+					benchmarkId:selectedNode.attributes.benchmarkId, 
 					assetId:selectedNode.attributes.assetId, 
 					assetName: selectedNode.attributes.assetName,
 				}

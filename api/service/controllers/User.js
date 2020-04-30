@@ -101,6 +101,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
         let hasProhibited = Object.keys(body).some((val) => prohibited.includes(val))
         if (hasProhibited) {
           writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+          return
         }
       }
       let response = await User.replaceUser(userId, body, projection, elevate, req.userObject)
@@ -128,6 +129,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
         let hasProhibited = Object.keys(body).some((val) => prohibited.includes(val))
         if (hasProhibited) {
           writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+          return
         }
       }
       let response = await User.updateUser(userId, body, projection, elevate, req.userObject)

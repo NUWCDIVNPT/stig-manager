@@ -21,7 +21,7 @@ function addUserAdmin() {
 			name: 'dept',
 			type: 'string'
 		},{
-			name: 'roleDisplay',
+			name: 'role',
 			type: 'string'
 		},{
 			name: 'canAdmin',
