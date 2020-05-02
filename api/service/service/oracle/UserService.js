@@ -37,7 +37,8 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
               KEY 'benchmarkId' VALUE sa.stigId,
               KEY 'asset' VALUE json_object(
                 KEY 'assetId' VALUE a.assetid,
-                KEY 'name' VALUE a.name
+                KEY 'name' VALUE a.name,
+                KEY 'dept' VALUE a.dept
                 ABSENT ON NULL
               )
           )

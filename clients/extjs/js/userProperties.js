@@ -14,7 +14,8 @@ async function showUserProperties(id, grid){
 	var assignmentFieldArray = [
 		{name: 'benchmarkId', type: 'string'},
 		{name: 'assetId', type: 'integer'},
-		{name: 'assetName', type: 'string'}
+		{name: 'assetName', type: 'string'},
+		{name: 'assetDept', type: 'string'}
 	];
 	var assignmentStore = new Ext.data.JsonStore({
 		//===========================================================
@@ -77,7 +78,8 @@ async function showUserProperties(id, grid){
 			let assignmentData = stigAssets.map(stigAsset => ({
 				benchmarkId: stigAsset.benchmarkId,
 				assetId: stigAsset.asset.assetId,
-				assetName: stigAsset.asset.name
+				assetName: stigAsset.asset.name,
+				assetDept: stigAsset.asset.dept
 			}))
 			assignmentStore.loadData(assignmentData);
 		},
@@ -98,38 +100,41 @@ async function showUserProperties(id, grid){
 		getName: function() {return this.name},
 		validate: function() { return true},
 		title: 'Asset-STIG Assignments',
-		flex: 2.8,
+		flex: 3.8,
 		store: assignmentStore,
 		stripeRows: true,
 		sm: selectionModel,
 		viewConfig: {
 			forceFit:true,
-			getRowClass: function(rowIndex, isSelected){
-				if(typeof rowIndex == 'number'){
-					if (isSelected==true){
-						//alert('Row ' + rowIndex + ' was Selected.');
-						return 'assignment-grid-item-selected';
-					}else if (isSelected==false){
-						//alert('Row ' + rowIndex + ' was Deselected.');
-						return '';
+			getRowClass: function(record, rowIndex, rp, ds) {
+				if (curUser.role === 'IAO' && !curUser.canAdmin) {
+					if (record.data.assetDept !== curUser.dept) {
+						return 'x-stigman-cross-department'
 					}
 				}
 			}
 		},
 		columns:[
 			{
-				id:'assetColumn',
-				header: "Asset", 
-				dataIndex: 'assetName',
-				sortable: true,
-				width: 250
-			},
-			{
 				id:'stigColumn',
-				header: "STIG", 
+				header: `<img src="../img/security_firewall_on.png" style="vertical-align: bottom;"> STIG`, 
 				dataIndex: 'benchmarkId',
 				sortable: true,
 				width: 350
+			},
+			{
+				id:'assetColumn',
+				header: `<img src="../img/mycomputer1-16.png" style="vertical-align: bottom;"> Asset`, 
+				dataIndex: 'assetName',
+				sortable: true,
+				width: 250
+			},{
+				id:'assetColumn',
+				header: 'Dept', 
+				dataIndex: 'assetDept',
+				sortable: true,
+				width: 100,
+				align: 'center'
 			}
 		]
 		
@@ -567,17 +572,18 @@ async function showUserProperties(id, grid){
 				projection: 'stigs'
 			}
 			})
-			let r = JSON.parse(result.response.responseText)
-			let content = r.stigs.map( stig => ({
+			let apiAsset = JSON.parse(result.response.responseText)
+			let content = apiAsset.stigs.map( stig => ({
 				id: `${packageId}-${assetId}-${stig.benchmarkId}-assignment-leaf`,
 				text: stig.benchmarkId,
 				leaf: true,
 				node: 'asset-stig',
 				iconCls: 'sm-stig-icon',
 				stigName: stig.benchmarkId,
-				assetName: r.name,
+				assetName: apiAsset.name,
+				assetDept: apiAsset.dept,
 				stigRevStr: stig.lastRevisionStr,
-				assetId: r.assetId,
+				assetId: apiAsset.assetId,
 				benchmarkId: stig.benchmarkId,
 				assetGroup: null,
 				qtip: stig.title
@@ -631,8 +637,8 @@ async function showUserProperties(id, grid){
 				projection: 'stigs'
 			}
 			})
-			let r = JSON.parse(result.response.responseText)
-			let content = r.map( asset => ({
+			let apiAssets = JSON.parse(result.response.responseText)
+			let content = apiAssets.map( asset => ({
 				id: `${packageId}-${benchmarkId}-${asset.assetId}-assignment-leaf`,
 				text: asset.name,
 				leaf: true,
@@ -643,7 +649,7 @@ async function showUserProperties(id, grid){
 				stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
 				assetId: asset.assetId,
 				benchmarkId: benchmarkId,
-				assetGroup: null,
+				assetDept: asset.dept,
 				qtip: asset.name
 			})
 			)
@@ -679,6 +685,7 @@ async function showUserProperties(id, grid){
 					assignments.push({
 						benchmarkId: stig.benchmarkId,
 						assetName: asset.name,
+						assetDept: asset.dept,
 						assetId: asset.assetId
 					})
 				})
@@ -710,6 +717,7 @@ async function showUserProperties(id, grid){
 			let assignments = asset.stigs.map(stig => ({
 				benchmarkId: stig.benchmarkId,
 				assetName: asset.name,
+				assetDept: asset.dept,
 				assetId: assetId
 			}))
 			assignmentStore.loadData(assignments, true);	
@@ -742,6 +750,7 @@ async function showUserProperties(id, grid){
 					assignments.push({
 						benchmarkId: stig.benchmarkId,
 						assetName: asset.name,
+						assetDept: asset.dept,
 						assetId: asset.assetId
 					})
 				})
@@ -803,6 +812,7 @@ async function showUserProperties(id, grid){
 					benchmarkId:selectedNode.attributes.benchmarkId, 
 					assetId:selectedNode.attributes.assetId, 
 					assetName: selectedNode.attributes.assetName,
+					assetDept: lectedNode.attributes.assetDept,
 				}
 				assignmentStore.loadData(newAssignmentRecord, true);
 				break;
