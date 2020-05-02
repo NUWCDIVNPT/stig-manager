@@ -16,7 +16,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
         writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with dept: ${body.dept}.`} ) )
         return
       }
-      let response = await Asset.createAsset( body, projection, req.userObject)
+      let response = await Asset.createAsset( body, projection, elevate, req.userObject)
       writer.writeJson(res, response)
     }
     else {
@@ -136,7 +136,7 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
           return
         }
       }
-      let response = await Asset.setStigAssetsByBenchmarkId( benchmarkId, assetIds, projection, req.userObject )
+      let response = await Asset.setStigAssetsByBenchmarkId( benchmarkId, assetIds, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
     catch (err) {
@@ -164,7 +164,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
           return
         }
       }
-      let response = await Asset.updateAsset( assetId, body, projection, req.userObject )
+      let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
     else {
@@ -192,7 +192,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
           return
         }
       }
-      let response = await Asset.replaceAsset( assetId, body, projection, req.userObject )
+      let response = await Asset.replaceAsset( assetId, body, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
     else {

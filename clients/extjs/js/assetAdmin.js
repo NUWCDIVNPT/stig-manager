@@ -488,7 +488,7 @@ function addAssetAdmin() {
 					let record = stigStore.getById(stig.benchmarkId)
 					selRecords.push(record)
 					// User assignments
-					userAssignments[stig.benchmarkId] = stig.reviewers.map(r => r.userId)
+					userAssignments[stig.benchmarkId] = stig.reviewers
 				})
 				stigSm.selectRecords(selRecords);
 			},
@@ -496,9 +496,11 @@ function addAssetAdmin() {
 				let stigReviewers = []
 				let selectedStigs = stigSm.getSelections();
 				selectedStigs.forEach(stigRecord => {
+					// Map the userIds from the assignment object
+					let userIds = userAssignments[stigRecord.data.benchmarkId].map(r => r.userId)
 					stigReviewers.push({
 						benchmarkId: stigRecord.data.benchmarkId,
-						userIds: userAssignments[stigRecord.data.benchmarkId] || []
+						userIds: userIds || []
 					})
 				})
 				return stigReviewers
@@ -808,7 +810,7 @@ function addAssetAdmin() {
 		/******************************************************/
 		// showStigReviewers
 		/******************************************************/
-		function showStigReviewers (benchmarkId, assignedUsers) {
+		async function showStigReviewers (benchmarkId, assignedUsers) {
 			var stigUserFields = Ext.data.Record.create([
 				{	name:'userId',
 					type: 'number'
@@ -821,9 +823,8 @@ function addAssetAdmin() {
 				}
 			]);
 			var stigUserStore = new Ext.data.JsonStore({
-				url: 'pl/getReviewers.pl',
 				fields: stigUserFields,
-				root: 'rows',
+				root: '',
 				sortInfo: {
 					field: 'username',
 					direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
@@ -841,6 +842,37 @@ function addAssetAdmin() {
 							this.grid.view.addRowClass(index, this.grid.view.selectedRowClass);
 						}
 					}
+				},
+				deselectRow: function (index, preventViewNotify) {
+					if(this.isLocked()){
+						return;
+					}
+					if(this.last == index){
+						this.last = false;
+					}
+					if(this.lastActive == index){
+						this.lastActive = false;
+					}
+					var r = this.grid.store.getAt(index);
+					if(r && this.fireEvent('beforerowdeselect', this, index, r) !== false){
+						this.selections.remove(r);
+						if(!preventViewNotify){
+							this.grid.getView().onRowDeselect(index);
+						}
+						this.fireEvent('rowdeselect', this, index, r);
+						this.fireEvent('selectionchange', this);
+					}
+				},
+			
+				listeners: {
+					// beforerowdeselect: function (sm, index, record) {
+					// 	if (curUser.role === 'IAO' && !curUser.canAdmin) {
+					// 		if (record.data.dept !== curUser.dept) {
+					// 			return false
+					// 		}
+					// 	}
+					// 	return true
+					// }
 				}
 			});
 			var stigUserGrid = new Ext.grid.GridPanel({
@@ -865,15 +897,22 @@ function addAssetAdmin() {
 					}					
 				],
 				viewConfig: {
-					forceFit: true
+					forceFit: true,
+					getRowClass: function(record, rowIndex, rp, ds) {
+						if (curUser.role === 'IAO' && !curUser.canAdmin) {
+							if (record.data.dept !== curUser.dept) {
+								return 'x-stigman-cross-department'
+							}
+						}
+					}
 				},
 				sm: stigUserSm,
-				setValue: function(v) {
-					var selRecords = [];
-					for(y=0;y<v.length;y++) {
-						var record = stigUserStore.getById(v[y]);
-						selRecords.push(record);
-					}
+				setValue: function(assignedUsers) {
+					var selRecords = []
+					assignedUsers.forEach(user => {
+						let record = stigUserStore.getById(user.userId)
+						selRecords.push(record)
+					})
 					stigUserSm.selectRecords(selRecords);
 				},
 				getValue: function() {},
@@ -959,31 +998,65 @@ function addAssetAdmin() {
 						assignedUsers.length = 0
 						let selectedUsers = stigUserSm.getSelections()
 						selectedUsers.forEach(userRecord => {
-							assignedUsers.push(userRecord.data['userId'])
+							// assignedUsers.push({
+							// 	userId: userRecord.data['userId'],
+							// 	username: userRecord.data['username'],
+							// 	dept: userRecord.data['dept']
+							// })
+							assignedUsers.push(userRecord.data)
 						})
 						stigUserWindow.close()
 					}
 				}]
 			});
 
-			stigUserStore.load({
-				callback: function (r,o,s) {
-					stigUserWindow.show(
-						document.body,
-						function () { // window.show()callback function
-							Ext.getBody().unmask();
-							stigUserWindow.getEl().mask('Loading...');
-							stigUserGrid.setValue(assignedUsers);
-							stigUserStore.filter([
-								{
-									fn: filterDept
-								}
-							]);
-							stigUserWindow.getEl().unmask();
-						}
-					);
+			// TODO: Load stigUserStore from GET /users?role=IAWF. If unelevated IAO, also merge the non-dept users from assignedUsers
+
+			let result = await Ext.Ajax.requestPromise({
+				url: `${STIGMAN.Env.apiBase}/users`,
+				params: {
+					elevate: curUser.canAdmin,
+					role: 'IAWF'
+				},
+				method: 'GET'
+			})
+			let apiUsers = JSON.parse(result.response.responseText)
+			if (curUser.role === 'IAO' && !curUser.canAdmin) {
+				// merge users from assignedUsers, allowing duplicate ids
+				apiUsers = apiUsers.concat(assignedUsers)
+			}
+			stigUserStore.loadData(apiUsers)
+
+			stigUserWindow.show(
+				document.body,
+				function () { // window.show()callback function
+					Ext.getBody().unmask();
+					stigUserWindow.getEl().mask('Loading...');
+					stigUserGrid.setValue(assignedUsers);
+					stigUserWindow.getEl().unmask();
 				}
-			});
+			);
+
+
+
+			// stigUserStore.load({
+			// 	callback: function (r,o,s) {
+			// 		stigUserWindow.show(
+			// 			document.body,
+			// 			function () { // window.show()callback function
+			// 				Ext.getBody().unmask();
+			// 				stigUserWindow.getEl().mask('Loading...');
+			// 				stigUserGrid.setValue(assignedUsers);
+			// 				stigUserStore.filter([
+			// 					{
+			// 						fn: filterDept
+			// 					}
+			// 				]);
+			// 				stigUserWindow.getEl().unmask();
+			// 			}
+			// 		);
+			// 	}
+			// });
 
 			function filterStigUserStore () {
 					var value = Ext.getCmp('assets-stigUserGrid-filterField').getValue();

@@ -54,7 +54,8 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
                           KEY 'reviewers' VALUE json_arrayagg(
                               CASE WHEN u.id IS NOT NULL THEN  json_object(
                                   KEY 'userId' VALUE u.id,
-                                  KEY 'username' VALUE u.name
+                                  KEY 'username' VALUE u.name,
+                                  KEY 'dept' VALUE u.dept
                                   ABSENT ON NULL
                               ) ELSE NULL END
                           ) FORMAT JSON
@@ -198,8 +199,8 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   }
 }
 
-exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, userObject) {
-  let connectVar // available to try, catch, and finally blocks
+exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, elevate, userObject) {
+  let connection // available to try, catch, and finally blocks
   try {
     // CREATE: assetId will be null
     // REPLACE/UPDATE: assetId is not null
@@ -219,12 +220,10 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     }
 
     // Connect to Oracle
-    let connection
-      let options = {
-        outFormat: oracledb.OUT_FORMAT_OBJECT
-      }
+    let options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT
+    }
     connection = await oracledb.getConnection()
-    connectVar = connection // make available to catch and finally blocks
 
     // Process scalar properties
     let binds = {}
@@ -289,30 +288,39 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       await connection.executeMany(sqlInsertPackages, binds)
     }
 
-    // Process benchmarkIds and/or stigReviewers
-    let sqlInsertBenchmarks = `
-      INSERT /*+ ignore_row_on_dupkey_index(stig_asset_map(stigId, assetId)) */ INTO 
-        stigman.stig_asset_map (stigId,assetId)
-      VALUES
-        (:benchmarkId, :assetId)
-      `
-    let benchmarkInsertBinds = []
-    let stigReviewersBenchmarkInsertBinds = []
-    let stigReviewersBenchmarkNotDeleteBinds = []
-    let userStigAssetInsertBinds = [] 
-    if (benchmarkIds.length > 0) {
-      // Bind stig_asset_map values from the request.benchmarkIds
-      benchmarkInsertBinds = benchmarkIds.map(i => [i, assetId])
+    // Process benchmarkIds and/or stigReviewers  
+    binds = {
+      insert: {
+        stigAsset: [],
+        userStigAsset: []
+      },
+      notdelete: {
+        stigAsset: [],
+      },
+      delete: {
+        userStigAsset: []
+      }
     }
+
+    if (benchmarkIds.length > 0) {
+      binds.insert.stigAsset = benchmarkIds.map(i => [i, assetId])
+      // Don't delete these from STIG_ASSET_MAP, they might have user mappings
+      binds.notdelete.stigAsset = benchmarkIds.map(i => i)
+    }
+
     if (stigReviewers.length > 0) {
-      // Bind stig_asset_map values from request.stigReviewers.benchmarkId
-      stigReviewersBenchmarkInsertBinds = stigReviewers.map(i => [i.benchmarkId, assetId])
-      stigReviewersBenchmarkNotDeleteBinds = stigReviewers.map(i => i.benchmarkId)
-      // Bind any user_stig_asset_map values
+      // Append these for insert into STIG_ASSET_MAP
+      binds.insert.stigAsset = binds.insert.stigAsset.concat(stigReviewers.map(i => [i.benchmarkId, assetId]))
+      // Exclude these benchmarkIds from notdelete STIG_ASSET_MAP since the user mappings will be replaced
+      let removeThese = stigReviewers.map(i => i.benchmarkId)
+      binds.notdelete.stigAsset = binds.notdelete.stigAsset.filter( benchmarkId => !removeThese.contains(benchmarkId))
+
+      // Bind the USER_STIG_ASSET_MAP values
       stigReviewers.forEach( e => {
+        binds.delete.userStigAsset.push([e.benchmarkId, assetId])
         if (e.userIds && e.userIds.length > 0) {
           e.userIds.forEach(userId => {
-            userStigAssetInsertBinds.push({
+            binds.insert.userStigAsset.push({
               userId: userId,
               benchmarkId: e.benchmarkId,
               assetId: assetId
@@ -321,49 +329,65 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
         }
       })
     }
-    // Binds for insert into stig_asset_map
-    let insertBinds = [...benchmarkInsertBinds, ...stigReviewersBenchmarkInsertBinds]
-    // Binds for deleting from stig_asset_map while leaving requested benchmarkIds
-    let notDeleteBinds = [...benchmarkIds, ...stigReviewersBenchmarkNotDeleteBinds]
 
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+    if (writeAction === dbUtils.WRITE_ACTION.REPLACE || 'benchmarkIds' in body || 'stigReviewers' in body) {
       let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map WHERE assetId = :assetId'
-      if (notDeleteBinds.length > 0) {
-        sqlDeleteBenchmarks += ` AND stigId NOT IN (${notDeleteBinds.map((name, index) => `:${index}`).join(", ")})`
+      if (binds.notdelete.stigAsset.length > 0) {
+        sqlDeleteBenchmarks += ` AND stigId NOT IN (${binds.notdelete.stigAsset.map((name, index) => `:${index}`).join(", ")})`
       }
       // DELETE from stig_asset_map, will cascade into user_stig_aset_map
-      await connection.execute(sqlDeleteBenchmarks, [assetId, ...notDeleteBinds])
+      await connection.execute(sqlDeleteBenchmarks, [assetId, ...binds.notdelete.stigAsset])
     }
 
-    if (insertBinds.length > 0) {
+    if (binds.insert.stigAsset.length > 0) {
       // INSERT into stig_asset_map
-      let result = await connection.executeMany(sqlInsertBenchmarks, insertBinds, options)
+      let sqlInsertBenchmarks = `
+      INSERT /*+ ignore_row_on_dupkey_index(stig_asset_map(stigId, assetId)) */ INTO 
+        stigman.stig_asset_map (stigId, assetId)
+      VALUES
+        (:benchmarkId, :assetId)
+      `
+      let result = await connection.executeMany(sqlInsertBenchmarks, binds.insert.stigAsset, options)
     }
-    if (userStigAssetInsertBinds.length > 0) {
+    
+    if (binds.delete.userStigAsset.length > 0) {
+      let sqlDeleteUserStigAsset = `
+        DELETE FROM
+          stigman.user_stig_asset_map 
+        WHERE saId IN (
+          SELECT said FROM stigman.stig_asset_map
+          WHERE stigId = :benchmarkId AND assetId = :assetId
+        )`
+      let result = await connection.executeMany(sqlDeleteUserStigAsset, binds.delete.userStigAsset, options)
+    }
+    
+    if (binds.insert.userStigAsset.length > 0) {
       // INSERT into user_stig_asset_map 
       let sqlInsertUserStigAsset = `INSERT /*+ ignore_row_on_dupkey_index(user_stig_asset_map(userId, saId)) */ INTO 
         stigman.user_stig_asset_map 
           (userId, saId)
         VALUES 
           (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`
-      let result = await connection.executeMany(sqlInsertUserStigAsset, userStigAssetInsertBinds, options)
+      let result = await connection.executeMany(sqlInsertUserStigAsset, binds.insert.userStigAsset, options)
     }
     // Commit the changes
     await connection.commit()
   }
   catch (err) {
-    await connectVar.rollback()
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     throw err
   }
   finally {
-    if (typeof connectVar !== 'undefined') {
-      await connectVar.close()
+    if (typeof connection !== 'undefined') {
+      await connection.close()
     }
   }
 
   // Fetch the new or updated Asset for the response
   try {
-    let row = await this.getAsset(assetId, projection, true, userObject)
+    let row = await this.getAsset(assetId, projection, elevate, userObject)
     return row
   }
   catch (err) {
@@ -722,9 +746,9 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
  * body Asset  (optional)
  * returns Asset
  **/
-exports.createAsset = async function(body, projection, userObject) {
+exports.createAsset = async function(body, projection, elevate, userObject) {
   try {
-    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
+    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
     return (row)
   }
   catch (err) {
@@ -849,9 +873,9 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
  * assetId Integer A path parameter that indentifies an Asset
  * returns AssetDetail
  **/
-exports.updateAsset = async function( assetId, body, projection, userObject ) {
+exports.updateAsset = async function( assetId, body, projection, elevate, userObject ) {
   try {
-    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, userObject)
+    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, elevate, userObject)
     return (row)
   } 
   catch (err) {
@@ -867,9 +891,9 @@ exports.updateAsset = async function( assetId, body, projection, userObject ) {
  * assetId Integer A path parameter that indentifies an Asset
  * returns AssetDetail
  **/
-exports.replaceAsset = async function( assetId, body, projection, userObject ) {
+exports.replaceAsset = async function( assetId, body, projection, elevate, userObject ) {
   try {
-    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.REPLACE, assetId, body, projection, userObject)
+    let row = await this.addOrUpdateAsset(dbUtils.WRITE_ACTION.REPLACE, assetId, body, projection, elevate, userObject)
     return (row)
   } 
   catch (err) {
