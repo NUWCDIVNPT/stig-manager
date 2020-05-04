@@ -106,6 +106,20 @@ function addStigAdmin() {
 				Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
 				showStigAssignments(r.get('benchmarkId'));
 			}
+		},'-',{
+			iconCls: 'sm-stig-icon',
+			text: 'Import STIGs',
+			disabled: false,
+			handler: function() {
+				uploadStigs();
+			}
+		},{
+			iconCls: 'sm-stig-icon',
+			text: 'Fetch STIGs',
+			disabled: false,
+			handler: function() {
+				fetchStigs();
+			}
 		}],
 		bbar: new Ext.Toolbar({
 			items: [

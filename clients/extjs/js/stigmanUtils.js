@@ -1672,6 +1672,228 @@ function uploadArchive(n) {
 
 }; //end uploadArchive();
 
+function uploadStigs(n) {
+	var fp = new Ext.FormPanel({
+		standardSubmit: false,
+		fileUpload: true,
+		baseCls: 'x-plain',
+		monitorValid: true,
+		autoHeight: true,
+		labelWidth: 1,
+		hideLabel: true,
+		defaults: {
+			anchor: '100%',
+			allowBlank: false
+		},
+		items: [
+		{
+			xtype: 'checkbox',
+			id: 'import-replace',
+			name: 'replace',
+			label: "Overwrite existing data"
+		},
+		{ // start fieldset config
+			xtype:'fieldset',
+			title: 'Instructions',
+			autoHeight:true,
+			items: [
+			{
+				xtype: 'displayfield',
+				id: 'infoText1',
+				// emptyText: 'Browse for a file... asset:' + leaf.assetId,
+				// fieldLabel: 'Import',
+				name: 'infoText',
+				html: "Please browse for STIG",
+				// buttonText: 'Browse...',
+				// buttonCfg: {
+					// icon: "img/disc_drive.png"
+				// }
+			}]
+		},
+		// { // start fieldset config
+			// xtype:'fieldset',
+			// title: 'Select file',
+			// autoHeight:true,
+			// items: [
+			{
+				xtype: 'fileuploadfield',
+				id: 'form-file',
+				emptyText: 'Browse for a file...',
+				//fieldLabel: 'Import',
+				name: 'importFile',
+				accept: '.zip,.xml',
+				buttonText: 'Browse...',
+				buttonCfg: {
+					icon: "img/disc_drive.png"
+				},
+				listeners: {
+					fileselected: function(field,filename){
+					}
+				}
+			},
+			{
+				xtype: 'displayfield',
+				id: 'infoText2',
+				// emptyText: 'Browse for a file... asset:' + leaf.assetId,
+				// fieldLabel: 'Import',
+				name: 'infoText',
+				html: "<i><b>IMPORTANT: Results from the imported file will overwrite any existing results!</b></i>",
+				// buttonText: 'Browse...',
+				// buttonCfg: {
+					// icon: "img/disc_drive.png"
+				// }
+			}]
+		//}]
+		,
+		buttonAlign: 'center',
+		buttons: [{
+			text: 'Import',
+			icon: 'img/page_white_get.png',
+			tooltip: 'Import the archive',
+			formBind: true,
+			handler: async function(){
+				if(fp.getForm().isValid()){
+					let input = document.getElementById("form-file-file")
+					let file = input.files[0]
+					let extension = file.name.substring(file.name.lastIndexOf(".")+1)
+					if (extension === 'xml') {
+						let formEl = fp.getForm().getEl().dom
+						let formData = new FormData(formEl)
+						formData.set('replace', 'true')
+						// appwindow.close();
+						initProgress("Importing file", "Initializing...");
+		  
+						let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
+						  method: 'POST',
+						  headers: new Headers({
+							'Authorization': `Bearer ${window.keycloak.token}`
+						  }),
+						  body: formData
+						})
+						const reader = response.body.getReader()
+						const td = new TextDecoder("utf-8")
+						let isdone = false
+						do {
+						  const {value, done} = await reader.read()
+						  updateStatusText (td.decode(value),true)
+						  isdone = done
+						} while (!isdone)
+					}
+					else if (extension === 'zip') {
+						initProgress("Importing file", "Initializing...");
+						await processZip(input.files[0])
+					} else {
+						alert(`No handler for ${extension}`)
+					}
+
+					// let reader = new FileReader()
+					// reader.onload = function (e) {
+					//   let data = e.target.result
+					//   processZip(data)
+					// //   data = new Uint8Array(data)
+					// }
+					// reader.readAsArrayBuffer(input.files[0])
+				}
+
+				async function processZip (f) {
+					try {
+						let parentZip = new JSZip()
+		   
+						let contents = await parentZip.loadAsync(f)
+						let fns = Object.keys(contents.files)
+						let xmlMembers = fns.filter( fn => fn.endsWith('xccdf.xml') )
+						let zipMembers = fns.filter( fn => fn.endsWith('.zip') )
+						for (let x=0,l=xmlMembers.length; x<l; x++) {
+							let xml = xmlMembers[x]
+							updateStatusText (xml)
+							let data = await parentZip.files[xml].async("blob")
+							let fd = new FormData()
+							fd.append('importFile', data, xml)
+							fd.append('replace', 'true')
+
+							let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
+								method: 'POST',
+								headers: new Headers({
+									'Authorization': `Bearer ${window.keycloak.token}`
+								}),
+								body: fd
+							})
+							let json = await response.json()
+							updateStatusText (JSON.stringify(json, null, 2))
+							updateStatusText ('------------------------------------')
+
+						}
+						for (let x=0, l=zipMembers.length; x<l; x++) {
+							let zip = zipMembers[x]
+							updateStatusText (`Extracting member ${zip}`)
+							let data = await parentZip.files[zip].async("blob")
+							updateStatusText (`Processing member ${zip}`)
+							await processZip(data)
+						}
+						// xmlMembers.forEach( async xml =>  {
+						// 	updateStatusText (xml)
+						// 	let data = await parentZip.files[xml].async("blob")
+						// 	let fd = new FormData()
+						// 	fd.append('importFile', data, xml)
+						// 	fd.append('replace', 'true')
+
+						// 	let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
+						// 		method: 'POST',
+						// 		headers: new Headers({
+						// 			'Authorization': `Bearer ${window.keycloak.token}`
+						// 		}),
+						// 		body: fd
+						// 	})
+						// 	let json = await response.json()
+						// 	updateStatusText (JSON.stringify(json))
+						// })
+						// zipMembers.forEach( async zip => {
+						// 	let data = await parentZip.files[zip].async("blob")
+						// 	await processZip(data)
+						// })
+
+					}
+					catch (e) {
+						alert(e.message)
+					}
+				  
+				}
+			}
+		},
+		{
+			text: 'Cancel',
+			handler: function(){appwindow.close();}
+		}
+		]
+	});
+
+	var appwindow = new Ext.Window({
+		title: 'Import ZIP archive of results in CKL or XCCDF format',
+		modal: true,
+		width: 500,
+		//height:140,
+		//minWidth: 500,
+		//minHeight: 140,
+		layout: 'fit',
+		plain:true,
+		bodyStyle:'padding:5px;',
+		buttonAlign:'center',
+		items: fp
+	});
+
+	appwindow.show(document.body);
+
+
+}; //end uploadStigs();
+
+async function fetchStigs() {
+	let r = await fetch('https://public.cyber.mil/stigs/compilations/', {
+		mode: 'no-cors'
+	})
+	let body = await r.text()
+	let one = 1
+}
+
 //=================================================
 //TAKES IN APPROPRIATE TREE NODE AND PULLS THE 
 //PACKAGE ID, STIG ID AND ASSET ID.  THE VALUES
