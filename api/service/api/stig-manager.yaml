@@ -1006,7 +1006,7 @@ paths:
       tags:
         - STIG
       summary: Import a new STIG
-      operationId: addSTIG
+      operationId: importManualBenchmark
       x-codegen-request-body-name: body
       requestBody:
         required: true
@@ -1014,10 +1014,17 @@ paths:
         content:
           multipart/form-data:
             schema:
+              type: object
+              required:
+                - replace
               properties:
-                source:
+                replace:
                   type: string
-                  description: An XCCDF file
+                  enum:
+                    - 'true'
+                    - 'false'
+                importFile:
+                  type: string
                   format: binary
       responses:
         '200':

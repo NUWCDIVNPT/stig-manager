@@ -426,6 +426,395 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   }  
 }
 
+exports.insertManualBenchmark = async function (b) {
+  let connection
+  try {
+    let result, hrstart, hrend
+    let stats = {}
+
+    let dml = {
+      stigs: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(stigs(stigId)) */ into stigs.stigs (title, stigId) VALUES (:title, :benchmarkId)"
+      },
+      revisions: {
+        sql: `insert /*+ ignore_row_on_dupkey_index(revisions(revId)) */ into stigs.revisions (
+          revId, 
+          stigId, 
+          version, 
+          release, 
+          benchmarkDate, 
+          benchmarkDateSql, 
+          status, 
+          statusDate, 
+          description
+        ) VALUES (
+          :revId, 
+          :benchmarkId, 
+          :version, 
+          :release, 
+          :benchmarkDate, 
+          TO_DATE(:benchmarkDateSql,'yyyy-mm-dd'), 
+          :status, 
+          :statusDate, 
+          :description
+        )`,
+      },
+      groups: {
+        sql: "INSERT /*+ ignore_row_on_dupkey_index(groups(groupId)) */ into stigs.groups (groupId, title) VALUES (:groupId, :title)",
+        binds: [],
+        options: {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: false,
+          bindDefs: {
+            groupId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+            title: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255}
+          }
+        }
+      },
+      fixes: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(fixes(fixId)) */ into stigs.fixes (fixId,text) VALUES (:fixId, :text)",
+        binds: [],
+        options: {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: false,
+          bindDefs: {
+            fixId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+            text: {type: oracledb.DB_TYPE_CLOB, maxSize: 64000}
+          }
+        }
+
+      },
+      checks: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(checks(checkId)) */ into stigs.checks (checkId,content) VALUES (:checkId, :content)",
+        binds: [],
+        options: {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: false,
+          bindDefs: {
+            checkId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+            content: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000}
+          }
+        }
+      },
+      rules: {
+        sql: `
+        insert  /*+ ignore_row_on_dupkey_index(rules(ruleId)) */ into stigs.rules (
+          ruleId,
+          version
+          ,title
+          ,severity
+          ,weight
+          ,vulnDiscussion
+          ,falsePositives
+          ,falseNegatives
+          ,documentable
+          ,mitigations
+          ,securityOverrideGuidance
+          ,potentialImpacts
+          ,thirdPartyTools
+          ,mitigationControl
+          ,responsibility
+          ,iaControls
+        ) VALUES (
+          :ruleId,
+          :version
+          ,:title
+          ,:severity
+          ,:weight
+          ,:vulnDiscussion
+          ,:falsePositives
+          ,:falseNegatives
+          ,:documentable
+          ,:mitigations
+          ,:severityOverrideGuidance
+          ,:potentialImpacts
+          ,:thirdPartyTools
+          ,:mitigationControl
+          ,:responsibility
+          ,:iaControls
+        )`,
+        binds: [],
+        options: {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: false,
+          bindDefs: {
+            ruleId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+            version: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+            title: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            severity: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+            weight: {type: oracledb.DB_TYPE_NUMBER},
+            vulnDiscussion: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
+            falsePositives: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            falseNegatives: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            documentable: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+            mitigations: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            severityOverrideGuidance: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            potentialImpacts: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            thirdPartyTools: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+            mitigationControl: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
+            responsibility: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+            iacontrols: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255}
+          }
+        }
+
+      },
+      revGroupMap: {
+        // sql: "insert /*+ ignore_row_on_dupkey_index(rule_group_map(revId, groupId)) */ into stigs.rev_group_map (revId, groupId) VALUES (:revId, :groupId) RETURNING rgId into :rgId",
+        sql: "insert /*+ ignore_row_on_dupkey_index(rev_group_map(groupId, revId)) */ into stigs.rev_group_map (revId, groupId) VALUES (:revId, :groupId)",
+        binds: [],
+        options: {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: false,
+          bindDefs: {
+            revId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+            groupId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+            // rgId: {dir: oracledb.BIND_OUT, type: oracledb.DB_TYPE_NUMBER}
+          }
+        }
+      },
+      revGroupRuleMap: {
+        sql: `insert /*+ ignore_row_on_dupkey_index(rev_group_rule_map(ruleId, rgId)) */ into stigs.rev_group_rule_map (rgId, ruleId) VALUES (
+          (SELECT rgId from stigs.rev_group_map where revId = :revId and groupId = :groupId), :ruleId)`,
+        binds: []
+      },
+      ruleCheckMap: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(rule_check_map(ruleId, checkId)) */ into stigs.rule_check_map (ruleId, checkId) VALUES (:ruleId, :checkId)",
+        binds: []
+      },
+      ruleFixMap: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(rule_fix_map(ruleId, fixId)) */ into stigs.rule_fix_map (ruleId, fixId) VALUES (:ruleId, :fixId)",
+        binds: []
+      },
+      ruleControlMap: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(rule_control_map(ruleId, controlnumber)) */ into stigs.rule_control_map (ruleId, controlnumber, controltype) VALUES (:ruleId, :cci, 'CCI')",
+        binds: []
+      },
+      currentRevs: {
+        sql: `insert into stigs.current_revs 
+        select 
+          revId,
+          stigId,
+          version,
+          release,
+          benchmarkDate,
+          benchmarkDateSql,
+          status,
+          statusDate,
+          description,
+          active
+        from (
+          SELECT
+          revId,
+          stigId,
+          version,
+          release,
+          benchmarkDate,
+          benchmarkDateSql,
+          status,
+          statusDate,
+          description,
+          active
+            ,ROW_NUMBER() OVER (PARTITION BY stigId ORDER BY version+0 desc, release+0 desc) AS rn
+          FROM
+            stigs.revisions
+        )
+        where rn = 1
+        `
+      },
+      currentGroupRules: {
+        sql: `insert into stigs.current_group_rules
+        SELECT rg.groupId,
+          rgr.ruleId,
+          s.stigId
+        from
+          stigs.stigs s
+          left join stigs.current_revs cr on cr.stigId=s.stigId
+          left join stigs.rev_group_map rg on rg.revId=cr.revId
+          left join stigs.rev_group_rule_map rgr on rgr.rgId=rg.rgId
+        where
+          cr.revId is not null
+        order by
+          rg.groupId,rgr.ruleId,s.stigId`
+      }
+    }
+
+    connection = await oracledb.getConnection()
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      autoCommit: false
+    }
+
+    // Collect the bind values
+    hrstart = process.hrtime()
+    let totalstart = hrstart
+
+    let {revision, ...benchmarkBinds} = b
+    // TABLE: STIGS
+    dml.stigs.binds = benchmarkBinds
+
+    let {groups, ...revisionBinds} = revision
+    delete revisionBinds.revisionStr
+    revisionBinds.benchmarkId = benchmarkBinds.benchmarkId
+    revisionBinds.revId = `${revisionBinds.benchmarkId}-${revisionBinds.version}-${revisionBinds.release}`
+    revisionBinds.benchmarkDateSql = revisionBinds.benchmarkDate8601
+    delete revisionBinds.benchmarkDate8601
+    // TABLE: REVISIONS
+    dml.revisions.binds = revisionBinds
+
+    groups.forEach(async group => {
+      let {rules, ...groupBinds} = group
+      delete groupBinds.description
+      // TABLE: GROUPS
+      dml.groups.binds.push(groupBinds)
+      // TABLE: REV_GROUP_MAP
+      dml.revGroupMap.binds.push({
+          revId: revisionBinds.revId,
+          groupId: group.groupId
+      })
+      rules.forEach(rule => {
+        let {checks, fixes, idents, ...ruleBinds} = rule
+        // TABLE: REV_GROUP_RULE_MAP (rgId placeholder)
+        dml.revGroupRuleMap.binds.push({
+          revId: revisionBinds.revId,
+          groupId: group.groupId,
+          ruleId: rule.ruleId
+        })
+        // TABLE: RULES
+        dml.rules.binds.push(ruleBinds)
+
+        checks.forEach(check => {
+          // TABLE: CHECKS
+          dml.checks.binds.push(check)
+          // TABLE: RULE_CHECK_MAP
+          dml.ruleCheckMap.binds.push({
+            ruleId: rule.ruleId,
+            checkId: check.checkId
+          })
+        })
+
+        fixes.forEach(fix => {
+          // TABLE: FIXES
+          dml.fixes.binds.push(fix)
+          // TABLE: RULE_FIX_MAP
+          dml.ruleFixMap.binds.push({
+            ruleId: rule.ruleId,
+            fixId: fix.fixId
+          })
+        })
+
+        idents.forEach(ident => {
+          if (ident.system === 'http://iase.disa.mil/cci') {
+            // TABLE: RULE_CONTROL_MAP
+            dml.ruleControlMap.binds.push({
+              ruleId: rule.ruleId,
+              cci: ident.ident
+            })
+          }
+        })
+      })
+    })
+
+    hrend = process.hrtime(hrstart)
+    stats.binds = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.execute(dml.stigs.sql, dml.stigs.binds)
+    hrend = process.hrtime(hrstart)
+    stats.stigs = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+  
+    hrstart = process.hrtime() 
+    result = await connection.execute(dml.revisions.sql, dml.revisions.binds)
+    hrend = process.hrtime(hrstart)
+    stats.revisions = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.groups.sql, dml.groups.binds, dml.groups.options)
+    hrend = process.hrtime(hrstart)
+    stats.groups = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.rules.sql, dml.rules.binds, dml.rules.options)
+    hrend = process.hrtime(hrstart)
+    stats.rules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.checks.sql, dml.checks.binds, dml.checks.options)
+    hrend = process.hrtime(hrstart)
+    stats.checks = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.fixes.sql, dml.fixes.binds, dml.fixes.options)
+    hrend = process.hrtime(hrstart)
+    stats.fixes = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.ruleCheckMap.sql, dml.ruleCheckMap.binds)
+    hrend = process.hrtime(hrstart)
+    stats.ruleCheck = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.ruleFixMap.sql, dml.ruleFixMap.binds)
+    hrend = process.hrtime(hrstart)
+    stats.ruleFix = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    if (dml.ruleControlMap.binds && dml.ruleControlMap.binds.length > 0) {
+      hrstart = process.hrtime()
+      result = await connection.executeMany(dml.ruleControlMap.sql, dml.ruleControlMap.binds)
+      hrend = process.hrtime(hrstart)
+      stats.ccis = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    }
+
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.revGroupMap.sql, dml.revGroupMap.binds, dml.revGroupMap.options)
+    hrend = process.hrtime(hrstart)
+    stats.revGroup = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    
+    hrstart = process.hrtime() 
+    result = await connection.executeMany(dml.revGroupRuleMap.sql, dml.revGroupRuleMap.binds)
+    hrend = process.hrtime(hrstart)
+    stats.revGroupRule = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    // hrstart = process.hrtime() 
+    // result = await connection.execute('DELETE from stigs.current_revs')
+    // hrend = process.hrtime(hrstart)
+    // stats.deleteCurrentRevs = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    
+    
+    // hrstart = process.hrtime() 
+    // result = await connection.execute('DELETE from stigs.current_group_rules')
+    // hrend = process.hrtime(hrstart)
+    // stats.deleteCurrentGroupRules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    // hrstart = process.hrtime() 
+    // result = await connection.execute(dml.currentRevs.sql)
+    // hrend = process.hrtime(hrstart)
+    // stats.currentRevs = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    
+    // hrstart = process.hrtime() 
+    // result = await connection.execute(dml.currentGroupRules.sql)
+    // hrend = process.hrtime(hrstart)
+    // stats.currentGroupRules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    
+    hrend = process.hrtime(totalstart)
+    stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    // await connection.rollback()
+    await connection.commit()
+    return (stats)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
+  }
+}
+
 /**
  * Import a new STIG
  *

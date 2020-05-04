@@ -330,6 +330,168 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
   }
 }
 
+module.exports.benchmarkFromXccdf = function (xccdfData) {
+  const Parser = require('fast-xml-parser')
+  const he = require('he')
+  try {
+    let hrstart = process.hrtime() 
+  
+    let fastparseOptions = {
+      attributeNamePrefix: "",
+      textNodeName: "_",
+      ignoreAttributes: false,
+      ignoreNameSpace: true,
+      allowBooleanAttributes: false,
+      parseNodeValue: true,
+      parseAttributeValue: true,
+      trimValues: true,
+      cdataTagName: "__cdata", //default is 'false'
+      cdataPositionChar: "\\c",
+      localeRange: "", //To support non english character in tag/attribute values.
+      parseTrueNumberOnly: false,
+      arrayMode: true, //"strict"
+      tagValueProcessor: (val, tagName) => he.decode(val)
+    }
+
+    let j = Parser.parse(xccdfData.toString(), fastparseOptions)
+    let bIn = j.Benchmark[0]
+    let groups = bIn.Group.map(group => {
+      let rules = group.Rule.map(rule => {
+        let checks = rule.check.map(check => ({
+          checkId: check.system,
+          content: check['check-content']
+        }))
+        let fixes = rule.fixtext.map(fix => ({
+          fixId: fix.fixref,
+          text: fix._
+        }))
+        let idents = rule.ident ? rule.ident.map(ident => ({
+          ident: ident._,
+          system: ident.system
+        })) : []
+
+        // The description element is often not well-formed XML, so we fallback on extracting content between expected tags
+        function parseRuleDescription (d) {
+          let parsed = {}
+          let propMap = {
+            vulnDiscussion: 'VulnDiscussion',
+            falsePositives: 'FalsePositives',
+            falseNegatives: 'FalseNegatives',
+            documentable: 'Documentable',
+            mitigations: 'Mitigations',
+            severityOverrideGuidance: 'SeverityOverrideGuidance',
+            potentialImpacts: 'PotentialImpacts',
+            thirdPartyTools: 'ThirdPartyTools',
+            mitigationControl: 'MitigationControl',
+            responsibility: 'Responsibility',
+            iacontrols: 'IAControls'
+          }
+
+          for (const prop in propMap) {
+            let re = new RegExp(`<${propMap[prop]}>([\\s\\S]*)</${propMap[prop]}>`)
+            let result = re.exec(d)
+            parsed[propMap[prop]] = result && result.length > 1 ? result[1] : null
+          }
+          
+          if (parsed.responsibility) {
+            parsed.responsibility = parsed.responsibility.replace(/<\/Responsibility><Responsibility>/, ', ')
+          }
+          return parsed
+        }
+
+        let desc = parseRuleDescription(rule.description)
+
+        return {
+          ruleId: rule.id,
+          version: rule.version || null,
+          title: rule.title || null,
+          severity: rule.severity || null,
+          weight: rule.weight || null,
+          vulnDiscussion: desc.VulnDiscussion || null,
+          falsePositives: desc.FalsePositives || null,
+          falseNegatives: desc.FalseNegatives || null,
+          documentable: desc.Documentable || null,
+          mitigations: desc.Mitigations || null,
+          severityOverrideGuidance: desc.SeverityOverrideGuidance || null,
+          potentialImpacts: desc.PotentialImpacts || null,
+          thirdPartyTools: desc.ThirdPartyTools || null,
+          mitigationControl: desc.MitigationControl || null,
+          responsibility: desc.Responsibility || null,
+          iacontrols: desc.IAControls || null,
+          checks: checks,
+          fixes: fixes,
+          idents: idents
+        }
+      })
+      let desc = Parser.parse(group.description, fastparseOptions)
+
+
+
+      return {
+        groupId: group.id,
+        title: group.title || null,
+        description: desc.GroupDescription || null,
+        rules: rules
+      }
+    })
+    let [reArray, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
+    let hrend = process.hrtime(hrstart)
+    console.info(bIn.id + ' execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
+
+    return {
+      benchmarkId: bIn.id,
+      title: bIn.title,
+      revision: {
+        revisionStr: `V${bIn.version}R${release}`,
+        version: bIn.version,
+        release: release,
+        benchmarkDate: benchmarkDate,
+        benchmarkDate8601: benchmarkDateTo8601(benchmarkDate),
+        status: bIn.status[0]._ || null,
+        statusDate: bIn.status[0].date || null,
+        description: bIn.description || null,
+        // profiles: bIn.Profile,
+        groups: groups
+      }
+    }
+  }
+  catch (e) {
+    throw (e)
+  }
+
+  function benchmarkDateTo8601(benchmarkDate) {
+    monthToNum = {
+      'Jan': '01',
+      'January': '01',
+      'Feb': '02',
+      'February': '02',
+      'Mar': '03',
+      'March': '03',
+      'Apr': '04',
+      'April': '04',
+      'May': '05',
+      'Jun': '06',
+      'June': '06',
+      'Jul': '07',
+      'July': '07',
+      'Aug': '08',
+      'August': '08',
+      'Sep': '09',
+      'September': '09',
+      'Oct': '10',
+      'October': '10',
+      'Nov': '11',
+      'November': '11',
+      'Dec': '12',
+      'December': '12'
+    };
+    let [day, monStr, year] = benchmarkDate.split(/\s+/);
+    // return sprintf("%04d-%02d-%02d",year,monthToNum[monStr],day);
+    return `${year}-${monthToNum[monStr]}-${day}`
+  }
+}
+
+
 module.exports.reviewsFromScc = function (sccFileContent, assetId) {
   const parser = require('fast-xml-parser')
   try {

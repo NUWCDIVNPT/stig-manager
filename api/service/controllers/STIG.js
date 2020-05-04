@@ -2,6 +2,8 @@
 
 const writer = require('../utils/writer.js')
 const config = require('../utils/config')
+const parsers = require('../utils/parsers.js')
+const {promises: fs} = require('fs')
 const STIG = require(`../service/${config.database.type}/STIGService`)
 
 module.exports.addSTIG = async function addSTIG (req, res, next) {
@@ -14,6 +16,24 @@ module.exports.addSTIG = async function addSTIG (req, res, next) {
     writer.writeJson(res, err)
   }
 }
+
+module.exports.importManualBenchmark = async function importManualBenchmark (req, res, next) {
+  try {
+    let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
+    if (extension != 'xml') {
+      throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
+    }
+    let xmlData = await fs.readFile(req.file.path)
+    let benchmark = parsers.benchmarkFromXccdf(xmlData)
+    // let elevate = req.swagger.params['elevate'].value
+    let response = await STIG.insertManualBenchmark(benchmark)
+    writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
+
 
 module.exports.deleteRevisionByString = async function deleteRevisionByString (req, res, next) {
   let benchmarkId = req.swagger.params['benchmarkId'].value
