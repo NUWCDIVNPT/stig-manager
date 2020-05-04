@@ -323,7 +323,7 @@ function addStigAdmin() {
 							let requests = []
 							values.assetAssignments.forEach( sa => {
 								Ext.Ajax.requestPromise({
-									url: `${STIGMAN.Env.apiBase}/assets/${sa}`,
+									url: `${STIGMAN.Env.apiBase}/assets/${sa}?elevate=${curUser.canAdmin}`,
 									method: method,
 									headers: { 'Content-Type': 'application/json;charset=utf-8' },
 									jsonData: values
@@ -333,11 +333,11 @@ function addStigAdmin() {
 							delete Object.assign(values, {['assetIds']: values['assets'] })['assets']
 							let url, method
 							if (packageId) {
-								url = `${STIGMAN.Env.apiBase}/packages/${packageId}`
+								url = `${STIGMAN.Env.apiBase}/packages/${packageId}?elevate=${curUser.canAdmin}`
 								method = 'PUT'
 							}
 							else {
-								url = `${STIGMAN.Env.apiBase}/packages`
+								url = `${STIGMAN.Env.apiBase}/packages?elevate=${curUser.canAdmin}`
 								method = 'POST'
 							}
 							let result = await Ext.Ajax.requestPromise({

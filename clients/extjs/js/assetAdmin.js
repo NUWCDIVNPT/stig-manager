@@ -698,11 +698,11 @@ function addAssetAdmin() {
 							delete Object.assign(values, {['packageIds']: values['packages'] })['packages']
 							let url, method
 							if (assetId) {
-								url = `${STIGMAN.Env.apiBase}/assets/${assetId}`
+								url = `${STIGMAN.Env.apiBase}/assets/${assetId}?elevate=${curUser.canAdmin}`
 								method = 'PUT'
 							}
 							else {
-								url = `${STIGMAN.Env.apiBase}/assets`
+								url = `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.canAdmin}`
 								method = 'POST'
 							}
 							let result = await Ext.Ajax.requestPromise({

@@ -812,7 +812,7 @@ async function showUserProperties(id, grid){
 					benchmarkId:selectedNode.attributes.benchmarkId, 
 					assetId:selectedNode.attributes.assetId, 
 					assetName: selectedNode.attributes.assetName,
-					assetDept: lectedNode.attributes.assetDept,
+					assetDept: selectedNode.attributes.assetDept,
 				}
 				assignmentStore.loadData(newAssignmentRecord, true);
 				break;

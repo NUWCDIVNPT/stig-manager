@@ -1820,11 +1820,14 @@ function uploadStigs(n) {
 						}
 						for (let x=0, l=zipMembers.length; x<l; x++) {
 							let zip = zipMembers[x]
+							updateProgress((x+1)/l, zip.slice(zip.lastIndexOf('/') + 1))
 							updateStatusText (`Extracting member ${zip}`)
 							let data = await parentZip.files[zip].async("blob")
 							updateStatusText (`Processing member ${zip}`)
 							await processZip(data)
 						}
+						updateProgress(0, "")
+
 					}
 					catch (e) {
 						throw (e)
