@@ -542,7 +542,7 @@ exports.insertManualBenchmark = async function (b) {
             version: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
             title: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
             severity: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
-            weight: {type: oracledb.DB_TYPE_NUMBER},
+            weight: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
             vulnDiscussion: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
             falsePositives: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
             falseNegatives: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
@@ -681,6 +681,25 @@ exports.insertManualBenchmark = async function (b) {
         })
         // TABLE: RULES
         dml.rules.binds.push(ruleBinds)
+        // dml.rules.binds.push({
+        //   ruleId: {val: ruleBinds.ruleId, type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+        //   version: {val: ruleBinds.version, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+        //   title: {val: ruleBinds.title, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   severity: {val: ruleBinds.severity, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+        //   weight: {val: ruleBinds.weight, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+        //   vulnDiscussion: {val: ruleBinds.vulnDiscussion, type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
+        //   falsePositives: {val: ruleBinds.falsePositives, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   falseNegatives: {val: ruleBinds.falseNegatives, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   documentable: {val: ruleBinds.documentable, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
+        //   mitigations: {val: ruleBinds.mitigations, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   severityOverrideGuidance: {val: ruleBinds.severityOverrideGuidance, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   potentialImpacts: {val: ruleBinds.potentialImpacts, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   thirdPartyTools: {val: ruleBinds.thirdPartyTools, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
+        //   mitigationControl: {val: ruleBinds.mitigationControl, type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
+        //   responsibility: {val: ruleBinds.responsibility, type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
+        //   iacontrols: {val: ruleBinds.iacontrols, type: oracledb.DB_TYPE_VARCHAR, maxSize: 255}
+
+        // })
 
         checks.forEach(check => {
           // TABLE: CHECKS
@@ -732,7 +751,13 @@ exports.insertManualBenchmark = async function (b) {
     hrend = process.hrtime(hrstart)
     stats.groups = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
-    hrstart = process.hrtime() 
+    // for (let x=0,l=dml.rules.binds.length; x<l; x++) {
+    //   let bind = dml.rules.binds[x]
+    //   console.log(bind.ruleId)
+    //   result = await connection.execute(dml.rules.sql, bind, dml.rules.options)
+    // }
+
+    hrstart = process.hrtime()
     result = await connection.executeMany(dml.rules.sql, dml.rules.binds, dml.rules.options)
     hrend = process.hrtime(hrstart)
     stats.rules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
@@ -774,6 +799,8 @@ exports.insertManualBenchmark = async function (b) {
     hrend = process.hrtime(hrstart)
     stats.revGroupRule = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
+    
+    // // CURRENT tables
     // hrstart = process.hrtime() 
     // result = await connection.execute('DELETE from stigs.current_revs')
     // hrend = process.hrtime(hrstart)

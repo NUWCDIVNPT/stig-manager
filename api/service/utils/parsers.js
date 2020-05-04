@@ -342,18 +342,20 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       ignoreAttributes: false,
       ignoreNameSpace: true,
       allowBooleanAttributes: false,
-      parseNodeValue: true,
-      parseAttributeValue: true,
+      parseNodeValue: false,
+      parseAttributeValue: false,
       trimValues: true,
       cdataTagName: "__cdata", //default is 'false'
       cdataPositionChar: "\\c",
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
       arrayMode: true, //"strict"
+      attrValueProcessor: (val, attrName) => he.decode(val, {isAttributeValue: true}),
       tagValueProcessor: (val, tagName) => he.decode(val)
     }
 
     let j = Parser.parse(xccdfData.toString(), fastparseOptions)
+    if (!j.Benchmark) { throw new Error("Invalid STIG format. No Benchmark element found.") }
     let bIn = j.Benchmark[0]
     let groups = bIn.Group.map(group => {
       let rules = group.Rule.map(rule => {
@@ -393,8 +395,8 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
             parsed[propMap[prop]] = result && result.length > 1 ? result[1] : null
           }
           
-          if (parsed.responsibility) {
-            parsed.responsibility = parsed.responsibility.replace(/<\/Responsibility><Responsibility>/, ', ')
+          if (parsed.Responsibility) {
+            parsed.Responsibility = parsed.Responsibility.replace(/<\/Responsibility><Responsibility/g, ', ')
           }
           return parsed
         }

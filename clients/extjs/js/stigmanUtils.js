@@ -1752,7 +1752,7 @@ function uploadStigs(n) {
 			tooltip: 'Import the archive',
 			formBind: true,
 			handler: async function(){
-				if(fp.getForm().isValid()){
+				try {
 					let input = document.getElementById("form-file-file")
 					let file = input.files[0]
 					let extension = file.name.substring(file.name.lastIndexOf(".")+1)
@@ -1762,21 +1762,21 @@ function uploadStigs(n) {
 						formData.set('replace', 'true')
 						// appwindow.close();
 						initProgress("Importing file", "Initializing...");
-		  
+		
 						let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
-						  method: 'POST',
-						  headers: new Headers({
+						method: 'POST',
+						headers: new Headers({
 							'Authorization': `Bearer ${window.keycloak.token}`
-						  }),
-						  body: formData
+						}),
+						body: formData
 						})
 						const reader = response.body.getReader()
 						const td = new TextDecoder("utf-8")
 						let isdone = false
 						do {
-						  const {value, done} = await reader.read()
-						  updateStatusText (td.decode(value),true)
-						  isdone = done
+						const {value, done} = await reader.read()
+						updateStatusText (td.decode(value),true)
+						isdone = done
 						} while (!isdone)
 					}
 					else if (extension === 'zip') {
@@ -1785,14 +1785,9 @@ function uploadStigs(n) {
 					} else {
 						alert(`No handler for ${extension}`)
 					}
-
-					// let reader = new FileReader()
-					// reader.onload = function (e) {
-					//   let data = e.target.result
-					//   processZip(data)
-					// //   data = new Uint8Array(data)
-					// }
-					// reader.readAsArrayBuffer(input.files[0])
+				}
+				catch (e) {
+					alert(e)
 				}
 
 				async function processZip (f) {
@@ -1830,31 +1825,9 @@ function uploadStigs(n) {
 							updateStatusText (`Processing member ${zip}`)
 							await processZip(data)
 						}
-						// xmlMembers.forEach( async xml =>  {
-						// 	updateStatusText (xml)
-						// 	let data = await parentZip.files[xml].async("blob")
-						// 	let fd = new FormData()
-						// 	fd.append('importFile', data, xml)
-						// 	fd.append('replace', 'true')
-
-						// 	let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
-						// 		method: 'POST',
-						// 		headers: new Headers({
-						// 			'Authorization': `Bearer ${window.keycloak.token}`
-						// 		}),
-						// 		body: fd
-						// 	})
-						// 	let json = await response.json()
-						// 	updateStatusText (JSON.stringify(json))
-						// })
-						// zipMembers.forEach( async zip => {
-						// 	let data = await parentZip.files[zip].async("blob")
-						// 	await processZip(data)
-						// })
-
 					}
 					catch (e) {
-						alert(e.message)
+						throw (e)
 					}
 				  
 				}
