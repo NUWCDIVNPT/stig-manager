@@ -8,7 +8,8 @@ services:
     image: store/oracle/database-enterprise:12.2.0.1-slim
     volumes:
       - ./stigman-init:/stigman-init
-      - stigman-data:/ORCL
+      # - stigman-data:/ORCL
+      - stigman-empty:/ORCL
     ports:
       - "1521:1521"
   api-classic:
@@ -55,3 +56,4 @@ services:
 volumes:
   stigman-data:
     external: true
+  stigman-empty:
