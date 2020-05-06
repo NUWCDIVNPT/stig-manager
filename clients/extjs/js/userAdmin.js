@@ -37,7 +37,7 @@ function addUserAdmin() {
 	]);
 
 	var userStore = new Ext.data.JsonStore({
-		url: `${STIGMAN.Env.apiBase}/users?elevate=${curUser.canAdmin}`,
+		url: `${STIGMAN.Env.apiBase}/users${curUser.canAdmin ? '?elevate=true' : ''}`,
 		root: '',
 		fields: userFields,
 		isLoaded: false, // custom property
