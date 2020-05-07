@@ -497,10 +497,10 @@ function addAssetAdmin() {
 				let selectedStigs = stigSm.getSelections();
 				selectedStigs.forEach(stigRecord => {
 					// Map the userIds from the assignment object
-					let userIds = userAssignments[stigRecord.data.benchmarkId].map(r => r.userId)
+					let userIds = stigRecord.data.benchmarkId in userAssignments ? userAssignments[stigRecord.data.benchmarkId].map(r => r.userId) : []
 					stigReviewers.push({
 						benchmarkId: stigRecord.data.benchmarkId,
-						userIds: userIds || []
+						userIds: userIds
 					})
 				})
 				return stigReviewers

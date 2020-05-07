@@ -313,15 +313,13 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
 
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      // remove keys with null value
-      Object.keys(record).forEach(key => record[key] == null && delete record[key])
       // parse projected columns
-      if (record.ccis) {
-        record.ccis = record.ccis == '[""]' ? [] : JSON.parse(record.ccis)
+      if (inProjection && inProjection.includes('cci')) {
+        record.ccis = record.ccis ? JSON.parse(record.ccis) : []
         record.ccis.sort()
       }
-      if (record.checks) {
-        record.checks = record.checks == '[""]' ? [] : JSON.parse(record.checks)
+      if (inProjection && inProjection.includes('checks')) {
+        record.checks = record.checks ? JSON.parse(record.checks) : []
         record.checks.sort((a,b) => {
           let c = 0
           if (a.checkId > b.checkId) { c= 1 }
@@ -329,8 +327,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
           return c
         })
       }
-      if (record.fixes) {
-        record.fixes = record.fixes == '[""]' ? [] : JSON.parse(record.fixes)
+      if (inProjection && inProjection.includes('fixes')) {
+        record.fixes = record.fixes ? JSON.parse(record.fixes) : []
         record.fixes.sort((a,b) => {
           let c = 0
           if (a.fixId > b.fixId) { c= 1 }
@@ -338,7 +336,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
           return c
         })
       }
-
+      // remove keys with null value
+      Object.keys(record).forEach(key => record[key] == null && delete record[key])
     }
 
     return (result.rows)
@@ -722,7 +721,7 @@ exports.insertManualBenchmark = async function (b) {
         })
 
         idents.forEach(ident => {
-          if (ident.system === 'http://iase.disa.mil/cci') {
+          if (ident.system === 'http://iase.disa.mil/cci' || ident.system === 'http://cyber.mil/cci') {
             // TABLE: RULE_CONTROL_MAP
             dml.ruleControlMap.binds.push({
               ruleId: rule.ruleId,
