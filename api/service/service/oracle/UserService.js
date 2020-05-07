@@ -67,7 +67,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   }
   if (inPredicates.dept) {
     predicates.statements.push('ud.dept = :dept')
-    predicates.binds.dept = inPredicates.deptId
+    predicates.binds.dept = inPredicates.dept
   }
   if (inPredicates.canAdmin) {
     predicates.statements.push('ud.canAdmin = :canAdmin')
