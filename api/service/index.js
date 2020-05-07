@@ -27,6 +27,7 @@ app.use(morgan('combined', {stream: process.stdout}))
 // swaggerRouter configuration
 let options = {
   controllers: path.join(__dirname, './controllers'),
+  checkControllers: false,
   useStubs: process.env.NODE_ENV === 'development', // Conditionally turn on stubs (mock mode)
   oasSecurity: true,
   securityFile: {
