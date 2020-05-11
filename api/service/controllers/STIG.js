@@ -26,7 +26,7 @@ module.exports.importManualBenchmark = async function importManualBenchmark (req
     let xmlData = await fs.readFile(req.file.path)
     let benchmark = parsers.benchmarkFromXccdf(xmlData)
     // let elevate = req.swagger.params['elevate'].value
-    let response = await STIG.insertManualBenchmark(benchmark)
+    let response = await STIG.insertManualBenchmark(benchmark, xmlData)
     writer.writeJson(res, response)
   }
   catch(err) {
