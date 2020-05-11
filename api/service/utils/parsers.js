@@ -355,14 +355,39 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
     }
 
     let j = Parser.parse(xccdfData.toString(), fastparseOptions)
-    if (!j.Benchmark) { throw new Error("Invalid STIG format. No Benchmark element found.") }
-    let bIn = j.Benchmark[0]
+    let bIn, isScap=false
+
+    if (j['data-stream-collection'] && j['data-stream-collection'][0]) {
+      // SCAP
+      let components =  j['data-stream-collection'][0].component
+      let candidate = components.find(component => 'Benchmark' in component)
+      if (candidate.Benchmark[0]) {
+        bIn = candidate.Benchmark[0]
+        isScap = true
+      }
+      else {
+        throw new Error("Cannot parse SCAP document. No Benchmark element found.")
+      }
+    }
+    else if (j.Benchmark && j.Benchmark[0]) { 
+      // Manual STIG
+      bIn = j.Benchmark[0]
+    }
+    else {
+      throw new Error("Cannot parse XML document as STIG or SCAP.") 
+    }
+
     let groups = bIn.Group.map(group => {
       let rules = group.Rule.map(rule => {
-        let checks = rule.check.map(check => ({
-          checkId: check.system,
-          content: check['check-content']
-        }))
+        let checks
+        // Traditional STIG has no checks, so check for checks
+        if (rule.check) {
+          checks = rule.check.map(check => ({
+            checkId: check.system,
+            content: isScap? check['check-content-ref'][0] : check['check-content']
+          }))
+        }
+
         let fixes = rule.fixtext.map(fix => ({
           fixId: fix.fixref,
           text: fix._
@@ -436,17 +461,19 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         rules: rules
       }
     })
-    let [reArray, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
+    let [releaseInfo, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
     let hrend = process.hrtime(hrstart)
     console.info(bIn.id + ' execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
 
     return {
       benchmarkId: bIn.id,
       title: bIn.title,
+      scap: isScap,
       revision: {
         revisionStr: `V${bIn.version}R${release}`,
-        version: bIn.version,
+        version: isScap ? bIn.version[0]._ : bIn.version,
         release: release,
+        releaseInfo: releaseInfo,
         benchmarkDate: benchmarkDate,
         benchmarkDate8601: benchmarkDateTo8601(benchmarkDate),
         status: bIn.status[0]._ || null,
