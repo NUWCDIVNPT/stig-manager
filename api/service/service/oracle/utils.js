@@ -1,6 +1,8 @@
 const oracledb = require('oracledb')
 const config = require('../../utils/config')
 
+module.exports.version = '0.5'
+
 module.exports.initializeDatabase = function () {
   return new Promise((resolve, reject) => {
     // Try to create the connection pool

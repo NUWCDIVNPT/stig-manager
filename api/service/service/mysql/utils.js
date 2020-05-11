@@ -1,6 +1,8 @@
 const mysql = require('mysql2/promise');
 const config = require('../../utils/config')
 
+module.exports.version = '0.6'
+
 module.exports.initializeDatabase = function () {
   let pool = mysql.createPool({
     connectionLimit : 10,
@@ -56,13 +58,13 @@ module.exports.parseRevisionStr = function (revisionStr) {
     let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
     ro.version = results[1]
     ro.release = results[2]
-    ro.table = 'stigs.revisions'
+    ro.table = 'stig.revision'
     ro.table_alias = 'r'
-    ro.predicates = ' and r.version = :version and r.release = :release '
+    ro.predicates = ' and r.version = ? and r.release = ? '
   } else {
     ro.version = null
     ro.release = null
-    ro.table = 'stigs.current_revs'
+    ro.table = 'stig.current_rev'
     ro.table_alias = 'cr'
     ro.predicates = ''
   }

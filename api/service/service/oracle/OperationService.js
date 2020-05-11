@@ -11,8 +11,7 @@ const dbUtils = require('./utils')
  **/
 exports.getVersion = async function(userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    return (dbUtils.version)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

@@ -970,8 +970,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-    
-    
   /stigs:
     get:
       tags:
@@ -1537,10 +1535,10 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-  /version:
+  /op/version:
     get:
       tags:
-        - Version
+        - Operation
       summary: Return version information
       operationId: getVersion
       responses:
