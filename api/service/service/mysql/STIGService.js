@@ -1,5 +1,4 @@
 'use strict';
-const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
@@ -7,72 +6,44 @@ const dbUtils = require('./utils')
 Generalized queries for STIGs
 **/
 exports.queryStigs = async function ( inPredicates ) {
-  let columns = [
-    's.STIGID as "benchmarkId"',
-    's.TITLE as "title"',
-    `'V' || cr.version || 'R' || cr.release as "lastRevisionStr"`,
-    `to_char(cr.benchmarkDateSql,'yyyy-mm-dd') as "lastRevisionDate"`
-  ]
-  let joins = [
-    'stigs.stigs s',
-    'left join stigs.current_revs cr on s.stigId = cr.stigId'
-  ]
-
-  // NO PROJECTIONS DEFINED
-  // if (inProjection && inProjection.includes('assets')) {
-  //   joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
-  //   joins.push('left join stigman.assets a on sa.assetId = a.assetId' )
-  //   columns.push(`'[' || strdagg_param(param_array(json_object(
-  //     KEY 'assetId' VALUE a.assetId, 
-  //     KEY 'name' VALUE a.name, 
-  //     KEY 'dept' VALUE a.dept ABSENT ON NULL
-  //     ), ',')) || ']' as "packages"`)
-  // }
-  // if (inProjection && inProjection.includes('packages')) {
-  //   if (! inProjection.includes('assets')) {
-  //     // Push dependent table
-  //     joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
-  //   }
-  //   joins.push('left join stigman.asset_package_map ap on sa.assetId = ap.assetId' )
-  //   joins.push('left join stigman.packages p on ap.packageId = p.packageId' )
-  //   columns.push(`'[' || strdagg_param(param_array(json_object(
-  //     KEY 'packageId' VALUE p.packageId, 
-  //     KEY 'name' VALUE p.name ABSENT ON NULL
-  //     ), ',')) || ']' as "stigs"`)
-  // }
-
-  // PREDICATES
-  let predicates = {
-    statements: [],
-    binds: []
-  }
-  if (inPredicates.title) {
-    predicates.statements.push("s.title LIKE '%' || :title || '%'")
-    predicates.binds.push( inPredicates.title )
-  }
-  if (inPredicates.benchmarkId) {
-    predicates.statements.push('s.stigId = :benchmarkId')
-    predicates.binds.push( inPredicates.benchmarkId )
-  }
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ' order by s.stigId'
-
   try {
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
+    let columns = [
+      'b.benchmarkId',
+      'b.title',
+      `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
+      `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`
+    ]
+    let joins = [
+      'stig.benchmark b',
+      'left join stig.current_rev cr on b.benchmarkId = cr.benchmarkId'
+    ]
+
+    // PREDICATES
+    let predicates = {
+      statements: [],
+      binds: []
     }
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
-    return (result.rows)
+    if (inPredicates.title) {
+      predicates.statements.push("b.title LIKE CONCAT('%',?,'%')")
+      predicates.binds.push( inPredicates.title )
+    }
+    if (inPredicates.benchmarkId) {
+      predicates.statements.push('b.benchmarkId = ?')
+      predicates.binds.push( inPredicates.benchmarkId )
+    }
+
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += ' order by b.benchmarkId'
+
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    return (rows)
   }
   catch (err) {
     throw err
@@ -92,40 +63,40 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   let joins
   let predicates = {
     statements: [],
-    binds: {}
+    binds: []
   }
   
-  predicates.statements.push('r.stigId = :benchmarkId')
-  predicates.binds.benchmarkId = inPredicates.benchmarkId
+  predicates.statements.push('r.benchmarkId = ?')
+  predicates.binds.push(inPredicates.benchmarkId)
   
   if (inPredicates.revisionStr != 'latest') {
-    joins = ['stigs.revisions r']
-    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-    let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
-    predicates.statements.push('r.revId = :revId')
-    predicates.binds.revId = revId
+    joins = ['stig.revision r']
+    let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+    predicates.statements.push('r.version = ?')
+    predicates.binds.push(version)
+    predicates.statements.push('r.release = ?')
+    predicates.binds.push(release)
   } else {
-    joins = ['stigs.current_revs r']
+    joins = ['stig.current_rev r']
   }
   
-  joins.push('left join stigs.rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join stigs.groups g on rg.groupId = g.groupId')
+  joins.push('left join stig.rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join stig.group g on rg.groupId = g.groupId')
 
   if (inPredicates.groupId) {
-    predicates.statements.push('g.groupId = :groupId')
-    predicates.binds.groupId = inPredicates.groupId
+    predicates.statements.push('g.groupId = ?')
+    predicates.binds.push(inPredicates.groupId)
   }
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('rules')) {
-    joins.push('left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-    joins.push('left join stigs.rules r on rgr.ruleId = r.ruleId' )
-    columns.push(`'[' || strdagg_param(param_array(json_object(
-      KEY 'ruleId' VALUE r.ruleId, 
-      KEY 'version' VALUE r.version, 
-      KEY 'title' VALUE r.title, 
-      KEY 'severity' VALUE r.severity ABSENT ON NULL
-      ), ',')) || ']' as "rules"`)
+    joins.push('left join stig.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('left join stig.rule rule on rgr.ruleId = rule.ruleId' )
+    columns.push(`json_arrayagg(json_object(
+      'ruleId', rule.ruleId, 
+      'version', rule.version, 
+      'title', rule.title, 
+      'severity', rule.severity)) as "rules"`)
   }
 
   // CONSTRUCT MAIN QUERY
@@ -139,35 +110,11 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   if (inProjection && inProjection.includes('rules')) {
     sql += "\nGROUP BY g.groupId, g.title\n"
   }  
-  sql += ` order by DECODE(substr(g.groupId,1,2),'V-',lpad(substr(g.groupId,3),6,'0'),g.groupId) asc`
+  sql += ` order by substring(g.groupId from 3) + 0`
 
   try {
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
-    if (inProjection && inProjection.includes('rules')) {
-      // Post-process each row, unfortunately.
-      // * Oracle doesn't support a JSON type, so we parse string values from 'rules' into objects
-      for (let x = 0, l = result.rows.length; x < l; x++) {
-        let record = result.rows[x]
-        // Handle packages
-        if (record.rules) {
-        // Check for "empty" arrays 
-          record.rules = record.rules == '[{}]' ? [] : JSON.parse(record.rules)
-          // Sort by package name
-          record.rules.sort((a,b) => {
-            let c = 0
-            if (a.ruleId > b.ruleId) { c= 1 }
-            if (a.ruleId < b.ruleId) { c = -1 }
-            return c
-          })
-        }
-      }
-    }
-    return (result.rows)
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    return (rows)
   }
   catch (err) {
     throw err
@@ -181,15 +128,6 @@ For specific Rule, allow for projections with Check and Fixes
 **/
 exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProjection, inPredicates ) {
   let columns = [
-    'r.ruleId as "ruleId"',
-    'r.title as "title"',
-    'g.groupId as "groupId"',
-    'g.title as "groupTitle"',
-    'r.version as "version"',
-    'r.severity as "severity"'
-  ]
-
-  let groupBy = [
     'r.ruleId',
     'r.title',
     'g.groupId',
@@ -198,53 +136,64 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     'r.severity'
   ]
 
+  let groupBy = [
+    'r.ruleId',
+    'r.title',
+    'g.groupId',
+    'g.title',
+    'r.version',
+    'r.severity',
+    'rgr.rgrId'
+  ]
+
   let joins
   let predicates = {
     statements: [],
-    binds: {}
+    binds: []
   }
   
   // PREDICATES
-  predicates.statements.push('r.stigId = :benchmarkId')
-  predicates.binds.benchmarkId = benchmarkId
+  predicates.statements.push('rev.benchmarkId = ?')
+  predicates.binds.push(benchmarkId)
   
   if (revisionStr != 'latest') {
-    joins = ['stigs.revisions r']
-    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
-    predicates.statements.push('r.revId = :revId')
-    predicates.binds.revId = revId
+    joins = ['stig.revision rev']
+    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    predicates.statements.push('rev.version = ?')
+    predicates.binds.push(version)
+    predicates.statements.push('rev.release = ?')
+    predicates.binds.push(release)
   } else {
-    joins = ['stigs.current_revs r']
+    joins = ['stig.current_rev rev']
   }
   
   if (inPredicates && inPredicates.ruleId) {
-    predicates.statements.push('r.ruleId = :ruleId')
-    predicates.binds.ruleId = inPredicates.ruleId
+    predicates.statements.push('rgr.ruleId = ?')
+    predicates.binds.push(inPredicates.ruleId)
   }
 
-  joins.push('left join stigs.rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join stigs.groups g on rg.groupId = g.groupId')
-  joins.push('left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-  joins.push('left join stigs.rules r on rgr.ruleId = r.ruleId' )
+  joins.push('left join stig.rev_group_map rg on rev.revId = rg.revId')
+  joins.push('left join stig.group g on rg.groupId = g.groupId')
+  joins.push('left join stig.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+  joins.push('left join stig.rule r on rgr.ruleId = r.ruleId' )
 
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
   if ( inProjection && inProjection.includes('details') ) {
     columns.push(
-      'r.version as "version"',
-      'r.weight as "weight"',
-      'r.vulnDiscussion as "vulnDiscussion"',
-      'r.falsePositives as "falsePositives"',
-      'r.falseNegatives as "falseNegatives"',
-      'r.documentable as "documentable"',
-      'r.mitigations as "mitigations"',
-      'r.securityOverrideGuidance as "securityOverrideGuidance"',
-      'r.potentialImpacts as "potentialImpacts"',
-      'r.thirdPartyTools as "thirdPartyTools"',
-      'r.mitigationControl as "mitigationControl"',
-      'r.responsibility as "responsibility"',
-      'r.iacontrols as "iacontrols"'
+      'r.version',
+      'r.weight',
+      'r.vulnDiscussion',
+      'r.falsePositives',
+      'r.falseNegatives',
+      'r.documentable',
+      'r.mitigations',
+      'r.severityOverrideGuidance',
+      'r.potentialImpacts',
+      'r.thirdPartyTools',
+      'r.mitigationControl',
+      'r.responsibility',
+      'r.iacontrols'
     )
     groupBy.push(
       'r.version',
@@ -254,7 +203,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       'r.falseNegatives',
       'r.documentable',
       'r.mitigations',
-      'r.securityOverrideGuidance',
+      'r.severityOverrideGuidance',
       'r.potentialImpacts',
       'r.thirdPartyTools',
       'r.mitigationControl',
@@ -265,27 +214,27 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
 
   if ( inProjection && inProjection.includes('cci') ) {
     columns.push(`(select json_arrayagg(json_object(
-      KEY 'cci' VALUE rc.controlnumber,
-      KEY 'ap' VALUE  cci.apacronym,
-      KEY 'control' VALUE  TRIM(cc.control) || ' ' || cc.textref ABSENT ON NULL)) 
-      from stigs.rule_control_map rc 
-      left join iacontrols.cci cci on rc.controlnumber = cci.cci
-      left join iacontrols.cci_control_map cc on rc.controlnumber = cc.cci
-      where rc.ruleId = r.ruleId) as "ccis"`)
+      'cci', rgrc.cci,
+      'ap', cci.apAcronym,
+      'control',  cr.indexDisa)) 
+      from stig.rev_group_rule_cci_map rgrc 
+      left join stig.cci cci on rgrc.cci = cci.cci
+      left join stig.cci_reference_map cr on cci.cci = cr.cci
+      where rgrc.rgrId = rgr.rgrId) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
-      KEY 'checkId' VALUE rck.checkId,
-      KEY 'content' VALUE convert(chk.content, 'UTF8') ABSENT ON NULL))
-      from stigs.rule_check_map rck left join stigs.checks chk on chk.checkId = rck.checkId
-      where rck.ruleId = r.ruleId) as "checks"`)
+      'checkId', rck.checkId,
+      'content', chk.content))
+      from stig.rev_group_rule_check_map rck left join stig.check chk on chk.checkId = rck.checkId
+      where rck.rgrId = rgr.rgrId) as "checks"`)
   }
   if ( inProjection && inProjection.includes('fixes') ) {
     columns.push(`(select json_arrayagg(json_object(
-      KEY 'fixId' VALUE rf.fixId,
-      KEY 'text' VALUE fix.text ABSENT ON NULL))
-      from stigs.rule_fix_map rf left join stigs.fixes fix on fix.fixId = rf.fixId
-      where rf.ruleId = r.ruleId) as "fixes"`)
+      'fixId', rf.fixId,
+      'text', fix.text))
+      from stig.rev_group_rule_fix_map rf left join stig.fix fix on fix.fixId = rf.fixId
+      where rf.rgrId = rgr.rgrId) as "fixes"`)
   }
 
 
@@ -300,47 +249,17 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   if (inProjection && inProjection.includes('cci')) {
     sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
   }  
-  sql += ` order by r.ruleId`
+  sql += ` order by substring(r.ruleId from 4) + 0`
 
   try {
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
-
-    for (let x = 0, l = result.rows.length; x < l; x++) {
-      let record = result.rows[x]
-      // parse projected columns
-      if (inProjection && inProjection.includes('cci')) {
-        record.ccis = record.ccis ? JSON.parse(record.ccis) : []
-        record.ccis.sort()
-      }
-      if (inProjection && inProjection.includes('checks')) {
-        record.checks = record.checks ? JSON.parse(record.checks) : []
-        record.checks.sort((a,b) => {
-          let c = 0
-          if (a.checkId > b.checkId) { c= 1 }
-          if (a.checkId < b.checkId) { c = -1 }
-          return c
-        })
-      }
-      if (inProjection && inProjection.includes('fixes')) {
-        record.fixes = record.fixes ? JSON.parse(record.fixes) : []
-        record.fixes.sort((a,b) => {
-          let c = 0
-          if (a.fixId > b.fixId) { c= 1 }
-          if (a.fixId < b.fixId) { c = -1 }
-          return c
-        })
-      }
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    for (let x = 0, l = rows.length; x < l; x++) {
+      let record = rows[x]
       // remove keys with null value
       Object.keys(record).forEach(key => record[key] == null && delete record[key])
     }
 
-    return (result.rows)
+    return (rows)
   }
   catch (err) {
     throw err
@@ -353,34 +272,34 @@ Generalized queries for a single Rule, optionally with Check and Fix
 **/
 exports.queryRules = async function ( ruleId, inProjection ) {
   let columns = [
-    'r.ruleId as "ruleId"',
-    'r.title as "title"',
-    'r.version as "version"',
-    'r.severity as "severity"',
-    'r.weight as "weight"',
-    'r.vulnDiscussion as "vulnDiscussion"',
-    'r.falsePositives as "falsePositives"',
-    'r.falseNegatives as "falseNegatives"',
-    'r.documentable as "documentable"',
-    'r.mitigations as "mitigations"',
-    'r.securityOverrideGuidance as "securityOverrideGuidance"',
-    'r.potentialImpacts as "potentialImpacts"',
-    'r.thirdPartyTools as "thirdPartyTools"',
-    'r.mitigationControl as "mitigationControl"',
-    'r.responsibility as "responsibility"'
+    'r.ruleId',
+    'r.title',
+    'r.version',
+    'r.severity',
+    'r.weight',
+    'r.vulnDiscussion',
+    'r.falsePositives',
+    'r.falseNegatives',
+    'r.documentable',
+    'r.mitigations',
+    'r.severityOverrideGuidance',
+    'r.potentialImpacts',
+    'r.thirdPartyTools',
+    'r.mitigationControl',
+    'r.responsibility'
 ]
 
   let joins = [
-    'stigs.rules r'
+    'stig.rule r'
   ]
   let predicates = {
     statements: [],
-    binds: {}
+    binds: []
   }
   
   // PREDICATES
-  predicates.statements.push('r.ruleId = :ruleId')
-  predicates.binds.ruleId = ruleId
+  predicates.statements.push('r.ruleId = ?')
+  predicates.binds.push(ruleId)
   
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
@@ -398,16 +317,10 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   // if (inProjection && inProjection.includes('rules')) {
   //   sql += "\nGROUP BY g.groupId, g.title\n"
   // }  
-  sql += ` order by r.ruleId`
+  sql += ` order by substring(r.ruleId from 4) + 0`
 
   try {
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
 
     // For JSON.stringify(), remove keys with null value
     result.rows.toJSON = function () {
@@ -417,8 +330,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
       }
       return this
     }
-
-    return (result.rows)
+    return (rows)
   }
   catch (err) {
     throw err
@@ -788,8 +700,11 @@ exports.addSTIG = async function(source, userObject) {
  **/
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
   try {
-    let rows = await this.METHOD()
-    return (rows)
+    let rows = await this.getRevisionByString(benchmarkId, revisionStr, userObject)
+    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    let sqlDelete = `DELETE from stig.revision WHERE benchmarkId = ? and version = ? and release = ?`
+    await dbUtils.pool.query(sqlDelete, [benchmarkId, version, release])
+    return (rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -805,16 +720,10 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
  **/
 exports.deleteStigById = async function(benchmarkId, userObject) {
   try {
-    let row = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
-    let sqlDelete = `DELETE FROM stigs.stigs where stigId = :benchmarkId`
-    let connection = await oracledb.getConnection()
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-      autoCommit: true
-    }
-    await connection.execute(sqlDelete, [benchmarkId], options)
-    await connection.close()
-    return (row)
+    let rows = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
+    let sqlDelete = `DELETE FROM stig.benchmark where benchmarkId = ?`
+    await dbUtils.pool.query(sqlDelete, [benchmarkId])
+    return (rows[0])
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -873,7 +782,7 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, p
       revisionStr: revisionStr,
       groupId: groupId
     })
-    return (rows)
+    return (rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -914,33 +823,28 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
     let ro = dbUtils.parseRevisionStr(revisionStr)
     let sql = 
     `SELECT
-      ${ro.table_alias}.stigId as "benchmarkId",
-      'V' || ${ro.table_alias}.version || 'R' || ${ro.table_alias}.release as "revisionStr",
-      ${ro.table_alias}.version as "version",
-      ${ro.table_alias}.release as "release",
+      ${ro.table_alias}.benchmarkId,
+      concat('V', ${ro.table_alias}.version, 'R', ${ro.table_alias}.release) as "revisionStr",
+      ${ro.table_alias}.version,
+      ${ro.table_alias}.release,
       ${ro.table_alias}.benchmarkDateSql as "benchmarkDate",
-      ${ro.table_alias}.status as "status",
-      ${ro.table_alias}.statusDate as "statusDate",
-      ${ro.table_alias}.description as "description"
+      ${ro.table_alias}.status,
+      ${ro.table_alias}.statusDate,
+      ${ro.table_alias}.description
     FROM
       ${ro.table}  ${ro.table_alias}
     WHERE
-      ${ro.table_alias}.stigId = :benchmarkId
+      ${ro.table_alias}.benchmarkId = ?
       ${ro.predicates}
     ORDER BY
       ${ro.table_alias}.benchmarkDateSql desc
     `
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
     let binds = [benchmarkId]
     if (ro.version) {
       binds.push(ro.version, ro.release)
     }
-    let result = await connection.execute(sql, binds, options)
-    await connection.close()
-    return (result.rows[0])
+    let [rows, fields] = await dbUtils.pool.query(sql, binds)
+    return (rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -958,28 +862,23 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
   try {
     let sql = 
     `SELECT
-      r.stigId as "benchmarkId",
-      'V' || r.version || 'R' || r.release as "revisionStr",
-      r.version as "version",
-      r.release as "release",
+      r.benchmarkId,
+      concat('V', r.version, 'R', r.release) as "revisionStr",
+      r.version,
+      r.release,
       r.benchmarkDateSql as "benchmarkDate",
-      r.status as "status",
-      r.statusDate as "statusDate",
-      r.description as "description"
+      r.status,
+      r.statusDate,
+      r.description
     FROM
-      stigs.revisions r
+      stig.revision r
     WHERE
-      r.stigId = :benchmarkId
+      r.benchmarkId = ?
     ORDER BY
       r.benchmarkDateSql desc
     `
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, [benchmarkId], options)
-    await connection.close()
-    return (result.rows)
+    let [rows, fields] = await dbUtils.pool.query(sql, [benchmarkId])
+    return (rows)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
