@@ -17,8 +17,27 @@ module.exports.initializeDatabase = function () {
       return next();
     } 
   })
+
+  async function closePoolAndExit() {
+    console.log('\nTerminating');
+    try {
+      await pool.end()
+      console.log('Pool closed');
+      process.exit(0);
+    } catch(err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+  }   
+  
+  // Call the pool destruction methods on SIGTERM and SEGINT
+  process.on('SIGTERM', closePoolAndExit)
+  process.on('SIGINT', closePoolAndExit)
+  
   module.exports.pool = pool
 }
+
+
 
 module.exports.getUserObject = async function (username) {
   let connection, sql, binds

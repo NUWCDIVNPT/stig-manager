@@ -18,34 +18,37 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   }
 
   let columns = [
-    'p.PACKAGEID as "packageId"',
-    'p.NAME as "name"',
-    'p.EMASSID as "emassId"',
-    'p.POCNAME as "pocName"',
-    'p.POCEMAIL as "pocEmail"',
-    'p.POCPHONE as "pocPhone"',
-    'p.REQRAR as "reqRar"'
+    'p.packageId',
+    'p.name',
+    'p.emassId',
+    'p.pocName',
+    'p.pocEmail',
+    'p.pocPhone',
+    'p.reqRar'
   ]
   let joins = [
-    'stigman.packages p',
+    'stigman.package p',
     'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
-    'left join stigman.assets a on ap.assetId = a.assetId',
+    'left join stigman.asset a on ap.assetId = a.assetId',
     'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
   ]
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('assets')) {
-    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'assetId' VALUE a.assetId, KEY 'name' VALUE a.name, KEY 'dept' VALUE a.dept ABSENT ON NULL), ',')) || ']' as "assets"`)
+    columns.push(`concat('[', group_concat(distinct json_object(
+      'assetId', a.assetId, 
+      'name', a.name, 
+      'dept', a.dept) order by a.name), ']') as "assets"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
-    joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
-    joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
-    columns.push(`'[' || strdagg_param(param_array(
-      CASE WHEN cr.stigId IS NOT NULL THEN json_object(
-      KEY 'benchmarkId' VALUE cr.stigId, 
-      KEY 'lastRevisionStr' VALUE 'V'||cr.version||'R'||cr.release,
-      KEY 'lastRevisionDate' VALUE cr.benchmarkDateSql,
-      KEY 'title' VALUE st.title ABSENT ON NULL) END, ',')) || ']' as "stigs"`)
+    joins.push('left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId')
+    joins.push('left join stig.benchmark st on cr.benchmarkId=st.benchmarkId')
+    columns.push(`concat('[', group_concat(distinct
+      CASE WHEN cr.benchmarkId IS NOT NULL THEN json_object(
+      'benchmarkId', cr.benchmarkId, 
+      'lastRevisionStr', concat('V', cr.version, 'R', cr.release),
+      'lastRevisionDate', cr.benchmarkDateSql,
+      'title', st.title) END order by cr.benchmarkId), ']') as "stigs"`)
   }
 
   // PREDICATES
@@ -54,16 +57,16 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     binds: []
   }
   if (inPredicates.packageId) {
-    predicates.statements.push('p.packageId = :packageId')
+    predicates.statements.push('p.packageId = ?')
     predicates.binds.push( inPredicates.packageId )
   }
   if (context == dbUtils.CONTEXT_DEPT) {
-    predicates.statements.push('a.dept = :dept')
+    predicates.statements.push('a.dept = ?')
     predicates.binds.push( userObject.dept )
   } 
   else if (context == dbUtils.CONTEXT_USER) {
     joins.push('left join stigman.user_stig_asset_map usa on sa.saId = usa.saId')
-    predicates.statements.push('usa.userId = :userId')
+    predicates.statements.push('usa.userId = ?')
     predicates.binds.push( userObject.id )
 
   }
@@ -79,63 +82,24 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
   sql += ' order by p.name'
   try {
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
 
     // Post-process each row, unfortunately.
-    // * Oracle doesn't have a BOOLEAN data type, so we must cast the column 'reqRar'
-    // * Oracle doesn't support a JSON type, so we parse string values from 'assets' and 'stigs' into objects
-    for (let x = 0, l = result.rows.length; x < l; x++) {
-      let record = result.rows[x]
+    // * MySQL doesn't have a BOOLEAN data type, so we must cast the column 'reqRar'
+    // * MySQL doesn't support JSON_ARRAYAGG with DISTINCT, so we parse string values from 'assets' and 'stigs' into objects
+    for (let x = 0, l = rows.length; x < l; x++) {
+      let record = rows[x]
       // Handle 'reqRar'
       record.reqRar = record.reqRar == 1 ? true : false
-      // Handle 'assests'
       if (record.assets) {
-        // Check for "empty" arrays 
-        record.assets = record.assets == '[{}]' ? [] : JSON.parse(record.assets)
-        // Sort by asset name
-        record.assets.sort((a,b) => {
-          let c = 0
-          if (a.name > b.name) { c= 1 }
-          if (a.name < b.name) { c = -1 }
-          return c
-        })
+        record.assets = record.assets  ? JSON.parse(record.assets) : []
       }
-      // Handle 'stigs'
       if (record.stigs) {
-        record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
-        // Sort by benchmarkId
-        record.stigs.sort((a,b) => {
-          let c = 0
-          if (a.benchmarkId > b.benchmarkId) { c = 1 }
-          if (a.benchmarkId < b.benchmarkId) { c = -1 }
-          return c
-        })
+        record.stigs = record.stigs  ? JSON.parse(record.stigs) : []
       }
-    }
+  }
 
-    // result.rows.toJSON = function() {
-    //   for (let x = 0, l = this.length; x < l; x++) {
-    //     let record = this[x]
-    //     record.reqRar = record.reqRar == 1 ? true : false
-    //     if (record.assets) {
-    //       record.assets = record.assets == '[{}]' ? [] : JSON.parse(record.assets)
-    //       record.assets.sort((a,b) => {
-    //         let c = 0
-    //         if (a.name > b.name) { c= 1}
-    //         if (a.name < b.name) { c = -1}
-    //         return c
-    //       })
-    //     }
-    //   }
-    //   return this
-    // }
-
-    return (result.rows)
+    return (rows)
   }
   catch (err) {
     throw err
@@ -145,7 +109,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
 exports.addOrUpdatePackage = async function(writeAction, packageId, body, projection, userObject) {
   // CREATE: packageId will be null
   // REPLACE/UPDATE: packageId is not null
-  let connectVar // available to try, catch, and finally blocks
+  let connection // available to try, catch, and finally blocks
   try {
     // Extract or initialize non-scalar properties to separate variables
     let { assetIds, ...packageFields } = body
@@ -156,12 +120,10 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
       packageFields.reqRar = packageFields.reqRar ? 1 : 0
     }
   
-    // Connect to Oracle
-    let options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
-    connectVar = connection // make available to catch and finally blocks
+    // Connect to MySQL
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    await connection.beginTransaction();
 
     // Process scalar properties
     let binds = {}
@@ -183,28 +145,24 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
       // INSERT into packages
       let sqlInsert =
       `INSERT INTO
-          stigman.packages
+          stigman.package
           (name, emassId, pocName, pocEmail, pocPhone, reqRar)
         VALUES
-          (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)
-        RETURNING
-          packageId into :packageId`
-      binds.packageId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
-      let result = await connection.execute(sqlInsert, binds, options)
-      packageId = result.outBinds.packageId[0]
+          (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)`
+      let [rows, fields] = await connection.execute(sqlInsert, binds)
+      packageId = rows.insertId
     }
     else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
       if (Object.keys(binds).length > 0) {
         // UPDATE into packages
         let sqlUpdate =
         `UPDATE
-            stigman.packages
+            stigman.package
           SET
-            ${dbUtils.objectBindObject(packageFields, binds)}
+            ?
           WHERE
-            packageId = :packageId`
-        binds.packageId = packageId
-        await connection.execute(sqlUpdate, binds, options)
+            packageId = ?`
+        await connection.execute(sqlUpdate, [packageFields, packageId])
       }
     }
     else {
@@ -214,29 +172,30 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     // Process assetIds
     if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
       // DELETE from asset_package_map
-      let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = :packageId'
+      let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = ?'
       await connection.execute(sqlDeleteAssets, [packageId])
     }
     if (assetIds.length > 0) {
       let sqlInsertAssets = `
-        INSERT /*+ ignore_row_on_dupkey_index(asset_package_map(packageId, assetId)) */ INTO 
-          stigman.asset_package_map (packageId,assetId)
-        VALUES (:packageId, :assetId)`      
+        INSERT IGNORE INTO 
+          stigman.asset_package_map (packageId, assetId)
+        VALUES
+          ?`      
       let binds = assetIds.map(i => [packageId, i])
       // INSERT into asset_package_map
-      await connection.executeMany(sqlInsertAssets, binds)
+      await connection.query(sqlInsertAssets, [binds])
     }
 
     // Commit the changes
     await connection.commit()
   }
   catch (err) {
-    await connectVar.rollback()
+    await connection.rollback()
     throw err
   }
   finally {
-    if (typeof connectVar !== 'undefined') {
-      await connectVar.close()
+    if (typeof connection !== 'undefined') {
+      await connection.release()
     }
   }
 
@@ -275,15 +234,9 @@ exports.createPackage = async function(body, projection, userObject) {
 exports.deletePackage = async function(packageId, projection, elevate, userObject) {
   try {
     let row = await this.queryPackages(projection, { packageId: packageId }, elevate, userObject)
-    let sqlDelete = `DELETE FROM stigman.packages where packageId = :packageId`
-    let connection = await oracledb.getConnection()
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-      autoCommit: true
-    }
-    await connection.execute(sqlDelete, [packageId], options)
-    await connection.close()
-    return (row)
+    let sqlDelete = `DELETE FROM stigman.package where packageId = ?`
+    await dbUtils.pool.query(sqlDelete, [packageId])
+    return (row[0])
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -309,17 +262,17 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
 
     // Non-current revision
     if (revisionStr !== 'latest') {
-      joins.splice(0, 1, 'stigs.revisions rev')
+      joins.splice(0, 1, 'stig.revision rev')
       let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
       binds.version = results[1]
       binds.release = results[2]
-      let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
+      // TODO: Apply these binds to predicates somewhere!
     }
 
     // Non-staff access control
     let userAccessControlPredicate = ''
     if (userObject.role == "IAO") {
-      userAccessControlPredicate = 'and ap.assetId in (select assetId from stigman.assets where dept=:dept)'
+      userAccessControlPredicate = 'and ap.assetId in (select assetId from stigman.asset where dept=:dept)'
       binds.dept = userObject.dept
     } 
     else if (userObject.role != "Staff") { // CSWF
@@ -336,12 +289,12 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
   
     let sql = `
       select
-        r.ruleId as "ruleId"
-        ,r.ruleTitle as "ruleTitle"
-        ,r.groupId as "groupId"
-        ,r.groupTitle as "groupTitle"
-        ,r.severity as "severity"
-        ,r.checkType as "checkType"
+        r.ruleId
+        ,r.ruleTitle
+        ,r.groupId
+        ,r.groupTitle
+        ,r.severity
+        ,r.checkType
         ,sum(CASE WHEN r.stateId = 4 THEN 1 ELSE 0 END) as "oCnt"
         ,sum(CASE WHEN r.stateId = 3 THEN 1 ELSE 0 END) as "nfCnt"
         ,sum(CASE WHEN r.stateId = 2 THEN 1 ELSE 0 END) as "naCnt"
@@ -366,16 +319,16 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         from
           stigman.asset_package_map ap
           left join stigman.stig_asset_map sa on ap.assetId=sa.assetId
-          left join stigs.current_revs cr on sa.stigId=cr.stigId
-          left join stigs.rev_group_map rg on cr.revId=rg.revId
-          left join stigs.groups g on rg.groupId=g.groupId
-          left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
-          left join stigs.rules rules on rgr.ruleId=rules.ruleId
-          left join stigs.rule_oval_map ro on rgr.ruleId=ro.ruleId
-          left join stigman.reviews r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)
+          left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId
+          left join stig.rev_group_map rg on cr.revId=rg.revId
+          left join stig.group g on rg.groupId=g.groupId
+          left join stig.rev_group_rule_map rgr on rg.rgId=rgr.rgId
+          left join stig.rule rules on rgr.ruleId=rules.ruleId
+          left join stig.rule_oval_map ro on rgr.ruleId=ro.ruleId
+          left join stigman.review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)
         where
           ap.packageId=:packageId
-          and cr.stigId=:benchmarkId
+          and cr.benchmarkId=:benchmarkId
           ${userAccessControlPredicate}
         ) r
       group by
@@ -386,20 +339,23 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.groupTitle
         ,r.checkType
       order by
-        DECODE(substr(r.groupId,1,2),'V-',lpad(substr(r.groupId,3),6,'0'),r.groupId) asc
+        substring(r.groupId from 3) + 0
     `
     // Send query
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, binds, options)
+    let connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    let [rows, fields] = await connection.query(sql, binds)
     await connection.close()
 
-    return (result.rows)
+    return (rows)
   }
   catch (e) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( writer.respondWithCode ( 500, { message: e.message, stack: e.stack }))
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
   }
 }
 
