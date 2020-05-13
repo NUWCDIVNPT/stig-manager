@@ -14,6 +14,10 @@ module.exports.initializeDatabase = function () {
       if (field.type == 'JSON') {
         return (JSON.parse(field.string())); 
       }
+      if ((field.type === "BIT") && (field.length === 1)) {
+        let bytes = field.buffer() || [0];
+        return( bytes[ 0 ] === 1 );
+      }
       return next();
     } 
   })
@@ -45,9 +49,9 @@ module.exports.getUserObject = async function (username) {
     connection = await this.pool.getConnection()
     sql = `
       SELECT
-        ud.id,
-        ud.cn,
-        ud.name,
+        ud.userId as id,
+        ud.username as cn,
+        ud.display as name,
         ud.dept,
         r.role,
         ud.canAdmin
@@ -55,13 +59,12 @@ module.exports.getUserObject = async function (username) {
         stigman.user_data ud
         left join stigman.role r on r.id=ud.roleId
       where
-        UPPER(cn)=UPPER(?)
+        UPPER(username)=UPPER(?)
       `
     binds = [username]
-    const [result, fields] = await connection.query(sql, binds)
+    const [rows] = await connection.query(sql, binds)
     connection.release()
-    result[0].canAdmin = result[0].canAdmin == 1
-    return (result[0])
+    return (rows[0])
   }
   catch (err) {
     throw err

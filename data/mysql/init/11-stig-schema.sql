@@ -19,6 +19,7 @@
 -- Current Database: `stig`
 --
 
+DROP DATABASE IF EXISTS `stig`;
 CREATE DATABASE /*!32312 IF NOT EXISTS*/ `stig` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
 USE `stig`;
@@ -272,6 +273,7 @@ CREATE TABLE `rev_group_map` (
   `rgId` int(11) NOT NULL AUTO_INCREMENT,
   `revId` varchar(255) DEFAULT NULL,
   `groupId` varchar(45) DEFAULT NULL,
+  `rules` JSON DEFAULT NULL,
   PRIMARY KEY (`rgId`),
   UNIQUE KEY `uidx_rgm_revId_groupId` (`revId`,`groupId`),
   KEY `idx_rgm_groupId` (`groupId`),
@@ -347,6 +349,9 @@ CREATE TABLE `rev_group_rule_map` (
   `rgrId` int(11) NOT NULL AUTO_INCREMENT,
   `rgId` int(11) NOT NULL,
   `ruleId` varchar(255) DEFAULT NULL,
+  `checks` JSON DEFAULT NULL,
+  `fixes` JSON DEFAULT NULL,
+  `ccis` JSON DEFAULT NULL,
   PRIMARY KEY (`rgrId`),
   UNIQUE KEY `uidx_rgrm_rgId_ruleId` (`rgId`,`ruleId`),
   KEY `idx_rgrm_ruleId` (`ruleId`),

@@ -34,10 +34,20 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('assets')) {
-    columns.push(`concat('[', group_concat(distinct json_object(
-      'assetId', a.assetId, 
-      'name', a.name, 
-      'dept', a.dept) order by a.name), ']') as "assets"`)
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when a.assetId is not null then 
+              json_object(
+                'assetId', a.assetId, 
+                'name', a.name, 
+                'dept', a.dept)
+            else null end 
+		  order by a.name),
+          ''),
+      ']')
+    as json) as "assets"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
     joins.push('left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId')
@@ -86,17 +96,17 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     // Post-process each row, unfortunately.
     // * MySQL doesn't have a BOOLEAN data type, so we must cast the column 'reqRar'
     // * MySQL doesn't support JSON_ARRAYAGG with DISTINCT, so we parse string values from 'assets' and 'stigs' into objects
-    for (let x = 0, l = rows.length; x < l; x++) {
-      let record = rows[x]
-      // Handle 'reqRar'
-      record.reqRar = record.reqRar == 1 ? true : false
-      if (record.assets) {
-        record.assets = record.assets  ? JSON.parse(record.assets) : []
-      }
-      if (record.stigs) {
-        record.stigs = record.stigs  ? JSON.parse(record.stigs) : []
-      }
-  }
+    // for (let x = 0, l = rows.length; x < l; x++) {
+    //   let record = rows[x]
+    //   // Handle 'reqRar'
+    //   record.reqRar = record.reqRar == 1 ? true : false
+    //   // if (inProjection && inProjection.includes('assets')) {
+    //   //   record.assets = record.assets  ? JSON.parse(record.assets) : []
+    //   // }
+    //   if (inProjection && inProjection.includes('stigs')) {
+    //     record.stigs = record.stigs  ? JSON.parse(record.stigs) : []
+    //   }
+    // }
 
     return (rows)
   }
