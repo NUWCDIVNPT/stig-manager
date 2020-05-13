@@ -1,5 +1,4 @@
 'use strict';
-const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
@@ -253,38 +252,56 @@ exports.deletePackage = async function(packageId, projection, elevate, userObjec
  * returns PackageChecklist
  **/
 exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revisionStr, userObject ) {
+  let connection
   try {
-    // Commond binds
-    let binds = {
-      packageId: packageId,
-      benchmarkId: benchmarkId
+    let joins = [
+      'stigman.asset_package_map ap',
+      'left join stigman.stig_asset_map sa on ap.assetId=sa.assetId',
+      'left join stig.current_rev rev on sa.benchmarkId=rev.benchmarkId',
+      'left join stig.rev_group_map rg on rev.revId=rg.revId',
+      'left join stig.group g on rg.groupId=g.groupId',
+      'left join stig.rev_group_rule_map rgr on rg.rgId=rgr.rgId',
+      'left join stig.rule rules on rgr.ruleId=rules.ruleId',
+      'left join stig.rule_oval_map ro on rgr.ruleId=ro.ruleId',
+      'left join stigman.review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
+    ]
+
+    let predicates = {
+      statements: [
+        'ap.packageId = :packageId',
+        'rev.benchmarkId = :benchmarkId'
+      ],
+      binds: {
+        packageId: packageId,
+        benchmarkId: benchmarkId
+      }
     }
 
     // Non-current revision
     if (revisionStr !== 'latest') {
-      joins.splice(0, 1, 'stig.revision rev')
-      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-      binds.version = results[1]
-      binds.release = results[2]
-      // TODO: Apply these binds to predicates somewhere!
+      joins.splice(2, 1, 'left join stig.revision rev on sa.benchmarkId=rev.benchmarkId')
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+      predicates.statements.push('rev.version = :version')
+      predicates.statements.push('rev.release = :release')
+      predicates.binds.version = results[1]
+      predicates.binds.release = results[2]
     }
 
     // Non-staff access control
-    let userAccessControlPredicate = ''
-    if (userObject.role == "IAO") {
-      userAccessControlPredicate = 'and ap.assetId in (select assetId from stigman.asset where dept=:dept)'
-      binds.dept = userObject.dept
+    if (userObject.role === "IAO") {
+      predicates.statements.push('ap.assetId in (select assetId from stigman.asset where dept=:dept)')
+      predicates.binds.dept = userObject.dept
     } 
-    else if (userObject.role != "Staff") { // CSWF
-      userAccessControlPredicate = `and ap.assetId in (
+    else if (userObject.role === "IAWF") {
+      predicates.statements.push(`ap.assetId in (
         select
             sa.assetId
         from
             stigman.user_stig_asset_map usa 
             left join stigman.stig_asset_map sa on usa.saId=sa.saId
         where
-            usa.userId=:userId)`
-      binds.userId = userObject.id
+            usa.userId=:userId)`)
+      predicates.binds.userId = userObject.id
     }
   
     let sql = `
@@ -317,19 +334,9 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
             ELSE 'SCAP'
           END	as checkType
         from
-          stigman.asset_package_map ap
-          left join stigman.stig_asset_map sa on ap.assetId=sa.assetId
-          left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId
-          left join stig.rev_group_map rg on cr.revId=rg.revId
-          left join stig.group g on rg.groupId=g.groupId
-          left join stig.rev_group_rule_map rgr on rg.rgId=rgr.rgId
-          left join stig.rule rules on rgr.ruleId=rules.ruleId
-          left join stig.rule_oval_map ro on rgr.ruleId=ro.ruleId
-          left join stigman.review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)
+          ${joins.join('\n')}
         where
-          ap.packageId=:packageId
-          and cr.benchmarkId=:benchmarkId
-          ${userAccessControlPredicate}
+          ${predicates.statements.join(' and ')}
         ) r
       group by
         r.ruleId
@@ -344,13 +351,11 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     // Send query
     let connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    let [rows, fields] = await connection.query(sql, binds)
-    await connection.close()
-
-    return (rows)
+    let [rows] = await connection.query(sql, predicates.binds)
+    return (rows.length > 0 ? rows : null)
   }
-  catch (e) {
-    throw ( writer.respondWithCode ( 500, { message: e.message, stack: e.stack }))
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, { message: err.message, stack: err.stack }))
   }
   finally {
     if (typeof connection !== 'undefined') {

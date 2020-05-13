@@ -145,7 +145,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
 exports.addOrUpdatePackage = async function(writeAction, packageId, body, projection, userObject) {
   // CREATE: packageId will be null
   // REPLACE/UPDATE: packageId is not null
-  let connectVar // available to try, catch, and finally blocks
+  let connection // available to try, catch, and finally blocks
   try {
     // Extract or initialize non-scalar properties to separate variables
     let { assetIds, ...packageFields } = body
@@ -160,8 +160,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     let options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
-    let connection = await oracledb.getConnection()
-    connectVar = connection // make available to catch and finally blocks
+    connection = await oracledb.getConnection()
 
     // Process scalar properties
     let binds = {}
@@ -231,12 +230,12 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     await connection.commit()
   }
   catch (err) {
-    await connectVar.rollback()
+    await connection.rollback()
     throw err
   }
   finally {
-    if (typeof connectVar !== 'undefined') {
-      await connectVar.close()
+    if (typeof connection !== 'undefined') {
+      await connection.close()
     }
   }
 
@@ -300,38 +299,56 @@ exports.deletePackage = async function(packageId, projection, elevate, userObjec
  * returns PackageChecklist
  **/
 exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revisionStr, userObject ) {
+  let connection
   try {
-    // Commond binds
-    let binds = {
-      packageId: packageId,
-      benchmarkId: benchmarkId
+    let joins = [
+      'stigman.asset_package_map ap',
+      'left join stigman.stig_asset_map sa on ap.assetId=sa.assetId',
+      'left join stigs.current_revs rev on sa.stigId=rev.stigId',
+      'left join stigs.rev_group_map rg on rev.revId=rg.revId',
+      'left join stigs.groups g on rg.groupId=g.groupId',
+      'left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId',
+      'left join stigs.rules rules on rgr.ruleId=rules.ruleId',
+      'left join stigs.rule_oval_map ro on rgr.ruleId=ro.ruleId',
+      'left join stigman.reviews r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
+    ]
+
+    let predicates = {
+      statements: [
+        'ap.packageId = :packageId',
+        'rev.stigId = :benchmarkId'
+      ],
+      binds: {
+        packageId: packageId,
+        benchmarkId: benchmarkId
+      }
     }
 
     // Non-current revision
     if (revisionStr !== 'latest') {
-      joins.splice(0, 1, 'stigs.revisions rev')
-      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-      binds.version = results[1]
-      binds.release = results[2]
-      let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
+      joins.splice(2, 1, 'left join stigs.revisions rev on sa.stigId=rev.stigId')
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+      predicates.statements.push('rev.version = :version')
+      predicates.statements.push('rev.release = :release')
+      predicates.binds.version = results[1]
+      predicates.binds.release = results[2]
     }
 
     // Non-staff access control
-    let userAccessControlPredicate = ''
-    if (userObject.role == "IAO") {
-      userAccessControlPredicate = 'and ap.assetId in (select assetId from stigman.assets where dept=:dept)'
-      binds.dept = userObject.dept
+    if (userObject.role === "IAO") {
+      predicates.statements.push('ap.assetId in (select assetId from stigman.assets where dept=:dept)')
+      predicates.binds.dept = userObject.dept
     } 
-    else if (userObject.role != "Staff") { // CSWF
-      userAccessControlPredicate = `and ap.assetId in (
+    else if (userObject.role === "IAWF") {
+      predicates.statements.push(`ap.assetId in (
         select
             sa.assetId
         from
             stigman.user_stig_asset_map usa 
             left join stigman.stig_asset_map sa on usa.saId=sa.saId
         where
-            usa.userId=:userId)`
-      binds.userId = userObject.id
+            usa.userId=:userId)`)
+      predicates.binds.userId = userObject.id
     }
   
     let sql = `
@@ -364,19 +381,9 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
             ELSE 'SCAP'
           END	as checkType
         from
-          stigman.asset_package_map ap
-          left join stigman.stig_asset_map sa on ap.assetId=sa.assetId
-          left join stigs.current_revs cr on sa.stigId=cr.stigId
-          left join stigs.rev_group_map rg on cr.revId=rg.revId
-          left join stigs.groups g on rg.groupId=g.groupId
-          left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
-          left join stigs.rules rules on rgr.ruleId=rules.ruleId
-          left join stigs.rule_oval_map ro on rgr.ruleId=ro.ruleId
-          left join stigman.reviews r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)
+          ${joins.join('\n')}
         where
-          ap.packageId=:packageId
-          and cr.stigId=:benchmarkId
-          ${userAccessControlPredicate}
+          ${predicates.statements.join(' and ')}
         ) r
       group by
         r.ruleId
@@ -392,14 +399,17 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
-    let connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, binds, options)
-    await connection.close()
-
-    return (result.rows)
+    connection = await oracledb.getConnection()
+    let result = await connection.execute(sql, predicates.binds, options)
+    return (result.rows.length > 0 ? result.rows : null)
   }
-  catch (e) {
+  catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
   }
 }
 
