@@ -1651,23 +1651,38 @@
 							"script": {
 								"id": "e5db5b2f-cebb-4cbd-a707-ae3f8258cf00",
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"",
 									"var user = pm.environment.get(\"user\");",
 									"console.log(\"user: \" + user);",
 									"user = pm.environment.get(\"user\");",
 									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
 									"    user = \"elevated\";",
+									"    console.log(\"user is elevated\");",
+									"",
 									"}",
 									"",
 									"var stuff = pm.request.auth;",
 									"console.log(stuff);",
 									"var stuff = pm.request;",
 									"console.log(stuff);",
+									"",
+									"if (user == 'elevated' || user == 'staff'){",
+									"    pm.test(\"User is elevated. Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"}",
+									"else {",
+									"    pm.test(\"User is not Staff or elevated. Expected status code is 404\", function () {",
+									"        pm.response.to.have.status(404);",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"if (pm.response.code == 500){",
+									"    console.log(\"Server returned 500\")",
+									"    return;",
+									"}",
+									"",
+									"var jsonData = pm.response.json();",
 									"",
 									"//console.log(jsonData);",
 									"// pm.test(\"Your test name (fail)\", function () {",
@@ -1690,32 +1705,41 @@
 									"console.log(\"created package: \" + createdPackage)",
 									"pm.environment.set (\"createdPackage\",createdPackage);",
 									"",
+									"pm.test(`Created Package: ${createdPackage}`, function () {",
+									"    pm.expect(createdPackage).to.be.an('number');",
+									"});",
 									"",
-									"let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
-									"console.log (\"user is \" + user);",
-									"allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
-									"disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
-									"validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
-									"invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
-									"validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
-									"invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
-									"console.log(\"user is \" + user);",
+									"// postman.setNextRequest(\"Package delete admin\");",
 									"",
 									"",
 									"",
-									"if (user == 'wf60'){",
-									"    pm.test(\"wf60 - checking package assets returned\", function () {",
-									"        jsonData.assets.forEach( function (item) {",
-									"        console.log(\"checking assetId: \" + item.assetId);",
-									"        pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
-									"        });",
-									"        // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
-									"    });",
+									"// let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"// console.log (\"user is \" + user);",
+									"// allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"// disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"// validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"// invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"// validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"// invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"// console.log(\"user is \" + user);",
+									"",
+									"",
+									"",
+									"// if (user == 'wf60'){",
+									"//     pm.test(\"wf60 - checking package assets returned\", function () {",
+									"//         jsonData.assets.forEach( function (item) {",
+									"//         console.log(\"checking assetId: \" + item.assetId);",
+									"//         pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
+									"//         });",
+									"//         // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"//     });",
 									"    ",
-									"}",
+									"// }",
 									"",
 									"",
-									"postman.setNextRequest(\"Package delete admin\");",
+									"",
+									"",
+									"",
 									"",
 									"",
 									"// pm.test(\"found package 21\", function () {",
@@ -1749,7 +1773,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Test Package 1\",\r\n  \"emassId\": \"emass1\",\r\n  \"pocName\": \"poc2\",\r\n  \"pocEmail\": \"pocEmail@email.com\",\r\n  \"pocPhone\": \"12342\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    63\r\n  ]\r\n}",
+							"raw": "{\r\n  \"name\": \"Test Package 1\",\r\n  \"emassId\": \"emass1\",\r\n  \"pocName\": \"poc2\",\r\n  \"pocEmail\": \"pocEmail@email.com\",\r\n  \"pocPhone\": \"12342\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    64\r\n  ]\r\n}",
 							"options": {
 								"raw": {}
 							}
@@ -1875,7 +1899,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"testPackagePatched\",\r\n  \"emassId\": \"emassPatched\",\r\n  \"pocName\": \"pocPatched\",\r\n  \"pocEmail\": \"emailPatched\",\r\n  \"pocPhone\": \"phonePatched\",\r\n  \"reqRar\": false,\r\n  \"assetIds\": [\r\n    63\r\n  ]\r\n}",
+							"raw": "{\r\n  \"name\": \"testPackagePatched\",\r\n  \"pocName\": \"pocPatched\",\r\n  \"pocEmail\": \"emailPatched\",\r\n  \"pocPhone\": \"phonePatched\",\r\n  \"reqRar\": false,\r\n  \"assetIds\": [\r\n    36\r\n  ]\r\n}",
 							"options": {
 								"raw": {}
 							}
@@ -1910,7 +1934,7 @@
 									"description": "(Required) A path parameter that indentifies a Package",
 									"key": "packageId",
 									"type": "string",
-									"value": "{{testPackage}}"
+									"value": "{{createdPackage}}"
 								}
 							]
 						}
@@ -2024,13 +2048,13 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}",
+							"raw": "{\r\n  \"name\": \"testPackagePUT\",\r\n  \"emassId\": \"emassPUT\",\r\n  \"pocName\": \"pocPUT\",\r\n  \"pocEmail\": \"pocEmailPUT\",\r\n  \"pocPhone\": \"pocPhonePUT\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    36\r\n  ]\r\n}",
 							"options": {
 								"raw": {}
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>&elevate=true",
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=true",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -2041,12 +2065,12 @@
 							"query": [
 								{
 									"key": "projection",
-									"value": "<string>",
+									"value": "assets",
 									"description": "Additional properties to include in the response.\n"
 								},
 								{
 									"key": "projection",
-									"value": "<string>",
+									"value": "stigs",
 									"description": "Additional properties to include in the response.\n"
 								},
 								{
@@ -2057,10 +2081,9 @@
 							"variable": [
 								{
 									"description": "(Required) A path parameter that indentifies a Package",
-									"id": "06d07ad1-2fe2-432a-9076-dd3f27ac1079",
 									"key": "packageId",
 									"type": "string",
-									"value": "<integer>"
+									"value": "{{createdPackage}}"
 								}
 							]
 						}
@@ -2163,6 +2186,155 @@
 					]
 				},
 				{
+					"name": "packages/{packageId} admin Copy",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"testPackagePatched\",\r\n  \"emassId\": \"emassPUT\",\r\n  \"pocName\": \"pocPatched\",\r\n  \"assetIds\": [\r\n    36\r\n  ]\r\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages",
+								":packageId"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "projection",
+									"value": "stigs",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"description": "(Required) A path parameter that indentifies a Package",
+									"key": "packageId",
+									"type": "string",
+									"value": "{{createdPackage}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						},
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"packageId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
 					"name": "Package delete admin",
 					"event": [
 						{
@@ -2170,10 +2342,6 @@
 							"script": {
 								"id": "b58bde10-df91-40c0-bd8d-1aab64f4c40e",
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
 									"var jsonData = pm.response.json();",
 									"",
 									"var user = pm.environment.get(\"user\");",
@@ -2188,6 +2356,21 @@
 									"var stuff = pm.request;",
 									"console.log(stuff);",
 									"",
+									"",
+									"if (user != \"elevated\"){",
+									"    pm.test(\"Status code should be 403\", function () {",
+									"        pm.response.to.have.status(403);",
+									"    });",
+									"    console.log(`Status code: ${pm.response.code}. Either previous test did not create the package, the package has already been deleted, or this user is not authorized to delete this package.`);",
+									"    return;",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"",
 									"//console.log(jsonData);",
 									"// pm.test(\"Your test name (fail)\", function () {",
 									"//     pm.expect(jsonData.value).to.eql(100);",
@@ -2201,37 +2384,37 @@
 									"console.log(jsonData);",
 									"// console.log(pm.environment.get(\"env\"));",
 									"",
-									"pm.test(\"Response JSON is an object\", function () {",
-									"    pm.expect(jsonData).to.be.an( 'object' ); ",
+									"pm.test(\"Response is an array with one JSON object\", function () {",
+									"    pm.expect(jsonData[0]).to.be.an( 'object' ); ",
 									"});",
 									"",
-									"let createdPackage = jsonData.packageId;",
-									"console.log(\"created package: \" + createdPackage)",
-									"pm.environment.set (\"createdPackage\",createdPackage);",
+									"// let createdPackage = jsonData.packageId;",
+									"// console.log(\"created package: \" + createdPackage)",
+									"// pm.environment.set (\"createdPackage\",createdPackage);",
 									"",
 									"",
-									"let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
-									"console.log (\"user is \" + user);",
-									"allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
-									"disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
-									"validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
-									"invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
-									"validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
-									"invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
-									"console.log(\"user is \" + user);",
+									"// let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"// console.log (\"user is \" + user);",
+									"// allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"// disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"// validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"// invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"// validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"// invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"// console.log(\"user is \" + user);",
 									"",
 									"",
 									"",
-									"if (user == 'wf60'){",
-									"    pm.test(\"wf60 - checking package assets returned\", function () {",
-									"        jsonData.assets.forEach( function (item) {",
-									"        console.log(\"checking assetId: \" + item.assetId);",
-									"        pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
-									"        });",
-									"        // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
-									"    });",
+									"// if (user == 'wf60'){",
+									"//     pm.test(\"wf60 - checking package assets returned\", function () {",
+									"//         jsonData.assets.forEach( function (item) {",
+									"//         console.log(\"checking assetId: \" + item.assetId);",
+									"//         pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
+									"//         });",
+									"//         // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"//     });",
 									"    ",
-									"}",
+									"// }",
 									"",
 									"",
 									"",
@@ -2391,7 +2574,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/packages/{{testPackage}}/checklists/{{testBenchmark}}/{{testRev}}",
+							"raw": "{{baseUrl}}/packages/{{testPackage}}/checklists/{{testBenchmark}}/latest",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -2400,7 +2583,7 @@
 								"{{testPackage}}",
 								"checklists",
 								"{{testBenchmark}}",
-								"{{testRev}}"
+								"latest"
 							]
 						},
 						"description": "Returns checklist for specified package/benchmark/rev"
@@ -3667,23 +3850,34 @@
 							"script": {
 								"id": "3a62f1f3-0a5a-4b45-86cd-55311510c62c",
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"",
 									"var user = pm.environment.get(\"user\");",
 									"console.log(\"user: \" + user);",
 									"user = pm.environment.get(\"user\");",
 									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
 									"    user = \"elevated\";",
+									"    console.log(\"user is elevated\");",
+									"",
 									"}",
 									"",
 									"var stuff = pm.request.auth;",
 									"console.log(stuff);",
 									"var stuff = pm.request;",
 									"console.log(stuff);",
+									"",
+									"if (user == 'elevated' || user == 'staff'){",
+									"    pm.test(\"User is elevated. Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"}",
+									"else {",
+									"    pm.test(\"User is not Staff or elevated. Expected status code is 404\", function () {",
+									"        pm.response.to.have.status(404);",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
 									"",
 									"//console.log(jsonData);",
 									"// pm.test(\"Your test name (fail)\", function () {",
@@ -3704,30 +3898,40 @@
 									"",
 									"let createdPackage = jsonData.packageId;",
 									"console.log(\"created package: \" + createdPackage)",
+									"pm.environment.set (\"createdPackage\",createdPackage);",
 									"",
+									"pm.test(`Created Package: ${createdPackage}`, function () {",
+									"    pm.expect(createdPackage).to.be.an('number');",
+									"});",
 									"",
-									"let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
-									"console.log (\"user is \" + user);",
-									"allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
-									"disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
-									"validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
-									"invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
-									"validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
-									"invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
-									"console.log(\"user is \" + user);",
+									"// postman.setNextRequest(\"Package delete admin\");",
 									"",
 									"",
 									"",
-									"if (user == 'wf60'){",
-									"    pm.test(\"wf60 - checking package assets returned\", function () {",
-									"        jsonData.assets.forEach( function (item) {",
-									"        console.log(\"checking assetId: \" + item.assetId);",
-									"        pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
-									"        });",
-									"        // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
-									"    });",
+									"// let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"// console.log (\"user is \" + user);",
+									"// allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"// disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"// validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"// invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"// validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"// invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"// console.log(\"user is \" + user);",
+									"",
+									"",
+									"",
+									"// if (user == 'wf60'){",
+									"//     pm.test(\"wf60 - checking package assets returned\", function () {",
+									"//         jsonData.assets.forEach( function (item) {",
+									"//         console.log(\"checking assetId: \" + item.assetId);",
+									"//         pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
+									"//         });",
+									"//         // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"//     });",
 									"    ",
-									"}",
+									"// }",
+									"",
+									"",
 									"",
 									"",
 									"",
@@ -4021,12 +4225,117 @@
 					]
 				},
 				{
-					"name": "Packages staff",
+					"name": "Package delete staff",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b58bde10-df91-40c0-bd8d-1aab64f4c40e",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"var user = pm.environment.get(\"user\");",
+									"console.log(\"user: \" + user);",
+									"user = pm.environment.get(\"user\");",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
+									"    user = \"elevated\";",
+									"}",
+									"",
+									"var stuff = pm.request.auth;",
+									"console.log(stuff);",
+									"var stuff = pm.request;",
+									"console.log(stuff);",
+									"",
+									"",
+									"if (user != \"elevated\"){",
+									"    pm.test(\"Status code should be 403\", function () {",
+									"        pm.response.to.have.status(403);",
+									"    });",
+									"    console.log(`Status code: ${pm.response.code}. Either previous test did not create the package, the package has already been deleted, or this user is not authorized to delete this package.`);",
+									"    return;",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"",
+									"//console.log(jsonData);",
+									"// pm.test(\"Your test name (fail)\", function () {",
+									"//     pm.expect(jsonData.value).to.eql(100);",
+									"// });",
+									"",
+									"pm.test(\"environment: stig-manager localhost packages\", function () {",
+									"    pm.expect(pm.environment.get(\"env\")).to.equal(\"stig-manager localhost packages\");",
+									"});",
+									"",
+									"",
+									"console.log(jsonData);",
+									"// console.log(pm.environment.get(\"env\"));",
+									"",
+									"pm.test(\"Response is an array with one JSON object\", function () {",
+									"    pm.expect(jsonData[0]).to.be.an( 'object' ); ",
+									"});",
+									"",
+									"// let createdPackage = jsonData.packageId;",
+									"// console.log(\"created package: \" + createdPackage)",
+									"// pm.environment.set (\"createdPackage\",createdPackage);",
+									"",
+									"",
+									"// let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"// console.log (\"user is \" + user);",
+									"// allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"// disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"// validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"// invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"// validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"// invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"// console.log(\"user is \" + user);",
+									"",
+									"",
+									"",
+									"// if (user == 'wf60'){",
+									"//     pm.test(\"wf60 - checking package assets returned\", function () {",
+									"//         jsonData.assets.forEach( function (item) {",
+									"//         console.log(\"checking assetId: \" + item.assetId);",
+									"//         pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
+									"//         });",
+									"//         // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"//     });",
+									"    ",
+									"// }",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"// pm.test(\"found package 21\", function () {",
+									"//     pm.expect(jsonData).to.deep.include({packageId:21});",
+									"// });",
+									"",
+									"// pm.test(\"found package 21 (or just package ids somewhere)\", function () {",
+									"//     pm.expect(jsonData).to.have.any.keys('packageId');",
+									"// });",
+									"",
+									"",
+									"//pm.test(\"Body is correct\", function () {",
+									"    //pm.response.to.have.body(\"response_body_string\");",
+									"//});",
+									"",
+									"// pm.test(\"found packageId somewhere\", function () {",
+									"//     pm.expect(pm.response.text()).to.include(\"packageId\");",
+									"// });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=false",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -4037,70 +4346,30 @@
 							"query": [
 								{
 									"key": "projection",
-									"value": "<string>",
+									"value": "assets",
 									"description": "Additional properties to include in the response.\n"
 								},
 								{
 									"key": "projection",
-									"value": "<string>",
+									"value": "stigs",
 									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "false"
 								}
 							],
 							"variable": [
 								{
 									"description": "(Required) A path parameter that indentifies a Package",
-									"id": "d9a46ed9-f4e6-4ba3-8bc6-14f560c19100",
 									"key": "packageId",
 									"type": "string",
-									"value": "<integer>"
+									"value": "{{createdPackage}}"
 								}
 							]
 						}
 					},
 					"response": [
-						{
-							"name": "unexpected error",
-							"originalRequest": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"packages",
-										":packageId"
-									],
-									"query": [
-										{
-											"key": "projection",
-											"value": "<string>"
-										},
-										{
-											"key": "projection",
-											"value": "<string>"
-										}
-									],
-									"variable": [
-										{
-											"key": "packageId"
-										}
-									]
-								}
-							},
-							"status": "Internal Server Error",
-							"code": 500,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
-							"cookie": [],
-							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
-						},
 						{
 							"name": "PackageProjected response",
 							"originalRequest": {
@@ -4143,6 +4412,49 @@
 							],
 							"cookie": [],
 							"body": "{\n \"packageId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
 						}
 					]
 				}
@@ -6624,6 +6936,1674 @@
 						"type": "text/javascript",
 						"exec": [
 							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "ALL",
+			"item": [
+				{
+					"name": "Packages - Admin- with Projections Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3513dadc-9fc7-48cc-a656-17b959d80d80",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"var user = pm.environment.get(\"user\");",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
+									"    user = \"elevated\";",
+									"}",
+									"// console.log(\"url: \" + pm.request.url.getQueryString().match(/elevate=true/));",
+									"console.log(\"user: \" + user);",
+									"",
+									"var stuff = pm.request.auth;",
+									"console.log(stuff);",
+									"var stuff = pm.request.url.query;",
+									"console.log(\"stuff:\" + stuff);",
+									"",
+									"//console.log(jsonData);",
+									"// pm.test(\"Your test name (fail)\", function () {",
+									"//     pm.expect(jsonData.value).to.eql(100);",
+									"// });",
+									"",
+									"pm.test(\"environment: stig-manager localhost packages\", function () {",
+									"    pm.expect(pm.environment.get(\"env\")).to.equal(\"stig-manager localhost packages\");",
+									"});",
+									"",
+									"let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"console.log (\"assignments\")",
+									"allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"console.log(\"user is \" + user);",
+									"",
+									"",
+									"",
+									"console.log(jsonData);",
+									"// console.log(pm.environment.get(\"env\"));",
+									"",
+									"pm.test(\"Response JSON is an array\", function () {",
+									"    pm.expect(jsonData).to.be.an( 'array' ); ",
+									"});",
+									"",
+									"let packageIds = [];",
+									"let assetIds = [];",
+									"let stigIds = [];",
+									"pm.test(\"Each item in response has proper properties\", function () {",
+									"        jsonData.forEach( function (item) {",
+									"            pm.expect(item).to.have.property('packageId'); ",
+									"            packageIds.push(item.packageId);",
+									"            // console.log (item.assets);",
+									"            // let assets = [];",
+									"            // assets = item.assets;",
+									"            // console.log (assets);",
+									"            item.assets.forEach( function (asset) {",
+									"                pm.expect(asset).to.have.property('assetId');",
+									"                assetIds.push(asset.assetId);",
+									"            });",
+									"            ",
+									"            item.stigs.forEach( function (stig) {",
+									"                pm.expect(stig).to.have.property('benchmarkId'); ",
+									"                stigIds.push(stig.benchmarkId);",
+									"            });",
+									"        ",
+									"        });",
+									"        ",
+									"//     pm.expect(packageIds).to.include.members(allowedPackages);",
+									"});",
+									"",
+									"console.log(\"packageIds = \" + packageIds);",
+									"",
+									"pm.test(\"Response contains VALID packageIds for this user\", function () {",
+									"    jsonData.forEach( function (item) {",
+									"    // console.log(\"checking packageId: \" + item.packageId);",
+									"    pm.expect(item.packageId).to.be.oneOf(allowedPackages); ",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"Response does NOT contain INvalid packageIds for this user\", function () {",
+									"    jsonData.forEach( function (item) {",
+									"    // console.log(\"checking packageId: \" + item.packageId);",
+									"    pm.expect(item.packageId).to.not.be.oneOf(disallowedPackages); ",
+									"    });",
+									"});",
+									"",
+									"// pm.test(\"Every user should fail this test (pacakgeId does not exist in system)\", function () {",
+									"//     jsonData.forEach( function (item) {",
+									"//     // console.log(\"checking packageId: \" + item.packageId);",
+									"//     pm.expect(item.packageId).to.be.oneOf(JSON.parse(pm.environment.get(\"packageThatDoesNotExist\"))); ",
+									"//     });",
+									"// });",
+									"",
+									"",
+									"if (user == \"wf60\" || user == \"officer60\"){",
+									"    pm.test(\"Response contains valid projection data (assets)\", function () {",
+									"        assetIds.forEach( function (assetId) {",
+									"                pm.expect(assetId).to.be.oneOf(validAssets); ",
+									"                console.log(\"checking assetId: \" + assetId);",
+									"        });",
+									"    });",
+									"    ",
+									"    pm.test(\"Response contains valid projection data (stigs)\", function () {",
+									"            stigIds.forEach( function (stigId) {",
+									"                pm.expect(stigId).to.be.oneOf(validStigs); ",
+									"                console.log(\"checking stigId: \" + stigId);",
+									"        });",
+									"    });",
+									"}",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"// pm.test(\"Response testJson is an array THAT INCLUDES\", function () {",
+									"//     testJson = [",
+									"//         {\"packageId\":21",
+									"// //        ,'other': 'ok'",
+									"//         },",
+									"//         {\"packageId\":22",
+									"//  //        ,'other': 'not ok'            ",
+									"//         }",
+									"//         ]",
+									"//     pm.expect(testJson).to.be.an( 'array' ).that.has.deep.includes({'packageId':21}); ",
+									"// //    pm.expect(testJson).to.be.an( 'array' ).that.has.deep.property('packageId'); ",
+									"// //   pm.expect(testJson).to.be.an( 'array' ).that.has.deep.property('packageId'); ",
+									"    ",
+									"// });",
+									"",
+									"",
+									"// console.log(jsonData);",
+									"// pm.test(\"Response has 3 objects (expected to fail)\", function () {",
+									"//     pm.expect(jsonData).to.have.length(4);",
+									"",
+									"// });",
+									"",
+									"// pm.test(\"response has 3 items\", function () {",
+									"//     pm.expect(jsonData).to.have.property('length',allowedPackages.length);",
+									"// });",
+									"",
+									"// pm.test(\"response items all have packageId\", function () {",
+									"//     pm.expect(jsonData).all.have.property('packageId');",
+									"// });",
+									"",
+									"// pm.test(\"response items all have packageId\", function () {",
+									"//     pm.expect(jsonData).all.have.key('packageId');",
+									"// });",
+									"",
+									"// pm.test(\"check for package id 21\", function () {",
+									"//     pm.expect(jsonData[0]).to.have.property('packageId',21);",
+									"// });",
+									"",
+									"// pm.test(\"found package 21\", function () {",
+									"//     pm.expect(jsonData).to.deep.include({packageId:21});",
+									"// });",
+									"",
+									"// pm.test(\"found package 21 (or just package ids somewhere)\", function () {",
+									"//     pm.expect(jsonData).to.have.any.keys('packageId');",
+									"// });",
+									"",
+									"",
+									"//pm.test(\"Body is correct\", function () {",
+									"    //pm.response.to.have.body(\"response_body_string\");",
+									"//});",
+									"",
+									"// pm.test(\"found packageId somewhere\", function () {",
+									"//     pm.expect(pm.response.text()).to.include(\"packageId\");",
+									"// });"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "717bdd09-0047-4151-afe2-d6a0995d994f",
+								"exec": [
+									"// pm.environment.set(\"user\", \"admin\");",
+									"// var user = pm.environment.get(\"user\");",
+									"// let token = pm.environment.get(\"token.\" + user)",
+									"// pm.environment.set(\"token\", token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/packages?projection=assets&projection=stigs&elevate={{elevated}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets"
+								},
+								{
+									"key": "projection",
+									"value": "stigs"
+								},
+								{
+									"key": "elevate",
+									"value": "{{elevated}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n {\n  \"packageId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"emassId\": \"<string>\",\n  \"pocName\": \"<string>\",\n  \"pocEmail\": \"<string>\",\n  \"pocPhone\": \"<string>\",\n  \"reqRar\": \"<boolean>\",\n  \"assets\": [\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   },\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   }\n  ],\n  \"stigs\": [\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   },\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   }\n  ]\n },\n {\n  \"packageId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"emassId\": \"<string>\",\n  \"pocName\": \"<string>\",\n  \"pocEmail\": \"<string>\",\n  \"pocPhone\": \"<string>\",\n  \"reqRar\": \"<boolean>\",\n  \"assets\": [\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   },\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   }\n  ],\n  \"stigs\": [\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   },\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   }\n  ]\n }\n]"
+						},
+						{
+							"name": "Packages - no params",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 15 Apr 2020 02:52:21 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"packageId\": 21,\n        \"name\": \"Code 60 Package\",\n        \"emassId\": \"none\",\n        \"pocName\": \"W. E. Coyote\",\n        \"pocEmail\": \"coyote@navy.mil\",\n        \"pocPhone\": \"555-1212\",\n        \"reqRar\": false\n    },\n    {\n        \"packageId\": 1,\n        \"name\": \"STAR Package\",\n        \"emassId\": \"none\",\n        \"pocName\": \"Bob\",\n        \"pocEmail\": \"bob@navy.mil\",\n        \"pocPhone\": \"555-1212\",\n        \"reqRar\": false\n    },\n    {\n        \"packageId\": 62,\n        \"name\": \"Twine\",\n        \"emassId\": null,\n        \"pocName\": null,\n        \"pocEmail\": null,\n        \"pocPhone\": null,\n        \"reqRar\": false\n    }\n]"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						},
+						{
+							"name": "Packages - Admin- no params",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Cache-control",
+									"value": "no-store"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 28 Apr 2020 20:27:24 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"packageId\": 21,\n        \"name\": \"Code 60 Package\",\n        \"emassId\": \"none\",\n        \"pocName\": \"W. E. Coyote\",\n        \"pocEmail\": \"coyote@navy.mil\",\n        \"pocPhone\": \"555-1212\",\n        \"reqRar\": false\n    },\n    {\n        \"packageId\": 1,\n        \"name\": \"STAR Package\",\n        \"emassId\": \"none\",\n        \"pocName\": \"Bob\",\n        \"pocEmail\": \"bob@navy.mil\",\n        \"pocPhone\": \"555-1212\",\n        \"reqRar\": false\n    },\n    {\n        \"packageId\": 62,\n        \"name\": \"Twine\",\n        \"emassId\": null,\n        \"pocName\": null,\n        \"pocEmail\": null,\n        \"pocPhone\": null,\n        \"reqRar\": false\n    }\n]"
+						},
+						{
+							"name": "Return a list of Packages accessible to the requester",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "<string>",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "<string>",
+											"description": "Additional properties to include in the response.\n"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 14 Apr 2020 20:14:16 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"packageId\": 21,\n        \"name\": \"Code 60 Package\",\n        \"emassId\": \"none\",\n        \"pocName\": \"W. E. Coyote\",\n        \"pocEmail\": \"coyote@navy.mil\",\n        \"pocPhone\": \"555-1212\",\n        \"reqRar\": false\n    },\n    {\n        \"packageId\": 1,\n        \"name\": \"STAR Package\",\n        \"emassId\": \"none\",\n        \"pocName\": \"Bob\",\n        \"pocEmail\": \"bob@navy.mil\",\n        \"pocPhone\": \"555-1212\",\n        \"reqRar\": false\n    },\n    {\n        \"packageId\": 62,\n        \"name\": \"Twine\",\n        \"emassId\": null,\n        \"pocName\": null,\n        \"pocEmail\": null,\n        \"pocPhone\": null,\n        \"reqRar\": false\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "packages/{packageId} admin Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d6d7d084-1814-4ed4-aa65-1d8b19777bc8",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"var user = pm.environment.get(\"user\");",
+									"console.log(\"user: \" + user);",
+									"user = pm.environment.get(\"user\");",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
+									"    user = \"elevated\";",
+									"}",
+									"",
+									"var stuff = pm.request.auth;",
+									"console.log(stuff);",
+									"var stuff = pm.request;",
+									"console.log(stuff);",
+									"",
+									"//console.log(jsonData);",
+									"// pm.test(\"Your test name (fail)\", function () {",
+									"//     pm.expect(jsonData.value).to.eql(100);",
+									"// });",
+									"",
+									"pm.test(\"environment: stig-manager localhost packages\", function () {",
+									"    pm.expect(pm.environment.get(\"env\")).to.equal(\"stig-manager localhost packages\");",
+									"});",
+									"",
+									"console.log(jsonData);",
+									"// console.log(pm.environment.get(\"env\"));",
+									"",
+									"pm.test(\"Response JSON is an object\", function () {",
+									"    pm.expect(jsonData).to.be.an( 'object' ); ",
+									"});",
+									"",
+									"let testPackage = JSON.parse(pm.environment.get((\"testPackage\")));",
+									"pm.test(\"Response JSON is an object with packageId\", function () {",
+									"    pm.expect(jsonData).to.have.deep.property('packageId',testPackage); ",
+									"});",
+									"",
+									"let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"console.log (\"user is \" + user);",
+									"allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"console.log(\"user is \" + user);",
+									"",
+									"let packageIds = [];",
+									"let assetIds = [];",
+									"let stigIds = [];",
+									"pm.test(\"Each item in response has packageId\", function () {",
+									"    pm.expect(jsonData).to.have.property('packageId'); ",
+									"    packageIds.push(jsonData.packageId);",
+									"    jsonData.assets.forEach( function (asset) {",
+									"        pm.expect(asset).to.have.property('assetId'); ",
+									"        assetIds.push(asset.assetId);",
+									"    });",
+									"    jsonData.stigs.forEach( function (stig) {",
+									"        pm.expect(stig).to.have.property('benchmarkId'); ",
+									"        stigIds.push(stig.benchmarkId);",
+									"    });",
+									"    // pm.expect(packageIds).to.include.oneOf(allowedPackages);",
+									"});",
+									"",
+									"console.log(\"packageIds = \" + packageIds);",
+									"",
+									"pm.test(\"Response contains VALID packageIds for this user\", function () {",
+									"    // jsonData.forEach( function (item) {",
+									"    // console.log(\"checking packageId: \" + item.packageId);",
+									"    pm.expect(jsonData.packageId).to.be.oneOf(allowedPackages); ",
+									"    // });",
+									"});",
+									"",
+									"pm.test(\"Response does NOT contain INvalid packageIds for this user\", function () {",
+									"    // jsonData.forEach( function (item) {",
+									"    // console.log(\"checking packageId: \" + item.packageId);",
+									"    pm.expect(jsonData.packageId).to.not.be.oneOf(disallowedPackages); ",
+									"    // });",
+									"});",
+									"",
+									"// pm.test(\"Every user should fail this test (pacakgeId does not exist in system)\", function () {",
+									"//     jsonData.forEach( function (item) {",
+									"//     // console.log(\"checking packageId: \" + item.packageId);",
+									"//     pm.expect(item.packageId).to.be.oneOf(JSON.parse(pm.environment.get(\"packageThatDoesNotExist\"))); ",
+									"//     });",
+									"// });",
+									"",
+									"",
+									"if (user == \"wf60\" || user == \"officer60\"){",
+									"    pm.test(\"Response contains valid projection data (assets)\", function () {",
+									"        assetIds.forEach( function (assetId) {",
+									"                pm.expect(assetId).to.be.oneOf(validAssets); ",
+									"                console.log(\"checking assetId: \" + assetId);",
+									"        });",
+									"    });",
+									"    ",
+									"    pm.test(\"Response contains valid projection data (stigs)\", function () {",
+									"            stigIds.forEach( function (stigId) {",
+									"                pm.expect(stigId).to.be.oneOf(validStigs); ",
+									"                console.log(\"checking stigId: \" + stigId);",
+									"        });",
+									"    });",
+									"}",
+									"",
+									"if (user == \"wf60\" || user == \"officer60\"){",
+									"    pm.test(\"checking package assets returned\", function () {",
+									"        jsonData.assets.forEach( function (item) {",
+									"        console.log(\"checking assetId: \" + item.assetId);",
+									"        pm.expect(item.assetId).to.be.oneOf(validAssets); ",
+									"        });",
+									"        // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"    });",
+									"    ",
+									"}",
+									"",
+									"",
+									"",
+									"// pm.test(\"Response testJson is an array THAT INCLUDES\", function () {",
+									"//     testJson = [",
+									"//         {\"packageId\":21",
+									"// //        ,'other': 'ok'",
+									"//         },",
+									"//         {\"packageId\":22",
+									"//  //        ,'other': 'not ok'            ",
+									"//         }",
+									"//         ]",
+									"//     pm.expect(testJson).to.be.an( 'array' ).that.has.deep.includes({'packageId':21}); ",
+									"// //    pm.expect(testJson).to.be.an( 'array' ).that.has.deep.property('packageId'); ",
+									"// //   pm.expect(testJson).to.be.an( 'array' ).that.has.deep.property('packageId'); ",
+									"    ",
+									"// });",
+									"",
+									"",
+									"// console.log(jsonData);",
+									"// pm.test(\"Response has 3 objects (expected to fail)\", function () {",
+									"//     pm.expect(jsonData).to.have.length(4);",
+									"",
+									"// });",
+									"",
+									"// pm.test(\"response has 3 items\", function () {",
+									"//     pm.expect(jsonData).to.have.property('length',allowedPackages.length);",
+									"// });",
+									"",
+									"// pm.test(\"response items all have packageId\", function () {",
+									"//     pm.expect(jsonData).all.have.property('packageId');",
+									"// });",
+									"",
+									"// pm.test(\"response items all have packageId\", function () {",
+									"//     pm.expect(jsonData).all.have.key('packageId');",
+									"// });",
+									"",
+									"// pm.test(\"check for package id 21\", function () {",
+									"//     pm.expect(jsonData[0]).to.have.property('packageId',21);",
+									"// });",
+									"",
+									"// pm.test(\"found package 21\", function () {",
+									"//     pm.expect(jsonData).to.deep.include({packageId:21});",
+									"// });",
+									"",
+									"// pm.test(\"found package 21 (or just package ids somewhere)\", function () {",
+									"//     pm.expect(jsonData).to.have.any.keys('packageId');",
+									"// });",
+									"",
+									"",
+									"//pm.test(\"Body is correct\", function () {",
+									"    //pm.response.to.have.body(\"response_body_string\");",
+									"//});",
+									"",
+									"// pm.test(\"found packageId somewhere\", function () {",
+									"//     pm.expect(pm.response.text()).to.include(\"packageId\");",
+									"// });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages",
+								":packageId"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets"
+								},
+								{
+									"key": "projection",
+									"value": "stigs"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"key": "packageId",
+									"value": "{{testPackage}}",
+									"type": "string",
+									"description": "(Required) A path parameter that indentifies a Package"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"packageId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Packages admin Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "52617c70-8495-49fa-b932-fa7fbe1ab991",
+								"exec": [
+									"var user = pm.environment.get(\"user\");",
+									"console.log(\"user: \" + user);",
+									"user = pm.environment.get(\"user\");",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
+									"    user = \"elevated\";",
+									"    console.log(\"user is elevated\");",
+									"",
+									"}",
+									"",
+									"var stuff = pm.request.auth;",
+									"console.log(stuff);",
+									"var stuff = pm.request;",
+									"console.log(stuff);",
+									"",
+									"if (user == 'elevated' || user == 'staff'){",
+									"    pm.test(\"User is elevated. Status code is 200\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"}",
+									"else {",
+									"    pm.test(\"User is not Staff or elevated. Expected status code is 404\", function () {",
+									"        pm.response.to.have.status(404);",
+									"    });",
+									"    return;",
+									"}",
+									"",
+									"if (pm.response.code == 500){",
+									"    console.log(\"Server returned 500\")",
+									"    return;",
+									"}",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"//console.log(jsonData);",
+									"// pm.test(\"Your test name (fail)\", function () {",
+									"//     pm.expect(jsonData.value).to.eql(100);",
+									"// });",
+									"",
+									"pm.test(\"environment: stig-manager localhost packages\", function () {",
+									"    pm.expect(pm.environment.get(\"env\")).to.equal(\"stig-manager localhost packages\");",
+									"});",
+									"",
+									"",
+									"console.log(jsonData);",
+									"// console.log(pm.environment.get(\"env\"));",
+									"",
+									"pm.test(\"Response JSON is an object\", function () {",
+									"    pm.expect(jsonData).to.be.an( 'object' ); ",
+									"});",
+									"",
+									"let createdPackage = jsonData.packageId;",
+									"console.log(\"created package: \" + createdPackage)",
+									"pm.environment.set (\"createdPackage\",createdPackage);",
+									"",
+									"pm.test(`Created Package: ${createdPackage}`, function () {",
+									"    pm.expect(createdPackage).to.be.an('number');",
+									"});",
+									"",
+									"// postman.setNextRequest(\"Package delete admin\");",
+									"",
+									"",
+									"",
+									"// let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"// console.log (\"user is \" + user);",
+									"// allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"// disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"// validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"// invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"// validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"// invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"// console.log(\"user is \" + user);",
+									"",
+									"",
+									"",
+									"// if (user == 'wf60'){",
+									"//     pm.test(\"wf60 - checking package assets returned\", function () {",
+									"//         jsonData.assets.forEach( function (item) {",
+									"//         console.log(\"checking assetId: \" + item.assetId);",
+									"//         pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
+									"//         });",
+									"//         // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"//     });",
+									"    ",
+									"// }",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"// pm.test(\"found package 21\", function () {",
+									"//     pm.expect(jsonData).to.deep.include({packageId:21});",
+									"// });",
+									"",
+									"// pm.test(\"found package 21 (or just package ids somewhere)\", function () {",
+									"//     pm.expect(jsonData).to.have.any.keys('packageId');",
+									"// });",
+									"",
+									"",
+									"//pm.test(\"Body is correct\", function () {",
+									"    //pm.response.to.have.body(\"response_body_string\");",
+									"//});",
+									"",
+									"// pm.test(\"found packageId somewhere\", function () {",
+									"//     pm.expect(pm.response.text()).to.include(\"packageId\");",
+									"// });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Test Package 1\",\r\n  \"emassId\": \"emass1\",\r\n  \"pocName\": \"poc2\",\r\n  \"pocEmail\": \"pocEmail@email.com\",\r\n  \"pocPhone\": \"12342\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    64\r\n  ]\r\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/packages?projection=assets&projection=stigs&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets"
+								},
+								{
+									"key": "projection",
+									"value": "stigs"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						},
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n {\n  \"packageId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"emassId\": \"<string>\",\n  \"pocName\": \"<string>\",\n  \"pocEmail\": \"<string>\",\n  \"pocPhone\": \"<string>\",\n  \"reqRar\": \"<boolean>\",\n  \"macCl\": \"<string>\",\n  \"assets\": [\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   },\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   }\n  ],\n  \"stigs\": [\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   },\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   }\n  ]\n },\n {\n  \"packageId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"emassId\": \"<string>\",\n  \"pocName\": \"<string>\",\n  \"pocEmail\": \"<string>\",\n  \"pocPhone\": \"<string>\",\n  \"reqRar\": \"<boolean>\",\n  \"macCl\": \"<string>\",\n  \"assets\": [\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   },\n   {\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\"\n   }\n  ],\n  \"stigs\": [\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   },\n   {\n    \"benchmarkId\": \"<string>\",\n    \"title\": \"<string>\",\n    \"lastRevisionStr\": \"<string>\",\n    \"lastRevisionDate\": \"<string>\"\n   }\n  ]\n }\n]"
+						}
+					]
+				},
+				{
+					"name": "packages/{packageId} admin Copy",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"testPackagePatched\",\r\n  \"pocName\": \"pocPatched\",\r\n  \"pocEmail\": \"emailPatched\",\r\n  \"pocPhone\": \"phonePatched\",\r\n  \"reqRar\": false,\r\n  \"assetIds\": [\r\n    36\r\n  ]\r\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages",
+								":packageId"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "projection",
+									"value": "stigs",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"description": "(Required) A path parameter that indentifies a Package",
+									"key": "packageId",
+									"type": "string",
+									"value": "{{createdPackage}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"packageId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "packages/{packageId} admin Copy",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"testPackagePUT\",\r\n  \"emassId\": \"emassPUT\",\r\n  \"pocName\": \"pocPUT\",\r\n  \"pocEmail\": \"pocEmailPUT\",\r\n  \"pocPhone\": \"pocPhonePUT\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    36\r\n  ]\r\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages",
+								":packageId"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "projection",
+									"value": "stigs",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"description": "(Required) A path parameter that indentifies a Package",
+									"key": "packageId",
+									"type": "string",
+									"value": "{{createdPackage}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						},
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"packageId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"packageId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Package delete admin Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "06f6e027-9913-4daa-9d0b-3dc6fd2a0f80",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"var user = pm.environment.get(\"user\");",
+									"console.log(\"user: \" + user);",
+									"user = pm.environment.get(\"user\");",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)){",
+									"    user = \"elevated\";",
+									"}",
+									"",
+									"var stuff = pm.request.auth;",
+									"console.log(stuff);",
+									"var stuff = pm.request;",
+									"console.log(stuff);",
+									"",
+									"",
+									"if (user != \"elevated\"){",
+									"    pm.test(\"Status code should be 403\", function () {",
+									"        pm.response.to.have.status(403);",
+									"    });",
+									"    console.log(`Status code: ${pm.response.code}. Either previous test did not create the package, the package has already been deleted, or this user is not authorized to delete this package.`);",
+									"    return;",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"",
+									"//console.log(jsonData);",
+									"// pm.test(\"Your test name (fail)\", function () {",
+									"//     pm.expect(jsonData.value).to.eql(100);",
+									"// });",
+									"",
+									"pm.test(\"environment: stig-manager localhost packages\", function () {",
+									"    pm.expect(pm.environment.get(\"env\")).to.equal(\"stig-manager localhost packages\");",
+									"});",
+									"",
+									"",
+									"console.log(jsonData);",
+									"// console.log(pm.environment.get(\"env\"));",
+									"",
+									"pm.test(\"Response is an array with one JSON object\", function () {",
+									"    pm.expect(jsonData[0]).to.be.an( 'object' ); ",
+									"});",
+									"",
+									"// let createdPackage = jsonData.packageId;",
+									"// console.log(\"created package: \" + createdPackage)",
+									"// pm.environment.set (\"createdPackage\",createdPackage);",
+									"",
+									"",
+									"// let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;",
+									"// console.log (\"user is \" + user);",
+									"// allowedPackages = JSON.parse(pm.environment.get((\"packages.valid.\" + user)));",
+									"// disallowedPackages = JSON.parse(pm.environment.get(\"packages.invalid.\" + user));",
+									"// validStigs = JSON.parse(pm.environment.get(\"stigs.valid.\" + user));",
+									"// invalidStigs = JSON.parse(pm.environment.get(\"stigs.invalid.\" + user));     ",
+									"// validAssets = JSON.parse(pm.environment.get(\"assets.valid.\" + user));",
+									"// invalidAssets = JSON.parse(pm.environment.get(\"assets.invalid.\" + user));       ",
+									"// console.log(\"user is \" + user);",
+									"",
+									"",
+									"",
+									"// if (user == 'wf60'){",
+									"//     pm.test(\"wf60 - checking package assets returned\", function () {",
+									"//         jsonData.assets.forEach( function (item) {",
+									"//         console.log(\"checking assetId: \" + item.assetId);",
+									"//         pm.expect(item.assetId).to.be.oneOf(allowedAssets); ",
+									"//         });",
+									"//         // pm.expect(jsonData.assets).to.deep.include({packageId:21});",
+									"//     });",
+									"    ",
+									"// }",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"// pm.test(\"found package 21\", function () {",
+									"//     pm.expect(jsonData).to.deep.include({packageId:21});",
+									"// });",
+									"",
+									"// pm.test(\"found package 21 (or just package ids somewhere)\", function () {",
+									"//     pm.expect(jsonData).to.have.any.keys('packageId');",
+									"// });",
+									"",
+									"",
+									"//pm.test(\"Body is correct\", function () {",
+									"    //pm.response.to.have.body(\"response_body_string\");",
+									"//});",
+									"",
+									"// pm.test(\"found packageId somewhere\", function () {",
+									"//     pm.expect(pm.response.text()).to.include(\"packageId\");",
+									"// });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/packages/:packageId?projection=assets&projection=stigs&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages",
+								":packageId"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "assets",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "projection",
+									"value": "stigs",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"description": "(Required) A path parameter that indentifies a Package",
+									"key": "packageId",
+									"type": "string",
+									"value": "{{createdPackage}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						},
+						{
+							"name": "PackageProjected response",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/packages/:packageId?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"packages",
+										":packageId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "packageId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"packageId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
+					"name": "packages/packageId/checklist Admin Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/packages/{{testPackage}}/checklists/{{testBenchmark}}/latest",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"packages",
+								"{{testPackage}}",
+								"checklists",
+								"{{testBenchmark}}",
+								"latest"
+							]
+						},
+						"description": "Returns checklist for specified package/benchmark/rev"
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "oauth2",
+				"oauth2": [
+					{
+						"key": "accessToken",
+						"value": "{{token}}",
+						"type": "string"
+					},
+					{
+						"key": "tokenType",
+						"value": "bearer",
+						"type": "string"
+					},
+					{
+						"key": "addTokenTo",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0bc2587d-3ef3-4b09-b355-3e8f334b1389",
+						"type": "text/javascript",
+						"exec": [
+							"// pm.environment.set(\"curUser\", \"staff\");",
+							"",
+							"user = pm.iterationData.get(\"user\");",
+							"console.log(`user: ${user} `);",
+							"",
+							"",
+							"if (user == \"admin\"){",
+							"    pm.environment.set(\"elevated\", \"true\");",
+							"    console.log(\"setting elevated to true. \");",
+							"}",
+							"else {",
+							"    pm.environment.set(\"elevated\", \"false\");",
+							"    pm.environment.set(\"user\", \"wf60\");",
+							"    user = \"wf60\";",
+							"    console.log(\"setting elevated to false, user to staff \");",
+							"",
+							"}",
+							"",
+							"let token = pm.environment.get(\"token.\" + user)",
+							"pm.environment.set(\"token\", token);",
+							"console.log(\"Bearer: \" + token);",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "2a72c5f1-5de4-4330-a823-cf3539088802",
+						"type": "text/javascript",
+						"exec": [
+							"// var user = pm.environment.get(\"user\");",
+							"// var elevated = pm.environment.get(\"elevated\");",
+							"",
+							"// pm.test(`Packages Tests with user: ${user} elevated: ${elevated} `, function () {",
+							"//     pm.expect(pm.environment.get(\"user\")).to.equal(user);",
+							"// });"
 						]
 					}
 				}
