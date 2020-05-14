@@ -1,9 +1,29 @@
 [{
-  "user": "admin"
-}, {
-  "user": "staff"
-}, {
-  "user": "wf60"
-}, {
-  "user": "officer60"
-}]
+  "user": "staff",
+  "elevate": "false"
+},{
+  "user": "staff",
+  "elevate": "true"
+},{
+  "user": "wf60",
+  "authPackage": "21",
+  "unAuthPackage": "1",
+  "elevate": "false"
+},{
+  "user": "wf60",
+  "elevate": "true"
+},{
+  "user": "officer60",
+  "authPackage": "21",
+  "unAuthPackage": "1",
+  "elevate": "false"
+},{
+  "user": "officer60",
+  "elevate": "true"
+},{
+  "user": "wf10",
+  "elevate": "true"
+}
+
+
+]
