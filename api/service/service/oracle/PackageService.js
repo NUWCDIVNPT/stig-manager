@@ -147,9 +147,8 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
   // REPLACE/UPDATE: packageId is not null
   let connection // available to try, catch, and finally blocks
   try {
-    // Extract or initialize non-scalar properties to separate variables
+    // Extract non-scalar properties to separate variables
     let { assetIds, ...packageFields } = body
-    assetIds = assetIds ? assetIds : []
     
     // Convert boolean scalar values to database values (true=1 or false=0)
     if ('reqRar' in packageFields) {
@@ -163,21 +162,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     connection = await oracledb.getConnection()
 
     // Process scalar properties
-    let binds = {}
-    if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      let defaults = {
-        name: null,
-        emassId: null,
-        pocName: null,
-        pocEmail: null,
-        pocPhone: null,
-        reqRar: 0
-      }
-      binds = { ...defaults, ...packageFields }
-    }
-    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE) {
-      binds = { ...packageFields}
-    }
+    let binds = { ...packageFields}
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
       // INSERT into packages
       let sqlInsert =
@@ -211,18 +196,18 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     }
 
     // Process assetIds
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+    if (assetIds && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
       // DELETE from asset_package_map
       let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = :packageId'
       await connection.execute(sqlDeleteAssets, [packageId])
     }
     if (assetIds.length > 0) {
+      // INSERT into asset_package_map
       let sqlInsertAssets = `
-        INSERT /*+ ignore_row_on_dupkey_index(asset_package_map(packageId, assetId)) */ INTO 
+        INSERT INTO 
           stigman.asset_package_map (packageId,assetId)
         VALUES (:packageId, :assetId)`      
       let binds = assetIds.map(i => [packageId, i])
-      // INSERT into asset_package_map
       await connection.executeMany(sqlInsertAssets, binds)
     }
 

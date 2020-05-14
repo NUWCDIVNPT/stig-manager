@@ -1615,11 +1615,50 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/STIG'
+    # PackageCreateOrReplace:
+    #   required:
+    #     - name
+    #     - emassId
+    #     - pocName
+    #     - pocEmail
+    #     - pocPhone
+    #     - reqRar
+    #     - assetIds
+    #   allOf:
+    #     - $ref: '#/components/schemas/PackageUpdate'
     PackageCreateOrReplace:
       required:
         - name
-      allOf:
-        - $ref: '#/components/schemas/PackageUpdate'
+        - emassId
+        - pocName
+        - pocEmail
+        - pocPhone
+        - reqRar
+        - assetIds
+      additionalProperties: false
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: false
+        emassId:
+          type: string
+          nullable: true
+        pocName:
+          type: string
+          nullable: true
+        pocEmail:
+          type: string
+          nullable: true
+        pocPhone:
+          type: string
+          nullable: true
+        reqRar:
+          type: boolean
+        assetIds:
+          type: array
+          items:
+            type: integer
     PackageUpdate:
       allOf:
         - $ref: '#/components/schemas/Package'
