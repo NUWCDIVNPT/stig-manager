@@ -8,7 +8,7 @@ const he = require('he');
 /**
 Generalized queries for asset(s).
 **/
-exports.queryAssets = async function (inProjection, inPredicates, elevate, userObject) {
+exports.queryAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   let context
   if (userObject.role == 'Staff' || elevate) {
     context = dbUtils.CONTEXT_ALL
@@ -35,18 +35,28 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   ]
 
   // PROJECTIONS
-  if (inProjection && inProjection.includes('packages')) {
-    columns.push(`concat('[', group_concat(distinct json_object(
-      'packageId', p.packageId, 
-      'name', p.name) order by p.name), ']') as "packages"`)
+  if (inProjection.includes('packages')) {
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when p.packageId is not null then 
+              json_object(
+                'packageId', p.packageId, 
+                'name', p.name)
+            else null end 
+      order by p.name),
+          ''),
+      ']')
+    as json) as "packages"`)
   }
-  if (inProjection && inProjection.includes('adminStats')) {
+  if (inProjection.includes('adminStats')) {
     columns.push(`json_object(
       'stigCount', COUNT(distinct sa.saId),
       'stigAssignedCount', COUNT(distinct usa.saId)
       ) as "adminStats"`)
   }
-  if (inProjection && inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
+  if (inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
     columns.push(`(select
       json_arrayagg(byStig.stigAssetUsers) as stigReviewers 
     from
@@ -58,40 +68,49 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       (select
         sa.benchmarkId,
         -- if no user, return null instead of object with null property values
-        case when u.id is not null then json_object('userId', u.id, 'username', u.name, 'dept', u.dept) else NULL end as reviewers
+        case when u.userId is not null then json_object('userId', u.userId, 'username', u.username, 'dept', u.dept) else NULL end as reviewers
         FROM 
           stigman.stig_asset_map sa
           left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
-          left join stigman.user_data u on usa.userId = u.id
+          left join stigman.user u on usa.userId = u.userId
         WHERE
         sa.assetId = a.assetId) as r
       group by r.benchmarkId) as byStig) as "stigReviewers"`)
   }
-  if (inProjection && inProjection.includes('reviewers') && context !== dbUtils.CONTEXT_USER) {
+  if ( inProjection.includes('reviewers') && context !== dbUtils.CONTEXT_USER) {
     // This projection is only available for endpoint /stigs/{benchmarkId}/assets
     // Subquery relies on predicate :benchmarkId being set
     columns.push(`(select
-        case when count(u.id > 0) then json_arrayagg(
+        case when count(u.userId > 0) then json_arrayagg(
         -- if no user, return null instead of object with null property values
-        case when u.id is not null then json_object('userId', u.id, 'username', u.name, 'dept', u.dept) else NULL end) 
+        case when u.userId is not null then json_object('userId', u.userId, 'username', u.username, 'dept', u.dept) else NULL end) 
         else json_array() end as reviewers
       FROM 
         stigman.stig_asset_map sa
         left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
-        left join stigman.user_data u on usa.userId = u.id
+        left join stigman.user u on usa.userId = u.userId
 		  WHERE
         sa.assetId = a.assetId and sa.benchmarkId = :benchmarkId) as "reviewers"`)
   }
-  if (inProjection && inProjection.includes('stigs')) {
+  if (inProjection.includes('stigs')) {
     //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
     joins.push('left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId')
     joins.push('left join stig.benchmark st on cr.benchmarkId=st.benchmarkId')
-    columns.push(`concat('[', group_concat(distinct json_object(
-      'benchmarkId', cr.benchmarkId,
-      'lastRevisionStr', concat('V', cr.version, 'R', cr.release),
-      'lastRevisionDate', cr.benchmarkDateSql,
-      'title', st.title
-    ) order by cr.benchmarkId), ']') as "stigs"`)
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when cr.benchmarkId is not null then 
+              json_object(
+                'benchmarkId', cr.benchmarkId, 
+                'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
+                'lastRevisionDate', cr.benchmarkDateSql,
+                'title', st.title)
+            else null end 
+      order by cr.benchmarkId),
+          ''),
+      ']')
+    as json) as "stigs"`)
   }
 
   // PREDICATES
@@ -141,37 +160,6 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
     let [rows] = await connection.query(sql, predicates.binds)
-
-    // Post-process each row, unfortunately.
-    // * MySQL doesn't have a BOOLEAN data type, so we must cast columns 'nonnetwork' and 'scanexempt'
-    // * MySQL doesn't support JSON_ARRAYAGG with DISTINCT, so we parse string values from 'packages' and 'stigs' into objects
-    for (let x = 0, l = rows.length; x < l; x++) {
-      let record = rows[x]
-      // Handle booleans
-      record.nonnetwork = record.nonnetwork == 1 ? true : false
-      record.scanexempt = record.scanexempt == 1 ? true : false
-      if ('packages' in record) {
-       // Check for "empty" arrays 
-        record.packages = record.packages ? JSON.parse(record.packages) : []
-        // // Sort by package name
-        // record.packages.sort((a,b) => {
-        //   let c = 0
-        //   if (a.name > b.name) { c= 1 }
-        //   if (a.name < b.name) { c = -1 }
-        //   return c
-        // })
-      }
-      if ('stigs' in record) {
-        record.stigs = record.stigs ? JSON.parse(record.stigs) : []
-        // Sort by benchmarkId
-        // record.stigs.sort((a,b) => {
-        //   let c = 0
-        //   if (a.benchmarkId > b.benchmarkId) { c = 1 }
-        //   if (a.benchmarkId < b.benchmarkId) { c = -1 }
-        //   return c
-        // })
-      }
-    }
     return (rows)
   }
   catch (err) {

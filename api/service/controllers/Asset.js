@@ -1,8 +1,8 @@
 'use strict';
 
-var writer = require('../utils/writer.js');
-var config = require('../utils/config')
-var Asset = require(`../service/${config.database.type}/AssetService`);
+const writer = require('../utils/writer.js');
+const config = require('../utils/config')
+const Asset = require(`../service/${config.database.type}/AssetService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 
 module.exports.createAsset = async function createAsset (req, res, next) {

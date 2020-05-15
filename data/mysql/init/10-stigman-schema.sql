@@ -411,13 +411,13 @@ CREATE TABLE `stig_asset_map` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `user_data`
+-- Table structure for table `user`
 --
 
-DROP TABLE IF EXISTS `user_data`;
+DROP TABLE IF EXISTS `user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user_data` (
+CREATE TABLE `user` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `display` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
@@ -444,7 +444,7 @@ CREATE TABLE `user_stig_asset_map` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `INDEX_2_1_C` (`userId`,`saId`),
   KEY `INDEX_3_2` (`saId`),
-  CONSTRAINT `FK_USER_STIG_ASSET_MAP_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_USER_STIG_ASSET_MAP_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_USER_STIG_ASSET_MAP_2` FOREIGN KEY (`saId`) REFERENCES `stig_asset_map` (`saId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;

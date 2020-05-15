@@ -1548,6 +1548,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiVersion'
+  /op/appdata:
+    get:
+      tags:
+        - Operation
+      summary: Export application data
+      operationId: getAppData
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - name: options
+          in: query
+          description: Options for the export
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+              enum:
+                - includeReviewHistory
+      responses:
+        '200':
+          description: Exported data
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:stig:read'
+    post:
+      tags:
+        - Operation
+      summary: Import and overwrite application data
+      operationId: replaceAppData
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - name: options
+          in: query
+          description: Options for the import
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+              enum:
+                - remapIds
+      requestBody:
+        required: true
+        x-name: body
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Import successful
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:stig:read'
 components:
   schemas:
     Error:
@@ -1615,17 +1689,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/STIG'
-    # PackageCreateOrReplace:
-    #   required:
-    #     - name
-    #     - emassId
-    #     - pocName
-    #     - pocEmail
-    #     - pocPhone
-    #     - reqRar
-    #     - assetIds
-    #   allOf:
-    #     - $ref: '#/components/schemas/PackageUpdate'
     PackageCreateOrReplace:
       required:
         - name

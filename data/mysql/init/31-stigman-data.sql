@@ -198,13 +198,13 @@ INSERT INTO `stig_asset_map` VALUES (29,'RHEL_7_STIG',22,0),(30,'Oracle_Linux_6_
 UNLOCK TABLES;
 
 --
--- Dumping data for table `user_data`
+-- Dumping data for table `user`
 --
 
-LOCK TABLES `user_data` WRITE;
-/*!40000 ALTER TABLE `user_data` DISABLE KEYS */;
-INSERT INTO `user_data` VALUES (1,'admin','StaffAdmin','10',4,1),(21,'officer-10','Officer 10','10',3,0),(22,'workforce-10','CSWF 10','10',2,0),(43,'workforce-60','CSWF 60','60',2,1),(44,'officer-60','Officer 60','60',3,1),(45,'staff','Staff','10',4,0),(77,'string','string','string',4,1),(82,'string2','string2','10',2,1),(85,'Test_user1','Test User 1','15',2,0);
-/*!40000 ALTER TABLE `user_data` ENABLE KEYS */;
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES (1,'admin','StaffAdmin','10',4,1),(21,'officer-10','Officer 10','10',3,0),(22,'workforce-10','CSWF 10','10',2,0),(43,'workforce-60','CSWF 60','60',2,1),(44,'officer-60','Officer 60','60',3,1),(45,'staff','Staff','10',4,0),(77,'string','string','string',4,1),(82,'string2','string2','10',2,1),(85,'Test_user1','Test User 1','15',2,0);
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

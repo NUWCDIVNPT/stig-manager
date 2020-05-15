@@ -6,108 +6,102 @@ const dbUtils = require('./utils')
 /**
 Generalized queries for package(s).
 **/
-exports.queryPackages = async function (inProjection, inPredicates, elevate, userObject) {
-  let context
-  if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
-    context = dbUtils.CONTEXT_ALL
-  } else if (userObject.role == "IAO") {
-    context = dbUtils.CONTEXT_DEPT
-  } else {
-    context = dbUtils.CONTEXT_USER
-  }
-
-  let columns = [
-    'p.packageId',
-    'p.name',
-    'p.emassId',
-    'p.pocName',
-    'p.pocEmail',
-    'p.pocPhone',
-    'p.reqRar'
-  ]
-  let joins = [
-    'stigman.package p',
-    'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
-    'left join stigman.asset a on ap.assetId = a.assetId',
-    'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
-  ]
-
-  // PROJECTIONS
-  if (inProjection && inProjection.includes('assets')) {
-    columns.push(`cast(
-      concat('[', 
-        coalesce (
-          group_concat(distinct 
-            case when a.assetId is not null then 
-              json_object(
-                'assetId', a.assetId, 
-                'name', a.name, 
-                'dept', a.dept)
-            else null end 
-		  order by a.name),
-          ''),
-      ']')
-    as json) as "assets"`)
-  }
-  if (inProjection && inProjection.includes('stigs')) {
-    joins.push('left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId')
-    joins.push('left join stig.benchmark st on cr.benchmarkId=st.benchmarkId')
-    columns.push(`concat('[', group_concat(distinct
-      CASE WHEN cr.benchmarkId IS NOT NULL THEN json_object(
-      'benchmarkId', cr.benchmarkId, 
-      'lastRevisionStr', concat('V', cr.version, 'R', cr.release),
-      'lastRevisionDate', cr.benchmarkDateSql,
-      'title', st.title) END order by cr.benchmarkId), ']') as "stigs"`)
-  }
-
-  // PREDICATES
-  let predicates = {
-    statements: [],
-    binds: []
-  }
-  if (inPredicates.packageId) {
-    predicates.statements.push('p.packageId = ?')
-    predicates.binds.push( inPredicates.packageId )
-  }
-  if (context == dbUtils.CONTEXT_DEPT) {
-    predicates.statements.push('a.dept = ?')
-    predicates.binds.push( userObject.dept )
-  } 
-  else if (context == dbUtils.CONTEXT_USER) {
-    joins.push('left join stigman.user_stig_asset_map usa on sa.saId = usa.saId')
-    predicates.statements.push('usa.userId = ?')
-    predicates.binds.push( userObject.id )
-
-  }
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
-  sql += ' order by p.name'
+exports.queryPackages = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let context
+    if (userObject.role == 'Staff' || elevate) {
+      context = dbUtils.CONTEXT_ALL
+    } else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+    } else {
+      context = dbUtils.CONTEXT_USER
+    }
 
-    // Post-process each row, unfortunately.
-    // * MySQL doesn't have a BOOLEAN data type, so we must cast the column 'reqRar'
-    // * MySQL doesn't support JSON_ARRAYAGG with DISTINCT, so we parse string values from 'assets' and 'stigs' into objects
-    // for (let x = 0, l = rows.length; x < l; x++) {
-    //   let record = rows[x]
-    //   // Handle 'reqRar'
-    //   record.reqRar = record.reqRar == 1 ? true : false
-    //   // if (inProjection && inProjection.includes('assets')) {
-    //   //   record.assets = record.assets  ? JSON.parse(record.assets) : []
-    //   // }
-    //   if (inProjection && inProjection.includes('stigs')) {
-    //     record.stigs = record.stigs  ? JSON.parse(record.stigs) : []
-    //   }
-    // }
+    let columns = [
+      'p.packageId',
+      'p.name',
+      'p.emassId',
+      'p.pocName',
+      'p.pocEmail',
+      'p.pocPhone',
+      'p.reqRar'
+    ]
+    let joins = [
+      'stigman.package p',
+      'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
+      'left join stigman.asset a on ap.assetId = a.assetId',
+      'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
+    ]
 
+    // PROJECTIONS
+    if (inProjection.includes('assets')) {
+      columns.push(`cast(
+        concat('[', 
+          coalesce (
+            group_concat(distinct 
+              case when a.assetId is not null then 
+                json_object(
+                  'assetId', a.assetId, 
+                  'name', a.name, 
+                  'dept', a.dept)
+              else null end 
+        order by a.name),
+            ''),
+        ']')
+      as json) as "assets"`)
+    }
+    if (inProjection.includes('stigs')) {
+      joins.push('left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId')
+      joins.push('left join stig.benchmark st on cr.benchmarkId=st.benchmarkId')
+      columns.push(`cast(
+        concat('[', 
+          coalesce (
+            group_concat(distinct 
+              case when cr.benchmarkId is not null then 
+                json_object(
+                  'benchmarkId', cr.benchmarkId, 
+                  'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
+                  'lastRevisionDate', cr.benchmarkDateSql,
+                  'title', st.title)
+              else null end 
+        order by a.name),
+            ''),
+        ']')
+      as json) as "stigs"`)
+    }
+
+    // PREDICATES
+    let predicates = {
+      statements: [],
+      binds: []
+    }
+    if (inPredicates.packageId) {
+      predicates.statements.push('p.packageId = ?')
+      predicates.binds.push( inPredicates.packageId )
+    }
+    if (context == dbUtils.CONTEXT_DEPT) {
+      predicates.statements.push('a.dept = ?')
+      predicates.binds.push( userObject.dept )
+    } 
+    else if (context == dbUtils.CONTEXT_USER) {
+      joins.push('left join stigman.user_stig_asset_map usa on sa.saId = usa.saId')
+      predicates.statements.push('usa.userId = ?')
+      predicates.binds.push( userObject.id )
+
+    }
+
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
+    sql += ' order by p.name'
+    
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)
   }
   catch (err) {
@@ -120,9 +114,8 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
   // REPLACE/UPDATE: packageId is not null
   let connection // available to try, catch, and finally blocks
   try {
-    // Extract or initialize non-scalar properties to separate variables
+    // Extract non-scalar properties to separate variables
     let { assetIds, ...packageFields } = body
-    assetIds = assetIds ? assetIds : []
     
     // Convert boolean scalar values to database values (true=1 or false=0)
     if ('reqRar' in packageFields) {
@@ -135,21 +128,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     await connection.beginTransaction();
 
     // Process scalar properties
-    let binds = {}
-    if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      let defaults = {
-        name: null,
-        emassId: null,
-        pocName: null,
-        pocEmail: null,
-        pocPhone: null,
-        reqRar: 0
-      }
-      binds = { ...defaults, ...packageFields }
-    }
-    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE) {
-      binds = { ...packageFields}
-    }
+    let binds =  { ...packageFields}
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
       // INSERT into packages
       let sqlInsert =
@@ -158,7 +137,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
           (name, emassId, pocName, pocEmail, pocPhone, reqRar)
         VALUES
           (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)`
-      let [rows, fields] = await connection.execute(sqlInsert, binds)
+      let [rows] = await connection.execute(sqlInsert, binds)
       packageId = rows.insertId
     }
     else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
@@ -171,7 +150,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
             ?
           WHERE
             packageId = ?`
-        await connection.execute(sqlUpdate, [packageFields, packageId])
+        await connection.query(sqlUpdate, [packageFields, packageId])
       }
     }
     else {
@@ -179,19 +158,19 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     }
 
     // Process assetIds
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+    if (assetIds && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
       // DELETE from asset_package_map
       let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = ?'
       await connection.execute(sqlDeleteAssets, [packageId])
     }
     if (assetIds.length > 0) {
+      // INSERT into asset_package_map
       let sqlInsertAssets = `
-        INSERT IGNORE INTO 
+        INSERT INTO 
           stigman.asset_package_map (packageId, assetId)
         VALUES
           ?`      
       let binds = assetIds.map(i => [packageId, i])
-      // INSERT into asset_package_map
       await connection.query(sqlInsertAssets, [binds])
     }
 
