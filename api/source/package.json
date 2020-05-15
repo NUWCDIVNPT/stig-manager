@@ -1,0 +1,34 @@
+{
+  "name": "stig-management-api",
+  "version": "1.0.0",
+  "description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node index.js",
+    "postinstall": "patch-package"
+  },
+  "keywords": [
+    "swagger"
+  ],
+  "license": "Unlicense",
+  "private": true,
+  "dependencies": {
+    "connect": "^3.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "fast-xml-parser": "^3.16.0",
+    "he": "^1.2.0",
+    "js-yaml": "^3.13.1",
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^1.6.2",
+    "lodash": "^4.17.15",
+    "morgan": "^1.9.1",
+    "mysql2": "^2.1.0",
+    "oas-tools": "^2.1.7",
+    "oracledb": "^4.2.0",
+    "patch-package": "^6.2.2",
+    "request": "^2.88.2",
+    "swagger-ui-express": "^4.1.3"
+  }
+}
