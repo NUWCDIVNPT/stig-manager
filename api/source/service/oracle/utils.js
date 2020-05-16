@@ -161,6 +161,7 @@ module.exports.REVIEW_STATUS_ID = {
 module.exports.REVIEW_STATUS_STR = { 
   'saved': 0,
   'submitted': 1,
+  'ready': 1,
   'rejected': 2,
   'approved': 3
 }

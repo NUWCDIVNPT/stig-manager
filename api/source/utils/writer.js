@@ -54,6 +54,15 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
   response.end(payload);
 }
 
+exports.writeJsonFile = function(response, payload, filename) {
+  response.writeHead(200, {
+    'Content-Type': 'application/json', 
+    'Content-Disposition': `attachment; filename="${filename}"`,
+    'Access-Control-Expose-Headers': 'Content-Disposition'
+  })
+  response.write(JSON.stringify(payload))
+  response.end()
+}
 exports.writePdf = function(response, payload, filename) {
   response.writeHead(200, {
     'Content-Type': 'application/pdf', 

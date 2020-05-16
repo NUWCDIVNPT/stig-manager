@@ -9,7 +9,7 @@ const {promises: fs} = require('fs')
 /**
 Generalized queries for review(s).
 **/
-exports.queryReviews = async function (inProjection, inPredicates, elevate, userObject) {
+exports.queryReviews = async function (inProjection = [], inPredicates = {}, elevate, userObject) {
   let connection
   try {
     let context
@@ -22,7 +22,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     }
 
     let columns = [
-      'DISTINCT r.REVIEWID as "reviewId"',
+      'r.REVIEWID as "reviewId"',
       'r.assetId as "assetId"',
       'asset.name as "assetName"',
       'r.ruleId as "ruleId"',
@@ -56,18 +56,38 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
           END
       END as "done"`
     ]
+    let groupBy = [
+      'r.reviewId',
+      'r.assetId',
+      'asset.name',
+      'r.ruleId',
+      'state.abbr',
+      'r.stateId',
+      'r.stateComment',
+      'r.actionId',
+      'action.action',
+      'r.actionComment',
+      'r.statusId',
+      'status.statusStr',
+      'r.ts',
+      'r.autoState',
+      'r.userId',
+      'ud.name',
+      'r.rejectText',
+      'r.rejectUserId'
+    ]
     let joins = [
       'stigman.reviews r',
       'left join stigman.states state on r.stateId = state.stateId',
       'left join stigman.statuses status on r.statusId = status.statusId',
       'left join stigman.actions action on r.actionId = action.actionId',
       'left join stigman.user_data ud on r.userId = ud.id',
-      'left join stigman.assets asset on r.assetId = asset.assetId' //,
-      // 'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
+      'left join stigman.assets asset on r.assetId = asset.assetId',
+      'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
     ]
 
     // PROJECTIONS
-    if (inProjection && inProjection.includes('packages')) {
+    if (inProjection.includes('packages')) {
       columns.push(`(select json_arrayagg(json_object(
         KEY 'packageId' VALUE p.packageId,
         KEY 'name' VALUE  p.name))
@@ -75,7 +95,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
         left join stigman.packages p on ap.packageId = p.packageId
         where ap.assetId = r.assetId) as "packages"`)
     }
-    if (inProjection && inProjection.includes('stigs')) {
+    if (inProjection.includes('stigs')) {
       columns.push(`(select json_arrayagg(json_object(
         KEY 'benchmarkId' VALUE rev.stigId,
         KEY 'revisionStr' VALUE  'V'||rev.version||'R'||rev.release))
@@ -84,7 +104,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
         left join stigs.revisions rev on rg.revId = rev.revId
         where rgr.ruleId = r.ruleId) as "stigs"`)
     }
-    if (inProjection && inProjection.includes('rule')) {
+    if (inProjection.includes('rule')) {
       columns.push(`(select
         json_object(
         KEY 'ruleId' VALUE rule.ruleId
@@ -100,6 +120,28 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
         where
         ROWNUM = 1 and
         rule.ruleId = r.ruleId) as "ruleInfo"`)
+    }
+    if (inProjection.includes('history')) {
+      columns.push(`(select
+      json_arrayagg(
+        json_object(
+          KEY 'ts' VALUE TO_CHAR(rh.ts,'yyyy-mm-dd hh24:mi:ss'),
+          KEY 'activityType' VALUE rh.activityType,
+          KEY 'columnName' VALUE rh.columnName,
+          KEY 'oldValue' VALUE rh.oldValue,
+          KEY 'newValue' VALUE rh.newValue,
+          KEY 'userId' VALUE rh.userId,
+          KEY 'username' VALUE ud.name
+        )
+      order by rh.ts desc, rh.columnName returning VARCHAR2(32000))
+      FROM
+        reviews_history rh
+        left join user_data ud on ud.id=rh.userId
+      where
+        rh.ruleId = r.ruleId and
+        rh.assetId = r.assetId
+        -- don't want to handle 'rejectText' yet
+        and rh.columnName != 'rejectText') as "history"`)
     }
 
     // PREDICATES
@@ -169,7 +211,6 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
         // Delete property so it is not processed by later code
         delete inPredicates.revisionStr
       }
-
       let aclSubquery = `
       SELECT
         ${aclColumns.join(",\n")}
@@ -178,7 +219,6 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       WHERE
         ${aclPredicates.join(" and ")}
       `
-
       // Splice the subquery onto the main query
       joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join stigman.reviews r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
       //joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
@@ -262,6 +302,7 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
+    sql += ` GROUP BY ${groupBy.join(', ')}`
     sql += ' order by r.assetId, r.ruleId'
 
 
@@ -279,43 +320,20 @@ exports.queryReviews = async function (inProjection, inPredicates, elevate, user
       let record = result.rows[x]
       record.done = record.done == 1 ? true : false
       record.autoState = record.autoState == 1 ? true : false
-      if (record.packages) {
+      if (inProjection.includes('packages')) {
          record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
        }
-      if (record.stigs) {
+      if (inProjection.includes('stigs')) {
          record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
        }
-      if (record.ruleInfo) {
+      if (inProjection.includes('ruleInfo')) {
         record.ruleInfo = JSON.parse(record.ruleInfo)
+      }
+      if (inProjection.includes('history')) {
+        record.history = JSON.parse(record.history)
       }
     }
 
-    // History hack, for now
-    if (inProjection && inProjection.includes('history') && result.rows.length === 1) {
-      if (inPredicates.assetId && inPredicates.ruleId) {
-        let sqlHistory = `
-        select
-          TO_CHAR(rh.ts,'yyyy-mm-dd hh24:mi:ss') as "ts",
-          rh.activityType as "activityType",
-          rh.columnName as "columnName",
-          rh.oldValue as "oldValue",
-          rh.newValue as "newValue",
-          rh.userId as "userId",
-          ud.name as "username"
-        FROM
-          reviews_history rh
-          left join user_data ud on ud.id=rh.userId
-        where
-          rh.ruleId = :ruleId and
-          rh.assetId = :assetId
-          -- don't want to handle 'rejectText' yet
-          and rh.columnName != 'rejectText'
-        order by 
-          rh.ts asc,rh.columnName desc`
-        let historyResult = await connection.execute(sqlHistory, [inPredicates.ruleId, inPredicates.assetId], options)
-        result.rows[0].history = historyResult.rows
-      }
-    }
     return (result.rows)
   }
   catch (err) {

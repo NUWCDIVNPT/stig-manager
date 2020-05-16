@@ -23,8 +23,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     'a.NAME as "name"',
     'a.DEPT as "dept"',
     'a.IP as "ip"',
-    'a.NONNETWORK as "nonnetwork"',
-    'a.SCANEXEMPT as "scanexempt"'
+    'a.NONNETWORK as "nonnetwork"'
   ]
   let joins = [
     'stigman.assets a',
@@ -160,7 +159,6 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       let record = result.rows[x]
       // Handle booleans
       record.nonnetwork = record.nonnetwork == 1 ? true : false
-      record.scanexempt = record.scanexempt == 1 ? true : false
       if ('packages' in record) {
        // Check for "empty" arrays 
         record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages) || []

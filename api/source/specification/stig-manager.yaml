@@ -1600,12 +1600,22 @@ paths:
               enum:
                 - remapIds
       requestBody:
-        required: true
+        required: false
         x-name: body
         content:
           application/json:
             schema:
               type: object
+              properties:
+                packages:
+                  type: string
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                importFile:
+                  type: string
+                  format: binary
       responses:
         '201':
           description: Import successful
