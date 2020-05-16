@@ -650,6 +650,8 @@ exports.insertManualBenchmark = async function (b) {
     let {revision, ...benchmarkBinds} = b
     // TABLE: STIGS
     dml.stigs.binds = benchmarkBinds
+    // TODO: handle SCAP benchmark
+    delete dml.stigs.binds.scap
 
     let {groups, ...revisionBinds} = revision
     delete revisionBinds.revisionStr
@@ -659,6 +661,7 @@ exports.insertManualBenchmark = async function (b) {
     delete revisionBinds.benchmarkDate8601
     // TABLE: REVISIONS
     dml.revisions.binds = revisionBinds
+    delete dml.revisions.binds.releaseInfo
 
     groups.forEach(async group => {
       let {rules, ...groupBinds} = group
