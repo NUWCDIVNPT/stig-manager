@@ -80,15 +80,11 @@ DROP TABLE IF EXISTS `asset`;
 CREATE TABLE `asset` (
   `assetId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) COLLATE utf8mb4_bin NOT NULL,
-  `profile` varchar(45) COLLATE utf8mb4_bin NOT NULL,
-  `domain` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `ip` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `dept` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `nonnetwork` bit(1) DEFAULT 0,
-  `scanexempt` bit(1) DEFAULT 0,
   PRIMARY KEY (`assetId`),
   UNIQUE KEY `INDEX_NAME` (`name`),
-  KEY `INDEX_PROFILE` (`profile`),
   KEY `INDEX_NONNETWORK` (`nonnetwork`),
   KEY `INDEX_DEPT` (`dept`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
@@ -384,7 +380,7 @@ DROP TABLE IF EXISTS `status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `status` (
-  `statusId` int(11) NOT NULL AUTO_INCREMENT,
+  `statusId` int(11) NOT NULL,
   `statusStr` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`statusId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
@@ -401,10 +397,8 @@ CREATE TABLE `stig_asset_map` (
   `saId` int(11) NOT NULL AUTO_INCREMENT,
   `benchmarkId` varchar(255) COLLATE utf8mb4_bin NOT NULL,
   `assetId` int(11) NOT NULL,
-  `disableImports` int NOT NULL,
   PRIMARY KEY (`saId`),
   UNIQUE KEY `INDEX_2_3_C` (`benchmarkId`,`assetId`),
-  KEY `DISABLEIMPORTS` (`disableImports`),
   KEY `FK_STIGASSETMAP_1` (`assetId`),
   CONSTRAINT `FK_STIG_ASSET_MAP_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
@@ -438,15 +432,18 @@ DROP TABLE IF EXISTS `user_stig_asset_map`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_stig_asset_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL,
-  `saId` int(11) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `userId` int NOT NULL,
+  `benchmarkId` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+  `assetId` int NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `INDEX_2_1_C` (`userId`,`saId`),
-  KEY `INDEX_3_2` (`saId`),
-  CONSTRAINT `FK_USER_STIG_ASSET_MAP_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_USER_STIG_ASSET_MAP_2` FOREIGN KEY (`saId`) REFERENCES `stig_asset_map` (`saId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+  UNIQUE KEY `usa_Unique` (`benchmarkId`,`assetId`,`userId`),
+  KEY `usa_sa` (`benchmarkId`,`assetId`),
+  KEY `usa_a` (`assetId`),
+  KEY `fk_user_stig_asset_map_2` (`userId`),
+  CONSTRAINT `fk_user_stig_asset_map_1` FOREIGN KEY (`benchmarkId`, `assetId`) REFERENCES `stig_asset_map` (`benchmarkId`, `assetId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_user_stig_asset_map_2` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=385 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

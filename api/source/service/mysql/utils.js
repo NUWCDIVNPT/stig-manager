@@ -56,7 +56,7 @@ module.exports.getUserObject = async function (username) {
         r.role,
         ud.canAdmin
       from 
-        stigman.user_data ud
+        stigman.user ud
         left join stigman.role r on r.id=ud.roleId
       where
         UPPER(username)=UPPER(?)
@@ -127,6 +127,7 @@ module.exports.REVIEW_STATUS_ID = {
 module.exports.REVIEW_STATUS_STR = { 
   'saved': 0,
   'submitted': 1,
+  'ready': 1,
   'rejected': 2,
   'approved': 3
 }
