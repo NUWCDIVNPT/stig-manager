@@ -125,7 +125,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.beginTransaction();
+    await connection.query('START TRANSACTION');
 
     // Process scalar properties
     let binds =  { ...packageFields}

@@ -40,6 +40,7 @@ function loadScripts() {
         "js/packageAdmin.js",
         "js/stigAdmin.js",
         "js/artifactAdmin.js",
+        "js/apiAdmin.js",
         "js/reportTab.js",
         "js/reviewTab.js",
         "js/adminTab.js",

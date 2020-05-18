@@ -61,8 +61,10 @@ function addAdminTab(adminAttributes) {
 		case 'artifact-admin':
 			addArtifactAdmin();
 			break;
+		case 'api-admin':
+			addApiAdmin();
+			break;
 	}	
-
 }
 
 function getTree() {
@@ -96,6 +98,15 @@ function getTree() {
 			iconCls: 'sm-package-icon'
 		})
 	}
+	if (curUser.canAdmin) {
+		children.push({
+			id: 'api-admin',
+			text: 'API ',
+			leaf: true,
+			iconCls: 'sm-database-save-icon'
+		})
+	}
+
 	return new Ext.tree.AsyncTreeNode({
 		id: 'global-admin',
 		text: 'Administration areas',

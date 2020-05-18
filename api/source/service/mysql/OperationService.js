@@ -220,18 +220,19 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
   let connection
   try {
-    let result, hrstart, hrend, stats = {}
+    let result, hrstart, hrend, tableOrder, dml, stats = {}
     let totalstart = process.hrtime() 
 
     hrstart = process.hrtime() 
-    let dml = dmlObjectFromAppData(appData)
+    dml = dmlObjectFromAppData(appData)
     hrend = process.hrtime(hrstart)
     stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
+    // Connect to MySQL and start transaction
     connection = await dbUtils.pool.getConnection()
     await connection.query('START TRANSACTION')
-    await connection.query('SET autocommit=0')
 
+    // // Preload
     // hrstart = process.hrtime() 
     // for (const sql of dml.preload) {
     //   console.log(sql)
@@ -240,101 +241,52 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     // hrend = process.hrtime(hrstart)
     // stats.preload = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.reviewHistory.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.reviewsHistory = {}
-    stats.reviewsHistory.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    // Deletes
+    tableOrder = [
+      'reviewHistory',
+      'review',
+      'userStigAssetMap',
+      'stigAssetMap',
+      'assetPackageMap',
+      'package',
+      'asset',
+      'user'
+    ]
+    for (const table of tableOrder) {
+      hrstart = process.hrtime() 
+      ;[result] = await connection.query(dml[table].sqlDelete)
+      hrend = process.hrtime(hrstart)
+      stats[table] = {}
+      stats[table].delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    }
 
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.review.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.reviews = {}
-    stats.reviews.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.userStigAssetMap.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.userStigAssetMap = {}
-    stats.userStigAssetMap.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result]= await connection.query(dml.stigAssetMap.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.stigAssetMap = {}
-    stats.stigAssetMap.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.assetPackageMap.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.assetPackageMap = {}
-    stats.assetPackageMap.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.package.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.packages = {}
-    stats.packages.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.asset.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.assets = {}
-    stats.assets.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.user.sqlDelete)
-    hrend = process.hrtime(hrstart)
-    stats.users = {}
-    stats.users.delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
+    // Inserts
+    tableOrder = [
+      'package',
+      'user',
+      'asset',
+      'assetPackageMap',
+      'stigAssetMap',
+      'userStigAssetMap',
+      'review',
+      'reviewHistory'
+    ]
+    for (const table of tableOrder) {
+      if (dml[table].insertBinds.length > 0) {
+        hrstart = process.hrtime() 
+        ;[result] = await connection.query(dml[table].sqlInsert, [dml[table].insertBinds])
+        hrend = process.hrtime(hrstart)
+        stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+      }
+    }
     
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.package.sqlInsert, [dml.package.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.packages.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.user.sqlInsert, [dml.user.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.users.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.asset.sqlInsert, [dml.asset.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.assets.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.assetPackageMap.sqlInsert, [dml.assetPackageMap.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.assetPackageMap.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.stigAssetMap.sqlInsert, [dml.stigAssetMap.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.stigAssetMap.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.userStigAssetMap.sqlInsert, [dml.userStigAssetMap.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.userStigAssetMap.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.review.sqlInsert, [dml.review.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.reviews.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result] = await connection.query(dml.reviewHistory.sqlInsert, [dml.reviewHistory.insertBinds])
-    hrend = process.hrtime(hrstart)
-    stats.reviewsHistory.insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-
+    // Commit
     hrstart = process.hrtime() 
     await connection.query('COMMIT')
     hrend = process.hrtime(hrstart)
     stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
+    // // Postload
     // hrstart = process.hrtime() 
     // for (const sql of dml.postload) {
     //   ;[result] = await connection.execute(sql)
@@ -342,9 +294,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     // hrend = process.hrtime(hrstart)
     // stats.postload = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
+    // Total time calculation
     hrend = process.hrtime(totalstart)
     stats.total = `TOTAL in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
 
     return (stats)
   }

@@ -1686,65 +1686,42 @@ function uploadStigs(n) {
 			allowBlank: false
 		},
 		items: [
-		{
-			xtype: 'checkbox',
-			id: 'import-replace',
-			name: 'replace',
-			label: "Overwrite existing data"
-		},
-		{ // start fieldset config
-			xtype:'fieldset',
-			title: 'Instructions',
-			autoHeight:true,
-			items: [
 			{
-				xtype: 'displayfield',
-				id: 'infoText1',
-				// emptyText: 'Browse for a file... asset:' + leaf.assetId,
-				// fieldLabel: 'Import',
-				name: 'infoText',
-				html: "Please browse for STIG",
-				// buttonText: 'Browse...',
-				// buttonCfg: {
-					// icon: "img/disc_drive.png"
-				// }
-			}]
-		},
-		// { // start fieldset config
-			// xtype:'fieldset',
-			// title: 'Select file',
-			// autoHeight:true,
-			// items: [
+				xtype: 'checkbox',
+				id: 'import-replace',
+				name: 'replace',
+				label: "Overwrite existing data"
+			},
+			{ 
+				xtype:'fieldset',
+				title: 'Instructions',
+				autoHeight:true,
+				items: [
+				{
+					xtype: 'displayfield',
+					id: 'infoText1',
+					name: 'infoText',
+					html: "Please browse for STIG",
+				}]
+			},
 			{
 				xtype: 'fileuploadfield',
 				id: 'form-file',
 				emptyText: 'Browse for a file...',
-				//fieldLabel: 'Import',
 				name: 'importFile',
 				accept: '.zip,.xml',
 				buttonText: 'Browse...',
 				buttonCfg: {
 					icon: "img/disc_drive.png"
-				},
-				listeners: {
-					fileselected: function(field,filename){
-					}
 				}
 			},
 			{
 				xtype: 'displayfield',
 				id: 'infoText2',
-				// emptyText: 'Browse for a file... asset:' + leaf.assetId,
-				// fieldLabel: 'Import',
 				name: 'infoText',
 				html: "<i><b>IMPORTANT: Results from the imported file will overwrite any existing results!</b></i>",
-				// buttonText: 'Browse...',
-				// buttonCfg: {
-					// icon: "img/disc_drive.png"
-				// }
-			}]
-		//}]
-		,
+			}
+		],
 		buttonAlign: 'center',
 		buttons: [{
 			text: 'Import',

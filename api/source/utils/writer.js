@@ -43,8 +43,8 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
       payload = JSON.stringify(payload, Object.getOwnPropertyNames(payload), 2);
     }
     else {
-      // payload = JSON.stringify(payload, null, 2);
-      payload = JSON.stringify(payload);
+      payload = JSON.stringify(payload, null, 2);
+      // payload = JSON.stringify(payload);
     }
   }
   response.writeHead(code, {
