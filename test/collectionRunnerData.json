@@ -1,0 +1,81 @@
+[{
+  "Test Case Description":" Staff, not elevated, etc.",
+  "user": "staff",
+  "elevate": "false",
+  "packages.valid": "[21,1,62]",
+  "packages.invalid": "[]",
+  "assets.valid": "[]",
+  "assets.invalid": "[]",
+  "stigs.valid": "[]",
+  "stigs.invalid": "[]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
+},{
+  "user": "staff",
+  "elevate": "true",
+  "packages.valid": "[21,1,62]",
+  "packages.invalid": "[]",
+  "assets.valid": "[]",
+  "assets.invalid": "[]",
+  "stigs.valid": "[]",
+  "stigs.invalid": "[]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
+},{
+  "user": "wf60",
+  "elevate": "false",
+  "packages.valid":"[21]",
+  "packages.invalid":"[1,62]",
+  "assets.valid": "[42]",
+  "assets.invalid": "[62]",
+  "stigs.valid": "[\"Microsoft_Word_2013\"]",
+  "stigs.invalid": "[\"Active_Directory_Domain\",\"Windows_10_STIG\"]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
+},{
+  "user": "wf60",
+  "elevate": "true",
+  "packages.valid":"[21,1,62]",
+  "packages.invalid":"[]",
+  "assets.valid": "[]",
+  "assets.invalid": "[]",
+  "stigs.valid": "[]",
+  "stigs.invalid": "[]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
+},{
+  "user": "officer60",
+  "elevate": "false",
+  "packages.valid":"[21]",
+  "packages.invalid":"[1,62]",
+  "assets.valid": "[42,62]",
+  "assets.invalid": "[29]",
+  "stigs.valid": "[\"Active_Directory_Domain\",\"Windows_10_STIG\",\"Microsoft_Word_2013\"]",
+  "stigs.invalid": "[\"RHEL_7_STIG\"]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
+},{
+  "user": "officer60",
+  "elevate": "true",
+  "packages.valid": "[21,1,62]",
+  "packages.invalid": "[]",
+  "assets.valid": "[]",
+  "assets.invalid": "[]",
+  "stigs.valid": "[]",
+  "stigs.invalid": "[]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
+},{
+  "user": "wf10",
+  "elevate": "true"
+
+}
+
+
+]
