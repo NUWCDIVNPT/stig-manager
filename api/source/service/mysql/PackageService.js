@@ -51,8 +51,8 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
       as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
-      joins.push('left join stig.current_rev cr on sa.benchmarkId=cr.benchmarkId')
-      joins.push('left join stig.benchmark st on cr.benchmarkId=st.benchmarkId')
+      joins.push('left join stigman.current_rev cr on sa.benchmarkId=cr.benchmarkId')
+      joins.push('left join stigman.benchmark st on cr.benchmarkId=st.benchmarkId')
       columns.push(`cast(
         concat('[', 
           coalesce (
@@ -246,12 +246,12 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     let joins = [
       'stigman.asset_package_map ap',
       'left join stigman.stig_asset_map sa on ap.assetId=sa.assetId',
-      'left join stig.current_rev rev on sa.benchmarkId=rev.benchmarkId',
-      'left join stig.rev_group_map rg on rev.revId=rg.revId',
-      'left join stig.group g on rg.groupId=g.groupId',
-      'left join stig.rev_group_rule_map rgr on rg.rgId=rgr.rgId',
-      'left join stig.rule rules on rgr.ruleId=rules.ruleId',
-      'left join stig.rule_oval_map ro on rgr.ruleId=ro.ruleId',
+      'left join stigman.current_rev rev on sa.benchmarkId=rev.benchmarkId',
+      'left join stigman.rev_group_map rg on rev.revId=rg.revId',
+      'left join stigman.group g on rg.groupId=g.groupId',
+      'left join stigman.rev_group_rule_map rgr on rg.rgId=rgr.rgId',
+      'left join stigman.rule rules on rgr.ruleId=rules.ruleId',
+      'left join stigman.rule_oval_map ro on rgr.ruleId=ro.ruleId',
       'left join stigman.review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
     ]
 
@@ -268,7 +268,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
 
     // Non-current revision
     if (revisionStr !== 'latest') {
-      joins.splice(2, 1, 'left join stig.revision rev on sa.benchmarkId=rev.benchmarkId')
+      joins.splice(2, 1, 'left join stigman.revision rev on sa.benchmarkId=rev.benchmarkId')
       let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
       predicates.statements.push('rev.version = :version')
       predicates.statements.push('rev.release = :release')

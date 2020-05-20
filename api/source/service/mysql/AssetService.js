@@ -227,11 +227,11 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
         // UPDATE into assets
         let sqlUpdate =
           `UPDATE
-              stigman.assets
+              stigman.asset
             SET
-              ${dbUtils.objectBindObject(assetFields, binds)}
+              ?
             WHERE
-              assetId = :assetId`
+              assetId = ?`
         await connection.execute(sqlUpdate, [assetFields, assetId])
       }
     }

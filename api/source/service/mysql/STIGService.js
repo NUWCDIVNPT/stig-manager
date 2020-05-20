@@ -14,8 +14,8 @@ exports.queryStigs = async function ( inPredicates ) {
       `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`
     ]
     let joins = [
-      'stig.benchmark b',
-      'left join stig.current_rev cr on b.benchmarkId = cr.benchmarkId'
+      'stigman.benchmark b',
+      'left join stigman.current_rev cr on b.benchmarkId = cr.benchmarkId'
     ]
 
     // PREDICATES
@@ -70,18 +70,18 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   predicates.binds.push(inPredicates.benchmarkId)
   
   if (inPredicates.revisionStr != 'latest') {
-    joins = ['stig.revision r']
+    joins = ['stigman.revision r']
     let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
     predicates.statements.push('r.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('r.release = ?')
     predicates.binds.push(release)
   } else {
-    joins = ['stig.current_rev r']
+    joins = ['stigman.current_rev r']
   }
   
-  joins.push('left join stig.rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join stig.group g on rg.groupId = g.groupId')
+  joins.push('left join stigman.rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join stigman.group g on rg.groupId = g.groupId')
 
   if (inPredicates.groupId) {
     predicates.statements.push('g.groupId = ?')
@@ -90,8 +90,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('rules')) {
-    joins.push('left join stig.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-    joins.push('left join stig.rule rule on rgr.ruleId = rule.ruleId' )
+    joins.push('left join stigman.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('left join stigman.rule rule on rgr.ruleId = rule.ruleId' )
     columns.push(`json_arrayagg(json_object(
       'ruleId', rule.ruleId, 
       'version', rule.version, 
@@ -157,14 +157,14 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   predicates.binds.push(benchmarkId)
   
   if (revisionStr != 'latest') {
-    joins = ['stig.revision rev']
+    joins = ['stigman.revision rev']
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
     predicates.statements.push('rev.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('rev.release = ?')
     predicates.binds.push(release)
   } else {
-    joins = ['stig.current_rev rev']
+    joins = ['stigman.current_rev rev']
   }
   
   if (inPredicates && inPredicates.ruleId) {
@@ -172,10 +172,10 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     predicates.binds.push(inPredicates.ruleId)
   }
 
-  joins.push('left join stig.rev_group_map rg on rev.revId = rg.revId')
-  joins.push('left join stig.group g on rg.groupId = g.groupId')
-  joins.push('left join stig.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-  joins.push('left join stig.rule r on rgr.ruleId = r.ruleId' )
+  joins.push('left join stigman.rev_group_map rg on rev.revId = rg.revId')
+  joins.push('left join stigman.group g on rg.groupId = g.groupId')
+  joins.push('left join stigman.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+  joins.push('left join stigman.rule r on rgr.ruleId = r.ruleId' )
 
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
@@ -217,23 +217,23 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       'cci', rgrc.cci,
       'ap', cci.apAcronym,
       'control',  cr.indexDisa)) 
-      from stig.rev_group_rule_cci_map rgrc 
-      left join stig.cci cci on rgrc.cci = cci.cci
-      left join stig.cci_reference_map cr on cci.cci = cr.cci
+      from stigman.rev_group_rule_cci_map rgrc 
+      left join stigman.cci cci on rgrc.cci = cci.cci
+      left join stigman.cci_reference_map cr on cci.cci = cr.cci
       where rgrc.rgrId = rgr.rgrId) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
       'checkId', rck.checkId,
       'content', chk.content))
-      from stig.rev_group_rule_check_map rck left join stig.check chk on chk.checkId = rck.checkId
+      from stigman.rev_group_rule_check_map rck left join stigman.check chk on chk.checkId = rck.checkId
       where rck.rgrId = rgr.rgrId) as "checks"`)
   }
   if ( inProjection && inProjection.includes('fixes') ) {
     columns.push(`(select json_arrayagg(json_object(
       'fixId', rf.fixId,
       'text', fix.text))
-      from stig.rev_group_rule_fix_map rf left join stig.fix fix on fix.fixId = rf.fixId
+      from stigman.rev_group_rule_fix_map rf left join stigman.fix fix on fix.fixId = rf.fixId
       where rf.rgrId = rgr.rgrId) as "fixes"`)
   }
 
@@ -290,7 +290,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
 ]
 
   let joins = [
-    'stig.rule r'
+    'stigman.rule r'
   ]
   let predicates = {
     statements: [],
@@ -345,10 +345,10 @@ exports.insertManualBenchmark = async function (b) {
 
     let dml = {
       benchmark: {
-        sql: "insert ignore into stig.benchmark (title, benchmarkId) VALUES (:title, :benchmarkId)"
+        sql: "insert ignore into stigman.benchmark (title, benchmarkId) VALUES (:title, :benchmarkId)"
       },
       revision: {
-        sql: `insert ignore into stig.revision (
+        sql: `insert ignore into stigman.revision (
           revId, 
           benchmarkId, 
           \`version\`, 
@@ -371,20 +371,20 @@ exports.insertManualBenchmark = async function (b) {
         )`,
       },
       group: {
-        sql: "INSERT ignore into stig.group (groupId, title) VALUES ?",
+        sql: "INSERT ignore into stigman.group (groupId, title) VALUES ?",
         binds: []
       },
       fix: {
-        sql: "insert ignore into stig.fix (fixId, text) VALUES ?",
+        sql: "insert ignore into stigman.fix (fixId, text) VALUES ?",
         binds: []
       },
       check: {
-        sql: "insert ignore into stig.check (checkId, content) VALUES ?",
+        sql: "insert ignore into stigman.check (checkId, content) VALUES ?",
         binds: []
       },
       rule: {
         sql: `
-        insert ignore into stig.rule (
+        insert ignore into stigman.rule (
           ruleId,
           version
           ,title
@@ -405,11 +405,11 @@ exports.insertManualBenchmark = async function (b) {
         binds: []
       },
       revGroupMap: {
-        sql: "insert ignore into stig.rev_group_map (revId, groupId, rules) VALUES ?",
+        sql: "insert ignore into stigman.rev_group_map (revId, groupId, rules) VALUES ?",
         binds: []
       },
       revGroupRuleMap: {
-        sql: `INSERT IGNORE INTO stig.rev_group_rule_map
+        sql: `INSERT IGNORE INTO stigman.rev_group_rule_map
         (rgId, ruleId, checks, fixes, ccis)
         SELECT 
         rg.rgId,
@@ -418,7 +418,7 @@ exports.insertManualBenchmark = async function (b) {
         tt.fixes,
         tt.ccis
         FROM
-        stig.rev_group_map rg,
+        stigman.rev_group_map rg,
            JSON_TABLE(
            rg.rules,
            "$[*]"
@@ -432,14 +432,14 @@ exports.insertManualBenchmark = async function (b) {
         WHERE rg.revId = ?`
       },
       revGroupRuleCciMap: {
-        sql: `INSERT IGNORE INTO stig.rev_group_rule_cci_map
+        sql: `INSERT IGNORE INTO stigman.rev_group_rule_cci_map
         (rgrId, cci)
         SELECT 
           rgr.rgrId,
           tt.cci
         FROM
-          stig.rev_group_map rg,
-          stig.rev_group_rule_map rgr,
+          stigman.rev_group_map rg,
+          stigman.rev_group_rule_map rgr,
           JSON_TABLE(
             rgr.ccis,
             "$[*]" COLUMNS(
@@ -451,14 +451,14 @@ exports.insertManualBenchmark = async function (b) {
           AND rg.rgId=rgr.rgId`
       },
       revGroupRuleCheckMap: {
-        sql: `INSERT IGNORE INTO stig.rev_group_rule_check_map
+        sql: `INSERT IGNORE INTO stigman.rev_group_rule_check_map
         (rgrId, checkId)
         SELECT 
           rgr.rgrId,
           tt.checkId
         FROM
-          stig.rev_group_map rg,
-          stig.rev_group_rule_map rgr,
+          stigman.rev_group_map rg,
+          stigman.rev_group_rule_map rgr,
           JSON_TABLE(
             rgr.checks,
             "$[*]" COLUMNS(
@@ -470,14 +470,14 @@ exports.insertManualBenchmark = async function (b) {
           AND rg.rgId=rgr.rgId`
       },
       revGroupRuleFixMap: {
-        sql: `INSERT IGNORE INTO stig.rev_group_rule_fix_map
+        sql: `INSERT IGNORE INTO stigman.rev_group_rule_fix_map
         (rgrId, fixId)
         SELECT 
           rgr.rgrId,
           tt.fixId
         FROM
-          stig.rev_group_map rg,
-          stig.rev_group_rule_map rgr,
+          stigman.rev_group_map rg,
+          stigman.rev_group_rule_map rgr,
           JSON_TABLE(
             rgr.fixes,
             "$[*]" COLUMNS(
@@ -702,7 +702,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
   try {
     let rows = await this.getRevisionByString(benchmarkId, revisionStr, userObject)
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    let sqlDelete = `DELETE from stig.revision WHERE benchmarkId = ? and version = ? and release = ?`
+    let sqlDelete = `DELETE from stigman.revision WHERE benchmarkId = ? and version = ? and release = ?`
     await dbUtils.pool.query(sqlDelete, [benchmarkId, version, release])
     return (rows[0])
   }
@@ -721,7 +721,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
 exports.deleteStigById = async function(benchmarkId, userObject) {
   try {
     let rows = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
-    let sqlDelete = `DELETE FROM stig.benchmark where benchmarkId = ?`
+    let sqlDelete = `DELETE FROM stigman.benchmark where benchmarkId = ?`
     await dbUtils.pool.query(sqlDelete, [benchmarkId])
     return (rows[0])
   }
@@ -871,7 +871,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
       r.statusDate,
       r.description
     FROM
-      stig.revision r
+      stigman.revision r
     WHERE
       r.benchmarkId = ?
     ORDER BY

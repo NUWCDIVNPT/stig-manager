@@ -19,10 +19,10 @@
 -- Current Database: `stig`
 --
 
-DROP DATABASE IF EXISTS `stig`;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `stig` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+-- DROP DATABASE IF EXISTS `stig`;
+-- CREATE DATABASE /*!32312 IF NOT EXISTS*/ `stig` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
-USE `stig`;
+USE `stigman`;
 
 --
 -- Table structure for table `cci`
@@ -550,7 +550,7 @@ CREATE TABLE `target` (
 -- Current Database: `stig`
 --
 
-USE `stig`;
+USE `stigman`;
 
 --
 -- Final view structure for view `current_cci`
