@@ -25,7 +25,7 @@ module.exports.initializeDatabase = async function () {
       port: config.database.port,
       user: config.database.username,
       password: config.database.password,
-      // database: config.database.schema,
+      database: config.database.schema,
       typeCast: function (field, next) {
         if (field.type == 'JSON') {
           return (JSON.parse(field.string())); 
@@ -66,9 +66,9 @@ module.exports.initializeDatabase = async function () {
         path: path.join(__dirname, './migrations'),
         params: [module.exports.pool]
       },
-      storage: 'json',
+      storage: path.join(__dirname, './migrations/lib/umzug-mysql-storage'),
       storageOptions: {
-        path: path.join(__dirname, './migrations.json')
+        pool: module.exports.pool
       }
     })
     const migrations = await umzug.pending()
