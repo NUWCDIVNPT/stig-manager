@@ -6,11 +6,12 @@
   "packages.invalid": "[]",
   "assets.valid": "[]",
   "assets.invalid": "[]",
-  "stigs.valid": "[]",
+  "stigs.valid": "[\"Microsoft_Word_2013\",\"Windows_10_STIG\",\"Active_Directory_Domain\"]",
   "stigs.invalid": "[]",
   "testPackage": 21,
   "testBenchmark": "Microsoft_Word_2013",
-  "testRev": "V1R6"
+  "testRev": "V1R6",
+  "testDept" : "10"
 },{
   "user": "staff",
   "elevate": "true",
@@ -18,7 +19,7 @@
   "packages.invalid": "[]",
   "assets.valid": "[]",
   "assets.invalid": "[]",
-  "stigs.valid": "[]",
+  "stigs.valid": "[\"Microsoft_Word_2013\",\"Windows_10_STIG\",\"Active_Directory_Domain\"]",
   "stigs.invalid": "[]",
   "testPackage": 21,
   "testBenchmark": "Microsoft_Word_2013",
@@ -73,7 +74,16 @@
   "testRev": "V1R6"
 },{
   "user": "wf10",
-  "elevate": "true"
+  "elevate": "true",
+  "packages.valid":"[21]",
+  "packages.invalid":"[1,62]",
+  "assets.valid": "[42]",
+  "assets.invalid": "[62]",
+  "stigs.valid": "[\"Microsoft_Word_2013\"]",
+  "stigs.invalid": "[\"Active_Directory_Domain\",\"Windows_10_STIG\"]",
+  "testPackage": 21,
+  "testBenchmark": "Microsoft_Word_2013",
+  "testRev": "V1R6"
 
 }
 
