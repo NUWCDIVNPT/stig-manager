@@ -11,7 +11,8 @@ module.exports = {
             host: config.database.host,
             port: config.database.port,
             user: config.database.username,
-            password: config.database.password                         
+            password: config.database.password,                         
+            database: config.database.schema                         
         })
         let dir = path.join(__dirname, 'sql', migrationName, 'up')
         let files = await fs.promises.readdir(dir)

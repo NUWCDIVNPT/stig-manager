@@ -18,7 +18,7 @@
 -- DROP DATABASE IF EXISTS `stigman`;
 -- CREATE DATABASE /*!32312 IF NOT EXISTS*/ `stigman` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
-USE `stigman`;
+-- USE `stigman`;
 
 --
 -- Table structure for table `action`
@@ -413,8 +413,8 @@ DROP TABLE IF EXISTS `user`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
   `userId` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-  `display` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
+  `username` varchar(255) NOT NULL COLLATE utf8mb4_bin,
+  `display` varchar(255) NOT NULL COLLATE utf8mb4_bin,
   `dept` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `roleId` int(11) DEFAULT NULL,
   `canAdmin` bit(1) DEFAULT 0,

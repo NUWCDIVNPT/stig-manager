@@ -19,7 +19,7 @@
 -- Dumping data for table `action`
 --
 
-USE `stigman`; 
+-- USE `stigman`; 
 
 LOCK TABLES `action` WRITE;
 /*!40000 ALTER TABLE `action` DISABLE KEYS */;
@@ -71,11 +71,11 @@ UNLOCK TABLES;
 -- Dumping data for table `user`
 --
 
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','Staff-Admin','10',4,1);
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `user` WRITE;
+-- /*!40000 ALTER TABLE `user` DISABLE KEYS */;
+-- INSERT INTO `user` VALUES (1,'admin','Staff-Admin','10',4,1);
+-- /*!40000 ALTER TABLE `user` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

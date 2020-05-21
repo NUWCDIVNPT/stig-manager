@@ -4,10 +4,12 @@ const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
 
+let _this = this
+
 module.exports.version = '0.6'
 module.exports.testConnection = async function () {
   try {
-    let [result] = await module.exports.pool.query('SHOW DATABASES')
+    let [result] = await _this.pool.query('SHOW DATABASES')
     console.log('MySQL preflight connection succeeded.')
     return JSON.stringify(result, null, 2)
   }
@@ -18,8 +20,9 @@ module.exports.testConnection = async function () {
 }
 
 module.exports.initializeDatabase = async function () {
-  try { 
-    module.exports.pool = mysql.createPool({
+  try {
+    // Create the connection pool
+    _this.pool = mysql.createPool({
       connectionLimit : 10,
       host: config.database.host,
       port: config.database.port,
@@ -37,7 +40,8 @@ module.exports.initializeDatabase = async function () {
         return next();
       } 
     })
-    module.exports.pool.on('connection', function (connection) {
+    // Set common session variables
+    _this.pool.on('connection', function (connection) {
       connection.query('SET SESSION group_concat_max_len=10000000')
     })
 
@@ -45,7 +49,7 @@ module.exports.initializeDatabase = async function () {
     async function closePoolAndExit() {
       console.log('\nTerminating');
       try {
-        await module.exports.pool.end()
+        await _this.pool.end()
         console.log('Pool closed');
         process.exit(0);
       } catch(err) {
@@ -57,18 +61,18 @@ module.exports.initializeDatabase = async function () {
     process.on('SIGINT', closePoolAndExit)
 
     // Preflight the pool
-    let result = await retry(module.exports.testConnection, {})
+    let result = await retry(_this.testConnection, {})
     console.log(result)
 
     // Perform migrations
     const umzug = new Umzug({
       migrations: {
         path: path.join(__dirname, './migrations'),
-        params: [module.exports.pool]
+        params: [_this.pool]
       },
       storage: path.join(__dirname, './migrations/lib/umzug-mysql-storage'),
       storageOptions: {
-        pool: module.exports.pool
+        pool: _this.pool
       }
     })
     const migrations = await umzug.pending()
@@ -79,6 +83,16 @@ module.exports.initializeDatabase = async function () {
     }
     else {
       console.log(`MySQL schema is up to date.`)
+    }
+
+    // Initialize superuser, if applicable
+    let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user')
+    if (rows[0].users === 0) {
+      await _this.pool.query(
+        'insert into user (username, display, roleId, canAdmin) VALUES (?, ?, ?, ?)',
+        [config.init.superuser, 'Superuser', 4, 1]
+      )
+      console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
     }
   }
   catch (err) {
@@ -104,7 +118,7 @@ module.exports.getUserObject = async function (username) {
         UPPER(username)=UPPER(?)
       `
     binds = [username]
-    const [rows] = await this.pool.query(sql, binds)
+    const [rows] = await _this.pool.query(sql, binds)
     return (rows[0])
   }
   catch (err) {

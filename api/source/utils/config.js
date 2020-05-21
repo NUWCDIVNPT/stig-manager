@@ -13,6 +13,9 @@ let config = {
         username: process.env.STIGMAN_DB_USER || "stigman",
         password: process.env.STIGMAN_DB_PASSWORD || "stigman"
     },
+    init: {
+        superuser: process.env.STIGMAN_SUPERUSER || 'admin'
+    },
     swaggerUi: {
         enabled: process.env.STIGMAN_SWAGGER_ENABLED || false, 
         server: process.env.STIGMAN_SWAGGER_SERVER || "http://localhost:54000/stig-manager/api",

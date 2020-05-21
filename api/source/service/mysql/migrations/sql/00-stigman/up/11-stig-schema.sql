@@ -22,7 +22,7 @@
 -- DROP DATABASE IF EXISTS `stig`;
 -- CREATE DATABASE /*!32312 IF NOT EXISTS*/ `stig` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
-USE `stigman`;
+-- USE `stigman`;
 
 --
 -- Table structure for table `cci`
@@ -33,7 +33,6 @@ DROP TABLE IF EXISTS `cci`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cci` (
   `cci` varchar(20) NOT NULL,
-  `cciNum` varchar(20) NOT NULL,
   `status` varchar(20) NOT NULL,
   `publishdate` date NOT NULL,
   `contributor` varchar(255) NOT NULL,
@@ -42,7 +41,8 @@ CREATE TABLE `cci` (
   `apAcronym` varchar(20) DEFAULT NULL,
   `implementation` text,
   `assessmentProcedure` text,
-  PRIMARY KEY (`cci`)
+  PRIMARY KEY (`cci`),
+  KEY `ap` (`apAcronym`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
