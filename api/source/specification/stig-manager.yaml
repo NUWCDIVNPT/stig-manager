@@ -266,7 +266,6 @@ paths:
         - Asset
       summary: Create an Asset
       operationId: createAsset
-      x-codegen-request-body-name: body
       requestBody:
         required: true
         x-name: body
@@ -443,7 +442,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Review'
+                $ref: '#/components/schemas/ChecklistAsset'
             application/xml:
               schema:
                 $ref: '#/components/schemas/ChecklistCkl'
@@ -1634,17 +1633,6 @@ paths:
             - 'stig-manager:stig:read'
 components:
   schemas:
-    Error:
-      required:
-        - code
-        - message
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
     ApiVersion:
       type: object
       properties:
@@ -1654,93 +1642,6 @@ components:
           type: string
         nearest-tag:
           type: string
-    Package:
-      type: object
-      properties:
-        packageId:
-          readOnly: true
-          type: integer
-          nullable: false
-        name:
-          type: string
-          nullable: false
-        emassId:
-          type: string
-          nullable: true
-        pocName:
-          type: string
-          nullable: true
-        pocEmail:
-          type: string
-          nullable: true
-        pocPhone:
-          type: string
-          nullable: true
-        reqRar:
-          type: boolean
-          nullable: true
-    PackageBasic:
-      type: object
-      properties:
-        packageId:
-          type: integer
-        name:
-          type: string
-    PackageProjected:
-      allOf:
-        - $ref: '#/components/schemas/Package'
-        - type: object
-          properties:
-            assets:
-              type: array
-              items:
-                $ref: '#/components/schemas/AssetBasic'
-            stigs:
-              type: array
-              items:
-                $ref: '#/components/schemas/STIG'
-    PackageCreateOrReplace:
-      required:
-        - name
-        - emassId
-        - pocName
-        - pocEmail
-        - pocPhone
-        - reqRar
-        - assetIds
-      additionalProperties: false
-      type: object
-      properties:
-        name:
-          type: string
-          nullable: false
-        emassId:
-          type: string
-          nullable: true
-        pocName:
-          type: string
-          nullable: true
-        pocEmail:
-          type: string
-          nullable: true
-        pocPhone:
-          type: string
-          nullable: true
-        reqRar:
-          type: boolean
-        assetIds:
-          type: array
-          items:
-            type: integer
-    PackageUpdate:
-      allOf:
-        - $ref: '#/components/schemas/Package'
-        - type: object
-          properties:
-            assetIds:
-              type: array
-              items:
-                type: integer
     Asset:
       type: object
       properties:
@@ -1759,43 +1660,6 @@ components:
         nonnetwork:
           type: boolean
           nullable: true
-        scanexempt:
-          type: boolean
-          nullable: true
-    AssetProjected:
-      allOf:
-        - $ref: '#/components/schemas/Asset'
-        - type: object
-          properties:
-            adminStats:
-              type: object
-              properties:
-                stigCount:
-                  type: integer
-                stigAssignedCount:
-                  type: integer
-            packages:
-              type: array
-              description: The Packages mapped to this Asset
-              items:
-                $ref: '#/components/schemas/PackageBasic'
-            stigs:
-              type: array
-              description: The benchmarkIds of STIGs mapped to this Asset
-              items:
-                $ref: '#/components/schemas/STIG'
-            stigReviewers:
-              type: array
-              description: The benchmarkIds of STIGs mapped to this Asset
-              items:
-                type: object
-                properties:
-                  benchmarkId:
-                    type: string
-                  reviewers:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserBasic'
     AssetBasic:
       type: object
       properties:
@@ -1805,458 +1669,98 @@ components:
           type: string
     AssetCreateOrReplace:
       required:
-        - name
-      allOf:
-        - $ref: '#/components/schemas/AssetUpdate'
-    AssetUpdate:
-      allOf:
-        - $ref: '#/components/schemas/Asset'
-        - type: object
-          properties:
-            packageIds:
-              description: The packageIds mapped to this Asset
-              type: array
-              items:
-                type: integer
-            benchmarkIds:
-              description: The benchmarkIds mapped to this Asset
-              type: array
-              items:
-                type: string
-            stigReviewers:
-              description: The benchmarkIds and reviewers mapped to this Asset
-              type: array
-              items:
-                type: object
-                properties:
-                  benchmarkId:
-                    type:  string
-                  userIds:
-                    type: array
-                    items:
-                      type: integer
-    UserRole:
-      type: string
-      enum:
-        - Staff
-        - IAO
-        - IAWF
-    User:
-      type: object
+      - name
+      - dept
+      - ip
+      - nonnetwork
+      - stigReviewers
+      - packageIds
       properties:
-        userId:
-          type: integer
-          readOnly: true
-        username:
+        name:
           type: string
-        display:
-          type: string
+          nullable: false
         dept:
           type: string
-        role:
-          $ref: '#/components/schemas/UserRole'
-        canAdmin:
-          type: boolean
-    UserCreateOrReplace:
-      required:
-        - username
-        - dept
-        - display
-        - role
-      allOf:
-        - $ref: '#/components/schemas/UserUpdate'
-    UserUpdate:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            stigReviews:
-              type: array
-              items:
-                $ref: '#/components/schemas/StigAssetBasic'
-    UserProjected:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            stigReviews:
-              type: array
-              items:
-                $ref: '#/components/schemas/StigAssetExtended'
-    UserBasic:
-      type: object
-      properties:
-        userId:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-    ReviewState:
-      description: The Review state
-      type: string
-      enum:
-        - O
-        - NF
-        - NA
-    ReviewAction:
-      type: string
-      nullable: true
-      enum:
-        - Remediate
-        - Mitigate
-        - Exception
-        - null
-    ReviewStatus:
-      type: string
-      enum:
-        - saved
-        - submitted
-        - approved
-        - rejected
-    ReviewPut:
-      type: object
-      required:
-        - state
-        - stateComment
-      properties:
-        assetId:
-          type: integer
-        ruleId:
-          type: string
-        state:
-          $ref: '#/components/schemas/ReviewState'
-        stateComment:
+          nullable: false
+        ip:
           type: string
           nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        autoState:
+        nonnetwork:
           type: boolean
           nullable: true
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-    ReviewAssetRulePut:
-      type: object
-      required:
-        - state
-        - stateComment
-      properties:
-        state:
-          $ref: '#/components/schemas/ReviewState'
-        stateComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        autoState:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-    ReviewAssetRulePatch:
-      type: object
-      properties:
-        state:
-          $ref: '#/components/schemas/ReviewState'
-        stateComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        autoState:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-    Review:
-      type: object
-      properties:
-        reviewId:
-          type: integer
-          readOnly: true
-        assetId:
-          type: integer
-        ruleId:
-          type: string
-        state:
-          $ref: '#/components/schemas/ReviewState'
-        stateComment:
-          type: string
-        autoState:
-          type: boolean
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-        reqDoc:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-        userId:
-          type: integer
-          readOnly: true
-        ts:
-          type: string
-          readOnly: true
-        rejectText:
-          description: Ignored unless status='Rejected'
-          type: string
-        rejectUserId:
-          type: integer
-          readOnly: true
-    ReviewHistory:
-      type: object
-      properties:
-        ts:
-          type: string
-        activityType:
-          type: string
-        columnName:
-          type: string
-        oldValue:
-          type: string
-        newValue:
-          type: string
-        userId:
-          type: integer
-        username:
-          type: string
-    ReviewWithHistoryProjected:
-      allOf:
-        - $ref: '#/components/schemas/Review'
-        - type: object
-          properties:
-            history:
-              type: array
-              items:
-                $ref: '#/components/schemas/ReviewHistory'
-            asset:
-              $ref: '#/components/schemas/AssetBasic'
-            stigs:
-              type: array
-              items:
-                type: string
-            rule:
-              $ref: '#/components/schemas/RuleAbbr'
-    ReviewProjected:
-      allOf:
-        - $ref: '#/components/schemas/Review'
-        - type: object
-          properties:
-            asset:
-              $ref: '#/components/schemas/AssetBasic'
-            stigs:
-              type: array
-              items:
-                type: string
-            rule:
-              $ref: '#/components/schemas/RuleAbbr'
-    StigAssetProjected:
-       allOf:
-        - $ref: '#/components/schemas/AssetBasic'
-        - type: object
-          properties:
-            reviewers:
-              type: array
-              items:
-                $ref: '#/components/schemas/UserBasic'
-    StigAsset:
-      type: object
-      properties:
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-    StigAssetExtended:
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-    StigAssetBasic:
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        assetId:
-          type: integer
-    STIG:
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        lastRevisionStr:
-          type: string
-        lastRevisionDate:
-          type: string
-        title:
-          type: string
-    Revision:
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          type: string
-        version:
-          type: string
-        release:
-          type: string
-        benchmarkDate:
-          type: string
-        status:
-          type: string
-        statusDate:
-          type: string
-        description:
-          type: string
-    Group:
-      type: array
-      items:
-        type: object
-        properties:
-          groupId:
-            type: string
-          title:
-            type: string
-    GroupProjected:
-      allOf:
-        - $ref: '#/components/schemas/Group'
-        - type: object
-          properties:
-            rules:
-              type: array
-              items:
-                $ref: '#/components/schemas/RuleAbbr'
-    Rule:
-      type: object
-      properties:
-        ruleId:
-          type: string
-        groupId:
-          type: string
-        groupTitle:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string
-    RuleProjected:
-      allOf:
-        - $ref: '#/components/schemas/Rule'
-        - type: object
-          properties:
-            weight:
-              type: string
-            vulnDiscussion:
-              type: string
-            falsePositives:
-              type: string
-            falseNegatives:
-              type: string
-            documentable:
-              type: string
-            mitigations:
-              type: string
-            securityOverrideGuidance:
-              type: string
-            potentialImpacts:
-              type: string
-            thirdPartyTools:
-              type: string
-            mitigationControl:
-              type: string
-            responsibility:
-              type: string
-    RuleDetailProjected:
-      allOf:
-        - $ref: '#/components/schemas/RuleProjected'
-        - type: object
-          properties:
-            cci:
-              type: array
-              items:
-                $ref: '#/components/schemas/CciRuleItem'
-            checks:
-              type: array
-              items:
-                $ref: '#/components/schemas/Check'
-            fixes:
-              type: array
-              items:
-                $ref: '#/components/schemas/Fix'
-    RuleAbbr:
-      type: object
-      properties:
-        ruleId:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string
-    Check:
-      type: object
-      properties:
-        checkId:
-          type: string
-        content:
-          type: string
-    Fix:
-      type: object
-      properties:
-        fixId:
-          type: string
-        text:
-          type: string
-    CciRuleItem:
-      type: object
-      properties:
-        cci:
-          type: string
-        ap:
-          description: eMASS Assessment Procedure
-          type: string
-        control:
-          description: NIST 800-53r4 control
-          type: string
-    CciReferenceItem:
-      type: object
-      properties:
-        creator:
-          type: string
-        title:
-          type: string
-        version:
-          type: string
-        location:
-          type: string
-        indexDisa:
-          type: string
-        textRefNist:
-          type: string
-        parentControl:
-          type: string
-    CciListItem:
-      type: object
-      properties:
-        cci:
-          type: string
-        type:
-          type: string
-        references:
+        packageIds:
+          description: The packageIds mapped to this Asset
           type: array
           items:
-            $ref: '#/components/schemas/CciReferenceItem'
+            type: integer
+        stigReviewers:
+          description: The benchmarkIds and reviewers mapped to this Asset
+          type: array
+          items:
+            type: object
+            properties:
+              benchmarkId:
+                type: string
+              userIds:
+                type: array
+                items:
+                  type: integer
+    AssetProjected:
+      allOf:
+      - "$ref": "#/components/schemas/Asset"
+      - type: object
+        properties:
+          adminStats:
+            type: object
+            properties:
+              stigCount:
+                type: integer
+              stigAssignedCount:
+                type: integer
+          packages:
+            type: array
+            description: The Packages mapped to this Asset
+            items:
+              "$ref": "#/components/schemas/PackageBasic"
+          stigs:
+            type: array
+            description: The benchmarkIds mapped to this Asset
+            items:
+              "$ref": "#/components/schemas/STIG"
+          stigReviewers:
+            type: array
+            description: The benchmarkIds and reviewers mapped to this Asset
+            items:
+              type: object
+              properties:
+                benchmarkId:
+                  type: string
+                reviewers:
+                  type: array
+                  items:
+                    "$ref": "#/components/schemas/UserBasic"
+    AssetUpdate:
+      allOf:
+      - "$ref": "#/components/schemas/Asset"
+      - type: object
+        properties:
+          packageIds:
+            description: The packageIds mapped to this Asset
+            type: array
+            items:
+              type: integer
+          stigReviewers:
+            description: The benchmarkIds and reviewers mapped to this Asset
+            type: array
+            items:
+              type: object
+              properties:
+                benchmarkId:
+                  type: string
+                userIds:
+                  type: array
+                  items:
+                    type: integer
     Cci:
       type: object
       properties:
@@ -2275,11 +1779,84 @@ components:
         references:
           type: array
           items:
-            $ref: '#/components/schemas/CciReferenceItem'
+            "$ref": "#/components/schemas/CciReferenceItem"
         current_revisions:
           type: array
           items:
-            $ref: '#/components/schemas/Revision'
+            "$ref": "#/components/schemas/Revision"
+    CciListItem:
+      type: object
+      properties:
+        cci:
+          type: string
+        type:
+          type: string
+        references:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CciReferenceItem"
+    CciReferenceItem:
+      type: object
+      properties:
+        creator:
+          type: string
+        title:
+          type: string
+        version:
+          type: string
+        location:
+          type: string
+        indexDisa:
+          type: string
+        textRefNist:
+          type: string
+        parentControl:
+          type: string
+    CciRuleItem:
+      type: object
+      properties:
+        cci:
+          type: string
+        ap:
+          description: eMASS Assessment Procedure
+          type: string
+        control:
+          description: NIST 800-53r4 control
+          type: string
+    Check:
+      type: object
+      properties:
+        checkId:
+          type: string
+        content:
+          type: string
+    ChecklistAsset:
+      type: object
+      properties:
+        assetId:
+          type: integer
+        ruleId:
+          type: string
+        ruleTitle:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
+          type: string
+        severity:
+          "$ref": "#/components/schemas/RuleSeverity"
+        state:
+          "$ref": "#/components/schemas/ChecklistState"
+        status:
+          "$ref": "#/components/schemas/ChecklistStatus"
+        autoState:
+          type: boolean
+        hasAttachment:
+          type: boolean
+        complete:
+          type: boolean
+        checkType:
+          "$ref": "#/components/schemas/ReviewCheckType"
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -2340,10 +1917,10 @@ components:
                       STATUS:
                         type: string
                         enum:
-                          - Open
-                          - NotAFinding
-                          - Not_Applicable
-                          - Not_Reviewed
+                        - Open
+                        - NotAFinding
+                        - Not_Applicable
+                        - Not_Reviewed
                       FINDING_DETAILS:
                         type: string
                       COMMENTS:
@@ -2352,6 +1929,509 @@ components:
                         type: string
                       SEVERITY_JUSTIFICATION:
                         type: string
+    ChecklistState:
+      description: The Review result
+      type: string
+      nullable: true
+      enum:
+      - O
+      - NF
+      - NA
+      - 
+    ChecklistStatus:
+      type: string
+      nullable: true
+      enum:
+      - saved
+      - submitted
+      - approved
+      - rejected
+      - 
+    Error:
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    Fix:
+      type: object
+      properties:
+        fixId:
+          type: string
+        text:
+          type: string
+    Group:
+      type: array
+      items:
+        type: object
+        properties:
+          groupId:
+            type: string
+          title:
+            type: string
+    GroupProjected:
+      allOf:
+      - "$ref": "#/components/schemas/Group"
+      - type: object
+        properties:
+          rules:
+            type: array
+            items:
+              "$ref": "#/components/schemas/RuleAbbr"
+    Package:
+      type: object
+      properties:
+        packageId:
+          readOnly: true
+          type: integer
+          nullable: false
+        name:
+          type: string
+          nullable: false
+        emassId:
+          type: string
+          nullable: true
+        pocName:
+          type: string
+          nullable: true
+        pocEmail:
+          type: string
+          nullable: true
+        pocPhone:
+          type: string
+          nullable: true
+        reqRar:
+          type: boolean
+          nullable: true
+    PackageBasic:
+      type: object
+      properties:
+        packageId:
+          type: integer
+        name:
+          type: string
+    PackageCreateOrReplace:
+      required:
+      - name
+      - emassId
+      - pocName
+      - pocEmail
+      - pocPhone
+      - reqRar
+      - assetIds
+      additionalProperties: false
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: false
+        emassId:
+          type: string
+          nullable: true
+        pocName:
+          type: string
+          nullable: true
+        pocEmail:
+          type: string
+          nullable: true
+        pocPhone:
+          type: string
+          nullable: true
+        reqRar:
+          type: boolean
+        assetIds:
+          type: array
+          items:
+            type: integer
+    PackageProjected:
+      allOf:
+      - "$ref": "#/components/schemas/Package"
+      - type: object
+        properties:
+          assets:
+            type: array
+            items:
+              "$ref": "#/components/schemas/AssetBasic"
+          stigs:
+            type: array
+            items:
+              "$ref": "#/components/schemas/STIG"
+    PackageUpdate:
+      allOf:
+      - "$ref": "#/components/schemas/Package"
+      - type: object
+        properties:
+          assetIds:
+            type: array
+            items:
+              type: integer
+    Review:
+      type: object
+      properties:
+        reviewId:
+          type: integer
+          readOnly: true
+        assetId:
+          type: integer
+        ruleId:
+          type: string
+        state:
+          "$ref": "#/components/schemas/ReviewState"
+        stateComment:
+          type: string
+        autoState:
+          type: boolean
+        action:
+          "$ref": "#/components/schemas/ReviewAction"
+        actionComment:
+          type: string
+        reqDoc:
+          type: boolean
+        status:
+          "$ref": "#/components/schemas/ReviewStatus"
+        userId:
+          type: integer
+          readOnly: true
+        ts:
+          type: string
+          readOnly: true
+        rejectText:
+          description: Ignored unless status='Rejected'
+          type: string
+        rejectUserId:
+          type: integer
+          readOnly: true
+    ReviewAction:
+      type: string
+      nullable: true
+      enum:
+      - Remediate
+      - Mitigate
+      - Exception
+      - 
+    ReviewAssetRulePatch:
+      type: object
+      properties:
+        state:
+          "$ref": "#/components/schemas/ReviewState"
+        stateComment:
+          type: string
+          nullable: true
+        action:
+          "$ref": "#/components/schemas/ReviewAction"
+        actionComment:
+          type: string
+          nullable: true
+        autoState:
+          type: boolean
+        status:
+          "$ref": "#/components/schemas/ReviewStatus"
+    ReviewAssetRulePut:
+      type: object
+      required:
+      - state
+      - stateComment
+      properties:
+        state:
+          "$ref": "#/components/schemas/ReviewState"
+        stateComment:
+          type: string
+          nullable: true
+        action:
+          "$ref": "#/components/schemas/ReviewAction"
+        actionComment:
+          type: string
+          nullable: true
+        autoState:
+          type: boolean
+        status:
+          "$ref": "#/components/schemas/ReviewStatus"
+    ReviewCheckType:
+      type: string
+      enum:
+      - scap
+      - manual
+    ReviewHistory:
+      type: object
+      properties:
+        ts:
+          type: string
+        activityType:
+          type: string
+        columnName:
+          type: string
+        oldValue:
+          type: string
+        newValue:
+          type: string
+        userId:
+          type: integer
+        username:
+          type: string
+    ReviewProjected:
+      allOf:
+      - "$ref": "#/components/schemas/Review"
+      - type: object
+        properties:
+          asset:
+            "$ref": "#/components/schemas/AssetBasic"
+          stigs:
+            type: array
+            items:
+              type: string
+          rule:
+            "$ref": "#/components/schemas/RuleAbbr"
+    ReviewPut:
+      type: object
+      required:
+      - state
+      - stateComment
+      properties:
+        assetId:
+          type: integer
+        ruleId:
+          type: string
+        state:
+          "$ref": "#/components/schemas/ReviewState"
+        stateComment:
+          type: string
+          nullable: true
+        action:
+          "$ref": "#/components/schemas/ReviewAction"
+        actionComment:
+          type: string
+          nullable: true
+        autoState:
+          type: boolean
+          nullable: true
+        status:
+          "$ref": "#/components/schemas/ReviewStatus"
+    ReviewState:
+      description: The Review state
+      type: string
+      enum:
+      - O
+      - NF
+      - NA
+    ReviewStatus:
+      type: string
+      enum:
+      - saved
+      - submitted
+      - approved
+      - rejected
+    ReviewWithHistoryProjected:
+      allOf:
+      - "$ref": "#/components/schemas/Review"
+      - type: object
+        properties:
+          history:
+            type: array
+            items:
+              "$ref": "#/components/schemas/ReviewHistory"
+          asset:
+            "$ref": "#/components/schemas/AssetBasic"
+          stigs:
+            type: array
+            items:
+              type: string
+          rule:
+            "$ref": "#/components/schemas/RuleAbbr"
+    Revision:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          type: string
+        version:
+          type: string
+        release:
+          type: string
+        benchmarkDate:
+          type: string
+        status:
+          type: string
+        statusDate:
+          type: string
+        description:
+          type: string
+    Rule:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+    RuleAbbr:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+    RuleDetailProjected:
+      allOf:
+      - "$ref": "#/components/schemas/RuleProjected"
+      - type: object
+        properties:
+          cci:
+            type: array
+            items:
+              "$ref": "#/components/schemas/CciRuleItem"
+          checks:
+            type: array
+            items:
+              "$ref": "#/components/schemas/Check"
+          fixes:
+            type: array
+            items:
+              "$ref": "#/components/schemas/Fix"
+    RuleProjected:
+      allOf:
+      - "$ref": "#/components/schemas/Rule"
+      - type: object
+        properties:
+          weight:
+            type: string
+          vulnDiscussion:
+            type: string
+          falsePositives:
+            type: string
+          falseNegatives:
+            type: string
+          documentable:
+            type: string
+          mitigations:
+            type: string
+          securityOverrideGuidance:
+            type: string
+          potentialImpacts:
+            type: string
+          thirdPartyTools:
+            type: string
+          mitigationControl:
+            type: string
+          responsibility:
+            type: string
+    RuleSeverity:
+      type: string
+      enum:
+      - high
+      - medium
+      - low
+    STIG:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        lastRevisionStr:
+          type: string
+        lastRevisionDate:
+          type: string
+        title:
+          type: string
+    StigAsset:
+      type: object
+      properties:
+        asset:
+          "$ref": "#/components/schemas/AssetBasic"
+    StigAssetBasic:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        assetId:
+          type: integer
+    StigAssetExtended:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        asset:
+          "$ref": "#/components/schemas/AssetBasic"
+    StigAssetProjected:
+      allOf:
+      - "$ref": "#/components/schemas/AssetBasic"
+      - type: object
+        properties:
+          reviewers:
+            type: array
+            items:
+              "$ref": "#/components/schemas/UserBasic"
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+        display:
+          type: string
+        dept:
+          type: string
+        role:
+          "$ref": "#/components/schemas/UserRole"
+        canAdmin:
+          type: boolean
+    UserBasic:
+      type: object
+      properties:
+        userId:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+    UserCreateOrReplace:
+      required:
+      - username
+      - dept
+      - display
+      - role
+      allOf:
+      - "$ref": "#/components/schemas/UserUpdate"
+    UserProjected:
+      allOf:
+      - "$ref": "#/components/schemas/User"
+      - type: object
+        properties:
+          stigReviews:
+            type: array
+            items:
+              "$ref": "#/components/schemas/StigAssetExtended"
+    UserRole:
+      type: string
+      enum:
+      - Staff
+      - IAO
+      - IAWF
+    UserUpdate:
+      allOf:
+      - "$ref": "#/components/schemas/User"
+      - type: object
+        properties:
+          stigReviews:
+            type: array
+            items:
+              "$ref": "#/components/schemas/StigAssetBasic"
   parameters:
     ElevateQuery:
       name: elevate

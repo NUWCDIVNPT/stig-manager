@@ -145,6 +145,150 @@ module.exports.parseRevisionStr = function (revisionStr) {
   return ro
 }
 
+// Returns Boolean
+module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
+  try {
+    let context, sql
+    if (userObject.role == 'Staff' || elevate) {
+      return true
+    } else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+      sql = `
+        SELECT
+          a.assetId
+        FROM
+          asset a
+        WHERE
+          a.assetId = ? and a.dept = ?
+      `
+      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept])
+      return rows.length > 0   
+    } else {
+      sql = `
+        SELECT
+          sa.assetId,
+          rgr.ruleId
+        FROM
+          user_stig_asset_map usa
+          inner join stig_asset_map sa on (usa.assetId = sa.assetId and usa.benchmarkId = sa.benchmarkId)
+          inner join revision rev on sa.benchmarkId = rev.benchmarkId
+          inner join rev_group_map rg on rev.revId = rg.revId
+          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+        WHERE
+          usa.userId = ? and assetId = ? and ruleId = ?`
+      let [rows] = await _this.pool.query(sql, [userObject.id, assetId, ruleId])
+      return rows.length > 0   
+    }
+  }
+  catch (e) {
+    throw (e)
+  }
+}
+
+// Returns Boolean
+module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
+  try {
+    let sql
+    if (userObject.role == 'Staff' || elevate) {
+      return true
+    } else if (userObject.role == "IAO") {
+      sql = `
+        SELECT
+          a.assetId
+        FROM
+          asset a
+        WHERE
+          a.assetId = ? and a.dept = ?
+      `
+      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept])
+      return rows.length > 0   
+    } else {
+      sql = `
+        SELECT
+          sa.assetId,
+          sa.benchmarkId
+        FROM
+          user_stig_asset_map usa
+          inner join stig_asset_map sa on (usa.assetId = sa.assetId and usa.benchmarkId = sa.benchmarkId)
+        WHERE
+          usa.userId = ? and assetId = ? and benchmarkId = ?`
+      let [rows] = await _this.pool.query(sql, [userObject.id, assetId, benchmarkId])
+      return rows.length > 0   
+    }
+  }
+  catch (e) {
+    throw (e)
+  }
+}
+
+
+// @param reviews Array List of Review objects
+// @param elevate Boolean 
+// @param userObject Object
+module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
+  try {
+    let context, sql, permitted = [], rejected = []
+    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+      permitted = reviews
+    } 
+    else if (userObject.role == "IAO") {
+      context = dbUtils.CONTEXT_DEPT
+      sql = `
+        SELECT
+          a.assetId
+        FROM
+          asset a
+        WHERE
+          a.assetId = ? and a.dept = ?
+      `
+      let [allowedAssets] = await _this.pool.query(sql, [assetId, userObject.dept])
+      // allowedAssets has permitted assetIds
+      reviews.forEach(review => {
+        if (allowedAssets.includes(review.assetId)) {
+          permitted.push(review)
+        }
+        else {
+          rejected.push(review)
+        }
+      })
+    } 
+    else {
+      sql = `
+        SELECT
+          CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
+        FROM
+          user_stig_asset_map usa
+          inner join stig_asset_map sa on (usa.assetId = sa.assetId and usa.benchmarkId = sa.benchmarkId)
+          inner join revision rev on sa.benchmarkId = rev.benchmarkId
+          inner join rev_group_map rg on rev.revId = rg.revId
+          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+        WHERE
+          usa.userId = ?`
+      let [rows] = await _this.pool.query(sql, [userObject.id])
+      let allowedAssetRules = rows.map(r => r.permitted)
+      await connection.close()
+      reviews.forEach(review => {
+        if (allowedAssetRules.includes(`${review.assetId}-${review.ruleId}`)) {
+          permitted.push(review)
+        }
+        else {
+          rejected.push(review)
+        }
+      })
+    }
+    return {
+      permitted: permitted,
+      rejected: rejected
+    }
+
+  }
+  catch (e) {
+    throw (e)
+  }
+
+}
+
+
 module.exports.CONTEXT_ALL = 'all'
 module.exports.CONTEXT_DEPT = 'department'
 module.exports.CONTEXT_USER = 'user'

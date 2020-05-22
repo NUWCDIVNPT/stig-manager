@@ -60,19 +60,6 @@ module.exports.parseCkl = async function (cklData) {
     return resultArray
   }
 
-  function processSiData(siDataElements) {
-    let stigInfo = {}
-    siDataElements.forEach(siData => {
-      if (siData.SID_NAME[0] == 'stigid') {
-        stigInfo.stigId = siData.SID_DATA[0]
-      }
-      if (siData.SID_NAME[0] == 'releaseinfo') {
-        stigInfo.release = siData.SID_DATA[0]
-      }
-    })
-    return stigInfo
-  }
-
   function processVuln(vulnElements) {
     // elVuln is an array of this object, all property values are arrays:
     // {
@@ -421,7 +408,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           }
           
           if (parsed.Responsibility) {
-            parsed.Responsibility = parsed.Responsibility.replace(/<\/Responsibility><Responsibility/g, ', ')
+            parsed.Responsibility = parsed.Responsibility.replace(/<\/Responsibility><Responsibility>/g, ', ')
           }
           return parsed
         }

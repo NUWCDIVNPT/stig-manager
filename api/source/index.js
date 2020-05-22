@@ -17,8 +17,7 @@ const writer = require('./utils/writer.js')
 
 
 const app = express();
-// app.use(upload.fields([{name: "importFile"}]))
-app.use(upload.single('importFile')) //TODO: Only attach multer to routes with multipart/form-data
+app.use(upload.single('importFile'))
 
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
@@ -59,6 +58,8 @@ oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${con
 // Initialize the Swagger middleware
 oasTools.configure(options)
 oasTools.initialize(oasDoc, app, function () {
+  // app.use('/stig-manager/ui', )
+  app.use('/stig-manager/ui', express.static(path.join(__dirname, '../../clients/extjs')))
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
       oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
     }))

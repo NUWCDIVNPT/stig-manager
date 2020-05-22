@@ -131,7 +131,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     'r.ruleId',
     'r.title',
     'g.groupId',
-    'g.title',
+    'g.title as "groupTitle"',
     'r.version',
     'r.severity'
   ]
@@ -157,14 +157,14 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   predicates.binds.push(benchmarkId)
   
   if (revisionStr != 'latest') {
-    joins = ['stigman.revision rev']
+    joins = ['revision rev']
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
     predicates.statements.push('rev.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('rev.release = ?')
     predicates.binds.push(release)
   } else {
-    joins = ['stigman.current_rev rev']
+    joins = ['current_rev rev']
   }
   
   if (inPredicates && inPredicates.ruleId) {
@@ -172,10 +172,10 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     predicates.binds.push(inPredicates.ruleId)
   }
 
-  joins.push('left join stigman.rev_group_map rg on rev.revId = rg.revId')
-  joins.push('left join stigman.group g on rg.groupId = g.groupId')
-  joins.push('left join stigman.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-  joins.push('left join stigman.rule r on rgr.ruleId = r.ruleId' )
+  joins.push('left join rev_group_map rg on rev.revId = rg.revId')
+  joins.push('left join `group` g on rg.groupId = g.groupId')
+  joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+  joins.push('left join rule r on rgr.ruleId = r.ruleId' )
 
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
@@ -217,23 +217,23 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       'cci', rgrc.cci,
       'ap', cci.apAcronym,
       'control',  cr.indexDisa)) 
-      from stigman.rev_group_rule_cci_map rgrc 
-      left join stigman.cci cci on rgrc.cci = cci.cci
-      left join stigman.cci_reference_map cr on cci.cci = cr.cci
+      from rev_group_rule_cci_map rgrc 
+      left join cci cci on rgrc.cci = cci.cci
+      left join cci_reference_map cr on cci.cci = cr.cci
       where rgrc.rgrId = rgr.rgrId) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
       'checkId', rck.checkId,
       'content', chk.content))
-      from stigman.rev_group_rule_check_map rck left join stigman.check chk on chk.checkId = rck.checkId
+      from rev_group_rule_check_map rck left join \`check\` chk on chk.checkId = rck.checkId
       where rck.rgrId = rgr.rgrId) as "checks"`)
   }
   if ( inProjection && inProjection.includes('fixes') ) {
     columns.push(`(select json_arrayagg(json_object(
       'fixId', rf.fixId,
       'text', fix.text))
-      from stigman.rev_group_rule_fix_map rf left join stigman.fix fix on fix.fixId = rf.fixId
+      from rev_group_rule_fix_map rf left join fix fix on fix.fixId = rf.fixId
       where rf.rgrId = rgr.rgrId) as "fixes"`)
   }
 
@@ -252,6 +252,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   sql += ` order by substring(r.ruleId from 4) + 0`
 
   try {
+    let formatted = dbUtils.pool.format(sql, predicates.binds)
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
     for (let x = 0, l = rows.length; x < l; x++) {
       let record = rows[x]
@@ -526,12 +527,12 @@ exports.insertManualBenchmark = async function (b) {
           ruleBinds.title,
           ruleBinds.severity,
           ruleBinds.weight,
-          ruleBinds.vulnDiscusssion,
+          ruleBinds.vulnDiscussion,
           ruleBinds.falsePositives,
           ruleBinds.falseNegatives,
           ruleBinds.documentable,
           ruleBinds.mitigations,
-          ruleBinds.securityOverrideGuidance,
+          ruleBinds.severityOverrideGuidance,
           ruleBinds.potentialImpacts,
           ruleBinds.thirdPartyTools,
           ruleBinds.mitigationControl,
