@@ -39,14 +39,16 @@ let options = {
 let spec = fs.readFileSync(path.join(__dirname,'./specification/stig-manager.yaml'), 'utf8')
 let oasDoc = jsyaml.safeLoad(spec)
 
-// oas-tools uses x-swagger-router-controller property to route path/method
+// oas-tools uses x-name property of requestBody to set name of the body parameter
+// oas-tools uses x-swagger-router-controller property to determine the controller
 // Set x-swagger-router-controller based on the first tag of each path/method
 for (const path in oasDoc.paths) {
   for (const method in oasDoc.paths[path]) {
-    if (! oasDoc.paths[path][method]['x-swagger-router-controller']) {
-      if (Array.isArray(oasDoc.paths[path][method].tags)) {
-        oasDoc.paths[path][method]['x-swagger-router-controller'] = oasDoc.paths[path][method].tags[0]
-      }  
+    if (Array.isArray(oasDoc.paths[path][method].tags)) {
+      oasDoc.paths[path][method]['x-swagger-router-controller'] = oasDoc.paths[path][method].tags[0]
+    }  
+    if (oasDoc.paths[path][method].requestBody) {
+      oasDoc.paths[path][method].requestBody['x-name'] = 'body'
     }
   }
 }

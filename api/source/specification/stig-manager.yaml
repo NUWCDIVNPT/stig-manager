@@ -45,7 +45,6 @@ paths:
       operationId: createPackage
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -102,12 +101,10 @@ paths:
     patch:
       tags:
         - Package
-      summary: Merge updates to a Package
+      summary: Merge provided properties with a Package
       operationId: updatePackage
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -131,12 +128,10 @@ paths:
     put:
       tags:
         - Package
-      summary: Replace all properties of a Package
+      summary: Set all properties of a Package
       operationId: replacePackage
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -212,7 +207,194 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PackageProjected'
+                $ref: '#/components/schemas/ChecklistPackageStig'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+  '/packages/{packageId}/findings':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+      - $ref: '#/components/parameters/AssetIdQuery'
+      - $ref: '#/components/parameters/GroupIdQuery'
+      - $ref: '#/components/parameters/FindingProjectionQuery'
+    get:
+      tags:
+        - Package
+      summary: Return the Findings for the specified Package
+      operationId: getFindingsByPackage
+      responses:
+        '200':
+          description: PackageFinding response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageFinding'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+  '/packages/{packageId}/findings/emass_poam':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+    get:
+      tags:
+        - Package
+      summary: Return the eMASS Plan of Action and Milestones (POAM) in XLSX format
+      operationId: getPoamByPackage
+      responses:
+        '200':
+          description: EMassPoam response
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+  '/packages/{packageId}/findings/emass_poam/{groupId}':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+      - $ref: '#/components/parameters/GroupIdPath'
+    get:
+      tags:
+        - Package
+      summary: Return the eMASS POAM record for the specified Package and Finding (groupId)
+      operationId: getPoamRecordByPackageGroup
+      responses:
+        '200':
+          description: PoamRecord response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmassPoamRecord'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+    put:
+      tags:
+        - Package
+      summary: Set all properties of the eMASS POAM record for a Finding (groupId)
+      operationId: setPoamRecordByPackageGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmassPoamRecordUpdate'
+      responses:
+        '200':
+          description: PoamRecord response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmassPoamRecord'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+    
+  '/packages/{packageId}/findings/emass_rar':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+    get:
+      tags:
+        - Package
+      summary: Return the eMASS Risk Assessment Report (RAR) in XLSX format
+      operationId: getRarByPackage
+      responses:
+        '200':
+          description: EMassRar response
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+  '/packages/{packageId}/findings/emass_rar/{groupId}':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+      - $ref: '#/components/parameters/GroupIdPath'
+    get:
+      tags:
+        - Package
+      summary: Return the eMASS RAR record for the specified Package and Finding (groupId)
+      operationId: getRarRecordByPackageGroup
+      responses:
+        '200':
+          description: PoamRecord response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmassRarRecord'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+    put:
+      tags:
+        - Package
+      summary: Set all properties of the eMASS RAR record for a Finding (groupId)
+      operationId: setRarRecordByPackageGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmassRarRecordUpdate'
+      responses:
+        '200':
+          description: PoamRecord response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmassRarRecord'
         default:
           description: unexpected error
           content:
@@ -224,6 +406,7 @@ paths:
             - 'stig-manager:package:read'
   /assets:
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
@@ -231,7 +414,6 @@ paths:
       summary: Return a list of Assets accessible to the requester
       operationId: getAssets
       parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
         - name: packageId
           in: query
           description: Selects Assets mapped to a Package
@@ -272,7 +454,6 @@ paths:
       operationId: createAsset
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -327,12 +508,10 @@ paths:
     patch:
       tags:
         - Asset
-      summary: Merge updates to an Asset
+      summary: Merge provided properties with an Asset
       operationId: updateAsset
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -356,12 +535,10 @@ paths:
     put:
       tags:
         - Asset
-      summary: Replace all properties of an Asset
+      summary: Set all properties of an Asset
       operationId: replaceAsset
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -432,7 +609,6 @@ paths:
       summary: Return the Checklist for the supplied Asset and STIG
       operationId: getChecklistByAssetStig
       parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
         - name: format
           in: query
           description: The format of the response. Default if missing is 'json'
@@ -448,7 +624,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChecklistAsset'
+                $ref: '#/components/schemas/ChecklistAssetStig'
             application/xml:
               schema:
                 $ref: '#/components/schemas/ChecklistCkl'
@@ -462,15 +638,12 @@ paths:
         - oauth:
             - 'stig-manager:package'
   /reviews:
-    parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
     get:
       tags:
         - Review
       summary: Return a list of Reviews accessible to the requester
       operationId: getReviews
       parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
         - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
@@ -529,59 +702,30 @@ paths:
     post:
       tags:
         - Review
-      summary: Import Review(s) from a CKL or XCCDF file or ZIP archive
+      summary: Import one or more Reviews, either from JSON or a CKL or XCCDF file
       operationId: importReviews
-      x-codegen-request-body-name: body
       requestBody:
-        required: true
-        x-name: body
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                assetId:
-                  type: string
-                benchmarkId:
-                  type: string
-                packageId:
-                  type: string
-                source:
-                  type: string
-                importFile:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: ReviewProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReviewProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package'
-    put:
-      tags:
-        - Review
-      summary: Create or update one or more Reviews
-      operationId: putReviews
-      x-codegen-request-body-name: body
-      requestBody:
-        required: true
-        x-name: body
         content:
           application/json:
             schema:
               type: array
               items:
                 $ref: '#/components/schemas/ReviewPut'
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - importFile
+              properties:
+                assetId:
+                  description: If provided, file contents will be checked for match
+                  type: string
+                benchmarkId:
+                  description: If provided, file contents will be checked for match
+                  type: string
+                importFile:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: ReviewProjected response
@@ -613,7 +757,6 @@ paths:
       summary: Return a list of Reviews for an Asset
       operationId: getReviewsByAssetId
       parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
         - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
@@ -650,7 +793,6 @@ paths:
             - 'stig-manager:package:read'
   '/reviews/{assetId}/{ruleId}':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - name: assetId
         in: path
         description: A path parameter that indentifies an Asset
@@ -669,8 +811,6 @@ paths:
         - Review
       summary: Return the Review for an Asset and Rule
       operationId: getReviewByAssetRule
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: ReviewProjected response
@@ -690,15 +830,13 @@ paths:
     put:
       tags:
         - Review
-      summary: Create or update a Review
+      summary: Set all properties of a Review
       description: >-
         Create a new Review, or update all properties of an existing Review,
         setting missing properties to null
       operationId: putReview
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -722,13 +860,11 @@ paths:
     patch:
       tags:
         - Review
-      summary: Merge update a Review
+      summary: Merge provided properties with a Review
       description: 'Update the given properties of a Review, if it exists'
       operationId: patchReview
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -754,6 +890,8 @@ paths:
         - Review
       summary: Delete a Review
       operationId: deleteReview
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: ReviewProjected response
@@ -837,10 +975,8 @@ paths:
         - User
       summary: Create a User
       operationId: createUser
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -897,12 +1033,10 @@ paths:
     patch:
       tags:
         - User
-      summary: Merge update a User
+      summary: Merge provided properties with a User
       operationId: updateUser
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -928,12 +1062,10 @@ paths:
     put:
       tags:
         - User
-      summary: Replace all properties of a User
+      summary: Set all properties of a User
       operationId: replaceUser
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -961,7 +1093,6 @@ paths:
         - User
       summary: Delete a User
       operationId: deleteUser
-      x-codegen-request-body-name: body
       responses:
         '200':
           description: UserProjected response
@@ -1015,10 +1146,8 @@ paths:
         - STIG
       summary: Import a new STIG
       operationId: importManualBenchmark
-      x-codegen-request-body-name: body
       requestBody:
         required: true
-        x-name: body
         content:
           multipart/form-data:
             schema:
@@ -1147,14 +1276,13 @@ paths:
     put:
       tags:
         - Asset
-      summary: Set the targets of evaluation against a STIG
+      summary: Set the Assets mapped to a STIG
       description: >-
         Invoking this endpoint will retain any previously configured Reviewer
         assignments
       operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
-        x-name: body
         content:
           application/json:
             schema:
@@ -1631,7 +1759,6 @@ paths:
                 - remapIds
       requestBody:
         required: false
-        x-name: body
         content:
           application/json:
             schema:
@@ -1647,7 +1774,7 @@ paths:
                   type: string
                   format: binary
       responses:
-        '201':
+        '200':
           description: Import successful
           content:
             application/json:
@@ -1807,14 +1934,27 @@ components:
           type: string
         defintion:
           type: string
+        emassAp:
+          $ref: '#/components/schemas/EmassAp'
         references:
           type: array
           items:
             $ref: '#/components/schemas/CciReferenceItem'
-        current_revisions:
+        stigs:
           type: array
           items:
-            $ref: '#/components/schemas/Revision'
+            $ref: '#/components/schemas/RevisionBasic'
+    CciBasic:
+      type: object
+      properties:
+        cci:
+          type: string
+        emassAp:
+          type: string
+        controls:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciReferenceRev4'
     CciListItem:
       type: object
       properties:
@@ -1843,6 +1983,15 @@ components:
           type: string
         parentControl:
           type: string
+    CciReferenceRev4:
+      type: object
+      properties:
+        indexDisa:
+          type: string
+        textRefNist:
+          type: string
+        parentControl:
+          type: string
     CciRuleItem:
       type: object
       properties:
@@ -1861,11 +2010,9 @@ components:
           type: string
         content:
           type: string
-    ChecklistAsset:
+    ChecklistAssetStig:
       type: object
       properties:
-        assetId:
-          type: integer
         ruleId:
           type: string
         ruleTitle:
@@ -1876,18 +2023,20 @@ components:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-        result:
-          $ref: '#/components/schemas/ChecklistResult'
-        status:
-          $ref: '#/components/schemas/ChecklistStatus'
-        autoResult:
+        autoCheck:
           type: boolean
-        hasAttachment:
-          type: boolean
-        complete:
-          type: boolean
-        checkType:
-          $ref: '#/components/schemas/ReviewCheckType'
+        review:
+          type: object
+          nullable: true
+          properties:
+            result:
+              $ref: '#/components/schemas/ChecklistResult'
+            status:
+              $ref: '#/components/schemas/ChecklistStatus'
+            autoResult:
+              type: boolean
+            complete:
+              type: boolean
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -1960,6 +2109,38 @@ components:
                         type: string
                       SEVERITY_JUSTIFICATION:
                         type: string
+    ChecklistPackageStig:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        ruleTitle:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
+          type: string
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        autoCheck:
+          type: boolean
+        stats:
+          type: object
+          properties:
+            failCount:
+              type: integer
+            passCount:
+              type: integer
+            naCount:
+              type: integer
+            absentCount:
+              type: integer
+            submitCount:
+              type: integer
+            acceptCount:
+              type: integer
+            rejectCount:
+              type: integer
     ChecklistResult:
       description: The Review result
       type: string
@@ -1978,6 +2159,89 @@ components:
         - accepted
         - rejected
         - null
+    EmassAp:
+      type: object
+      properties:
+        apAcronym:
+          type: string
+        implementation:
+          type: string
+        assessmentProcedure:
+          type: string
+    EmassPoamRecord:
+      type: object
+      properties:
+        control:
+          type: string
+        residualRisk:
+          $ref: '#/components/schemas/RuleSeverity'
+        mitigations:
+          type: string
+        completionDate:
+          type: string
+        milestone:
+          type: string
+    EmassPoamRecordUpdate:
+      type: object
+      required:
+        - control
+        - residualRisk
+        - mitigations
+        - completionDate
+        - milestone
+      properties:
+        control:
+          type: string
+        residualRisk:
+          $ref: '#/components/schemas/RuleSeverity'
+        mitigations:
+          type: string
+        completionDate:
+          type: string
+        milestone:
+          type: string
+    EmassRarRecord:
+      type: object
+      properties:
+        control:
+          type: string
+        residualRisk:
+          $ref: '#/components/schemas/RuleSeverity'
+        mitigations:
+          type: string
+        likelihood:
+          type: string
+        recommendedCorrectiveAction:
+          type: string
+        remediationDescription:
+          type: string
+        comment:
+          type: string
+    EmassRarRecordUpdate:
+      type: object
+      required:
+        - control
+        - residualRisk
+        - mitigations
+        - likelihood
+        - recommendedCorrectiveAction
+        - remediationDescription
+        - comment
+      properties:
+        control:
+          type: string
+        residualRisk:
+          $ref: '#/components/schemas/RuleSeverity'
+        mitigations:
+          type: string
+        likelihood:
+          type: string
+        recommendedCorrectiveAction:
+          type: string
+        remediationDescription:
+          type: string
+        comment:
+          type: string
     Error:
       required:
         - code
@@ -2079,6 +2343,42 @@ components:
           type: array
           items:
             type: integer
+    PackageFinding:
+      type: object
+      properties:
+        groupId:
+          type: string
+        ruleTitle:
+          type: string
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        ccis:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciBasic'
+        benchmarkIds:
+          type: array
+          items:
+            type: string
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetBasic'
+        eMassSummary:
+            type: object
+            properties:
+              status:
+                type: string
+                nullable: true
+                enum:
+                  - ongoing
+                  - completed
+              poamComplete:
+                type: boolean
+              rarComplete:
+                type: boolean
+            
+
     PackageProjected:
       allOf:
         - $ref: '#/components/schemas/Package'
@@ -2290,6 +2590,13 @@ components:
           type: string
         description:
           type: string
+    RevisionBasic:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          type: string
     Rule:
       type: object
       properties:
@@ -2462,6 +2769,19 @@ components:
               items:
                 $ref: '#/components/schemas/StigAssetBasic'
   parameters:
+    AssetIdPath:
+      name: assetId
+      in: path
+      description: A path parameter that indentifies an Asset
+      required: true
+      schema:
+        type: integer
+    AssetIdQuery:
+      name: assetId
+      in: query
+      description: A query parameter that indentifies an Asset
+      schema:
+        type: integer
     AssetProjectionQuery:
       name: projection
       in: query
@@ -2523,11 +2843,33 @@ components:
         (canAdmin)
       schema:
         type: boolean
+    FindingProjectionQuery:
+      name: projection
+      in: query
+      description: >-
+        Optional properties to return
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - assets
+            - benchmarkIds
+            - ccis
+            - eMassSummary
     GroupIdPath:
       name: groupId
       in: path
       description: A path parameter that indentifies a Group
       required: true
+      schema:
+        type: string
+    GroupIdQuery:
+      name: groupId
+      in: query
+      description: A query parameter that indentifies a Group
       schema:
         type: string
     GroupProjectionQuery:
@@ -2543,6 +2885,19 @@ components:
           type: string
           enum:
             - rules
+    PackageIdPath:
+      name: packageId
+      in: path
+      description: A path parameter that indentifies a Package
+      required: true
+      schema:
+        type: integer
+    PackageIdQuery:
+      name: packageId
+      in: query
+      description: A query parameter that indentifies a Package
+      schema:
+        type: integer
     PackageProjectionQuery:
       name: projection
       in: query
