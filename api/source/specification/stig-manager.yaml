@@ -1,7 +1,9 @@
 openapi: 3.0.1
 info:
   title: STIG Management API
-  description: An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.
+  description: >-
+    An API for managing evaluations of Security Technical Implementation Guide
+    (STIG) assessments.
   contact:
     name: Carl Smigielski
     email: carl.a.smigielski@saic.com
@@ -192,7 +194,9 @@ paths:
           type: string
       - name: revisionStr
         in: path
-        description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+        description: >-
+          A path parameter that indentifies a STIG revision [
+          V{version_num}R{release_num} | 'latest' ]
         required: true
         schema:
           pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -415,7 +419,9 @@ paths:
           type: string
       - name: revisionStr
         in: path
-        description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+        description: >-
+          A path parameter that indentifies a STIG revision [
+          V{version_num}R{release_num} | 'latest' ]
         required: true
         schema:
           pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -446,7 +452,6 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/ChecklistCkl'
-
         default:
           description: unexpected error
           content:
@@ -491,7 +496,9 @@ paths:
             type: string
         - name: revisionStr
           in: query
-          description: 'Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | ''latest'' ]; requires benchmarkId'
+          description: >-
+            Selects Reviews mapped to a Revision [ V{version_num}R{release_num}
+            | 'latest' ]; requires benchmarkId
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
@@ -617,7 +624,9 @@ paths:
             type: string
         - name: revisionStr
           in: query
-          description: 'Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | ''latest'' ]; requires benchmarkId'
+          description: >-
+            Selects Reviews mapped to a Revision [ V{version_num}R{release_num}
+            | 'latest' ]; requires benchmarkId
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
@@ -682,7 +691,9 @@ paths:
       tags:
         - Review
       summary: Create or update a Review
-      description: 'Create a new Review, or update all properties of an existing Review, setting missing properties to null'
+      description: >-
+        Create a new Review, or update all properties of an existing Review,
+        setting missing properties to null
       operationId: putReview
       x-codegen-request-body-name: body
       requestBody:
@@ -852,7 +863,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-  /users/{userId}:
+  '/users/{userId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/UserProjectionQuery'
@@ -1137,7 +1148,9 @@ paths:
       tags:
         - Asset
       summary: Set the targets of evaluation against a STIG
-      description: Invoking this endpoint will retain any previously configured Reviewer assignments 
+      description: >-
+        Invoking this endpoint will retain any previously configured Reviewer
+        assignments
       operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
@@ -1212,7 +1225,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1247,7 +1262,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1286,7 +1303,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1311,7 +1330,9 @@ paths:
     get:
       tags:
         - STIG
-      summary: 'Return the rules, checks and fixes for a Group from a specified revision of a STIG.'
+      summary: >-
+        Return the rules, checks and fixes for a Group from a specified revision
+        of a STIG.
       description: None
       operationId: getGroupByRevision
       parameters:
@@ -1324,7 +1345,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1367,7 +1390,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1406,7 +1431,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1439,7 +1466,9 @@ paths:
     get:
       tags:
         - STIG
-      summary: Return the defintion and associated checks and fixes for the specified Rule
+      summary: >-
+        Return the defintion and associated checks and fixes for the specified
+        Rule
       operationId: getRuleByRuleId
       parameters:
         - $ref: '#/components/parameters/RuleProjectionQuery'
@@ -1480,7 +1509,9 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
+          description: >-
+            A path parameter that indentifies a STIG revision [
+            V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -1669,12 +1700,12 @@ components:
           type: string
     AssetCreateOrReplace:
       required:
-      - name
-      - dept
-      - ip
-      - nonnetwork
-      - stigReviewers
-      - packageIds
+        - name
+        - dept
+        - ip
+        - nonnetwork
+        - stigReviewers
+        - packageIds
       properties:
         name:
           type: string
@@ -1707,60 +1738,60 @@ components:
                   type: integer
     AssetProjected:
       allOf:
-      - "$ref": "#/components/schemas/Asset"
-      - type: object
-        properties:
-          adminStats:
-            type: object
-            properties:
-              stigCount:
-                type: integer
-              stigAssignedCount:
-                type: integer
-          packages:
-            type: array
-            description: The Packages mapped to this Asset
-            items:
-              "$ref": "#/components/schemas/PackageBasic"
-          stigs:
-            type: array
-            description: The benchmarkIds mapped to this Asset
-            items:
-              "$ref": "#/components/schemas/STIG"
-          stigReviewers:
-            type: array
-            description: The benchmarkIds and reviewers mapped to this Asset
-            items:
+        - $ref: '#/components/schemas/Asset'
+        - type: object
+          properties:
+            adminStats:
               type: object
               properties:
-                benchmarkId:
-                  type: string
-                reviewers:
-                  type: array
-                  items:
-                    "$ref": "#/components/schemas/UserBasic"
+                stigCount:
+                  type: integer
+                stigAssignedCount:
+                  type: integer
+            packages:
+              type: array
+              description: The Packages mapped to this Asset
+              items:
+                $ref: '#/components/schemas/PackageBasic'
+            stigs:
+              type: array
+              description: The benchmarkIds mapped to this Asset
+              items:
+                $ref: '#/components/schemas/STIG'
+            stigReviewers:
+              type: array
+              description: The benchmarkIds and reviewers mapped to this Asset
+              items:
+                type: object
+                properties:
+                  benchmarkId:
+                    type: string
+                  reviewers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserBasic'
     AssetUpdate:
       allOf:
-      - "$ref": "#/components/schemas/Asset"
-      - type: object
-        properties:
-          packageIds:
-            description: The packageIds mapped to this Asset
-            type: array
-            items:
-              type: integer
-          stigReviewers:
-            description: The benchmarkIds and reviewers mapped to this Asset
-            type: array
-            items:
-              type: object
-              properties:
-                benchmarkId:
-                  type: string
-                userIds:
-                  type: array
-                  items:
-                    type: integer
+        - $ref: '#/components/schemas/Asset'
+        - type: object
+          properties:
+            packageIds:
+              description: The packageIds mapped to this Asset
+              type: array
+              items:
+                type: integer
+            stigReviewers:
+              description: The benchmarkIds and reviewers mapped to this Asset
+              type: array
+              items:
+                type: object
+                properties:
+                  benchmarkId:
+                    type: string
+                  userIds:
+                    type: array
+                    items:
+                      type: integer
     Cci:
       type: object
       properties:
@@ -1779,11 +1810,11 @@ components:
         references:
           type: array
           items:
-            "$ref": "#/components/schemas/CciReferenceItem"
+            $ref: '#/components/schemas/CciReferenceItem'
         current_revisions:
           type: array
           items:
-            "$ref": "#/components/schemas/Revision"
+            $ref: '#/components/schemas/Revision'
     CciListItem:
       type: object
       properties:
@@ -1794,7 +1825,7 @@ components:
         references:
           type: array
           items:
-            "$ref": "#/components/schemas/CciReferenceItem"
+            $ref: '#/components/schemas/CciReferenceItem'
     CciReferenceItem:
       type: object
       properties:
@@ -1844,11 +1875,11 @@ components:
         groupTitle:
           type: string
         severity:
-          "$ref": "#/components/schemas/RuleSeverity"
+          $ref: '#/components/schemas/RuleSeverity'
         result:
-          "$ref": "#/components/schemas/ChecklistResult"
+          $ref: '#/components/schemas/ChecklistResult'
         status:
-          "$ref": "#/components/schemas/ChecklistStatus"
+          $ref: '#/components/schemas/ChecklistStatus'
         autoResult:
           type: boolean
         hasAttachment:
@@ -1856,7 +1887,7 @@ components:
         complete:
           type: boolean
         checkType:
-          "$ref": "#/components/schemas/ReviewCheckType"
+          $ref: '#/components/schemas/ReviewCheckType'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -1917,10 +1948,10 @@ components:
                       STATUS:
                         type: string
                         enum:
-                        - Open
-                        - NotAFinding
-                        - Not_Applicable
-                        - Not_Reviewed
+                          - Open
+                          - NotAFinding
+                          - Not_Applicable
+                          - Not_Reviewed
                       FINDING_DETAILS:
                         type: string
                       COMMENTS:
@@ -1934,23 +1965,23 @@ components:
       type: string
       nullable: true
       enum:
-      - O
-      - NF
-      - NA
-      - 
+        - O
+        - NF
+        - NA
+        - null
     ChecklistStatus:
       type: string
       nullable: true
       enum:
-      - saved
-      - submitted
-      - accepted
-      - rejected
-      - 
+        - saved
+        - submitted
+        - accepted
+        - rejected
+        - null
     Error:
       required:
-      - code
-      - message
+        - code
+        - message
       type: object
       properties:
         code:
@@ -1976,13 +2007,13 @@ components:
             type: string
     GroupProjected:
       allOf:
-      - "$ref": "#/components/schemas/Group"
-      - type: object
-        properties:
-          rules:
-            type: array
-            items:
-              "$ref": "#/components/schemas/RuleAbbr"
+        - $ref: '#/components/schemas/Group'
+        - type: object
+          properties:
+            rules:
+              type: array
+              items:
+                $ref: '#/components/schemas/RuleAbbr'
     Package:
       type: object
       properties:
@@ -2017,13 +2048,13 @@ components:
           type: string
     PackageCreateOrReplace:
       required:
-      - name
-      - emassId
-      - pocName
-      - pocEmail
-      - pocPhone
-      - reqRar
-      - assetIds
+        - name
+        - emassId
+        - pocName
+        - pocEmail
+        - pocPhone
+        - reqRar
+        - assetIds
       additionalProperties: false
       type: object
       properties:
@@ -2050,26 +2081,26 @@ components:
             type: integer
     PackageProjected:
       allOf:
-      - "$ref": "#/components/schemas/Package"
-      - type: object
-        properties:
-          assets:
-            type: array
-            items:
-              "$ref": "#/components/schemas/AssetBasic"
-          stigs:
-            type: array
-            items:
-              "$ref": "#/components/schemas/STIG"
+        - $ref: '#/components/schemas/Package'
+        - type: object
+          properties:
+            assets:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
+                $ref: '#/components/schemas/STIG'
     PackageUpdate:
       allOf:
-      - "$ref": "#/components/schemas/Package"
-      - type: object
-        properties:
-          assetIds:
-            type: array
-            items:
-              type: integer
+        - $ref: '#/components/schemas/Package'
+        - type: object
+          properties:
+            assetIds:
+              type: array
+              items:
+                type: integer
     Review:
       type: object
       properties:
@@ -2081,19 +2112,17 @@ components:
         ruleId:
           type: string
         result:
-          "$ref": "#/components/schemas/ReviewResult"
+          $ref: '#/components/schemas/ReviewResult'
         resultComment:
           type: string
         autoResult:
           type: boolean
         action:
-          "$ref": "#/components/schemas/ReviewAction"
+          $ref: '#/components/schemas/ReviewAction'
         actionComment:
           type: string
-        reqDoc:
-          type: boolean
         status:
-          "$ref": "#/components/schemas/ReviewStatus"
+          $ref: '#/components/schemas/ReviewStatus'
         userId:
           type: integer
           readOnly: true
@@ -2110,52 +2139,52 @@ components:
       type: string
       nullable: true
       enum:
-      - remediate
-      - mitigate
-      - exception
-      - 
+        - remediate
+        - mitigate
+        - exception
+        - null
     ReviewAssetRulePatch:
       type: object
       properties:
         result:
-          "$ref": "#/components/schemas/ReviewResult"
+          $ref: '#/components/schemas/ReviewResult'
         resultComment:
           type: string
           nullable: true
         action:
-          "$ref": "#/components/schemas/ReviewAction"
+          $ref: '#/components/schemas/ReviewAction'
         actionComment:
           type: string
           nullable: true
         autoResult:
           type: boolean
         status:
-          "$ref": "#/components/schemas/ReviewStatus"
+          $ref: '#/components/schemas/ReviewStatus'
     ReviewAssetRulePut:
       type: object
       required:
-      - result
-      - resultComment
+        - result
+        - resultComment
       properties:
         result:
-          "$ref": "#/components/schemas/ReviewResult"
+          $ref: '#/components/schemas/ReviewResult'
         resultComment:
           type: string
           nullable: true
         action:
-          "$ref": "#/components/schemas/ReviewAction"
+          $ref: '#/components/schemas/ReviewAction'
         actionComment:
           type: string
           nullable: true
         autoResult:
           type: boolean
         status:
-          "$ref": "#/components/schemas/ReviewStatus"
+          $ref: '#/components/schemas/ReviewStatus'
     ReviewCheckType:
       type: string
       enum:
-      - scap
-      - manual
+        - scap
+        - manual
     ReviewHistory:
       type: object
       properties:
@@ -2175,34 +2204,34 @@ components:
           type: string
     ReviewProjected:
       allOf:
-      - "$ref": "#/components/schemas/Review"
-      - type: object
-        properties:
-          asset:
-            "$ref": "#/components/schemas/AssetBasic"
-          stigs:
-            type: array
-            items:
-              type: string
-          rule:
-            "$ref": "#/components/schemas/RuleAbbr"
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            asset:
+              $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
+                type: string
+            rule:
+              $ref: '#/components/schemas/RuleAbbr'
     ReviewPut:
       type: object
       required:
-      - result
-      - resultComment
+        - result
+        - resultComment
       properties:
         assetId:
           type: integer
         ruleId:
           type: string
         result:
-          "$ref": "#/components/schemas/ReviewResult"
+          $ref: '#/components/schemas/ReviewResult'
         resultComment:
           type: string
           nullable: true
         action:
-          "$ref": "#/components/schemas/ReviewAction"
+          $ref: '#/components/schemas/ReviewAction'
         actionComment:
           type: string
           nullable: true
@@ -2210,38 +2239,38 @@ components:
           type: boolean
           nullable: true
         status:
-          "$ref": "#/components/schemas/ReviewStatus"
+          $ref: '#/components/schemas/ReviewStatus'
     ReviewResult:
       description: The Review result
       type: string
       enum:
-      - O
-      - NF
-      - NA
+        - O
+        - NF
+        - NA
     ReviewStatus:
       type: string
       enum:
-      - saved
-      - submitted
-      - accepted
-      - rejected
+        - saved
+        - submitted
+        - accepted
+        - rejected
     ReviewWithHistoryProjected:
       allOf:
-      - "$ref": "#/components/schemas/Review"
-      - type: object
-        properties:
-          history:
-            type: array
-            items:
-              "$ref": "#/components/schemas/ReviewHistory"
-          asset:
-            "$ref": "#/components/schemas/AssetBasic"
-          stigs:
-            type: array
-            items:
-              type: string
-          rule:
-            "$ref": "#/components/schemas/RuleAbbr"
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            history:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReviewHistory'
+            asset:
+              $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
+                type: string
+            rule:
+              $ref: '#/components/schemas/RuleAbbr'
     Revision:
       type: object
       properties:
@@ -2289,54 +2318,54 @@ components:
           type: string
     RuleDetailProjected:
       allOf:
-      - "$ref": "#/components/schemas/RuleProjected"
-      - type: object
-        properties:
-          cci:
-            type: array
-            items:
-              "$ref": "#/components/schemas/CciRuleItem"
-          checks:
-            type: array
-            items:
-              "$ref": "#/components/schemas/Check"
-          fixes:
-            type: array
-            items:
-              "$ref": "#/components/schemas/Fix"
+        - $ref: '#/components/schemas/RuleProjected'
+        - type: object
+          properties:
+            cci:
+              type: array
+              items:
+                $ref: '#/components/schemas/CciRuleItem'
+            checks:
+              type: array
+              items:
+                $ref: '#/components/schemas/Check'
+            fixes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Fix'
     RuleProjected:
       allOf:
-      - "$ref": "#/components/schemas/Rule"
-      - type: object
-        properties:
-          weight:
-            type: string
-          vulnDiscussion:
-            type: string
-          falsePositives:
-            type: string
-          falseNegatives:
-            type: string
-          documentable:
-            type: string
-          mitigations:
-            type: string
-          securityOverrideGuidance:
-            type: string
-          potentialImpacts:
-            type: string
-          thirdPartyTools:
-            type: string
-          mitigationControl:
-            type: string
-          responsibility:
-            type: string
+        - $ref: '#/components/schemas/Rule'
+        - type: object
+          properties:
+            weight:
+              type: string
+            vulnDiscussion:
+              type: string
+            falsePositives:
+              type: string
+            falseNegatives:
+              type: string
+            documentable:
+              type: string
+            mitigations:
+              type: string
+            securityOverrideGuidance:
+              type: string
+            potentialImpacts:
+              type: string
+            thirdPartyTools:
+              type: string
+            mitigationControl:
+              type: string
+            responsibility:
+              type: string
     RuleSeverity:
       type: string
       enum:
-      - high
-      - medium
-      - low
+        - high
+        - medium
+        - low
     STIG:
       type: object
       properties:
@@ -2352,7 +2381,7 @@ components:
       type: object
       properties:
         asset:
-          "$ref": "#/components/schemas/AssetBasic"
+          $ref: '#/components/schemas/AssetBasic'
     StigAssetBasic:
       type: object
       properties:
@@ -2366,16 +2395,16 @@ components:
         benchmarkId:
           type: string
         asset:
-          "$ref": "#/components/schemas/AssetBasic"
+          $ref: '#/components/schemas/AssetBasic'
     StigAssetProjected:
       allOf:
-      - "$ref": "#/components/schemas/AssetBasic"
-      - type: object
-        properties:
-          reviewers:
-            type: array
-            items:
-              "$ref": "#/components/schemas/UserBasic"
+        - $ref: '#/components/schemas/AssetBasic'
+        - type: object
+          properties:
+            reviewers:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserBasic'
     User:
       type: object
       properties:
@@ -2389,7 +2418,7 @@ components:
         dept:
           type: string
         role:
-          "$ref": "#/components/schemas/UserRole"
+          $ref: '#/components/schemas/UserRole'
         canAdmin:
           type: boolean
     UserBasic:
@@ -2402,57 +2431,37 @@ components:
           type: string
     UserCreateOrReplace:
       required:
-      - username
-      - dept
-      - display
-      - role
+        - username
+        - dept
+        - display
+        - role
       allOf:
-      - "$ref": "#/components/schemas/UserUpdate"
+        - $ref: '#/components/schemas/UserUpdate'
     UserProjected:
       allOf:
-      - "$ref": "#/components/schemas/User"
-      - type: object
-        properties:
-          stigReviews:
-            type: array
-            items:
-              "$ref": "#/components/schemas/StigAssetExtended"
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            stigReviews:
+              type: array
+              items:
+                $ref: '#/components/schemas/StigAssetExtended'
     UserRole:
       type: string
       enum:
-      - Staff
-      - IAO
-      - IAWF
+        - Staff
+        - IAO
+        - IAWF
     UserUpdate:
       allOf:
-      - "$ref": "#/components/schemas/User"
-      - type: object
-        properties:
-          stigReviews:
-            type: array
-            items:
-              "$ref": "#/components/schemas/StigAssetBasic"
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            stigReviews:
+              type: array
+              items:
+                $ref: '#/components/schemas/StigAssetBasic'
   parameters:
-    ElevateQuery:
-      name: elevate
-      in: query
-      description: Elevate the user context for this request if user is permitted (canAdmin)
-      schema:
-        type: boolean
-    PackageProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - assets
-            - stigs
     AssetProjectionQuery:
       name: projection
       in: query
@@ -2469,83 +2478,6 @@ components:
             - stigs
             - stigReviewers
             - adminStats
-    ReviewProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - ruleInfo
-            - stigs
-            - packages
-    ReviewIndividualProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - ruleInfo
-            - history
-            - stigs
-            - packages
-    ReviewResultQuery:
-      name: result
-      in: query
-      schema:
-        $ref: '#/components/schemas/ReviewResult'
-    ReviewStatusQuery:
-      name: status
-      in: query
-      schema:
-        $ref: '#/components/schemas/ReviewStatus'
-    ReviewActionQuery:
-      name: action
-      in: query
-      schema:
-        $ref: '#/components/schemas/ReviewAction'
-    StigAssetProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - reviewers
-    UserProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - stigReviews
-    UserRoleQuery:
-      name: role
-      in: query
-      schema:
-        $ref: '#/components/schemas/UserRole'
     BenchmarkIdPath:
       name: benchmarkId
       in: path
@@ -2559,6 +2491,38 @@ components:
       description: A query parameter that indentifies a STIG
       schema:
         type: string
+    CciPath:
+      name: cci
+      in: path
+      description: A path parameter that indentifies a CCI
+      required: true
+      schema:
+        type: string
+    ChecklistProjectionQuery:
+      name: projection
+      in: query
+      description: >
+        Optional properties to return. Selecting "checks" or "fixes" will also
+        select "fullrules"
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - cci
+            - fullrules
+            - checks
+            - fixes
+    ElevateQuery:
+      name: elevate
+      in: query
+      description: >-
+        Elevate the user context for this request if user is permitted
+        (canAdmin)
+      schema:
+        type: boolean
     GroupIdPath:
       name: groupId
       in: path
@@ -2579,6 +2543,76 @@ components:
           type: string
           enum:
             - rules
+    PackageProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - assets
+            - stigs
+    ReviewActionQuery:
+      name: action
+      in: query
+      schema:
+        $ref: '#/components/schemas/ReviewAction'
+    ReviewIndividualProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - ruleInfo
+            - history
+            - stigs
+            - packages
+    ReviewProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - ruleInfo
+            - stigs
+            - packages
+    ReviewResultQuery:
+      name: result
+      in: query
+      schema:
+        $ref: '#/components/schemas/ReviewResult'
+    ReviewStatusQuery:
+      name: status
+      in: query
+      schema:
+        $ref: '#/components/schemas/ReviewStatus'
+    RevisionStrPath:
+      name: revisionStr
+      in: path
+      description: >-
+        A path parameter that indentifies a STIG revision [
+        V{version_num}R{release_num} | 'latest' ]
+      required: true
+      schema:
+        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+        type: string
     RuleIdPath:
       name: ruleId
       in: path
@@ -2615,43 +2649,44 @@ components:
           type: string
           enum:
             - details
-    CciPath:
-      name: cci
-      in: path
-      description: A path parameter that indentifies a CCI
-      required: true
-      schema:
-        type: string
-    RevisionStrPath:
-      name: revisionStr
-      in: path
-      description: 'A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | ''latest'' ]'
-      required: true
-      schema:
-        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-        type: string
-    ChecklistProjectionQuery:
+    StigAssetProjectionQuery:
       name: projection
       in: query
       description: |
-        Optional properties to return. Selecting "checks" or "fixes" will also select "fullrules"
+        Additional properties to include in the response.
       style: form
-      explode: false
+      explode: true
       schema:
         type: array
         items:
           type: string
           enum:
-            - cci
-            - fullrules
-            - checks
-            - fixes
+            - reviewers
+    UserProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - stigReviews
+    UserRoleQuery:
+      name: role
+      in: query
+      schema:
+        $ref: '#/components/schemas/UserRole'
   securitySchemes:
     oauth:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: 'http://192.168.1.155:8080/auth/realms/stigman/protocol/openid-connect/auth'
+          authorizationUrl: >-
+            http://192.168.1.155:8080/auth/realms/stigman/protocol/openid-connect/auth
           scopes:
             stig-manager: Top-level scope
             'stig-manager:stig': Full access to the STIG collection
