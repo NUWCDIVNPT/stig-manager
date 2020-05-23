@@ -226,20 +226,19 @@ CREATE TABLE `review` (
   `reviewId` int(11) NOT NULL AUTO_INCREMENT,
   `assetId` int(11) DEFAULT NULL,
   `ruleId` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
-  `stateId` int(11) DEFAULT NULL,
-  `userId` int(11) DEFAULT NULL,
-  `stateComment` longtext COLLATE utf8mb4_bin,
+  `resultId` int(11) DEFAULT NULL,
+  `resultComment` longtext COLLATE utf8mb4_bin,
   `actionId` int(11) DEFAULT NULL,
   `actionComment` longtext COLLATE utf8mb4_bin,
-  `reqdoc` bit(1) DEFAULT 0,
-  `autostate` bit(1) DEFAULT 0,
+  `autoResult` bit(1) DEFAULT 0,
   `ts` datetime NOT NULL,
+  `userId` int(11) DEFAULT NULL,
   `rejecttext` longtext COLLATE utf8mb4_bin,
   `rejectUserId` int(11) DEFAULT NULL,
   `statusId` int(11) NOT NULL,
   PRIMARY KEY (`reviewId`),
   UNIQUE KEY `INDEX_2_1_1` (`assetId`,`ruleId`),
-  KEY `INDEX_4` (`stateId`),
+  KEY `INDEX_4` (`resultId`),
   KEY `INDEX_3_3` (`ruleId`),
   KEY `INDEX_STATUSID` (`statusId`),
   CONSTRAINT `FK_REVIEWS_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -325,17 +324,17 @@ CREATE TABLE `role` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `state`
+-- Table structure for table `result`
 --
 
-DROP TABLE IF EXISTS `state`;
+DROP TABLE IF EXISTS `result`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `state` (
-  `stateId` int(11) NOT NULL AUTO_INCREMENT,
-  `state` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
+CREATE TABLE `result` (
+  `resultId` int(11) NOT NULL AUTO_INCREMENT,
+  `result` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `abbr` varchar(3) COLLATE utf8mb4_bin DEFAULT NULL,
-  PRIMARY KEY (`stateId`)
+  PRIMARY KEY (`resultId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

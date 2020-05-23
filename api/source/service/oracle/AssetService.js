@@ -405,16 +405,15 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
 
   let columns = [
     ':assetId as "assetId"',
-    'g.GROUPID as "groupId"',
     'r.RULEID as "ruleId"',
-    'g.TITLE as "groupTitle"',
     'r.TITLE as "ruleTitle"',
-    'sc.CAT as "cat"',
-    'r.DOCUMENTABLE as "documentable"',
-    `NVL(state.abbr,'') as "stateAbbr"`,
-    `NVL(review.statusId,0) as "statusId"`,
-    `NVL(review.autoState,0) as "autoState"`,
-    `CASE WHEN ra.raId is null THEN 0 ELSE 1 END as "hasAttach"`,
+    'g.GROUPID as "groupId"',
+    'g.TITLE as "groupTitle"',
+    'r.SEVERITY as "severity"',
+    `state.abbr as "result"`,
+    `status.statusStr as "status"`,
+    `review.autoState as "autoResult"`,
+    `CASE WHEN ra.raId is null THEN 0 ELSE 1 END as "hasAttachment"`,
     `CASE
       WHEN review.ruleId is null
       THEN 0
@@ -429,7 +428,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
             THEN 1
             ELSE 0 END
         END
-    END as "done"`,
+    END as "complete"`,
     `CASE
       WHEN scap.ruleId is null
       THEN 'Manual'
@@ -445,6 +444,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     'left join stigs.severity_cat_map sc on r.severity=sc.severity',
     'left join reviews review on r.ruleId = review.ruleId and review.assetId = :assetId',
     'left join states state on review.stateId=state.stateId',
+    'left join statuses status on review.statusId=status.statusId',
     'left join review_artifact_map ra on (ra.assetId=review.assetId and ra.ruleId=review.ruleId)',
     'left join (SELECT distinct ruleId FROM	stigs.rule_oval_map) scap on r.ruleId=scap.ruleId'
   ]
@@ -484,7 +484,11 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     let connection = await oracledb.getConnection()
     let result = await connection.execute(sql, predicates.binds, options)
     await connection.close()
-
+    for (const row of result.rows) {
+      row.autoResult = row.autoResult === 1 ? true : false
+      row.hasAttachment = row.hasAttachment === 1 ? true : false
+      row.complete = row.complete === 1 ? true : false
+    }
     return (result.rows)
   }
   catch (err) {

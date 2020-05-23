@@ -466,7 +466,7 @@ paths:
       operationId: getReviews
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
-        - $ref: '#/components/parameters/ReviewStateQuery'
+        - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - name: ruleId
@@ -607,7 +607,7 @@ paths:
       operationId: getReviewsByAssetId
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
-        - $ref: '#/components/parameters/ReviewStateQuery'
+        - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - name: benchmarkId
@@ -1845,11 +1845,11 @@ components:
           type: string
         severity:
           "$ref": "#/components/schemas/RuleSeverity"
-        state:
-          "$ref": "#/components/schemas/ChecklistState"
+        result:
+          "$ref": "#/components/schemas/ChecklistResult"
         status:
           "$ref": "#/components/schemas/ChecklistStatus"
-        autoState:
+        autoResult:
           type: boolean
         hasAttachment:
           type: boolean
@@ -1929,7 +1929,7 @@ components:
                         type: string
                       SEVERITY_JUSTIFICATION:
                         type: string
-    ChecklistState:
+    ChecklistResult:
       description: The Review result
       type: string
       nullable: true
@@ -1944,7 +1944,7 @@ components:
       enum:
       - saved
       - submitted
-      - approved
+      - accepted
       - rejected
       - 
     Error:
@@ -2080,11 +2080,11 @@ components:
           type: integer
         ruleId:
           type: string
-        state:
-          "$ref": "#/components/schemas/ReviewState"
-        stateComment:
+        result:
+          "$ref": "#/components/schemas/ReviewResult"
+        resultComment:
           type: string
-        autoState:
+        autoResult:
           type: boolean
         action:
           "$ref": "#/components/schemas/ReviewAction"
@@ -2110,16 +2110,16 @@ components:
       type: string
       nullable: true
       enum:
-      - Remediate
-      - Mitigate
-      - Exception
+      - remediate
+      - mitigate
+      - exception
       - 
     ReviewAssetRulePatch:
       type: object
       properties:
-        state:
-          "$ref": "#/components/schemas/ReviewState"
-        stateComment:
+        result:
+          "$ref": "#/components/schemas/ReviewResult"
+        resultComment:
           type: string
           nullable: true
         action:
@@ -2127,19 +2127,19 @@ components:
         actionComment:
           type: string
           nullable: true
-        autoState:
+        autoResult:
           type: boolean
         status:
           "$ref": "#/components/schemas/ReviewStatus"
     ReviewAssetRulePut:
       type: object
       required:
-      - state
-      - stateComment
+      - result
+      - resultComment
       properties:
-        state:
-          "$ref": "#/components/schemas/ReviewState"
-        stateComment:
+        result:
+          "$ref": "#/components/schemas/ReviewResult"
+        resultComment:
           type: string
           nullable: true
         action:
@@ -2147,7 +2147,7 @@ components:
         actionComment:
           type: string
           nullable: true
-        autoState:
+        autoResult:
           type: boolean
         status:
           "$ref": "#/components/schemas/ReviewStatus"
@@ -2189,16 +2189,16 @@ components:
     ReviewPut:
       type: object
       required:
-      - state
-      - stateComment
+      - result
+      - resultComment
       properties:
         assetId:
           type: integer
         ruleId:
           type: string
-        state:
-          "$ref": "#/components/schemas/ReviewState"
-        stateComment:
+        result:
+          "$ref": "#/components/schemas/ReviewResult"
+        resultComment:
           type: string
           nullable: true
         action:
@@ -2206,13 +2206,13 @@ components:
         actionComment:
           type: string
           nullable: true
-        autoState:
+        autoResult:
           type: boolean
           nullable: true
         status:
           "$ref": "#/components/schemas/ReviewStatus"
-    ReviewState:
-      description: The Review state
+    ReviewResult:
+      description: The Review result
       type: string
       enum:
       - O
@@ -2223,7 +2223,7 @@ components:
       enum:
       - saved
       - submitted
-      - approved
+      - accepted
       - rejected
     ReviewWithHistoryProjected:
       allOf:
@@ -2500,11 +2500,11 @@ components:
             - history
             - stigs
             - packages
-    ReviewStateQuery:
-      name: state
+    ReviewResultQuery:
+      name: result
       in: query
       schema:
-        $ref: '#/components/schemas/ReviewState'
+        $ref: '#/components/schemas/ReviewResult'
     ReviewStatusQuery:
       name: status
       in: query
