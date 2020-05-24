@@ -220,9 +220,13 @@ paths:
   '/packages/{packageId}/findings':
     parameters:
       - $ref: '#/components/parameters/PackageIdPath'
+      - name: acceptedOnly
+        in: query
+        schema:
+          type: boolean
+          default: true
       - $ref: '#/components/parameters/BenchmarkIdQuery'
-      - $ref: '#/components/parameters/AssetIdQuery'
-      - $ref: '#/components/parameters/GroupIdQuery'
+      - $ref: '#/components/parameters/DepartmentQuery'
       - $ref: '#/components/parameters/FindingProjectionQuery'
     get:
       tags:
@@ -237,7 +241,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PackageFinding'
+                  $ref: '#/components/schemas/FindingProjected'
         default:
           description: unexpected error
           content:
@@ -247,18 +251,28 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-  '/packages/{packageId}/findings/emass_poam':
+  '/packages/{packageId}/findings/poam_rar':
     parameters:
       - $ref: '#/components/parameters/PackageIdPath'
+      - name: artifact
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+            - poam
+            - rar
       - $ref: '#/components/parameters/BenchmarkIdQuery'
     get:
       tags:
         - Package
-      summary: Return the eMASS Plan of Action and Milestones (POAM) in XLSX format
-      operationId: getPoamByPackage
+      summary: Return an eMASS POAM or RAR artifact in XLSX format
+      description: >-
+        Generates a Plan of Action and Milestones (POAM) or Risk Assessment Report (RAR) for use as an eMASS artifact. The artifact is generated based on the currently accepted findings and incorporates the EMassPoamRarRecords managed by the {groupId} child endpoints.
+      operationId: getPoamOrRarByPackage
       responses:
         '200':
-          description: EMassPoam response
+          description: EMassPoamRar response
           content:
             application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
               schema:
@@ -273,14 +287,14 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-  '/packages/{packageId}/findings/emass_poam/{groupId}':
+  '/packages/{packageId}/findings/poam_rar/{groupId}':
     parameters:
       - $ref: '#/components/parameters/PackageIdPath'
       - $ref: '#/components/parameters/GroupIdPath'
     get:
       tags:
         - Package
-      summary: Return the eMASS POAM record for the specified Package and Finding (groupId)
+      summary: Return the eMASS POAM/RAR record for the specified Package and Finding (groupId)
       operationId: getPoamRecordByPackageGroup
       responses:
         '200':
@@ -288,7 +302,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmassPoamRecord'
+                $ref: '#/components/schemas/EmassPoamRarRecord'
         default:
           description: unexpected error
           content:
@@ -301,21 +315,21 @@ paths:
     put:
       tags:
         - Package
-      summary: Set all properties of the eMASS POAM record for a Finding (groupId)
+      summary: Set all properties of the eMASS POAM/RAR record for a Finding (groupId)
       operationId: setPoamRecordByPackageGroup
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmassPoamRecordUpdate'
+              $ref: '#/components/schemas/EmassPoamRarRecordUpdate'
       responses:
         '200':
           description: PoamRecord response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmassPoamRecord'
+                $ref: '#/components/schemas/EmassPoamRarRecord'
         default:
           description: unexpected error
           content:
@@ -326,84 +340,7 @@ paths:
         - oauth:
             - 'stig-manager:package:read'
     
-  '/packages/{packageId}/findings/emass_rar':
-    parameters:
-      - $ref: '#/components/parameters/PackageIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdQuery'
-    get:
-      tags:
-        - Package
-      summary: Return the eMASS Risk Assessment Report (RAR) in XLSX format
-      operationId: getRarByPackage
-      responses:
-        '200':
-          description: EMassRar response
-          content:
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-              schema:
-                type: string
-                format: binary
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
-  '/packages/{packageId}/findings/emass_rar/{groupId}':
-    parameters:
-      - $ref: '#/components/parameters/PackageIdPath'
-      - $ref: '#/components/parameters/GroupIdPath'
-    get:
-      tags:
-        - Package
-      summary: Return the eMASS RAR record for the specified Package and Finding (groupId)
-      operationId: getRarRecordByPackageGroup
-      responses:
-        '200':
-          description: PoamRecord response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmassRarRecord'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
-    put:
-      tags:
-        - Package
-      summary: Set all properties of the eMASS RAR record for a Finding (groupId)
-      operationId: setRarRecordByPackageGroup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmassRarRecordUpdate'
-      responses:
-        '200':
-          description: PoamRecord response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmassRarRecord'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
+
   /assets:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -702,7 +639,7 @@ paths:
     post:
       tags:
         - Review
-      summary: Import one or more Reviews, either from JSON or a CKL or XCCDF file
+      summary: Import one or more Reviews from a JSON body, a STIGViewer CKL file, or an SCC XCCDF file
       operationId: importReviews
       requestBody:
         content:
@@ -724,6 +661,7 @@ paths:
                   description: If provided, file contents will be checked for match
                   type: string
                 importFile:
+                  description: Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)
                   type: string
                   format: binary
       responses:
@@ -2168,9 +2106,11 @@ components:
           type: string
         assessmentProcedure:
           type: string
-    EmassPoamRecord:
+    EmassPoamRarRecord:
       type: object
       properties:
+        status:
+          $ref: '#/components/schemas/EmassPoamRarStatus'
         control:
           type: string
         residualRisk:
@@ -2181,15 +2121,30 @@ components:
           type: string
         milestone:
           type: string
-    EmassPoamRecordUpdate:
+        rarLikelihood:
+          type: string
+        rarRecommendedCorrectiveAction:
+          type: string
+        rarRemediationDescription:
+          type: string
+        rarComment:
+          type: string
+    EmassPoamRarRecordUpdate:
       type: object
       required:
+        - status
         - control
         - residualRisk
         - mitigations
         - completionDate
         - milestone
+        - rarLikelihood
+        - rarRecommendedCorrectiveAction
+        - rarRemediationDescription
+        - rarComment
       properties:
+        status:
+          $ref: '#/components/schemas/EmassPoamRarStatus'
         control:
           type: string
         residualRisk:
@@ -2200,48 +2155,19 @@ components:
           type: string
         milestone:
           type: string
-    EmassRarRecord:
-      type: object
-      properties:
-        control:
+        rarLikelihood:
           type: string
-        residualRisk:
-          $ref: '#/components/schemas/RuleSeverity'
-        mitigations:
+        rarRecommendedCorrectiveAction:
           type: string
-        likelihood:
+        rarRemediationDescription:
           type: string
-        recommendedCorrectiveAction:
+        rarComment:
           type: string
-        remediationDescription:
-          type: string
-        comment:
-          type: string
-    EmassRarRecordUpdate:
-      type: object
-      required:
-        - control
-        - residualRisk
-        - mitigations
-        - likelihood
-        - recommendedCorrectiveAction
-        - remediationDescription
-        - comment
-      properties:
-        control:
-          type: string
-        residualRisk:
-          $ref: '#/components/schemas/RuleSeverity'
-        mitigations:
-          type: string
-        likelihood:
-          type: string
-        recommendedCorrectiveAction:
-          type: string
-        remediationDescription:
-          type: string
-        comment:
-          type: string
+    EmassPoamRarStatus:
+      type: string
+      enum:
+        - ongoing
+        - completed
     Error:
       required:
         - code
@@ -2253,6 +2179,40 @@ components:
           format: int32
         message:
           type: string
+    FindingProjected:
+      type: object
+      properties:
+        groupId:
+          type: string
+        ruleTitle:
+          type: string
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        ccis:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciBasic'
+        benchmarkIds:
+          type: array
+          items:
+            type: string
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetBasic'
+        poamRarSummary:
+            type: object
+            properties:
+              status:
+                type: string
+                nullable: true
+                enum:
+                  - ongoing
+                  - completed
+              poamComplete:
+                type: boolean
+              rarComplete:
+                type: boolean
     Fix:
       type: object
       properties:
@@ -2343,42 +2303,6 @@ components:
           type: array
           items:
             type: integer
-    PackageFinding:
-      type: object
-      properties:
-        groupId:
-          type: string
-        ruleTitle:
-          type: string
-        severity:
-          $ref: '#/components/schemas/RuleSeverity'
-        ccis:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciBasic'
-        benchmarkIds:
-          type: array
-          items:
-            type: string
-        assets:
-          type: array
-          items:
-            $ref: '#/components/schemas/AssetBasic'
-        eMassSummary:
-            type: object
-            properties:
-              status:
-                type: string
-                nullable: true
-                enum:
-                  - ongoing
-                  - completed
-              poamComplete:
-                type: boolean
-              rarComplete:
-                type: boolean
-            
-
     PackageProjected:
       allOf:
         - $ref: '#/components/schemas/Package'
@@ -2835,6 +2759,11 @@ components:
             - fullrules
             - checks
             - fixes
+    DepartmentQuery:
+      name: department
+      in: query
+      schema:
+        type: string
     ElevateQuery:
       name: elevate
       in: query
@@ -2858,7 +2787,7 @@ components:
             - assets
             - benchmarkIds
             - ccis
-            - eMassSummary
+            - poamRarSummary
     GroupIdPath:
       name: groupId
       in: path
