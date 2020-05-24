@@ -1106,6 +1106,147 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
+  /departments:
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+    get:
+      tags:
+        - Department
+      summary: Return a list of Departments
+      operationId: getDepartments
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: List of Department
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    departmentId:
+                      type: integer
+                    name:
+                      type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager'
+    post:
+      tags:
+        - Department
+      summary: Create a Department
+      operationId: createDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentCreateOrReplace'
+      responses:
+        '201':
+          description: Department response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager'
+  '/departments/{departmentId}':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - name: departmentId
+        in: path
+        description: A path parameter that indentifies a Department
+        required: true
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/DepartmentProjectionQuery'
+    get:
+      tags:
+        - Department
+      summary: Return a Department
+      operationId: getDepartment
+      responses:
+        '200':
+          description: DepartmentProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager'
+    put:
+      tags:
+        - Department
+      summary: Set all properties of a Department
+      operationId: replaceDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentCreateOrReplace'
+      responses:
+        '200':
+          description: DepartmentProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager'
+    delete:
+      tags:
+        - Department
+      summary: Delete a Department
+      operationId: deleteDepartment
+      responses:
+        '200':
+          description: DepartmentProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
   /stigs:
     get:
       tags:
@@ -1709,16 +1850,6 @@ paths:
       operationId: getAppData
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
-        - name: options
-          in: query
-          description: Options for the export
-          schema:
-            type: array
-            uniqueItems: true
-            items:
-              type: string
-              enum:
-                - includeReviewHistory
       responses:
         '200':
           description: Exported data
@@ -1734,7 +1865,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:stig:read'
+            - 'stig-manager'
     post:
       tags:
         - Operation
@@ -1742,16 +1873,6 @@ paths:
       operationId: replaceAppData
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
-        - name: options
-          in: query
-          description: Options for the import
-          schema:
-            type: array
-            uniqueItems: true
-            items:
-              type: string
-              enum:
-                - remapIds
       requestBody:
         required: false
         content:
@@ -1783,7 +1904,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:stig:read'
+            - 'stig-manager'
 components:
   schemas:
     ApiVersion:
@@ -2154,6 +2275,33 @@ components:
         - accepted
         - rejected
         - null
+    Department:
+      type: object
+      properties:
+        departmentId:
+          type: integer
+        name:
+          type: string
+    DepartmentProjected:
+      allOf:
+        - $ref: '#/components/schemas/Department'
+        - type: object
+          properties:
+            assets:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetBasic'
+            users:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserBasic'
+    DepartmentCreateOrReplace:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
     EmassAp:
       type: object
       properties:
@@ -2848,6 +2996,20 @@ components:
             - fullrules
             - checks
             - fixes
+    DepartmentProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - assets
+            - users
     DepartmentQuery:
       name: department
       in: query
