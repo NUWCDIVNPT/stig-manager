@@ -764,7 +764,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Test Package 1\",\r\n  \"emassId\": \"emass1\",\r\n  \"pocName\": \"poc2\",\r\n  \"pocEmail\": \"pocEmail@email.com\",\r\n  \"pocPhone\": \"12342\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    63\r\n  ]\r\n}",
+							"raw": "{\r\n  \"name\": \"z_packageIdBenchmarkIdDept-1\",\r\n  \"emassId\": \"emass1\",\r\n  \"pocName\": \"poc2\",\r\n  \"pocEmail\": \"pocEmail@email.com\",\r\n  \"pocPhone\": \"12342\",\r\n  \"reqRar\": true,\r\n  \"assetIds\": [\r\n    63\r\n  ]\r\n}",
 							"options": {
 								"raw": {}
 							}
@@ -2213,21 +2213,12 @@
 											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
 											"    user = \"elevated\";\r",
 											"}\r",
+											"\r",
 											"// console.log(\"url: \" + pm.request.url.getQueryString().match(/elevate=true/));\r",
 											"\r",
 											"var stuff = pm.request.auth;\r",
 											"var stuff = pm.request.url.query;\r",
-											"let packageQuery, benchmarkQuery, deptQuery = 0;\r",
 											"\r",
-											"if (pm.request.url.getQueryString().match(/packageId=/)) {\r",
-											"    packageQuery = 1;\r",
-											"}\r",
-											"if (pm.request.url.getQueryString().match(/benchmarkId=/)) {\r",
-											"    benchmarkQuery = 1;\r",
-											"}\r",
-											"if (pm.request.url.getQueryString().match(/dept=/)) {\r",
-											"    deptQuery = 1;\r",
-											"}\r",
 											"\r",
 											"\r",
 											"let allowedPackages, disallowedPackages, validStigs, invalidStigs, validAssets, invalidAssets;\r",
@@ -2283,6 +2274,23 @@
 											"});\r",
 											"\r",
 											"console.log(\"packageIds = \" + packageIds);\r",
+											"\r",
+											"let packageQuery, benchmarkQuery, deptQuery = 0;\r",
+											"\r",
+											"pm.test(\"Response does NOT contain unAuthorized packageIds for this user\", function () {\r",
+											"\r",
+											"    if (pm.request.url.getQueryString().match(/packageId=/)) {\r",
+											"        packageQuery = 1;\r",
+											"        \r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/benchmarkId=/)) {\r",
+											"        benchmarkQuery = 1;\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/dept=/)) {\r",
+											"        deptQuery = 1;\r",
+											"    }\r",
+											"\r",
+											"});\r",
 											"\r",
 											"pm.test(\"Response contains authorized packageIds for this user\", function () {\r",
 											"    packageIds.forEach(function (item) {\r",
@@ -3676,6 +3684,1872 @@
 					],
 					"protocolProfileBehavior": {},
 					"_postman_isSubFolder": true
+				},
+				{
+					"name": "{asset Id} ",
+					"item": [
+						{
+							"name": "Return an Asset",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?projection=packages&projection=stigReviewers&projection=adminStats&elevate={{elevated}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "packages",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigReviewers",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{assets.queryAsset}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								},
+								{
+									"name": "AssetProjected response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+								}
+							]
+						},
+						{
+							"name": "Merge updates to an Asset",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"z_testAssetPatched\",\n    \"dept\": \"60\",\n    \"ip\": \"1.1.1.1\",\n    \"nonnetwork\": true,\n    \"scanexempt\": false,\n    \"packageIds\": [\n        62\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"DNS_SRG\",\n            \"userIds\": [\n                22\n            ]\n        }\n    ]\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=packages&projection=stigs&projection=adminStats",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "packages",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{createdAsset}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "AssetProjected response",
+									"originalRequest": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+								},
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								}
+							]
+						},
+						{
+							"name": "Replace all properties of an Asset",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"z_testAssetPut\",\n    \"dept\": \"60\",\n    \"ip\": \"1.1.1.2\",\n    \"nonnetwork\": false,\n    \"scanexempt\": true,\n    \"packageIds\": [\n        1\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"DNS_SRG\",\n            \"userIds\": [\n                21\n            ]\n        }\n    ]\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=packages&projection=stigs&projection=adminStats",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "packages",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{createdAsset}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								},
+								{
+									"name": "AssetProjected response",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+								}
+							]
+						},
+						{
+							"name": "Delete an Asset",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "e4be83ca-fc3e-4407-a271-f1dc60356aa0",
+										"exec": [
+											"\r",
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"if (user == \"wf10\") {\r",
+											"    pm.test(\"Status should be is 403 for user wf10\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"}\r",
+											"\r",
+											"var jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"if (user == \"wf60\") {\r",
+											"    pm.test(\"Status code should be 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    console.log(`Status code: ${pm.response.code}. Either previous test did not create the package, the package has already been deleted, or this user is not authorized to delete this package.`);\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"console.log(jsonData);\r",
+											"// console.log(pm.environment.get(\"env\"));\r",
+											"\r",
+											"pm.test(\"Response is an array with one JSON object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?projection=packages&projection=stigReviewers&projection=adminStats&elevate={{elevated}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "packages",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigReviewers",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{createdAsset}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "AssetProjected response",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+								},
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								}
+							]
+						},
+						{
+							"name": "Delete an Asset CLEANUP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4e36deb8-c96b-43f7-8119-0bf831a3ec32",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.staff}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate=true&projection=packages&projection=stigReviewers&projection=adminStats",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "packages",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigReviewers",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{createdAsset}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								},
+								{
+									"name": "AssetProjected response",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+								}
+							]
+						},
+						{
+							"name": "Return the Checklist for the supplied Asset and STIG",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?elevate={{elevated}}&format=json",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId",
+										"checklists",
+										":benchmarkId",
+										":revisionStr"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The format of the response. Default if missing is 'json'"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{assets.queryAsset}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "benchmarkId",
+											"value": "{{assets.queryBenchmark}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies a STIG"
+										},
+										{
+											"key": "revisionStr",
+											"value": "{{assets.queryRev}}",
+											"type": "string",
+											"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Review response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?elevate=<boolean>&format=json",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists",
+												":benchmarkId",
+												":revisionStr"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "format",
+													"value": "json"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												},
+												{
+													"key": "benchmarkId"
+												},
+												{
+													"key": "revisionStr"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"reviewId\": \"<integer>\",\n \"assetId\": \"<integer>\",\n \"ruleId\": \"<string>\",\n \"state\": \"<string>\",\n \"stateComment\": \"<string>\",\n \"autoState\": \"<boolean>\",\n \"action\": \"<string>\",\n \"actionComment\": \"<string>\",\n \"reqDoc\": \"<boolean>\",\n \"status\": \"<string>\",\n \"userId\": \"<integer>\",\n \"ts\": \"<string>\",\n \"rejectText\": \"<string>\",\n \"rejectUserId\": \"<integer>\"\n}"
+								},
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?elevate=<boolean>&format=json",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists",
+												":benchmarkId",
+												":revisionStr"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "format",
+													"value": "json"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												},
+												{
+													"key": "benchmarkId"
+												},
+												{
+													"key": "revisionStr"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "99451a90-9375-4aae-80f9-50cf21e7f434",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "b7a86b0c-07af-4e04-b571-6d80356c1fda",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Special Cases ( Mostly IAO)",
+					"item": [
+						{
+							"name": "Create an Asset - IAO - wrong dept",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "044c9466-5bbb-4cb6-9a8f-7e711d9d8a96",
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (user != \"officer60\") {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"user is elevated\");\r",
+											"\r",
+											"}\r",
+											"\r",
+											"var stuff = pm.request.auth;\r",
+											"var stuff = pm.request;\r",
+											"\r",
+											"if (user == 'elevated' || user == 'staff' || user == 'officer60') {\r",
+											"    pm.test(\"User is elevated. Status code is 201\", function () {\r",
+											"        pm.response.to.have.status(201);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"User is not Staff or elevated. Expected status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"if (pm.response.code == 500) {\r",
+											"    console.log(\"Server returned 500\")\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"var jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});\r",
+											"\r",
+											"let createdAsset = jsonData.assetId;\r",
+											"console.log(\"created asset: \" + createdAsset)\r",
+											"pm.environment.set(\"createdAsset\", createdAsset);\r",
+											"\r",
+											"pm.test(`Created Asset: ${createdAsset}`, function () {\r",
+											"    pm.expect(createdAsset).to.be.an('number');\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"z_testAsset_expectFail-1\",\n    \"dept\": \"85\",\n    \"ip\": \"\",\n    \"nonnetwork\": false,\n    \"scanexempt\": false,\n    \"packageIds\": [],\n    \"stigReviewers\": []\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets?projection=packages&projection=stigReviewers&projection=adminStats&elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "packages",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigReviewers"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats"
+										},
+										{
+											"key": "elevate",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "AssetProjected response",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets?projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+								},
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets?projection=<string>&projection=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "<string>"
+												},
+												{
+													"key": "projection",
+													"value": "<string>"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								}
+							]
+						},
+						{
+							"name": "Return the Checklist (expect to fail)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?elevate={{elevated}}&format=json",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId",
+										"checklists",
+										":benchmarkId",
+										":revisionStr"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The format of the response. Default if missing is 'json'"
+										}
+									],
+									"variable": [
+										{
+											"description": "(Required) A path parameter that indentifies an Asset",
+											"key": "assetId",
+											"type": "string",
+											"value": "{{assets.queryAsset}}"
+										},
+										{
+											"description": "(Required) A path parameter that indentifies a STIG",
+											"key": "benchmarkId",
+											"type": "string",
+											"value": "{{assets.queryBenchmark}}"
+										},
+										{
+											"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]",
+											"key": "revisionStr",
+											"type": "string",
+											"value": "{{assets.queryRev}}"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?elevate=<boolean>&format=json",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists",
+												":benchmarkId",
+												":revisionStr"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "format",
+													"value": "json"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												},
+												{
+													"key": "benchmarkId"
+												},
+												{
+													"key": "revisionStr"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+								},
+								{
+									"name": "Review response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?elevate=<boolean>&format=json",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists",
+												":benchmarkId",
+												":revisionStr"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "<boolean>"
+												},
+												{
+													"key": "format",
+													"value": "json"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId"
+												},
+												{
+													"key": "benchmarkId"
+												},
+												{
+													"key": "revisionStr"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"reviewId\": \"<integer>\",\n \"assetId\": \"<integer>\",\n \"ruleId\": \"<string>\",\n \"state\": \"<string>\",\n \"stateComment\": \"<string>\",\n \"autoState\": \"<boolean>\",\n \"action\": \"<string>\",\n \"actionComment\": \"<string>\",\n \"reqDoc\": \"<boolean>\",\n \"status\": \"<string>\",\n \"userId\": \"<integer>\",\n \"ts\": \"<string>\",\n \"rejectText\": \"<string>\",\n \"rejectUserId\": \"<integer>\"\n}"
+								}
+							]
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Create an Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e68a39c9-2909-4170-bb3f-f8a2364373a2",
+								"exec": [
+									"let user = pm.environment.get(\"user\");\r",
+									"console.log(\"user: \" + user);\r",
+									"if (user == \"wf10\") {\r",
+									"    pm.test(\"Status should be is 403 for user wf10\", function () {\r",
+									"        pm.response.to.have.status(403);\r",
+									"    });\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+									"    user = \"elevated\";\r",
+									"    console.log(\"user is elevated\");\r",
+									"\r",
+									"}\r",
+									"\r",
+									"var stuff = pm.request.auth;\r",
+									"var stuff = pm.request;\r",
+									"\r",
+									"if (user == 'elevated' || user == 'staff' || user == \"officer60\") {\r",
+									"    pm.test(\"User is elevated. Status code is 201\", function () {\r",
+									"        pm.response.to.have.status(201);\r",
+									"    });\r",
+									"}\r",
+									"else {\r",
+									"    pm.test(\"User is not Staff, IAO (w/ proper dept) or elevated. Expected status code is 403\", function () {\r",
+									"        pm.response.to.have.status(403);\r",
+									"    });\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"if (pm.response.code == 500) {\r",
+									"    console.log(\"Server returned 500\")\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response JSON is an object\", function () {\r",
+									"    pm.expect(jsonData).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"let createdAsset = jsonData.assetId;\r",
+									"console.log(\"created asset: \" + createdAsset)\r",
+									"pm.environment.set(\"createdAsset\", createdAsset);\r",
+									"\r",
+									"pm.test(`Created Asset: ${createdAsset}`, function () {\r",
+									"    pm.expect(createdAsset).to.be.an('number');\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"z_testAsset-2\",\n    \"dept\": \"60\",\n    \"ip\": \"\",\n    \"nonnetwork\": false,\n    \"scanexempt\": false,\n    \"packageIds\": [],\n    \"stigReviewers\": []\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/assets?projection=packages&projection=stigReviewers&projection=adminStats&elevate=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"assets"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "packages",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "projection",
+									"value": "stigs",
+									"description": "Additional properties to include in the response.\n",
+									"disabled": true
+								},
+								{
+									"key": "projection",
+									"value": "stigReviewers"
+								},
+								{
+									"key": "projection",
+									"value": "adminStats"
+								},
+								{
+									"key": "elevate",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "AssetProjected response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"assetId\": \"<integer>\",\n \"name\": \"<string>\",\n \"dept\": \"<string>\",\n \"ip\": \"<string>\",\n \"nonnetwork\": \"<boolean>\",\n \"scanexempt\": \"<boolean>\",\n \"adminStats\": {\n  \"stigCount\": \"<integer>\",\n  \"stigAssignedCount\": \"<integer>\"\n },\n \"packages\": [\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  },\n  {\n   \"packageId\": \"<integer>\",\n   \"name\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\",\n   \"title\": \"<string>\"\n  }\n ],\n \"stigReviewers\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"reviewers\": [\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    },\n    {\n     \"userId\": \"<integer>\",\n     \"username\": \"<string>\"\n    }\n   ]\n  }\n ]\n}"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"assetId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"dept\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"nonnetwork\": \"<boolean>\",\n    \"scanexempt\": \"<boolean>\",\n    \"packageIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ],\n    \"benchmarkIds\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"stigReviewers\": [\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        },\n        {\n            \"benchmarkId\": \"<string>\",\n            \"userIds\": [\n                \"<integer>\",\n                \"<integer>\"\n            ]\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets?projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Return Assets with specified STIG",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/stigs/:benchmarkId/assets?projection=reviewers&elevate={{elevated}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stigs",
+								":benchmarkId",
+								"assets"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "reviewers",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "{{elevated}}",
+									"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+								}
+							],
+							"variable": [
+								{
+									"key": "benchmarkId",
+									"value": "{{assets.queryBenchmark}}",
+									"type": "string",
+									"description": "(Required) A path parameter that indentifies a STIG"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Revision response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId/assets?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId",
+										"assets"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "benchmarkId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n {\n  \"assetId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"reviewers\": [\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   },\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   }\n  ]\n },\n {\n  \"assetId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"reviewers\": [\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   },\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   }\n  ]\n }\n]"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId/assets?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId",
+										"assets"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "benchmarkId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Set the targets of evaluation against a STIG Copy",
+					"request": {
+						"auth": {
+							"type": "oauth2"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n   42,22\n]",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/stigs/:benchmarkId/assets?projection=reviewers&elevate={{elevated}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stigs",
+								":benchmarkId",
+								"assets"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "reviewers",
+									"description": "Additional properties to include in the response.\n"
+								},
+								{
+									"key": "elevate",
+									"value": "{{elevated}}",
+									"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+								}
+							],
+							"variable": [
+								{
+									"key": "benchmarkId",
+									"value": "{{assets.queryBenchmark}}",
+									"type": "string",
+									"description": "(Required) A path parameter that indentifies a STIG"
+								}
+							]
+						},
+						"description": "Invoking this endpoint will retain any previously configured Reviewer assignments"
+					},
+					"response": [
+						{
+							"name": "Revision response",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    \"<integer>\",\n    \"<integer>\"\n]"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId/assets?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId",
+										"assets"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "benchmarkId"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n {\n  \"assetId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"reviewers\": [\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   },\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   }\n  ]\n },\n {\n  \"assetId\": \"<integer>\",\n  \"name\": \"<string>\",\n  \"reviewers\": [\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   },\n   {\n    \"userId\": \"<integer>\",\n    \"username\": \"<string>\"\n   }\n  ]\n }\n]"
+						},
+						{
+							"name": "unexpected error",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    \"<integer>\",\n    \"<integer>\"\n]"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId/assets?elevate=<boolean>&projection=<string>&projection=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId",
+										"assets"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "<boolean>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										},
+										{
+											"key": "projection",
+											"value": "<string>"
+										}
+									],
+									"variable": [
+										{
+											"key": "benchmarkId"
+										}
+									]
+								}
+							},
+							"status": "Internal Server Error",
+							"code": 500,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
+						}
+					]
 				}
 			],
 			"protocolProfileBehavior": {}
