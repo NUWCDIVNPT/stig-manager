@@ -116,17 +116,17 @@ module.exports.getUserObject = async function (username) {
     connection = await oracledb.getConnection()
     sql = `
       SELECT
-        ud.id as "id",
-        ud.cn as "cn",
-        ud.name as "name",
-        ud.dept as "dept",
-        r.role as "role",
+        ud.userid as "userId",
+        ud.username as "username",
+        ud.display as "display",
+        ud.deptId as "deptId",
+        r.roleId as "roleId",
         ud.canAdmin as "canAdmin"
       from 
         user_data ud
-        left join roles r on r.id=ud.roleId
+        left join role r on r.roleid=ud.roleId
       where
-        UPPER(cn)=UPPER(:0)
+        UPPER(username)=UPPER(:0)
       `
     binds = [username]
     options = {
@@ -182,17 +182,18 @@ module.exports.parseRevisionStr = function (revisionStr) {
 module.exports.CONTEXT_ALL = 'all'
 module.exports.CONTEXT_DEPT = 'department'
 module.exports.CONTEXT_USER = 'user'
-module.exports.REVIEW_STATE_ID = { 
-  1: {state: 'In Progress', abbr: 'IP'},
-  2: {state: 'Not Applicable', abbr: 'NA'},
-  3: {state: 'Not a Finding', abbr: 'NF'},
-  4: {state: 'Open', abbr: 'O'}
+module.exports.CONTEXT_GUEST = 'guest'
+module.exports.REVIEW_RESULT_ID = { 
+  1: {result: 'In Progress', abbr: 'IP'},
+  2: {result: 'Not Applicable', abbr: 'NA'},
+  3: {result: 'Not a Finding', abbr: 'NF'},
+  4: {result: 'Open', abbr: 'O'}
 }
-module.exports.REVIEW_STATE_ABBR = { 
-  'IP': {state: 'In Progress', id: 1},
-  'NA': {state: 'Not Applicable', id: 2},
-  'NF': {state: 'Not a Finding', id: 3},
-  'O': {state: 'Open', id: 4}
+module.exports.REVIEW_RESULT_ABBR = { 
+  'IP': {result: 'In Progress', id: 1},
+  'NA': {result: 'Not Applicable', id: 2},
+  'NF': {result: 'Not a Finding', id: 3},
+  'O': {result: 'Open', id: 4}
 }
 module.exports.REVIEW_ACTION_ID = { 
   1: 'Remediate',

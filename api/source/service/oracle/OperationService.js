@@ -23,54 +23,193 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     let {packages, assets, users, reviews} = appdata
     let dml = {
       preload: [
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY CONSTRAINT FK_REVIEWS_1 DISABLE`,
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY CONSTRAINT INDEX_2_1_1 DISABLE`,
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY CONSTRAINT PRIMARY_27 DISABLE`,
-        `ALTER TABLE STIGMAN.REVIEWS_HISTORY MODIFY CONSTRAINT PRIMARY_28 DISABLE`,        
-        `ALTER TABLE STIGMAN.REVIEWS DISABLE ALL TRIGGERS`,
-        `ALTER TABLE STIGMAN.ASSETS DISABLE ALL TRIGGERS`,
-        `ALTER INDEX STIGMAN.INDEX_2_1_1 UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_4 UNUSABLE`,
-        `ALTER INDEX STIGMAN.PRIMARY_27 UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_3_3 UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_STATUSID UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_ACTIVITYTYPE UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_ASSETID UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_COLUMNNAME UNUSABLE`,
-        `ALTER INDEX STIGMAN.INDEX_RULEID UNUSABLE`,
-        `ALTER INDEX STIGMAN.PRIMARY_28 UNUSABLE`
-        
+        'ALTER TABLE REVIEW MODIFY CONSTRAINT PK_REVIEW DISABLE',
+        'ALTER TABLE REVIEW MODIFY CONSTRAINT UK_REVIEW_2 DISABLE',
+        'ALTER TABLE REVIEW_HISTORY MODIFY CONSTRAINT PK_RH DISABLE',
+        `ALTER TABLE REVIEW DISABLE ALL TRIGGERS`,
+        `ALTER TABLE ASSET DISABLE ALL TRIGGERS`,
+        // 'ALTER INDEX UK_ACTION_ACTIONID UNUSABLE',
+        // 'ALTER INDEX IDX_ASSET_4 UNUSABLE',
+        // 'ALTER INDEX IDX_ASSET_1 UNUSABLE',
+        // 'ALTER INDEX IDX_ASSET_2 UNUSABLE',
+        // 'ALTER INDEX IDX_ASSET_3 UNUSABLE',
+        // 'ALTER INDEX IDX_APM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_APM_4 UNUSABLE',
+        // 'ALTER INDEX IDX_APM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_APM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_CCI_1 UNUSABLE',
+        // 'ALTER INDEX IDX_CCI_2 UNUSABLE',
+        // 'ALTER INDEX IDX_CRM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_CRM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_CHECKS_1 UNUSABLE',
+        // 'ALTER INDEX IDX_DEPT_1 UNUSABLE',
+        // 'ALTER INDEX IDX_DEPT_2 UNUSABLE',
+        // 'ALTER INDEX IDX_FIX_1 UNUSABLE',
+        // 'ALTER INDEX IDX_GROUPS UNUSABLE',
+        // 'ALTER INDEX IDX_PACKAGE_1 UNUSABLE',
+        // 'ALTER INDEX IDX_PRENTRY_1 UNUSABLE',
+        // 'ALTER INDEX IDX_PRENTRY_3 UNUSABLE',
+        // 'ALTER INDEX IDX_PRENTRY_2 UNUSABLE',
+        // 'ALTER INDEX IDX_REJECT_STRING_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RESULT_1 UNUSABLE',
+        // 'ALTER INDEX IDX_REVIEW_4 UNUSABLE',
+        // 'ALTER INDEX IDX_REVIEW_1 UNUSABLE',
+        // 'ALTER INDEX IDX_REVIEW_3 UNUSABLE',
+        // 'ALTER INDEX IDX_REVIEW_5 UNUSABLE',
+        // 'ALTER INDEX IDX_REVIEW_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RH_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RH_3 UNUSABLE',
+        // 'ALTER INDEX IDX_RH_4 UNUSABLE',
+        // 'ALTER INDEX IDX_RH_5 UNUSABLE',
+        // 'ALTER INDEX IDX_RH_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RRSM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RRSM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_REVISION_2 UNUSABLE',
+        // 'ALTER INDEX IDX_REVISION_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RGM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RGM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RGM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRCM2_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRCM2_3 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRCM2_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRCM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRCM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRCM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRFM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRFM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRFM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RGRM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_RXM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_RXM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_ROLE_1 UNUSABLE',
+        // 'ALTER INDEX IDX_RULE_1 UNUSABLE',
+        // 'ALTER INDEX PRIMARY_15 UNUSABLE',
+        // 'ALTER INDEX INDEX_2_3 UNUSABLE',
+        // 'ALTER INDEX INDEX_3_2 UNUSABLE',
+        // 'ALTER INDEX PRIMARY_17 UNUSABLE',
+        // 'ALTER INDEX INDEX_2_5 UNUSABLE',
+        // 'ALTER INDEX IDX_SCM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_SAS_3 UNUSABLE',
+        // 'ALTER INDEX IDX_SAS_1 UNUSABLE',
+        // 'ALTER INDEX IDX_SAS_2 UNUSABLE',
+        // 'ALTER INDEX IDX_STATUS_1 UNUSABLE',
+        // 'ALTER INDEX IDX_STIG_2 UNUSABLE',
+        // 'ALTER INDEX IDX_STIG_1 UNUSABLE',
+        // 'ALTER INDEX IDX_SAM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_SAM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_SAM_1 UNUSABLE',
+        // 'ALTER INDEX IDX_USER_DATA_4 UNUSABLE',
+        // 'ALTER INDEX IDX_USER_DATA_3 UNUSABLE',
+        // 'ALTER INDEX IDX_USER_DATA_1 UNUSABLE',
+        // 'ALTER INDEX IDX_USER_DATA_2 UNUSABLE',
+        // 'ALTER INDEX IDX_USER_DATA_5 UNUSABLE',
+        // 'ALTER INDEX IDX_USER_DATA_6 UNUSABLE',
+        // 'ALTER INDEX IDX_USAM_2 UNUSABLE',
+        // 'ALTER INDEX IDX_USAM_3 UNUSABLE',
+        // 'ALTER INDEX IDX_USAM_1 UNUSABLE'
       ],
       postload: [
-        `ALTER INDEX STIGMAN.INDEX_2_1_1 REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_4 REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.PRIMARY_27 REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_3_3 REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_STATUSID REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_ACTIVITYTYPE REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_ASSETID REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_COLUMNNAME REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.INDEX_RULEID REBUILD ONLINE`,
-        `ALTER INDEX STIGMAN.PRIMARY_28 REBUILD ONLINE`,
-        `ALTER TABLE STIGMAN.ASSET_PACKAGE_MAP MODIFY APID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.ASSETS MODIFY ASSETID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.PACKAGES MODIFY PACKAGEID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY REVIEWID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.STATS_ASSET_STIG MODIFY ID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.STIG_ASSET_MAP MODIFY SAID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.USER_DATA MODIFY ID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.USER_STIG_ASSET_MAP MODIFY ID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
-        `ALTER TABLE STIGMAN.REVIEWS ENABLE ALL TRIGGERS`,
-        `ALTER TABLE STIGMAN.ASSETS ENABLE ALL TRIGGERS`,
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY CONSTRAINT FK_REVIEWS_1 ENABLE`,
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY CONSTRAINT INDEX_2_1_1 ENABLE`,
-        `ALTER TABLE STIGMAN.REVIEWS MODIFY CONSTRAINT PRIMARY_27 ENABLE`,
-        `ALTER TABLE STIGMAN.REVIEWS_HISTORY MODIFY CONSTRAINT PRIMARY_28 ENABLE`
+        // 'ALTER INDEX UK_ACTION_ACTIONID REBUILD ONLINE',
+        // 'ALTER INDEX IDX_ASSET_4 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_ASSET_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_ASSET_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_ASSET_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_APM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_APM_4 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_APM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_APM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_CCI_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_CCI_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_CRM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_CRM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_CHECKS_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_DEPT_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_DEPT_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_FIX_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_GROUPS REBUILD ONLINE',
+        // 'ALTER INDEX IDX_PACKAGE_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_PRENTRY_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_PRENTRY_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_PRENTRY_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REJECT_STRING_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RESULT_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVIEW_4 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVIEW_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVIEW_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVIEW_5 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVIEW_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RH_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RH_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RH_4 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RH_5 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RH_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RRSM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RRSM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVISION_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_REVISION_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRCM2_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRCM2_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRCM2_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRCM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRCM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRCM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRFM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRFM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRFM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RGRM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RXM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RXM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_ROLE_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_RULE_1 REBUILD ONLINE',
+        // 'ALTER INDEX PRIMARY_15 REBUILD ONLINE',
+        // 'ALTER INDEX INDEX_2_3 REBUILD ONLINE',
+        // 'ALTER INDEX INDEX_3_2 REBUILD ONLINE',
+        // 'ALTER INDEX PRIMARY_17 REBUILD ONLINE',
+        // 'ALTER INDEX INDEX_2_5 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SCM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SAS_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SAS_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SAS_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_STATUS_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_STIG_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_STIG_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SAM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SAM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_SAM_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USER_DATA_4 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USER_DATA_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USER_DATA_1 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USER_DATA_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USER_DATA_5 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USER_DATA_6 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USAM_2 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USAM_3 REBUILD ONLINE',
+        // 'ALTER INDEX IDX_USAM_1 REBUILD ONLINE',
+        `ALTER TABLE ASSET_PACKAGE_MAP MODIFY APID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE ASSET MODIFY ASSETID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE PACKAGE MODIFY PACKAGEID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE REVIEW MODIFY REVIEWID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE STATS_ASSET_STIG MODIFY ID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE STIG_ASSET_MAP MODIFY SAID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE USER_DATA MODIFY USERID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE USER_STIG_ASSET_MAP MODIFY ID GENERATED BY DEFAULT ON NULL AS IDENTITY (START WITH LIMIT VALUE)`,
+        `ALTER TABLE REVIEW ENABLE ALL TRIGGERS`,
+        `ALTER TABLE ASSET ENABLE ALL TRIGGERS`,
+        'ALTER TABLE REVIEW MODIFY CONSTRAINT PK_REVIEW ENABLE',
+        'ALTER TABLE REVIEW MODIFY CONSTRAINT UK_REVIEW_2 ENABLE',
+        'ALTER TABLE REVIEW_HISTORY MODIFY CONSTRAINT PK_RH ENABLE'
       ],
-      packages: {
-        sqlDelete: `DELETE FROM stigman.packages`,
+      package: {
+        sqlDelete: `DELETE FROM package`,
         sqlInsert: `INSERT INTO
-        stigman.packages (
+        package (
           packageId,
           NAME, 
           EMASSID,
@@ -83,37 +222,37 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         )`,
         insertBinds: []
       },
-      users: {
-        sqlDelete: `DELETE FROM stigman.user_data`,
+      userData: {
+        sqlDelete: `DELETE FROM user_data`,
         sqlInsert: `INSERT INTO
-        stigman.user_data (
-          id,
-          cn, 
-          name,
-          dept,
+        user_data (
+          userId,
+          username, 
+          display,
+          deptId,
           roleId,
           canAdmin
         ) VALUES (
-          :userId, :username, :display, :dept, :role, :canAdmin
+          :userId, :username, :display, :deptId, :roleId, :canAdmin
         )`,
         insertBinds: []
       },
-      assets: {
-        sqlDelete: `DELETE FROM stigman.assets`,
-        sqlInsert: `INSERT INTO stigman.assets (
+      asset: {
+        sqlDelete: `DELETE FROM asset`,
+        sqlInsert: `INSERT INTO asset (
           assetId,
           name,
           ip,
-          dept,
+          deptId,
           nonnetwork
         ) VALUES (
-          :assetId, :name, :ip, :dept, :nonnetwork
+          :assetId, :name, :ip, :deptId, :nonnetwork
         )`,
         insertBinds: []
       },
       assetPackageMap: {
-        sqlDelete: `DELETE FROM stigman.asset_package_map`,
-        sqlInsert: `INSERT INTO stigman.asset_package_map (
+        sqlDelete: `DELETE FROM asset_package_map`,
+        sqlInsert: `INSERT INTO asset_package_map (
           assetId,
           packageId
         ) VALUES (
@@ -122,29 +261,29 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         insertBinds: []
       },
       stigAssetMap: {
-        sqlDelete: `DELETE FROM stigman.stig_asset_map`,
-        sqlInsert: `INSERT INTO stigman.stig_asset_map (
+        sqlDelete: `DELETE FROM stig_asset_map`,
+        sqlInsert: `INSERT INTO stig_asset_map (
           assetId,
-          stigId
+          benchmarkId
         ) VALUES (
           :assetId, :benchmarkId
         )`,
         insertBinds: []
       },
       userStigAssetMap: {
-        sqlDelete: `DELETE FROM stigman.user_stig_asset_map`,
-        sqlInsert: `INSERT INTO stigman.user_stig_asset_map (
+        sqlDelete: `DELETE FROM user_stig_asset_map`,
+        sqlInsert: `INSERT INTO user_stig_asset_map (
           userId,
           saId
         ) VALUES (
           :userId,
-          (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId)
+          (SELECT saId from stig_asset_map WHERE benchmarkId=:benchmarkId and assetId=:assetId)
         )`,
         insertBinds: []
       },
-      reviewsHistory: {
-        sqlDelete: `TRUNCATE TABLE stigman.reviews_history`,
-        sqlInsert: `INSERT INTO stigman.reviews_history (
+      reviewHistory: {
+        sqlDelete: `TRUNCATE TABLE review_history`,
+        sqlInsert: `INSERT INTO review_history (
           assetId,
           ruleId,
           activityType,
@@ -168,24 +307,24 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
           ts: {type: oracledb.DB_TYPE_DATE}
         }
       },
-      reviews: {
-        sqlDelete: `TRUNCATE TABLE stigman.reviews`,
-        sqlInsert: `INSERT INTO stigman.reviews (
+      review: {
+        sqlDelete: `TRUNCATE TABLE review`,
+        sqlInsert: `INSERT INTO review (
           assetId,
           ruleId,
-          stateId,
-          stateComment,
+          resultId,
+          resultComment,
           actionId,
           actionComment,
           userId,
-          autoState,
+          autoResult,
           ts,
           rejectText,
           rejectUserId,
           statusId
         ) VALUES (
-          :assetId, :ruleId, :state, :stateComment, :action, :actionComment,
-          :userId, :autoState, :ts, :rejectText, :rejectUserId, :status
+          :assetId, :ruleId, :result, :resultComment, :action, :actionComment,
+          :userId, :autoResult, :ts, :rejectText, :rejectUserId, :status
         )`,
         // sqlInsert: `INSERT INTO stigman.reviews (
         //   assetId,
@@ -203,22 +342,20 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     for (const p of packages) {
       p.reqRar = p.reqRar ? 1 : 0
     }
-    dml.packages.insertBinds = packages
+    dml.package.insertBinds = packages
 
     // USER_DATA
     for (const u of users) {
       u.canAdmin = u.canAdmin ? 1 : 0
-      u.role = dbUtils.USER_ROLE[u.role].id
     }
-    dml.users.insertBinds = users
+    dml.userData.insertBinds = users
 
     // ASSETS, ASSET_PACAKGE_MAP, STIG_ASSET_MAP, USER_STIG_ASSET_MAP
     for (const asset of assets) {
       let { packageIds, stigReviewers, ...assetFields} = asset
-      assetFields.nonnetwork = assetFields.nonnetwork ? 1: 0
-      delete assetFields.scanexempt // TODO: Remove this when scanexempt no longer provided
-      dml.assets.insertBinds.push(assetFields)
       let assetId = assetFields.assetId
+      assetFields.nonnetwork = assetFields.nonnetwork ? 1: 0
+      dml.asset.insertBinds.push(assetFields)
       for (const packageId of packageIds) {
         dml.assetPackageMap.insertBinds.push([assetId, packageId])
       }
@@ -241,8 +378,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // REVIEWS, REVIEWS_HISTORY
     for (const review of reviews) {
-      review.autoState = review.autoState ? 1 : 0
-      review.state = dbUtils.REVIEW_STATE_ABBR[review.state].id
+      review.autoResult = review.autoResult ? 1 : 0
+      review.result = dbUtils.REVIEW_RESULT_ABBR[review.result].id
       review.action = review.action ? dbUtils.REVIEW_ACTION_STR[review.action] : null
       review.status = review.status ? dbUtils.REVIEW_STATUS_STR[review.status] : 0
       review.ts = new Date(review.ts)
@@ -251,13 +388,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         h.ts = new Date(h.ts)
         h.assetId = review.assetId
         h.ruleId = review.ruleId
-        dml.reviewsHistory.insertBinds.push(h)
+        dml.reviewHistory.insertBinds.push(h)
       }
       delete review.history
-      dml.reviews.insertBinds.push(review)
-
     }
-    dml.reviews.insertBinds = reviews
+    dml.review.insertBinds = reviews
 
     return dml
   }
@@ -286,14 +421,14 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // Deletes
     tableOrder = [
-      'reviewsHistory',
-      'reviews',
+      'reviewHistory',
+      'review',
       'userStigAssetMap',
       'stigAssetMap',
       'assetPackageMap',
-      'packages',
-      'assets',
-      'users'
+      'package',
+      'asset',
+      'userData'
     ]
     for (const table of tableOrder) {
       hrstart = process.hrtime() 
@@ -305,14 +440,14 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // Inserts
     tableOrder = [
-      'packages',
-      'users',
-      'assets',
+      'package',
+      'userData',
+      'asset',
       'assetPackageMap',
       'stigAssetMap',
       'userStigAssetMap',
-      'reviews',
-      'reviewsHistory'
+      'review',
+      'reviewHistory'
     ]
     for (const table of tableOrder) {
       if (dml[table].insertBinds.length > 0) {

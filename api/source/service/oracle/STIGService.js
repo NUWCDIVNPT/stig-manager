@@ -426,19 +426,15 @@ exports.queryRules = async function ( ruleId, inProjection ) {
 }
 
 exports.insertManualBenchmark = async function (b) {
-  let connection
-  try {
-    let result, hrstart, hrend
-    let stats = {}
-
+  function dmlObjectFromBenchmarkData (b) {
     let dml = {
-      stigs: {
-        sql: "insert /*+ ignore_row_on_dupkey_index(stigs(stigId)) */ into stigs.stigs (title, stigId) VALUES (:title, :benchmarkId)"
+      stig: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(stig(benchmarkId)) */ into stig (title, benchmarkId) VALUES (:title, :benchmarkId)",
       },
-      revisions: {
-        sql: `insert /*+ ignore_row_on_dupkey_index(revisions(revId)) */ into stigs.revisions (
+      revision: {
+        sql: `insert /*+ ignore_row_on_dupkey_index(revision(revId)) */ into revision (
           revId, 
-          stigId, 
+          benchmarkId, 
           version, 
           release, 
           benchmarkDate, 
@@ -459,7 +455,7 @@ exports.insertManualBenchmark = async function (b) {
         )`,
       },
       groups: {
-        sql: "INSERT /*+ ignore_row_on_dupkey_index(groups(groupId)) */ into stigs.groups (groupId, title) VALUES (:groupId, :title)",
+        sql: "INSERT /*+ ignore_row_on_dupkey_index(group(groupId)) */ into groups (groupId, title) VALUES (:groupId, :title)",
         binds: [],
         options: {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -470,8 +466,8 @@ exports.insertManualBenchmark = async function (b) {
           }
         }
       },
-      fixes: {
-        sql: "insert /*+ ignore_row_on_dupkey_index(fixes(fixId)) */ into stigs.fixes (fixId,text) VALUES (:fixId, :text)",
+      fix: {
+        sql: "insert /*+ ignore_row_on_dupkey_index(fix(fixId)) */ into fix (fixId,text) VALUES (:fixId, :text)",
         binds: [],
         options: {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -484,7 +480,7 @@ exports.insertManualBenchmark = async function (b) {
 
       },
       checks: {
-        sql: "insert /*+ ignore_row_on_dupkey_index(checks(checkId)) */ into stigs.checks (checkId,content) VALUES (:checkId, :content)",
+        sql: "insert /*+ ignore_row_on_dupkey_index(checks(checkId)) */ into checks (checkId,content) VALUES (:checkId, :content)",
         binds: [],
         options: {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -495,9 +491,9 @@ exports.insertManualBenchmark = async function (b) {
           }
         }
       },
-      rules: {
+      rule: {
         sql: `
-        insert  /*+ ignore_row_on_dupkey_index(rules(ruleId)) */ into stigs.rules (
+        insert  /*+ ignore_row_on_dupkey_index(rule(ruleId)) */ into rule (
           ruleId,
           version
           ,title
@@ -508,7 +504,7 @@ exports.insertManualBenchmark = async function (b) {
           ,falseNegatives
           ,documentable
           ,mitigations
-          ,securityOverrideGuidance
+          ,severityOverrideGuidance
           ,potentialImpacts
           ,thirdPartyTools
           ,mitigationControl
@@ -558,8 +554,7 @@ exports.insertManualBenchmark = async function (b) {
 
       },
       revGroupMap: {
-        // sql: "insert /*+ ignore_row_on_dupkey_index(rule_group_map(revId, groupId)) */ into stigs.rev_group_map (revId, groupId) VALUES (:revId, :groupId) RETURNING rgId into :rgId",
-        sql: "insert /*+ ignore_row_on_dupkey_index(rev_group_map(groupId, revId)) */ into stigs.rev_group_map (revId, groupId) VALUES (:revId, :groupId)",
+        sql: "insert /*+ ignore_row_on_dupkey_index(rev_group_map(groupId, revId)) */ into rev_group_map (revId, groupId) VALUES (:revId, :groupId)",
         binds: [],
         options: {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -567,91 +562,121 @@ exports.insertManualBenchmark = async function (b) {
           bindDefs: {
             revId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
             groupId: {type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
-            // rgId: {dir: oracledb.BIND_OUT, type: oracledb.DB_TYPE_NUMBER}
           }
         }
       },
       revGroupRuleMap: {
-        sql: `insert /*+ ignore_row_on_dupkey_index(rev_group_rule_map(ruleId, rgId)) */ into stigs.rev_group_rule_map (rgId, ruleId) VALUES (
-          (SELECT rgId from stigs.rev_group_map where revId = :revId and groupId = :groupId), :ruleId)`,
+        sql: `insert /*+ ignore_row_on_dupkey_index(rev_group_rule_map(ruleId, rgId)) */ into rev_group_rule_map (rgId, ruleId) VALUES (
+          (SELECT rgId from rev_group_map where revId = :revId and groupId = :groupId), :ruleId)`,
         binds: []
       },
-      ruleCheckMap: {
-        sql: "insert /*+ ignore_row_on_dupkey_index(rule_check_map(ruleId, checkId)) */ into stigs.rule_check_map (ruleId, checkId) VALUES (:ruleId, :checkId)",
+      revGroupRuleCheckMap: {
+        sql: `insert /*+ ignore_row_on_dupkey_index(rev_group_rule_check_map(rgrId, checkId)) */ into rev_group_rule_check_map (rgrId, checkId) VALUES (
+          (SELECT
+            rgrId
+          from
+            rev_group_rule_map 
+          where
+            rgId = (SELECT rgId from rev_group_map where revId = :revId and groupId = :groupId) 
+            and ruleId = :ruleId
+          ), 
+          :checkId)`,
         binds: []
       },
-      ruleFixMap: {
-        sql: "insert /*+ ignore_row_on_dupkey_index(rule_fix_map(ruleId, fixId)) */ into stigs.rule_fix_map (ruleId, fixId) VALUES (:ruleId, :fixId)",
+      revGroupRuleFixMap: {
+        sql: `insert /*+ ignore_row_on_dupkey_index(rev_group_rule_fix_map(rgrId, fixId)) */ into rev_group_rule_fix_map (rgrId, fixId) VALUES (
+          (
+            SELECT
+              rgrId
+            from
+              rev_group_rule_map 
+            where
+              rgId = (SELECT rgId from rev_group_map where revId = :revId and groupId = :groupId) 
+              and ruleId = :ruleId
+          ),
+          :fixId)`,
         binds: []
       },
-      ruleControlMap: {
-        sql: "insert /*+ ignore_row_on_dupkey_index(rule_control_map(ruleId, controlnumber)) */ into stigs.rule_control_map (ruleId, controlnumber, controltype) VALUES (:ruleId, :cci, 'CCI')",
+      revGroupRuleCciMap: {
+        sql: `insert /*+ ignore_row_on_dupkey_index(rev_group_rule_cci_map(rgrId, cci)) */ into rev_group_rule_cci_map (rgrId, cci) VALUES (
+          (
+            SELECT
+              rgrId
+            from
+              rev_group_rule_map 
+            where
+              rgId = (SELECT rgId from rev_group_map where revId = :revId and groupId = :groupId) 
+              and ruleId = :ruleId
+          ),
+          :cci)`,
         binds: []
       },
-      currentRevs: {
-        sql: `insert into stigs.current_revs 
-        select 
-          revId,
-          stigId,
-          version,
-          release,
-          benchmarkDate,
-          benchmarkDateSql,
-          status,
-          statusDate,
-          description,
-          active
-        from (
-          SELECT
-          revId,
-          stigId,
-          version,
-          release,
-          benchmarkDate,
-          benchmarkDateSql,
-          status,
-          statusDate,
-          description,
-          active
-            ,ROW_NUMBER() OVER (PARTITION BY stigId ORDER BY version+0 desc, release+0 desc) AS rn
-          FROM
-            stigs.revisions
-        )
-        where rn = 1
-        `
-      },
-      currentGroupRules: {
-        sql: `insert into stigs.current_group_rules
-        SELECT rg.groupId,
-          rgr.ruleId,
-          s.stigId
-        from
-          stigs.stigs s
-          left join stigs.current_revs cr on cr.stigId=s.stigId
-          left join stigs.rev_group_map rg on rg.revId=cr.revId
-          left join stigs.rev_group_rule_map rgr on rgr.rgId=rg.rgId
-        where
-          cr.revId is not null
-        order by
-          rg.groupId,rgr.ruleId,s.stigId`
-      }
+      // ruleCheckMap: {
+      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_check_map(ruleId, checkId)) */ into stigs.rule_check_map (ruleId, checkId) VALUES (:ruleId, :checkId)",
+      //   binds: []
+      // },
+      // ruleFixMap: {
+      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_fix_map(ruleId, fixId)) */ into stigs.rule_fix_map (ruleId, fixId) VALUES (:ruleId, :fixId)",
+      //   binds: []
+      // },
+      // ruleControlMap: {
+      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_control_map(ruleId, controlnumber)) */ into stigs.rule_control_map (ruleId, controlnumber, controltype) VALUES (:ruleId, :cci, 'CCI')",
+      //   binds: []
+      // },
+      // currentRevs: {
+      //   sql: `insert into stigs.current_revs 
+      //   select 
+      //     revId,
+      //     stigId,
+      //     version,
+      //     release,
+      //     benchmarkDate,
+      //     benchmarkDateSql,
+      //     status,
+      //     statusDate,
+      //     description,
+      //     active
+      //   from (
+      //     SELECT
+      //     revId,
+      //     stigId,
+      //     version,
+      //     release,
+      //     benchmarkDate,
+      //     benchmarkDateSql,
+      //     status,
+      //     statusDate,
+      //     description,
+      //     active
+      //       ,ROW_NUMBER() OVER (PARTITION BY stigId ORDER BY version+0 desc, release+0 desc) AS rn
+      //     FROM
+      //       stigs.revisions
+      //   )
+      //   where rn = 1
+      //   `
+      // },
+      // currentGroupRules: {
+      //   sql: `insert into stigs.current_group_rules
+      //   SELECT rg.groupId,
+      //     rgr.ruleId,
+      //     s.stigId
+      //   from
+      //     stigs.stigs s
+      //     left join stigs.current_revs cr on cr.stigId=s.stigId
+      //     left join stigs.rev_group_map rg on rg.revId=cr.revId
+      //     left join stigs.rev_group_rule_map rgr on rgr.rgId=rg.rgId
+      //   where
+      //     cr.revId is not null
+      //   order by
+      //     rg.groupId,rgr.ruleId,s.stigId`
+      // }
     }
-
-    connection = await oracledb.getConnection()
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-      autoCommit: false
-    }
-
-    // Collect the bind values
-    hrstart = process.hrtime()
-    let totalstart = hrstart
 
     let {revision, ...benchmarkBinds} = b
-    // TABLE: STIGS
-    dml.stigs.binds = benchmarkBinds
-    // TODO: handle SCAP benchmark
-    delete dml.stigs.binds.scap
+    // TABLE: STIG
+    dml.stig.binds = benchmarkBinds
+    // TODO: handle SCAP benchmark, indicated by boolean property: scap
+    delete dml.stig.binds.scap
 
     let {groups, ...revisionBinds} = revision
     delete revisionBinds.revisionStr
@@ -659,11 +684,11 @@ exports.insertManualBenchmark = async function (b) {
     revisionBinds.revId = `${revisionBinds.benchmarkId}-${revisionBinds.version}-${revisionBinds.release}`
     revisionBinds.benchmarkDateSql = revisionBinds.benchmarkDate8601
     delete revisionBinds.benchmarkDate8601
-    // TABLE: REVISIONS
-    dml.revisions.binds = revisionBinds
-    delete dml.revisions.binds.releaseInfo
+    // TABLE: REVISION
+    dml.revision.binds = revisionBinds
+    delete dml.revision.binds.releaseInfo
 
-    groups.forEach(async group => {
+    groups.forEach( group => {
       let {rules, ...groupBinds} = group
       delete groupBinds.description
       // TABLE: GROUPS
@@ -675,39 +700,21 @@ exports.insertManualBenchmark = async function (b) {
       })
       rules.forEach(rule => {
         let {checks, fixes, idents, ...ruleBinds} = rule
-        // TABLE: REV_GROUP_RULE_MAP (rgId placeholder)
+        // TABLE: REV_GROUP_RULE_MAP
         dml.revGroupRuleMap.binds.push({
           revId: revisionBinds.revId,
           groupId: group.groupId,
           ruleId: rule.ruleId
         })
-        // TABLE: RULES
-        dml.rules.binds.push(ruleBinds)
-        // dml.rules.binds.push({
-        //   ruleId: {val: ruleBinds.ruleId, type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
-        //   version: {val: ruleBinds.version, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
-        //   title: {val: ruleBinds.title, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   severity: {val: ruleBinds.severity, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
-        //   weight: {val: ruleBinds.weight, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
-        //   vulnDiscussion: {val: ruleBinds.vulnDiscussion, type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
-        //   falsePositives: {val: ruleBinds.falsePositives, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   falseNegatives: {val: ruleBinds.falseNegatives, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   documentable: {val: ruleBinds.documentable, type: oracledb.DB_TYPE_VARCHAR, maxSize: 45},
-        //   mitigations: {val: ruleBinds.mitigations, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   severityOverrideGuidance: {val: ruleBinds.severityOverrideGuidance, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   potentialImpacts: {val: ruleBinds.potentialImpacts, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   thirdPartyTools: {val: ruleBinds.thirdPartyTools, type: oracledb.DB_TYPE_VARCHAR, maxSize: 4000},
-        //   mitigationControl: {val: ruleBinds.mitigationControl, type: oracledb.DB_TYPE_VARCHAR, maxSize: 32000},
-        //   responsibility: {val: ruleBinds.responsibility, type: oracledb.DB_TYPE_VARCHAR, maxSize: 255},
-        //   iacontrols: {val: ruleBinds.iacontrols, type: oracledb.DB_TYPE_VARCHAR, maxSize: 255}
-
-        // })
-
+        // TABLE: RULE
+        dml.rule.binds.push(ruleBinds)
         checks.forEach(check => {
           // TABLE: CHECKS
           dml.checks.binds.push(check)
-          // TABLE: RULE_CHECK_MAP
-          dml.ruleCheckMap.binds.push({
+          // TABLE: REV_GROUP_RULE_CHECK_MAP
+          dml.revGroupRuleCheckMap.binds.push({
+            revId: revisionBinds.revId,
+            groupId: group.groupId,
             ruleId: rule.ruleId,
             checkId: check.checkId
           })
@@ -715,9 +722,11 @@ exports.insertManualBenchmark = async function (b) {
 
         fixes.forEach(fix => {
           // TABLE: FIXES
-          dml.fixes.binds.push(fix)
-          // TABLE: RULE_FIX_MAP
-          dml.ruleFixMap.binds.push({
+          dml.fix.binds.push(fix)
+          // TABLE: REV_GROUP_RULE_FIX_MAP
+          dml.revGroupRuleFixMap.binds.push({
+            revId: revisionBinds.revId,
+            groupId: group.groupId,
             ruleId: rule.ruleId,
             fixId: fix.fixId
           })
@@ -725,8 +734,10 @@ exports.insertManualBenchmark = async function (b) {
 
         idents.forEach(ident => {
           if (ident.system === 'http://iase.disa.mil/cci' || ident.system === 'http://cyber.mil/cci') {
-            // TABLE: RULE_CONTROL_MAP
-            dml.ruleControlMap.binds.push({
+            // TABLE: REV_GROUP_RULE_CCI_MAP
+            dml.revGroupRuleCciMap.binds.push({
+              revId: revisionBinds.revId,
+              groupId: group.groupId,
               ruleId: rule.ruleId,
               cci: ident.ident
             })
@@ -735,94 +746,51 @@ exports.insertManualBenchmark = async function (b) {
       })
     })
 
-    hrend = process.hrtime(hrstart)
-    stats.binds = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    return dml
+  }
+
+  let connection
+  try {
+    let result, hrstart, hrend, tableOrder, dml, stats = {}
+    let totalstart = process.hrtime() 
 
     hrstart = process.hrtime() 
-    result = await connection.execute(dml.stigs.sql, dml.stigs.binds)
+    dml = dmlObjectFromBenchmarkData(b)
     hrend = process.hrtime(hrstart)
-    stats.stigs = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-  
-    hrstart = process.hrtime() 
-    result = await connection.execute(dml.revisions.sql, dml.revisions.binds)
-    hrend = process.hrtime(hrstart)
-    stats.revisions = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.groups.sql, dml.groups.binds, dml.groups.options)
-    hrend = process.hrtime(hrstart)
-    stats.groups = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    // for (let x=0,l=dml.rules.binds.length; x<l; x++) {
-    //   let bind = dml.rules.binds[x]
-    //   console.log(bind.ruleId)
-    //   result = await connection.execute(dml.rules.sql, bind, dml.rules.options)
-    // }
-
-    hrstart = process.hrtime()
-    result = await connection.executeMany(dml.rules.sql, dml.rules.binds, dml.rules.options)
-    hrend = process.hrtime(hrstart)
-    stats.rules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.checks.sql, dml.checks.binds, dml.checks.options)
-    hrend = process.hrtime(hrstart)
-    stats.checks = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.fixes.sql, dml.fixes.binds, dml.fixes.options)
-    hrend = process.hrtime(hrstart)
-    stats.fixes = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.ruleCheckMap.sql, dml.ruleCheckMap.binds)
-    hrend = process.hrtime(hrstart)
-    stats.ruleCheck = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.ruleFixMap.sql, dml.ruleFixMap.binds)
-    hrend = process.hrtime(hrstart)
-    stats.ruleFix = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    if (dml.ruleControlMap.binds && dml.ruleControlMap.binds.length > 0) {
-      hrstart = process.hrtime()
-      result = await connection.executeMany(dml.ruleControlMap.sql, dml.ruleControlMap.binds)
-      hrend = process.hrtime(hrstart)
-      stats.ccis = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    connection = await oracledb.getConnection()
+    let  options = {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      autoCommit: false
     }
 
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.revGroupMap.sql, dml.revGroupMap.binds, dml.revGroupMap.options)
-    hrend = process.hrtime(hrstart)
-    stats.revGroup = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    hrstart = process.hrtime() 
-    result = await connection.executeMany(dml.revGroupRuleMap.sql, dml.revGroupRuleMap.binds)
-    hrend = process.hrtime(hrstart)
-    stats.revGroupRule = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    tableOrder = [
+      'stig',
+      'revision',
+      'groups',
+      'rule',
+      'checks',
+      'fix',
+      'revGroupMap',
+      'revGroupRuleMap',
+      'revGroupRuleCheckMap',
+      'revGroupRuleFixMap',
+      'revGroupRuleCciMap'
+    ]
 
-    
-    // // CURRENT tables
-    // hrstart = process.hrtime() 
-    // result = await connection.execute('DELETE from stigs.current_revs')
-    // hrend = process.hrtime(hrstart)
-    // stats.deleteCurrentRevs = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    
-    // hrstart = process.hrtime() 
-    // result = await connection.execute('DELETE from stigs.current_group_rules')
-    // hrend = process.hrtime(hrstart)
-    // stats.deleteCurrentGroupRules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    // hrstart = process.hrtime() 
-    // result = await connection.execute(dml.currentRevs.sql)
-    // hrend = process.hrtime(hrstart)
-    // stats.currentRevs = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    // hrstart = process.hrtime() 
-    // result = await connection.execute(dml.currentGroupRules.sql)
-    // hrend = process.hrtime(hrstart)
-    // stats.currentGroupRules = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    for (const table of tableOrder) {
+      hrstart = process.hrtime()
+      if (Array.isArray(dml[table].binds)) {
+        if (dml[table].binds.length === 0) { continue }
+        result = await connection.executeMany(dml[table].sql, dml[table].binds, dml[table].options || {})
+      }
+      else {
+        result = await connection.execute(dml[table].sql, dml[table].binds, dml[table].options || {})
+      }
+      hrend = process.hrtime(hrstart)
+      stats[table] = `${result.rowsAffected} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    }
     
     hrend = process.hrtime(totalstart)
     stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
@@ -843,23 +811,6 @@ exports.insertManualBenchmark = async function (b) {
     }
   }
 }
-
-/**
- * Import a new STIG
- *
- * source File An XCCDF file (optional)
- * returns STIG
- **/
-exports.addSTIG = async function(source, userObject) {
-  try {
-    let rows = await this.METHOD()
-    return (rows)
-  }
-  catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
-}
-
 
 /**
  * Deletes the specified revision of a STIG

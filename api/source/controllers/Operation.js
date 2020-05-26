@@ -80,7 +80,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
       else {
         appdata = req.swagger.params['body'].value
       }
-      let options = req.swagger.params['options'].value
+      let options = []
       let response = await Operation.replaceAppData(options, appdata, req.userObject )
       writer.writeJson(res, response)
     }

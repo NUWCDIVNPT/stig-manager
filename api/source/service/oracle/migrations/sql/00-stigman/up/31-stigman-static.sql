@@ -17,4 +17,7 @@ INSERT INTO status VALUES (1,'submitted');
 INSERT INTO status VALUES (2,'rejected');
 INSERT INTO status VALUES (3,'accepted');
 INSERT INTO department VALUES (0,'Default');
+-- IMPORTANT: Remove the last two INSERTs once department endpoints are finished
+INSERT INTO department VALUES (10,'Code 60');
+INSERT INTO department VALUES (60,'Code 10');
 commit;

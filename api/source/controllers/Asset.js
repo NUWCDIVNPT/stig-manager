@@ -44,7 +44,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
         }
       }
       let row = await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
-      writer.writeJson(res, r)
+      writer.writeJson(res, row)
     }
   }
   catch (err) {
