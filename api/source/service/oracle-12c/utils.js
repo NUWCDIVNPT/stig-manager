@@ -1,30 +1,7 @@
 const oracledb = require('oracledb')
 const config = require('../../utils/config')
-const retry = require('async-retry')
-const Umzug = require('umzug')
-const path = require('path')
 
-let _this = this
-
-module.exports.version = '0.5.0'
-module.exports.testConnection = async function () {
-  let connection
-  try {
-    connection = await oracledb.getConnection()
-    let result = await connection.execute('SELECT * FROM USER_USERS')
-    console.log('Oracle preflight connection succeeded.')
-    return JSON.stringify(result.rows, null, 2)
-  }
-  catch (err) {
-    console.log(err.message)
-    throw (err)
-  }
-  finally {
-    if (typeof connection !== 'undefined') {
-      await connection.close()
-    }
-  }
-}
+module.exports.version = '0.5'
 
 module.exports.initializeDatabase = function () {
   return new Promise((resolve, reject) => {
@@ -33,7 +10,7 @@ module.exports.initializeDatabase = function () {
       user: config.database.username,
       password: config.database.password,
       connectString: `${config.database.host}:${config.database.port}/${config.database.service}`
-    }, async (error, pool) => {
+    }, (error, pool) => {
       if (error) {
         // Could not create pool, invoke reject cb
         reject(error)
@@ -45,51 +22,22 @@ module.exports.initializeDatabase = function () {
       process.on('SIGTERM', closePoolAndExit)
       process.on('SIGINT', closePoolAndExit)
 
-      // Preflight the pool
-      let result = await retry(_this.testConnection, {})
-      console.log(result)
+      // Check if we can make a connection. Will recurse until success.
+      testConnection()
 
-      // Perform migrations
-      const umzug = new Umzug({
-        migrations: {
-          path: path.join(__dirname, './migrations'),
-          params: [_this.pool]
-        },
-        storage: path.join(__dirname, './migrations/lib/umzug-oracle-storage'),
-        storageOptions: {}
-      })
-      const migrations = await umzug.pending()
-      if (migrations.length > 0) {
-        console.log(`Oracle schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}.`)
-        await umzug.up()
-        console.log('All migrations performed successfully')
-      }
-      else {
-        console.log(`Oracle schema is up to date.`)
-      }
-      // Initialize superuser, if applicable
-      let connection
-      try {
-        connection = await oracledb.getConnection()
-        let result = await connection.execute('SELECT COUNT(userId) as users FROM user_data')
-        if (result.rows[0][0] === 0) {
-          await connection.execute(
-            'insert into user_data (username, display, roleId, canAdmin) VALUES (:1, :2, :3, :4)',
-            [config.init.superuser, 'Superuser', 4, 1],
-            {autoCommit: true}
-          )
-          console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
+      function testConnection() {
+        console.log(`Testing Oracle connection to ${config.database.host}:${config.database.port}/${config.database.service}`)
+        oracledb.getConnection((error, connection) => {
+          if (error) {
+            console.log(`Oracle connection failed. Retry in 5 seconds...`)
+            setTimeout(testConnection, 5000)
+            return
           }
+          console.log(`Oracle connection succeeded.`)
+          connection.close()
+          resolve()
+        })
       }
-      catch (err) {
-        console.log(err)
-      }
-      finally {
-        if (typeof connection !== 'undefined') {
-          await connection.close()
-        }
-      }
-      resolve(true)
     })
   })
 }

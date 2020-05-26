@@ -43,7 +43,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `role` WRITE;
 /*!40000 ALTER TABLE `role` DISABLE KEYS */;
-INSERT INTO `role` VALUES (2,'IAWF','IA Workforce'),(3,'IAO','IA Officer'),(4,'Staff','IA Staff');
+INSERT INTO `role` VALUES (1,'Guest','Guest Viewer'),(2,'IAWF','IA Workforce'),(3,'IAO','IA Officer'),(4,'Staff','IA Staff');
 /*!40000 ALTER TABLE `role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -51,9 +51,9 @@ UNLOCK TABLES;
 -- Dumping data for table `state`
 --
 
-LOCK TABLES `state` WRITE;
+LOCK TABLES `result` WRITE;
 /*!40000 ALTER TABLE `state` DISABLE KEYS */;
-INSERT INTO `state` VALUES (1,'In Process','IP'),(2,'Not Applicable','NA'),(3,'Not a Finding','NF'),(4,'Open','O');
+INSERT INTO `result` VALUES (1,'In Process','IP'),(2,'Not Applicable','NA'),(3,'Not a Finding','NF'),(4,'Open','O');
 /*!40000 ALTER TABLE `state` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -63,19 +63,9 @@ UNLOCK TABLES;
 
 LOCK TABLES `status` WRITE;
 /*!40000 ALTER TABLE `status` DISABLE KEYS */;
-INSERT INTO `status` VALUES (1,'ready'),(2,'rejected'),(3,'approved'),(5,'in_progress'),(0,'saved');
+INSERT INTO `status` VALUES (0,'saved'),(1,'submitted'),(2,'rejected'),(3,'accepted');
 /*!40000 ALTER TABLE `status` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Dumping data for table `user`
---
-
--- LOCK TABLES `user` WRITE;
--- /*!40000 ALTER TABLE `user` DISABLE KEYS */;
--- INSERT INTO `user` VALUES (1,'admin','Staff-Admin','10',4,1);
--- /*!40000 ALTER TABLE `user` ENABLE KEYS */;
--- UNLOCK TABLES;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

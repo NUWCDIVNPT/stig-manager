@@ -68,7 +68,7 @@ module.exports.getReviews = async function getReviews (req, res, next) {
   let projection = req.swagger.params['projection'].value
   try {
     let response = await Review.getReviews( projection, {
-        state: req.swagger.params['state'].value,
+        result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
         ruleId: req.swagger.params['ruleId'].value,
@@ -89,7 +89,7 @@ module.exports.getReviewsByAssetId = async function (req, res, next) {
   let projection = req.swagger.params['projection'].value
   try {
     let response = await Review.getReviews( projection, {
-        state: req.swagger.params['state'].value,
+        result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
         benchmarkId: req.swagger.params['benchmarkId'].value,
