@@ -88,7 +88,7 @@ function addFindingsSummary(packageId,packageName) {
 			}
 		}),
 		tbar: new Ext.Toolbar({
-			hidden: (curUser.role != 'Staff'), 
+			hidden: (curUser.role.roleId !== 4), 
 			items: [
 			{
 				xtype: 'tbtext',

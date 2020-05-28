@@ -2,6 +2,7 @@
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
+const ROLE = require('../../utils/appRoles')
 
 
 /**
@@ -9,46 +10,69 @@ Generalized queries for users
 **/
 exports.queryUsers = async function (inProjection, inPredicates, elevate, userObject) {
   let context
-  if (userObject.role == 'Staff' || elevate) {
+  if (elevate) {
     context = dbUtils.CONTEXT_ALL
-  } else if (userObject.role == "IAO") {
-    context = dbUtils.CONTEXT_DEPT
-  } else {
-    context = dbUtils.CONTEXT_USER
+  }
+  else {
+    switch (userObject.role.roleId) {
+      case ROLE.COMMAND:
+        context = dbUtils.CONTEXT_ALL
+        break
+      case ROLE.DEPT:
+        context = dbUtils.CONTEXT_DEPT
+        break
+      case ROLE.REVIEWER:
+        context = dbUtils.CONTEXT_USER
+        break
+      case ROLE.GUEST:
+        context = dbUtils.CONTEXT_GUEST
+        break;
+    }
   }
 
   let columns = [
-    'ud.id as "userId"',
-    'ud.cn as "username"',
-    'ud.name as "display"',
-    'ud.dept as "dept"',
-    'ud.roleId as "role"',
+    'ud.userId as "userId"',
+    'ud.username as "username"',
+    'ud.display as "display"',
+    `json_object (
+      KEY 'deptId' VALUE d.deptId,
+      KEY 'name' VALUE d.name
+    ) as "dept"`,
+    `json_object (
+      KEY 'roleId' VALUE r.roleId,
+      KEY 'name' VALUE r.name
+    ) as "role"`,
     'ud.canAdmin as "canAdmin"'
   ]
   let joins = [
-    'stigman.user_data ud',
+    'user_data ud',
+    'left join department d on ud.deptId = d.deptId',
+    'left join role r on ud.roleId = r.roleId',
   ]
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('stigReviews')) {
     columns.push(`(select
-      json_arrayagg( distinct 
+      json_arrayagg( 
           json_object(
-              KEY 'benchmarkId' VALUE sa.stigId,
+              KEY 'benchmarkId' VALUE sa.benchmarkId,
               KEY 'asset' VALUE json_object(
                 KEY 'assetId' VALUE a.assetid,
                 KEY 'name' VALUE a.name,
-                KEY 'dept' VALUE a.dept
+                KEY 'dept' VALUE json_object (
+                  KEY 'deptId' VALUE a.deptId,
+                  KEY 'name' VALUE d.name)
                 ABSENT ON NULL
               )
           )
-         order by sa.stigId, a.name returning varchar2(32000)
+         order by sa.benchmarkId, a.name returning varchar2(32000)
       )
     FROM 
-        stigman.stig_asset_map sa
-        left join stigman.assets a on sa.assetId = a.assetId
-        left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
-    where usa.userId = ud.id
+        stig_asset_map sa
+        left join asset a on sa.assetId = a.assetId
+        left join department d on a.deptId = d.deptId
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+    where usa.userId = ud.userid
     group by usa.userId) as "stigReviews"`)
   }
 
@@ -58,24 +82,24 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     binds: {}
   }
   if (inPredicates.userId) {
-    predicates.statements.push('ud.id = :userId')
+    predicates.statements.push('ud.userid = :userId')
     predicates.binds.userId = inPredicates.userId
   }
-  if (inPredicates.role) {
+  if (inPredicates.roleId) {
     predicates.statements.push('ud.roleId = :roleId')
-    predicates.binds.roleId = dbUtils.USER_ROLE[inPredicates.role].id
+    predicates.binds.roleId = inPredicates.roleId
   }
-  if (inPredicates.dept) {
-    predicates.statements.push('ud.dept = :dept')
-    predicates.binds.dept = inPredicates.dept
+  if (inPredicates.deptId) {
+    predicates.statements.push('ud.deptId = :deptId')
+    predicates.binds.deptId = inPredicates.deptId
   }
   if (inPredicates.canAdmin) {
     predicates.statements.push('ud.canAdmin = :canAdmin')
     predicates.binds.canAdmin = inPredicates.canAdmin ? 1 : 0
   }
   if (context == dbUtils.CONTEXT_DEPT) {
-    predicates.statements.push('ud.dept = :dept')
-    predicates.binds.dept = userObject.dept
+    predicates.statements.push('ud.deptId = :deptId')
+    predicates.binds.deptId = userObject.dept.deptId
   } 
 
   // CONSTRUCT MAIN QUERY
@@ -86,7 +110,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' order by ud.cn'
+  sql += ' order by ud.username'
   
   try {
     let  options = {
@@ -101,10 +125,9 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      // Handle booleans
       record.canAdmin = record.canAdmin == 1 ? true : false
-      // Convert roleId
-      record.role = dbUtils.USER_ROLE_ID[record.role].role
+      record.role = JSON.parse(record.role)
+      record.dept = JSON.parse(record.dept)
       if ('stigReviews' in record) {
        // Check for "empty" arrays 
         record.stigReviews = record.stigReviews ? JSON.parse(record.stigReviews) : []
@@ -127,22 +150,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     let { stigReviews, ...userFields } = body
     stigReviews = stigReviews ? stigReviews : []
 
-    // Convert boolean scalar values to database values (true=1 or false=0)
+    // Convert boolean value to database value (true=1 or false=0)
     if ('canAdmin' in userFields) {
       userFields.canAdmin = userFields.canAdmin ? 1 : 0
-    }
-    // Convert role to roleId
-    if ('role' in userFields) {
-      userFields.roleId = dbUtils.USER_ROLE[userFields.role].id
-      delete userFields.role
-    }
-    if ('username' in userFields) {
-      userFields.cn = userFields.username
-      delete userFields.username
-    }
-    if ('display' in userFields) {
-      userFields.name = userFields.display
-      delete userFields.display
     }
 
     // Connect to Oracle
@@ -157,12 +167,12 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       // INSERT into user_data
       let sqlInsert =
         `INSERT INTO
-            stigman.user_data
-            (cn, name, dept, roleId, canAdmin)
+            user_data
+            ( username, display, deptId, roleId, canAdmin)
           VALUES
-            (:cn, :name, :dept, :roleId, :canAdmin)
+            (:username, :display, :deptId, :roleId, :canAdmin)
           RETURNING
-            id into :userId`
+            userid into :userId`
       binds = {...userFields}
       binds.userId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
       let result = await connection.execute(sqlInsert, binds, options)
@@ -172,11 +182,11 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       if (Object.keys(binds).length > 0) {        // UPDATE into assets
         let sqlUpdate =
           `UPDATE
-              stigman.user_data
+              user_data
             SET
               ${dbUtils.objectBindObject(userFields, binds)}
             WHERE
-              id = :userId`
+              userid = :userId`
         binds.userId = userId
         await connection.execute(sqlUpdate, binds, options)
       }
@@ -186,18 +196,16 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     }
 
     // Process stigReviews if present
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE || 
-        writeAction === dbUtils.WRITE_ACTION.CREATE ||
-        stigReviews.length == 0 ) {
+    if ( stigReviews || writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE ) {
       // DELETE from user_stig_asset_map
-      let sqlDeleteStigAssets = 'DELETE FROM stigman.user_stig_asset_map where userId = :userId'
+      let sqlDeleteStigAssets = 'DELETE FROM user_stig_asset_map where userId = :userId'
       await connection.execute(sqlDeleteStigAssets, [userId])
     }
     if (stigReviews.length > 0) {
       let sqlInsertStigAssets = `
-        INSERT /*+ ignore_row_on_dupkey_index(user_stig_asset_map(userId, saId)) */ INTO 
-          stigman.user_stig_asset_map (userId,saId)
-        VALUES (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`      
+        INSERT INTO 
+          user_stig_asset_map (userId, saId)
+        VALUES (:userId, (SELECT saId from stig_asset_map WHERE benchmarkId = :benchmarkId and assetId = :assetId))`      
       let binds = stigReviews.map(i => [userId, i.benchmarkId, i.assetId])
       // INSERT into asset_package_map
       await connection.executeMany(sqlInsertStigAssets, binds)
@@ -254,7 +262,7 @@ exports.createUser = async function(body, projection, elevate, userObject) {
 exports.deleteUser = async function(userId, projection, elevate, userObject) {
   try {
     let rows = await this.queryUsers(projection, {userId: userId}, elevate, userObject)
-    let sqlDelete = `DELETE FROM stigman.user_data where id = :userId`
+    let sqlDelete = `DELETE FROM user_data where userId = :userId`
     let connection = await oracledb.getConnection()
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -300,11 +308,11 @@ exports.getUserByUserId = async function(userId, projection, elevate, userObject
  * canAdmin Boolean Selects Users matching the condition (optional)
  * returns List of UserProjected
  **/
-exports.getUsers = async function(role, dept, canAdmin, projection, elevate, userObject) {
+exports.getUsers = async function(roleId, deptId, canAdmin, projection, elevate, userObject) {
   try {
     let rows = await this.queryUsers( projection, {
-      role: role,
-      dept: dept,
+      roleId: roleId,
+      deptId: deptId,
       canAdmin: canAdmin
     }, elevate, userObject)
     return (rows)

@@ -119,12 +119,19 @@ module.exports.getUserObject = async function (username) {
         ud.userid as "userId",
         ud.username as "username",
         ud.display as "display",
-        ud.deptId as "deptId",
-        r.roleId as "roleId",
+        json_object(
+          KEY 'deptId' VALUE d.deptId,
+          KEY 'name' VALUE d.name
+        ) as "dept",
+        json_object(
+          KEY 'roleId' VALUE r.roleId,
+          KEY 'name' VALUE r.display
+        ) as "role",
         ud.canAdmin as "canAdmin"
       from 
         user_data ud
-        left join role r on r.roleid=ud.roleId
+        left join department d on d.deptId = ud.deptId
+        left join role r on r.roleid = ud.roleId
       where
         UPPER(username)=UPPER(:0)
       `
@@ -135,6 +142,8 @@ module.exports.getUserObject = async function (username) {
     result = await connection.execute(sql, binds, options)
     await connection.close()
     result.rows[0].canAdmin = result.rows[0].canAdmin == 1
+    result.rows[0].dept = JSON.parse(result.rows[0].dept)
+    result.rows[0].role = JSON.parse(result.rows[0].role)
     return (result.rows[0])
   }
   catch (err) {

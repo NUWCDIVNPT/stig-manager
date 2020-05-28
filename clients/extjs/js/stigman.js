@@ -11,11 +11,6 @@ var licenseStr = "This program is free software: you can redistribute it and/or 
 
 var curUser;
 
-/* DEBUG ONLY */
-// appName = curUser.name;
-// appVersion = ' - ' + curUser.role + ' - ' + curUser.canAdmin;
-
-
 function GetXmlHttpObject() {
 	if (window.XMLHttpRequest)
 	  {
@@ -69,7 +64,7 @@ function start () {
 		if (varsXmlHttp.readyState == 4) {
 			if (varsXmlHttp.status == 200) {
 				curUser = Ext.util.JSON.decode(varsXmlHttp.responseText);
-				if (curUser.cn !== undefined) {
+				if (curUser.username !== undefined) {
 					loadApp();
 				} else {
 					Ext.get( 'indicator' ).dom.innerHTML = curUser.error;
@@ -128,32 +123,16 @@ function loadApp () {
 							tag: 'span',
 							cls: 'x-tab-strip-text',
 							//html: '<a href="#" onclick="showAbout()" style="text-decoration:none;">' + appName + ' ' + appVersion + '</a>'
-							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.name + ' (' + curUser.role + ') - Logout</span>'
+							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.display + ' (' + curUser.role.name + ') - Logout</span>'
 						}]
 					};
 					var edge = tp.getEl().child('.x-tab-edge');
 					var appStrEl = edge.insertSibling(appStr,'after');
-					// new Ext.ToolTip({
-						// width: 100,
-						// //html: copyrightStr + '<div>' + licenseStr + '</div>',
-						// html: '<a href="#" onclick="">About</a>',
-						// target: appStrEl
-					// });
 				}
 			}
 		}]
 	});
-	// if (curUser.canAdmin || curUser.role == 'Staff') {
-		// var nessusItems = getNessusItems();
-		// Ext.getCmp('main-tabs').add({
-			// title: 'Nessus Scans',
-			// iconCls: 'sm-nessus-16-icon',
-			// layout: 'border',
-			// id: 'tab-nessus',
-			// items: nessusItems
-		// });
-	// }
-	if (curUser.canAdmin || curUser.role == 'IAO' || curUser.role == 'Staff') {
+	if (curUser.canAdmin || curUser.role.roleId === 3 || curUser.role.roleId === 4) {
 		var adminItems = getAdministrationItems();
 		Ext.getCmp('main-tabs').add({
 			title: 'Administration',

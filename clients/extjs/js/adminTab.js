@@ -90,7 +90,7 @@ function getTree() {
 		iconCls: 'sm-stig-icon'
 	}]
 
-	if (curUser.canAdmin || curUser.role === 'Staff') {
+	if (curUser.canAdmin || curUser.role.roleId === 4) {
 		children.push({
 			id: 'package-admin',
 			text: 'Packages',

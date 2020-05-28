@@ -345,7 +345,7 @@ function addReview(leaf, selectedRule, selectedResource) {
         var test = 1;
       },
       render: function () {
-        if (curUser.role != 'Staff') {
+        if (curUser.role.roleId !== 4) {
           Ext.getCmp('unlockMenuItem' + idAppend).hide();
         } else {
           Ext.getCmp('unlockMenuItem' + idAppend).show();
@@ -996,20 +996,20 @@ function addReview(leaf, selectedRule, selectedResource) {
   var otherGrid = new Ext.grid.GridPanel({
     //region: 'center',
     enableDragDrop: true,
-    sm_Filter: function () {
-      var checked = Ext.getCmp('otherFilter' + idAppend).getValue();
-      if (checked) {
-        otherStore.filter([
-          {
-            fn: function (record) {
-              return (record.get('dept') == curUser.dept || record.get('assetGroup') == TEMPLATE_STR)
-            }
-          }
-        ])
-      } else {
-        otherStore.clearFilter();
-      }
-    },
+    // sm_Filter: function () {
+    //   var checked = Ext.getCmp('otherFilter' + idAppend).getValue();
+    //   if (checked) {
+    //     otherStore.filter([
+    //       {
+    //         fn: function (record) {
+    //           return (record.get('deptId') === curUser.deptId || record.get('assetGroup') == TEMPLATE_STR)
+    //         }
+    //       }
+    //     ])
+    //   } else {
+    //     otherStore.clearFilter();
+    //   }
+    // },
     ddGroup: 'gridDDGroup',
     plugins: expander,
     layout: 'fit',
@@ -1028,33 +1028,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       deferEmptyText: false
     }),
     tbar: new Ext.Toolbar({
-      items: [
-        {
-          xtype: 'checkbox',
-          id: 'otherFilter' + idAppend,
-          style: 'margin-left: 3px;',
-          boxLabel: 'Show Code ' + curUser.dept + ' assets only',
-          listeners: {
-            check: function (cb, checked) {
-              if (checked) {
-                otherStore.filter([
-                  {
-                    fn: function (record) {
-                      return (record.get('dept') == curUser.dept || record.get('assetGroup') == TEMPLATE_STR)
-                    }
-                  }
-                ])
-              } else {
-                otherStore.clearFilter();
-              }
-            }
-          }
-        },
-        {
-          xtype: 'tbbutton',
-          text: ''
-        }
-      ]
+      items: []
     }),
     columns: [
       expander,

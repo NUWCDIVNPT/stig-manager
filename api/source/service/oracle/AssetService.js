@@ -4,38 +4,63 @@ const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 const J2X = require("fast-xml-parser").j2xParser
 const he = require('he');
+const ROLE = require('../../utils/appRoles')
 
 /**
 Generalized queries for asset(s).
 **/
 exports.queryAssets = async function (inProjection, inPredicates, elevate, userObject) {
   let context
-  if (userObject.role == 'Staff' || elevate) {
+  if (elevate) {
     context = dbUtils.CONTEXT_ALL
-  } else if (userObject.role == "IAO") {
-    context = dbUtils.CONTEXT_DEPT
-  } else {
-    context = dbUtils.CONTEXT_USER
+  }
+  else {
+    switch (userObject.role.roleId) {
+      case ROLE.COMMAND:
+        context = dbUtils.CONTEXT_ALL
+        break
+      case ROLE.DEPT:
+        context = dbUtils.CONTEXT_DEPT
+        break
+      case ROLE.REVIEWER:
+        context = dbUtils.CONTEXT_USER
+        break
+      case ROLE.GUEST:
+        context = dbUtils.CONTEXT_GUEST
+        break;
+    }
   }
 
   let columns = [
     'a.ASSETID as "assetId"',
     'a.NAME as "name"',
-    'a.DEPT as "dept"',
+    `json_object (
+      KEY 'deptId' VALUE d.deptId,
+      KEY 'name' VALUE d.name
+    ) as "dept"`,
     'a.IP as "ip"',
     'a.NONNETWORK as "nonnetwork"'
   ]
   let joins = [
-    'stigman.assets a',
-    'left join stigman.asset_package_map ap on a.assetId=ap.assetId',
-    'left join stigman.packages p on ap.packageId=p.packageId',
-    'left join stigman.stig_asset_map sa on a.assetId = sa.assetId',
-    'left join stigman.user_stig_asset_map usa on sa.saId = usa.saId'
+    'asset a',
+    'left join department d on a.deptId = d.deptId',
+    'left join asset_package_map ap on a.assetId=ap.assetId',
+    'left join package p on ap.packageId=p.packageId',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join user_stig_asset_map usa on sa.saId = usa.saId'
   ]
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('packages')) {
-    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'packageId' VALUE p.packageId, KEY 'name' VALUE p.name ABSENT ON NULL), ',')) || ']' as "packages"`)
+    columns.push(`'[' || 
+      listagg( distinct
+        json_object(
+          KEY 'packageId' VALUE p.packageId,
+          KEY 'name' VALUE p.name
+          ABSENT ON NULL
+        ),','
+      ) within group (order by p.name)
+    || ']' as "packages"`)
   }
   if (inProjection && inProjection.includes('adminStats')) {
     columns.push(`json_object(
@@ -43,18 +68,20 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       KEY 'stigAssignedCount' VALUE COUNT(Distinct usa.saId)
       ) as "adminStats"`)
   }
-  if (inProjection && inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
+  if (inProjection && inProjection.includes('stigReviewers')) {
     columns.push(`(select
           replace(
               replace(
                   json_arrayagg(
                       json_object(
-                          KEY 'benchmarkId' VALUE sa.stigId,
+                          KEY 'benchmarkId' VALUE sa.benchmarkId,
                           KEY 'reviewers' VALUE json_arrayagg(
-                              CASE WHEN u.id IS NOT NULL THEN  json_object(
-                                  KEY 'userId' VALUE u.id,
-                                  KEY 'username' VALUE u.name,
-                                  KEY 'dept' VALUE u.dept
+                              CASE WHEN u.userId IS NOT NULL THEN  json_object(
+                                  KEY 'userId' VALUE u.userid,
+                                  KEY 'username' VALUE u.username,
+                                  KEY 'dept' VALUE json_object (
+                                    KEY 'deptId' VALUE d.deptId,
+                                    KEY 'name' VALUE d.name)
                                   ABSENT ON NULL
                               ) ELSE NULL END
                           ) FORMAT JSON
@@ -63,14 +90,16 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
               , '"{', '{')
           , '}"', '}')
       FROM 
-      stigman.stig_asset_map sa
-      left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
-      left join stigman.user_data u on usa.userId = u.id
+      stig_asset_map sa
+      left join user_stig_asset_map usa on sa.saId = usa.saId
+      left join user_data u on usa.userId = u.userid
+      left join department d on u.deptId = d.deptId
       WHERE sa.assetId = a.assetId
-      group by sa.stigId) as "stigReviewers"`)
+      group by sa.benchmarkId) as "stigReviewers"`)
   }
-  if (inProjection && inProjection.includes('reviewers') && context !== dbUtils.CONTEXT_USER) {
-    // Subquery relies on predicate :stigId to be set
+  if (inProjection && inProjection.includes('reviewers')) {
+    // This projection is specified by /stigs/{benchmarkId}/assets}
+    // Subquery relies on :benchmarkId to be bound
     columns.push(`(select
         replace(
           replace(
@@ -84,22 +113,27 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
           , '"{', '{')
         , '}"', '}')  
       FROM 
-        stigman.stig_asset_map sa
-        left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
-        left join stigman.user_data u on usa.userId = u.id
-      WHERE sa.assetId = a.assetId and sa.stigId = :benchmarkId
-      group by sa.stigId) as "reviewers"`)
+        stig_asset_map sa
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+        left join user_data u on usa.userId = u.id
+      WHERE sa.assetId = a.assetId and sa.benchmarkId = :benchmarkId
+      group by sa.benchmarkId) as "reviewers"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
-    joins.push('left join stigs.current_revs cr on sa.stigId=cr.stigId')
-    joins.push('left join stigs.stigs st on cr.stigId=st.stigId')
-    columns.push(`'[' || strdagg_param(param_array(json_object(
-      KEY 'benchmarkId' VALUE cr.stigId, 
-      KEY 'lastRevisionStr' VALUE CASE 
-        WHEN cr.stigId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END,
-      KEY 'lastRevisionDate' VALUE CASE
-        WHEN cr.stigId IS NOT NULL THEN cr.benchmarkDateSql END,
-      KEY 'title' VALUE st.title ABSENT ON NULL), ',')) || ']' as "stigs"`)
+    joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
+    joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
+    columns.push(`'[' || 
+      listagg ( distinct
+        json_object(
+          KEY 'benchmarkId' VALUE cr.benchmarkId, 
+          KEY 'lastRevisionStr' VALUE CASE 
+            WHEN cr.benchmarkId IS NOT NULL THEN 'V'||cr.version||'R'||cr.release END,
+          KEY 'lastRevisionDate' VALUE CASE
+            WHEN cr.benchmarkId IS NOT NULL THEN cr.benchmarkDateSql END,
+          KEY 'title' VALUE st.title ABSENT ON NULL
+        ),','
+      ) within group (order by cr.benchmarkId)
+      || ']' as "stigs"`)
   }
 
   // PREDICATES
@@ -116,20 +150,20 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     predicates.binds.packageId = inPredicates.packageId
   }
   if (inPredicates.benchmarkId) {
-    predicates.statements.push('sa.stigId = :benchmarkId')
+    predicates.statements.push('sa.benchmarkId = :benchmarkId')
     predicates.binds.benchmarkId = inPredicates.benchmarkId
   }
-  if (inPredicates.dept) {
-    predicates.statements.push('a.dept = :dept')
-    predicates.binds.dept = inPredicates.dept
+  if (inPredicates.deptId) {
+    predicates.statements.push('a.deptId = :deptId')
+    predicates.binds.deptId = inPredicates.deptId
   }
   if (context == dbUtils.CONTEXT_DEPT) {
-    predicates.statements.push('a.dept = :dept')
-    predicates.binds.dept = userObject.dept
+    predicates.statements.push('a.deptId = :deptId')
+    predicates.binds.deptId = userObject.dept.deptId
   } 
   else if (context == dbUtils.CONTEXT_USER) {
     predicates.statements.push('usa.userId = :userId')
-    predicates.binds.userId = userObject.id
+    predicates.binds.userId = userObject.userId
 
   }
 
@@ -141,7 +175,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by a.assetId, a.name, a.dept, a.ip, a.nonnetwork, a.scanexempt'
+  sql += ' group by a.assetId, a.name, a.deptId, a.ip, a.nonnetwork, d.deptId, d.name'
   sql += ' order by a.name'
   
   try {
@@ -152,41 +186,25 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     let result = await connection.execute(sql, predicates.binds, options)
     await connection.close()
 
-    // Post-process each row, unfortunately.
-    // * Oracle doesn't have a BOOLEAN data type, so we must cast columns 'nonnetwork' and 'scanexempt'
-    // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
+    // Process boolean and JSON fields for each row
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      // Handle booleans
       record.nonnetwork = record.nonnetwork == 1 ? true : false
-      if ('packages' in record) {
+      record.dept = JSON.parse(record.dept)
+      if (inProjection && inProjection.includes('packages')) {
        // Check for "empty" arrays 
         record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages) || []
-        // Sort by package name
-        record.packages.sort((a,b) => {
-          let c = 0
-          if (a.name > b.name) { c= 1 }
-          if (a.name < b.name) { c = -1 }
-          return c
-        })
       }
-      if ('stigs' in record) {
+      if (inProjection && inProjection.includes('stigs')) {
         record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs) || []
-        // Sort by benchmarkId
-        record.stigs.sort((a,b) => {
-          let c = 0
-          if (a.benchmarkId > b.benchmarkId) { c = 1 }
-          if (a.benchmarkId < b.benchmarkId) { c = -1 }
-          return c
-        })
       }
-      if ('adminStats' in record) {
+      if (inProjection && inProjection.includes('adminStats')) {
         record.adminStats = JSON.parse(record.adminStats) || {}
       }
-      if ('stigReviewers' in record) {
+      if (inProjection && inProjection.includes('stigReviewers')) {
         record.stigReviewers = JSON.parse(record.stigReviewers) || []
       }
-      if ('reviewers' in record) {
+      if (inProjection && inProjection.includes('reviewers')) {
         record.reviewers = JSON.parse(record.reviewers) || []
       }
     }
@@ -203,20 +221,13 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // CREATE: assetId will be null
     // REPLACE/UPDATE: assetId is not null
 
-    // Extract or initialize non-scalar properties to separate variables
+    // Extract non-scalar properties to separate variables
     let { stigReviewers, benchmarkIds, packageIds, ...assetFields } = body
-    stigReviewers = stigReviewers ? stigReviewers : []
-    benchmarkIds = benchmarkIds ? benchmarkIds : []
-    packageIds = packageIds ? packageIds : []
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('nonnetwork')) {
       assetFields.nonnetwork = assetFields.nonnetwork ? 1 : 0
     }
-    if (assetFields.hasOwnProperty('scanexempt')) {
-      assetFields.scanexempt = assetFields.scanexempt ? 1 : 0
-    }
-
     // Connect to Oracle
     let options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
@@ -224,28 +235,15 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     connection = await oracledb.getConnection()
 
     // Process scalar properties
-    let binds = {}
-    if (writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      let defaults = {
-        name: null,
-        ip: null,
-        dept: null,
-        nonnetwork: 0,
-        scanexempt: 0
-      }
-      binds = { ...defaults, ...assetFields }
-    }
-    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE) {
-      binds = { ...assetFields}
-    }
+    let binds = { ...assetFields }
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
-    // INSERT into assets
+    // INSERT into asset
     let sqlInsert =
       `INSERT INTO
-          stigman.assets
-          (name, ip, dept, nonnetwork, scanexempt)
+          asset
+          (name, ip, deptId, nonnetwork)
         VALUES
-          (:name, :ip, :dept, :nonnetwork, :scanexempt)
+          (:name, :ip, :deptId, :nonnetwork)
         RETURNING
           assetId into :assetId`
       binds.assetId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
@@ -254,10 +252,10 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     }
     else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
       if (Object.keys(binds).length > 0) {
-        // UPDATE into assets
+        // UPDATE into asset
         let sqlUpdate =
           `UPDATE
-              stigman.assets
+              asset
             SET
               ${dbUtils.objectBindObject(assetFields, binds)}
             WHERE
@@ -271,102 +269,59 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     }
 
     // Process packageIds if present
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      // DELETE from asset_package_map
-      let sqlDeletePackages = 'DELETE FROM stigman.asset_package_map where assetId = :assetId'
-      await connection.execute(sqlDeletePackages, [assetId])
-    }
-    if (packageIds.length > 0) {
-      let sqlInsertPackages = `
-        INSERT /*+ ignore_row_on_dupkey_index(asset_package_map(packageId, assetId)) */ INTO 
-          stigman.asset_package_map (packageId,assetId)
-        VALUES (:packageId, :assetId)`      
-      let binds = packageIds.map(i => [i, assetId])
-      // INSERT into asset_package_map
-      await connection.executeMany(sqlInsertPackages, binds)
-    }
-
-    // Process benchmarkIds and/or stigReviewers  
-    binds = {
-      insert: {
-        stigAsset: [],
-        userStigAsset: []
-      },
-      notdelete: {
-        stigAsset: [],
-      },
-      delete: {
-        userStigAsset: []
+    if (packageIds) {
+      if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+        // DELETE from asset_package_map
+        let sqlDeletePackages = 'DELETE FROM asset_package_map where assetId = :assetId'
+        await connection.execute(sqlDeletePackages, [assetId])
+      }
+      if (packageIds.length > 0) {
+        let sqlInsertPackages = `
+          INSERT INTO 
+            asset_package_map (packageId,assetId)
+          VALUES (:packageId, :assetId)`      
+        let binds = packageIds.map(i => [i, assetId])
+        // INSERT into asset_package_map
+        await connection.executeMany(sqlInsertPackages, binds)
       }
     }
 
-    if (benchmarkIds.length > 0) {
-      binds.insert.stigAsset = benchmarkIds.map(i => [i, assetId])
-      // Don't delete these from STIG_ASSET_MAP, they might have user mappings
-      binds.notdelete.stigAsset = benchmarkIds.map(i => i)
-    }
-
-    if (stigReviewers.length > 0) {
-      // Append these for insert into STIG_ASSET_MAP
-      binds.insert.stigAsset = binds.insert.stigAsset.concat(stigReviewers.map(i => [i.benchmarkId, assetId]))
-      // Exclude these benchmarkIds from notdelete STIG_ASSET_MAP since the user mappings will be replaced
-      let removeThese = stigReviewers.map(i => i.benchmarkId)
-      binds.notdelete.stigAsset = binds.notdelete.stigAsset.filter( benchmarkId => !removeThese.contains(benchmarkId))
-
-      // Bind the USER_STIG_ASSET_MAP values
-      stigReviewers.forEach( e => {
-        binds.delete.userStigAsset.push([e.benchmarkId, assetId])
-        if (e.userIds && e.userIds.length > 0) {
-          e.userIds.forEach(userId => {
-            binds.insert.userStigAsset.push({
-              userId: userId,
-              benchmarkId: e.benchmarkId,
-              assetId: assetId
-            })
-          })
+    // Process stigReviewers, spec requires for CREATE/REPLACE not for UPDATE
+    // In all cases, the property value replaces the current mappings
+    if (stigReviewers) {
+      binds = {
+        stigAsset: [],
+        userStigAsset: []
+      }
+      if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+        let sqlDeleteBenchmarks = 'DELETE FROM stig_asset_map WHERE assetId = :assetId'
+        // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
+        await connection.execute(sqlDeleteBenchmarks, [assetId])
+      }
+      for (const stigReview of stigReviewers) {
+        binds.stigAsset.push([stigReview.benchmarkId, assetId])
+        for (const userId of stigReview.userIds) {
+          binds.userStigAsset.push([userId, stigReview.benchmarkId, assetId])
         }
-      })
-    }
-
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE || 'benchmarkIds' in body || 'stigReviewers' in body) {
-      let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map WHERE assetId = :assetId'
-      if (binds.notdelete.stigAsset.length > 0) {
-        sqlDeleteBenchmarks += ` AND stigId NOT IN (${binds.notdelete.stigAsset.map((name, index) => `:${index}`).join(", ")})`
       }
-      // DELETE from stig_asset_map, will cascade into user_stig_aset_map
-      await connection.execute(sqlDeleteBenchmarks, [assetId, ...binds.notdelete.stigAsset])
-    }
-
-    if (binds.insert.stigAsset.length > 0) {
-      // INSERT into stig_asset_map
-      let sqlInsertBenchmarks = `
-      INSERT /*+ ignore_row_on_dupkey_index(stig_asset_map(stigId, assetId)) */ INTO 
-        stigman.stig_asset_map (stigId, assetId)
-      VALUES
-        (:benchmarkId, :assetId)
-      `
-      let result = await connection.executeMany(sqlInsertBenchmarks, binds.insert.stigAsset, options)
-    }
-    
-    if (binds.delete.userStigAsset.length > 0) {
-      let sqlDeleteUserStigAsset = `
-        DELETE FROM
-          stigman.user_stig_asset_map 
-        WHERE saId IN (
-          SELECT said FROM stigman.stig_asset_map
-          WHERE stigId = :benchmarkId AND assetId = :assetId
-        )`
-      let result = await connection.executeMany(sqlDeleteUserStigAsset, binds.delete.userStigAsset, options)
-    }
-    
-    if (binds.insert.userStigAsset.length > 0) {
-      // INSERT into user_stig_asset_map 
-      let sqlInsertUserStigAsset = `INSERT /*+ ignore_row_on_dupkey_index(user_stig_asset_map(userId, saId)) */ INTO 
-        stigman.user_stig_asset_map 
-          (userId, saId)
-        VALUES 
-          (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`
-      let result = await connection.executeMany(sqlInsertUserStigAsset, binds.insert.userStigAsset, options)
+      if (binds.stigAsset.length > 0) {
+        // INSERT into stig_asset_map
+        let sqlInsertBenchmarks = `
+        INSERT INTO 
+          stig_asset_map (benchmarkId, assetId)
+        VALUES
+          (:benchmarkId, :assetId)`
+        let result = await connection.executeMany(sqlInsertBenchmarks, binds.stigAsset, options)
+        if (binds.userStigAsset.length > 0) {
+          // INSERT into user_stig_asset_map 
+          let sqlInsertUserStigAsset = `INSERT INTO 
+            user_stig_asset_map 
+              (userId, saId)
+            VALUES 
+              (:userId, (SELECT saId from stig_asset_map WHERE benchmarkId=:benchmarkId and assetId=:assetId))`
+          let result = await connection.executeMany(sqlInsertUserStigAsset, binds.userStigAsset, options)
+        }
+      }
     }
     // Commit the changes
     await connection.commit()
@@ -436,17 +391,17 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     END as "checkType"`
   ]
   let joins = [
-    'stigs.current_revs rev',
-    'left join stigs.rev_group_map rg on rev.revId = rg.revId',
-    'left join stigs.groups g on rg.groupId=g.groupId',
-    'left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId',
-    'left join stigs.rules r on rgr.ruleId=r.ruleId',
-    'left join stigs.severity_cat_map sc on r.severity=sc.severity',
-    'left join reviews review on r.ruleId = review.ruleId and review.assetId = :assetId',
+    'current_revs rev',
+    'left join rev_group_map rg on rev.revId = rg.revId',
+    'left join groups g on rg.groupId=g.groupId',
+    'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
+    'left join rule r on rgr.ruleId=r.ruleId',
+    'left join severity_cat_map sc on r.severity=sc.severity',
+    'left join review review on r.ruleId = review.ruleId and review.assetId = :assetId',
     'left join states state on review.stateId=state.stateId',
     'left join statuses status on review.statusId=status.statusId',
     'left join review_artifact_map ra on (ra.assetId=review.assetId and ra.ruleId=review.ruleId)',
-    'left join (SELECT distinct ruleId FROM	stigs.rule_oval_map) scap on r.ruleId=scap.ruleId'
+    'left join (SELECT distinct ruleId FROM	rule_oval_map) scap on r.ruleId=scap.ruleId'
   ]
   // PREDICATES
   let predicates = {
@@ -457,11 +412,11 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     predicates.binds.assetId = inPredicates.assetId
   }
   if (inPredicates.benchmarkId) {
-    predicates.statements.push('rev.stigId = :benchmarkId')
+    predicates.statements.push('rev.benchmarkId = :benchmarkId')
     predicates.binds.benchmarkId = inPredicates.benchmarkId
   }
   if (inPredicates.revisionStr !== 'latest') {
-    joins.splice(0, 1, 'stigs.revisions rev')
+    joins.splice(0, 1, 'revisions rev')
     let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
     let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
     predicates.statements.push('rev.revId = :revId')
@@ -529,13 +484,13 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
     }
     let sqlGetBenchmarkId
     if (revisionStr === 'latest') {
-      sqlGetBenchmarkId = "select cr.stigId, s.title, cr.revId, cr.description, cr.version, cr.release, cr.benchmarkDate from stigs.current_revs cr left join stigs.stigs s on cr.stigId = s.stigId where cr.stigId = :1"
+      sqlGetBenchmarkId = "select cr.benchmarkId, s.title, cr.revId, cr.description, cr.version, cr.release, cr.benchmarkDate from current_revs cr left join stigs s on cr.benchmarkId = s.benchmarkId where cr.benchmarkId = :1"
     }
     else {
-      sqlGetBenchmarkId = "select r.stigId,s.title, r.description, r.version, r.release, r.benchmarkDate from stigs.stigs s left join stigs.revisions r on s.stigId=r.stigId where r.revId = :1"
+      sqlGetBenchmarkId = "select r.benchmarkId,s.title, r.description, r.version, r.release, r.benchmarkDate from stigs s left join revisions r on s.benchmarkId=r.benchmarkId where r.revId = :1"
     }
-    let sqlGetAsset = "select name,profile,ip from stigman.assets where assetId = :assetId"
-    let sqlGetCCI = "select controlnumber from stigs.rule_control_map where ruleId = :ruleId and controltype='CCI'"
+    let sqlGetAsset = "select name, ip from asset where assetId = :assetId"
+    let sqlGetCCI = "select controlnumber from rule_control_map where ruleId = :ruleId and controltype='CCI'"
     let sqlGetResults = `
     select
       g.groupId as "groupId",
@@ -559,7 +514,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       r.thirdPartyTools as "thirdPartyTools",
       r.mitigationControl as "mitigationControl",
       r.responsibility as "responsibility",
-      r.securityOverrideGuidance as "securityOverrideGuidance",
+      r.severityOverrideGuidance as "severityOverrideGuidance",
       NVL(rev.stateId,0) as "stateId",
       rev.stateComment as "stateComment",
       act.action as "action",
@@ -567,19 +522,19 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       to_char(rev.ts,'yyyy-mm-dd hh24:mi:ss') as "ts",
       listagg(rulectl.controlnumber, ',') within group (order by rulectl.controlnumber) as "ccis"
     from
-      assets s
-      left join stigs.rev_profile_group_map rpg on s.profile=rpg.profile
-      left join stigs.groups g on rpg.groupId=g.groupId
-      left join stigs.rev_group_map rg on (rpg.groupId=rg.groupId and rpg.revId=rg.revId)
-      left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
-      left join stigs.rules r on rgr.ruleId=r.ruleId
-      left join stigs.rule_check_map rc on r.ruleId=rc.ruleId
-      left join stigs.rule_control_map rulectl on (r.ruleId = rulectl.ruleId and rulectl.controltype='CCI')
-      left join stigs.checks c on rc.checkId=c.checkId
-      left join stigs.rule_fix_map rf on r.ruleId=rf.ruleId
-      left join stigs.fixes f on rf.fixId=f.fixId
-      left join reviews rev on (r.ruleId=rev.ruleId and s.assetId=rev.assetId)
-      left join actions act on act.actionId=rev.actionId
+      asset s
+      left join rev_profile_group_map rpg on s.profile=rpg.profile
+      left join groups g on rpg.groupId=g.groupId
+      left join rev_group_map rg on (rpg.groupId=rg.groupId and rpg.revId=rg.revId)
+      left join rev_group_rule_map rgr on rg.rgId=rgr.rgId
+      left join rule r on rgr.ruleId=r.ruleId
+      left join rule_check_map rc on r.ruleId=rc.ruleId
+      left join rule_control_map rulectl on (r.ruleId = rulectl.ruleId and rulectl.controltype='CCI')
+      left join check c on rc.checkId=c.checkId
+      left join rule_fix_map rf on r.ruleId=rf.ruleId
+      left join fix f on rf.fixId=f.fixId
+      left join review rev on (r.ruleId=rev.ruleId and s.assetId=rev.assetId)
+      left join action act on act.actionId=rev.actionId
     where
       s.assetId = :assetId
       and rg.revId = :revId
@@ -603,7 +558,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       r.thirdPartyTools,
       r.mitigationControl,
       r.responsibility,
-      r.securityOverrideGuidance,
+      r.severityOverrideGuidance,
       rev.stateId,
       rev.stateComment,
       act.action,
@@ -680,12 +635,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       ['Third_Party_Tools', 'thirdPartyTools' ],
       ['Mitigation_Control', 'mitigationControl' ],
       ['Responsibility', 'responsibility' ],
-      ['Security_Override_Guidance', 'securityOverrideGuidance' ]
-      // ['Check_Content_Ref', 'securityOverrideGuidance' ]
-      // ['Class', 'securityOverrideGuidance' ]
-      // ['STIGRef', 'securityOverrideGuidance' ]
-      // ['STIG_UUID', 'securityOverrideGuidance' ]
-      // ['CCI_REF', 'securityOverrideGuidance' ]
+      ['Severity_Override_Guidance', 'severityOverrideGuidance' ]
     ]
     let stateStrings = ['Not_Reviewed', 'Not_Reviewed', 'Not_Applicable', 'NotAFinding', 'Open']
 
@@ -768,7 +718,7 @@ exports.createAsset = async function(body, projection, elevate, userObject) {
 exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   try {
     let row = await this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
-    let sqlDelete = `DELETE FROM stigman.assets where assetId = :assetId`
+    let sqlDelete = `DELETE FROM asset where assetId = :assetId`
     let connection = await oracledb.getConnection()
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -811,12 +761,12 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(packageId, benchmarkId, dept, projection, elevate, userObject) {
+exports.getAssets = async function(packageId, benchmarkId, deptId, projection, elevate, userObject) {
   try {
     let rows = await this.queryAssets(projection, {
       packageId: packageId,
       benchmarkId: benchmarkId,
-      dept: dept
+      deptId: deptId
     }, elevate, userObject)
     return (rows)
   }

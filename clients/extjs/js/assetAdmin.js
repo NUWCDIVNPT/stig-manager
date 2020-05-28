@@ -62,8 +62,7 @@ function addAssetAdmin() {
 			type: 'string',
 			sortType: sortIpAddress
 		},{
-			name: 'dept',
-			type: 'string'
+			name: 'dept'
 		},{
 			name: 'packages',
 			type: 'string',
@@ -139,9 +138,9 @@ function addAssetAdmin() {
 				sortable: true
 			},{ 	
 				header: "Dept",
-				width: 5,
+				width: 50,
 				align: "center",
-				dataIndex: 'dept',
+				dataIndex: 'dept.name',
 				sortable: true
 			},{ 	
 				header: "IP",
@@ -617,8 +616,8 @@ function addAssetAdmin() {
 							name: 'dept',
 							mode: 'local',
 							triggerAction: 'all',
-							hideTrigger: !(curUser.canAdmin || curUser.role == 'Staff'),
-							readOnly: !(curUser.canAdmin || curUser.role == 'Staff'),
+							hideTrigger: !(curUser.canAdmin || curUser.role.roleId == 4),
+							readOnly: !(curUser.canAdmin || curUser.role.roleId == 4),
 							//fieldClass: "x-item-disabled",
 							displayField:'dept',
 							//disabled: !(curUser.canAdmin),
@@ -865,14 +864,6 @@ function addAssetAdmin() {
 				},
 			
 				listeners: {
-					// beforerowdeselect: function (sm, index, record) {
-					// 	if (curUser.role === 'IAO' && !curUser.canAdmin) {
-					// 		if (record.data.dept !== curUser.dept) {
-					// 			return false
-					// 		}
-					// 	}
-					// 	return true
-					// }
 				}
 			});
 			var stigUserGrid = new Ext.grid.GridPanel({
@@ -899,8 +890,8 @@ function addAssetAdmin() {
 				viewConfig: {
 					forceFit: true,
 					getRowClass: function(record, rowIndex, rp, ds) {
-						if (curUser.role === 'IAO' && !curUser.canAdmin) {
-							if (record.data.dept !== curUser.dept) {
+						if (curUser.role.roleId === 3 && !curUser.canAdmin) {
+							if (record.data.deptId !== curUser.deptId) {
 								return 'x-stigman-cross-department'
 							}
 						}
@@ -1021,7 +1012,7 @@ function addAssetAdmin() {
 				method: 'GET'
 			})
 			let apiUsers = JSON.parse(result.response.responseText)
-			if (curUser.role === 'IAO' && !curUser.canAdmin) {
+			if (curUser.role.roleId === 3 && !curUser.canAdmin) {
 				// merge users from assignedUsers, allowing duplicate ids
 				apiUsers = apiUsers.concat(assignedUsers)
 			}

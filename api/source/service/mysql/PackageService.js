@@ -2,6 +2,7 @@
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
+const _this = this
 
 /**
 Generalized queries for package(s).
@@ -188,7 +189,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
   }
 
   try {
-    let row = await this.getPackage(packageId, projection, true, userObject)
+    let row = await _this.getPackage(packageId, projection, true, userObject)
     return row
   }
   catch (err) {
@@ -204,7 +205,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
  **/
 exports.createPackage = async function(body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
+    let row = await _this.addOrUpdatePackage(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
     return (row)
   }
   catch (err) {
@@ -221,7 +222,7 @@ exports.createPackage = async function(body, projection, userObject) {
  **/
 exports.deletePackage = async function(packageId, projection, elevate, userObject) {
   try {
-    let row = await this.queryPackages(projection, { packageId: packageId }, elevate, userObject)
+    let row = await _this.queryPackages(projection, { packageId: packageId }, elevate, userObject)
     let sqlDelete = `DELETE FROM stigman.package where packageId = ?`
     await dbUtils.pool.query(sqlDelete, [packageId])
     return (row[0])
@@ -362,7 +363,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
  **/
 exports.getPackage = async function(packageId, projection, elevate, userObject) {
   try {
-    let rows = await this.queryPackages(projection, {
+    let rows = await _this.queryPackages(projection, {
       packageId: packageId
     }, elevate, userObject)
   return (rows[0])
@@ -380,7 +381,7 @@ exports.getPackage = async function(packageId, projection, elevate, userObject) 
  **/
 exports.getPackages = async function(projection, elevate, userObject) {
   try {
-    let rows = await this.queryPackages(projection, {}, elevate, userObject)
+    let rows = await _this.queryPackages(projection, {}, elevate, userObject)
     return (rows)
   }
   catch (err) {
@@ -398,7 +399,7 @@ exports.getPackages = async function(projection, elevate, userObject) {
  **/
 exports.replacePackage = async function( packageId, body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.REPLACE, packageId, body, projection, userObject)
+    let row = await _this.addOrUpdatePackage(dbUtils.WRITE_ACTION.REPLACE, packageId, body, projection, userObject)
     return (row)
   } 
   catch (err) {
@@ -416,7 +417,7 @@ exports.replacePackage = async function( packageId, body, projection, userObject
  **/
 exports.updatePackage = async function( packageId, body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.UPDATE, packageId, body, projection, userObject)
+    let row = await _this.addOrUpdatePackage(dbUtils.WRITE_ACTION.UPDATE, packageId, body, projection, userObject)
     return (row)
   } 
   catch (err) {

@@ -8,20 +8,20 @@ Generalized queries for STIGs
 **/
 exports.queryStigs = async function ( inPredicates ) {
   let columns = [
-    's.STIGID as "benchmarkId"',
+    's.benchmarkId as "benchmarkId"',
     's.TITLE as "title"',
     `'V' || cr.version || 'R' || cr.release as "lastRevisionStr"`,
     `to_char(cr.benchmarkDateSql,'yyyy-mm-dd') as "lastRevisionDate"`
   ]
   let joins = [
-    'stigs.stigs s',
-    'left join stigs.current_revs cr on s.stigId = cr.stigId'
+    'stig s',
+    'left join current_rev cr on s.benchmarkId = cr.benchmarkId'
   ]
 
   // NO PROJECTIONS DEFINED
   // if (inProjection && inProjection.includes('assets')) {
-  //   joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
-  //   joins.push('left join stigman.assets a on sa.assetId = a.assetId' )
+  //   joins.push('left join stig_asset_map sa on s.benchmarkId = sa.benchmarkId' )
+  //   joins.push('left join assets a on sa.assetId = a.assetId' )
   //   columns.push(`'[' || strdagg_param(param_array(json_object(
   //     KEY 'assetId' VALUE a.assetId, 
   //     KEY 'name' VALUE a.name, 
@@ -31,14 +31,14 @@ exports.queryStigs = async function ( inPredicates ) {
   // if (inProjection && inProjection.includes('packages')) {
   //   if (! inProjection.includes('assets')) {
   //     // Push dependent table
-  //     joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
+  //     joins.push('left join stig_asset_map sa on s.benchmarkId = sa.benchmarkId' )
   //   }
-  //   joins.push('left join stigman.asset_package_map ap on sa.assetId = ap.assetId' )
-  //   joins.push('left join stigman.packages p on ap.packageId = p.packageId' )
+  //   joins.push('left join asset_package_map ap on sa.assetId = ap.assetId' )
+  //   joins.push('left join packages p on ap.packageId = p.packageId' )
   //   columns.push(`'[' || strdagg_param(param_array(json_object(
   //     KEY 'packageId' VALUE p.packageId, 
   //     KEY 'name' VALUE p.name ABSENT ON NULL
-  //     ), ',')) || ']' as "stigs"`)
+  //     ), ',')) || ']' as "stig"`)
   // }
 
   // PREDICATES
@@ -51,7 +51,7 @@ exports.queryStigs = async function ( inPredicates ) {
     predicates.binds.push( inPredicates.title )
   }
   if (inPredicates.benchmarkId) {
-    predicates.statements.push('s.stigId = :benchmarkId')
+    predicates.statements.push('s.benchmarkId = :benchmarkId')
     predicates.binds.push( inPredicates.benchmarkId )
   }
 
@@ -63,7 +63,7 @@ exports.queryStigs = async function ( inPredicates ) {
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' order by s.stigId'
+  sql += ' order by s.benchmarkId'
 
   try {
     let  options = {
@@ -95,21 +95,21 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
     binds: {}
   }
   
-  predicates.statements.push('r.stigId = :benchmarkId')
+  predicates.statements.push('r.benchmarkId = :benchmarkId')
   predicates.binds.benchmarkId = inPredicates.benchmarkId
   
   if (inPredicates.revisionStr != 'latest') {
-    joins = ['stigs.revisions r']
+    joins = ['revision r']
     let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
     let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
     predicates.statements.push('r.revId = :revId')
     predicates.binds.revId = revId
   } else {
-    joins = ['stigs.current_revs r']
+    joins = ['current_revs r']
   }
   
-  joins.push('left join stigs.rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join stigs.groups g on rg.groupId = g.groupId')
+  joins.push('left join rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join groups g on rg.groupId = g.groupId')
 
   if (inPredicates.groupId) {
     predicates.statements.push('g.groupId = :groupId')
@@ -118,8 +118,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('rules')) {
-    joins.push('left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-    joins.push('left join stigs.rules r on rgr.ruleId = r.ruleId' )
+    joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('left join rule r on rgr.ruleId = r.ruleId' )
     columns.push(`'[' || strdagg_param(param_array(json_object(
       KEY 'ruleId' VALUE r.ruleId, 
       KEY 'version' VALUE r.version, 
@@ -205,17 +205,17 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   }
   
   // PREDICATES
-  predicates.statements.push('r.stigId = :benchmarkId')
+  predicates.statements.push('r.benchmarkId = :benchmarkId')
   predicates.binds.benchmarkId = benchmarkId
   
   if (revisionStr != 'latest') {
-    joins = ['stigs.revisions r']
+    joins = ['revision r']
     let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
     let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
     predicates.statements.push('r.revId = :revId')
     predicates.binds.revId = revId
   } else {
-    joins = ['stigs.current_revs r']
+    joins = ['current_revs r']
   }
   
   if (inPredicates && inPredicates.ruleId) {
@@ -223,10 +223,10 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     predicates.binds.ruleId = inPredicates.ruleId
   }
 
-  joins.push('left join stigs.rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join stigs.groups g on rg.groupId = g.groupId')
-  joins.push('left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-  joins.push('left join stigs.rules r on rgr.ruleId = r.ruleId' )
+  joins.push('left join rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join groups g on rg.groupId = g.groupId')
+  joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+  joins.push('left join rule r on rgr.ruleId = r.ruleId' )
 
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
@@ -267,24 +267,24 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     columns.push(`(select json_arrayagg(json_object(
       KEY 'cci' VALUE rc.controlnumber,
       KEY 'ap' VALUE  cci.apacronym,
-      KEY 'control' VALUE  TRIM(cc.control) || ' ' || cc.textref ABSENT ON NULL)) 
-      from stigs.rule_control_map rc 
-      left join iacontrols.cci cci on rc.controlnumber = cci.cci
-      left join iacontrols.cci_control_map cc on rc.controlnumber = cc.cci
+      KEY 'control' VALUE  cr.textRefNist ABSENT ON NULL)) 
+      from rule_control_map rc 
+      left join cci cci on rc.cci = cci.cci
+      left join cci_reference_map cr on rc.cci = cr.cci
       where rc.ruleId = r.ruleId) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
       KEY 'checkId' VALUE rck.checkId,
       KEY 'content' VALUE convert(chk.content, 'UTF8') ABSENT ON NULL))
-      from stigs.rule_check_map rck left join stigs.checks chk on chk.checkId = rck.checkId
+      from rule_check_map rck left join check chk on chk.checkId = rck.checkId
       where rck.ruleId = r.ruleId) as "checks"`)
   }
   if ( inProjection && inProjection.includes('fixes') ) {
     columns.push(`(select json_arrayagg(json_object(
       KEY 'fixId' VALUE rf.fixId,
       KEY 'text' VALUE fix.text ABSENT ON NULL))
-      from stigs.rule_fix_map rf left join stigs.fixes fix on fix.fixId = rf.fixId
+      from rule_fix_map rf left join fix fix on fix.fixId = rf.fixId
       where rf.ruleId = r.ruleId) as "fixes"`)
   }
 
@@ -371,7 +371,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
 ]
 
   let joins = [
-    'stigs.rules r'
+    'rule r'
   ]
   let predicates = {
     statements: [],
@@ -455,7 +455,7 @@ exports.insertManualBenchmark = async function (b) {
         )`,
       },
       groups: {
-        sql: "INSERT /*+ ignore_row_on_dupkey_index(group(groupId)) */ into groups (groupId, title) VALUES (:groupId, :title)",
+        sql: "INSERT /*+ ignore_row_on_dupkey_index(groups(groupId)) */ into groups (groupId, title) VALUES (:groupId, :title)",
         binds: [],
         options: {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -612,22 +612,22 @@ exports.insertManualBenchmark = async function (b) {
         binds: []
       },
       // ruleCheckMap: {
-      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_check_map(ruleId, checkId)) */ into stigs.rule_check_map (ruleId, checkId) VALUES (:ruleId, :checkId)",
+      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_check_map(ruleId, checkId)) */ into rule_check_map (ruleId, checkId) VALUES (:ruleId, :checkId)",
       //   binds: []
       // },
       // ruleFixMap: {
-      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_fix_map(ruleId, fixId)) */ into stigs.rule_fix_map (ruleId, fixId) VALUES (:ruleId, :fixId)",
+      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_fix_map(ruleId, fixId)) */ into rule_fix_map (ruleId, fixId) VALUES (:ruleId, :fixId)",
       //   binds: []
       // },
       // ruleControlMap: {
-      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_control_map(ruleId, controlnumber)) */ into stigs.rule_control_map (ruleId, controlnumber, controltype) VALUES (:ruleId, :cci, 'CCI')",
+      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_control_map(ruleId, controlnumber)) */ into rule_control_map (ruleId, controlnumber, controltype) VALUES (:ruleId, :cci, 'CCI')",
       //   binds: []
       // },
       // currentRevs: {
-      //   sql: `insert into stigs.current_revs 
+      //   sql: `insert into current_revs 
       //   select 
       //     revId,
-      //     stigId,
+      //     benchmarkId,
       //     version,
       //     release,
       //     benchmarkDate,
@@ -639,7 +639,7 @@ exports.insertManualBenchmark = async function (b) {
       //   from (
       //     SELECT
       //     revId,
-      //     stigId,
+      //     benchmarkId,
       //     version,
       //     release,
       //     benchmarkDate,
@@ -648,27 +648,27 @@ exports.insertManualBenchmark = async function (b) {
       //     statusDate,
       //     description,
       //     active
-      //       ,ROW_NUMBER() OVER (PARTITION BY stigId ORDER BY version+0 desc, release+0 desc) AS rn
+      //       ,ROW_NUMBER() OVER (PARTITION BY benchmarkId ORDER BY version+0 desc, release+0 desc) AS rn
       //     FROM
-      //       stigs.revisions
+      //       revision
       //   )
       //   where rn = 1
       //   `
       // },
       // currentGroupRules: {
-      //   sql: `insert into stigs.current_group_rules
+      //   sql: `insert into current_group_rules
       //   SELECT rg.groupId,
       //     rgr.ruleId,
-      //     s.stigId
+      //     s.benchmarkId
       //   from
-      //     stigs.stigs s
-      //     left join stigs.current_revs cr on cr.stigId=s.stigId
-      //     left join stigs.rev_group_map rg on rg.revId=cr.revId
-      //     left join stigs.rev_group_rule_map rgr on rgr.rgId=rg.rgId
+      //     stig s
+      //     left join current_revs cr on cr.benchmarkId=s.benchmarkId
+      //     left join rev_group_map rg on rg.revId=cr.revId
+      //     left join rev_group_rule_map rgr on rgr.rgId=rg.rgId
       //   where
       //     cr.revId is not null
       //   order by
-      //     rg.groupId,rgr.ruleId,s.stigId`
+      //     rg.groupId,rgr.ruleId,s.benchmarkId`
       // }
     }
 
@@ -708,17 +708,19 @@ exports.insertManualBenchmark = async function (b) {
         })
         // TABLE: RULE
         dml.rule.binds.push(ruleBinds)
-        checks.forEach(check => {
-          // TABLE: CHECKS
-          dml.checks.binds.push(check)
-          // TABLE: REV_GROUP_RULE_CHECK_MAP
-          dml.revGroupRuleCheckMap.binds.push({
-            revId: revisionBinds.revId,
-            groupId: group.groupId,
-            ruleId: rule.ruleId,
-            checkId: check.checkId
+        if (checks) { // Some STIGS (Network_Devices_STIG_V8R23, U_Traditional_Security_V1R2) have no checks (!)
+          checks.forEach(check => {
+            // TABLE: CHECKS
+            dml.checks.binds.push(check)
+            // TABLE: REV_GROUP_RULE_CHECK_MAP
+            dml.revGroupRuleCheckMap.binds.push({
+              revId: revisionBinds.revId,
+              groupId: group.groupId,
+              ruleId: rule.ruleId,
+              checkId: check.checkId
+            })
           })
-        })
+        }
 
         fixes.forEach(fix => {
           // TABLE: FIXES
@@ -839,7 +841,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
 exports.deleteStigById = async function(benchmarkId, userObject) {
   try {
     let row = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
-    let sqlDelete = `DELETE FROM stigs.stigs where stigId = :benchmarkId`
+    let sqlDelete = `DELETE FROM stig where benchmarkId = :benchmarkId`
     let connection = await oracledb.getConnection()
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -947,7 +949,7 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
     let ro = dbUtils.parseRevisionStr(revisionStr)
     let sql = 
     `SELECT
-      ${ro.table_alias}.stigId as "benchmarkId",
+      ${ro.table_alias}.benchmarkId as "benchmarkId",
       'V' || ${ro.table_alias}.version || 'R' || ${ro.table_alias}.release as "revisionStr",
       ${ro.table_alias}.version as "version",
       ${ro.table_alias}.release as "release",
@@ -958,7 +960,7 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
     FROM
       ${ro.table}  ${ro.table_alias}
     WHERE
-      ${ro.table_alias}.stigId = :benchmarkId
+      ${ro.table_alias}.benchmarkId = :benchmarkId
       ${ro.predicates}
     ORDER BY
       ${ro.table_alias}.benchmarkDateSql desc
@@ -991,7 +993,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
   try {
     let sql = 
     `SELECT
-      r.stigId as "benchmarkId",
+      r.benchmarkId as "benchmarkId",
       'V' || r.version || 'R' || r.release as "revisionStr",
       r.version as "version",
       r.release as "release",
@@ -1000,9 +1002,9 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
       r.statusDate as "statusDate",
       r.description as "description"
     FROM
-      stigs.revisions r
+      revision r
     WHERE
-      r.stigId = :benchmarkId
+      r.benchmarkId = :benchmarkId
     ORDER BY
       r.benchmarkDateSql desc
     `

@@ -998,7 +998,7 @@ function filterDept (record,sm) {
 	if (curUser.canAdmin) {
 		return true;
 	}
-	if (record.data.dept == curUser.dept) {
+	if (record.data.deptId == curUser.deptId) {
 		return true;
 	} else {
 		return false;

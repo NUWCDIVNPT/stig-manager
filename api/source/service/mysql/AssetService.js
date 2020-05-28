@@ -251,7 +251,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
         let sqlDeleteBenchmarks = 'DELETE FROM stig_asset_map WHERE assetId = ?'
         // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
-        await connection.execute(sqlDeleteBenchmarks, [assetId, ...binds.notdelete.stigAsset])
+        await connection.execute(sqlDeleteBenchmarks, [assetId])
       }
       // Push any bind values
       stigReviewers.forEach( e => {

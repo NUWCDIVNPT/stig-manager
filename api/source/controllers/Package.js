@@ -2,6 +2,7 @@
 
 var writer = require('../utils/writer.js')
 var config = require('../utils/config')
+var ROLE = require('../utils/appRoles')
 var Package = require(`../service/${config.database.type}/PackageService`)
 
 module.exports.createPackage = async function createPackage (req, res, next) {
@@ -9,7 +10,7 @@ module.exports.createPackage = async function createPackage (req, res, next) {
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
     let body = req.swagger.params['body'].value
-    if ( elevate || req.userObject.role == 'Staff' ) {
+    if ( elevate || req.userObject.role.roleId === ROLE.COMMAND ) {
       let response = await Package.createPackage( body, projection, req.userObject)
       writer.writeJson(res, response)
     }
@@ -81,7 +82,7 @@ module.exports.getPackages = async function getPackages (req, res, next) {
 module.exports.replacePackage = async function updatePackage (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.role == 'Staff' ) {
+    if ( elevate || req.userObject.role.roleId === ROLE.COMMAND ) {
       let packageId = req.swagger.params['packageId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.body
@@ -101,7 +102,7 @@ module.exports.replacePackage = async function updatePackage (req, res, next) {
 module.exports.updatePackage = async function updatePackage (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.role == 'Staff' ) {
+    if ( elevate || req.userObject.role.roleId === ROLE.COMMAND ) {
       let packageId = req.swagger.params['packageId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.body

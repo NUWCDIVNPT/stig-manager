@@ -1166,6 +1166,8 @@ where rr.rn =1
   USING INDEX "IDX_USAM_1"  ENABLE;
   ALTER TABLE "USER_STIG_ASSET_MAP" ADD CONSTRAINT "UK_USAM_2" UNIQUE ("USERID", "SAID")
   USING INDEX "IDX_USAM_2"  ENABLE;
+  ALTER TABLE "USER_STIG_ASSET_MAP" MODIFY ("USERID" NOT NULL ENABLE);
+  ALTER TABLE "USER_STIG_ASSET_MAP" MODIFY ("SAID" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Ref Constraints for Table ASSET
 --------------------------------------------------------

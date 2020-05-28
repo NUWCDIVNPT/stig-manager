@@ -107,8 +107,8 @@ async function showUserProperties(id, grid){
 		viewConfig: {
 			forceFit:true,
 			getRowClass: function(record, rowIndex, rp, ds) {
-				if (curUser.role === 'IAO' && !curUser.canAdmin) {
-					if (record.data.assetDept !== curUser.dept) {
+				if (curUser.role.roleId === 3 && !curUser.canAdmin) {
+					if (record.data.assetDeptId !== curUser.deptId) {
 						return 'x-stigman-cross-department'
 					}
 				}

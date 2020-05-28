@@ -361,11 +361,11 @@ paths:
           description: Selects Assets mapped to a STIG
           schema:
             type: string
-        - name: dept
+        - name: deptId
           in: query
-          description: Selects Assets exactly matching a department string
+          description: Selects Assets with a departmentId
           schema:
-            type: string
+            type: integer
       responses:
         '200':
           description: AssetProjected response
@@ -880,14 +880,12 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
         - $ref: '#/components/parameters/UserRoleQuery'
-        - name: dept
+        - name: deptId
           in: query
-          description: Selects Users exactly matching a department string
           schema:
-            type: string
+            type: integer
         - name: canAdmin
           in: query
-          description: Selects Users matching the condition
           schema:
             type: boolean
       responses:
@@ -1413,12 +1411,10 @@ paths:
       tags:
         - Asset
       summary: Set the Assets mapped to a STIG
-      description: >-
-        Invoking this endpoint will retain any previously configured Reviewer
-        assignments
       operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
+        description: A list of assetIds
         content:
           application/json:
             schema:
@@ -1926,8 +1922,7 @@ components:
           type: string
           nullable: false
         dept:
-          type: string
-          nullable: false
+          $ref: '#/components/schemas/Department'
         ip:
           type: string
           nullable: true
@@ -1941,10 +1936,12 @@ components:
           type: integer
         name:
           type: string
+        dept:
+          $ref: '#/components/schemas/Department'
     AssetCreateOrReplace:
       required:
         - name
-        - dept
+        - deptId
         - ip
         - nonnetwork
         - stigReviewers
@@ -1953,8 +1950,8 @@ components:
         name:
           type: string
           nullable: false
-        dept:
-          type: string
+        deptId:
+          type: integer
           nullable: false
         ip:
           type: string
@@ -2014,27 +2011,36 @@ components:
                     items:
                       $ref: '#/components/schemas/UserBasic'
     AssetUpdate:
-      allOf:
-        - $ref: '#/components/schemas/Asset'
-        - type: object
-          properties:
-            packageIds:
-              description: The packageIds mapped to this Asset
-              type: array
-              items:
-                type: integer
-            stigReviewers:
-              description: The benchmarkIds and reviewers mapped to this Asset
-              type: array
-              items:
-                type: object
-                properties:
-                  benchmarkId:
-                    type: string
-                  userIds:
-                    type: array
-                    items:
-                      type: integer
+      properties:
+        name:
+          type: string
+          nullable: false
+        deptId:
+          type: integer
+          nullable: false
+        ip:
+          type: string
+          nullable: true
+        nonnetwork:
+          type: boolean
+          nullable: true
+        packageIds:
+          description: The packageIds mapped to this Asset
+          type: array
+          items:
+            type: integer
+        stigReviewers:
+          description: The benchmarkIds and reviewers mapped to this Asset
+          type: array
+          items:
+            type: object
+            properties:
+              benchmarkId:
+                type: string
+              userIds:
+                type: array
+                items:
+                  type: integer
     Cci:
       type: object
       properties:
@@ -2278,7 +2284,7 @@ components:
     Department:
       type: object
       properties:
-        departmentId:
+        deptId:
           type: integer
         name:
           type: string
@@ -2735,29 +2741,38 @@ components:
           maximum: 4
         name:
           type: string
+    RoleId:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+        - 4
+    RoleNamesReplace:
+      type: array
+      items:
+        type: string
+      minItems: 4
+      maxItems: 4
+      uniqueItems: true
     RoleProjected:
       allOf:
         - $ref: '#/components/schemas/Role'
         - type: object
           properties:
             users:
-              $ref: '#/components/schemas/User'
-    RoleNamesReplace:
-      type: object
-      required:
-        - roleId1
-        - roleId2
-        - roleId3
-        - roleId4
-      properties:
-        roleId1:
-          type: string
-        roleId2:
-          type: string
-        roleId3:
-          type: string
-        roleId4:
-          type: string
+              type: object
+              properties:
+                userId:
+                  type: integer
+                username:
+                  type: string
+                display:
+                  type: string
+                dept:
+                  $ref: '#/components/schemas/Department'
+                canAdmin:
+                  type: boolean
     Rule:
       type: object
       properties:
@@ -2884,9 +2899,9 @@ components:
         display:
           type: string
         dept:
-          type: string
+          $ref: '#/components/schemas/Department'
         role:
-          $ref: '#/components/schemas/UserRole'
+          $ref: '#/components/schemas/Role'
         canAdmin:
           type: boolean
     UserBasic:
@@ -2900,11 +2915,25 @@ components:
     UserCreateOrReplace:
       required:
         - username
-        - dept
+        - deptId
         - display
-        - role
-      allOf:
-        - $ref: '#/components/schemas/UserUpdate'
+        - roleId
+      type: object
+      properties:
+        username:
+          type: string
+        display:
+          type: string
+        deptId:
+          type: integer
+        roleId:
+          type: integer
+        canAdmin:
+          type: boolean
+        stigReviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/StigAssetBasic'
     UserProjected:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -2914,21 +2943,22 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/StigAssetExtended'
-    UserRole:
-      type: string
-      enum:
-        - Staff
-        - IAO
-        - IAWF
     UserUpdate:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            stigReviews:
-              type: array
-              items:
-                $ref: '#/components/schemas/StigAssetBasic'
+      properties:
+        username:
+          type: string
+        display:
+          type: string
+        deptId:
+          type: integer
+        roleId:
+          type: integer
+        canAdmin:
+          type: boolean
+        stigReviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/StigAssetBasic'
   parameters:
     AssetIdPath:
       name: assetId
@@ -2955,10 +2985,10 @@ components:
         items:
           type: string
           enum:
+            - adminStats
             - packages
             - stigs
             - stigReviewers
-            - adminStats
     BenchmarkIdPath:
       name: benchmarkId
       in: path
@@ -3224,10 +3254,10 @@ components:
           enum:
             - stigReviews
     UserRoleQuery:
-      name: role
+      name: roleId
       in: query
       schema:
-        $ref: '#/components/schemas/UserRole'
+        $ref: '#/components/schemas/RoleId'
   securitySchemes:
     oauth:
       type: oauth2

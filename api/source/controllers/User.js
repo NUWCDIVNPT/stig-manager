@@ -2,7 +2,9 @@
 
 const writer = require('../utils/writer.js')
 const config = require('../utils/config')
+const ROLE = require('../utils/appRoles')
 const User = require(`../service/${config.database.type}/UserService`)
+const Asset = require(`../service/${config.database.type}/AssetService`)
 
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -52,7 +54,7 @@ module.exports.getUserObject = async function getUserObject (req, res, next) {
 module.exports.getUserByUserId = async function getUserByUserId (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if (elevate || req.userObject.role == "IAO" || req.userObject.role == "Staff") {
+    if (elevate || req.userObject.role.roleId >= ROLE.DEPT) {
       let userId = req.swagger.params['userId'].value
       let projection = req.swagger.params['projection'].value
       let response = await User.getUserByUserId(userId, projection, elevate, req.userObject)
@@ -70,13 +72,13 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res, next)
 module.exports.getUsers = async function getUsers (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if (elevate || req.userObject.role == "IAO" || req.userObject.role == "Staff") {
+    if (elevate || req.userObject.role.roleId >= ROLE.DEPT) {
       let projection = req.swagger.params['projection'].value
       let elevate = req.swagger.params['elevate'].value
-      let role = req.swagger.params['role'].value
-      let dept = req.swagger.params['dept'].value
+      let roleId = req.swagger.params['roleId'].value
+      let deptId = req.swagger.params['deptId'].value
       let canAdmin = req.swagger.params['canAdmin'].value
-      let response = await User.getUsers(role, dept, canAdmin, projection, elevate, req.userObject)
+      let response = await User.getUsers(roleId, deptId, canAdmin, projection, elevate, req.userObject)
       writer.writeJson(res, response)
     }
     else {
@@ -91,19 +93,10 @@ module.exports.getUsers = async function getUsers (req, res, next) {
 module.exports.replaceUser = async function replaceUser (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if (elevate || req.userObject.role == "IAO" || req.userObject.role == "Staff") {
+    if ( elevate ) {
       let userId = req.swagger.params['userId'].value
       let body = req.swagger.params['body'].value
       let projection = req.swagger.params['projection'].value
-      if (! elevate ) {
-        // Unelevated requests cannot change core properties
-        let prohibited = ['username', 'dept', 'role', 'canAdmin']
-        let hasProhibited = Object.keys(body).some((val) => prohibited.includes(val))
-        if (hasProhibited) {
-          writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
-          return
-        }
-      }
       let response = await User.replaceUser(userId, body, projection, elevate, req.userObject)
       writer.writeJson(res, response)
     }
@@ -116,23 +109,50 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
   }
 }
 
+// User.updateUser() restrictions:
+// For all roles, members of stigReviews must describe an existing StigAsset mapping
+// Elevated:     Unrestricted changes
+// ROLE.COMMAND: Change display and all members of stigReviews
+// ROLE.DEPT:    Change display and some members of stigReviews
+//               Can remove any existing member from stigReviews
+//               Can retain any existing member from stigReviews
+//               New member of stigReviews must include a departmental asset
 module.exports.updateUser = async function updateUser (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
-    if (elevate || req.userObject.role == "IAO" || req.userObject.role == "Staff") {
-      let userId = req.swagger.params['userId'].value
-      let body = req.swagger.params['body'].value
-      let projection = req.swagger.params['projection'].value
-      if (! elevate ) {
+    const elevate = req.swagger.params['elevate'].value
+    if (elevate || req.userObject.role.roleId >= ROLE.DEPT) {
+      const userId = req.swagger.params['userId'].value
+      const body = req.swagger.params['body'].value
+      const projection = req.swagger.params['projection'].value
+      if (! elevate ) { // Unelevated ROLE.COMMAND or ROLE.DEPT
         // Unelevated requests cannot change core properties
-        let prohibited = ['username', 'dept', 'role', 'canAdmin']
-        let hasProhibited = Object.keys(body).some((val) => prohibited.includes(val))
+        const prohibited = ['username', 'deptId', 'roleId', 'canAdmin']
+        const hasProhibited = Object.keys(body).some((val) => prohibited.includes(val))
         if (hasProhibited) {
           writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
           return
         }
+        if (req.userObject.role.roleId === ROLE.DEPT && body.stigReviews) {
+          // Unelevated ROLE.DEPT is setting items of stigReviews
+          const allowedAssets = await Asset.getAssets( null, null, null, null, elevate, req.userObject )
+          const allowedAssetIds = allowedAssets.map(a => a.assetId)
+          const currentUserState = await User.getUserByUserId(userId, ['stigReviews'], elevate, req.userObject)
+          const isAllowedStigReview = (stigReview) => {
+            const assetAllowed = allowedAssetIds.includes(stigReview.assetId)
+            if (assetAllowed) { return true }
+            const existingItem = currentUserState.stigReviews.some(item => {
+              item.benchmarkId === stigReview.benchmarkId && item.assetId === stigReview.assetId
+            })
+            return existingItem
+          }
+          const allowed = body.stigReviews.every(isAllowedStigReview)
+          if (! allowed) {
+            writer.writeJson(res, writer.respondWithCode ( 403, {message: `Attempted to set a prohibited member of stigReviews`} ) )
+            return
+          }
+        }
       }
-      let response = await User.updateUser(userId, body, projection, elevate, req.userObject)
+      const response = await User.updateUser(userId, body, projection, elevate, req.userObject)
       writer.writeJson(res, response)
     }
     else {

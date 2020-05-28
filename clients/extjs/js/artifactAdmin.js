@@ -15,7 +15,7 @@ function addArtifactAdmin() {
 			name:'userName',
 			type: 'string'
 		},{
-			name:'dept',
+			name:'deptId',
 			type: 'string'
 		},{
 			name:'sha1',

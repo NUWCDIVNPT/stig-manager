@@ -135,14 +135,14 @@ function getReviewItems() {
 				Ext.getCmp('reviews-nav-tree-separator-4').hide();
 				Ext.getCmp('unlock-package-asset-reviews').hide();
 					
-				if ((node.attributes.node == 'package' || node.attributes.report == 'stig' || node.attributes.report == 'asset') && (curUser.role == 'Staff'  || curUser.canAdmin)) {
+				if ((node.attributes.node === 'package' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.role.roleId === 4  || curUser.canAdmin)) {
 					var c = node.getOwnerTree().contextMenu;
 					c.contextNode = node;
 					if (node.attributes.node == 'package') {
 						Ext.getCmp('open-poam-workspace').show();   //Open Poam workspace
 						Ext.getCmp('reviews-nav-tree-separator-1').show(); //Disable HBSS SCAP Imports
 						Ext.getCmp('open-hbss-control').show();
-						if (curUser.role == 'Staff'){
+						if (curUser.role.roleId === 4) { //Staff
 							//===============================================
 							//Include package-level reset options
 							//===============================================
@@ -153,7 +153,7 @@ function getReviewItems() {
 					} else if (node.attributes.report == 'stig') {
 						Ext.getCmp('open-package-review').show(); //Open Approval Workspace
 						Ext.getCmp('open-poam-workspace').show();
-						if (curUser.role == 'Staff'){
+						if (curUser.role.roleId === 4){
 							//===============================================
 							//Include STIG-level unlock options
 							//===============================================
@@ -162,7 +162,7 @@ function getReviewItems() {
 						}
 						c.showAt(e.getXY());
 					}else{
-						if (curUser.role == 'Staff'){
+						if (curUser.role.roleId === 4){
 							//===============================================
 							//Include ASSET-level reset options
 							//===============================================
@@ -449,9 +449,8 @@ function addReviewHome() {
 		}
 	});
 
-	if (curUser.role != 'Staff') {
-		//var statusChangesGridTitle = 'Rejected reviews assigned to ' + curUser.name;
-		var statusChangesGridTitle = 'Returned reviews associated with ' + curUser.name;
+	if (curUser.role.roleId !== 4) {
+		var statusChangesGridTitle = 'Rejected reviews associated with ' + curUser.display;
 	} else {
 		var statusChangesGridTitle = 'Status changes';
 	}
@@ -718,7 +717,7 @@ function addReviewHome() {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
 					var idAppend,tab;
-					if (curUser.role == 'Staff') {
+					if (curUser.role.roleId === 4) {
 						idAppend = '-package_review-' + r.data.packageId + '-' + r.data.stigId.replace(".","_");
 						tab = Ext.getCmp('packageReviewTab' +  idAppend);
 						if (Ext.isDefined(tab)) {
@@ -904,20 +903,10 @@ function reviewsTreeClick(n) {
 			addScanManagement(n);
 		}
 	}
-	
-	// else if (n.attributes.report == 'stig' && (curUser.role == 'Staff' || curUser.canAdmin)) {
-		// var idAppend = '-' + n.attributes.packageId + '-' + n.attributes.stigId.replace(".","_");
-		// var tab = Ext.getCmp('reviews-center-tab').getItem('packageReviewTab' + idAppend);
-		// if (tab) {
-			// tab.show();
-		// } else {
-			// addPackageReview(n.attributes);
-		// }
-	// }
 }
 
 function openPackageReview(n) {
-	if (n.attributes.report == 'stig' && (curUser.role == 'Staff' || curUser.canAdmin)) {
+	if (n.attributes.report === 'stig' && (curUser.role.roleId === 4 || curUser.canAdmin)) {
 		var idAppend = '-' + n.attributes.packageId + '-' + n.attributes.stigId.replace(".","_");
 		var tab = Ext.getCmp('reviews-center-tab').getItem('packageReviewTab' + idAppend);
 		if (tab) {
