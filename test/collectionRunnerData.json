@@ -1,6 +1,7 @@
 [{
   "Test Case Description":" Staff, not elevated, etc.",
   "user": "staff",
+  "role": "staff",
   "elevate": "false",
   "packages.valid": "[21,1,62]",
   "packages.invalid": "[]",
@@ -12,9 +13,9 @@
   "testBenchmark": "Microsoft_Word_2013",
   "testRev": "V1R6",
   "testDept" : "10",
-  "assets.packageQuery" : "[64,105,106,107,112]",
-  "assets.benchmarkQuery" : "[64,105,108,109,112]",
-  "assets.deptQuery" : "[64,106,108,110,112]",
+  "assets.packageQuery.response" : "[64,105,106,107,112]",
+  "assets.benchmarkQuery.response" : "[64,105,108,109,112]",
+  "assets.deptQuery.response" : "[64,106,108,110,112]",
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
@@ -22,6 +23,7 @@
   "assets.queryAsset" : 64
 },{
   "user": "staff",
+  "role": "staff",
   "elevate": "true",
   "packages.valid": "[21,1,62]",
   "packages.invalid": "[]",
@@ -34,6 +36,7 @@
   "testRev": "V1R6"
 },{
   "user": "wf60",
+  "role": "reviewer",
   "elevate": "false",
   "packages.valid":"[21]",
   "packages.invalid":"[1,62]",
@@ -46,6 +49,7 @@
   "testRev": "V1R6"
 },{
   "user": "wf60",
+  "role": "reviewer",
   "elevate": "true",
   "packages.valid":"[21,1,62]",
   "packages.invalid":"[]",
@@ -58,6 +62,7 @@
   "testRev": "V1R6"
 },{
   "user": "officer60",
+  "role": "dept",
   "elevate": "false",
   "packages.valid":"[21]",
   "packages.invalid":"[1,62]",
@@ -70,6 +75,7 @@
   "testRev": "V1R6"
 },{
   "user": "officer60",
+  "role": "dept",
   "elevate": "true",
   "packages.valid": "[21,1,62]",
   "packages.invalid": "[]",
@@ -82,6 +88,7 @@
   "testRev": "V1R6"
 },{
   "user": "wf10",
+  "role": "reviewer",
   "elevate": "true",
   "packages.valid":"[21]",
   "packages.invalid":"[1,62]",
