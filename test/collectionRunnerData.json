@@ -20,8 +20,9 @@
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 },{
   "user": "staff",
   "role": "staff",
@@ -43,8 +44,9 @@
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 },{
   "user": "wf60",
   "role": "reviewer",
@@ -60,14 +62,15 @@
   "testBenchmark": "DNS_SRG",
   "testRev": "V2R4",
   "testDept" : "10",
-  "assets.packageQuery.response" : "[64,105,106,107,112]",
+  "assets.packageQuery.response" : "[64,105,107,112]",
   "assets.benchmarkQuery.response" : "[64,105,108,109,112]",
-  "assets.deptQuery.response" : "[64,106,108,110,112]",
+  "assets.deptQuery.response" : "[64,108,112]",
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 },{
   "user": "wf60",
   "role": "reviewer",
@@ -89,8 +92,9 @@
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 },{
   "user": "officer60",
   "role": "dept",
@@ -106,14 +110,15 @@
   "testBenchmark": "DNS_SRG",
   "testRev": "V2R4",
   "testDept" : "10",
-  "assets.packageQuery.response" : "[64,105,106,107,112]",
-  "assets.benchmarkQuery.response" : "[64,105,108,109,112]",
+  "assets.packageQuery.response" : "[64,106,112]",
+  "assets.benchmarkQuery.response" : "[64,108,112]",
   "assets.deptQuery.response" : "[64,106,108,110,112]",
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 },{
   "user": "officer60",
   "role": "dept",
@@ -135,31 +140,33 @@
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 },{
   "user": "wf10",
   "role": "reviewer",
   "elevate": "true",
-  "packages.valid": "[21,1,62,146]",
-  "packages.invalid": "[]",
-  "assets.valid": "[]",
-  "assets.invalid": "[]",
+  "packages.valid": "[21,146]",
+  "packages.invalid": "[1,62]",
+  "assets.valid": "[64,106]",
+  "assets.invalid": "[29]",
   "stigs.valid": "[\"DNS_SRG\"]",
   "stigs.valid.xxxx": "[\"Microsoft_Word_2013\",\"Windows_10_STIG\",\"Active_Directory_Domain\"]",
-  "stigs.invalid": "[]",
+  "stigs.invalid": "[\"RHEL_7_STIG\"]",
   "testPackage": 146,
   "testBenchmark": "DNS_SRG",
   "testRev": "V2R4",
   "testDept" : "10",
-  "assets.packageQuery.response" : "[64,105,106,107,112]",
-  "assets.benchmarkQuery.response" : "[64,105,108,109,112]",
+  "assets.packageQuery.response" : "[64,106,112]",
+  "assets.benchmarkQuery.response" : "[64,108,112]",
   "assets.deptQuery.response" : "[64,106,108,110,112]",
   "assets.queryPkg" : 146,
   "assets.queryBenchmark" : "DNS_SRG",
   "assets.queryRev" : "V2R4",
-  "assets.queryDept": 70,
-  "assets.queryAsset" : 64
+  "assets.queryDept": 60,
+  "assets.queryAsset" : 64,
+  "assets.checklistLength" : 98
 
 }
 
