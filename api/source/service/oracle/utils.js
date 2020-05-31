@@ -3,6 +3,7 @@ const config = require('../../utils/config')
 const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
+const ROLE = require('../../utils/appRoles')
 
 let _this = this
 
@@ -12,7 +13,7 @@ module.exports.testConnection = async function () {
   try {
     connection = await oracledb.getConnection()
     let result = await connection.execute('SELECT * FROM USER_USERS')
-    console.log('Oracle preflight connection succeeded.')
+    console.log('Oracle pre-flight connection succeeded.')
     return JSON.stringify(result.rows, null, 2)
   }
   catch (err) {
@@ -40,6 +41,7 @@ module.exports.initializeDatabase = function () {
       }
       // Pool was created
       console.log('Oracle connection pool created')
+      console.log('Attempting pre-flight connection to Oracle.')
 
       // Call the pool destruction methods on SIGTERM and SEGINT
       process.on('SIGTERM', closePoolAndExit)
@@ -175,13 +177,13 @@ module.exports.parseRevisionStr = function (revisionStr) {
     let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
     ro.version = results[1]
     ro.release = results[2]
-    ro.table = 'stigs.revisions'
+    ro.table = 'revision'
     ro.table_alias = 'r'
     ro.predicates = ' and r.version = :version and r.release = :release '
   } else {
     ro.version = null
     ro.release = null
-    ro.table = 'stigs.current_revs'
+    ro.table = 'current_rev'
     ro.table_alias = 'cr'
     ro.predicates = ''
   }
@@ -193,26 +195,36 @@ module.exports.CONTEXT_DEPT = 'department'
 module.exports.CONTEXT_USER = 'user'
 module.exports.CONTEXT_GUEST = 'guest'
 module.exports.REVIEW_RESULT_ID = { 
-  1: {result: 'In Progress', abbr: 'IP'},
-  2: {result: 'Not Applicable', abbr: 'NA'},
-  3: {result: 'Not a Finding', abbr: 'NF'},
-  4: {result: 'Open', abbr: 'O'}
+  1: {api: 'notchecked', ckl: 'Not_Reviewed', abbr: 'NC'},
+  2: {api: 'notapplicable', ckl: 'Not_Applicable', abbr: 'NA'},
+  3: {api: 'pass', ckl: 'NotAFinding', abbr: 'NF'},
+  4: {api: 'fail', ckl: 'Open', abbr: 'O'}
+}
+
+module.exports.REVIEW_RESULT_API = { 
+  'notapplicable': 2,
+  'pass': 3,
+  'fail': 4
+}
+module.exports.REVIEW_RESULT_CKL = { 
+  'Not_Applicable': {id: 2},
+  'NotAFinding': {id: 3},
+  'Open': {id: 4}
 }
 module.exports.REVIEW_RESULT_ABBR = { 
-  'IP': {result: 'In Progress', id: 1},
-  'NA': {result: 'Not Applicable', id: 2},
-  'NF': {result: 'Not a Finding', id: 3},
-  'O': {result: 'Open', id: 4}
+  'NA': {id: 2},
+  'NF': {id: 3},
+  'O': {id: 4}
 }
 module.exports.REVIEW_ACTION_ID = { 
-  1: 'Remediate',
-  2: 'Mitigate',
-  3: 'Exception'
+  1: 'remediate',
+  2: 'mitigate',
+  3: 'exception'
 }
-module.exports.REVIEW_ACTION_STR = { 
-  'Remediate': 1,
-  'Mitigate': 2,
-  'Exception': 3
+module.exports.REVIEW_ACTION_API = { 
+  'remediate': 1,
+  'mitigate': 2,
+  'exception': 3
 }
 module.exports.REVIEW_STATUS_ID = { 
   0: 'saved',
@@ -220,12 +232,11 @@ module.exports.REVIEW_STATUS_ID = {
   2: 'rejected',
   3: 'approved'
 }
-module.exports.REVIEW_STATUS_STR = { 
+module.exports.REVIEW_STATUS_API = { 
   'saved': 0,
   'submitted': 1,
-  'ready': 1,
   'rejected': 2,
-  'approved': 3
+  'accepted': 3
 }
 module.exports.WRITE_ACTION = { 
   CREATE: 0,
@@ -248,20 +259,21 @@ module.exports.USER_ROLE = {
 module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
   try {
     let context, sql
-    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
       return true
-    } else if (userObject.role == "IAO") {
+    } 
+    else if (userObject.role.roleId === ROLE.DEPT) {
       context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT
           a.assetId
         FROM
-          stigman.assets a
+          asset a
         WHERE
           a.assetId = :assetId and a.dept = :dept
       `
       let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [assetId, userObject.dept])
+      let result = await connection.execute(sql, [assetId, userObject.dept.deptId])
       await connection.close()
       return result.rows.length > 0   
     } else {
@@ -270,15 +282,15 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
           sa.assetId,
           rgr.ruleId
         FROM
-          stigman.user_stig_asset_map usa
-          inner join stigman.stig_asset_map sa on usa.saId = sa.saId
-          inner join stigs.revisions rev on sa.stigId = rev.stigId
-          inner join stigs.rev_group_map rg on rev.revId = rg.revId
-          inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          user_stig_asset_map usa
+          inner join stig_asset_map sa on usa.saId = sa.saId
+          inner join revision rev on sa.benchmarkId = rev.benchmarkId
+          inner join rev_group_map rg on rev.revId = rg.revId
+          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
         WHERE
           usa.userId = :userId and assetId = :assetId and ruleId = :ruleId`
       let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [userObject.id, assetId, ruleId])
+      let result = await connection.execute(sql, [userObject.userId, assetId, ruleId])
       await connection.close()
       return result.rows.length > 0   
     }
@@ -292,33 +304,34 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {
     let sql
-    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
       return true
-    } else if (userObject.role == "IAO") {
+    } 
+    else if (userObject.role.roleId === ROLE.DEPT) {
       sql = `
         SELECT
           a.assetId
         FROM
-          stigman.assets a
+          asset a
         WHERE
-          a.assetId = :assetId and a.dept = :dept
+          a.assetId = :assetId and a.deptId = :deptId
       `
       let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [assetId, userObject.dept])
+      let result = await connection.execute(sql, [assetId, userObject.dept.deptId])
       await connection.close()
       return result.rows.length > 0   
     } else {
       sql = `
         SELECT
           sa.assetId,
-          sa.stigId
+          sa.benchmarkId
         FROM
-          stigman.user_stig_asset_map usa
-          inner join stigman.stig_asset_map sa on usa.saId = sa.saId
+          user_stig_asset_map usa
+          inner join stig_asset_map sa on usa.saId = sa.saId
         WHERE
-          usa.userId = :userId and assetId = :assetId and stigId = :benchmarkId`
+          usa.userId = :userId and assetId = :assetId and benchmarkId = :benchmarkId`
       let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [userObject.id, assetId, benchmarkId])
+      let result = await connection.execute(sql, [userObject.userId, assetId, benchmarkId])
       await connection.close()
       return result.rows.length > 0   
     }
@@ -335,21 +348,21 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
   try {
     let context, sql, permitted = [], rejected = []
-    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
       permitted = reviews
     } 
-    else if (userObject.role == "IAO") {
+    else if (userObject.role.roleId === ROLE.DEPT) {
       context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT
           a.assetId
         FROM
-          stigman.assets a
+          asset a
         WHERE
-          a.assetId = :assetId and a.dept = :dept
+          a.assetId = :assetId and a.deptId = :deptId
       `
       let connection = await oracledb.getConnection()
-      let allowedAssets = await connection.execute(sql, [assetId, userObject.dept])
+      let allowedAssets = await connection.execute(sql, [assetId, userObject.dept.deptId])
       await connection.close()
       // result.rows has legal assetIds
       reviews.forEach(review => {
@@ -366,15 +379,15 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
         SELECT
           sa.assetId || '-' || rgr.ruleId
         FROM
-          stigman.user_stig_asset_map usa
-          inner join stigman.stig_asset_map sa on usa.saId = sa.saId
-          inner join stigs.revisions rev on sa.stigId = rev.stigId
-          inner join stigs.rev_group_map rg on rev.revId = rg.revId
-          inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          user_stig_asset_map usa
+          inner join stig_asset_map sa on usa.saId = sa.saId
+          inner join revision rev on sa.benchmarkId = rev.benchmarkId
+          inner join rev_group_map rg on rev.revId = rg.revId
+          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
         WHERE
           usa.userId = :userId`
       let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [userObject.id], {outFormat: oracledb.OUT_FORMAT_ARRAY})
+      let result = await connection.execute(sql, [userObject.userId], {outFormat: oracledb.OUT_FORMAT_ARRAY})
       let allowedAssetRules = result.rows.flat() // Requires Node 12
       await connection.close()
       reviews.forEach(review => {
@@ -402,7 +415,7 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
 module.exports.insertJobRecord = async function (record) {
 	let sql = `
 	insert into imported_jobs (
-    startTime ,userId	,source	,assetId ,stigId
+    startTime ,userId	,source	,assetId ,benchmarkId
     ,packageId ,filename ,filesize
 	)
 	VALUES

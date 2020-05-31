@@ -822,18 +822,18 @@ function addReviewHome() {
 	let section508link = ` <span class='cs-section-five-o-eight' onclick="alert('You have reached the Department of Defense (DoD) Accessibility Link, at which you may report issues of accessibility of DoD websites for persons with disabilities.\\n\\nIf your issue involves log in access, password recovery, or other technical issues, contact the administrator for the website in question, or your local helpdesk.\\n\\nThe U.S. Department of Defense is committed to making its electronic and information technologies accessible to individuals with disabilities in accordance with Section 508 of the Rehabilitation Act (29 U.S.C. 794d), as amended in 1998.\\n\\nFor persons with disabilities experiencing difficulties accessing content on a particular website, please email RSSDD-DODCIO.MailboxSection508@osd.smil.mil.  In your message, please indicate the nature of your accessibility problem, the website address of the requested content, and your contact information so we can address your issue.\\n\\nFor more information about Section 508 law, policies and resource guidance, please visit the DoD Section 508 website on NIPRNET (http://dodcio.defense.gov/DoDSection508.aspx) .  \\n\\nLast Updated:  04/30/2014')">Accessibility/Section 508</span>`
 	let reviewsHomeTpl = new Ext.XTemplate(
 		`<div class='cs-home-header-reviews'>Reviews Home${section508link}</div>`,
-		`<tpl if="recordCount == 0">`,
+		// `<tpl if="recordCount == 0">`,
 		`<div class=sm-reviews-home-no-tasks>`,
 		`<div class='sm-reviews-home-body-title'>No returned reviews</div>`,
 		`<div class='sm-reviews-home-body-text'>There are no returned reviews that require your attention.</div>`,
 		`</div>`,
-		`</tpl>`,
-		`<tpl if="recordCount &gt; 0">`,
-		`<div class=sm-reviews-home-tasks>`,
-		`<div class='sm-reviews-home-body-title'>Returned reviews</div>`,
-		`<div class='sm-reviews-home-body-text'>There are returned reviews that require your attention.</div>`,
-		`</div>`,
-		`</tpl>`
+		// `</tpl>`,
+		// `<tpl if="recordCount &gt; 0">`,
+		// `<div class=sm-reviews-home-tasks>`,
+		// `<div class='sm-reviews-home-body-title'>Returned reviews</div>`,
+		// `<div class='sm-reviews-home-body-text'>There are returned reviews that require your attention.</div>`,
+		// `</div>`,
+		// `</tpl>`
 	)
 
 	var thisTab = Ext.getCmp('reviews-center-tab').add({
@@ -856,23 +856,31 @@ function addReviewHome() {
 			border: false,
 			height:180,
 			tpl: reviewsHomeTpl,
-			bodyCssClass: 'sm-reviews-home-background'
+			bodyCssClass: 'sm-reviews-home-background',
+			listeners: {
+				render: function () {
+					Ext.getCmp('reviewHome-html' + idAppend).update({
+						recordCount: 0
+					});
+				}
+			}
 		}
 		,	statusChangesGrid
 		]
 	});
 
 	thisTab.show();
-	statusChangesStore.load({
-		callback: function (records,options,success) {
-			if (success) {
-				var recordCount = records.length;
-				Ext.getCmp('reviewHome-html' + idAppend).update({
-					recordCount: recordCount
-				});
-			}
-		}
-	});
+
+	// statusChangesStore.load({
+	// 	callback: function (records,options,success) {
+	// 		if (success) {
+	// 			var recordCount = records.length;
+	// 			Ext.getCmp('reviewHome-html' + idAppend).update({
+	// 				recordCount: recordCount
+	// 			});
+	// 		}
+	// 	}
+	// });
 	
 
 }; //end addReviewHome();

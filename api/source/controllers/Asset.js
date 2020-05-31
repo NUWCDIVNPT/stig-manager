@@ -41,8 +41,8 @@ module.exports.createAsset = async function createAsset (req, res, next) {
         // Not elevated or >= ROLE.DEPT
         throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
       }
-      let response = await Asset.createAsset( body, projection, elevate, req.userObject)
-      writer.writeJson(res, response)
+      let asset = await Asset.createAsset( body, projection, elevate, req.userObject)
+      writer.writeJson(res, 201, asset)
     }
   }
   catch (err) {
@@ -134,9 +134,8 @@ module.exports.getChecklistByAssetStig = async function getAssets (req, res, nex
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let revisionStr = req.swagger.params['revisionStr'].value
     let format = req.swagger.params['format'].value || 'json'
-    let elevate = req.swagger.params['elevate'].value
-    if (await dbUtils.userHasAssetStig(assetId, benchmarkId, elevate, req.userObject)) {
-      let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, elevate, req.userObject )
+    if (await dbUtils.userHasAssetStig(assetId, benchmarkId, false, req.userObject)) {
+      let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
         writer.writeJson(res, response)
       }
@@ -260,8 +259,8 @@ async function verifyDeptUpdateOrReplace (assetId, body, userObject) {
       // currentStigUsers = { BENCHMARKID: [userId, userId, userId], ... }
       const currentStigUsers = {}
       for (const sr of currentAsset.stigReviewers) {
+        if (!currentStigUsers[sr.benchmarkId]) { currentStigUsers[sr.benchmarkId] = [] }
         for (const reviewers of sr.reviewers) {
-            if (!currentStigUsers[sr.benchmarkId]) { currentStigUsers[sr.benchmarkId] = [] }
             currentStigUsers[sr.benchmarkId].push(reviewers.userId)
         }
       }

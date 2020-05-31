@@ -266,16 +266,16 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
       //     STIG_DATA [26]
       // }
   
-      const states = {
-        NotAFinding: 'NF',
-        Open: 'O',
-        NotApplicable: 'NA'
+      const results = {
+        NotAFinding: 'pass',
+        Open: 'fail',
+        NotApplicable: 'notapplicable'
       }
       let vulnArray = []
       vulnElements.forEach(vuln => {
-        const state = states[vuln.STATUS]
+        const result = results[vuln.STATUS]
         // Skip unreviewed
-        if (state) {
+        if (result) {
           let ruleId, action
           // Array.some() stops once a true value is returned
           vuln.STIG_DATA.some(stigDatum => {
@@ -284,13 +284,13 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
               return true
             }
           })
-          if (state == 'O') {
-            action = "Remediate"
+          if (result == 'fail') {
+            action = "remediate"
             if (vuln.COMMENTS.startsWith("Mitigate:")) {
-              action = "Mitigate"
+              action = "mitigate"
             } 
-            else if (vuln.COMMENTS.startsWith("Mitigate:")) {
-              action = "Exception "
+            else if (vuln.COMMENTS.startsWith("Exception:")) {
+              action = "exception "
             } 
           }
           else {
@@ -299,12 +299,12 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
           vulnArray.push({
             assetId: assetId,
             ruleId: ruleId,
-            state: state,
-            stateComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
+            result: result,
+            resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
             action: action,
             actionComment: action ? (vuln.COMMENTS == "" ? null : vuln.COMMENTS) : null,
-            autoState: false,
-            status: state != 'O' ? 'submitted' : 'saved'
+            autoResult: false,
+            status: result != 'fail' ? 'submitted' : 'saved'
           })
         }
       })
@@ -550,23 +550,23 @@ module.exports.reviewsFromScc = function (sccFileContent, assetId) {
 
 
   function processRuleResults(ruleResults) {
-    const states = {
-      pass: 'NF',
-      fail: 'O',
-      notapplicable: 'NA'
+    const results = {
+      pass: 'pass',
+      fail: 'fail',
+      notapplicable: 'notapplicable'
     }
     let reviews = []
     
     ruleResults.forEach(ruleResult => {
-      state = states[ruleResult.result]
-      if (state) {
+      result = results[ruleResult.result]
+      if (result) {
         reviews.push({
           assetId: assetId,
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
-          state: state,
-          stateComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
-          autoState: true,
-          status: state != 'O' ? 'approved' : 'saved'
+          result: result,
+          resultComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
+          autoResult: true,
+          status: result != 'fail' ? 'accepted' : 'saved'
         })
       }
     })

@@ -134,20 +134,28 @@ module.exports.updateUser = async function updateUser (req, res, next) {
         }
         if (req.userObject.role.roleId === ROLE.DEPT && body.stigReviews) {
           // Unelevated ROLE.DEPT is setting items of stigReviews
+          // Get the assets ROLE.DEPT can configure
           const allowedAssets = await Asset.getAssets( null, null, null, null, elevate, req.userObject )
           const allowedAssetIds = allowedAssets.map(a => a.assetId)
+          // Get this User's current record with stigReviews
           const currentUserState = await User.getUserByUserId(userId, ['stigReviews'], elevate, req.userObject)
+          
+          // Function to check if a stigReview item can be added by this ROLE.DEPT
           const isAllowedStigReview = (stigReview) => {
-            const assetAllowed = allowedAssetIds.includes(stigReview.assetId)
+            // Does stigReview include a departmental asset?
+            const assetAllowed = allowedAssetIds.includes(stigReview.assetId)            
             if (assetAllowed) { return true }
+            // Does stigReview match an existing non-departmental asset/STIG item?
             const existingItem = currentUserState.stigReviews.some(item => {
               item.benchmarkId === stigReview.benchmarkId && item.assetId === stigReview.assetId
             })
             return existingItem
           }
+          
+          // Check if each item of stigReview is permitted
           const allowed = body.stigReviews.every(isAllowedStigReview)
           if (! allowed) {
-            writer.writeJson(res, writer.respondWithCode ( 403, {message: `Attempted to set a prohibited member of stigReviews`} ) )
+            writer.writeJson(res, writer.respondWithCode ( 403, {message: `Attempted to set a prohibited item of stigReviews`} ) )
             return
           }
         }

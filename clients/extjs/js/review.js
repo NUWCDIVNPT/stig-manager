@@ -36,11 +36,8 @@ function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
   var groupFields = Ext.data.Record.create([
     {
-      name: 'checkId',
-      type: 'string'
-    }, {
       name: 'assetId',
-      type: 'string'
+      type: 'integer'
     }, {
       name: 'groupId',
       type: 'string',
@@ -56,28 +53,25 @@ function addReview(leaf, selectedRule, selectedResource) {
       name: 'ruleTitle',
       type: 'string'
     }, {
-      name: 'cat',
+      name: 'severity',
       type: 'string'
     }, {
-      name: 'documentable',
+      name: 'result',
       type: 'string'
     }, {
-      name: 'stateAbbr',
+      name: 'status',
       type: 'string'
-    }, {
-      name: 'statusId',
-      type: 'integer'
     }, {
       name: 'hasAttach',
-      type: 'integer'
+      type: 'boolean'
     }, {
-      name: 'autoState',
-      type: 'integer'
+      name: 'autoResult',
+      type: 'boolean'
     }, {
-      name: 'done',
-      type: 'integer'
+      name: 'reviewComplete',
+      type: 'boolean'
     }, {
-      name: 'checkType',
+      name: 'autoCheckAvailable',
       type: 'string'
     }
   ]);
@@ -451,14 +445,14 @@ function addReview(leaf, selectedRule, selectedResource) {
     var checksNA = 0;
     var checksNR = 0;
     store.data.each(function (item, index, totalItems) {
-      switch (item.data.stateAbbr) {
-        case 'O':
+      switch (item.data.result) {
+        case 'fail':
           checksO++;
           break;
-        case 'NF':
+        case 'pass':
           checksNF++;
           break;
-        case 'NA':
+        case 'notapplicable':
           checksNA++;
           break;
         case '':
@@ -502,12 +496,12 @@ function addReview(leaf, selectedRule, selectedResource) {
       singleSelect: true,
       listeners: {
         beforerowselect: function (sm, index, keepExisting, record) {
-          // var stateCombo = Ext.getCmp('state-combo' + idAppend);
-          // var stateComment = Ext.getCmp('state-comment' + idAppend);
+          // var resultCombo = Ext.getCmp('result-combo' + idAppend);
+          // var resultComment = Ext.getCmp('result-comment' + idAppend);
           // var actionCombo = Ext.getCmp('action-combo' + idAppend);
           // var actionComment = Ext.getCmp('action-comment' + idAppend);
 
-          // //var isDirty = (stateCombo.lastSavedData != stateCombo.value) || (stateComment.lastSavedData != stateComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
+          // //var isDirty = (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
           var reviewForm = Ext.getCmp('reviewForm' + idAppend);
 
           if (reviewForm.groupGridRecord != record) { // perhaps the row select is the result of a view refresh
@@ -531,7 +525,7 @@ function addReview(leaf, selectedRule, selectedResource) {
                       reviewForm.isLoaded = false;
                       break;
                     case 'no':
-                      Ext.getCmp('state-combo' + idAppend).changed = false;
+                      Ext.getCmp('result-combo' + idAppend).changed = false;
                       Ext.getCmp('action-combo' + idAppend).changed = false;
                       reviewForm.isLoaded = false;
 
@@ -563,63 +557,26 @@ function addReview(leaf, selectedRule, selectedResource) {
       // These listeners keep the grid in the same scroll position after the store is reloaded
       holdPosition: true, // HACK to be used with override
       listeners: {
-        // beforerefresh: function(v) {
-        // v.scrollTop = v.scroller.dom.scrollTop;
-        // v.scrollHeight = v.scroller.dom.scrollHeight;
-        // },
-        // refresh: function(v) {
-        // setTimeout(function() { 
-        // v.scroller.dom.scrollTop = v.scrollTop + (v.scrollTop == 0 ? 0 : v.scroller.dom.scrollHeight - v.scrollHeight);
-        // }, 100);
-        // }
       },
       deferEmptyText: false,
       getRowClass: function (record, index) {
         var checkType = record.get('checkType');
-        if (checkType == 'SCAP') {
+        if (checkType === true) {
           return 'sm-scap-grid-item';
         } else {
           return 'sm-manual-grid-item';
         }
       }
     }),
-    // view: new Ext.ux.grid.BufferView({
-    // forceFit:false,
-    // emptyText: '',
-    // These listeners keep the grid in the same scroll position after the store is reloaded
-    // holdPosition: true, // HACK to be used with override
-    // listeners: {
-    // beforerefresh: function(v) {
-    // v.scrollTop = v.scroller.dom.scrollTop;
-    // v.scrollHeight = v.scroller.dom.scrollHeight;
-    // },
-    // refresh: function(v) {
-    // setTimeout(function() { 
-    // v.scroller.dom.scrollTop = v.scrollTop + (v.scrollTop == 0 ? 0 : v.scroller.dom.scrollHeight - v.scrollHeight);
-    // }, 100);
-    // }
-    // },
-    // deferEmptyText:false,
-    // scrollDelay: false,
-    // rowHeight: 60,
-    // getRowClass: function (record,index) {
-    // var checkType = record.get('checkType');
-    // if (checkType == 'SCAP') {
-    // return 'sm-scap-grid-item';
-    // } else {
-    // return 'sm-manual-grid-item';
-    // }
-    // }
-    // }),
     columns: [
       {
-        id: 'stateAbbr' + idAppend,
+        id: 'result' + idAppend,
         header: '&#160;', // per docs
         menuDisabled: true,
         width: 25,
-        dataIndex: 'stateAbbr',
+        dataIndex: 'result',
         sortable: true,
-        renderer: renderState
+        renderer: renderResult
       },
       {
         id: 'groupId' + idAppend,
@@ -658,19 +615,20 @@ function addReview(leaf, selectedRule, selectedResource) {
         sortable: true
       },
       {
-        id: 'cat' + idAppend,
+        id: 'severity' + idAppend,
         header: "CAT",
         width: 32,
         align: 'center',
-        dataIndex: 'cat',
-        sortable: true
+        dataIndex: 'severity',
+        sortable: true,
+        renderer: renderSeverity
       },
       {
         id: 'status' + idAppend,
         header: "Status",
         width: 50,
         align: 'center',
-        dataIndex: 'statusId',
+        dataIndex: 'status',
         sortable: true,
         renderer: renderStatuses
       }
@@ -805,42 +763,42 @@ function addReview(leaf, selectedRule, selectedResource) {
       case 'Manual':
       case 'SCAP':
         filterArray.push({
-          property: 'checkType',
-          value: groupGrid.filterType
+          property: 'autoCheckAvailable',
+          value: groupGrid.filterType === 'SCAP' ? true : false
         });
         break;
       case 'Incomplete':
         filterArray.push({
           fn: function (record) {
-            return record.get('done') == 0;
+            return record.get('reviewComplete')
           }
         });
         break;
       case 'Unsubmitted':
         filterArray.push({
           fn: function (record) {
-            return (record.get('done') == 1 && record.get('statusId') == 0);
+            return (record.get('reviewComplete') && record.get('status') === 'saved');
           }
         });
         break;
       case 'Submitted':
         filterArray.push({
           fn: function (record) {
-            return record.get('statusId') == 1;
+            return record.get('status') === 'submitted';
           }
         });
         break;
-      case 'Returned':
+      case 'Rejected':
         filterArray.push({
           fn: function (record) {
-            return record.get('statusId') == 2;
+            return record.get('status') === 'rejected';
           }
         });
         break;
-      case 'Approved':
+      case 'Accepted':
         filterArray.push({
           fn: function (record) {
-            return record.get('statusId') == 3;
+            return record.get('status') === 'accepted';
           }
         });
         break;
@@ -893,7 +851,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     '<table class=cs-home-body-table border="1">',
     '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
     '<tpl for="ccis">',
-    '<tr><td>{cci}</td><td>{ap}</td><td>{control}</td></tr>',
+    '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
     '</tpl>',
     '</table>',
     '</div>',
@@ -912,26 +870,17 @@ function addReview(leaf, selectedRule, selectedResource) {
       name: 'assetName',
       type: 'string'
     }, {
-      name: 'assetGroup',
-      type: 'string'
-    }, {
       name: 'dept',
       type: 'string'
     }, {
-      name: 'stateId',
-      type: 'int'
-    }, {
-      name: 'state',
+      name: 'result',
+      type: 'string'
+    },  {
+      name: 'action',
       type: 'string'
     }, {
-      name: 'reqDoc',
-      type: 'int'
-    }, {
-      name: 'actionId',
-      type: 'int'
-    }, {
-      name: 'autostate',
-      type: 'int'
+      name: 'autoResult',
+      type: 'boolean'
     }, {
       name: 'action',
       type: 'string'
@@ -939,7 +888,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       name: 'username',
       type: 'string'
     }, {
-      name: 'stateComment',
+      name: 'resultComment',
       type: 'string'
     }, {
       name: 'actionComment',
@@ -986,7 +935,7 @@ function addReview(leaf, selectedRule, selectedResource) {
   var expander = new Ext.ux.grid.RowExpander({
     tpl: new Ext.XTemplate(
       '<p><b>Reviewer:</b> {username}</p>',
-      '<p><b>Result Comment:</b> {stateComment}</p>',
+      '<p><b>Result Comment:</b> {resultComment}</p>',
       '<tpl if="actionComment">',
       '<p><b>Action Comment:</b> {actionComment}</p>',
       '</tpl>'
@@ -996,20 +945,6 @@ function addReview(leaf, selectedRule, selectedResource) {
   var otherGrid = new Ext.grid.GridPanel({
     //region: 'center',
     enableDragDrop: true,
-    // sm_Filter: function () {
-    //   var checked = Ext.getCmp('otherFilter' + idAppend).getValue();
-    //   if (checked) {
-    //     otherStore.filter([
-    //       {
-    //         fn: function (record) {
-    //           return (record.get('deptId') === curUser.deptId || record.get('assetGroup') == TEMPLATE_STR)
-    //         }
-    //       }
-    //     ])
-    //   } else {
-    //     otherStore.clearFilter();
-    //   }
-    // },
     ddGroup: 'gridDDGroup',
     plugins: expander,
     layout: 'fit',
@@ -1053,20 +988,20 @@ function addReview(leaf, selectedRule, selectedResource) {
         id: 'state' + idAppend,
         header: "Result",
         width: 80,
-        dataIndex: 'stateId',
+        dataIndex: 'result',
         sortable: true,
         renderer: function (value, metaData, record, rowIndex, colIndex, store) {
           switch (value) {
-            case 1:
+            case 'notchecked':
               return "In Progress"
               break
-            case 2:
+            case 'notapplicable':
               return "Not Applicable"
               break
-            case 3:
+            case 'pass':
               return "Not a Finding"
               break
-            case 4:
+            case 'fail':
               return "Open"
               break
           }
@@ -1080,13 +1015,13 @@ function addReview(leaf, selectedRule, selectedResource) {
         sortable: true,
         renderer: function (value, metaData, record, rowIndex, colIndex, store) {
           switch (value) {
-            case 1:
+            case 'remediate':
               return "Remediate"
               break
-            case 2:
+            case 'mitigate':
               return "Mitigate"
               break
-            case 3:
+            case 'exception':
               return "Exception"
               break
           }
@@ -1536,11 +1471,11 @@ function addReview(leaf, selectedRule, selectedResource) {
     monitorValid: false,
     trackResetOnLoad: false,
     reviewChanged: function () { // STIG Manager defined property
-      var stateCombo = Ext.getCmp('state-combo' + idAppend);
-      var stateComment = Ext.getCmp('state-comment' + idAppend);
+      var resultCombo = Ext.getCmp('result-combo' + idAppend);
+      var resultComment = Ext.getCmp('result-comment' + idAppend);
       var actionCombo = Ext.getCmp('action-combo' + idAppend);
       var actionComment = Ext.getCmp('action-comment' + idAppend);
-      return (stateCombo.lastSavedData != stateCombo.value) || (stateComment.lastSavedData != stateComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
+      return (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
     },
     items: [{
       xtype: 'fieldset',
@@ -1552,26 +1487,26 @@ function addReview(leaf, selectedRule, selectedResource) {
         width: 100,
         lastSavedData: "",
         //anchor: '50%',
-        id: 'state-combo' + idAppend,
+        id: 'result-combo' + idAppend,
         changed: false,
         fieldLabel: 'Result',
         emptyText: 'Your result...',
         valueNotFoundText: 'Your result...',
         //allowBlank: false,
         disabled: true,
-        name: 'stateId',
-        hiddenName: 'stateId',
+        name: 'result',
+        hiddenName: 'result',
         mode: 'local',
         editable: false,
         store: new Ext.data.SimpleStore({
-          fields: ['stateId', 'state'],
-          data: [['3', 'Not a Finding'], ['2', 'Not Applicable'], ['4', 'Open']]
+          fields: ['result', 'resultStr'],
+          data: [['pass', 'Not a Finding'], ['notapplicable', 'Not Applicable'], ['fail', 'Open']]
         }),
-        valueField: 'stateId',
-        displayField: 'state',
+        valueField: 'result',
+        displayField: 'resultStr',
         listeners: {
           'select': function (combo, record, index) {
-            if (record.data.stateId == 4) { // Open
+            if (record.data.result == '0') { // Open
               Ext.getCmp('action-combo' + idAppend).enable();
               Ext.getCmp('action-comment' + idAppend).enable();
             } else {
@@ -1591,12 +1526,12 @@ function addReview(leaf, selectedRule, selectedResource) {
         anchor: '100% -30',
         lastSavedData: "",
         allowBlank: true,
-        id: 'state-comment' + idAppend,
+        id: 'result-comment' + idAppend,
         //emptyText: 'Please address the specific items in the review.',
         //height: 65,
         fieldLabel: 'Comment',
         autoScroll: 'auto',
-        name: 'stateComment'
+        name: 'resultComment'
       }] // end fieldset items
     }, {
       xtype: 'fieldset',
@@ -1615,17 +1550,16 @@ function addReview(leaf, selectedRule, selectedResource) {
         fieldLabel: 'Action',
         emptyText: 'Your action...',
         valueNotFoundText: 'Your action...',
-        name: 'actionId',
-        hiddenName: 'actionId',
+        name: 'action',
+        hiddenName: 'action',
         mode: 'local',
         editable: false,
         store: new Ext.data.SimpleStore({
-          fields: ['actionId', 'action'],
-          data: [['1', 'Remediate'], ['2', 'Mitigate'], ['3', 'Exception']]
-          //data : [['1','Remediate'],['2','Mitigate']]
+          fields: ['action', 'actionStr'],
+          data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
         }),
-        displayField: 'action',
-        valueField: 'actionId',
+        displayField: 'actionStr',
+        valueField: 'action',
         listeners: {
           'select': function (combo, record, index) {
             if (record.data.actionId == 3) {
@@ -1662,8 +1596,8 @@ function addReview(leaf, selectedRule, selectedResource) {
     }
       , {
       xtype: 'hidden',
-      name: 'autoState',
-      id: 'autoState' + idAppend
+      name: 'autoResult',
+      id: 'autoResult' + idAppend
     }, {
       xtype: 'hidden',
       name: 'locked',
@@ -1699,8 +1633,8 @@ function addReview(leaf, selectedRule, selectedResource) {
         var reviewFormPanelDropTarget = new Ext.dd.DropTarget(reviewFormPanelDropTargetEl, {
           ddGroup: 'gridDDGroup',
           notifyEnter: function (ddSource, e, data) {
-            var editableDest = (reviewForm.groupGridRecord.data.statusId == 0 || reviewForm.groupGridRecord.data.statusId == 2);
-            var copyableSrc = (data.selections[0].data.autostate == 0 || (data.selections[0].data.autostate == 1 && data.selections[0].data.actionId !== 0));
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
               //Add some flare to invite drop.
               reviewForm.body.stopFx();
@@ -1715,8 +1649,8 @@ function addReview(leaf, selectedRule, selectedResource) {
             }
           },
           notifyOver: function (ddSource, e, data) {
-            var editableDest = (reviewForm.groupGridRecord.data.statusId == 0 || reviewForm.groupGridRecord.data.statusId == 2);
-            var copyableSrc = (data.selections[0].data.autostate == 0 || (data.selections[0].data.autostate == 1 && data.selections[0].data.actionId !== 0));
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
               return (reviewFormPanelDropTarget.dropAllowed);
             } else {
@@ -1724,22 +1658,22 @@ function addReview(leaf, selectedRule, selectedResource) {
             }
           },
           notifyDrop: function (ddSource, e, data) {
-            var editableDest = (reviewForm.groupGridRecord.data.statusId == 0 || reviewForm.groupGridRecord.data.statusId == 2);
-            var copyableSrc = (data.selections[0].data.autostate == 0 || (data.selections[0].data.autostate == 1 && data.selections[0].data.actionId !== 0));
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
               // Reference the record (single selection) for readability
               //var selectedRecord = ddSource.dragData.selections[0];
               var selectedRecord = data.selections[0];
               // Load the record into the form
-              var sCombo = Ext.getCmp('state-combo' + idAppend);
-              var sComment = Ext.getCmp('state-comment' + idAppend);
+              var sCombo = Ext.getCmp('result-combo' + idAppend);
+              var sComment = Ext.getCmp('result-comment' + idAppend);
               var aCombo = Ext.getCmp('action-combo' + idAppend);
               var aComment = Ext.getCmp('action-comment' + idAppend);
-              if (!sCombo.disabled && selectedRecord.data.autostate == 0) {
-                sCombo.setValue(selectedRecord.data.stateId);
+              if (!sCombo.disabled && selectedRecord.data.autoResult == false) {
+                sCombo.setValue(selectedRecord.data.result);
               }
-              //if (!sComment.disabled && selectedRecord.data.autostate == 0) {
-              sComment.setValue(selectedRecord.data.stateComment);
+              //if (!sComment.disabled && selectedRecord.data.autoResult == 0) {
+              sComment.setValue(selectedRecord.data.resultComment);
               //}
               if (sCombo.getValue() == 4) {
                 aCombo.enable();
@@ -1765,46 +1699,46 @@ function addReview(leaf, selectedRule, selectedResource) {
   });
 
   function setReviewFormItemStates(fp, valid) {
-    var stateCombo = Ext.getCmp('state-combo' + idAppend);
-    var stateComment = Ext.getCmp('state-comment' + idAppend);
+    var resultCombo = Ext.getCmp('result-combo' + idAppend);
+    var resultComment = Ext.getCmp('result-comment' + idAppend);
     var actionCombo = Ext.getCmp('action-combo' + idAppend);
     var actionComment = Ext.getCmp('action-comment' + idAppend);
     var button1 = Ext.getCmp('reviewForm-button-1' + idAppend); // left button
     var button2 = Ext.getCmp('reviewForm-button-2' + idAppend); // right button
     var attachButton = Ext.getCmp('attachGrid-add-button' + idAppend); // 'add attachment' button
-    var autoStateField = Ext.getCmp('autoState' + idAppend); // hidden 'autoState' field
+    var autoResultField = Ext.getCmp('autoResult' + idAppend); // hidden 'autoResult' field
 
     // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
-    var editable = (fp.groupGridRecord.data.statusId == 0 || fp.groupGridRecord.data.statusId == 2);
-    stateCombo.setDisabled(!editable); // disable if not editable
-    stateComment.setDisabled(!editable);
+    var editable = (fp.groupGridRecord.data.status === '' || fp.groupGridRecord.data.status === 'saved' || fp.groupGridRecord.data.status === 'rejected');
+    resultCombo.setDisabled(!editable); // disable if not editable
+    resultComment.setDisabled(!editable);
     actionCombo.setDisabled(!editable);
     actionComment.setDisabled(!editable);
 
-    if (autoStateField.value == "1" && stateCombo.value == 2) {
-      autoStateField.value = "0";
+    if (autoResultField.value == true && resultCombo.value === 'notapplicable') {
+      autoResultField.value = false;
     }
 
-    if (autoStateField.value == "1") { // Disable editing for autoState
-      stateCombo.disable();
-      stateComment.disable();
+    if (autoResultField.value == true) { // Disable editing for autoResult
+      resultCombo.disable();
+      resultComment.disable();
     }
 
     if (editable) {
-      if (stateCombo.value == 4) { // Result is 'Open'
+      if (resultCombo.value === 'fail') { // Result is 'Open'
         actionCombo.enable();
         actionComment.enable();
       } else {
         actionCombo.disable();
         actionComment.disable();
       }
-      if (stateCombo.value == '' || stateCombo.value == undefined || stateCombo.value == null) {
-        stateComment.disable();
+      if (resultCombo.value === '' || resultCombo.value === undefined || resultCombo.value === null) {
+        resultComment.disable();
       }
     }
 
     //Disable the add attachment button if the review has not been saved yet
-    if (fp.groupGridRecord.data.stateAbbr == "") {
+    if (fp.groupGridRecord.data.result == "") {
       attachButton.disable();
       attachButton.setTooltip('This button is disabled because the review has never been saved.');
     } else {
@@ -1815,7 +1749,7 @@ function addReview(leaf, selectedRule, selectedResource) {
 
     // Quick hide of the buttons and exit if review status is 'Approved', 
     // otherwise show the buttons and continue processing below
-    if (fp.groupGridRecord.data.statusId == 3) {
+    if (fp.groupGridRecord.data.status == 'accepted') {
       button1.hide();
       button2.hide();
       attachButton.disable();
@@ -1824,7 +1758,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     } else {
       button1.show();
       button2.show();
-      if (fp.groupGridRecord.data.statusId == 1) {
+      if (fp.groupGridRecord.data.statusId == 'submitted') {
         attachButton.disable();
         attachButton.setTooltip('This button is disabled because the review is submitted');
       } else {
@@ -1834,11 +1768,12 @@ function addReview(leaf, selectedRule, selectedResource) {
     }
 
 
-    if (isReviewComplete(stateCombo.value, stateComment.getValue(), actionCombo.value, actionComment.getValue())) {
+    if (isReviewComplete(resultCombo.value, resultComment.getValue(), actionCombo.value, actionComment.getValue())) {
       if (fp.reviewChanged()) {
         // review has been changed (is dirty)
-        switch (fp.groupGridRecord.data.statusId) {
-          case 0: // 'in progress'
+        switch (fp.groupGridRecord.data.status) {
+          case '':
+          case 'saved':
             // button 1
             button1.enable();
             button1.setText('Save without submitting');
@@ -1851,9 +1786,9 @@ function addReview(leaf, selectedRule, selectedResource) {
             button2.actionType = 'save and submit';
             button2.setTooltip('');
             break;
-          case 1: // 'ready' (a.k.a 'submitted'), dirty review can't happen
+          case 'submitted': // 'ready' (a.k.a 'submitted'), dirty review can't happen
             break;
-          case 2: // 'rejected'
+          case 'rejected': // 'rejected'
             // button 1
             button1.enable();
             button1.setText('Save without submitting');
@@ -1866,13 +1801,14 @@ function addReview(leaf, selectedRule, selectedResource) {
             button2.actionType = 'save and submit';
             button2.setTooltip('');
             break;
-          case 3: // 'approved', dirty review can't happen
+          case 'accepted': // 'approved', dirty review can't happen
             break;
         }
       } else {
         // review has not been changed (is in last saved state)
-        switch (fp.groupGridRecord.data.statusId) {
-          case 0: // in progress
+        switch (fp.groupGridRecord.data.status) {
+          case '':
+          case 'saved': // in progress
             // button 1
             button1.disable();
             button1.setText('Save without submitting');
@@ -1885,7 +1821,7 @@ function addReview(leaf, selectedRule, selectedResource) {
             button2.actionType = 'submit';
             button2.setTooltip('');
             break;
-          case 1: // ready
+          case 'submitted': // ready
             // button 1
             button1.enable();
             button1.setText('Unsubmit');
@@ -1899,7 +1835,7 @@ function addReview(leaf, selectedRule, selectedResource) {
             button2.setTooltip('This button is disabled because the review has already been submitted.');
             // review fields
             break;
-          case 2: // rejected
+          case 'rejected': // rejected
             // button 1
             button1.disable();
             button1.setText('Save without submitting');
@@ -1912,7 +1848,7 @@ function addReview(leaf, selectedRule, selectedResource) {
             button2.actionType = '';
             button2.setTooltip('This button is disabled because the review has not been modified.');
             break;
-          case 3: // approved
+          case 'accepted': // approved
             // we should never get here because of the earlier 'if' statement
             // button 1
             button1.hide();
@@ -2002,12 +1938,12 @@ function addReview(leaf, selectedRule, selectedResource) {
     items: reviewItems,
     listeners: {
       beforeclose: function (p) {
-        var stateCombo = Ext.getCmp('state-combo' + idAppend);
-        var stateComment = Ext.getCmp('state-comment' + idAppend);
+        var resultCombo = Ext.getCmp('result-combo' + idAppend);
+        var resultComment = Ext.getCmp('result-comment' + idAppend);
         var actionCombo = Ext.getCmp('action-combo' + idAppend);
         var actionComment = Ext.getCmp('action-comment' + idAppend);
 
-        var isDirty = (stateCombo.lastSavedData != stateCombo.value) || (stateComment.lastSavedData != stateComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
+        var isDirty = (resultCombo.lastSavedData != resultCombo.value) || (resultComment.lastSavedData != resultComment.getValue()) || (actionCombo.lastSavedData != actionCombo.value) || (actionComment.lastSavedData != actionComment.getValue());
 
         //var isDirty = Ext.getCmp('reviewForm' + idAppend).getForm().isDirty();
         var isValid = Ext.getCmp('reviewForm' + idAppend).getForm().isValid();
@@ -2026,7 +1962,7 @@ function addReview(leaf, selectedRule, selectedResource) {
                   });
                   break;
                 case 'no':
-                  Ext.getCmp('state-combo' + idAppend).changed = false;
+                  Ext.getCmp('result-combo' + idAppend).changed = false;
                   Ext.getCmp('action-combo' + idAppend).changed = false;
                   Ext.getCmp('reviews-center-tab').remove('reviewTab' + idAppend);
                   break;
@@ -2061,22 +1997,20 @@ function addReview(leaf, selectedRule, selectedResource) {
 
     let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
     let jsonData = {}
-    let states = [null, null, 'NA', 'NF', 'O']
-    let actions = [null, 'Remediate', 'Mitigate', 'Exception']
-    if (typeof fvalues.stateId !== 'undefined') {
-      jsonData.state = states[fvalues.stateId]
+    if (typeof fvalues.result !== 'undefined') {
+      jsonData.result = fvalues.result
     }
-    if (typeof fvalues.stateComment !== 'undefined') {
-      jsonData.stateComment = fvalues.stateComment === "" ? null : fvalues.stateComment
+    if (typeof fvalues.resultComment !== 'undefined') {
+      jsonData.resultComment = fvalues.resultComment === "" ? null : fvalues.resultComment
     }
-    if (typeof fvalues.actionId !== 'undefined') {
-      jsonData.action = actions[fvalues.actionId]
+    if (typeof fvalues.action !== 'undefined') {
+      jsonData.action = fvalues.actionId
     }
     if (typeof fvalues.actionComment !== 'undefined') {
       jsonData.actionComment = fvalues.actionComment === "" ? null : fvalues.actionComment
     }
-    if (typeof fvalues.autoState !== 'undefined') {
-      jsonData.autoState = fvalues.autoState === 'true' ? true : false
+    if (typeof fvalues.autoResult !== 'undefined') {
+      jsonData.autoResult = fvalues.autoResult === 'true' ? true : false
     }
     try {
       let result, reviewFromApi
@@ -2124,15 +2058,15 @@ function addReview(leaf, selectedRule, selectedResource) {
           reviewFromApi = JSON.parse(result.response.responseText)
           break
       }
-      stateCombo = Ext.getCmp('state-combo'+idAppend)
-      stateComment = Ext.getCmp('state-comment'+idAppend)
+      resultCombo = Ext.getCmp('result-combo'+idAppend)
+      resultComment = Ext.getCmp('result-comment'+idAppend)
       actionCombo = Ext.getCmp('action-combo'+idAppend)
       actionComment = Ext.getCmp('action-comment'+idAppend)				
-      stateCombo.changed = false
+      resultCombo.changed = false
       actionCombo.changed = false
-      fp.groupGridRecord.data.stateAbbr = reviewFromApi.state
-      fp.groupGridRecord.data.done = reviewFromApi.done
-      fp.groupGridRecord.data.statusId = reviewFromApi.statusId
+      fp.groupGridRecord.data.result = reviewFromApi.result
+      fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
+      fp.groupGridRecord.data.status = reviewFromApi.status
       fp.groupGridRecord.commit()
 
       let extDate = new Date(reviewFromApi.ts)
@@ -2141,8 +2075,8 @@ function addReview(leaf, selectedRule, selectedResource) {
       filterGroupStore()
 
       //Reset lastSavedData to current values, so we do not trigger the save again:
-      stateCombo.lastSavedData = stateCombo.value;
-      stateComment.lastSavedData = stateComment.getValue()
+      resultCombo.lastSavedData = resultCombo.value;
+      resultComment.lastSavedData = resultComment.getValue()
       actionCombo.lastSavedData = actionCombo.value
       actionComment.lastSavedData = actionComment.getValue()
 
@@ -2268,14 +2202,17 @@ function addReview(leaf, selectedRule, selectedResource) {
                 }),
                 body: formData
               })
-              const reader = response.body.getReader()
-              const td = new TextDecoder("utf-8")
-              let isdone = false
-              do {
-                const {value, done} = await reader.read()
-                updateStatusText (td.decode(value),true)
-                isdone = done
-              } while (!isdone)
+              let json = await response.json()
+							updateStatusText (JSON.stringify(json, null, 2))
+
+              // const reader = response.body.getReader()
+              // const td = new TextDecoder("utf-8")
+              // let isreviewComplete = false
+              // do {
+              //   const {value, reviewComplete} = await reader.read()
+              //   updateStatusText (td.decode(value),true)
+              //   isreviewComplete = reviewComplete
+              // } while (!isreviewComplete)
             }
           }
           catch (e) {
@@ -2343,7 +2280,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     // var rule1 = ourStore.getAt(0).data.ruleId;
     // // ruleArray.push(rule1);
     // while (i < total){
-    // // if (isReviewComplete(stateCombo.value,stateComment.getValue(),actionCombo.value,actionComment.getValue())) { 
+    // // if (isReviewComplete(resultCombo.value,resultComment.getValue(),actionCombo.value,actionComment.getValue())) { 
     // ruleArray.push(ourStore.getAt(i).data.ruleId);
     // // }
     // i++;

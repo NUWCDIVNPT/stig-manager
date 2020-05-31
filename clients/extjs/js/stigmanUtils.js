@@ -803,16 +803,16 @@ function Sm_HistoryData (idAppend) {
 							break;
 					}
 					switch (record.data.columnName) {
-						case 'stateId':
+						case 'result':
 							returnStr += '<b>Result</b> set to <i>';
 							switch (record.data.newValue) {
-								case '2':
+								case 'NA':
 									returnStr += 'Not Applicable';
 									break;
-								case '3':
+								case 'NF':
 									returnStr += 'Not a Finding';
 									break;
-								case '4':
+								case 'O':
 									returnStr += 'Open';
 									break;
 								default:
@@ -821,19 +821,19 @@ function Sm_HistoryData (idAppend) {
 							}
 							returnStr += '</i>';
 							break;
-						case 'stateComment':
+						case 'resultComment':
 							returnStr += '<b>Result comment</b> set to:<br><i>' + record.data.newValue.replace(/\n/g, "<br//>") + '</i>';
 							break;
-						case 'actionId':
+						case 'action':
 							returnStr += '<b>Action</b> set to <i>';
 								switch (record.data.newValue) {
-								case '1':
+								case 'remediate':
 									returnStr += 'Remediate';
 									break;
-								case '2':
+								case 'mitigate':
 									returnStr += 'Mitigate';
 									break;
-								case '3':
+								case 'exception':
 									returnStr += 'Exception';
 									break;
 								default:
@@ -845,19 +845,19 @@ function Sm_HistoryData (idAppend) {
 						case 'actionComment':
 							returnStr += '<b>Action comment</b> set to:<br><i>' + record.data.newValue.replace(/\n/g, "<br//>") + '</i>';
 							break;
-						case 'statusId':
+						case 'status':
 							returnStr += '<b>Status</b> set to <i>';
 								switch (record.data.newValue) {
-								case '0':
+								case 'saved':
 									returnStr += 'In progress';
 									break;
-								case '1':
+								case 'submitted':
 									returnStr += 'Submitted';
 									break;
-								case '2':
+								case 'rejected':
 									returnStr += 'Returned';
 									break;
-								case '3':
+								case 'accepted':
 									returnStr += 'Approved';
 									break;
 								default:
@@ -962,9 +962,9 @@ function getFileIcon (filename) {
 	}
 }
 
-function isReviewComplete (state,stateComment,action,actionComment) {
+function isReviewComplete (state,resultComment,action,actionComment) {
 	if (state == 4) { // Open
-		if (stateComment != '' && undefined != stateComment) {
+		if (resultComment != '' && undefined != resultComment) {
 			if (action != '' && undefined != action) {
 				if (actionComment != '' && undefined != actionComment) {
 					return true;
@@ -972,7 +972,7 @@ function isReviewComplete (state,stateComment,action,actionComment) {
 			}
 		}
 	} else { // not Open
-		if (stateComment != '' && undefined != stateComment) {
+		if (resultComment != '' && undefined != resultComment) {
 			return true;
 		}
 	}			
@@ -1101,17 +1101,17 @@ async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend,
 
 		reviewForm.groupGridRecord = groupGridRecord
 		reviewForm.isLoaded = true
-		let stateCombo = form.findField('state-combo' + idAppend)
-		let stateComment = form.findField('state-comment' + idAppend)
+		let resultCombo = form.findField('result-combo' + idAppend)
+		let resultComment = form.findField('result-comment' + idAppend)
 		let actionCombo = form.findField('action-combo' + idAppend)
 		let actionComment = form.findField('action-comment' + idAppend)
 
 		// Initialize the lastSavedData properties
-		stateCombo.lastSavedData = stateCombo.value
-		if (review.stateComment === null) {
-			stateComment.lastSavedData = ""
+		resultCombo.lastSavedData = resultCombo.value
+		if (review.resultComment === null) {
+			resultComment.lastSavedData = ""
 		} else {
-			stateComment.lastSavedData = stateComment.getValue()
+			resultComment.lastSavedData = resultComment.getValue()
 		}
 		actionCombo.lastSavedData = actionCombo.value
 		if (review.actionComment === null) {
@@ -1124,7 +1124,6 @@ async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend,
 
 		// load others
 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
-		Ext.getCmp('otherGrid' + idAppend).sm_Filter();
 
 		// History
 		let historyReq = await Ext.Ajax.requestPromise({
@@ -1144,7 +1143,12 @@ async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend,
 
 	}
 	catch (e) {
-		alert (e.message)
+		if (e.response) {
+			alert (e.response.responseText)
+		}
+		else {
+			alert (e)
+		}
 	}	
 }	
 
@@ -1158,18 +1162,13 @@ function checked(val) {
 	}
 }
 
-function renderState(val, metaData, record, rowIndex, colIndex, store) {
-	if (val == 'NF') {
-		//return '<img src="img/greencheckt.gif">';
-		//return '<img src="img/NF-12.gif">';
-		return '<div style="color:green;font-weight:bolder;text-align:center;">'+ val +'</div>';
-	} else if (val == 'O'){
-		//return '<img src="img/x-red2.gif">';
-		//return '<img src="img/O-12.gif">';
-		return '<div style="color:red;font-weight:bolder;text-align:center">'+ val +'</div>';
-	} else if (val == 'NA'){
-		//return '<img src="img/NA-12.gif">';
-		return '<div style="color:grey;font-weight:bolder;text-align:center">'+ val +'</div>';
+function renderResult(val, metaData, record, rowIndex, colIndex, store) {
+	if (val == 'pass') {
+		return '<div style="color:green;font-weight:bolder;text-align:center;">NF</div>';
+	} else if (val == 'fail'){
+		return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
+	} else if (val == 'notapplicable'){
+		return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
 	} else {
 		return '';
 	}
@@ -1178,22 +1177,22 @@ function renderState(val, metaData, record, rowIndex, colIndex, store) {
 
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
-	switch (record.data.statusId) {
-		case 1:
+	switch (record.data.status) {
+		case 'submitted':
 			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted">';
 			break;
-		case 2:
-			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Returned">';
+		case 'rejected':
+			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
 			break;
-		case 3:
-			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Approved">';
+		case 'accepted':
+			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted">';
 			break;
 		default:
 			statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 			break;
 	}
 	statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
-	if (record.data.hasAttach == 1) {
+	if (record.data.hasAttach) {
 		statusIcons += '<img src="img/attach-16.png" width=12 height=12 ext:qtip="Has attachments">';
 	} else {
 		statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
@@ -1203,17 +1202,34 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 
 function renderStatus(val) {
 	switch (val) {
-		case 1:
+		case 'submitted':
 			return '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted">';
 			break;
-		case 2:
-			return '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Returned">';
+		case 'rejected':
+			return '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
 			break;
-		case 3:
-			return '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Approved">';
+		case 'accepted':
+			return '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted">';
 			break;
 		default:
 			return '<img src="img/pixel.gif" width=12 height=12>';
+			break;
+	}
+}
+
+function renderSeverity(val) {
+	switch (val) {
+		case 'high':
+			return '1';
+			break;
+		case 'medium':
+			return '2';
+			break;
+		case 'low':
+			return '3';
+			break;
+		default:
+			return '4';
 			break;
 	}
 }

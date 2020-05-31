@@ -105,7 +105,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
     predicates.statements.push('r.revId = :revId')
     predicates.binds.revId = revId
   } else {
-    joins = ['current_revs r']
+    joins = ['current_rev r']
   }
   
   joins.push('left join rev_group_map rg on r.revId = rg.revId')
@@ -120,12 +120,14 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   if (inProjection && inProjection.includes('rules')) {
     joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
     joins.push('left join rule r on rgr.ruleId = r.ruleId' )
-    columns.push(`'[' || strdagg_param(param_array(json_object(
-      KEY 'ruleId' VALUE r.ruleId, 
-      KEY 'version' VALUE r.version, 
-      KEY 'title' VALUE r.title, 
-      KEY 'severity' VALUE r.severity ABSENT ON NULL
-      ), ',')) || ']' as "rules"`)
+    columns.push(`json_arrayagg (
+      json_object(
+        KEY 'ruleId' VALUE r.ruleId, 
+        KEY 'version' VALUE r.version, 
+        KEY 'title' VALUE r.title, 
+        KEY 'severity' VALUE r.severity ABSENT ON NULL
+      )
+    ) as "rules"`)
   }
 
   // CONSTRUCT MAIN QUERY
@@ -157,13 +159,6 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
         if (record.rules) {
         // Check for "empty" arrays 
           record.rules = record.rules == '[{}]' ? [] : JSON.parse(record.rules)
-          // Sort by package name
-          record.rules.sort((a,b) => {
-            let c = 0
-            if (a.ruleId > b.ruleId) { c= 1 }
-            if (a.ruleId < b.ruleId) { c = -1 }
-            return c
-          })
         }
       }
     }
@@ -180,136 +175,170 @@ Generalized queries for Rules associated with a STIG
 For specific Rule, allow for projections with Check and Fixes
 **/
 exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProjection, inPredicates ) {
-  let columns = [
-    'r.ruleId as "ruleId"',
-    'r.title as "title"',
-    'g.groupId as "groupId"',
-    'g.title as "groupTitle"',
-    'r.version as "version"',
-    'r.severity as "severity"'
-  ]
-
-  let groupBy = [
-    'r.ruleId',
-    'r.title',
-    'g.groupId',
-    'g.title',
-    'r.version',
-    'r.severity'
-  ]
-
-  let joins
-  let predicates = {
-    statements: [],
-    binds: {}
-  }
-  
-  // PREDICATES
-  predicates.statements.push('r.benchmarkId = :benchmarkId')
-  predicates.binds.benchmarkId = benchmarkId
-  
-  if (revisionStr != 'latest') {
-    joins = ['revision r']
-    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
-    predicates.statements.push('r.revId = :revId')
-    predicates.binds.revId = revId
-  } else {
-    joins = ['current_revs r']
-  }
-  
-  if (inPredicates && inPredicates.ruleId) {
-    predicates.statements.push('r.ruleId = :ruleId')
-    predicates.binds.ruleId = inPredicates.ruleId
-  }
-
-  joins.push('left join rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join groups g on rg.groupId = g.groupId')
-  joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-  joins.push('left join rule r on rgr.ruleId = r.ruleId' )
-
-  // PROJECTIONS
-  // Include extra columns for Rules with details OR individual Rule
-  if ( inProjection && inProjection.includes('details') ) {
-    columns.push(
-      'r.version as "version"',
-      'r.weight as "weight"',
-      'r.vulnDiscussion as "vulnDiscussion"',
-      'r.falsePositives as "falsePositives"',
-      'r.falseNegatives as "falseNegatives"',
-      'r.documentable as "documentable"',
-      'r.mitigations as "mitigations"',
-      'r.securityOverrideGuidance as "securityOverrideGuidance"',
-      'r.potentialImpacts as "potentialImpacts"',
-      'r.thirdPartyTools as "thirdPartyTools"',
-      'r.mitigationControl as "mitigationControl"',
-      'r.responsibility as "responsibility"',
-      'r.iacontrols as "iacontrols"'
-    )
-    groupBy.push(
-      'r.version',
-      'r.weight',
-      'r.vulnDiscussion',
-      'r.falsePositives',
-      'r.falseNegatives',
-      'r.documentable',
-      'r.mitigations',
-      'r.securityOverrideGuidance',
-      'r.potentialImpacts',
-      'r.thirdPartyTools',
-      'r.mitigationControl',
-      'r.responsibility',
-      'r.iacontrols'
-    )
-  }
-
-  if ( inProjection && inProjection.includes('cci') ) {
-    columns.push(`(select json_arrayagg(json_object(
-      KEY 'cci' VALUE rc.controlnumber,
-      KEY 'ap' VALUE  cci.apacronym,
-      KEY 'control' VALUE  cr.textRefNist ABSENT ON NULL)) 
-      from rule_control_map rc 
-      left join cci cci on rc.cci = cci.cci
-      left join cci_reference_map cr on rc.cci = cr.cci
-      where rc.ruleId = r.ruleId) as "ccis"`)
-  }
-  if ( inProjection && inProjection.includes('checks') ) {
-    columns.push(`(select json_arrayagg(json_object(
-      KEY 'checkId' VALUE rck.checkId,
-      KEY 'content' VALUE convert(chk.content, 'UTF8') ABSENT ON NULL))
-      from rule_check_map rck left join check chk on chk.checkId = rck.checkId
-      where rck.ruleId = r.ruleId) as "checks"`)
-  }
-  if ( inProjection && inProjection.includes('fixes') ) {
-    columns.push(`(select json_arrayagg(json_object(
-      KEY 'fixId' VALUE rf.fixId,
-      KEY 'text' VALUE fix.text ABSENT ON NULL))
-      from rule_fix_map rf left join fix fix on fix.fixId = rf.fixId
-      where rf.ruleId = r.ruleId) as "fixes"`)
-  }
-
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  if (inProjection && inProjection.includes('cci')) {
-    sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
-  }  
-  sql += ` order by r.ruleId`
-
+  let connection
   try {
+
+    let columns = [
+      'r.ruleId as "ruleId"',
+      'r.title as "title"',
+      'g.groupId as "groupId"',
+      'g.title as "groupTitle"',
+      'r.version as "version"',
+      'r.severity as "severity"'
+    ]
+
+    let groupBy = [
+      'rev.revId',
+      'r.ruleId',
+      'r.title',
+      'g.groupId',
+      'g.title',
+      'r.version',
+      'r.severity'
+    ]
+
+    let joins
+    let predicates = {
+      statements: [],
+      binds: {}
+    }
+    
+    // PREDICATES
+    predicates.statements.push('rev.benchmarkId = :benchmarkId')
+    predicates.binds.benchmarkId = benchmarkId
+    
+    if (revisionStr != 'latest') {
+      joins = ['revision rev']
+      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+      let revId =  `${benchmarkId}-${results[1]}-${results[2]}`
+      predicates.statements.push('rev.revId = :revId')
+      predicates.binds.revId = revId
+    } else {
+      joins = ['current_rev rev']
+    }
+    
+    if (inPredicates && inPredicates.ruleId) {
+      predicates.statements.push('r.ruleId = :ruleId')
+      predicates.binds.ruleId = inPredicates.ruleId
+    }
+
+    joins.push('left join rev_group_map rg on rev.revId = rg.revId')
+    joins.push('left join groups g on rg.groupId = g.groupId')
+    joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('left join rule r on rgr.ruleId = r.ruleId' )
+
+    // PROJECTIONS
+    // Include extra columns for Rules with details OR individual Rule
+    if ( inProjection && inProjection.includes('details') ) {
+      columns.push(
+        'r.weight as "weight"',
+        'r.vulnDiscussion as "vulnDiscussion"',
+        'r.falsePositives as "falsePositives"',
+        'r.falseNegatives as "falseNegatives"',
+        'r.documentable as "documentable"',
+        'r.mitigations as "mitigations"',
+        'r.severityOverrideGuidance as "severityOverrideGuidance"',
+        'r.potentialImpacts as "potentialImpacts"',
+        'r.thirdPartyTools as "thirdPartyTools"',
+        'r.mitigationControl as "mitigationControl"',
+        'r.responsibility as "responsibility"',
+        'r.iacontrols as "iacontrols"'
+      )
+      groupBy.push(
+        'r.weight',
+        'r.vulnDiscussion',
+        'r.falsePositives',
+        'r.falseNegatives',
+        'r.documentable',
+        'r.mitigations',
+        'r.severityOverrideGuidance',
+        'r.potentialImpacts',
+        'r.thirdPartyTools',
+        'r.mitigationControl',
+        'r.responsibility',
+        'r.iacontrols'
+      )
+    }
+
+    if ( inProjection && inProjection.includes('cci') ) {
+      columns.push(`(select
+        json_arrayagg(
+          json_object(
+            KEY 'cci' VALUE cci.cci,
+            KEY 'apAcronym' VALUE  cci.apAcronym,
+            KEY 'control' VALUE  cr.textRefNist ABSENT ON NULL
+          )
+        ) 
+        from
+          rev_group_map rg
+          left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          left join rev_group_rule_cci_map rgrc on rgr.rgrId = rgrc.rgrId 
+          left join cci cci on rgrc.cci = cci.cci
+          left join cci_reference_map cr on cci.cci = cr.cci
+        where
+          rg.revId = rev.revId
+          and rg.groupId = g.groupId 
+          and rgr.ruleId = r.ruleId) as "ccis"`)
+    }
+    if ( inProjection && inProjection.includes('checks') ) {
+      columns.push(`(select
+        json_arrayagg(
+          json_object(
+            KEY 'checkId' VALUE rck.checkId,
+            KEY 'content' VALUE convert(chk.content, 'UTF8') 
+            ABSENT ON NULL returning VARCHAR2(32000)
+          )
+        returning VARCHAR2(32000))
+        from
+          rev_group_map rg
+          left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          left join rev_group_rule_check_map rck on rgr.rgrId = rck.rgrId
+          left join checks chk on chk.checkId = rck.checkId
+        where
+          rg.revId = rev.revId
+          and rg.groupId = g.groupId 
+          and rgr.ruleId = r.ruleId) as "checks"`)
+    }
+    if ( inProjection && inProjection.includes('fixes') ) {
+      columns.push(`(select
+        json_arrayagg(
+          json_object(
+            KEY 'fixId' VALUE rf.fixId,
+            KEY 'text' VALUE fix.text 
+            ABSENT ON NULL returning VARCHAR2(32000)
+          )
+        returning VARCHAR2(32000) )
+        from
+          rev_group_map rg
+          left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+          left join rev_group_rule_fix_map rf on rgr.rgrId = rf.rgrId
+          left join fix on fix.fixId = rf.fixId
+        where
+          rg.revId = rev.revId
+          and rg.groupId = g.groupId 
+          and rgr.ruleId = r.ruleId) as "fixes"`)
+    }
+
+
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    if (inProjection && inProjection.includes('cci')) {
+      sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
+    }  
+    sql += ` order by r.ruleId`
+
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
 
-    let connection = await oracledb.getConnection()
+    connection = await oracledb.getConnection()
     let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
 
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
@@ -345,6 +374,11 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   catch (err) {
     throw err
   }  
+  finally {
+    if (typeof connection !== 'undefinied') {
+      await connection.close()
+    }
+  }
 }
 
 
@@ -610,66 +644,7 @@ exports.insertManualBenchmark = async function (b) {
           ),
           :cci)`,
         binds: []
-      },
-      // ruleCheckMap: {
-      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_check_map(ruleId, checkId)) */ into rule_check_map (ruleId, checkId) VALUES (:ruleId, :checkId)",
-      //   binds: []
-      // },
-      // ruleFixMap: {
-      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_fix_map(ruleId, fixId)) */ into rule_fix_map (ruleId, fixId) VALUES (:ruleId, :fixId)",
-      //   binds: []
-      // },
-      // ruleControlMap: {
-      //   sql: "insert /*+ ignore_row_on_dupkey_index(rule_control_map(ruleId, controlnumber)) */ into rule_control_map (ruleId, controlnumber, controltype) VALUES (:ruleId, :cci, 'CCI')",
-      //   binds: []
-      // },
-      // currentRevs: {
-      //   sql: `insert into current_revs 
-      //   select 
-      //     revId,
-      //     benchmarkId,
-      //     version,
-      //     release,
-      //     benchmarkDate,
-      //     benchmarkDateSql,
-      //     status,
-      //     statusDate,
-      //     description,
-      //     active
-      //   from (
-      //     SELECT
-      //     revId,
-      //     benchmarkId,
-      //     version,
-      //     release,
-      //     benchmarkDate,
-      //     benchmarkDateSql,
-      //     status,
-      //     statusDate,
-      //     description,
-      //     active
-      //       ,ROW_NUMBER() OVER (PARTITION BY benchmarkId ORDER BY version+0 desc, release+0 desc) AS rn
-      //     FROM
-      //       revision
-      //   )
-      //   where rn = 1
-      //   `
-      // },
-      // currentGroupRules: {
-      //   sql: `insert into current_group_rules
-      //   SELECT rg.groupId,
-      //     rgr.ruleId,
-      //     s.benchmarkId
-      //   from
-      //     stig s
-      //     left join current_revs cr on cr.benchmarkId=s.benchmarkId
-      //     left join rev_group_map rg on rg.revId=cr.revId
-      //     left join rev_group_rule_map rgr on rgr.rgId=rg.rgId
-      //   where
-      //     cr.revId is not null
-      //   order by
-      //     rg.groupId,rgr.ruleId,s.benchmarkId`
-      // }
+      }
     }
 
     let {revision, ...benchmarkBinds} = b
@@ -741,7 +716,7 @@ exports.insertManualBenchmark = async function (b) {
               revId: revisionBinds.revId,
               groupId: group.groupId,
               ruleId: rule.ruleId,
-              cci: ident.ident
+              cci: ident.ident.replace('CCI-','')
             })
           }
         })
@@ -908,7 +883,7 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, p
       revisionStr: revisionStr,
       groupId: groupId
     })
-    return (rows)
+    return (rows[0])
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

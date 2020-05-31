@@ -163,7 +163,7 @@ function addPackageAdmin() {
 						if (btn == 'yes') {
 							var package = packageGrid.getSelectionModel().getSelected();
 							let result = await Ext.Ajax.requestPromise({
-								url: `${STIGMAN.Env.apiBase}/packages/${package.data.packageId}`,
+								url: `${STIGMAN.Env.apiBase}/packages/${package.data.packageId}?elevate=true`,
 								method: 'DELETE'
 							})
 							packageStore.remove(package);

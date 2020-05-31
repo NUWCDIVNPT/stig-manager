@@ -26,7 +26,7 @@ module.exports.createPackage = async function createPackage (req, res, next) {
 module.exports.deletePackage = async function deletePackage (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate ) {
+    if ( elevate || req.userObject.role.roleId === ROLE.COMMAND) {
       let packageId = req.swagger.params['packageId'].value
       let projection = req.swagger.params['projection'].value
       let response = await Package.deletePackage(packageId, projection, elevate, req.userObject)

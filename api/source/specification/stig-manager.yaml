@@ -19,6 +19,13 @@ paths:
       tags:
         - Package
       summary: Return a list of Packages accessible to the requester
+      description: |
+        |Role|Request|Response|
+        |---|---|---|
+        |**COMMAND**|Permitted|All packages<br>- assets: All mapped assets<br/>- stigs: All STIGs mapped to mapped assets| 
+        |**DEPT**|Permitted|Packages having department assets<br/>- assets: Department assets<br>- stigs: STIGs mapped to department assets|
+        |**REVIEWER**|Permitted|Packages having assigned assets<br/>- assets: Assigned assets<br>- stigs: STIGs mapped to assigned assets|
+        |**elevate**|Permitted|All packages<br/>- assets: All mapped assets<br>- stigs: All mapped STIGs| 
       operationId: getPackages
       responses:
         '200':
@@ -42,6 +49,13 @@ paths:
       tags:
         - Package
       summary: Create a Package
+      description: |
+        |Role        |Request        |RequestBody        |Response|
+        |---         |---            |---                |---|
+        |**COMMAND** | Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
+        |**DEPT**    | Forbidden     | --                | -- |
+        |**REVIEWER**| Forbidden     |--                 |--|
+        |**elevated**| Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
       operationId: createPackage
       requestBody:
         required: true
@@ -81,6 +95,13 @@ paths:
       tags:
         - Package
       summary: Return a Package
+      description: |
+        |Role        |Request        |Parameters|Response|
+        |---         |---            |---                |---|
+        |**COMMAND** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
+        |**DEPT**    | Permitted     |Any {packageId} | IF {packageId} HAS *department assets* THEN<br>Package:<br>--> assets: Mapped department assets<br>--> stigs: STIGs mapped to department assets|
+        |**REVIEWER**| Permitted     |Any {packageId}  |IF {packageId} HAS *assigned assets* THEN<br>Package:<br>--> assets: Assigned assets<br>--> stigs: STIGs mapped to assigned assets|
+        |**elevated** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
       operationId: getPackage
       responses:
         '200':
@@ -102,6 +123,11 @@ paths:
       tags:
         - Package
       summary: Merge provided properties with a Package
+      description: |
+        RBAC table:
+        | COMMAND | DEPT | REVIEWER | elevated |
+        |-----|-----|-------|-------|
+        | Any packageId | Prohibited | Prohibited | Any packageId |
       operationId: updatePackage
       requestBody:
         required: true
@@ -217,128 +243,148 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-  '/packages/{packageId}/findings':
-    parameters:
-      - $ref: '#/components/parameters/PackageIdPath'
-      - name: acceptedOnly
-        in: query
-        schema:
-          type: boolean
-          default: true
-      - $ref: '#/components/parameters/BenchmarkIdQuery'
-      - $ref: '#/components/parameters/DepartmentQuery'
-      - $ref: '#/components/parameters/FindingProjectionQuery'
-    get:
-      tags:
-        - Package
-      summary: Return the Findings for the specified Package
-      operationId: getFindingsByPackage
-      responses:
-        '200':
-          description: PackageFinding response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FindingProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
-  '/packages/{packageId}/findings/poam_rar':
-    parameters:
-      - $ref: '#/components/parameters/PackageIdPath'
-      - name: artifact
-        in: query
-        required: true
-        schema:
-          type: string
-          enum:
-            - poam
-            - rar
-      - $ref: '#/components/parameters/BenchmarkIdQuery'
-    get:
-      tags:
-        - Package
-      summary: Return an eMASS POAM or RAR artifact in XLSX format
-      description: >-
-        Generates a Plan of Action and Milestones (POAM) or Risk Assessment Report (RAR) for use as an eMASS artifact. The artifact is generated based on the currently accepted findings and incorporates the EMassPoamRarRecords managed by the {groupId} child endpoints.
-      operationId: getPoamOrRarByPackage
-      responses:
-        '200':
-          description: EMassPoamRar response
-          content:
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-              schema:
-                type: string
-                format: binary
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
-  '/packages/{packageId}/findings/poam_rar/{groupId}':
-    parameters:
-      - $ref: '#/components/parameters/PackageIdPath'
-      - $ref: '#/components/parameters/GroupIdPath'
-    get:
-      tags:
-        - Package
-      summary: Return the eMASS POAM/RAR record for the specified Package and Finding (groupId)
-      operationId: getPoamRecordByPackageGroup
-      responses:
-        '200':
-          description: PoamRecord response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmassPoamRarRecord'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
-    put:
-      tags:
-        - Package
-      summary: Set all properties of the eMASS POAM/RAR record for a Finding (groupId)
-      operationId: setPoamRecordByPackageGroup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmassPoamRarRecordUpdate'
-      responses:
-        '200':
-          description: PoamRecord response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmassPoamRarRecord'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
+  # '/packages/{packageId}/findings':
+  #   parameters:
+  #     - $ref: '#/components/parameters/PackageIdPath'
+  #     - name: acceptedOnly
+  #       in: query
+  #       schema:
+  #         type: boolean
+  #         default: true
+  #     - $ref: '#/components/parameters/BenchmarkIdQuery'
+  #     - $ref: '#/components/parameters/DepartmentQuery'
+  #     - $ref: '#/components/parameters/FindingProjectionQuery'
+  #   get:
+  #     tags:
+  #       - Package
+  #     summary: Return the Findings for the specified Package
+  #     description: |
+  #       Request RBAC:
+  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       |-----|-----|-------|-------|
+  #       | All packages | Packages having department Assets | Packages having Assets with assigned Reviews | NA |
+  #     operationId: getFindingsByPackage
+  #     responses:
+  #       '200':
+  #         description: PackageFinding response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/FindingProjected'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:package:read'
+  # '/packages/{packageId}/findings/poam_rar':
+  #   parameters:
+  #     - $ref: '#/components/parameters/PackageIdPath'
+  #     - name: artifact
+  #       in: query
+  #       required: true
+  #       schema:
+  #         type: string
+  #         enum:
+  #           - poam
+  #           - rar
+  #     - $ref: '#/components/parameters/BenchmarkIdQuery'
+  #   get:
+  #     tags:
+  #       - Package
+  #     summary: Return an eMASS POAM or RAR artifact in XLSX format
+  #     description: |
+  #       Generates a Plan of Action and Milestones (POAM) or Risk Assessment Report (RAR) for use as an eMASS artifact. The artifact is generated based on the currently accepted findings and incorporates the EMassPoamRarRecords managed by the {groupId} child endpoints.
+
+  #       RBAC table:
+  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       |-----|-----|-------|-------|
+  #       | All packages | Prohibited | Prohibited | NA |
+  #     operationId: getPoamOrRarByPackage
+  #     responses:
+  #       '200':
+  #         description: EMassPoamRar response
+  #         content:
+  #           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+  #             schema:
+  #               type: string
+  #               format: binary
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:package:read'
+  # '/packages/{packageId}/findings/poam_rar/{groupId}':
+  #   parameters:
+  #     - $ref: '#/components/parameters/PackageIdPath'
+  #     - $ref: '#/components/parameters/GroupIdPath'
+  #   get:
+  #     tags:
+  #       - Package
+  #     summary: Return the eMASS POAM/RAR record for the specified Package and Finding (groupId)
+  #     description: |
+  #       RBAC table:
+  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       |-----|-----|-------|-------|
+  #       | Any {packageId}<br>Any {groupId} | Prohibited | Prohibited | NA |
+  #     operationId: getPoamRecordByPackageGroup
+  #     responses:
+  #       '200':
+  #         description: PoamRecord response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/EmassPoamRarRecord'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:package:read'
+  #   put:
+  #     tags:
+  #       - Package
+  #     summary: Set all properties of the eMASS POAM/RAR record for a Finding (groupId)
+  #     operationId: setPoamRecordByPackageGroup
+  #     description: |
+  #       RBAC table:
+  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       |-----|-----|-------|-------|
+  #       | Any {packageId}<br>Any {groupId} | Prohibited | Prohibited | NA |
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/EmassPoamRarRecordUpdate'
+  #     responses:
+  #       '200':
+  #         description: PoamRecord response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/EmassPoamRarRecord'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:package:read'
     
 
   /assets:
@@ -579,6 +625,10 @@ paths:
       tags:
         - Review
       summary: Return a list of Reviews accessible to the requester
+      description: |
+        | RBAC | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        |-----|-----|-------|-------|-------|
+        |Response| All reviews | All departmental reviews | All mapped reviews  | NA  |
       operationId: getReviews
       parameters:
         - $ref: '#/components/parameters/ReviewResultQuery'
@@ -640,6 +690,10 @@ paths:
       tags:
         - Review
       summary: Import one or more Reviews from a JSON body, a STIGViewer CKL file, or an SCC XCCDF file
+      description: |
+        | RBAC | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        |-----|-----|-------|-------|-------|
+        |RequestBody| assetId: any<BR>ruleId: any|assetId: any departmental<BR>ruleId: any | assetId: any mapped asset<BR>ruleId: any ruleId from a mapped STIG on the asset |NA  |
       operationId: importReviews
       requestBody:
         content:
@@ -1047,63 +1101,63 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-  /roles:
-    parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
-    get:
-      tags:
-        - User
-      summary: Return the list of Role names
-      operationId: getRoles
-      parameters:
-        - $ref: '#/components/parameters/RoleProjectionQuery'
-      responses:
-        '200':
-          description: Roles response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoleProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user:read'
-    put:
-      tags:
-        - User
-      summary: Set the list of Role names
-      operationId: setRoles
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RoleNamesReplace'
-      responses:
-        '200':
-          description: UserProjected response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Role'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user'
+  # /roles:
+  #   parameters:
+  #     - $ref: '#/components/parameters/ElevateQuery'
+  #   get:
+  #     tags:
+  #       - User
+  #     summary: Return the list of Role names
+  #     operationId: getRoles
+  #     parameters:
+  #       - $ref: '#/components/parameters/RoleProjectionQuery'
+  #     responses:
+  #       '200':
+  #         description: Roles response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/RoleProjected'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:user:read'
+  #   put:
+  #     tags:
+  #       - User
+  #     summary: Set the list of Role names
+  #     operationId: setRoles
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/RoleNamesReplace'
+  #     responses:
+  #       '200':
+  #         description: UserProjected response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/Role'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:user'
   /departments:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -1112,8 +1166,6 @@ paths:
         - Department
       summary: Return a list of Departments
       operationId: getDepartments
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: List of Department
@@ -1200,7 +1252,7 @@ paths:
     put:
       tags:
         - Department
-      summary: Set all properties of a Department
+      summary: Set the name of a Department
       operationId: replaceDepartment
       requestBody:
         required: true
@@ -1389,6 +1441,15 @@ paths:
         - Asset
       summary: Return Assets that are targets of evaluation against a STIG
       operationId: getAssetsByBenchmarkId
+      description: |
+        Request RBAC:
+        | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        |-----|-----|-------|-------|
+        | Any {benchmarkId} | Any {benchmarkId} | Any {benchmarkId}  | Any {benchmarkId}  |
+        Response RBAC:
+        | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        |-----|-----|-------|-------|
+        | All assets<br>All mapped reviewers | All departmental assets<br>All mapped reviewers | All assigned assets<br>Projection ['reviewers'] prohibited  | All assets<br>All mapped reviewers  |
       responses:
         '200':
           description: Revision response
@@ -1411,6 +1472,13 @@ paths:
       tags:
         - Asset
       summary: Set the Assets mapped to a STIG
+      description: |
+        |Role|Request|RequestBody|Response|
+        |---|---|---|---|
+        |**COMMAND**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
+        |**DEPT**|Any {benchmarkId} | Department [assetId] | All assets in department<br>-->All mapped reviewers| 
+        |**REVIEWER**|Prohibited |--|--|
+        |**elevated**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
       operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
@@ -2119,7 +2187,7 @@ components:
       properties:
         cci:
           type: string
-        ap:
+        apAcronym:
           description: eMASS Assessment Procedure
           type: string
         control:
@@ -2145,20 +2213,16 @@ components:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-        autoCheck:
+        autoCheckAvailable:
           type: boolean
-        review:
-          type: object
-          nullable: true
-          properties:
-            result:
-              $ref: '#/components/schemas/ChecklistResult'
-            status:
-              $ref: '#/components/schemas/ChecklistStatus'
-            autoResult:
-              type: boolean
-            complete:
-              type: boolean
+        result:
+          $ref: '#/components/schemas/ChecklistResult'
+        autoResult:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ChecklistStatus'
+        reviewComplete:
+          type: boolean
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -2268,9 +2332,9 @@ components:
       type: string
       nullable: true
       enum:
-        - O
-        - NF
-        - NA
+        - fail
+        - pass
+        - notapplicable
         - null
     ChecklistStatus:
       type: string
@@ -2539,9 +2603,6 @@ components:
     Review:
       type: object
       properties:
-        reviewId:
-          type: integer
-          readOnly: true
         assetId:
           type: integer
         ruleId:
@@ -2679,9 +2740,9 @@ components:
       description: The Review result
       type: string
       enum:
-        - O
-        - NF
-        - NA
+        - fail
+        - pass
+        - notapplicable
     ReviewStatus:
       type: string
       enum:

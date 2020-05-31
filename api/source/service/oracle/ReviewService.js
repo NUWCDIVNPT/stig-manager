@@ -4,49 +4,46 @@ const writer = require('../../utils/writer.js')
 const parsers = require('../../utils/parsers.js')
 const dbUtils = require('./utils')
 const {promises: fs} = require('fs')
+const ROLE = require('../../utils/appRoles')
 
 
 /**
 Generalized queries for review(s).
 **/
-exports.queryReviews = async function (inProjection = [], inPredicates = {}, elevate, userObject) {
+exports.queryReviews = async function (inProjection = [], inPredicates = {}, userObject) {
   let connection
   try {
     let context
-    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    if (userObject.role.roleId === ROLE.COMMAND ) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.role == "IAO") {
+    } else if (userObject.role.roleId === ROLE.DEPT) {
       context = dbUtils.CONTEXT_DEPT
     } else {
       context = dbUtils.CONTEXT_USER
     }
 
     let columns = [
-      'r.REVIEWID as "reviewId"',
       'r.assetId as "assetId"',
       'asset.name as "assetName"',
       'r.ruleId as "ruleId"',
-      'state.abbr as "state"',
-      'r.stateId as "stateId"',
-      'r.stateComment as "stateComment"',
-      'r.actionId as "actionId"',
-      'action.action as "action"',
+      'result.api as "result"',
+      'r.resultComment as "resultComment"',
+      'r.autoResult as "autoResult"',
+      'action.api as "action"',
       'r.actionComment as "actionComment"',
-      'r.statusId as "statusId"',
-      'status.statusStr as "status"',
-      'r.ts as "ts"',
-      'r.autoState as "autoState"',
+      'status.api as "status"',
       'r.userId as "userId"',
-      'ud.name as "username"',
+      'ud.username as "username"',
+      'r.ts as "ts"',
       'r.rejectText as "rejectText"',
       'r.rejectUserId as "rejectUserId"',
       `CASE
         WHEN r.ruleId is null
         THEN 0
         ELSE
-          CASE WHEN r.stateId != 4
+          CASE WHEN r.resultId != 4
           THEN
-            CASE WHEN r.stateComment != ' ' and r.stateComment is not null
+            CASE WHEN r.resultComment != ' ' and r.resultComment is not null
               THEN 1
               ELSE 0 END
           ELSE
@@ -54,36 +51,34 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
               THEN 1
               ELSE 0 END
           END
-      END as "done"`
+      END as "reviewComplete"`
     ]
     let groupBy = [
-      'r.reviewId',
       'r.assetId',
       'asset.name',
       'r.ruleId',
-      'state.abbr',
-      'r.stateId',
-      'r.stateComment',
+      'r.resultId',
+      'result.api',
+      'r.resultComment',
+      'r.autoResult',
       'r.actionId',
-      'action.action',
+      'action.api',
       'r.actionComment',
-      'r.statusId',
-      'status.statusStr',
-      'r.ts',
-      'r.autoState',
+      'status.api',
       'r.userId',
-      'ud.name',
+      'ud.username',
+      'r.ts',
       'r.rejectText',
       'r.rejectUserId'
     ]
     let joins = [
-      'stigman.reviews r',
-      'left join stigman.states state on r.stateId = state.stateId',
-      'left join stigman.statuses status on r.statusId = status.statusId',
-      'left join stigman.actions action on r.actionId = action.actionId',
-      'left join stigman.user_data ud on r.userId = ud.id',
-      'left join stigman.assets asset on r.assetId = asset.assetId',
-      'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
+      'review r',
+      'left join result on r.resultId = result.resultId',
+      'left join status on r.statusId = status.statusId',
+      'left join action on r.actionId = action.actionId',
+      'left join user_data ud on r.userId = ud.userId',
+      'left join asset on r.assetId = asset.assetId',
+      'left join asset_package_map ap on asset.assetId = ap.assetId'
     ]
 
     // PROJECTIONS
@@ -91,35 +86,35 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       columns.push(`(select json_arrayagg(json_object(
         KEY 'packageId' VALUE p.packageId,
         KEY 'name' VALUE  p.name))
-        from stigman.asset_package_map ap 
-        left join stigman.packages p on ap.packageId = p.packageId
+        from asset_package_map ap 
+        left join package p on ap.packageId = p.packageId
         where ap.assetId = r.assetId) as "packages"`)
     }
     if (inProjection.includes('stigs')) {
       columns.push(`(select json_arrayagg(json_object(
-        KEY 'benchmarkId' VALUE rev.stigId,
+        KEY 'benchmarkId' VALUE rev.benchmarkId,
         KEY 'revisionStr' VALUE  'V'||rev.version||'R'||rev.release))
-        from stigs.rev_group_rule_map rgr 
-        left join stigs.rev_group_map rg on rgr.rgId = rg.rgId
-        left join stigs.revisions rev on rg.revId = rev.revId
+        from rev_group_rule_map rgr 
+        left join rev_group_map rg on rgr.rgId = rg.rgId
+        left join revision rev on rg.revId = rev.revId
         where rgr.ruleId = r.ruleId) as "stigs"`)
     }
-    if (inProjection.includes('rule')) {
+    if (inProjection.includes('ruleInfo')) {
       columns.push(`(select
         json_object(
-        KEY 'ruleId' VALUE rule.ruleId
-        ,KEY 'ruleTitle' VALUE rule.title
-        ,KEY 'group' VALUE g.groupId
-        ,KEY 'groupTitle' VALUE g.title
-        ,KEY 'severity' VALUE rule.severity)
+          KEY 'ruleId' VALUE rule.ruleId
+          ,KEY 'ruleTitle' VALUE rule.title
+          ,KEY 'group' VALUE g.groupId
+          ,KEY 'groupTitle' VALUE g.title
+          ,KEY 'severity' VALUE rule.severity)
         from
-        stigs.rules rule
-        left join stigs.rev_group_rule_map rgr on rgr.ruleId=rule.ruleId
-        inner join stigs.rev_group_map rg on rgr.rgId=rg.rgId
-        inner join stigs.groups g on rg.groupId=g.groupId
+          rule
+          left join rev_group_rule_map rgr on rgr.ruleId=rule.ruleId
+          inner join rev_group_map rg on rgr.rgId=rg.rgId
+          inner join groups g on rg.groupId=g.groupId
         where
-        ROWNUM = 1 and
-        rule.ruleId = r.ruleId) as "ruleInfo"`)
+          ROWNUM = 1 and
+          rule.ruleId = r.ruleId) as "ruleInfo"`)
     }
     if (inProjection.includes('history')) {
       columns.push(`(select
@@ -131,12 +126,12 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
           KEY 'oldValue' VALUE rh.oldValue,
           KEY 'newValue' VALUE rh.newValue,
           KEY 'userId' VALUE rh.userId,
-          KEY 'username' VALUE ud.name
+          KEY 'username' VALUE ud.username
         )
       order by rh.ts desc, rh.columnName returning VARCHAR2(32000))
       FROM
-        reviews_history rh
-        left join user_data ud on ud.id=rh.userId
+        review_history rh
+        left join user_data ud on ud.userId=rh.userId
       where
         rh.ruleId = r.ruleId and
         rh.assetId = r.assetId
@@ -162,17 +157,17 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       let aclPredicates = [
         'usa.userId = :context_user'
       ]
-      predicates.binds.context_user = userObject.id
+      predicates.binds.context_user = userObject.userId
 
-      // item 2 handles the common case where revisionStr is 'latest'
-      // Will replace aclJoins[2] for other revisionStr values
+      // item 3 ('inner join current_rev') handles the common case where revisionStr is 'latest'
+      // Will replace aclJoins[3] for other revisionStr values
       let aclJoins = [
-        'stigman.user_stig_asset_map usa',
-        'inner join stigman.stig_asset_map sa on sa.said = usa.said',
-        'left join stigman.asset_package_map ap on ap.assetId = sa.assetId',
-        'inner join stigs.current_revs rev on rev.stigId = sa.stigId',
-        'inner join stigs.rev_group_map rg on rev.revId = rg.revId',
-        'inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
+        'user_stig_asset_map usa',
+        'inner join stig_asset_map sa on sa.said = usa.said',
+        'left join asset_package_map ap on ap.assetId = sa.assetId',
+        'inner join current_rev rev on rev.benchmarkId = sa.benchmarkId',
+        'inner join rev_group_map rg on rev.revId = rg.revId',
+        'inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId'
       ]
 
       if (inPredicates.assetId) {
@@ -195,14 +190,14 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       }
       // If predicates include benchmarkId and revisionStr (which must occur together)
       if (inPredicates.benchmarkId) {
-        aclPredicates.push('sa.stigId = :benchmarkId')
+        aclPredicates.push('sa.benchmarkId = :benchmarkId')
         predicates.binds.benchmarkId = inPredicates.benchmarkId
         // Delete property so it is not processed by later code
         delete inPredicates.benchmarkId
       }
       if (inPredicates.revisionStr && inPredicates.revisionStr !== 'latest') {
         // Join to revisions so we can specify a revId
-        aclJoins[2] = 'inner join stigs.revisions rev on rev.stigId = sa.stigId'
+        aclJoins[3] = 'inner join revision rev on rev.benchmarkId = sa.benchmarkId'
         // Calculate the revId
         let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
         let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
@@ -220,13 +215,13 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
         ${aclPredicates.join(" and ")}
       `
       // Splice the subquery onto the main query
-      joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join stigman.reviews r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
+      joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join review r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
       //joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
     }
     // CONTEXT_DEPT
     else if (context === dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('asset.dept = :dept')
-      predicates.binds.dept = userObject.dept
+      predicates.statements.push('asset.deptId = :deptId')
+      predicates.binds.deptId = userObject.dept.deptId
     }
 
       // COMMON
@@ -242,16 +237,16 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       predicates.statements.push('r.ruleId = :ruleId')
       predicates.binds.ruleId = inPredicates.ruleId
     }
-    if (inPredicates.state) {
-      predicates.statements.push('state.abbr = :stateAbbr')
-      predicates.binds.stateAbbr = inPredicates.state
+    if (inPredicates.result) {
+      predicates.statements.push('result.api = :result')
+      predicates.binds.result = inPredicates.result
     }
     if (inPredicates.status) {
-      predicates.statements.push('status.statusStr = :statusStr')
-      predicates.binds.statusStr = inPredicates.status
+      predicates.statements.push('status.api = :status')
+      predicates.binds.status = inPredicates.status
     }
     if (inPredicates.action) {
-      predicates.statements.push('action.action = :action')
+      predicates.statements.push('action.api = :action')
       predicates.binds.action = inPredicates.action
     }
     if (inPredicates.packageId) {
@@ -267,12 +262,12 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
           SELECT
             r2.ruleId
           FROM
-            stigs.revisions rev
-            left join stigs.rev_group_map rg on rev.revId = rg.revId
-            left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
-            left join stigs.rules r2 on rgr.ruleId = r2.ruleId
+            revision rev
+            left join rev_group_map rg on rev.revId = rg.revId
+            left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+            left join rule r2 on rgr.ruleId = r2.ruleId
           WHERE
-            rev.stigId = :benchmarkId
+            rev.benchmarkId = :benchmarkId
             and rev.revId = :revId    
           )` )
           predicates.binds.benchmarkId = inPredicates.benchmarkId
@@ -283,12 +278,12 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
           SELECT
             r2.ruleId
           FROM
-            stigs.current_revs rev
-            left join stigs.rev_group_map rg on rev.revId = rg.revId
-            left join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId
-            left join stigs.rules r2 on rgr.ruleId = r2.ruleId
+            current_rev rev
+            left join rev_group_map rg on rev.revId = rg.revId
+            left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+            left join rule r2 on rgr.ruleId = r2.ruleId
           WHERE
-            rev.stigId = :benchmarkId      
+            rev.benchmarkId = :benchmarkId      
           )` )
         predicates.binds.benchmarkId = inPredicates.benchmarkId
       }
@@ -314,12 +309,12 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
   //     await connection.close()
 
     // Post-process each row, unfortunately.
-    // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'done' and 'autoState'
+    // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'reviewComplete' and 'autoResult'
     // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
-      record.done = record.done == 1 ? true : false
-      record.autoState = record.autoState == 1 ? true : false
+      record.reviewComplete = record.reviewComplete == 1 ? true : false
+      record.autoResult = record.autoResult == 1 ? true : false
       if (inProjection.includes('packages')) {
          record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
        }
@@ -354,10 +349,10 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.importReviews = async function(body, elevate, file, userObject, response) {
+exports.importReviews = async function(body, file, userObject) {
   try {
     // let jobId = await dbUtils.insertJobRecord({
-    //   userId: userObject.id,
+    //   userId: userObject.userId,
     //   assetId: body.assetId,
     //   benchmarkId: body.benchmarkId,
     //   packageId: body.packageId,
@@ -377,7 +372,7 @@ exports.importReviews = async function(body, elevate, file, userObject, response
         result = parsers.reviewsFromScc(buffer, assetId)
         break
     }
-    return (this.putReviews(result.reviews, elevate, userObject))
+    return (this.putReviews(result.reviews, userObject))
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -404,30 +399,10 @@ exports.deleteReview = async function(reviewId, projection, userObject) {
 
 
 /**
- * Return a Review
- *
- * reviewId Integer A path parameter that indentifies a Review
- * projection List Additional properties to include in the response.  (optional)
- * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
- * returns AssetProjected
- **/
-exports.getReview = async function(reviewId, projection, elevate, userObject) {
-  try {
-    let rows = await this.METHOD()
-    return (rows)
-  }
-  catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
-}
-
-
-/**
  * Return a list of Reviews accessible to the requester
  *
  * projection List Additional properties to include in the response.  (optional)
- * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
- * state ReviewState  (optional)
+ * result ReviewState  (optional)
  * action ReviewAction  (optional)
  * status ReviewStatus  (optional)
  * ruleId String Selects Reviews of a Rule (optional)
@@ -436,9 +411,9 @@ exports.getReview = async function(reviewId, projection, elevate, userObject) {
  * packageId Integer Selects Reviews mapped to a Package (optional)
  * returns List
  **/
-exports.getReviews = async function(projection, predicates, elevate, userObject) {
+exports.getReviews = async function(projection, predicates, userObject) {
   try {
-    let rows = await this.queryReviews(projection, predicates, elevate, userObject)
+    let rows = await this.queryReviews(projection, predicates, userObject)
     return (rows)
   }
   catch(err) {
@@ -451,22 +426,21 @@ exports.getReviews = async function(projection, predicates, elevate, userObject)
  * Create or update a complete Review
  *
  * projection List Additional properties to include in the response.  (optional)
- * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
  * ruleId String Selects Reviews of a Rule (optional)
  * assetId String Selects Reviews mapped to an Asset (optional)
  * body Object The Review content (required)
  * returns Review
  **/
-exports.putReview = async function(projection, assetId, ruleId, body, elevate, userObject) {
+exports.putReview = async function(projection, assetId, ruleId, body, userObject) {
   try {
     let values = {
-      userId: userObject.id,
-      stateId: dbUtils.REVIEW_STATE_ABBR[body.state].id,
-      stateComment: body.stateComment,
-      actionId: body.action ? dbUtils.REVIEW_ACTION_STR[body.action] : null,
+      userId: userObject.userId,
+      resultId: dbUtils.REVIEW_RESULT_API[body.result],
+      resultComment: body.resultComment,
+      actionId: body.action ? dbUtils.REVIEW_ACTION_API[body.action] : null,
       actionComment: body.actionComment || null,
-      statusId: body.status ? dbUtils.REVIEW_STATUS_STR[body.status] : null,
-      autoState: body.autoState? 1 : 0
+      statusId: body.status ? dbUtils.REVIEW_STATUS_API[body.status] : null,
+      autoResult: body.autoResult? 1 : 0
     }
 
     let binds = {
@@ -475,7 +449,7 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
     }
     let sqlUpdate = `
       UPDATE
-        stigman.reviews
+        review
       SET
         ${dbUtils.objectBindObject(values, binds)}
       WHERE
@@ -485,10 +459,10 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
     let status = 'created'
     if (result.rowsAffected == 0) {
       let sqlInsert = `
-        INSERT INTO stigman.reviews
-        (assetId, ruleId, stateId, stateComment, actionId, actionComment, statusId, userId, autoState)
+        INSERT INTO review
+        (assetId, ruleId, resultId, resultComment, actionId, actionComment, statusId, userId, autoResult)
         VALUES
-        (:assetId, :ruleId, :stateId, :stateComment, :actionId, :actionComment, :statusId, :userId, :autoState)
+        (:assetId, :ruleId, :resultId, :resultComment, :actionId, :actionComment, :statusId, :userId, :autoResult)
       `
       result = await connection.execute(sqlInsert, binds, {autoCommit: true})
       status = 'updated'
@@ -497,7 +471,7 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
     let rows = await this.queryReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
-    }, elevate, userObject)
+    }, userObject)
     return ({
       row: rows[0],
       status: status
@@ -513,22 +487,21 @@ exports.putReview = async function(projection, assetId, ruleId, body, elevate, u
  * Create or update a complete Review
  *
  * projection List Additional properties to include in the response.  (optional)
- * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
  * ruleId String Selects Reviews of a Rule (optional)
  * assetId String Selects Reviews mapped to an Asset (optional)
  * body Object The Review content (required)
  * returns Review
  **/
-exports.putReviews = async function( body, elevate, userObject) {
+exports.putReviews = async function( body, userObject) {
   try {
     let sqlMerge = `
-    MERGE INTO stigman.reviews r USING (
+    MERGE INTO review r USING (
       SELECT 
         :assetId as ASSETID,
         :ruleId as RULEID,
-        :stateId as STATEID,
-        :stateComment as STATECOMMENT,
-        :autoState AS AUTOSTATE,
+        :resultId as RESULTID,
+        :resultComment as RESULTCOMMENT,
+        :autoResult AS AUTORESULT,
         :actionId as ACTIONID,
         :actionComment AS ACTIONCOMMENT,
         :statusId AS STATUSID,
@@ -537,30 +510,30 @@ exports.putReviews = async function( body, elevate, userObject) {
       ON (r.assetId = i.assetId AND r.ruleId = i.ruleId)
       WHEN MATCHED THEN
         UPDATE SET
-          r.STATEID = i.STATEID,
-          r.STATECOMMENT = i.STATECOMMENT,
-          r.AUTOSTATE = i.AUTOSTATE,
+          r.RESULTID = i.RESULTID,
+          r.RESULTCOMMENT = i.RESULTCOMMENT,
+          r.AUTORESULT = i.AUTORESULT,
           r.ACTIONID = i.ACTIONID,
           r.ACTIONCOMMENT = i.ACTIONCOMMENT,
           r.STATUSID = i.STATUSID,
           r.USERID = i.USERID
       WHEN NOT MATCHED THEN
-      INSERT (r.assetId, r.ruleId, r.stateId, r.stateComment, r.autoState, r.actionId, r.actionComment, r.statusId, r.userId)
-      VALUES (i.assetId, i.ruleId, i.stateId, i.stateComment, i.autoState, i.actionId, i.actionComment, i.statusId, i.userId)
+      INSERT (r.assetId, r.ruleId, r.resultId, r.resultComment, r.autoResult, r.actionId, r.actionComment, r.statusId, r.userId)
+      VALUES (i.assetId, i.ruleId, i.resultId, i.resultComment, i.autoResult, i.actionId, i.actionComment, i.statusId, i.userId)
     `
     let binds = []
-    let reviewsByStatus = await dbUtils.scrubReviewsByUser(body, elevate, userObject)
+    let reviewsByStatus = await dbUtils.scrubReviewsByUser(body, false, userObject)
     reviewsByStatus.permitted.forEach(member => {
       let values = {
         assetId: member.assetId,
         ruleId: member.ruleId,
-        stateId: dbUtils.REVIEW_STATE_ABBR[member.state].id,
-        stateComment: member.stateComment,
-        autoState: member.autoState? 1 : 0,
-        actionId: member.action ? dbUtils.REVIEW_ACTION_STR[member.action] : null,
+        resultId: dbUtils.REVIEW_RESULT_API[member.result],
+        resultComment: member.resultComment,
+        autoResult: member.autoResult? 1 : 0,
+        actionId: member.action ? dbUtils.REVIEW_ACTION_API[member.action] : null,
         actionComment: member.actionComment || null,
-        statusId: member.status ? dbUtils.REVIEW_STATUS_STR[member.status] : 0,
-        userId: userObject.id
+        statusId: member.status ? dbUtils.REVIEW_STATUS_API[member.status] : 0,
+        userId: userObject.userId
       }
       binds.push(values)
     })
@@ -590,34 +563,33 @@ exports.putReviews = async function( body, elevate, userObject) {
  * Merge update a Review, if it exists
  *
  * projection List Additional properties to include in the response.  (optional)
- * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
  * ruleId String Selects Reviews of a Rule (optional)
  * assetId String Selects Reviews mapped to an Asset (optional)
  * body Object The Review content (required)
  * returns Review
  **/
-exports.patchReview = async function(projection, assetId, ruleId, body, elevate, userObject) {
+exports.patchReview = async function(projection, assetId, ruleId, body, userObject) {
   try {
     let values = {
-      userId: userObject.id
+      userId: userObject.userId
     }
-    if (body.state != undefined) {
-      values.stateId = dbUtils.REVIEW_STATE_ABBR[body.state].id
+    if (body.result != undefined) {
+      values.resultId = dbUtils.REVIEW_RESULT_API[body.result]
     }
-    if (body.stateComment != undefined) {
-      values.stateComment = body.stateComment
+    if (body.resultComment != undefined) {
+      values.resultComment = body.resultComment
     }
     if (body.action != undefined) {
-      values.actionId = dbUtils.REVIEW_ACTION_STR[body.action]
+      values.actionId = dbUtils.REVIEW_ACTION_API[body.action]
     }
     if (body.actionComment != undefined) {
       values.actionComment = body.actionComment
     }
     if (body.status != undefined) {
-      values.statusId = dbUtils.REVIEW_STATUS_STR[body.status]
+      values.statusId = dbUtils.REVIEW_STATUS_API[body.status]
     }
-    if (body.autoState != undefined) {
-      values.autoState = body.autoState ? 1 : 0
+    if (body.autoResult != undefined) {
+      values.autoResult = body.autoResult ? 1 : 0
     }
 
     let binds = {
@@ -626,7 +598,7 @@ exports.patchReview = async function(projection, assetId, ruleId, body, elevate,
     }
     let sqlUpdate = `
       UPDATE
-        stigman.reviews
+        review
       SET
         ${dbUtils.objectBindObject(values, binds)}
       WHERE
@@ -640,7 +612,7 @@ exports.patchReview = async function(projection, assetId, ruleId, body, elevate,
     let rows = await this.queryReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
-    }, elevate, userObject)
+    }, userObject)
     return (rows[0])
   }
   catch(err) {
