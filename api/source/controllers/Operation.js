@@ -4,10 +4,11 @@ const writer = require('../utils/writer.js')
 const {promises: fs} = require('fs')
 const config = require('../utils/config')
 const Operation = require(`../service/${config.database.type}/OperationService`)
-const Asset = require(`../service/${config.database.type}/AssetService`)
-const Package = require(`../service/${config.database.type}/PackageService`)
-const User = require(`../service/${config.database.type}/UserService`)
-const Review = require(`../service/${config.database.type}/ReviewService`)
+const Asset = require(`./Asset`)
+const Department = require(`./Department`)
+const Package = require(`./Package`)
+const User = require(`./User`)
+const Review = require(`./Review`)
 
 module.exports.getVersion = async function getVersion (req, res, next) {
   try {
@@ -30,29 +31,34 @@ module.exports.getAppData = async function getAppData (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     if ( elevate ) {
-      let options = req.swagger.params['options'].value
-
-      let packages = await Package.queryPackages( [], {}, elevate, req.userObject)
-
-      let users = await User.queryUsers( [], {}, elevate, req.userObject)
-
-      let assets = await Asset.queryAssets( ['packages','stigReviewers'], {}, elevate, req.userObject)
+      let departments = await Department.exportDepartments(elevate, req.UserObject)
+      let packages = await Package.exportPackages( [], elevate, req.userObject )
+      let users = await User.exportUsers( [], elevate, req.userObject)
+      users.forEach(user => {
+        user.deptId = user.dept.deptId
+        delete user.dept
+        user.roleId = user.role.roleId
+        delete user.role
+      })
+      let assets = await Asset.exportAssets( ['packages','stigReviewers'], elevate, req.userObject)
       assets.forEach(asset => {
         asset.packageIds = asset.packages.map( p => p.packageId )
         delete asset.packages
+        asset.deptId = asset.dept.deptId
+        delete asset.dept
         asset.stigReviewers = asset.stigReviewers.map( s => ({
           benchmarkId: s.benchmarkId,
           userIds: s.reviewers.map( r => r.userId )
         }))
       })
-
-      let reviews = await Review.queryReviews(['history'], {}, elevate, req.userObject)
+      let reviews = await Review.exportReviews(['history'], req.userObject)
       reviews.forEach(r => {
-        ['stateId','statusId','actionId','assetName','username','done'].forEach(k => delete r[k])
+        ['assetName','username','reviewComplete'].forEach(k => delete r[k])
         r.history.forEach(h => delete h.username)
       })      
       let response = {
         packages: packages,
+        departments: departments,
         users: users,
         assets: assets,
         reviews: reviews

@@ -79,6 +79,15 @@ module.exports.getPackages = async function getPackages (req, res, next) {
   }
 }
 
+module.exports.exportPackages = async function exportPackages (projection, elevate, userObject) {
+  try {
+    return await Package.getPackages( projection, elevate, userObject )
+  }
+  catch (err) {
+    throw (err)
+  }
+} 
+
 module.exports.replacePackage = async function updatePackage (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value

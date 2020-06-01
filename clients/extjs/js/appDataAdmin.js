@@ -1,4 +1,4 @@
-function addApiAdmin() {
+function addAppDataAdmin() {
 
   let apiPanel = new Ext.form.FormPanel({
     baseCls: 'x-plain',
@@ -18,7 +18,7 @@ function addApiAdmin() {
         items: [
           {
             xtype: 'button',
-            id: 'api-admin-form-export-btn',
+            id: 'appdata-admin-form-export-btn',
             text: 'Download Application Data',
             iconCls: 'sm-export-icon',
             handler: async function () {
@@ -43,7 +43,7 @@ function addApiAdmin() {
         items: [
           {
             xtype: 'button',
-            id: 'api-admin-form-import-btn',
+            id: 'appdata-admin-form-import-btn',
             text: 'Replace Application Data...',
             iconCls: 'sm-import-icon',
             handler: handleImport
@@ -209,7 +209,7 @@ function addApiAdmin() {
 
 
   let thisTab = Ext.getCmp('admin-center-tab').add({
-    id: 'api-admin-tab',
+    id: 'appdata-admin-tab',
     iconCls: 'sm-database-icon',
     title: 'API',
     closable: true,

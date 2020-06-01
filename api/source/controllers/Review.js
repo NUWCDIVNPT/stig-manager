@@ -32,6 +32,15 @@ module.exports.deleteReview = async function deleteReview (req, res, next) {
   }
 }
 
+module.exports.exportReviews = async function exportReviews (projection, userObject) {
+  try {
+    return await Review.getReviews(projection, {}, userObject )
+  }
+  catch (err) {
+    throw (err)
+  }
+} 
+
 module.exports.getReviewByAssetRule = async function (req, res, next) {
   let projection = req.swagger.params['projection'].value
   try {

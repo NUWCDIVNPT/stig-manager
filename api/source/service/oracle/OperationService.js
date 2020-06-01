@@ -20,7 +20,7 @@ exports.getVersion = async function(userObject) {
 
 exports.replaceAppData = async function (importOpts, appData, userObject ) {
   function dmlObjectFromAppData (appdata) {
-    let {packages, assets, users, reviews} = appdata
+    const {packages, departments, assets, users, reviews} = appdata
     let dml = {
       preload: [
         'ALTER TABLE REVIEW MODIFY CONSTRAINT PK_REVIEW DISABLE',
@@ -44,6 +44,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         'ALTER TABLE REVIEW MODIFY CONSTRAINT UK_REVIEW_2 ENABLE',
         'ALTER TABLE REVIEW_HISTORY MODIFY CONSTRAINT PK_RH ENABLE'
       ],
+      department: {
+        sqlDelete: `DELETE FROM department`,
+        sqlInsert: `INSERT INTO department (deptId, name) VALUES (:deptId, :name)`,
+        insertBinds: []
+      },
       package: {
         sqlDelete: `DELETE FROM package`,
         sqlInsert: `INSERT INTO
@@ -169,6 +174,15 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     }
 
     // Process appdata object
+    // DEPARTMENTS
+    if (!departments.some(d => d.deptId === 0)) {
+      // Ensure the default department always exists
+      departments.push({
+        deptId: 0,
+        name: 'Default'
+      })
+    }
+    dml.department.insertBinds = departments
 
     // PACKAGES
     for (const p of packages) {
@@ -260,7 +274,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       'assetPackageMap',
       'package',
       'asset',
-      'userData'
+      'userData',
+      'department'
     ]
     for (const table of tableOrder) {
       hrstart = process.hrtime() 
@@ -273,6 +288,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     // Inserts
     tableOrder = [
       'package',
+      'department',
       'userData',
       'asset',
       'assetPackageMap',

@@ -55,6 +55,7 @@ Ext.override(Ext.Ajax, {
                 },
                 failure: function (response, options) {
                     reject ({
+                        message: `${options.method} ${options.url}\n${response.responseText}`,
                         response: response,
                         options: options
                     })

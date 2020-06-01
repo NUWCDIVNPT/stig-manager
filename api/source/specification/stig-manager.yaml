@@ -1218,10 +1218,10 @@ paths:
       security:
         - oauth:
             - 'stig-manager'
-  '/departments/{departmentId}':
+  '/departments/{deptId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      - name: departmentId
+      - name: deptId
         in: path
         description: A path parameter that indentifies a Department
         required: true
@@ -2014,6 +2014,7 @@ components:
         - nonnetwork
         - stigReviewers
         - packageIds
+      additionalProperties: false
       properties:
         name:
           type: string

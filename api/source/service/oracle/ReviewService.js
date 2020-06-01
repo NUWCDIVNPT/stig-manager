@@ -325,7 +325,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         record.ruleInfo = JSON.parse(record.ruleInfo)
       }
       if (inProjection.includes('history')) {
-        record.history = JSON.parse(record.history)
+        record.history = JSON.parse(record.history) || []
       }
     }
 

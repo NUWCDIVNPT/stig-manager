@@ -21,7 +21,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
         // ROLE.DEPT can only map stigReviewers with departmental userIds
         if (body.stigReviewers) {
           let userIdsFromRequest = []
-          for (sr of bodyStigReviewers) {
+          for (sr of body.stigReviewers) {
             for (userId of sr.userIds) {
               userIdsFromRequest.push(userId)
             }
@@ -42,7 +42,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
         throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
       }
       let asset = await Asset.createAsset( body, projection, elevate, req.userObject)
-      writer.writeJson(res, 201, asset)
+      writer.writeJson(res, asset, 201)
     }
   }
   catch (err) {
@@ -71,6 +71,16 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     writer.writeJson(res, err)
   }
 }
+
+module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
+  try {
+    let assets =  await Asset.getAssets(null, null, null, projection, elevate, userObject )
+    return assets
+  }
+  catch (err) {
+    throw (err)
+  }
+} 
 
 module.exports.getAsset = async function getAsset (req, res, next) {
   try {

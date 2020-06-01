@@ -61,35 +61,27 @@ function addAdminTab(adminAttributes) {
 		case 'artifact-admin':
 			addArtifactAdmin();
 			break;
-		case 'api-admin':
-			addApiAdmin();
+		case 'appdata-admin':
+			addAppDataAdmin();
 			break;
 	}	
 }
 
 function getTree() {
-	let children = [{
-		id: 'user-admin',
-		text: 'Users',
-		leaf: true,
-		iconCls: 'sm-users-icon'
-	},{
-		id: 'asset-admin',
-		text: 'Assets',
-		leaf: true,
-		iconCls: 'sm-asset-icon'
-	},{
-		id: 'artifact-admin',
-		text: 'Artifacts',
-		leaf: true,
-		iconCls: 'sm-artifact-icon'
-	},{
-		id: 'stig-admin',
-		text: 'STIG checklists',
-		leaf: true,
-		iconCls: 'sm-stig-icon'
-	}]
-
+	let children = []
+	if (curUser.canAdmin) {
+		children.push({
+			id: 'appdata-admin',
+			text: 'Application Data ',
+			leaf: true,
+			iconCls: 'sm-database-save-icon'
+		},{
+			id: 'department-admin',
+			text: 'Departments',
+			leaf: true,
+			iconCls: 'sm-department-icon'
+		})
+	}
 	if (curUser.canAdmin || curUser.role.roleId === 4) {
 		children.push({
 			id: 'package-admin',
@@ -98,14 +90,30 @@ function getTree() {
 			iconCls: 'sm-package-icon'
 		})
 	}
-	if (curUser.canAdmin) {
-		children.push({
-			id: 'api-admin',
-			text: 'API ',
-			leaf: true,
-			iconCls: 'sm-database-save-icon'
-		})
+	children.push({
+		id: 'asset-admin',
+		text: 'Assets',
+		leaf: true,
+		iconCls: 'sm-asset-icon'
+	},{
+		id: 'user-admin',
+		text: 'Users',
+		leaf: true,
+		iconCls: 'sm-users-icon'
 	}
+	// ,{
+	// 	id: 'artifact-admin',
+	// 	text: 'Artifacts',
+	// 	leaf: true,
+	// 	iconCls: 'sm-artifact-icon'
+	// }
+	,{
+		id: 'stig-admin',
+		text: 'STIG checklists',
+		leaf: true,
+		iconCls: 'sm-stig-icon'
+	})
+
 
 	return new Ext.tree.AsyncTreeNode({
 		id: 'global-admin',

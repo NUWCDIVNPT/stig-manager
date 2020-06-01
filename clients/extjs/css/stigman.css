@@ -12,6 +12,10 @@
 	background-color:#ffa0a0;
 }
 
+.icon-department
+{
+	background:url(../img/department-16.png) 0 no-repeat !important;
+}
 .icon-refresh
 {
 	background:url(../img/refresh.gif) 0 no-repeat !important;
@@ -310,9 +314,12 @@
 .sm-package-icon {
  background-image: url(../img/package.png) !important;
 }
-.sm-users-icon {
- background-image: url(../img/User-Group-icon.png) !important;
+.sm-department-icon {
+ background-image: url(../img/department-16.png) !important;
 }
+.sm-users-icon {
+	background-image: url(../img/User-Group-icon.png) !important;
+} 
 .sm-stig-icon {
  background-image: url(../img/security_firewall_on.png) !important;
 }

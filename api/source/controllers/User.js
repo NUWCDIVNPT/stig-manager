@@ -42,6 +42,15 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
   }
 }
 
+module.exports.exportUsers = async function exportUsers (projection, elevate, userObject) {
+  try {
+    return await User.getUsers(null, null, null, projection, elevate, userObject )
+  }
+  catch (err) {
+    throw (err)
+  }
+} 
+
 module.exports.getUserObject = async function getUserObject (req, res, next) {
   try {
     writer.writeJson(res, req.userObject)

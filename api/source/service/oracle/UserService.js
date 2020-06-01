@@ -128,7 +128,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       record.canAdmin = record.canAdmin == 1 ? true : false
       record.role = JSON.parse(record.role)
       record.dept = JSON.parse(record.dept)
-      if (nProjection && inProjection.includes('stigReviews')) {
+      if (inProjection && inProjection.includes('stigReviews')) {
        // Check for "empty" arrays 
         record.stigReviews = record.stigReviews ? JSON.parse(record.stigReviews) : []
       }
