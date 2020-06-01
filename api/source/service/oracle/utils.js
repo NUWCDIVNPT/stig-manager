@@ -3,7 +3,7 @@ const config = require('../../utils/config')
 const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
-const ROLE = require('../../utils/appRoles')
+
 
 let _this = this
 
@@ -76,8 +76,8 @@ module.exports.initializeDatabase = function () {
         let result = await connection.execute('SELECT COUNT(userId) as users FROM user_data')
         if (result.rows[0][0] === 0) {
           await connection.execute(
-            'insert into user_data (username, display, roleId, canAdmin) VALUES (:1, :2, :3, :4)',
-            [config.init.superuser, 'Superuser', 4, 1],
+            'insert into user_data (username, display, accessLevel, canAdmin) VALUES (:1, :2, :3, :4)',
+            [config.init.superuser, 'Superuser', 3, 1],
             {autoCommit: true}
           )
           console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
@@ -125,15 +125,11 @@ module.exports.getUserObject = async function (username) {
           KEY 'deptId' VALUE d.deptId,
           KEY 'name' VALUE d.name
         ) as "dept",
-        json_object(
-          KEY 'roleId' VALUE r.roleId,
-          KEY 'name' VALUE r.display
-        ) as "role",
+        ud.accessLevel as "accessLevel",
         ud.canAdmin as "canAdmin"
       from 
         user_data ud
         left join department d on d.deptId = ud.deptId
-        left join role r on r.roleid = ud.roleId
       where
         UPPER(username)=UPPER(:0)
       `
@@ -142,20 +138,27 @@ module.exports.getUserObject = async function (username) {
       outFormat: oracledb.OUT_FORMAT_OBJECT   // query result format
     }
     result = await connection.execute(sql, binds, options)
-    await connection.close()
+    if (result.rows.length === 0) {
+      throw new Error(`Account ${username} is not registered.`)
+    }
     result.rows[0].canAdmin = result.rows[0].canAdmin == 1
     result.rows[0].dept = JSON.parse(result.rows[0].dept)
-    result.rows[0].role = JSON.parse(result.rows[0].role)
     return (result.rows[0])
   }
   catch (err) {
       throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
   }     
 }
 
 module.exports.objectBind = function (object, binds) {
-  let sqlStubs = []
+  let sqlStubs = [], column
   for (const property in object) {
+    if (property === 'accessLevel') { column === 'accessLevel'}
     sqlStubs.push(`${property} = :${property}`)
     binds.push(object[property])
   }
@@ -163,9 +166,10 @@ module.exports.objectBind = function (object, binds) {
 }
 
 module.exports.objectBindObject = function (object, binds) {
-  let sqlStubs = []
+  let sqlStubs = [], column
   for (const property in object) {
-    sqlStubs.push(`${property} = :${property}`)
+    if (property === 'accessLevel') { column === 'accessLevel'}
+    sqlStubs.push(`${column||property} = :${property}`)
     binds[property] = (object[property])
   }
   return sqlStubs.join(',')
@@ -259,10 +263,10 @@ module.exports.USER_ROLE = {
 module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
   try {
     let context, sql
-    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
+    if (userObject.accessLevel === 3 || elevate ) {
       return true
     } 
-    else if (userObject.role.roleId === ROLE.DEPT) {
+    else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT
@@ -304,10 +308,10 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {
     let sql
-    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
+    if (userObject.accessLevel === 3 || elevate ) {
       return true
     } 
-    else if (userObject.role.roleId === ROLE.DEPT) {
+    else if (userObject.accessLevel === 2) {
       sql = `
         SELECT
           a.assetId
@@ -348,10 +352,10 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
   try {
     let context, sql, permitted = [], rejected = []
-    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
+    if (userObject.accessLevel === 3 || elevate ) {
       permitted = reviews
     } 
-    else if (userObject.role.roleId === ROLE.DEPT) {
+    else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT

@@ -2,7 +2,7 @@
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
-const ROLE = require('../../utils/appRoles')
+
 
 const _this = this
 
@@ -35,15 +35,11 @@ exports.queryDepartments = async function (inProjection, inPredicates, elevate, 
     // PROJECTIONS
     if (inProjection && inProjection.includes('users')) {
       joins.push('left join user_data u on d.deptId = u.deptId')
-      joins.push('left join role on u.roleId = role.roleId')
       columns.push(`json_arrayagg( 
         json_object(
           KEY 'userId' VALUE u.userId,
           KEY 'username' VALUE u.username,
-          KEY 'role' VALUE json_object(
-            KEY 'roleId' VALUE role.roleId,
-            KEY 'name' VALUE role.name
-          )
+          KEY 'accessLevel' VALUE u.accessLevel
         )
         order by u.username returning varchar2(32000)) as "users"`)
     }
@@ -57,7 +53,7 @@ exports.queryDepartments = async function (inProjection, inPredicates, elevate, 
       predicates.statements.push('d.deptId = :deptId')
       predicates.binds.deptId = inPredicates.deptId
     }
-    if (!elevate && userObject.role.roleId === ROLE.DEPT) {
+    if (!elevate && userObject.accessLevel === 2) {
       predicates.statements.push('d.deptId = :deptId')
       predicates.binds.deptId = userObject.dept.deptId
     } 

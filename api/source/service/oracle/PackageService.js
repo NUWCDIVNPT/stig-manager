@@ -2,7 +2,7 @@
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
-const ROLE = require('../../utils/appRoles')
+
 
 
 /**
@@ -10,9 +10,9 @@ Generalized queries for package(s).
 **/
 exports.queryPackages = async function (inProjection, inPredicates, elevate, userObject) {
   let context
-  if ( userObject.role.roleId === ROLE.COMMAND || elevate ) {
+  if ( userObject.accessLevel === 3 || elevate ) {
     context = dbUtils.CONTEXT_ALL
-  } else if (userObject.role.roleId === ROLE.DEPT) {
+  } else if (userObject.accessLevel === 2) {
     context = dbUtils.CONTEXT_DEPT
   } else {
     context = dbUtils.CONTEXT_USER
@@ -306,11 +306,11 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     }
 
     // Non-staff access control
-    if (userObject.role === "IAO") {
+    if (userObject.accessLevel === 2) {
       predicates.statements.push('ap.assetId in (select assetId from asset where dept=:dept)')
       predicates.binds.dept = userObject.dept.deptId
     } 
-    else if (userObject.role === "IAWF") {
+    else if (userObject.accessLevel === 1) {
       predicates.statements.push(`ap.assetId in (
         select
             sa.assetId

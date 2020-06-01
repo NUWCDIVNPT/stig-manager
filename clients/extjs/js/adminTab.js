@@ -82,7 +82,7 @@ function getTree() {
 			iconCls: 'sm-department-icon'
 		})
 	}
-	if (curUser.canAdmin || curUser.role.roleId === 4) {
+	if (curUser.canAdmin || curUser.accessLevel === 3) {
 		children.push({
 			id: 'package-admin',
 			text: 'Packages',

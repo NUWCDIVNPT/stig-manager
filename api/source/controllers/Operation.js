@@ -37,8 +37,6 @@ module.exports.getAppData = async function getAppData (req, res, next) {
       users.forEach(user => {
         user.deptId = user.dept.deptId
         delete user.dept
-        user.roleId = user.role.roleId
-        delete user.role
       })
       let assets = await Asset.exportAssets( ['packages','stigReviewers'], elevate, req.userObject)
       assets.forEach(asset => {

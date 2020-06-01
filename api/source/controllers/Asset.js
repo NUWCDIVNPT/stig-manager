@@ -2,7 +2,6 @@
 
 const writer = require('../utils/writer.js');
 const config = require('../utils/config')
-const ROLE = require('../utils/appRoles')
 const Asset = require(`../service/${config.database.type}/AssetService`);
 const User = require(`../service/${config.database.type}/UserService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
@@ -10,15 +9,15 @@ const dbUtils = require(`../service/${config.database.type}/utils`)
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.role.roleId >= ROLE.DEPT ) {
+    if ( elevate || req.userObject.accessLevel >= 2 ) {
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-      if ( req.userObject.role.roleId === ROLE.DEPT && !elevate ) {
+      if ( req.userObject.accessLevel === 2 && !elevate ) {
         if ( body.deptId !== req.userObject.dept.deptId ) {
-          // ROLE.DEPT can only create assets for their department
+          // Level 2 can only create assets for their department
           throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with deptId: ${body.dept.deptId}.`} ) )
         }
-        // ROLE.DEPT can only map stigReviewers with departmental userIds
+        // Level 2 can only map stigReviewers with departmental userIds
         if (body.stigReviewers) {
           let userIdsFromRequest = []
           for (sr of body.stigReviewers) {
@@ -31,14 +30,14 @@ module.exports.createAsset = async function createAsset (req, res, next) {
             const deptUserIds = deptUsers.map(u => u.userId)
             const allowed = userIdsFromRequest.every(i => deptUserIds.includes(i))
             if (! allowed) {
-              // ROLE.DEPT can only map Users from their department
+              // Level 2 can only map Users from their department
               throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to map non-department Users.`} ) )
             }
           }
         }
       }
       else {
-        // Not elevated or >= ROLE.DEPT
+        // Not elevated or >= 2
         throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
       }
       let asset = await Asset.createAsset( body, projection, elevate, req.userObject)
@@ -53,11 +52,11 @@ module.exports.createAsset = async function createAsset (req, res, next) {
 module.exports.deleteAsset = async function deleteAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.role.roleId >= ROLE.DEPT ) {
+    if ( elevate || req.userObject.accessLevel >= 2 ) {
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
-      if (req.userObject.role.roleId === ROLE.DEPT && !elevate) {
-        // Unelevated ROLE.DEPT, check if user can fetch Asset
+      if (req.userObject.accessLevel === 2 && !elevate) {
+        // Unelevated Level 2, check if user can fetch Asset
         let assetToDelete = await Asset.getAsset(assetId, projection, elevate, req.userObject)
         if (!assetToDelete) {
           throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
@@ -87,7 +86,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     let assetId = req.swagger.params['assetId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
-    if (req.userObject.role.roleId <= ROLE.REVIEWER && !elevate) {
+    if (req.userObject.accessLevel <= 1 && !elevate) {
       if (projection && projection.includes('stigReviewers')) {
         throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
       }
@@ -107,7 +106,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let deptId = req.swagger.params['deptId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
-    if (req.userObject.role.roleId <= ROLE.REVIEWER && !elevate) {
+    if (req.userObject.accessLevel <= 1 && !elevate) {
       if (projection && projection.includes('stigReviewers')) {
         throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
       }
@@ -125,7 +124,7 @@ module.exports.getAssetsByBenchmarkId = async function getAssets (req, res, next
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
-    if (req.userObject.role.roleId <= ROLE.REVIEWER && !elevate) {
+    if (req.userObject.accessLevel <= 1 && !elevate) {
       if (projection && projection.includes('reviewers')) {
         throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'reviewers'.`} ) )
       }
@@ -169,9 +168,9 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
     let assetIds = req.swagger.params['body'].value
     let projection = req.swagger.params['projection'].value
 
-    if (elevate || req.userObject.roleId >= ROLE.DEPT) {
-      if (req.userObject.roleId === ROLE.DEPT && !elevated) {
-        // ROLE.DEPT can only change the mapped Assets from their department
+    if (elevate || req.userObject.accessLevel >= 2) {
+      if (req.userObject.accessLevel === 2 && !elevated) {
+        // Level 2 can only change the mapped Assets from their department
         // E.g. If the request incudes an empty asset array, then only departmental assets are unmapped
         // Get all assets currently mapped to this STIG by making an internal elevated request
         let currentAssetMap = await Asset.getAssetsByBenchmarkId(benchmarkId, null, true, req.userObject)
@@ -206,11 +205,11 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
 module.exports.updateAsset = async function updateAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.role.roleId >= ROLE.DEPT ) {
+    if ( elevate || req.userObject.accessLevel >= 2 ) {
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-      if (!elevate && req.userObject.role.roleId === ROLE.DEPT) {
+      if (!elevate && req.userObject.accessLevel === 2) {
         await verifyDeptUpdateOrReplace(assetId, body, req.userObject)
       }
       let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
@@ -228,11 +227,11 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
 module.exports.replaceAsset = async function replaceAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.role.roleId >= ROLE.DEPT ) {
+    if ( elevate || req.userObject.accessLevel >= 2 ) {
       let assetId = req.swagger.params['assetId'].value
       let projection = req.swagger.params['projection'].value
       let body = req.swagger.params['body'].value
-      if (!elevate && req.userObject.role.roleId === ROLE.DEPT) {
+      if (!elevate && req.userObject.accessLevel === 2) {
         await verifyDeptUpdateOrReplace(assetId, body, req.userObject)
       }
       let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
@@ -249,20 +248,20 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
 
 async function verifyDeptUpdateOrReplace (assetId, body, userObject) {
   try {
-    // ROLE.DEPT can only update assets they can fetch.
+    // Level 2 can only update assets they can fetch.
     let currentAsset = await Asset.getAsset(assetId, ['stigReviewers'], false, userObject)
     if ( ! currentAsset ) {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    // ROLE.DEPT can't change the deptId of an Asset
+    // Level 2 can't change the deptId of an Asset
     if ( body.deptId && body.deptId !== userObject.dept.deptId ) {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to update deptId: ${body.dept.deptId}.`} ) )
     }
-    // ROLE.DEPT can only map stigReviewers with userIds from their department 
+    // Level 2 can only map stigReviewers with userIds from their department 
     // UNLESS the stigReviewer is already mapped
     if (body.stigReviewers) {
-      // Get the departmental userIds with ROLE.REVIEWER
-      const deptUsers = await User.getUsers(ROLE.REVIEWER, null, null, null, false, userObject)
+      // Get the departmental userIds with 1
+      const deptUsers = await User.getUsers(1, null, null, null, false, userObject)
       const deptUserIds = deptUsers.map(u => u.userId)
 
       // From the earlier call to getAsset(), build an object of current stigReviewers
@@ -289,7 +288,7 @@ async function verifyDeptUpdateOrReplace (assetId, body, userObject) {
         const newIds = proposedStigUsers[benchmarkId].filter( userId => !currentStigUsers[benchmarkId].includes(userId) )
         for (const newId of newIds) {
           const allowed = deptUserIds.includes(newId)
-          // ROLE.DEPT can only map new Users from their department
+          // 2 can only map new Users from their department
           if (!allowed) {
             throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to map userId: ${newId} to ${benchmarkId}.`} ) )
           }

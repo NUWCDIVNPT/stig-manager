@@ -137,8 +137,8 @@ function addAssetAdmin() {
 				dataIndex: 'name',
 				sortable: true
 			},{ 	
-				header: "Dept",
-				width: 10,
+				header: "Department",
+				width: 15,
 				dataIndex: 'dept.name',
 				sortable: true
 			},{ 	
@@ -547,11 +547,6 @@ function addAssetAdmin() {
 			});
 
 			let deptStore = new Ext.data.JsonStore({
-				listeners: {
-					load: function () {
-						let one = 1
-					}
-				},
 				fields: [{
 					name: 'deptId',
 					type: 'integer'
@@ -627,8 +622,8 @@ function addAssetAdmin() {
 								name: 'deptId',
 								mode: 'local',
 								triggerAction: 'all',
-								hideTrigger: !(curUser.canAdmin || curUser.role.roleId == 4),
-								readOnly: !(curUser.canAdmin || curUser.role.roleId == 4),
+								hideTrigger: !(curUser.canAdmin || curUser.accessLevel == 4),
+								readOnly: !(curUser.canAdmin || curUser.accessLevel == 4),
 								//fieldClass: "x-item-disabled",
 								displayField:'name',
 								valueField: 'deptId',
@@ -882,7 +877,7 @@ function addAssetAdmin() {
 						viewConfig: {
 							forceFit: true,
 							getRowClass: function(record, rowIndex, rp, ds) {
-								if (curUser.role.roleId === 3 && !curUser.canAdmin) {
+								if (curUser.accessLevel === 2 && !curUser.canAdmin) {
 									if (record.data.deptId !== curUser.deptId) {
 										return 'x-stigman-cross-department'
 									}
@@ -997,12 +992,12 @@ function addAssetAdmin() {
 						url: `${STIGMAN.Env.apiBase}/users`,
 						params: {
 							elevate: curUser.canAdmin,
-							roleId: 2
+							accessLevel: 1
 						},
 						method: 'GET'
 					})
 					let apiUsers = JSON.parse(result.response.responseText)
-					if (curUser.role.roleId === 3 && !curUser.canAdmin) {
+					if (curUser.accessLevel === 2 && !curUser.canAdmin) {
 						// merge users from assignedUsers, ExtJS will handle any duplicate ids
 						apiUsers = apiUsers.concat(assignedUsers)
 					}

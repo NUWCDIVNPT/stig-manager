@@ -339,7 +339,7 @@ function addReview(leaf, selectedRule, selectedResource) {
         var test = 1;
       },
       render: function () {
-        if (curUser.role.roleId !== 4) {
+        if (curUser.accessLevel !== 3) {
           Ext.getCmp('unlockMenuItem' + idAppend).hide();
         } else {
           Ext.getCmp('unlockMenuItem' + idAppend).show();

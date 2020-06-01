@@ -20,12 +20,11 @@ paths:
         - Package
       summary: Return a list of Packages accessible to the requester
       description: |
-        |Role|Request|Response|
-        |---|---|---|
-        |**COMMAND**|Permitted|All packages<br>- assets: All mapped assets<br/>- stigs: All STIGs mapped to mapped assets| 
-        |**DEPT**|Permitted|Packages having department assets<br/>- assets: Department assets<br>- stigs: STIGs mapped to department assets|
-        |**REVIEWER**|Permitted|Packages having assigned assets<br/>- assets: Assigned assets<br>- stigs: STIGs mapped to assigned assets|
-        |**elevate**|Permitted|All packages<br/>- assets: All mapped assets<br>- stigs: All mapped STIGs| 
+        |User accessLevel|Request|Response|
+        |:---:|---|---|
+        |**1**|Permitted|Packages having assigned assets<br/>- assets: Assigned assets<br>- stigs: STIGs mapped to assigned assets|
+        |**2**|Permitted|Packages having department assets<br/>- assets: Department assets<br>- stigs: STIGs mapped to department assets|
+        |**3<br>elevate**|Permitted|All packages<br>- assets: All mapped assets<br/>- stigs: All STIGs mapped to mapped assets| 
       operationId: getPackages
       responses:
         '200':
@@ -50,11 +49,11 @@ paths:
         - Package
       summary: Create a Package
       description: |
-        |Role        |Request        |RequestBody        |Response|
+        |User accessLevel        |Request        |RequestBody        |Response|
         |---         |---            |---                |---|
-        |**COMMAND** | Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
-        |**DEPT**    | Forbidden     | --                | -- |
-        |**REVIEWER**| Forbidden     |--                 |--|
+        |**3** | Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
+        |**2**    | Forbidden     | --                | -- |
+        |**1**| Forbidden     |--                 |--|
         |**elevated**| Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
       operationId: createPackage
       requestBody:
@@ -96,11 +95,11 @@ paths:
         - Package
       summary: Return a Package
       description: |
-        |Role        |Request        |Parameters|Response|
+        |User accessLevel        |Request        |Parameters|Response|
         |---         |---            |---                |---|
-        |**COMMAND** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
-        |**DEPT**    | Permitted     |Any {packageId} | IF {packageId} HAS *department assets* THEN<br>Package:<br>--> assets: Mapped department assets<br>--> stigs: STIGs mapped to department assets|
-        |**REVIEWER**| Permitted     |Any {packageId}  |IF {packageId} HAS *assigned assets* THEN<br>Package:<br>--> assets: Assigned assets<br>--> stigs: STIGs mapped to assigned assets|
+        |**3** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
+        |**2**    | Permitted     |Any {packageId} | IF {packageId} HAS *department assets* THEN<br>Package:<br>--> assets: Mapped department assets<br>--> stigs: STIGs mapped to department assets|
+        |**1**| Permitted     |Any {packageId}  |IF {packageId} HAS *assigned assets* THEN<br>Package:<br>--> assets: Assigned assets<br>--> stigs: STIGs mapped to assigned assets|
         |**elevated** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
       operationId: getPackage
       responses:
@@ -125,7 +124,7 @@ paths:
       summary: Merge provided properties with a Package
       description: |
         RBAC table:
-        | COMMAND | DEPT | REVIEWER | elevated |
+        | 3 | 2 | 1 | elevated |
         |-----|-----|-------|-------|
         | Any packageId | Prohibited | Prohibited | Any packageId |
       operationId: updatePackage
@@ -260,7 +259,7 @@ paths:
   #     summary: Return the Findings for the specified Package
   #     description: |
   #       Request RBAC:
-  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
   #       |-----|-----|-------|-------|
   #       | All packages | Packages having department Assets | Packages having Assets with assigned Reviews | NA |
   #     operationId: getFindingsByPackage
@@ -302,7 +301,7 @@ paths:
   #       Generates a Plan of Action and Milestones (POAM) or Risk Assessment Report (RAR) for use as an eMASS artifact. The artifact is generated based on the currently accepted findings and incorporates the EMassPoamRarRecords managed by the {groupId} child endpoints.
 
   #       RBAC table:
-  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
   #       |-----|-----|-------|-------|
   #       | All packages | Prohibited | Prohibited | NA |
   #     operationId: getPoamOrRarByPackage
@@ -333,7 +332,7 @@ paths:
   #     summary: Return the eMASS POAM/RAR record for the specified Package and Finding (groupId)
   #     description: |
   #       RBAC table:
-  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
   #       |-----|-----|-------|-------|
   #       | Any {packageId}<br>Any {groupId} | Prohibited | Prohibited | NA |
   #     operationId: getPoamRecordByPackageGroup
@@ -360,7 +359,7 @@ paths:
   #     operationId: setPoamRecordByPackageGroup
   #     description: |
   #       RBAC table:
-  #       | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
   #       |-----|-----|-------|-------|
   #       | Any {packageId}<br>Any {groupId} | Prohibited | Prohibited | NA |
   #     requestBody:
@@ -626,7 +625,7 @@ paths:
         - Review
       summary: Return a list of Reviews accessible to the requester
       description: |
-        | RBAC | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        | RBAC | User Level 1 | User Level 2 | User Level 3 | elevated |
         |-----|-----|-------|-------|-------|
         |Response| All reviews | All departmental reviews | All mapped reviews  | NA  |
       operationId: getReviews
@@ -691,7 +690,7 @@ paths:
         - Review
       summary: Import one or more Reviews from a JSON body, a STIGViewer CKL file, or an SCC XCCDF file
       description: |
-        | RBAC | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        | RBAC | User Level 1 | User Level 2 | User Level 3 | elevated |
         |-----|-----|-------|-------|-------|
         |RequestBody| assetId: any<BR>ruleId: any|assetId: any departmental<BR>ruleId: any | assetId: any mapped asset<BR>ruleId: any ruleId from a mapped STIG on the asset |NA  |
       operationId: importReviews
@@ -933,7 +932,7 @@ paths:
       operationId: getUsers
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
-        - $ref: '#/components/parameters/UserRoleQuery'
+        - $ref: '#/components/parameters/UserAccessLevelQuery'
         - name: deptId
           in: query
           schema:
@@ -1101,25 +1100,25 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-  # /roles:
+  # /accessLevels:
   #   parameters:
   #     - $ref: '#/components/parameters/ElevateQuery'
   #   get:
   #     tags:
   #       - User
-  #     summary: Return the list of Role names
-  #     operationId: getRoles
+  #     summary: Return the list of Level names
+  #     operationId: getLevels
   #     parameters:
-  #       - $ref: '#/components/parameters/RoleProjectionQuery'
+  #       - $ref: '#/components/parameters/LevelProjectionQuery'
   #     responses:
   #       '200':
-  #         description: Roles response
+  #         description: Levels response
   #         content:
   #           application/json:
   #             schema:
   #               type: array
   #               items:
-  #                 $ref: '#/components/schemas/RoleProjected'
+  #                 $ref: '#/components/schemas/LevelProjected'
   #       default:
   #         description: unexpected error
   #         content:
@@ -1132,14 +1131,14 @@ paths:
   #   put:
   #     tags:
   #       - User
-  #     summary: Set the list of Role names
-  #     operationId: setRoles
+  #     summary: Set the list of Level names
+  #     operationId: setLevels
   #     requestBody:
   #       required: true
   #       content:
   #         application/json:
   #           schema:
-  #             $ref: '#/components/schemas/RoleNamesReplace'
+  #             $ref: '#/components/schemas/LevelNamesReplace'
   #     responses:
   #       '200':
   #         description: UserProjected response
@@ -1148,7 +1147,7 @@ paths:
   #             schema:
   #               type: array
   #               items:
-  #                 $ref: '#/components/schemas/Role'
+  #                 $ref: '#/components/schemas/Level'
   #       default:
   #         description: unexpected error
   #         content:
@@ -1443,11 +1442,11 @@ paths:
       operationId: getAssetsByBenchmarkId
       description: |
         Request RBAC:
-        | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        | Level 1 | Level 2 | Level 3 | elevated |
         |-----|-----|-------|-------|
         | Any {benchmarkId} | Any {benchmarkId} | Any {benchmarkId}  | Any {benchmarkId}  |
         Response RBAC:
-        | RoleId 1 | RoleId 2 | RoleId 3 | elevated |
+        | Level 1 | Level 2 | Level 3 | elevated |
         |-----|-----|-------|-------|
         | All assets<br>All mapped reviewers | All departmental assets<br>All mapped reviewers | All assigned assets<br>Projection ['reviewers'] prohibited  | All assets<br>All mapped reviewers  |
       responses:
@@ -1473,11 +1472,11 @@ paths:
         - Asset
       summary: Set the Assets mapped to a STIG
       description: |
-        |Role|Request|RequestBody|Response|
+        |Level|Request|RequestBody|Response|
         |---|---|---|---|
-        |**COMMAND**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
-        |**DEPT**|Any {benchmarkId} | Department [assetId] | All assets in department<br>-->All mapped reviewers| 
-        |**REVIEWER**|Prohibited |--|--|
+        |**3**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
+        |**2**|Any {benchmarkId} | Department [assetId] | All assets in department<br>-->All mapped reviewers| 
+        |**1**|Prohibited |--|--|
         |**elevated**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
       operationId: setStigAssetsByBenchmarkId
       requestBody:
@@ -2794,47 +2793,10 @@ components:
           type: string
         revisionStr:
           type: string
-    Role:
-      type: object
-      properties:
-        roleId:
-          type: integer
-          minimum: 1
-          maximum: 4
-        name:
-          type: string
-    RoleId:
+    AccessLevel:
       type: integer
-      enum:
-        - 1
-        - 2
-        - 3
-        - 4
-    RoleNamesReplace:
-      type: array
-      items:
-        type: string
-      minItems: 4
-      maxItems: 4
-      uniqueItems: true
-    RoleProjected:
-      allOf:
-        - $ref: '#/components/schemas/Role'
-        - type: object
-          properties:
-            users:
-              type: object
-              properties:
-                userId:
-                  type: integer
-                username:
-                  type: string
-                display:
-                  type: string
-                dept:
-                  $ref: '#/components/schemas/Department'
-                canAdmin:
-                  type: boolean
+      minimum: 1
+      maximum: 3
     Rule:
       type: object
       properties:
@@ -2962,8 +2924,8 @@ components:
           type: string
         dept:
           $ref: '#/components/schemas/Department'
-        role:
-          $ref: '#/components/schemas/Role'
+        accessLevel:
+          $ref: '#/components/schemas/AccessLevel'
         canAdmin:
           type: boolean
     UserBasic:
@@ -2979,7 +2941,7 @@ components:
         - username
         - deptId
         - display
-        - roleId
+        - accessLevel
       type: object
       properties:
         username:
@@ -2988,7 +2950,7 @@ components:
           type: string
         deptId:
           type: integer
-        roleId:
+        accessLevel:
           type: integer
         canAdmin:
           type: boolean
@@ -3013,7 +2975,7 @@ components:
           type: string
         deptId:
           type: integer
-        roleId:
+        accessLevel:
           type: integer
         canAdmin:
           type: boolean
@@ -3240,7 +3202,7 @@ components:
       schema:
         pattern: ^(V\d+R\d+(\.\d+)?|latest)$
         type: string
-    RoleProjectionQuery:
+    LevelProjectionQuery:
       name: projection
       in: query
       description: |
@@ -3315,11 +3277,11 @@ components:
           type: string
           enum:
             - stigReviews
-    UserRoleQuery:
-      name: roleId
+    UserAccessLevelQuery:
+      name: accessLevel
       in: query
       schema:
-        $ref: '#/components/schemas/RoleId'
+        $ref: '#/components/schemas/AccessLevel'
   securitySchemes:
     oauth:
       type: oauth2
@@ -3328,7 +3290,7 @@ components:
           authorizationUrl: >-
             http://192.168.1.155:8080/auth/realms/stigman/protocol/openid-connect/auth
           scopes:
-            stig-manager: Top-level scope
+            stig-manager: Top-accessLevel scope
             'stig-manager:stig': Full access to the STIG collection
             'stig-manager:stig:read': Read access to the STIG collection
             'stig-manager:package': Full access to the Package collection

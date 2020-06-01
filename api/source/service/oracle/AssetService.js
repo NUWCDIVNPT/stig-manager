@@ -4,7 +4,7 @@ const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 const J2X = require("fast-xml-parser").j2xParser
 const he = require('he');
-const ROLE = require('../../utils/appRoles')
+
 
 /**
 Generalized queries for asset(s).
@@ -17,14 +17,14 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       context = dbUtils.CONTEXT_ALL
     }
     else {
-      switch (userObject.role.roleId) {
-        case ROLE.COMMAND:
+      switch (userObject.accessLevel) {
+        case 3:
           context = dbUtils.CONTEXT_ALL
           break
-        case ROLE.DEPT:
+        case 2:
           context = dbUtils.CONTEXT_DEPT
           break
-        case ROLE.REVIEWER:
+        case 1:
           context = dbUtils.CONTEXT_USER
           break
         case ROLE.GUEST:
@@ -360,9 +360,9 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
   let connection
   try {
     let context
-    if (userObject.role.roleId === ROLE.COMMAND || elevate ) {
+    if (userObject.accessLevel === 3 || elevate ) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.role.roleId === ROLE.DEPT) {
+    } else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
     } else {
       context = dbUtils.CONTEXT_USER

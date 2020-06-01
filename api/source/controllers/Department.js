@@ -2,7 +2,6 @@
 
 const writer = require('../utils/writer.js')
 const config = require('../utils/config')
-const ROLE = require('../utils/appRoles')
 const Department = require(`../service/${config.database.type}/DepartmentService`)
 
 module.exports.createDepartment = async function createDepartment (req, res, next) {
@@ -53,9 +52,9 @@ module.exports.exportDepartments = async function exportDepartments ( elevate, u
 module.exports.getDepartment = async function getDepartment (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if (elevate || req.userObject.role.roleId >= ROLE.DEPT) {
+    if (elevate || req.userObject.accessLevel >= 2) {
       let deptId = req.swagger.params['deptId'].value
-      if (req.userObject.role.roleId === ROLE.DEPT && !elevate) {
+      if (req.userObject.accessLevel === 2 && !elevate) {
         if (deptId !== req.userObject.dept.deptId) {
           throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`}))
         }
@@ -76,7 +75,7 @@ module.exports.getDepartment = async function getDepartment (req, res, next) {
 module.exports.getDepartments = async function getDepartments (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if (elevate || req.userObject.role.roleId >= ROLE.DEPT) {
+    if (elevate || req.userObject.accessLevel >= 2) {
       let elevate = req.swagger.params['elevate'].value
       let response = await Department.getDepartments( elevate, req.userObject )
       writer.writeJson(res, response)

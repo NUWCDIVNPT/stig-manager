@@ -135,16 +135,16 @@ function getReviewItems() {
 				Ext.getCmp('reviews-nav-tree-separator-4').hide();
 				Ext.getCmp('unlock-package-asset-reviews').hide();
 					
-				if ((node.attributes.node === 'package' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.role.roleId === 4  || curUser.canAdmin)) {
+				if ((node.attributes.node === 'package' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3  || curUser.canAdmin)) {
 					var c = node.getOwnerTree().contextMenu;
 					c.contextNode = node;
 					if (node.attributes.node == 'package') {
 						Ext.getCmp('open-poam-workspace').show();   //Open Poam workspace
 						Ext.getCmp('reviews-nav-tree-separator-1').show(); //Disable HBSS SCAP Imports
 						Ext.getCmp('open-hbss-control').show();
-						if (curUser.role.roleId === 4) { //Staff
+						if (curUser.accessLevel === 3) { //Staff
 							//===============================================
-							//Include package-level reset options
+							//Include package-accessLevel reset options
 							//===============================================
 							Ext.getCmp('reviews-nav-tree-separator-2').show();
 							Ext.getCmp('unlock-all-package-reviews').show();
@@ -153,18 +153,18 @@ function getReviewItems() {
 					} else if (node.attributes.report == 'stig') {
 						Ext.getCmp('open-package-review').show(); //Open Approval Workspace
 						Ext.getCmp('open-poam-workspace').show();
-						if (curUser.role.roleId === 4){
+						if (curUser.accessLevel === 3){
 							//===============================================
-							//Include STIG-level unlock options
+							//Include STIG-accessLevel unlock options
 							//===============================================
 							Ext.getCmp('reviews-nav-tree-separator-3').show();
 							Ext.getCmp('unlock-package-stig-reviews').show();
 						}
 						c.showAt(e.getXY());
 					}else{
-						if (curUser.role.roleId === 4){
+						if (curUser.accessLevel === 3){
 							//===============================================
-							//Include ASSET-level reset options
+							//Include ASSET-accessLevel reset options
 							//===============================================
 							Ext.getCmp('unlock-package-asset-reviews').show();
 							c.showAt(e.getXY());
@@ -449,7 +449,7 @@ function addReviewHome() {
 		}
 	});
 
-	if (curUser.role.roleId !== 4) {
+	if (curUser.accessLevel !== 3) {
 		var statusChangesGridTitle = 'Rejected reviews associated with ' + curUser.display;
 	} else {
 		var statusChangesGridTitle = 'Status changes';
@@ -717,7 +717,7 @@ function addReviewHome() {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
 					var idAppend,tab;
-					if (curUser.role.roleId === 4) {
+					if (curUser.accessLevel === 3) {
 						idAppend = '-package_review-' + r.data.packageId + '-' + r.data.stigId.replace(".","_");
 						tab = Ext.getCmp('packageReviewTab' +  idAppend);
 						if (Ext.isDefined(tab)) {
@@ -914,7 +914,7 @@ function reviewsTreeClick(n) {
 }
 
 function openPackageReview(n) {
-	if (n.attributes.report === 'stig' && (curUser.role.roleId === 4 || curUser.canAdmin)) {
+	if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.canAdmin)) {
 		var idAppend = '-' + n.attributes.packageId + '-' + n.attributes.stigId.replace(".","_");
 		var tab = Ext.getCmp('reviews-center-tab').getItem('packageReviewTab' + idAppend);
 		if (tab) {

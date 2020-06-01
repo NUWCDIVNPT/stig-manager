@@ -18,11 +18,12 @@ function addUserAdmin() {
 			name: 'display',
 			type: 'string'
 		},{
-			name: 'dept',
-			type: 'string'
+			name: 'dept.name',
+			type: 'string',
+			mapping: 'dept.name'
 		},{
-			name: 'role',
-			type: 'string'
+			name: 'accessLevel',
+			type: 'integer'
 		},{
 			name: 'canAdmin',
 			type: 'number'
@@ -82,15 +83,15 @@ function addUserAdmin() {
 				sortable: true
 			},
 			{ 	
-				header: "Role",
+				header: "Access Level",
 				width: 150,
-				dataIndex: 'role',
+				dataIndex: 'accessLevel',
 				sortable: true
 			},
 			{ 	
 				header: "Department",
 				width: 150,
-				dataIndex: 'dept',
+				dataIndex: 'dept.name',
 				sortable: true
 			},
 			{ 	

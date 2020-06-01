@@ -70,7 +70,7 @@ function start () {
 					Ext.get( 'indicator' ).dom.innerHTML = curUser.error;
 				}
 			} else {
-				Ext.get( 'indicator' ).dom.innerHTML = "XHR request returned status:<br>" + varsXmlHttp.statusText ;
+				Ext.get( 'indicator' ).dom.innerHTML = "XHR request returned status:<br>" + varsXmlHttp.responseText ;
 			}
 		}
 	};
@@ -123,7 +123,7 @@ function loadApp () {
 							tag: 'span',
 							cls: 'x-tab-strip-text',
 							//html: '<a href="#" onclick="showAbout()" style="text-decoration:none;">' + appName + ' ' + appVersion + '</a>'
-							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.display + ' (' + curUser.role.name + ') - Logout</span>'
+							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.display + ' (Level ' + curUser.accessLevel + ') - Logout</span>'
 						}]
 					};
 					var edge = tp.getEl().child('.x-tab-edge');
@@ -132,7 +132,7 @@ function loadApp () {
 			}
 		}]
 	});
-	if (curUser.canAdmin || curUser.role.roleId === 3 || curUser.role.roleId === 4) {
+	if (curUser.canAdmin || curUser.accessLevel === 2 || curUser.accessLevel === 3) {
 		var adminItems = getAdministrationItems();
 		Ext.getCmp('main-tabs').add({
 			title: 'Administration',

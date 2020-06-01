@@ -4,7 +4,7 @@ const writer = require('../../utils/writer.js')
 const parsers = require('../../utils/parsers.js')
 const dbUtils = require('./utils')
 const {promises: fs} = require('fs')
-const ROLE = require('../../utils/appRoles')
+
 
 
 /**
@@ -14,9 +14,9 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
   let connection
   try {
     let context
-    if (userObject.role.roleId === ROLE.COMMAND ) {
+    if (userObject.accessLevel === 3 ) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.role.roleId === ROLE.DEPT) {
+    } else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
     } else {
       context = dbUtils.CONTEXT_USER

@@ -73,10 +73,10 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
           username, 
           display,
           deptId,
-          roleId,
+          accessLevel,
           canAdmin
         ) VALUES (
-          :userId, :username, :display, :deptId, :roleId, :canAdmin
+          :userId, :username, :display, :deptId, :accessLevel, :canAdmin
         )`,
         insertBinds: []
       },

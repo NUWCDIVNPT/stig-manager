@@ -2,7 +2,7 @@
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
-const ROLE = require('../../utils/appRoles')
+
 
 
 /**
@@ -14,14 +14,14 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     context = dbUtils.CONTEXT_ALL
   }
   else {
-    switch (userObject.role.roleId) {
-      case ROLE.COMMAND:
+    switch (userObject.accessLevel) {
+      case 3:
         context = dbUtils.CONTEXT_ALL
         break
-      case ROLE.DEPT:
+      case 2:
         context = dbUtils.CONTEXT_DEPT
         break
-      case ROLE.REVIEWER:
+      case 1:
         context = dbUtils.CONTEXT_USER
         break
       case ROLE.GUEST:
@@ -38,16 +38,12 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       KEY 'deptId' VALUE d.deptId,
       KEY 'name' VALUE d.name
     ) as "dept"`,
-    `json_object (
-      KEY 'roleId' VALUE r.roleId,
-      KEY 'name' VALUE r.name
-    ) as "role"`,
+    'ud.accessLevel as "accessLevel"',
     'ud.canAdmin as "canAdmin"'
   ]
   let joins = [
     'user_data ud',
-    'left join department d on ud.deptId = d.deptId',
-    'left join role r on ud.roleId = r.roleId',
+    'left join department d on ud.deptId = d.deptId'
   ]
 
   // PROJECTIONS
@@ -85,9 +81,9 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     predicates.statements.push('ud.userid = :userId')
     predicates.binds.userId = inPredicates.userId
   }
-  if (inPredicates.roleId) {
-    predicates.statements.push('ud.roleId = :roleId')
-    predicates.binds.roleId = inPredicates.roleId
+  if (inPredicates.accessLevel) {
+    predicates.statements.push('ud.accessLevel = :accessLevel')
+    predicates.binds.accessLevel = inPredicates.accessLevel
   }
   if (inPredicates.deptId) {
     predicates.statements.push('ud.deptId = :deptId')
@@ -126,7 +122,6 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
       record.canAdmin = record.canAdmin == 1 ? true : false
-      record.role = JSON.parse(record.role)
       record.dept = JSON.parse(record.dept)
       if (inProjection && inProjection.includes('stigReviews')) {
        // Check for "empty" arrays 
@@ -168,9 +163,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       let sqlInsert =
         `INSERT INTO
             user_data
-            ( username, display, deptId, roleId, canAdmin)
+            ( username, display, deptId, accessLevel, canAdmin)
           VALUES
-            (:username, :display, :deptId, :roleId, :canAdmin)
+            (:username, :display, :deptId, :accessLevel, :canAdmin)
           RETURNING
             userid into :userId`
       binds = {...userFields}
@@ -303,15 +298,15 @@ exports.getUserByUserId = async function(userId, projection, elevate, userObject
  *
  * projection List Additional properties to include in the response.  (optional)
  * elevate Boolean Elevate the user context for this request if user is permitted (canAdmin) (optional)
- * role UserRole  (optional)
+ * accessLevel UserLevel  (optional)
  * dept String Selects Users exactly matching a department string (optional)
  * canAdmin Boolean Selects Users matching the condition (optional)
  * returns List of UserProjected
  **/
-exports.getUsers = async function(roleId, deptId, canAdmin, projection, elevate, userObject) {
+exports.getUsers = async function(accessLevel, deptId, canAdmin, projection, elevate, userObject) {
   try {
     let rows = await this.queryUsers( projection, {
-      roleId: roleId,
+      accessLevel: accessLevel,
       deptId: deptId,
       canAdmin: canAdmin
     }, elevate, userObject)

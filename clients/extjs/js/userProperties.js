@@ -107,7 +107,7 @@ async function showUserProperties(id, grid){
 		viewConfig: {
 			forceFit:true,
 			getRowClass: function(record, rowIndex, rp, ds) {
-				if (curUser.role.roleId === 3 && !curUser.canAdmin) {
+				if (curUser.accessLevel === 2 && !curUser.canAdmin) {
 					if (record.data.assetDeptId !== curUser.deptId) {
 						return 'x-stigman-cross-department'
 					}
@@ -117,14 +117,14 @@ async function showUserProperties(id, grid){
 		columns:[
 			{
 				id:'stigColumn',
-				header: `<img src="../img/security_firewall_on.png" style="vertical-align: bottom;"> STIG`, 
+				header: `<img src="img/security_firewall_on.png" style="vertical-align: bottom;"> STIG`, 
 				dataIndex: 'benchmarkId',
 				sortable: true,
 				width: 350
 			},
 			{
 				id:'assetColumn',
-				header: `<img src="../img/mycomputer1-16.png" style="vertical-align: bottom;"> Asset`, 
+				header: `<img src="img/mycomputer1-16.png" style="vertical-align: bottom;"> Asset`, 
 				dataIndex: 'assetName',
 				sortable: true,
 				width: 250
@@ -139,6 +139,28 @@ async function showUserProperties(id, grid){
 		]
 		
 	});
+
+	let deptStore = new Ext.data.JsonStore({
+		listeners: {
+			load: function () {
+				let one = 1
+			}
+		},
+		fields: [{
+			name: 'deptId',
+			type: 'integer'
+		},{
+			name: 'name',
+			type: 'string'
+		}],
+		url: `${STIGMAN.Env.apiBase}/departments?elevate=${curUser.canAdmin}`,
+		root: '',
+		sortInfo: {
+			field: 'name',
+			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
+		},
+		idProperty: 'deptId'
+	})
 	
 	let userPropsFormPanel = new Ext.form.FormPanel({
 		baseCls: 'x-plain',
@@ -198,38 +220,36 @@ async function showUserProperties(id, grid){
 						allowBlank: false,
 						editable: false,
 						forceSelection: true,
-						name: 'dept',
+						name: 'deptId',
 						mode: 'local',
 						triggerAction: 'all',
-						displayField:'dept',
-						store: new Ext.data.SimpleStore({
-							fields: ['dept'],
-							data : [['10'],['15'],['25'],['34'],['40'],['60'],['70'],['85']]
-						})
+						displayField:'name',
+						valueField: 'deptId',
+						store: deptStore
 					},
 					{
 						xtype: 'combo',
-						id: 'userPropsRoleCombo',
+						id: 'userPropsLevelCombo',
 						disabled: !(curUser.canAdmin),
-						fieldLabel: 'Role',
+						fieldLabel: 'Level',
 						width: 100,
-						emptyText: 'Role...',
+						emptyText: 'Level...',
 						allowBlank: false,
 						editable: false,
 						forceSelection: true,
-						name: 'role',
-						hiddenName: 'role',
+						name: 'accessLevel',
+						hiddenName: 'accessLevel',
 						mode: 'local',
 						triggerAction: 'all',
-						displayField:'roleDisplay',
-						valueField:'role',
+						displayField:'accessLevel',
+						valueField:'accessLevel',
 						store: new Ext.data.ArrayStore({
-							fields: ['role','roleDisplay'],
-							data : [['IAWF','IA Workforce'],['IAO','IA Officer'],['Staff','IA Staff']]
+							fields: ['accessLevel'],
+							data : [[1],[2],[3]]
 						}),
 						listeners: {
 							select: function ( combo, record, index ) {
-								toggleAssignmentAccess(record.data.role);
+								toggleAssignmentAccess(record.data.accessLevel);
 							}
 							
 						}
@@ -762,8 +782,8 @@ async function showUserProperties(id, grid){
 		}
 	}
 
-	function toggleAssignmentAccess(role){
-		if (role == 'IAWF') {
+	function toggleAssignmentAccess(accessLevel){
+		if (accessLevel == 1) {
 			Ext.getCmp('userProps_assignment_box').enable();
 		} else {
 			Ext.getCmp('userProps_assignment_box').disable();
@@ -836,6 +856,16 @@ async function showUserProperties(id, grid){
 		items: userPropsFormPanel
 	});		
 
+	// Get departments for the combo box
+	let resultDept = await Ext.Ajax.requestPromise({
+		url: `${STIGMAN.Env.apiBase}/departments`,
+		params: {
+			elevate: curUser.canAdmin
+		},
+		method: 'GET'
+	})
+	deptStore.loadData(JSON.parse(resultDept.response.responseText))
+
 	appwindow.render(document.body);
 	//===================================================
 	//LOAD THE FORM WITH THE USER PROPERTIES
@@ -850,10 +880,18 @@ async function showUserProperties(id, grid){
 			},
 			method: 'GET'
 		})
-		apiUser = JSON.parse(result.response.responseText)
+		let apiUser = JSON.parse(result.response.responseText)
+		apiUser.deptId = apiUser.dept.deptId
 		userPropsFormPanel.getForm().setValues(apiUser)
-		toggleAssignmentAccess(apiUser.role)
+		toggleAssignmentAccess(apiUser.accessLevel)
 	}
+	else {
+		// For new user, set default department
+		userPropsFormPanel.getForm().setValues({
+			deptId: curUser.canAdmin ? 0 : curUser.dept.deptId
+		})
+	}
+
 	Ext.getBody().unmask();
 	appwindow.show(document.body);
 }
