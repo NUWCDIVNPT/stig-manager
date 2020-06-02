@@ -17,7 +17,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
           // Level 2 can only create assets for their department
           throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with deptId: ${body.dept.deptId}.`} ) )
         }
-        // Level 2 can only map stigReviewers with departmental userIds
+        // Check stigReviewers to ensure only departmental users are requested
         if (body.stigReviewers) {
           let userIdsFromRequest = []
           for (sr of body.stigReviewers) {
@@ -36,12 +36,13 @@ module.exports.createAsset = async function createAsset (req, res, next) {
           }
         }
       }
-      else {
-        // Not elevated or >= 2
-        throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
-      }
-      let asset = await Asset.createAsset( body, projection, elevate, req.userObject)
+
+      let asset = await Asset.createAsset( body, projection, elevate, req.userObject)    
       writer.writeJson(res, asset, 201)
+    }
+    else {
+      // Not elevated or >= 2
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }
   }
   catch (err) {
