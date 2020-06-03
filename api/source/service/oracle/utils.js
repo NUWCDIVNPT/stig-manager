@@ -76,8 +76,8 @@ module.exports.initializeDatabase = function () {
         let result = await connection.execute('SELECT COUNT(userId) as users FROM user_data')
         if (result.rows[0][0] === 0) {
           await connection.execute(
-            'insert into user_data (username, display, accessLevel, canAdmin) VALUES (:1, :2, :3, :4)',
-            [config.init.superuser, 'Superuser', 3, 1],
+            'insert into user_data (username, display, deptId, accessLevel, canAdmin) VALUES (:1, :2, :3, :4, :5)',
+            [config.init.superuser, 'Superuser', 0, 3, 1],
             {autoCommit: true}
           )
           console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
@@ -350,9 +350,10 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
 // @param elevate Boolean 
 // @param userObject Object
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
+  let connection
   try {
-    let context, sql, permitted = [], rejected = []
-    if (userObject.accessLevel === 3 || elevate ) {
+    let context, sql, permitted = [], forbidden = []
+    if (userObject.accessLevel === 3 || elevate) {
       permitted = reviews
     } 
     else if (userObject.accessLevel === 2) {
@@ -365,16 +366,15 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
         WHERE
           a.assetId = :assetId and a.deptId = :deptId
       `
-      let connection = await oracledb.getConnection()
+      connection = await oracledb.getConnection()
       let allowedAssets = await connection.execute(sql, [assetId, userObject.dept.deptId])
-      await connection.close()
       // result.rows has legal assetIds
       reviews.forEach(review => {
         if (allowedAssets.includes(review.assetId)) {
           permitted.push(review)
         }
         else {
-          rejected.push(review)
+          forbidden.push(review)
         }
       })
     } 
@@ -399,18 +399,23 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
           permitted.push(review)
         }
         else {
-          rejected.push(review)
+          forbidden.push(review)
         }
       })
     }
     return {
       permitted: permitted,
-      rejected: rejected
+      forbidden: forbidden
     }
 
   }
   catch (e) {
     throw (e)
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
   }
 
 }

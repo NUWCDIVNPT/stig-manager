@@ -23,7 +23,7 @@ exports.getVersion = async function(userObject) {
 
 exports.replaceAppData = async function (importOpts, appData, userObject ) {
   function dmlObjectFromAppData (appdata) {
-    let {packages, assets, users, reviews} = appdata
+    let {packages, departments, assets, users, reviews} = appdata
 
     let dml = {
       preload: [
@@ -31,9 +31,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       postload: [
       ],
       package: {
-        sqlDelete: `DELETE FROM stigman.package`,
+        sqlDelete: `DELETE FROM package`,
         sqlInsert: `INSERT INTO
-        stigman.package (
+        package (
           packageId,
           name, 
           emassId,
@@ -44,58 +44,78 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         ) VALUES ?`,
         insertBinds: []
       },
-      user: {
-        sqlDelete: `DELETE FROM stigman.user`,
+      department: {
+        sqlDelete: `DELETE FROM department`,
+        sqlInsert: `INSERT INTO department (deptId, name) VALUES ?`,
+        insertBinds: []
+      },
+      userData: {
+        sqlDelete: `DELETE FROM user_data`,
         sqlInsert: `INSERT INTO
-        stigman.user (
+        user_data (
           userId,
           username, 
           display,
-          dept,
-          roleId,
+          deptId,
+          accessLevel,
           canAdmin
         ) VALUES ?`,
         insertBinds: []
       },
       asset: {
-        sqlDelete: `DELETE FROM stigman.asset`,
-        sqlInsert: `INSERT INTO stigman.asset (
+        sqlDelete: `DELETE FROM asset`,
+        sqlInsert: `INSERT INTO asset (
           assetId,
           name,
           ip,
-          dept,
+          deptId,
           nonnetwork
         ) VALUES ?`,
         insertBinds: []
       },
       assetPackageMap: {
-        sqlDelete: `DELETE FROM stigman.asset_package_map`,
-        sqlInsert: `INSERT INTO stigman.asset_package_map (
+        sqlDelete: `DELETE FROM asset_package_map`,
+        sqlInsert: `INSERT INTO asset_package_map (
           assetId,
           packageId
         ) VALUES ?`,
         insertBinds: []
       },
       stigAssetMap: {
-        sqlDelete: `DELETE FROM stigman.stig_asset_map`,
-        sqlInsert: `INSERT INTO stigman.stig_asset_map (
+        sqlDelete: `DELETE FROM stig_asset_map`,
+        sqlInsert: `INSERT INTO stig_asset_map (
           assetId,
-          benchmarkId
+          benchmarkId,
+          userIds
         ) VALUES ?`,
         insertBinds: []
       },
       userStigAssetMap: {
-        sqlDelete: `DELETE FROM stigman.user_stig_asset_map`,
-        sqlInsert: `INSERT INTO stigman.user_stig_asset_map (
-          userId,
-          benchmarkId,
-          assetId
-        ) VALUES ?`,
-        insertBinds: []
+        sqlDelete: `DELETE FROM user_stig_asset_map`,
+        // sqlInsert: `INSERT INTO stigman.user_stig_asset_map (
+        //   userId,
+        //   benchmarkId,
+        //   assetId
+        // ) VALUES ?`,
+        sqlInsert: `INSERT INTO user_stig_asset_map
+        (saId, userId)
+        SELECT
+        sa.saId,
+        jt.userId
+        FROM
+        stig_asset_map sa,
+          JSON_TABLE(
+            sa.userIds,
+            "$[*]"
+            COLUMNS(
+              userId INT(11) PATH "$"
+            )
+          ) AS jt`,
+        insertBinds: [null] // dummy value so length > 0
       },
       reviewHistory: {
-        sqlDelete: `DELETE FROM stigman.review_history`,
-        sqlInsert: `INSERT INTO stigman.review_history (
+        sqlDelete: `DELETE FROM review_history`,
+        sqlInsert: `INSERT INTO review_history (
           assetId,
           ruleId,
           activityType,
@@ -108,16 +128,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         insertBinds: []
       },
       review: {
-        sqlDelete: `DELETE FROM stigman.review`,
-        sqlInsert: `INSERT INTO stigman.review (
+        sqlDelete: `DELETE FROM review`,
+        sqlInsert: `INSERT INTO review (
           assetId,
           ruleId,
-          stateId,
-          stateComment,
+          resultId,
+          resultComment,
           actionId,
           actionComment,
           userId,
-          autoState,
+          autoResult,
           ts,
           rejectText,
           rejectUserId,
@@ -142,14 +162,26 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       ])
     }
 
+    // Table: department
+    if (!departments.some(d => d.deptId === 0)) {
+      // Ensure the default department always exists
+      dml.department.insertBinds.push( [ 0, 'Default' ] )
+    }
+    for (const d of departments) {
+      dml.department.insertBinds.push([
+        d.deptId,
+        d.name
+      ])
+    }
+
     // Table: user
     for (const u of users) {
-      dml.user.insertBinds .push([
+      dml.userData.insertBinds .push([
         u.userId,
         u.username, 
         u.display,
-        u.dept,
-        dbUtils.USER_ROLE[u.role].id,
+        u.deptId,
+        u.accessLevel,
         u.canAdmin ? 1 : 0
       ])
     }
@@ -161,7 +193,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         assetFields.assetId,
         assetFields.name,
         assetFields.ip,
-        assetFields.dept,
+        assetFields.deptId,
         assetFields.nonnetwork ? 1: 0
       ])
       let assetId = assetFields.assetId
@@ -169,19 +201,17 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         dml.assetPackageMap.insertBinds.push([assetId, packageId])
       }
       for (const sr of stigReviewers) {
-        dml.stigAssetMap.insertBinds.push([
-          assetId,
-          sr.benchmarkId
-        ])
+        const userIds = []
         if (sr.userIds && sr.userIds.length > 0) {
           for (const userId of sr.userIds) {
-            dml.userStigAssetMap.insertBinds.push([
-              userId,
-              sr.benchmarkId,
-              assetId
-            ])
+            userIds.push(userId)
           }
         }
+        dml.stigAssetMap.insertBinds.push([
+          assetId,
+          sr.benchmarkId,
+          JSON.stringify(userIds)
+        ])
       }
     }
 
@@ -202,16 +232,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       dml.review.insertBinds.push([
         review.assetId,
         review.ruleId,
-        dbUtils.REVIEW_STATE_ABBR[review.state].id,
-        review.stateComment,
-        review.action ? dbUtils.REVIEW_ACTION_STR[review.action] : null,
+        dbUtils.REVIEW_RESULT_API[review.result],
+        review.resultComment,
+        review.action ? dbUtils.REVIEW_ACTION_API[review.action] : null,
         review.actionComment,
         review.userId,
         review.autoState ? 1 : 0,
         new Date(review.ts),
         review.rejectText,
         review.rejectUserId,
-        review.status ? dbUtils.REVIEW_STATUS_STR[review.status] : 0
+        review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0
       ])
     }
 
@@ -250,7 +280,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       'assetPackageMap',
       'package',
       'asset',
-      'user'
+      'userData',
+      'department'
     ]
     for (const table of tableOrder) {
       hrstart = process.hrtime() 
@@ -263,7 +294,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     // Inserts
     tableOrder = [
       'package',
-      'user',
+      'department',
+      'userData',
       'asset',
       'assetPackageMap',
       'stigAssetMap',

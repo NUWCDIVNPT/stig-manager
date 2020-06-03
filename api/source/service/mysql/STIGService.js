@@ -14,8 +14,8 @@ exports.queryStigs = async function ( inPredicates ) {
       `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`
     ]
     let joins = [
-      'stigman.benchmark b',
-      'left join stigman.current_rev cr on b.benchmarkId = cr.benchmarkId'
+      'stig b',
+      'left join current_rev cr on b.benchmarkId = cr.benchmarkId'
     ]
 
     // PREDICATES
@@ -70,18 +70,18 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   predicates.binds.push(inPredicates.benchmarkId)
   
   if (inPredicates.revisionStr != 'latest') {
-    joins = ['stigman.revision r']
+    joins = ['revision r']
     let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
     predicates.statements.push('r.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('r.release = ?')
     predicates.binds.push(release)
   } else {
-    joins = ['stigman.current_rev r']
+    joins = ['current_rev r']
   }
   
-  joins.push('left join stigman.rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join stigman.group g on rg.groupId = g.groupId')
+  joins.push('left join rev_group_map rg on r.revId = rg.revId')
+  joins.push('left join group g on rg.groupId = g.groupId')
 
   if (inPredicates.groupId) {
     predicates.statements.push('g.groupId = ?')
@@ -90,8 +90,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('rules')) {
-    joins.push('left join stigman.rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-    joins.push('left join stigman.rule rule on rgr.ruleId = rule.ruleId' )
+    joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('left join rule rule on rgr.ruleId = rule.ruleId' )
     columns.push(`json_arrayagg(json_object(
       'ruleId', rule.ruleId, 
       'version', rule.version, 
@@ -291,7 +291,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
 ]
 
   let joins = [
-    'stigman.rule r'
+    'rule r'
   ]
   let predicates = {
     statements: [],
@@ -339,17 +339,13 @@ exports.queryRules = async function ( ruleId, inProjection ) {
 }
 
 exports.insertManualBenchmark = async function (b) {
-  let connection
-  try {
-    let result, fields, hrstart, hrend
-    let stats = {}
-
+  function dmlObjectFromBenchmarkData (b) {
     let dml = {
-      benchmark: {
-        sql: "insert ignore into stigman.benchmark (title, benchmarkId) VALUES (:title, :benchmarkId)"
+      stig: {
+        sql: "insert ignore into stig (title, benchmarkId) VALUES (:title, :benchmarkId)"
       },
       revision: {
-        sql: `insert ignore into stigman.revision (
+        sql: `insert ignore into revision (
           revId, 
           benchmarkId, 
           \`version\`, 
@@ -372,20 +368,20 @@ exports.insertManualBenchmark = async function (b) {
         )`,
       },
       group: {
-        sql: "INSERT ignore into stigman.group (groupId, title) VALUES ?",
+        sql: "INSERT ignore into `group` (groupId, title) VALUES ?",
         binds: []
       },
       fix: {
-        sql: "insert ignore into stigman.fix (fixId, text) VALUES ?",
+        sql: "insert ignore into fix (fixId, text) VALUES ?",
         binds: []
       },
       check: {
-        sql: "insert ignore into stigman.check (checkId, content) VALUES ?",
+        sql: "insert ignore into `check` (checkId, content) VALUES ?",
         binds: []
       },
       rule: {
         sql: `
-        insert ignore into stigman.rule (
+        insert ignore into rule (
           ruleId,
           version
           ,title
@@ -406,11 +402,11 @@ exports.insertManualBenchmark = async function (b) {
         binds: []
       },
       revGroupMap: {
-        sql: "insert ignore into stigman.rev_group_map (revId, groupId, rules) VALUES ?",
+        sql: "insert ignore into rev_group_map (revId, groupId, rules) VALUES ?",
         binds: []
       },
       revGroupRuleMap: {
-        sql: `INSERT IGNORE INTO stigman.rev_group_rule_map
+        sql: `INSERT IGNORE INTO rev_group_rule_map
         (rgId, ruleId, checks, fixes, ccis)
         SELECT 
         rg.rgId,
@@ -419,7 +415,7 @@ exports.insertManualBenchmark = async function (b) {
         tt.fixes,
         tt.ccis
         FROM
-        stigman.rev_group_map rg,
+        rev_group_map rg,
            JSON_TABLE(
            rg.rules,
            "$[*]"
@@ -430,17 +426,17 @@ exports.insertManualBenchmark = async function (b) {
                ccis JSON PATH "$.ccis"
            )
            ) AS tt
-        WHERE rg.revId = ?`
+        WHERE rg.revId = :revId`
       },
       revGroupRuleCciMap: {
-        sql: `INSERT IGNORE INTO stigman.rev_group_rule_cci_map
+        sql: `INSERT IGNORE INTO rev_group_rule_cci_map
         (rgrId, cci)
         SELECT 
           rgr.rgrId,
           tt.cci
         FROM
-          stigman.rev_group_map rg,
-          stigman.rev_group_rule_map rgr,
+          rev_group_map rg,
+          rev_group_rule_map rgr,
           JSON_TABLE(
             rgr.ccis,
             "$[*]" COLUMNS(
@@ -448,18 +444,18 @@ exports.insertManualBenchmark = async function (b) {
 			      )
           ) AS tt
 		    WHERE 
-          rg.revId = ?
+          rg.revId = :revId
           AND rg.rgId=rgr.rgId`
       },
       revGroupRuleCheckMap: {
-        sql: `INSERT IGNORE INTO stigman.rev_group_rule_check_map
+        sql: `INSERT IGNORE INTO rev_group_rule_check_map
         (rgrId, checkId)
         SELECT 
           rgr.rgrId,
           tt.checkId
         FROM
-          stigman.rev_group_map rg,
-          stigman.rev_group_rule_map rgr,
+          rev_group_map rg,
+          rev_group_rule_map rgr,
           JSON_TABLE(
             rgr.checks,
             "$[*]" COLUMNS(
@@ -467,18 +463,18 @@ exports.insertManualBenchmark = async function (b) {
 			      )
           ) AS tt
 		    WHERE 
-          rg.revId = ?
+          rg.revId = :revId
           AND rg.rgId=rgr.rgId`
       },
       revGroupRuleFixMap: {
-        sql: `INSERT IGNORE INTO stigman.rev_group_rule_fix_map
+        sql: `INSERT IGNORE INTO rev_group_rule_fix_map
         (rgrId, fixId)
         SELECT 
           rgr.rgrId,
           tt.fixId
         FROM
-          stigman.rev_group_map rg,
-          stigman.rev_group_rule_map rgr,
+          rev_group_map rg,
+          rev_group_rule_map rgr,
           JSON_TABLE(
             rgr.fixes,
             "$[*]" COLUMNS(
@@ -486,18 +482,16 @@ exports.insertManualBenchmark = async function (b) {
 			      )
           ) AS tt
 		    WHERE 
-          rg.revId = ?
+          rg.revId = :revId
           AND rg.rgId=rgr.rgId`
       },
     }
 
-    // Collect the bind values
-    hrstart = process.hrtime()
-    let totalstart = hrstart
-
     let {revision, ...benchmarkBinds} = b
     // TABLE: benchmark
-    dml.benchmark.binds = benchmarkBinds
+    dml.stig.binds = benchmarkBinds
+    // TODO: handle SCAP benchmark, indicated by boolean property: scap
+    delete dml.stig.binds.scap
 
     let {groups, ...revisionBinds} = revision
     delete revisionBinds.revisionStr
@@ -582,78 +576,59 @@ exports.insertManualBenchmark = async function (b) {
       ])
 
       // TABLE: rev_group_rule_map
-      dml.revGroupRuleMap.binds = revisionBinds.revId
+      dml.revGroupRuleMap.binds = { revId: revisionBinds.revId }
       // TABLE: rev_group_rule_cci_map
-      dml.revGroupRuleCciMap.binds = revisionBinds.revId
+      dml.revGroupRuleCciMap.binds = { revId: revisionBinds.revId }
       // TABLE: rev_group_rule_check_map
-      dml.revGroupRuleCheckMap.binds = revisionBinds.revId
+      dml.revGroupRuleCheckMap.binds = { revId: revisionBinds.revId }
       // TABLE: rev_group_rule_fix_map
-      dml.revGroupRuleFixMap.binds = revisionBinds.revId
+      dml.revGroupRuleFixMap.binds = { revId: revisionBinds.revId }
       
     }) // end groups.forEach
 
-    // INSERT into MySQL
+    return dml
+  }
+
+  let connection
+  try {
+    let result, hrstart, hrend, tableOrder, dml, stats = {}
+    let totalstart = process.hrtime() 
+
+    hrstart = process.hrtime() 
+    dml = dmlObjectFromBenchmarkData(b)
+    hrend = process.hrtime(hrstart)
+    stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
     let pp = dbUtils.pool
     connection = await pp.getConnection()
     connection.config.namedPlaceholders = true
 
-    hrend = process.hrtime(hrstart)
-    stats.binds = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    tableOrder = [
+      'stig',
+      'revision',
+      'group',
+      'rule',
+      'check',
+      'fix',
+      'revGroupMap',
+      'revGroupRuleMap',
+      'revGroupRuleCheckMap',
+      'revGroupRuleFixMap',
+      'revGroupRuleCciMap'
+    ]
 
-    hrstart = process.hrtime()
-    ;[result, fields] = await connection.execute(dml.benchmark.sql, dml.benchmark.binds)
-    hrend = process.hrtime(hrstart)
-    stats.stigs = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-  
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.execute(dml.revision.sql, dml.revision.binds)
-    hrend = process.hrtime(hrstart)
-    stats.revisions = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.group.sql, [dml.group.binds])
-    hrend = process.hrtime(hrstart)
-    stats.groups = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime()
-    ;[result, fields] = await connection.query(dml.rule.sql, [dml.rule.binds])
-    hrend = process.hrtime(hrstart)
-    stats.rules = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.check.sql, [dml.check.binds])
-    hrend = process.hrtime(hrstart)
-    stats.checks = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.fix.sql, [dml.fix.binds])
-    hrend = process.hrtime(hrstart)
-    stats.fixes = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.revGroupMap.sql, [dml.revGroupMap.binds])
-    hrend = process.hrtime(hrstart)
-    stats.revGroup = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.revGroupRuleMap.sql, [dml.revGroupRuleMap.binds])
-    hrend = process.hrtime(hrstart)
-    stats.revGroupRule = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.revGroupRuleCciMap.sql, [dml.revGroupRuleCciMap.binds])
-    hrend = process.hrtime(hrstart)
-    stats.revGroupRuleCci = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.revGroupRuleCheckMap.sql, [dml.revGroupRuleCheckMap.binds])
-    hrend = process.hrtime(hrstart)
-    stats.revGroupRuleCheck = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    hrstart = process.hrtime() 
-    ;[result, fields] = await connection.query(dml.revGroupRuleFixMap.sql, [dml.revGroupRuleFixMap.binds])
-    hrend = process.hrtime(hrstart)
-    stats.revGroupRuleFix = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    for (const table of tableOrder) {
+      hrstart = process.hrtime()
+      if (Array.isArray(dml[table].binds)) {
+        if (dml[table].binds.length === 0) { continue }
+        ;[result] = await connection.query(dml[table].sql, [dml[table].binds])
+      }
+      else {
+        ;[result] = await connection.query(dml[table].sql, dml[table].binds)
+      }
+      hrend = process.hrtime(hrstart)
+      stats[table] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    }
 
     hrend = process.hrtime(totalstart)
     stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
@@ -703,7 +678,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
   try {
     let rows = await this.getRevisionByString(benchmarkId, revisionStr, userObject)
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    let sqlDelete = `DELETE from stigman.revision WHERE benchmarkId = ? and version = ? and release = ?`
+    let sqlDelete = `DELETE from revision WHERE benchmarkId = ? and version = ? and release = ?`
     await dbUtils.pool.query(sqlDelete, [benchmarkId, version, release])
     return (rows[0])
   }
@@ -722,7 +697,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
 exports.deleteStigById = async function(benchmarkId, userObject) {
   try {
     let rows = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
-    let sqlDelete = `DELETE FROM stigman.benchmark where benchmarkId = ?`
+    let sqlDelete = `DELETE FROM stig where benchmarkId = ?`
     await dbUtils.pool.query(sqlDelete, [benchmarkId])
     return (rows[0])
   }
@@ -872,7 +847,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
       r.statusDate,
       r.description
     FROM
-      stigman.revision r
+      revision r
     WHERE
       r.benchmarkId = ?
     ORDER BY

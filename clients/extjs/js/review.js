@@ -2004,7 +2004,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       jsonData.resultComment = fvalues.resultComment === "" ? null : fvalues.resultComment
     }
     if (typeof fvalues.action !== 'undefined') {
-      jsonData.action = fvalues.actionId
+      jsonData.action = fvalues.action
     }
     if (typeof fvalues.actionComment !== 'undefined') {
       jsonData.actionComment = fvalues.actionComment === "" ? null : fvalues.actionComment

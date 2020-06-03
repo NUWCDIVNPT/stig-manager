@@ -86,11 +86,11 @@ module.exports.initializeDatabase = async function () {
     }
 
     // Initialize superuser, if applicable
-    let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user')
+    let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user_data')
     if (rows[0].users === 0) {
       await _this.pool.query(
-        'insert into user (username, display, roleId, canAdmin) VALUES (?, ?, ?, ?)',
-        [config.init.superuser, 'Superuser', 4, 1]
+        'insert into user_data (username, display, deptId, accessLevel, canAdmin) VALUES (?, ?, ?, ?, ?)',
+        [config.init.superuser, 'Superuser', 0, 3, 1]
       )
       console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
     }
@@ -104,19 +104,22 @@ module.exports.getUserObject = async function (username) {
   let sql, binds
   try {    
     sql = `
-      SELECT
-        ud.userId as id,
-        ud.username as cn,
-        ud.display as name,
-        ud.dept,
-        r.role,
-        ud.canAdmin
-      from 
-        stigman.user ud
-        left join stigman.role r on r.id=ud.roleId
-      where
-        UPPER(username)=UPPER(?)
-      `
+    SELECT
+    ud.userId,
+    ud.username,
+    ud.display,
+    json_object(
+      'deptId', d.deptId,
+      'name', d.name
+    ) as "dept",
+    ud.accessLevel,
+    ud.canAdmin
+  from 
+    user_data ud
+    left join department d on d.deptId = ud.deptId
+  where
+    UPPER(username)=UPPER(?)
+  `
     binds = [username]
     const [rows] = await _this.pool.query(sql, binds)
     return (rows[0])
@@ -149,9 +152,9 @@ module.exports.parseRevisionStr = function (revisionStr) {
 module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
   try {
     let context, sql
-    if (userObject.role == 'Staff' || elevate) {
+    if (userObject.accessLevel === 3 || elevate) {
       return true
-    } else if (userObject.role == "IAO") {
+    } else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT
@@ -159,9 +162,9 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
         FROM
           asset a
         WHERE
-          a.assetId = ? and a.dept = ?
+          a.assetId = ? and a.deptId = ?
       `
-      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept])
+      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept.deptId])
       return rows.length > 0   
     } else {
       sql = `
@@ -170,13 +173,13 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
           rgr.ruleId
         FROM
           user_stig_asset_map usa
-          inner join stig_asset_map sa on (usa.assetId = sa.assetId and usa.benchmarkId = sa.benchmarkId)
+          inner join stig_asset_map sa on usa.saId = sa.saId
           inner join revision rev on sa.benchmarkId = rev.benchmarkId
           inner join rev_group_map rg on rev.revId = rg.revId
           inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
         WHERE
           usa.userId = ? and assetId = ? and ruleId = ?`
-      let [rows] = await _this.pool.query(sql, [userObject.id, assetId, ruleId])
+      let [rows] = await _this.pool.query(sql, [userObject.userId, assetId, ruleId])
       return rows.length > 0   
     }
   }
@@ -189,18 +192,18 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {
     let sql
-    if (userObject.role == 'Staff' || elevate) {
+    if (userObject.accessLevel === 3 || elevate) {
       return true
-    } else if (userObject.role == "IAO") {
+    } else if (userObject.accessLevel === 2) {
       sql = `
         SELECT
           a.assetId
         FROM
           asset a
         WHERE
-          a.assetId = ? and a.dept = ?
+          a.assetId = ? and a.deptId = ?
       `
-      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept])
+      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept.deptId])
       return rows.length > 0   
     } else {
       sql = `
@@ -209,10 +212,10 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
           sa.benchmarkId
         FROM
           user_stig_asset_map usa
-          inner join stig_asset_map sa on (usa.assetId = sa.assetId and usa.benchmarkId = sa.benchmarkId)
+          inner join stig_asset_map sa on usa.saId = sa.saId
         WHERE
           usa.userId = ? and assetId = ? and benchmarkId = ?`
-      let [rows] = await _this.pool.query(sql, [userObject.id, assetId, benchmarkId])
+      let [rows] = await _this.pool.query(sql, [userObject.userId, assetId, benchmarkId])
       return rows.length > 0   
     }
   }
@@ -228,10 +231,10 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
   try {
     let context, sql, permitted = [], rejected = []
-    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    if (userObject.accessLevel === 3 || elevate) {
       permitted = reviews
     } 
-    else if (userObject.role == "IAO") {
+    else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
       sql = `
         SELECT
@@ -239,9 +242,9 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
         FROM
           asset a
         WHERE
-          a.assetId = ? and a.dept = ?
+          a.assetId = ? and a.deptId = ?
       `
-      let [allowedAssets] = await _this.pool.query(sql, [assetId, userObject.dept])
+      let [allowedAssets] = await _this.pool.query(sql, [assetId, userObject.dept.deptId])
       // allowedAssets has permitted assetIds
       reviews.forEach(review => {
         if (allowedAssets.includes(review.assetId)) {
@@ -258,13 +261,13 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
           CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
         FROM
           user_stig_asset_map usa
-          inner join stig_asset_map sa on (usa.assetId = sa.assetId and usa.benchmarkId = sa.benchmarkId)
+          inner join stig_asset_map sa on usa.saId = sa.saId
           inner join revision rev on sa.benchmarkId = rev.benchmarkId
           inner join rev_group_map rg on rev.revId = rg.revId
           inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
         WHERE
           usa.userId = ?`
-      let [rows] = await _this.pool.query(sql, [userObject.id])
+      let [rows] = await _this.pool.query(sql, [userObject.userId])
       let allowedAssetRules = rows.map(r => r.permitted)
       await connection.close()
       reviews.forEach(review => {
@@ -292,27 +295,36 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
 module.exports.CONTEXT_ALL = 'all'
 module.exports.CONTEXT_DEPT = 'department'
 module.exports.CONTEXT_USER = 'user'
-module.exports.REVIEW_STATE_ID = { 
-  1: {state: 'In Progress', abbr: 'IP'},
-  2: {state: 'Not Applicable', abbr: 'NA'},
-  3: {state: 'Not a Finding', abbr: 'NF'},
-  4: {state: 'Open', abbr: 'O'}
+module.exports.REVIEW_RESULT_ID = { 
+  1: {api: 'notchecked', ckl: 'Not_Reviewed', abbr: 'NC'},
+  2: {api: 'notapplicable', ckl: 'Not_Applicable', abbr: 'NA'},
+  3: {api: 'pass', ckl: 'NotAFinding', abbr: 'NF'},
+  4: {api: 'fail', ckl: 'Open', abbr: 'O'}
 }
-module.exports.REVIEW_STATE_ABBR = { 
-  'IP': {state: 'In Progress', id: 1},
-  'NA': {state: 'Not Applicable', id: 2},
-  'NF': {state: 'Not a Finding', id: 3},
-  'O': {state: 'Open', id: 4}
+module.exports.REVIEW_RESULT_API = { 
+  'notapplicable': 2,
+  'pass': 3,
+  'fail': 4
+}
+module.exports.REVIEW_RESULT_CKL = { 
+  'Not_Applicable': {id: 2},
+  'NotAFinding': {id: 3},
+  'Open': {id: 4}
+}
+module.exports.REVIEW_RESULT_ABBR = { 
+  'NA': {id: 2},
+  'NF': {id: 3},
+  'O': {id: 4}
 }
 module.exports.REVIEW_ACTION_ID = { 
-  1: 'Remediate',
-  2: 'Mitigate',
-  3: 'Exception'
+  1: 'remediate',
+  2: 'mitigate',
+  3: 'exception'
 }
-module.exports.REVIEW_ACTION_STR = { 
-  'Remediate': 1,
-  'Mitigate': 2,
-  'Exception': 3
+module.exports.REVIEW_ACTION_API = { 
+  'remediate': 1,
+  'mitigate': 2,
+  'exception': 3
 }
 module.exports.REVIEW_STATUS_ID = { 
   0: 'saved',
@@ -320,12 +332,11 @@ module.exports.REVIEW_STATUS_ID = {
   2: 'rejected',
   3: 'approved'
 }
-module.exports.REVIEW_STATUS_STR = { 
+module.exports.REVIEW_STATUS_API = { 
   'saved': 0,
   'submitted': 1,
-  'ready': 1,
   'rejected': 2,
-  'approved': 3
+  'accepted': 3
 }
 module.exports.WRITE_ACTION = { 
   CREATE: 0,

@@ -395,7 +395,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
               THEN 1
               ELSE 0 END
           END
-      END as "reviewComplete"`,
+      END as "reviewComplete"`
     ]
     let joins = [
       'current_rev rev',
@@ -403,7 +403,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'left join groups g on rg.groupId=g.groupId',
       'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
       'left join rule r on rgr.ruleId=r.ruleId',
-      'left join severity_cat_map sc on r.severity=sc.severity',
+      // 'left join severity_cat_map sc on r.severity=sc.severity',
       'left join review on r.ruleId = review.ruleId and review.assetId = :assetId',
       'left join result on review.resultId=result.resultId',
       'left join status on review.statusId=status.statusId',

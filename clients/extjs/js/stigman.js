@@ -81,6 +81,7 @@ function start () {
 };
 
 function loadApp () {
+	Ext.isReady = true // a bit of a hack, for Firefox
 	Ext.BLANK_IMAGE_URL=Ext.isIE6||Ext.isIE7||Ext.isAir? "/ext/resources/images/default/s.gif" : "data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
 	//Ext.getBody().on("contextmenu", Ext.emptyFn, null, {preventDefault: true});  
 	Ext.getBody().on("contextmenu", myContextMenu);  

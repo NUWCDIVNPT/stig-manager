@@ -1,19 +1,42 @@
 'use strict';
 
 const writer = require('../utils/writer.js')
+const Parsers = require('../utils/parsers.js')
 const config = require('../utils/config')
 const Review = require(`../service/${config.database.type}/ReviewService`)
 const dbUtils = require(`../service/${config.database.type}/utils`)
+const {promises: fs} = require('fs')
 
 module.exports.importReviews = async function importReviews (req, res, next) {
   try {
-    let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
-    if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
-      throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
-    }
+    let reviewsRequested, reviews
     let body = req.swagger.params['body'].value
-    let response = await Review.importReviews(body, req.file, req.userObject, res)
-    writer.writeJson(res, response)
+    if (req.file) {
+      let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
+      if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
+        throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
+      }
+      let assetId = parseInt(body.assetId)
+      let data = await fs.readFile(req.file.path)
+      let result
+      switch (extension) {
+        case 'ckl':
+          result = await Parsers.reviewsFromCkl(data, assetId)
+          break
+        case 'xml':
+          result = Parsers.reviewsFromScc(data, assetId)
+          break
+      }
+      reviewsRequested = result.reviews
+    }
+    else {
+      reviewsRequested = body
+    }
+
+    let reviewsByStatus = await dbUtils.scrubReviewsByUser(reviewsRequested, false, req.userObject)
+    reviewsByStatus.errors = await Review.putReviews(reviewsByStatus.permitted, req.userObject)
+
+    writer.writeJson(res, reviewsByStatus)
   }
   catch(err) {
     writer.writeJson(res, err)
@@ -102,10 +125,10 @@ module.exports.putReview = async function (req, res, next) {
   try {
     if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
       let response = await Review.putReview( projection, assetId, ruleId, body, req.userObject)
-      if (response.status === 'updated') {
-        writer.writeJson(res, response.row)
+      if (response.status === 'created') {
+        writer.writeJson(res, response.row, 201)
       } else {
-        writer.writeJson(res, writer.respondWithCode ( 201, response.row ))
+        writer.writeJson(res, response.row )
       }
     }
     else {

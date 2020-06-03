@@ -15,7 +15,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
       if ( req.userObject.accessLevel === 2 && !elevate ) {
         if ( body.deptId !== req.userObject.dept.deptId ) {
           // Level 2 can only create assets for their department
-          throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with deptId: ${body.dept.deptId}.`} ) )
+          throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with deptId: ${body.deptId}.`} ) )
         }
         // Check stigReviewers to ensure only departmental users are requested
         if (body.stigReviewers) {
@@ -65,6 +65,9 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
       }
       let row = await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
       writer.writeJson(res, row)
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }
   }
   catch (err) {

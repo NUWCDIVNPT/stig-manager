@@ -1,6 +1,7 @@
 INSERT INTO action VALUES (1,'remediate','Remediate');
 INSERT INTO action VALUES (2,'mitigate','Mitigate');
 INSERT INTO action VALUES (3,'exception','Exception');
+INSERT INTO department VALUES (0,'Default');
 INSERT INTO reject_string VALUES (1,'Evaluation comment not specific.','The comment supporting the result of the evaluation does not contain enough specific information. Comments should mention the specific setting(s) or value(s) contained in the check text.');
 INSERT INTO reject_string VALUES (2,'Recommendation comment not specific.','The comment describing the recommended action is not specific.');
 INSERT INTO reject_string VALUES (3,'Documentation is not attached.','The review requires the submission of documentation for the result of the evaluation to be accepted.');
@@ -17,8 +18,4 @@ INSERT INTO status VALUES (0,'saved','Saved');
 INSERT INTO status VALUES (1,'submitted','Submitted');
 INSERT INTO status VALUES (2,'rejected','Rejected');
 INSERT INTO status VALUES (3,'accepted','Accepted');
-INSERT INTO department VALUES (0,'Default');
--- IMPORTANT: Remove the last two INSERTs once department endpoints are finished
-INSERT INTO department VALUES (10,'Code 10');
-INSERT INTO department VALUES (60,'Code 60');
 commit;

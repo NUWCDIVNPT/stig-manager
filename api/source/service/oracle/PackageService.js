@@ -280,7 +280,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
       'left join groups g on rg.groupId=g.groupId',
       'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
       'left join rule on rgr.ruleId=rule.ruleId',
-      'left join rule_oval_map ro on rgr.ruleId=ro.ruleId',
+      'left join (select distinct ruleId from rule_oval_map) scap on rgr.ruleId=scap.ruleId',
       'left join review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
     ]
 
@@ -347,10 +347,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
           ,g.title as groupTitle
           ,r.resultId
           ,r.statusId
-          ,CASE WHEN ro.ruleId is null
-            THEN 'Manual'
-            ELSE 'SCAP'
-          END	as checkType
+          ,CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as "autoCheckAvailable"
         from
           ${joins.join('\n')}
         where
@@ -372,6 +369,10 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     }
     connection = await oracledb.getConnection()
     let result = await connection.execute(sql, predicates.binds, options)
+    for (const row of result.rows) {
+      row.autoCheckAvailable = row.autoCheckAvailable === 1 ? true : false
+    }
+
     return (result.rows.length > 0 ? result.rows : null)
   }
   catch (err) {

@@ -306,7 +306,7 @@
  background-image: url(../img/up-icon-16.png) !important;
 }
 .sm-asset-icon {
- background-image: url(../img/mycomputer1-16.png) !important;
+ background-image: url(../img/accuracy-16.png) !important;
 }
 .sm-template-icon {
  background-image: url(../img/template.png) !important;
@@ -542,8 +542,9 @@
 	padding-left: 14px !important;
 }
 .sm-cell-asset {
-	background-image: url(../img/mycomputer1-16.png);
+	background-image: url(../img/accuracy-16.png);
 	background-repeat: no-repeat;
+	background-position: 1px 2px;
 	padding-left: 14px !important;
 }
 .sm-cell-template {

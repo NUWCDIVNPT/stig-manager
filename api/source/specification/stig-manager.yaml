@@ -2308,7 +2308,7 @@ components:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-        autoCheck:
+        autoCheckAvailable:
           type: boolean
         stats:
           type: object

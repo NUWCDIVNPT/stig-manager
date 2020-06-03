@@ -19,12 +19,20 @@
 -- Dumping data for table `action`
 --
 
--- USE `stigman`; 
-
 LOCK TABLES `action` WRITE;
 /*!40000 ALTER TABLE `action` DISABLE KEYS */;
-INSERT INTO `action` VALUES (1,'Remediate'),(2,'Mitigate'),(3,'Exception');
+INSERT INTO `action` VALUES (1,'remediate','Remediate'),(2,'mitigate','Mitigate'),(3,'exception','Exception');
 /*!40000 ALTER TABLE `action` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `department`
+--
+
+LOCK TABLES `department` WRITE;
+/*!40000 ALTER TABLE `department` DISABLE KEYS */;
+INSERT INTO `department` VALUES (0,'Default');
+/*!40000 ALTER TABLE `department` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -38,23 +46,21 @@ INSERT INTO `reject_string` VALUES (1,'Evaluation comment not specific.','The co
 UNLOCK TABLES;
 
 --
--- Dumping data for table `role`
---
-
-LOCK TABLES `role` WRITE;
-/*!40000 ALTER TABLE `role` DISABLE KEYS */;
-INSERT INTO `role` VALUES (1,'Guest','Guest Viewer'),(2,'IAWF','IA Workforce'),(3,'IAO','IA Officer'),(4,'Staff','IA Staff');
-/*!40000 ALTER TABLE `role` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Dumping data for table `state`
 --
 
 LOCK TABLES `result` WRITE;
-/*!40000 ALTER TABLE `state` DISABLE KEYS */;
-INSERT INTO `result` VALUES (1,'In Process','IP'),(2,'Not Applicable','NA'),(3,'Not a Finding','NF'),(4,'Open','O');
-/*!40000 ALTER TABLE `state` ENABLE KEYS */;
+/*!40000 ALTER TABLE `result` DISABLE KEYS */;
+INSERT INTO `result` VALUES (1,'notchecked','Not_Reviewed','NR','Not checked'),
+(2,'notapplicable','Not_Applicable','NA','Not Applicable'),
+(3,'pass','NotAFinding','NF','Not a Finding'),
+(4,'fail','Open','O','Open'),
+(5,'unknown','Not_Reviewed','U','Unknown'),
+(6,'error','Not_Reviewed','E','Error'),
+(7,'notselected','Not_Reviewed','NS','Not selected'),
+(8,'informational','Not_Reviewed','I','Informational'),
+(9,'fixed','NotAFinding','NF','Fixed');
+/*!40000 ALTER TABLE `result` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -63,7 +69,10 @@ UNLOCK TABLES;
 
 LOCK TABLES `status` WRITE;
 /*!40000 ALTER TABLE `status` DISABLE KEYS */;
-INSERT INTO `status` VALUES (0,'saved'),(1,'submitted'),(2,'rejected'),(3,'accepted');
+INSERT INTO `status` VALUES (0,'saved','Saved'),
+(1,'submitted','Submitted'),
+(2,'rejected','Rejected'),
+(3,'accepted','Accepted');
 /*!40000 ALTER TABLE `status` ENABLE KEYS */;
 UNLOCK TABLES;
 

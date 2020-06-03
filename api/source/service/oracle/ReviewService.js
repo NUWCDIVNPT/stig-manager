@@ -1,10 +1,7 @@
 'use strict';
 const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
-const parsers = require('../../utils/parsers.js')
 const dbUtils = require('./utils')
-const {promises: fs} = require('fs')
-
 
 
 /**
@@ -104,7 +101,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         json_object(
           KEY 'ruleId' VALUE rule.ruleId
           ,KEY 'ruleTitle' VALUE rule.title
-          ,KEY 'group' VALUE g.groupId
+          ,KEY 'groupId' VALUE g.groupId
           ,KEY 'groupTitle' VALUE g.title
           ,KEY 'severity' VALUE rule.severity)
         from
@@ -343,44 +340,6 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
 
 
 /**
- * Import a Review
- *
- * body Review 
- * projection List Additional properties to include in the response.  (optional)
- * returns ReviewProjected
- **/
-exports.importReviews = async function(body, file, userObject) {
-  try {
-    // let jobId = await dbUtils.insertJobRecord({
-    //   userId: userObject.userId,
-    //   assetId: body.assetId,
-    //   benchmarkId: body.benchmarkId,
-    //   packageId: body.packageId,
-    //   source: body.source,
-    //   filename: file.originalname,
-    //   filesize: file.size
-    // })
-    let assetId = parseInt(body.assetId)
-    let extension = file.originalname.substring(file.originalname.lastIndexOf(".")+1)
-    let buffer = await fs.readFile(file.path)
-    let result
-    switch (extension) {
-      case 'ckl':
-        result = await parsers.reviewsFromCkl(buffer, assetId)
-        break
-      case 'xml':
-        result = parsers.reviewsFromScc(buffer, assetId)
-        break
-    }
-    return (this.putReviews(result.reviews, userObject))
-  }
-  catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
-}
-
-
-/**
  * Delete a Review
  *
  * reviewId Integer A path parameter that indentifies a Review
@@ -432,6 +391,7 @@ exports.getReviews = async function(projection, predicates, userObject) {
  * returns Review
  **/
 exports.putReview = async function(projection, assetId, ruleId, body, userObject) {
+  let connection
   try {
     let values = {
       userId: userObject.userId,
@@ -454,7 +414,7 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
         ${dbUtils.objectBindObject(values, binds)}
       WHERE
         assetId = :assetId and ruleId = :ruleId`
-    let connection = await oracledb.getConnection()
+    connection = await oracledb.getConnection()
     let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
     let status = 'created'
     if (result.rowsAffected == 0) {
@@ -467,7 +427,6 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
       result = await connection.execute(sqlInsert, binds, {autoCommit: true})
       status = 'updated'
     }
-    await connection.close()
     let rows = await this.queryReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
@@ -479,6 +438,11 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
   }
 }
 
@@ -492,7 +456,8 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
  * body Object The Review content (required)
  * returns Review
  **/
-exports.putReviews = async function( body, userObject) {
+exports.putReviews = async function( reviews, userObject) {
+  let connection
   try {
     let sqlMerge = `
     MERGE INTO review r USING (
@@ -522,8 +487,7 @@ exports.putReviews = async function( body, userObject) {
       VALUES (i.assetId, i.ruleId, i.resultId, i.resultComment, i.autoResult, i.actionId, i.actionComment, i.statusId, i.userId)
     `
     let binds = []
-    let reviewsByStatus = await dbUtils.scrubReviewsByUser(body, false, userObject)
-    reviewsByStatus.permitted.forEach(member => {
+    reviews.forEach(member => {
       let values = {
         assetId: member.assetId,
         ruleId: member.ruleId,
@@ -538,23 +502,27 @@ exports.putReviews = async function( body, userObject) {
       binds.push(values)
     })
 
-    let connection = await oracledb.getConnection()
+    connection = await oracledb.getConnection()
     let result = await connection.executeMany(sqlMerge, binds, {
       autoCommit: true,
       batchErrors: true
     })
-    reviewsByStatus.errors = []
+    let errors = []
     if (result.batchErrors) {
       result.batchErrors.forEach(e => {
-        reviewsByStatus.errors.push(binds[e.offset])
+        errors.push(binds[e.offset])
       })
-      await connection.commit()
     }
-    await connection.close()
-    return (reviewsByStatus)
+    await connection.commit()
+    return (errors)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
   }
 }
 

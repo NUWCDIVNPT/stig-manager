@@ -14,27 +14,40 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   let connection
   try {
     let context
-    if (userObject.role == 'Staff' || elevate) {
+    if (elevate) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.role == "IAO") {
-      context = dbUtils.CONTEXT_DEPT
-    } else {
-      context = dbUtils.CONTEXT_USER
+    }
+    else {
+      switch (userObject.accessLevel) {
+        case 3:
+          context = dbUtils.CONTEXT_ALL
+          break
+        case 2:
+          context = dbUtils.CONTEXT_DEPT
+          break
+        case 1:
+          context = dbUtils.CONTEXT_USER
+          break
+      }
     }
 
     let columns = [
       'a.assetId',
       'a.name',
-      'a.dept',
+      `json_object (
+        'deptId', d.deptId,
+        'name', d.name
+      ) as "dept"`,
       'a.ip',
       'a.nonnetwork'
     ]
     let joins = [
       'asset a',
+      'left join department d on a.deptId = d.deptId',
       'left join asset_package_map ap on a.assetId=ap.assetId',
       'left join package p on ap.packageId=p.packageId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join user_stig_asset_map usa on (sa.assetId = usa.assetId and sa.benchmarkId = usa.benchmarkId)'
+      'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
     // PROJECTIONS
@@ -48,18 +61,19 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
                   'packageId', p.packageId, 
                   'name', p.name)
               else null end 
-        order by p.name),
-            ''),
+            order by p.name),
+          ''),
         ']')
       as json) as "packages"`)
     }
     if (inProjection.includes('adminStats')) {
       columns.push(`json_object(
         'stigCount', COUNT(distinct sa.assetId),
-        'stigAssignedCount', COUNT(distinct usa.assetId)
+        'stigAssignedCount', COUNT(distinct usa.saId)
         ) as "adminStats"`)
     }
     if (inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
+      // A bit more complex than the Oracle query because we can't use nested json_arrayagg's
       columns.push(`(select
         json_arrayagg(byStig.stigAssetUsers) as stigReviewers 
       from
@@ -71,11 +85,21 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         (select
           sa.benchmarkId,
           -- if no user, return null instead of object with null property values
-          case when u.userId is not null then json_object('userId', u.userId, 'username', u.username, 'dept', u.dept) else NULL end as reviewers
+          case when ud.userId is not null then
+            json_object(
+              'userId', ud.userId, 
+              'username', ud.username, 
+              'dept', json_object(
+                'deptId', d.deptId,
+                'name', d.name
+              )
+            ) 
+          else NULL end as reviewers
           FROM 
             stig_asset_map sa
-            left join user_stig_asset_map usa on (sa.assetId = usa.assetId and sa.benchmarkId = usa.benchmarkId)
-            left join user u on usa.userId = u.userId
+            left join user_stig_asset_map usa on sa.saId = usa.saId
+            left join user_data ud on usa.userId = ud.userId
+            left join department d on ud.deptId = d.deptId
           WHERE
           sa.assetId = a.assetId) as r
         group by r.benchmarkId) as byStig) as "stigReviewers"`)
@@ -90,7 +114,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
           else json_array() end as reviewers
         FROM 
           stig_asset_map sa
-          left join user_stig_asset_map usa on (sa.assetId = usa.assetId and sa.benchmarkId = usa.benchmarkId)
+          left join user_stig_asset_map usa on sa.saId = usa.saId
           left join user u on usa.userId = u.userId
         WHERE
           sa.assetId = a.assetId and sa.benchmarkId = :benchmarkId) as "reviewers"`)
@@ -98,7 +122,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (inProjection.includes('stigs')) {
       //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
       joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
-      joins.push('left join benchmark st on cr.benchmarkId=st.benchmarkId')
+      joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
       columns.push(`cast(
         concat('[', 
           coalesce (
@@ -133,17 +157,17 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.statements.push('sa.benchmarkId = :benchmarkId')
       predicates.binds.benchmarkId = inPredicates.benchmarkId
     }
-    if (inPredicates.dept) {
-      predicates.statements.push('a.dept = :dept')
-      predicates.binds.dept = inPredicates.dept
+    if (inPredicates.deptId) {
+      predicates.statements.push('a.deptId = :deptId')
+      predicates.binds.deptId = inPredicates.deptId
     }
     if (context == dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('a.dept = :dept')
-      predicates.binds.dept = userObject.dept
+      predicates.statements.push('a.deptId = :deptId')
+      predicates.binds.deptId = userObject.dept.deptId
     } 
     else if (context == dbUtils.CONTEXT_USER) {
       predicates.statements.push('usa.userId = :userId')
-      predicates.binds.userId = userObject.id
+      predicates.binds.userId = userObject.userId
 
     }
 
@@ -155,7 +179,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.dept, a.ip, a.nonnetwork'
+    sql += ' group by a.assetId, a.name, a.deptId, a.ip, a.nonnetwork, d.deptId, d.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -308,9 +332,9 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
   let connection
   try {
     let context
-    if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
+    if (userObject.accessLevel === 3 || elevate) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.role == "IAO") {
+    } else if (userObject.accessLevel === 2) {
       context = dbUtils.CONTEXT_DEPT
     } else {
       context = dbUtils.CONTEXT_USER
@@ -322,19 +346,18 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'r.ruleId',
       'g.title as "groupTitle"',
       'r.title as "ruleTitle"',
-      'sc.cat as "cat"',
-      'r.documentable',
-      `state.abbr as "state"`,
-      `status.statusStr as "status"`,
-      `review.autoState`,
-      `CASE WHEN ra.raId is null THEN 0 ELSE 1 END as "hasAttach"`,
+      'r.severity',
+      `CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as "autoCheckAvailable"`,
+      `result.api as "result"`,
+      `review.autoResult as "autoResult"`,
+      `status.api as "status"`,
       `CASE
         WHEN review.ruleId is null
         THEN 0
         ELSE
-          CASE WHEN review.stateId != 4
+          CASE WHEN review.resultId != 4
           THEN
-            CASE WHEN review.stateComment != ' ' and review.stateComment is not null
+            CASE WHEN review.resultComment != ' ' and review.resultComment is not null
               THEN 1
               ELSE 0 END
           ELSE
@@ -342,12 +365,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
               THEN 1
               ELSE 0 END
           END
-      END as "done"`,
-      `CASE
-        WHEN scap.ruleId is null
-        THEN 'Manual'
-        ELSE 'SCAP'
-      END as "checkType"`
+      END as "reviewComplete"`
     ]
     let joins = [
       'current_rev rev',
@@ -355,11 +373,10 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'left join `group` g on rg.groupId=g.groupId',
       'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
       'left join rule r on rgr.ruleId=r.ruleId',
-      'left join severity_cat_map sc on r.severity=sc.severity',
-      'left join review review on r.ruleId = review.ruleId and review.assetId = :assetId',
-      'left join state state on review.stateId=state.stateId',
-      'left join status status on review.statusId=status.statusId',
-      'left join review_artifact_map ra on (ra.assetId=review.assetId and ra.ruleId=review.ruleId)',
+      // 'left join severity_cat_map sc on r.severity=sc.severity',
+      'left join review on r.ruleId = review.ruleId and review.assetId = :assetId',
+      'left join result on review.resultId=result.resultId',
+      'left join status on review.statusId=status.statusId',
       'left join (SELECT distinct ruleId FROM	rule_oval_map) scap on r.ruleId=scap.ruleId'
     ]
     // PREDICATES
@@ -403,7 +420,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
           let bytes = field.buffer() || [0];
           return( bytes[ 0 ] === 1 );
         }
-        if (field.name === 'hasAttach' || field.name === 'done' || field.name === 'autoState') {
+        if (field.name === 'autoResult' || field.name === 'reviewComplete' || field.name === 'autoCheckAvailable') {
           return field.string() === '1'
         }
         return next()

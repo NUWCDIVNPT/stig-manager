@@ -32,7 +32,6 @@ function loadScripts() {
         "js/overrides.js",
         "js/RowEditor.js",
         "js/RowExpander.js",
-        "js/stigman.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",
         "js/userAdmin.js",
@@ -52,6 +51,7 @@ function loadScripts() {
         "js/scanManagement.js",
         "js/ExportButton.js",
         "js/jszip.min.js",
+        "js/stigman.js"
     ].forEach(function(src) {
         var script = document.createElement('script');
         script.src = src;
