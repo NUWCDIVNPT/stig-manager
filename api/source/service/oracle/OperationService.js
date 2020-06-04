@@ -175,13 +175,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // Process appdata object
     // DEPARTMENTS
-    if (!departments.some(d => d.deptId === 0)) {
-      // Ensure the default department always exists
-      departments.push({
-        deptId: 0,
-        name: 'Default'
-      })
-    }
     dml.department.insertBinds = departments
 
     // PACKAGES

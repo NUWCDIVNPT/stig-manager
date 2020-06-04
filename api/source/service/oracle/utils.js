@@ -77,7 +77,7 @@ module.exports.initializeDatabase = function () {
         if (result.rows[0][0] === 0) {
           await connection.execute(
             'insert into user_data (username, display, deptId, accessLevel, canAdmin) VALUES (:1, :2, :3, :4, :5)',
-            [config.init.superuser, 'Superuser', 0, 3, 1],
+            [config.init.superuser, 'Superuser', 1, 3, 1],
             {autoCommit: true}
           )
           console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)

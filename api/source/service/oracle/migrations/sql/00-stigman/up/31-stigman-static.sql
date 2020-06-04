@@ -1,7 +1,7 @@
 INSERT INTO action VALUES (1,'remediate','Remediate');
 INSERT INTO action VALUES (2,'mitigate','Mitigate');
 INSERT INTO action VALUES (3,'exception','Exception');
-INSERT INTO department VALUES (0,'Default');
+INSERT INTO department VALUES (1,'Default');
 INSERT INTO reject_string VALUES (1,'Evaluation comment not specific.','The comment supporting the result of the evaluation does not contain enough specific information. Comments should mention the specific setting(s) or value(s) contained in the check text.');
 INSERT INTO reject_string VALUES (2,'Recommendation comment not specific.','The comment describing the recommended action is not specific.');
 INSERT INTO reject_string VALUES (3,'Documentation is not attached.','The review requires the submission of documentation for the result of the evaluation to be accepted.');

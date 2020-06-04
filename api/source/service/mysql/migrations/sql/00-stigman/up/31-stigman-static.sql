@@ -31,7 +31,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `department` WRITE;
 /*!40000 ALTER TABLE `department` DISABLE KEYS */;
-INSERT INTO `department` VALUES (0,'Default');
+INSERT INTO `department` VALUES (1,'Default');
 /*!40000 ALTER TABLE `department` ENABLE KEYS */;
 UNLOCK TABLES;
 

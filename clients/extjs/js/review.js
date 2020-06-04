@@ -259,14 +259,14 @@ function addReview(leaf, selectedRule, selectedResource) {
                       } else {
                           reject({
                               status: this.status,
-                              statusText: xhr.statusText
+                              message: xhr.statusText
                             })
                       }
                   }
                   xhr.onerror = function () {
                       reject({
                           status: this.status,
-                          message: xhr.statusText
+                          message: xhr.responseText
                         })
                   }
                   xhr.send()        
@@ -1992,27 +1992,18 @@ function addReview(leaf, selectedRule, selectedResource) {
     // type
     // }
 
-    let fp = Ext.getCmp('reviewForm' + idAppend)
-    Ext.getBody().mask('Saving...')
-
-    let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-    let jsonData = {}
-    if (typeof fvalues.result !== 'undefined') {
-      jsonData.result = fvalues.result
-    }
-    if (typeof fvalues.resultComment !== 'undefined') {
-      jsonData.resultComment = fvalues.resultComment === "" ? null : fvalues.resultComment
-    }
-    if (typeof fvalues.action !== 'undefined') {
-      jsonData.action = fvalues.action
-    }
-    if (typeof fvalues.actionComment !== 'undefined') {
-      jsonData.actionComment = fvalues.actionComment === "" ? null : fvalues.actionComment
-    }
-    if (typeof fvalues.autoResult !== 'undefined') {
-      jsonData.autoResult = fvalues.autoResult === 'true' ? true : false
-    }
     try {
+      let fp = Ext.getCmp('reviewForm' + idAppend)
+      Ext.getBody().mask('Saving...')
+
+      let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+      let jsonData = {
+        result: fvalues.result,
+        resultComment:fvalues.resultComment === "" ? null : fvalues.resultComment,
+        action: fvalues.action === "" ? null : fvalues.action,
+        actionComment: fvalues.actionComment === "" ? null : fvalues.actionComment,
+        autoResult: fvalues.autoResult === 'true' ? true : false
+      }
       let result, reviewFromApi
       switch (saveParams.type) {
         case 'submit':
@@ -2091,7 +2082,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       //Ext.Msg.alert('Success','Successfully updated review.');
     }
     catch (e) {
-      Ext.Msg.alert('Fail','Failed to update review.')
+      Ext.Msg.alert('Fail',`Failed to update review.\n${e.message}`)
     }
     finally {
       Ext.getBody().unmask()

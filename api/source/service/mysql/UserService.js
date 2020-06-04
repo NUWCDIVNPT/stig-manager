@@ -8,75 +8,99 @@ const dbUtils = require('./utils')
 Generalized queries for users
 **/
 exports.queryUsers = async function (inProjection, inPredicates, elevate, userObject) {
+  let connection
   try {
     let context
-    if (userObject.role == 'Staff' || elevate) {
+    if (elevate) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.role == "IAO") {
-      context = dbUtils.CONTEXT_DEPT
-    } else {
-      context = dbUtils.CONTEXT_USER
     }
-  
+    else {
+      switch (userObject.accessLevel) {
+        case 3:
+          context = dbUtils.CONTEXT_ALL
+          break
+        case 2:
+          context = dbUtils.CONTEXT_DEPT
+          break
+        case 1:
+          context = dbUtils.CONTEXT_USER
+          break
+        case ROLE.GUEST:
+          context = dbUtils.CONTEXT_GUEST
+          break;
+      }
+    }
+
     let columns = [
-      'ud.id as "userId"',
-      'ud.cn as "username"',
-      'ud.name as "display"',
-      'ud.dept',
-      'ud.roleId as "role"',
+      'ud.userId',
+      'ud.username',
+      'ud.display',
+      `json_object (
+        'deptId', d.deptId,
+        'name', d.name
+      ) as "dept"`,
+      'ud.accessLevel',
       'ud.canAdmin'
     ]
     let joins = [
-      'stigman.user_data ud',
+      'user_data ud',
+      'left join department d on ud.deptId = d.deptId'
     ]
-  
+
     // PROJECTIONS
     if (inProjection && inProjection.includes('stigReviews')) {
-      columns.push(`coalesce(
+      columns.push(`(with cte as 
         (select
-        json_arrayagg(
-        json_object(
-          'benchmarkId', sa.stigId,
-          'asset', json_object (
-            'assetId', a.assetid,
-            'name', a.name,
-            'dept', a.dept)
-          )
-        ) a
-      FROM 
-          stigman.stig_asset_map sa
-          left join stigman.asset a on sa.assetId = a.assetId
-          left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
-      where usa.userId = ud.id
-      group by usa.userId), json_array()) as stigReviews`)
+          json_arrayagg( 
+            json_object(
+              'benchmarkId', sa.benchmarkId,
+              'asset', json_object(
+                'assetId', a.assetid,
+                'name', a.name,
+                'dept', json_object (
+                  'deptId', a.deptId,
+                  'name', d.name
+                )
+              )
+            )
+          ) OVER (partition by userId ORDER BY benchmarkId desc, a.name desc)  as stigReviews,
+          ROW_NUMBER() OVER (partition by userId ORDER BY benchmarkId, a.name) as rn
+        FROM 
+          stig_asset_map sa
+          left join asset a on sa.assetId = a.assetId
+          left join department d on a.deptId = d.deptId
+          inner join user_stig_asset_map usa on sa.saId = usa.saId
+          WHERE usa.userId = ud.userId
+        )
+        SELECT COALESCE ((SELECT stigReviews from cte where rn = 1), json_array())) as "stigReviews"`)
     }
-  
+
     // PREDICATES
     let predicates = {
       statements: [],
-      binds: []
+      binds: {}
     }
     if (inPredicates.userId) {
-      predicates.statements.push('ud.id = ?')
-      predicates.binds.push( inPredicates.userId )
+      predicates.statements.push('ud.userid = :userId')
+      predicates.binds.userId = inPredicates.userId
     }
-    if (inPredicates.role) {
-      predicates.statements.push('ud.roleId = ?')
-      predicates.binds.push( dbUtils.USER_ROLE[inPredicates.role].id )
+    if (inPredicates.accessLevel) {
+      predicates.statements.push('ud.accessLevel = :accessLevel')
+      predicates.binds.accessLevel = inPredicates.accessLevel
     }
-    if (inPredicates.dept) {
-      predicates.statements.push('ud.dept = ?')
-      predicates.binds.push( inPredicates.dept )
+    if (inPredicates.deptId) {
+      predicates.statements.push('ud.deptId = :deptId')
+      predicates.binds.deptId = inPredicates.deptId
     }
     if (inPredicates.canAdmin) {
-      predicates.statements.push('ud.canAdmin = ?')
-      predicates.binds.push( inPredicates.canAdmin ? 1 : 0 )
+      predicates.statements.push('ud.canAdmin = :canAdmin')
+      predicates.binds.canAdmin = inPredicates.canAdmin ? 1 : 0
     }
     if (context == dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('ud.dept = ?')
-      predicates.binds.push( userObject.dept )
+      predicates.statements.push('ud.deptId = :deptId')
+      predicates.binds.deptId = userObject.dept.deptId
     } 
-  
+
     // CONSTRUCT MAIN QUERY
     let sql = 'SELECT '
     sql+= columns.join(",\n")
@@ -85,32 +109,25 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' order by ud.cn'
-    // connection = await dbUtils.pool.getConnection()
-    const [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
-
-    // Post-process each row, unfortunately.
-    // * MySQL doesn't have a BOOLEAN data type, so we must cast boolean columns
-    for (let x = 0, l = rows.length; x < l; x++) {
-      let record = rows[x]
-      // Handle booleans
-      record.canAdmin = record.canAdmin == 1 ? true : false
-      // Convert roleId
-      record.role = dbUtils.USER_ROLE_ID[record.role].role
-      // if ('stigReviews' in inPredicates) {
-      //  // Convert null to empty array 
-      //   record.stigReviews = record.stigReviews ? record.stigReviews : []
-      // }
-    }
+    sql += ' order by ud.username'
+  
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    let [rows] = await connection.query(sql, predicates.binds)
     return (rows)
   }
   catch (err) {
     throw err
   }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
+  }
 }
 
 exports.addOrUpdateUser = async function (writeAction, userId, body, projection, elevate, userObject) {
-  let connection // available to try, catch, and finally blocks
+  let connection 
   try {
     // CREATE: userId will be null
     // REPLACE/UPDATE: assetId is not null
@@ -119,58 +136,43 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     let { stigReviews, ...userFields } = body
     stigReviews = stigReviews ? stigReviews : []
 
-    // Convert boolean scalar values to database values (true=1 or false=0)
+    // Convert boolean value to database value (true=1 or false=0)
     if ('canAdmin' in userFields) {
       userFields.canAdmin = userFields.canAdmin ? 1 : 0
     }
-    // Convert role to roleId
-    if ('role' in userFields) {
-      userFields.roleId = dbUtils.USER_ROLE[userFields.role].id
-      delete userFields.role
-    }
-    if ('username' in userFields) {
-      userFields.cn = userFields.username
-      delete userFields.username
-    }
-    if ('display' in userFields) {
-      userFields.name = userFields.display
-      delete userFields.display
-    }
 
-    // Connect to Oracle
-    let options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    connection = await oracledb.getConnection()
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION');
 
     // Process scalar properties
-    let binds = {...userFields}
+    let binds
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
       // INSERT into user_data
+      binds = {...userFields}
       let sqlInsert =
         `INSERT INTO
-            stigman.user_data
-            (cn, name, dept, roleId, canAdmin)
+            user_data
+            ( username, display, deptId, accessLevel, canAdmin)
           VALUES
-            (:cn, :name, :dept, :roleId, :canAdmin)
-          RETURNING
-            id into :userId`
-      binds = {...userFields}
-      binds.userId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
-      let result = await connection.execute(sqlInsert, binds, options)
-      userId = result.outBinds.userId[0]
+            (:username, :display, :deptId, :accessLevel, :canAdmin)`
+      let [result] = await connection.query(sqlInsert, binds)
+      userId = result.insertId
     }
     else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      if (Object.keys(binds).length > 0) {        // UPDATE into assets
+      binds = {
+        userId: userId,
+        values: userFields
+      }
+      if (Object.keys(binds.values).length > 0) {
         let sqlUpdate =
           `UPDATE
-              stigman.user_data
+              user_data
             SET
-              ${dbUtils.objectBindObject(userFields, binds)}
+              :values
             WHERE
-              id = :userId`
-        binds.userId = userId
-        await connection.execute(sqlUpdate, binds, options)
+              userid = :userId`
+        await connection.query(sqlUpdate, binds)
       }
     }
     else {
@@ -178,21 +180,22 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     }
 
     // Process stigReviews if present
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE || 
-        writeAction === dbUtils.WRITE_ACTION.CREATE ||
-        stigReviews.length == 0 ) {
+    if ( stigReviews || writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE ) {
       // DELETE from user_stig_asset_map
-      let sqlDeleteStigAssets = 'DELETE FROM stigman.user_stig_asset_map where userId = :userId'
-      await connection.execute(sqlDeleteStigAssets, [userId])
+      let sqlDeleteStigAssets = 'DELETE FROM user_stig_asset_map where userId = ?'
+      await connection.query(sqlDeleteStigAssets, [userId])
     }
     if (stigReviews.length > 0) {
       let sqlInsertStigAssets = `
-        INSERT /*+ ignore_row_on_dupkey_index(user_stig_asset_map(userId, saId)) */ INTO 
-          stigman.user_stig_asset_map (userId,saId)
-        VALUES (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`      
+        INSERT INTO 
+          user_stig_asset_map (userId, saId)
+        VALUES (?, (SELECT saId from stig_asset_map WHERE benchmarkId = ? and assetId = :?))`      
       let binds = stigReviews.map(i => [userId, i.benchmarkId, i.assetId])
       // INSERT into asset_package_map
-      await connection.executeMany(sqlInsertStigAssets, binds)
+      connection.prepare(sqlInsertStigAssets)
+      for (values of binds) {
+        await connection.execute(sqlInsertStigAssets, values)
+      }
     }
     // Commit the changes
     await connection.commit()
@@ -203,7 +206,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.close()
+      await connection.release()
     }
   }
 

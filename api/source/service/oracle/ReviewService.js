@@ -537,6 +537,7 @@ exports.putReviews = async function( reviews, userObject) {
  * returns Review
  **/
 exports.patchReview = async function(projection, assetId, ruleId, body, userObject) {
+  let connection
   try {
     let values = {
       userId: userObject.userId
@@ -571,9 +572,8 @@ exports.patchReview = async function(projection, assetId, ruleId, body, userObje
         ${dbUtils.objectBindObject(values, binds)}
       WHERE
         assetId = :assetId and ruleId = :ruleId`
-    let connection = await oracledb.getConnection()
+    connection = await oracledb.getConnection()
     let result = await connection.execute(sqlUpdate, binds, {autoCommit: true})
-    await connection.close()
     if (result.rowsAffected == 0) {
       throw (writer.respondWithCode ( 400, {message: "Review must exist to be patched."}))
     }
@@ -589,6 +589,11 @@ exports.patchReview = async function(projection, assetId, ruleId, body, userObje
     }
     else {
       throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    }
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
     }
   }
 }

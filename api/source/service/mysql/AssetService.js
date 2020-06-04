@@ -1,5 +1,4 @@
 'use strict';
-const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 const J2X = require("fast-xml-parser").j2xParser
@@ -198,7 +197,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 }
 
 exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, elevate, userObject) {
-  let connection // available to try, catch, and finally blocks
+  let connection
   try {
     // CREATE: assetId will be null
     // REPLACE/UPDATE: assetId is not null
@@ -211,7 +210,6 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       assetFields.nonnetwork = assetFields.nonnetwork ? 1 : 0
     }
 
-    // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
     await connection.query('START TRANSACTION');
@@ -440,6 +438,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
 }
 
 exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId, revisionStr, elevate, userObject) {
+  let connection
   try {
     let cklJs = {
       CHECKLIST: {
@@ -470,61 +469,87 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
     }
     let sqlGetBenchmarkId
     if (revisionStr === 'latest') {
-      sqlGetBenchmarkId = "select cr.stigId, s.title, cr.revId, cr.description, cr.version, cr.release, cr.benchmarkDate from stigs.current_revs cr left join stigs.stigs s on cr.stigId = s.stigId where cr.stigId = :1"
+      sqlGetBenchmarkId = `select
+        cr.benchmarkId, 
+        s.title, 
+        cr.revId, 
+        cr.description, 
+        cr.version, 
+        cr.release, 
+        cr.benchmarkDate
+      from
+        current_rev cr 
+        left join stig s on cr.benchmarkId = s.benchmarkId
+      where
+        cr.benchmarkId = ?`
     }
     else {
-      sqlGetBenchmarkId = "select r.stigId,s.title, r.description, r.version, r.release, r.benchmarkDate from stigs.stigs s left join stigs.revisions r on s.stigId=r.stigId where r.revId = :1"
+      sqlGetBenchmarkId = `select
+        r.benchmarkId,
+        s.title,
+        r.description,
+        r.version,
+        r.release,
+        r.benchmarkDate
+      from 
+        stig s 
+        left join revision r on s.benchmarkId=r.benchmarkId
+      where
+        r.revId = ?`  
     }
-    let sqlGetAsset = "select name,profile,ip from stigman.assets where assetId = :assetId"
-    let sqlGetCCI = "select controlnumber from stigs.rule_control_map where ruleId = :ruleId and controltype='CCI'"
-    let sqlGetResults = `
-    select
-      g.groupId as "groupId",
-      r.severity as "severity",
+
+    let sqlGetAsset = "select name, ip from asset where assetId = ?"
+    let sqlGetChecklist =`SELECT 
+      g.groupId,
+      r.severity,
       g.title as "groupTitle",
-      r.ruleId as "ruleId",
+      r.ruleId,
       r.title as "ruleTitle",
-      r.weight as "weight",
-      r.version as "version",
-      r.vulnDiscussion as "vulnDiscussion",
-      r.iaControls as "iaControls",
-    --  The two lines below are hacks that only display a subset of the content and fix texts.
-    --  We should be doing some type of concatenation
+      r.weight,
+      r.version,
+      r.vulnDiscussion,
+      r.iaControls,
+      r.falsePositives,
+      r.falseNegatives,
+      r.documentable,
+      r.mitigations,
+      r.potentialImpacts,
+      r.thirdPartyTools,
+      r.mitigationControl,
+      r.responsibility,
+      r.severityOverrideGuidance,
+      result.ckl as "result",
+      review.resultComment,
+      action.en as "action",
+      review.actionComment,
       MAX(c.content) as "checkContent",
-      MAX(to_char(substr(f.text,0,3999))) as "fixText",
-      r.falsePositives as "falsePositives",
-      r.falseNegatives as "falseNegatives",
-      r.documentable as "documentable",
-      r.mitigations as "mitigations",
-      r.potentialImpacts as "potentialImpacts",
-      r.thirdPartyTools as "thirdPartyTools",
-      r.mitigationControl as "mitigationControl",
-      r.responsibility as "responsibility",
-      r.securityOverrideGuidance as "securityOverrideGuidance",
-      NVL(rev.stateId,0) as "stateId",
-      rev.stateComment as "stateComment",
-      act.action as "action",
-      rev.actionComment as "actionComment",
-      to_char(rev.ts,'yyyy-mm-dd hh24:mi:ss') as "ts",
-      listagg(rulectl.controlnumber, ',') within group (order by rulectl.controlnumber) as "ccis"
-    from
-      assets s
-      left join stigs.rev_profile_group_map rpg on s.profile=rpg.profile
-      left join stigs.groups g on rpg.groupId=g.groupId
-      left join stigs.rev_group_map rg on (rpg.groupId=rg.groupId and rpg.revId=rg.revId)
-      left join stigs.rev_group_rule_map rgr on rg.rgId=rgr.rgId
-      left join stigs.rules r on rgr.ruleId=r.ruleId
-      left join stigs.rule_check_map rc on r.ruleId=rc.ruleId
-      left join stigs.rule_control_map rulectl on (r.ruleId = rulectl.ruleId and rulectl.controltype='CCI')
-      left join stigs.checks c on rc.checkId=c.checkId
-      left join stigs.rule_fix_map rf on r.ruleId=rf.ruleId
-      left join stigs.fixes f on rf.fixId=f.fixId
-      left join reviews rev on (r.ruleId=rev.ruleId and s.assetId=rev.assetId)
-      left join actions act on act.actionId=rev.actionId
-    where
-      s.assetId = :assetId
-      and rg.revId = :revId
-    group by
+      MAX(fix.text) as "fixText",
+      group_concat(rgrcc.cci ORDER BY rgrcc.cci) as "ccis"
+    FROM
+      revision rev 
+      left join rev_group_map rg on rev.revId = rg.revId 
+      left join \`group\` g on rg.groupId = g.groupId 
+
+      left join rev_group_rule_map rgr on rg.rgId = rgr.rgId 
+      left join rule r on rgr.ruleId = r.ruleId 
+      left join severity_cat_map sc on r.severity = sc.severity 
+      
+      left join rev_group_rule_cci_map rgrcc on rgr.rgrId = rgrcc.rgrId 
+
+      left join rev_group_rule_check_map rgrc on rgr.rgrId = rgrc.rgrId
+      left join \`check\` c on rgrc.checkId = c.checkId
+
+      left join rev_group_rule_fix_map rgrf on rgr.rgrId = rgrf.rgrId
+      left join fix on rgrf.fixId = fix.fixId
+
+      left join review on r.ruleId = review.ruleId and review.assetId = ?
+      left join result on review.resultId = result.resultId 
+      left join status on review.statusId = status.statusId 
+      left join action on review.actionId = action.actionId                                     
+
+    WHERE
+      rev.revId = ?
+    GROUP BY
       g.groupId,
       r.severity,
       g.title,
@@ -534,8 +559,6 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       r.version,
       r.vulnDiscussion,
       r.iaControls,
-    --	c.content,
-    --	to_char(substr(f.text,0,8000)),
       r.falsePositives,
       r.falseNegatives,
       r.documentable,
@@ -544,51 +567,44 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       r.thirdPartyTools,
       r.mitigationControl,
       r.responsibility,
-      r.securityOverrideGuidance,
-      rev.stateId,
-      rev.stateComment,
-      act.action,
-      rev.actionComment,
-      rev.ts,
-      rg.groupId
+      r.severityOverrideGuidance,
+      result.ckl,
+      review.resultComment,
+      action.en,
+      review.actionComment
     order by
-      DECODE(substr(g.groupId,1,2),'V-',lpad(substr(g.groupId,3),6,'0'),g.groupId) asc
+      substring(g.groupId from 3) + 0 asc
     `
-
-    // Fetch data
-    let oracleOptions = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    let connection = await oracledb.getConnection()
+    connection = await dbUtils.pool.getConnection()
 
     // ASSET
-    let resultGetAsset = await connection.execute(sqlGetAsset, {assetId: assetId}, oracleOptions)
-    cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset.rows[0].NAME
-    cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset.rows[0].IP
+    let [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
+    cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].name
+    cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
 
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
     // Calculate revId
     let resultGetBenchmarkId, revId
     if (revisionStr === 'latest') {
-      resultGetBenchmarkId = await connection.execute(sqlGetBenchmarkId, [benchmarkId], oracleOptions)
-      revId = resultGetBenchmarkId.rows[0].REVID
+      ;[resultGetBenchmarkId] = await connection.query(sqlGetBenchmarkId, [benchmarkId])
+      revId = resultGetBenchmarkId[0].revId
     }
     else {
       let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
       revId =  `${benchmarkId}-${results[1]}-${results[2]}`
-      resultGetBenchmarkId = await connection.execute(sqlGetBenchmarkId, [revId], oracleOptions)
+      ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
     }
 
-    let stig = resultGetBenchmarkId.rows[0]
+    let stig = resultGetBenchmarkId[0]
     let siDataRefs = [
-      { SID_NAME: 'version', SID_DATA: stig.VERSION },
+      { SID_NAME: 'version', SID_DATA: stig.version },
       { SID_NAME: 'classification' },
       { SID_NAME: 'customname' },
-      { SID_NAME: 'stigid', SID_DATA: stig.STIGID },
-      { SID_NAME: 'description', SID_DATA: stig.DESCRIPTION },
+      { SID_NAME: 'stigid', SID_DATA: stig.benchmarkId },
+      { SID_NAME: 'description', SID_DATA: stig.description },
       { SID_NAME: 'filename', SID_DATA: 'stig-manager-oss' },
-      { SID_NAME: 'releaseinfo', SID_DATA: `Release: ${stig.RELEASE} Benchmark Date: ${stig.BENCHMARKDATE}`},
-      { SID_NAME: 'title', SID_DATA: stig.TITLE },
+      { SID_NAME: 'releaseinfo', SID_DATA: `Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`},
+      { SID_NAME: 'title', SID_DATA: stig.title },
       { SID_NAME: 'uuid', SID_DATA: '391aad33-3cc3-4d9a-b5f7-0d7538b7b5a2' },
       { SID_NAME: 'notice', SID_DATA: 'terms-of-use' },
       { SID_NAME: 'source', }
@@ -599,8 +615,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
     })
 
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.VULN
-    let resultGetResults = await connection.execute(sqlGetResults, {assetId: assetId, revId: revId}, oracleOptions)
-    await connection.close()
+    let [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])
 
     let stigDataRef = [
       ['Vuln_Num', 'groupId' ],
@@ -621,21 +636,16 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       ['Third_Party_Tools', 'thirdPartyTools' ],
       ['Mitigation_Control', 'mitigationControl' ],
       ['Responsibility', 'responsibility' ],
-      ['Security_Override_Guidance', 'securityOverrideGuidance' ]
-      // ['Check_Content_Ref', 'securityOverrideGuidance' ]
-      // ['Class', 'securityOverrideGuidance' ]
-      // ['STIGRef', 'securityOverrideGuidance' ]
-      // ['STIG_UUID', 'securityOverrideGuidance' ]
-      // ['CCI_REF', 'securityOverrideGuidance' ]
+      ['Security_Override_Guidance', 'severityOverrideGuidance' ] 
+      // STIGViewer bug requires using Security_Override_Guidance instead of Severity_Override_Guidance
     ]
-    let stateStrings = ['Not_Reviewed', 'Not_Reviewed', 'Not_Applicable', 'NotAFinding', 'Open']
 
     let vulnArray = cklJs.CHECKLIST.STIGS.iSTIG.VULN
-    resultGetResults.rows.forEach( r => {
+    resultGetChecklist.forEach( r => {
       let vulnObj = {
         STIG_DATA: [],
-        STATUS: stateStrings[r.stateId],
-        FINDING_DETAILS: r.stateComment,
+        STATUS: r.result || 'Not_Reviewed',
+        FINDING_DETAILS: r.resultComment,
         COMMENTS: r.action ? `${r.action}: ${r.actionComment}` : null,
         SEVERITY_OVERRIDE: null,
         SEVERITY_JUSTIFICATION: null
@@ -647,14 +657,16 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
         })
       })
       // CCI_REFs
-      let ccis = r.ccis.split(',')
-      ccis.forEach( cci=> {
-        vulnObj.STIG_DATA.push({
-          VULN_ATTRIBUTE: 'CCI_REF',
-          ATTRIBUTE_DATA: cci
+      if (r.ccis) {
+        let ccis = r.ccis.split(',')
+        ccis.forEach( cci=> {
+          vulnObj.STIG_DATA.push({
+            VULN_ATTRIBUTE: 'CCI_REF',
+            ATTRIBUTE_DATA: `CCI-${cci}`
+          })
         })
-      })
-      vulnArray.push(vulnObj)
+        vulnArray.push(vulnObj)
+      }
     })
 
     let defaultOptions = {
@@ -664,7 +676,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       ignoreAttributes : true,
       cdataTagName: "__cdata", //default is false
       cdataPositionChar: "\\c",
-      format: false,
+      format: true,
       indentBy: "  ",
       supressEmptyNode: false,
       tagValueProcessor: a => {
@@ -674,12 +686,18 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
   };
   
     const j2x = new J2X(defaultOptions)
-    let xml = j2x.parse(cklJs)
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<!--STIG Manager :: 3.0-->\n'
+    xml += j2x.parse(cklJs)
     return (xml)
 
   }
   catch (e) {
     throw (e)
+  }
+  finally {
+    if (typeof connection !== 'undefinied') {
+      await connection.close()
+    }
   }
 }
 

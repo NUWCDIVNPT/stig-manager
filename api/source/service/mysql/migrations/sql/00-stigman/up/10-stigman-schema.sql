@@ -409,7 +409,7 @@ CREATE TABLE `review` (
   `actionId` int(11) DEFAULT NULL,
   `actionComment` longtext ,
   `autoResult` bit(1) DEFAULT 0,
-  `ts` datetime NOT NULL,
+  `ts` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `userId` int(11) DEFAULT NULL,
   `rejecttext` longtext ,
   `rejectUserId` int(11) DEFAULT NULL,

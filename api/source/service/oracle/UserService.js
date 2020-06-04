@@ -3,118 +3,118 @@ const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
-
+let _this = this
 
 /**
 Generalized queries for users
 **/
 exports.queryUsers = async function (inProjection, inPredicates, elevate, userObject) {
-  let context
-  if (elevate) {
-    context = dbUtils.CONTEXT_ALL
-  }
-  else {
-    switch (userObject.accessLevel) {
-      case 3:
-        context = dbUtils.CONTEXT_ALL
-        break
-      case 2:
-        context = dbUtils.CONTEXT_DEPT
-        break
-      case 1:
-        context = dbUtils.CONTEXT_USER
-        break
-      case ROLE.GUEST:
-        context = dbUtils.CONTEXT_GUEST
-        break;
-    }
-  }
-
-  let columns = [
-    'ud.userId as "userId"',
-    'ud.username as "username"',
-    'ud.display as "display"',
-    `json_object (
-      KEY 'deptId' VALUE d.deptId,
-      KEY 'name' VALUE d.name
-    ) as "dept"`,
-    'ud.accessLevel as "accessLevel"',
-    'ud.canAdmin as "canAdmin"'
-  ]
-  let joins = [
-    'user_data ud',
-    'left join department d on ud.deptId = d.deptId'
-  ]
-
-  // PROJECTIONS
-  if (inProjection && inProjection.includes('stigReviews')) {
-    columns.push(`(select
-      json_arrayagg( 
-          json_object(
-              KEY 'benchmarkId' VALUE sa.benchmarkId,
-              KEY 'asset' VALUE json_object(
-                KEY 'assetId' VALUE a.assetid,
-                KEY 'name' VALUE a.name,
-                KEY 'dept' VALUE json_object (
-                  KEY 'deptId' VALUE a.deptId,
-                  KEY 'name' VALUE d.name)
-                ABSENT ON NULL
-              )
-          )
-         order by sa.benchmarkId, a.name returning varchar2(32000)
-      )
-    FROM 
-        stig_asset_map sa
-        left join asset a on sa.assetId = a.assetId
-        left join department d on a.deptId = d.deptId
-        left join user_stig_asset_map usa on sa.saId = usa.saId
-    where usa.userId = ud.userid
-    group by usa.userId) as "stigReviews"`)
-  }
-
-  // PREDICATES
-  let predicates = {
-    statements: [],
-    binds: {}
-  }
-  if (inPredicates.userId) {
-    predicates.statements.push('ud.userid = :userId')
-    predicates.binds.userId = inPredicates.userId
-  }
-  if (inPredicates.accessLevel) {
-    predicates.statements.push('ud.accessLevel = :accessLevel')
-    predicates.binds.accessLevel = inPredicates.accessLevel
-  }
-  if (inPredicates.deptId) {
-    predicates.statements.push('ud.deptId = :deptId')
-    predicates.binds.deptId = inPredicates.deptId
-  }
-  if (inPredicates.canAdmin) {
-    predicates.statements.push('ud.canAdmin = :canAdmin')
-    predicates.binds.canAdmin = inPredicates.canAdmin ? 1 : 0
-  }
-  if (context == dbUtils.CONTEXT_DEPT) {
-    predicates.statements.push('ud.deptId = :deptId')
-    predicates.binds.deptId = userObject.dept.deptId
-  } 
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ' order by ud.username'
-  
+  let connection
   try {
+    let context
+    if (elevate) {
+      context = dbUtils.CONTEXT_ALL
+    }
+    else {
+      switch (userObject.accessLevel) {
+        case 3:
+          context = dbUtils.CONTEXT_ALL
+          break
+        case 2:
+          context = dbUtils.CONTEXT_DEPT
+          break
+        case 1:
+          context = dbUtils.CONTEXT_USER
+          break
+        case ROLE.GUEST:
+          context = dbUtils.CONTEXT_GUEST
+          break;
+      }
+    }
+
+    let columns = [
+      'ud.userId as "userId"',
+      'ud.username as "username"',
+      'ud.display as "display"',
+      `json_object (
+        KEY 'deptId' VALUE d.deptId,
+        KEY 'name' VALUE d.name
+      ) as "dept"`,
+      'ud.accessLevel as "accessLevel"',
+      'ud.canAdmin as "canAdmin"'
+    ]
+    let joins = [
+      'user_data ud',
+      'left join department d on ud.deptId = d.deptId'
+    ]
+
+    // PROJECTIONS
+    if (inProjection && inProjection.includes('stigReviews')) {
+      columns.push(`(select
+        json_arrayagg( 
+            json_object(
+                KEY 'benchmarkId' VALUE sa.benchmarkId,
+                KEY 'asset' VALUE json_object(
+                  KEY 'assetId' VALUE a.assetid,
+                  KEY 'name' VALUE a.name,
+                  KEY 'dept' VALUE json_object (
+                    KEY 'deptId' VALUE a.deptId,
+                    KEY 'name' VALUE d.name)
+                  ABSENT ON NULL
+                )
+            )
+          order by sa.benchmarkId, a.name returning varchar2(32000)
+        )
+      FROM 
+          stig_asset_map sa
+          left join asset a on sa.assetId = a.assetId
+          left join department d on a.deptId = d.deptId
+          left join user_stig_asset_map usa on sa.saId = usa.saId
+      where usa.userId = ud.userid
+      group by usa.userId) as "stigReviews"`)
+    }
+
+    // PREDICATES
+    let predicates = {
+      statements: [],
+      binds: {}
+    }
+    if (inPredicates.userId) {
+      predicates.statements.push('ud.userid = :userId')
+      predicates.binds.userId = inPredicates.userId
+    }
+    if (inPredicates.accessLevel) {
+      predicates.statements.push('ud.accessLevel = :accessLevel')
+      predicates.binds.accessLevel = inPredicates.accessLevel
+    }
+    if (inPredicates.deptId) {
+      predicates.statements.push('ud.deptId = :deptId')
+      predicates.binds.deptId = inPredicates.deptId
+    }
+    if (inPredicates.canAdmin) {
+      predicates.statements.push('ud.canAdmin = :canAdmin')
+      predicates.binds.canAdmin = inPredicates.canAdmin ? 1 : 0
+    }
+    if (context == dbUtils.CONTEXT_DEPT) {
+      predicates.statements.push('ud.deptId = :deptId')
+      predicates.binds.deptId = userObject.dept.deptId
+    } 
+
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += ' order by ud.username'
+  
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
-    let connection = await oracledb.getConnection()
+    connection = await oracledb.getConnection()
     let result = await connection.execute(sql, predicates.binds, options)
-    await connection.close()
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast columns 'nonnetwork' and 'scanexempt'
@@ -133,10 +133,15 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   catch (err) {
     throw err
   }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
+  }
 }
 
 exports.addOrUpdateUser = async function (writeAction, userId, body, projection, elevate, userObject) {
-  let connection // available to try, catch, and finally blocks
+  let connection 
   try {
     // CREATE: userId will be null
     // REPLACE/UPDATE: assetId is not null

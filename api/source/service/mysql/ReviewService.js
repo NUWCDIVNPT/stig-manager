@@ -29,7 +29,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       'r.autoResult',
       'action.api as "action"',
       'r.actionComment',
-      'status.api',
+      'status.api as "status"',
       'r.userId',
       'ud.username',
       'r.ts',
@@ -121,7 +121,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
             (select
               json_arrayagg(
                 json_object(
-                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%s'),
+                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%d %H:%i:%s'),
                   'activityType' , rh.activityType,
                   'columnName' , rh.columnName,
                   'oldValue' , rh.oldValue,
@@ -310,19 +310,6 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
     for (let x = 0, l = rows.length; x < l; x++) {
       let record = rows[x]
       record.reviewComplete = record.reviewComplete == 1 ? true : false
-      // record.autoResult = record.autoResult == 1 ? true : false
-      // if (inProjection.includes('packages')) {
-      //    record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
-      //  }
-      // if (inProjection.includes('stigs')) {
-      //    record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
-      //  }
-      // if (inProjection.includes('ruleInfo')) {
-      //   record.ruleInfo = JSON.parse(record.ruleInfo)
-      // }
-      // if (inProjection.includes('history')) {
-      //   record.history = JSON.parse(record.history) || []
-      // }
     }
 
     return (rows)
@@ -397,13 +384,14 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
 
     let binds = {
       assetId: assetId,
-      ruleId: ruleId
+      ruleId: ruleId,
+      values: values
     }
     let sqlUpdate = `
       UPDATE
         review
       SET
-        ?
+        :values
       WHERE
         assetId = :assetId and ruleId = :ruleId`
     
@@ -412,6 +400,11 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
     let [result] = await connection.query(sqlUpdate, binds)
     let status = 'created'
     if (result.affectedRows == 0) {
+      binds = {
+        assetId: assetId,
+        ruleId: ruleId,
+        ...values
+      }
       let sqlInsert = `
         INSERT INTO review
         (assetId, ruleId, resultId, resultComment, actionId, actionComment, statusId, userId, autoResult)
@@ -519,7 +512,69 @@ exports.putReviews = async function( reviews, userObject) {
  * returns Review
  **/
 exports.patchReview = async function(projection, assetId, ruleId, body, userObject) {
+  let connection
+  try {
+    let values = {
+      userId: userObject.userId
+    }
+    if (body.result != undefined) {
+      values.resultId = dbUtils.REVIEW_RESULT_API[body.result]
+    }
+    if (body.resultComment != undefined) {
+      values.resultComment = body.resultComment
+    }
+    if (body.action != undefined) {
+      values.actionId = dbUtils.REVIEW_ACTION_API[body.action]
+    }
+    if (body.actionComment != undefined) {
+      values.actionComment = body.actionComment
+    }
+    if (body.status != undefined) {
+      values.statusId = dbUtils.REVIEW_STATUS_API[body.status]
+    }
+    if (body.autoResult != undefined) {
+      values.autoResult = body.autoResult ? 1 : 0
+    }
 
+    let binds = {
+      assetId: assetId,
+      ruleId: ruleId,
+      values: values
+    }
+    let sqlUpdate = `
+      UPDATE
+        review
+      SET
+        :values
+      WHERE
+        assetId = :assetId and ruleId = :ruleId`
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    let [result] = await connection.query(sqlUpdate, binds)
+
+    if (result.affectedRows == 0) {
+      throw ({message: "Review must exist to be patched."})
+    }
+    let rows = await this.queryReviews(projection, {
+      assetId: assetId,
+      ruleId: ruleId
+    }, userObject)
+    return (rows[0])
+  }
+  catch(err) {
+    if (err.code == 400) {
+      throw(err)
+    }
+    else {
+      throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    }
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.close()
+    }
+  }
 }
 
 

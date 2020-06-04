@@ -23,25 +23,40 @@ exports.queryDepartments = async function (inProjection, inPredicates, elevate, 
     // PROJECTIONS
     if (inProjection && inProjection.includes('assets')) {
       joins.push('left join asset a on d.deptId = a.deptId')
-      columns.push(`
-      json_arrayagg( 
-        json_object(
-          KEY 'assetId' VALUE a.assetId,
-          KEY 'name' VALUE a.name
-          ABSENT ON NULL)
-      order by a.name returning varchar2(32000)) as "assets"`)
+      columns.push(`cast(
+        concat('[', 
+          coalesce (
+            group_concat(distinct 
+              case when a.assetId is not null then 
+                json_object(
+                  'assetId', a.assetId, 
+                  'name', a.name
+                )
+              else null end 
+            order by a.name),
+            ''),
+        ']')
+      as json) as "assets"`)
     }
 
     // PROJECTIONS
     if (inProjection && inProjection.includes('users')) {
       joins.push('left join user_data u on d.deptId = u.deptId')
-      columns.push(`json_arrayagg( 
-        json_object(
-          KEY 'userId' VALUE u.userId,
-          KEY 'username' VALUE u.username,
-          KEY 'accessLevel' VALUE u.accessLevel
-        )
-        order by u.username returning varchar2(32000)) as "users"`)
+      columns.push(`cast(
+        concat('[', 
+          coalesce (
+            group_concat(distinct 
+              case when u.userId is not null then 
+                json_object(
+                  'userId', u.userId, 
+                  'username', u.username,
+                  'accessLevel', u.accessLevel
+                )
+              else null end 
+            order by u.username),
+            ''),
+        ']')
+      as json) as "users"`)
     }
 
     // PREDICATES
@@ -70,30 +85,17 @@ exports.queryDepartments = async function (inProjection, inPredicates, elevate, 
     sql += ' group by d.deptId, d.name'
     sql += ' order by d.name'
     
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    connection = await oracledb.getConnection()
-    let result = await connection.execute(sql, predicates.binds, options)
-
-    // Post-process each row.
-    for (let x = 0, l = result.rows.length; x < l; x++) {
-      let record = result.rows[x]
-      if (inProjection && inProjection.includes('assets')) {
-        record.assets = record.assets ? JSON.parse(record.assets) : []
-      }
-      if (inProjection && inProjection.includes('users')) {
-        record.users = record.users ? JSON.parse(record.users) : []
-      }
-    }
-    return (result.rows)
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    let [rows] = await connection.query(sql, predicates.binds)
+    return (rows)
   }
   catch (err) {
     throw err
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.close()
+      await connection.release()
     }
   }
 }
@@ -104,23 +106,10 @@ exports.addOrUpdateDepartment = async function (writeAction, deptId, body, proje
     // CREATE: identifier will be null
     // REPLACE: identifier is not null
 
-    // // Extract or initialize non-scalar properties to separate variables
-    // let { stigReviews, ...userFields } = body
-    // stigReviews = stigReviews ? stigReviews : []
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
 
-    // // Convert boolean value to database value (true=1 or false=0)
-    // if ('canAdmin' in userFields) {
-    //   userFields.canAdmin = userFields.canAdmin ? 1 : 0
-    // }
-
-    // Connect to Oracle
-    let options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT
-    }
-    connection = await oracledb.getConnection()
-
-    // Process scalar properties
-    let binds = {...userFields}
+    let name = body.name
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
       // INSERT into user_data
       let sqlInsert =
@@ -128,13 +117,9 @@ exports.addOrUpdateDepartment = async function (writeAction, deptId, body, proje
             department
             ( name )
           VALUES
-            (:name)
-          RETURNING
-            deptId into :deptId`
-      binds = body
-      binds.deptId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
-      let result = await connection.execute(sqlInsert, binds, options)
-      deptId = result.outBinds.deptId[0]
+            (?)`
+      let [rows] = await connection.query(sqlInsert, [name])
+      deptId = rows.insertId
     }
     else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
       if (Object.keys(binds).length > 0) {        // UPDATE into assets
@@ -142,27 +127,22 @@ exports.addOrUpdateDepartment = async function (writeAction, deptId, body, proje
           `UPDATE
               department
             SET
-              ${dbUtils.objectBindObject(body, binds)}
+              name = ?
             WHERE
-              deptId = :deptId`
-        binds.deptId = deptId
-        await connection.execute(sqlUpdate, binds, options)
+              deptId = ?`
+        await connection.query(sqlUpdate, [name, assetId])
       }
     }
     else {
       throw('Invalid writeAction')
     }
-
-    // Commit the changes
-    await connection.commit()
   }
   catch (err) {
-    await connection.rollback()
     throw err
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.close()
+      await connection.release()
     }
   }
 
@@ -204,23 +184,13 @@ exports.deleteDepartment = async function(deptId, projection, elevate, userObjec
   let connection
   try {
     let row = await _this.getDepartment(deptId, projection, elevate, userObject)
-    let sqlDelete = `DELETE FROM department where deptId = :deptId`
-    
-    connection = await oracledb.getConnection()
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-      autoCommit: true
-    }
-    await connection.execute(sqlDelete, [deptId], options)
+
+    let sqlDelete = `DELETE FROM department where deptId = ?`
+    await dbUtils.pool.query(sqlDelete, [deptId])
     return (row)
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
-  finally {
-    if (typeof connection !== 'undefined') {
-      await connection.close()
-    }
   }
 }
 

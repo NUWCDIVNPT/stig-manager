@@ -104,23 +104,13 @@ exports.addOrUpdateDepartment = async function (writeAction, deptId, body, proje
     // CREATE: identifier will be null
     // REPLACE: identifier is not null
 
-    // // Extract or initialize non-scalar properties to separate variables
-    // let { stigReviews, ...userFields } = body
-    // stigReviews = stigReviews ? stigReviews : []
-
-    // // Convert boolean value to database value (true=1 or false=0)
-    // if ('canAdmin' in userFields) {
-    //   userFields.canAdmin = userFields.canAdmin ? 1 : 0
-    // }
-
     // Connect to Oracle
     let options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT
     }
     connection = await oracledb.getConnection()
 
-    // Process scalar properties
-    let binds = {...userFields}
+    let binds = {...body}
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
       // INSERT into user_data
       let sqlInsert =
@@ -131,7 +121,6 @@ exports.addOrUpdateDepartment = async function (writeAction, deptId, body, proje
             (:name)
           RETURNING
             deptId into :deptId`
-      binds = body
       binds.deptId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
       let result = await connection.execute(sqlInsert, binds, options)
       deptId = result.outBinds.deptId[0]

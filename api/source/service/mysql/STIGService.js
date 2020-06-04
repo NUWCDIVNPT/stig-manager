@@ -2,6 +2,8 @@
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
+let _this = this
+
 /**
 Generalized queries for STIGs
 **/
@@ -650,22 +652,6 @@ exports.insertManualBenchmark = async function (b) {
   }
 }
 
-/**
- * Import a new STIG
- *
- * source File An XCCDF file (optional)
- * returns STIG
- **/
-exports.addSTIG = async function(source, userObject) {
-  try {
-    let rows = await this.METHOD()
-    return (rows)
-  }
-  catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
-}
-
 
 /**
  * Deletes the specified revision of a STIG
@@ -676,7 +662,7 @@ exports.addSTIG = async function(source, userObject) {
  **/
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
   try {
-    let rows = await this.getRevisionByString(benchmarkId, revisionStr, userObject)
+    let rows = await _this.getRevisionByString(benchmarkId, revisionStr, userObject)
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
     let sqlDelete = `DELETE from revision WHERE benchmarkId = ? and version = ? and release = ?`
     await dbUtils.pool.query(sqlDelete, [benchmarkId, version, release])
@@ -696,7 +682,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
  **/
 exports.deleteStigById = async function(benchmarkId, userObject) {
   try {
-    let rows = await this.queryStigs( {benchmarkId: benchmarkId}, userObject)
+    let rows = await _this.queryStigs( {benchmarkId: benchmarkId}, userObject)
     let sqlDelete = `DELETE FROM stig where benchmarkId = ?`
     await dbUtils.pool.query(sqlDelete, [benchmarkId])
     return (rows[0])
@@ -715,7 +701,7 @@ exports.deleteStigById = async function(benchmarkId, userObject) {
  **/
 exports.getCci = async function(cci, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await _this.METHOD()
     return (rows)
   }
   catch(err) {
@@ -733,7 +719,7 @@ exports.getCci = async function(cci, userObject) {
  **/
 exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject) {
   try {
-    let rows = await this.METHOD()
+    let rows = await _this.METHOD()
     return (rows)
   }
   catch(err) {
@@ -753,7 +739,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
  **/
 exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, projection, userObject) {
   try {
-    let rows = await this.queryGroups( projection, {
+    let rows = await _this.queryGroups( projection, {
       benchmarkId: benchmarkId,
       revisionStr: revisionStr,
       groupId: groupId
@@ -775,7 +761,7 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, p
  **/
 exports.getGroupsByRevision = async function(benchmarkId, revisionStr, projection, userObject) {
   try {
-    let rows = await this.queryGroups( projection, {
+    let rows = await _this.queryGroups( projection, {
       benchmarkId: benchmarkId,
       revisionStr: revisionStr
     })
@@ -870,7 +856,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
  **/
 exports.getRuleByRuleId = async function(ruleId, projection, userObject) {
   try {
-    let rows = await this.queryRules( ruleId, projection )
+    let rows = await _this.queryRules( ruleId, projection )
     return (rows)
   }
   catch(err) {
@@ -888,7 +874,7 @@ exports.getRuleByRuleId = async function(ruleId, projection, userObject) {
  **/
 exports.getRuleByRevision = async function(benchmarkId, revisionStr, ruleId, projection, userObject) {
   try {
-    let rows = await this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {
+    let rows = await _this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {
       ruleId: ruleId
     })
     return (rows[0])
@@ -908,7 +894,7 @@ exports.getRuleByRevision = async function(benchmarkId, revisionStr, ruleId, pro
  **/
 exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection, userObject) {
   try {
-    let rows = await this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {} )
+    let rows = await _this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {} )
     return (rows)
   }
   catch(err) {
@@ -925,7 +911,7 @@ exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection
  **/
 exports.getSTIGs = async function(title, userObject) {
   try {
-    let rows = await this.queryStigs( {
+    let rows = await _this.queryStigs( {
       title: title
     }, userObject )
     return (rows)
@@ -944,7 +930,7 @@ exports.getSTIGs = async function(title, userObject) {
  **/
 exports.getStigById = async function(benchmarkId, userObject) {
   try {
-    let rows = await this.queryStigs( {
+    let rows = await _this.queryStigs( {
       benchmarkId: benchmarkId
     }, userObject )
     return (rows[0])

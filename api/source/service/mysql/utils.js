@@ -43,6 +43,7 @@ module.exports.initializeDatabase = async function () {
     // Set common session variables
     _this.pool.on('connection', function (connection) {
       connection.query('SET SESSION group_concat_max_len=10000000')
+      // connection.query('SET SESSION sql_mode=’NO_AUTO_VALUE_ON_ZERO')
     })
 
     // Call the pool destruction methods on SIGTERM and SEGINT
@@ -90,7 +91,7 @@ module.exports.initializeDatabase = async function () {
     if (rows[0].users === 0) {
       await _this.pool.query(
         'insert into user_data (username, display, deptId, accessLevel, canAdmin) VALUES (?, ?, ?, ?, ?)',
-        [config.init.superuser, 'Superuser', 0, 3, 1]
+        [config.init.superuser, 'Superuser', 1, 3, 1]
       )
       console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
     }
