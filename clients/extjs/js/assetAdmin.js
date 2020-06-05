@@ -2,7 +2,7 @@
 $Id: assetAdmin.js 820 2017-08-31 14:14:41Z csmig $
 */
 
-function addAssetAdmin() {
+function addAssetAdmin ( packageId, packageName ) {
 
 	var stigFields = Ext.data.Record.create([
 		{	name:'benchmarkId',
@@ -72,10 +72,6 @@ function addAssetAdmin() {
 			type: 'string',
 			mapping: 'dept.name'
 		},{
-			name: 'packages',
-			type: 'string',
-			convert: (v, r) => v.map(i => i.name).join(', ')
-		},{
 			name: 'stigCount',
 			type: 'integer',
 			mapping: 'adminStats.stigCount'
@@ -106,11 +102,11 @@ function addAssetAdmin() {
 		listeners: {
 			load: function (store,records) {
 				store.isLoaded = true,
-				Ext.getCmp('assetGrid-totalText').setText(records.length + ' records');
+				Ext.getCmp(`assetGrid-${packageId}-totalText`).setText(records.length + ' records');
 				assetGrid.getSelectionModel().selectFirstRow();
 			},
 			remove: function (store,record,index) {
-				Ext.getCmp('assetGrid-totalText').setText(store.getCount() + ' records');
+				Ext.getCmp(`assetGrid-${packageId}-totalText`).setText(store.getCount() + ' records');
 			}
 		}
 	});
@@ -119,15 +115,15 @@ function addAssetAdmin() {
 		//region: 'center',
 		//split: true,
 		//title: 'Asset administration',
-		id: 'assetGrid',
+		id: `assetGrid-${packageId}`,
 		store: assetStore,
 		stripeRows:true,
 		sm: new Ext.grid.RowSelectionModel({
 			singleSelect: true,
 			listeners: {
 				selectionchange: function (sm) {
-					Ext.getCmp('assetGrid-modifyBtn').setDisabled(!sm.hasSelection());
-					Ext.getCmp('assetGrid-deleteBtn').setDisabled(!sm.hasSelection());
+					Ext.getCmp(`assetGrid-${packageId}-modifyBtn`).setDisabled(!sm.hasSelection());
+					Ext.getCmp(`assetGrid-${packageId}-deleteBtn`).setDisabled(!sm.hasSelection());
 				}
 			}
 		}),
@@ -145,11 +141,6 @@ function addAssetAdmin() {
 				header: "IP",
 				width: 10,
 				dataIndex: 'ip',
-				sortable: true
-			},{ 	
-				header: "Packages",
-				width: 10,
-				dataIndex: 'packages',
 				sortable: true
 			},{ 	
 				header: "Not Networked",
@@ -214,7 +205,7 @@ function addAssetAdmin() {
 		, {
 			ref: '../removeBtn',
 			iconCls: 'icon-del',
-			id: 'assetGrid-deleteBtn',
+			id: `assetGrid-${packageId}-deleteBtn`,
 			text: 'Delete asset',
 			disabled: true,
 			handler: function() {
@@ -240,7 +231,7 @@ function addAssetAdmin() {
 		,{
 			iconCls: 'sm-asset-icon',
 			disabled: true,
-			id: 'assetGrid-modifyBtn',
+			id: `assetGrid-${packageId}-modifyBtn`,
 			text: 'Modify asset properties',
 			handler: function() {
 				var r = assetGrid.getSelectionModel().getSelected();
@@ -263,7 +254,7 @@ function addAssetAdmin() {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbbutton',
-				id: 'assetGrid-csvBtn',
+				id: `assetGrid-${packageId}-csvBtn`,
 				iconCls: 'icon-save',
 				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 				width: 20,
@@ -278,7 +269,7 @@ function addAssetAdmin() {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbtext',
-				id: 'assetGrid-totalText',
+				id: `assetGrid-${packageId}-totalText`,
 				text: '0 records',
 				width: 80
 			}]
@@ -698,8 +689,8 @@ function addAssetAdmin() {
 								apiAsset = JSON.parse(result.response.responseText)
 
 								//TODO: This is expensive, should update the specific record instead of reloading entire set
-								Ext.getCmp('assetGrid').getView().holdPosition = true
-								Ext.getCmp('assetGrid').getStore().reload()
+								Ext.getCmp(`assetGrid-${packageId}`).getView().holdPosition = true
+								Ext.getCmp(`assetGrid-${packageId}`).getStore().reload()
 								appwindow.close()
 							}
 						}
@@ -1071,7 +1062,7 @@ function addAssetAdmin() {
 					url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
 					params: {
 						elevate: curUser.canAdmin,
-						projection: ['stigReviewers', 'packages']
+						projection: ['stigReviewers']
 					},
 					method: 'GET'
 				})
@@ -1104,9 +1095,9 @@ function addAssetAdmin() {
 	} //end showAssetProps
 
 	var thisTab = Ext.getCmp('admin-center-tab').add({
-		id: 'asset-admin-tab',
+		id: `asset-admin-tab-${packageId}`,
 		iconCls: 'sm-asset-icon',
-		title: 'Assets',
+		title: `Assets (${packageName})`,
 		closable:true,
 		layout: 'fit',
 		items: [assetGrid]
@@ -1118,7 +1109,8 @@ function addAssetAdmin() {
 	
 	assetGrid.getStore().load({
 		params: {
-			projection: ['adminStats', 'packages'],
+			packageId: packageId,
+			projection: ['adminStats'],
 			elevate: curUser.canAdmin
 		}
 	});

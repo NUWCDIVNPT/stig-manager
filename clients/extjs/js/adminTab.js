@@ -49,9 +49,6 @@ function addAdminTab(adminAttributes) {
 		case 'user-admin':
 			addUserAdmin();
 			break;
-		case 'asset-admin':
-			addAssetAdmin();
-			break;
 		case 'package-admin':
 			addPackageAdmin();
 			break;
@@ -91,11 +88,6 @@ function getTree() {
 		})
 	}
 	children.push({
-		id: 'asset-admin',
-		text: 'Assets',
-		leaf: true,
-		iconCls: 'sm-asset-icon'
-	},{
 		id: 'user-admin',
 		text: 'Users',
 		leaf: true,

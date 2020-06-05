@@ -146,15 +146,30 @@ function addPackageAdmin() {
 		},
 		tbar: [{
 			iconCls: 'icon-add',
-			text: 'New package',
+			text: 'New Package...',
 			handler: function() {
 				Ext.getBody().mask('Loading form...');
 				showPackageProps(0);            
 			}
-		},'-', {
+		},'-',{
+			iconCls: 'sm-package-icon',
+			text: 'Modify Package...',
+			handler: function() {
+				var r = packageGrid.getSelectionModel().getSelected();
+				Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+				showPackageProps(r.get('packageId'));
+			}
+		},'-',{
+			iconCls: 'sm-asset-icon',
+			text: 'Manage Package Assets...',
+			handler: function() {
+				var r = packageGrid.getSelectionModel().getSelected();
+				addAssetAdmin(r.get('packageId'), r.get('name'))
+			}
+		},'->', {
 			ref: '../removeBtn',
 			iconCls: 'icon-del',
-			text: 'Delete package',
+			text: 'Delete Package',
 			disabled: !(curUser.canAdmin),
 			handler: function() {
 				try {
@@ -173,14 +188,6 @@ function addPackageAdmin() {
 				catch (e) {
 					alert(e.message)
 				}
-			}
-		},'-',{
-			iconCls: 'sm-package-icon',
-			text: 'Modify package properties',
-			handler: function() {
-				var r = packageGrid.getSelectionModel().getSelected();
-				Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-				showPackageProps(r.get('packageId'));
 			}
 		}],
 		bbar: new Ext.Toolbar({

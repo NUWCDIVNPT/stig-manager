@@ -2047,6 +2047,24 @@ components:
                 type: array
                 items:
                   type: integer
+    AssetForPackage:
+      type: object
+      properties:
+        assetId:
+          type: integer
+        name:
+          type: string
+        dept:
+          $ref: '#/components/schemas/Department'
+    AssetForDepartment:
+      type: object
+      properties:
+        assetId:
+          type: integer
+        name:
+          type: string
+        package:
+          $ref: '#/components/schemas/PackageBasic'
     AssetProjected:
       allOf:
         - $ref: '#/components/schemas/Asset'
@@ -2356,7 +2374,7 @@ components:
             assets:
               type: array
               items:
-                $ref: '#/components/schemas/AssetBasic'
+                $ref: '#/components/schemas/AssetForDepartment'
             users:
               type: array
               items:
@@ -2577,7 +2595,7 @@ components:
             assets:
               type: array
               items:
-                $ref: '#/components/schemas/AssetBasic'
+                $ref: '#/components/schemas/AssetForPackage'
             stigs:
               type: array
               items:
