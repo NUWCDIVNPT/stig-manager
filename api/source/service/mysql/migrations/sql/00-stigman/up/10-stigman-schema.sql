@@ -45,34 +45,17 @@ DROP TABLE IF EXISTS `asset`;
 CREATE TABLE `asset` (
   `assetId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
+  `deptId` int(11) NOT NULL,
+  `packageId` int(11) NOT NULL,
   `ip` varchar(45) DEFAULT NULL,
-  `deptId` int(11) DEFAULT NULL,
   `nonnetwork` bit(1) DEFAULT 0,
   PRIMARY KEY (`assetId`),
-  UNIQUE KEY `INDEX_NAME` (`name`),
+  KEY `INDEX_NAME` (`name`),
   KEY `INDEX_NONNETWORK` (`nonnetwork`),
   KEY `INDEX_DEPTID` (`deptId`),
-  CONSTRAINT `FK_ASSET_1` FOREIGN KEY (`deptId`) REFERENCES `department` (`deptId`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `asset_package_map`
---
-
-DROP TABLE IF EXISTS `asset_package_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `asset_package_map` (
-  `apId` int(11) NOT NULL AUTO_INCREMENT,
-  `assetId` int(11) NOT NULL,
-  `packageId` int(11) NOT NULL,
-  PRIMARY KEY (`apId`),
-  UNIQUE KEY `IDX_APM_2` (`packageId`,`assetId`),
-  KEY `IDX_APM_4` (`packageId`),
-  KEY `IDX_APM_3` (`assetId`),
-  CONSTRAINT `FK_ASSET_PACKAGE_MAP_1` FOREIGN KEY (`packageId`) REFERENCES `package` (`packageId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_ASSET_PACKAGE_MAP_2` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `INDEX_PACKAGEID` (`packageId`),
+  CONSTRAINT `FK_ASSET_1` FOREIGN KEY (`deptId`) REFERENCES `department` (`deptId`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`packageId`) REFERENCES `package` (`packageId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

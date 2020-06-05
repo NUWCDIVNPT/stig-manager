@@ -1990,6 +1990,8 @@ components:
           nullable: false
         dept:
           $ref: '#/components/schemas/Department'
+        package:
+          $ref: '#/components/schemas/PackageBasic'
         ip:
           type: string
           nullable: true
@@ -2005,10 +2007,13 @@ components:
           type: string
         dept:
           $ref: '#/components/schemas/Department'
+        package:
+          $ref: '#/components/schemas/PackageBasic'
     AssetCreateOrReplace:
       required:
         - name
         - deptId
+        - packageId
         - ip
         - nonnetwork
         - stigReviewers
@@ -2021,17 +2026,15 @@ components:
         deptId:
           type: integer
           nullable: false
+        packageId:
+          description: The packageId mapped to this Asset
+          type: integer
         ip:
           type: string
           nullable: true
         nonnetwork:
           type: boolean
           nullable: true
-        packageIds:
-          description: The packageIds mapped to this Asset
-          type: array
-          items:
-            type: integer
         stigReviewers:
           description: The benchmarkIds and reviewers mapped to this Asset
           type: array
@@ -2056,11 +2059,6 @@ components:
                   type: integer
                 stigAssignedCount:
                   type: integer
-            packages:
-              type: array
-              description: The Packages mapped to this Asset
-              items:
-                $ref: '#/components/schemas/PackageBasic'
             stigs:
               type: array
               description: The benchmarkIds mapped to this Asset
@@ -2086,17 +2084,15 @@ components:
         deptId:
           type: integer
           nullable: false
+        packageId:
+          type: integer
+          nullable: false
         ip:
           type: string
           nullable: true
         nonnetwork:
           type: boolean
           nullable: true
-        packageIds:
-          description: The packageIds mapped to this Asset
-          type: array
-          items:
-            type: integer
         stigReviewers:
           description: The benchmarkIds and reviewers mapped to this Asset
           type: array
@@ -2553,7 +2549,6 @@ components:
         - pocEmail
         - pocPhone
         - reqRar
-        - assetIds
       additionalProperties: false
       type: object
       properties:
@@ -2574,10 +2569,6 @@ components:
           nullable: true
         reqRar:
           type: boolean
-        assetIds:
-          type: array
-          items:
-            type: integer
     PackageProjected:
       allOf:
         - $ref: '#/components/schemas/Package'
@@ -2594,12 +2585,6 @@ components:
     PackageUpdate:
       allOf:
         - $ref: '#/components/schemas/Package'
-        - type: object
-          properties:
-            assetIds:
-              type: array
-              items:
-                type: integer
     Review:
       type: object
       properties:
@@ -3010,7 +2995,6 @@ components:
           type: string
           enum:
             - adminStats
-            - packages
             - stigs
             - stigReviewers
     BenchmarkIdPath:
@@ -3179,9 +3163,9 @@ components:
         items:
           type: string
           enum:
-            - ruleInfo
+            - rule
             - stigs
-            - packages
+            - asset
     ReviewResultQuery:
       name: result
       in: query

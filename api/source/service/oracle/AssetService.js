@@ -40,30 +40,22 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
         KEY 'deptId' VALUE d.deptId,
         KEY 'name' VALUE d.name
       ) as "dept"`,
+      `json_object(
+        KEY 'packageId' VALUE p.packageId,
+        KEY 'name' VALUE p.name
+      ) as "package"`,
       'a.IP as "ip"',
       'a.NONNETWORK as "nonnetwork"'
     ]
     let joins = [
       'asset a',
       'left join department d on a.deptId = d.deptId',
-      'left join asset_package_map ap on a.assetId=ap.assetId',
-      'left join package p on ap.packageId=p.packageId',
+      'left join package p on a.packageId = p.packageId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
     // PROJECTIONS
-    if (inProjection && inProjection.includes('packages')) {
-      columns.push(`'[' || 
-        listagg( distinct
-          json_object(
-            KEY 'packageId' VALUE p.packageId,
-            KEY 'name' VALUE p.name
-            ABSENT ON NULL
-          ),','
-        ) within group (order by p.name)
-      || ']' as "packages"`)
-    }
     if (inProjection && inProjection.includes('adminStats')) {
       columns.push(`json_object(
         KEY 'stigCount' VALUE COUNT(Distinct sa.saId),
@@ -151,7 +143,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       predicates.binds.assetId = inPredicates.assetId
     }
     if (inPredicates.packageId) {
-      predicates.statements.push('ap.packageId = :packageId')
+      predicates.statements.push('a.packageId = :packageId')
       predicates.binds.packageId = inPredicates.packageId
     }
     if (inPredicates.benchmarkId) {
@@ -180,7 +172,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.deptId, a.ip, a.nonnetwork, d.deptId, d.name'
+    sql += ' group by a.assetId, a.name, a.deptId, a.packageId, a.ip, a.nonnetwork, p.packageId, p.name, d.deptId, d.name'
     sql += ' order by a.name'
 
     let  options = {
@@ -194,10 +186,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       let record = result.rows[x]
       record.nonnetwork = record.nonnetwork == 1 ? true : false
       record.dept = JSON.parse(record.dept)
-      if (inProjection && inProjection.includes('packages')) {
-       // Check for "empty" arrays 
-        record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages) || []
-      }
+      record.package = JSON.parse(record.package)
       if (inProjection && inProjection.includes('stigs')) {
         record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs) || []
       }
@@ -230,7 +219,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // REPLACE/UPDATE: assetId is not null
 
     // Extract non-scalar properties to separate variables
-    let { stigReviewers, benchmarkIds, packageIds, ...assetFields } = body
+    let { stigReviewers, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('nonnetwork')) {
@@ -249,9 +238,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, deptId, nonnetwork)
+          (name, ip, deptId, packageId, nonnetwork)
         VALUES
-          (:name, :ip, :deptId, :nonnetwork)
+          (:name, :ip, :deptId, :packageId, :nonnetwork)
         RETURNING
           assetId into :assetId`
       binds.assetId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
@@ -274,24 +263,6 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     }
     else {
       throw('Invalid writeAction')
-    }
-
-    // Process packageIds if present
-    if (packageIds) {
-      if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-        // DELETE from asset_package_map
-        let sqlDeletePackages = 'DELETE FROM asset_package_map where assetId = :assetId'
-        await connection.execute(sqlDeletePackages, [assetId])
-      }
-      if (packageIds.length > 0) {
-        let sqlInsertPackages = `
-          INSERT INTO 
-            asset_package_map (packageId,assetId)
-          VALUES (:packageId, :assetId)`      
-        let binds = packageIds.map(i => [i, assetId])
-        // INSERT into asset_package_map
-        await connection.executeMany(sqlInsertPackages, binds)
-      }
     }
 
     // Process stigReviewers, spec requires for CREATE/REPLACE not for UPDATE

@@ -29,8 +29,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   ]
   let joins = [
     'package p',
-    'left join asset_package_map ap on p.packageId=ap.packageId',
-    'left join asset a on ap.assetId = a.assetId',
+    'left join asset a on p.packageId = a.packageId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join department d on a.deptId = d.deptId'
   ]
@@ -38,15 +37,17 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   // PROJECTIONS
   if (inProjection && inProjection.includes('assets')) {
     columns.push(`'[' || 
-      listagg ( distinct
-        json_object(
-          KEY 'assetId' VALUE a.assetId, 
-          KEY 'name' VALUE a.name, 
-          KEY 'dept' VALUE json_object (
-            KEY 'deptId' VALUE d.deptId,
-            KEY 'name' VALUE d.name) ABSENT ON NULL
-        ),
-      ',') within group (order by a.name)
+      listagg ( distinct (
+        CASE WHEN a.assetId IS NOT NULL THEN
+          json_object(
+            KEY 'assetId' VALUE a.assetId, 
+            KEY 'name' VALUE a.name, 
+            KEY 'dept' VALUE json_object (
+              KEY 'deptId' VALUE d.deptId,
+              KEY 'name' VALUE d.name) ABSENT ON NULL
+          )
+        END ), ','
+      ) within group (order by a.name)
       || ']' as "assets"`)
   }
   if (inProjection && inProjection.includes('stigs')) {
@@ -128,13 +129,11 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   }
 }
 
-exports.addOrUpdatePackage = async function(writeAction, packageId, body, projection, userObject) {
+exports.addOrUpdatePackage = async function(writeAction, packageId, packageFields, projection, userObject) {
   // CREATE: packageId will be null
   // REPLACE/UPDATE: packageId is not null
   let connection // available to try, catch, and finally blocks
   try {
-    // Extract non-scalar properties to separate variables
-    let { assetIds, ...packageFields } = body
     
     // Convert boolean scalar values to database values (true=1 or false=0)
     if ('reqRar' in packageFields) {
@@ -179,22 +178,6 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     }
     else {
       throw('Invalid writeAction')
-    }
-
-    // Process assetIds
-    if (assetIds && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-      // DELETE from asset_package_map
-      let sqlDeleteAssets = 'DELETE FROM asset_package_map where packageId = :packageId'
-      await connection.execute(sqlDeleteAssets, [packageId])
-    }
-    if (assetIds.length > 0) {
-      // INSERT into asset_package_map
-      let sqlInsertAssets = `
-        INSERT INTO 
-          asset_package_map (packageId,assetId)
-        VALUES (:packageId, :assetId)`      
-      let binds = assetIds.map(i => [packageId, i])
-      await connection.executeMany(sqlInsertAssets, binds)
     }
 
     // Commit the changes
@@ -273,8 +256,8 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
   let connection
   try {
     let joins = [
-      'asset_package_map ap',
-      'left join stig_asset_map sa on ap.assetId=sa.assetId',
+      'asset a',
+      'left join stig_asset_map sa on a.assetId=sa.assetId',
       'left join current_rev rev on sa.benchmarkId=rev.benchmarkId',
       'left join rev_group_map rg on rev.revId=rg.revId',
       'left join groups g on rg.groupId=g.groupId',
@@ -286,7 +269,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
 
     let predicates = {
       statements: [
-        'ap.packageId = :packageId',
+        'a.packageId = :packageId',
         'rev.benchmarkId = :benchmarkId'
       ],
       binds: {
@@ -307,11 +290,11 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
 
     // Non-staff access control
     if (userObject.accessLevel === 2) {
-      predicates.statements.push('ap.assetId in (select assetId from asset where dept=:dept)')
+      predicates.statements.push('a.assetId in (select assetId from asset where dept=:dept)')
       predicates.binds.dept = userObject.dept.deptId
     } 
     else if (userObject.accessLevel === 1) {
-      predicates.statements.push(`ap.assetId in (
+      predicates.statements.push(`a.assetId in (
         select
             sa.assetId
         from
@@ -339,7 +322,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END) as "readyCnt"
       from (
         select
-          ap.assetId
+          a.assetId
           ,rgr.ruleId
           ,rule.title as ruleTitle
           ,rule.severity

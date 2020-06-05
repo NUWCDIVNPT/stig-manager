@@ -74,19 +74,10 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       'left join status on r.statusId = status.statusId',
       'left join action on r.actionId = action.actionId',
       'left join user_data ud on r.userId = ud.userId',
-      'left join asset on r.assetId = asset.assetId',
-      'left join asset_package_map ap on asset.assetId = ap.assetId'
+      'left join asset on r.assetId = asset.assetId'
     ]
 
     // PROJECTIONS
-    if (inProjection.includes('packages')) {
-      columns.push(`(select json_arrayagg(json_object(
-        KEY 'packageId' VALUE p.packageId,
-        KEY 'name' VALUE  p.name))
-        from asset_package_map ap 
-        left join package p on ap.packageId = p.packageId
-        where ap.assetId = r.assetId) as "packages"`)
-    }
     if (inProjection.includes('stigs')) {
       columns.push(`(select json_arrayagg(json_object(
         KEY 'benchmarkId' VALUE rev.benchmarkId,
@@ -96,7 +87,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         left join revision rev on rg.revId = rev.revId
         where rgr.ruleId = r.ruleId) as "stigs"`)
     }
-    if (inProjection.includes('ruleInfo')) {
+    if (inProjection.includes('rule')) {
       columns.push(`(select
         json_object(
           KEY 'ruleId' VALUE rule.ruleId
@@ -161,7 +152,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       let aclJoins = [
         'user_stig_asset_map usa',
         'inner join stig_asset_map sa on sa.said = usa.said',
-        'left join asset_package_map ap on ap.assetId = sa.assetId',
+        'left join asset a on a.assetId = sa.assetId',
         'inner join current_rev rev on rev.benchmarkId = sa.benchmarkId',
         'inner join rev_group_map rg on rev.revId = rg.revId',
         'inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId'
@@ -180,7 +171,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         delete inPredicates.ruleId
       }
       if (inPredicates.packageId) {
-        aclPredicates.push('ap.packageId = :packageId')
+        aclPredicates.push('a.packageId = :packageId')
         predicates.binds.packageId = inPredicates.packageId
         // Delete property so it is not processed by later code
         delete inPredicates.packageId
@@ -247,7 +238,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       predicates.binds.action = inPredicates.action
     }
     if (inPredicates.packageId) {
-      predicates.statements.push('ap.packageId = :packageId')
+      predicates.statements.push('a.packageId = :packageId')
       predicates.binds.packageId = inPredicates.packageId
     }
     if (inPredicates.benchmarkId) {

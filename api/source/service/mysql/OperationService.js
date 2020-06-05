@@ -69,15 +69,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
           name,
           ip,
           deptId,
+          packageId,
           nonnetwork
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      assetPackageMap: {
-        sqlDelete: `DELETE FROM asset_package_map`,
-        sqlInsert: `INSERT INTO asset_package_map (
-          assetId,
-          packageId
         ) VALUES ?`,
         insertBinds: []
       },
@@ -184,18 +177,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // Tables: assets, asset_package_map, stig_asset_map, user_stig_asset_map
     for (const asset of assets) {
-      let { packageIds, stigReviewers, ...assetFields} = asset
+      let { stigReviewers, ...assetFields} = asset
       dml.asset.insertBinds.push([
         assetFields.assetId,
         assetFields.name,
         assetFields.ip,
         assetFields.deptId,
+        assetFields.packageId,
         assetFields.nonnetwork ? 1: 0
       ])
       let assetId = assetFields.assetId
-      for (const packageId of packageIds) {
-        dml.assetPackageMap.insertBinds.push([assetId, packageId])
-      }
       for (const sr of stigReviewers) {
         const userIds = []
         if (sr.userIds && sr.userIds.length > 0) {
@@ -273,7 +264,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       'review',
       'userStigAssetMap',
       'stigAssetMap',
-      'assetPackageMap',
       'package',
       'asset',
       'userData',
@@ -293,7 +283,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       'department',
       'userData',
       'asset',
-      'assetPackageMap',
       'stigAssetMap',
       'userStigAssetMap',
       'review',

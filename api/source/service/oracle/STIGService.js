@@ -19,27 +19,6 @@ exports.queryStigs = async function ( inPredicates ) {
   ]
 
   // NO PROJECTIONS DEFINED
-  // if (inProjection && inProjection.includes('assets')) {
-  //   joins.push('left join stig_asset_map sa on s.benchmarkId = sa.benchmarkId' )
-  //   joins.push('left join assets a on sa.assetId = a.assetId' )
-  //   columns.push(`'[' || strdagg_param(param_array(json_object(
-  //     KEY 'assetId' VALUE a.assetId, 
-  //     KEY 'name' VALUE a.name, 
-  //     KEY 'dept' VALUE a.dept ABSENT ON NULL
-  //     ), ',')) || ']' as "packages"`)
-  // }
-  // if (inProjection && inProjection.includes('packages')) {
-  //   if (! inProjection.includes('assets')) {
-  //     // Push dependent table
-  //     joins.push('left join stig_asset_map sa on s.benchmarkId = sa.benchmarkId' )
-  //   }
-  //   joins.push('left join asset_package_map ap on sa.assetId = ap.assetId' )
-  //   joins.push('left join packages p on ap.packageId = p.packageId' )
-  //   columns.push(`'[' || strdagg_param(param_array(json_object(
-  //     KEY 'packageId' VALUE p.packageId, 
-  //     KEY 'name' VALUE p.name ABSENT ON NULL
-  //     ), ',')) || ']' as "stig"`)
-  // }
 
   // PREDICATES
   let predicates = {

@@ -37,37 +37,25 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         'deptId', d.deptId,
         'name', d.name
       ) as "dept"`,
+      `json_object (
+        'packageId', p.packageId,
+        'name', d.name
+      ) as "package"`,
       'a.ip',
       'a.nonnetwork'
     ]
     let joins = [
       'asset a',
       'left join department d on a.deptId = d.deptId',
-      'left join asset_package_map ap on a.assetId=ap.assetId',
-      'left join package p on ap.packageId=p.packageId',
+      'left join package p on a.packageId = p.packageId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
     // PROJECTIONS
-    if (inProjection.includes('packages')) {
-      columns.push(`cast(
-        concat('[', 
-          coalesce (
-            group_concat(distinct 
-              case when p.packageId is not null then 
-                json_object(
-                  'packageId', p.packageId, 
-                  'name', p.name)
-              else null end 
-            order by p.name),
-          ''),
-        ']')
-      as json) as "packages"`)
-    }
     if (inProjection.includes('adminStats')) {
       columns.push(`json_object(
-        'stigCount', COUNT(distinct sa.assetId),
+        'stigCount', COUNT(distinct sa.saId),
         'stigAssignedCount', COUNT(distinct usa.saId)
         ) as "adminStats"`)
     }
@@ -149,7 +137,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.binds.assetId = inPredicates.assetId
     }
     if (inPredicates.packageId) {
-      predicates.statements.push('ap.packageId = :packageId')
+      predicates.statements.push('a.packageId = :packageId')
       predicates.binds.packageId = inPredicates.packageId
     }
     if (inPredicates.benchmarkId) {
@@ -178,7 +166,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.deptId, a.ip, a.nonnetwork, d.deptId, d.name'
+    sql += ' group by a.assetId, a.name, a.deptId, a.packageId, a.ip, a.nonnetwork, p.packageId, p.name, d.deptId, d.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -203,7 +191,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // REPLACE/UPDATE: assetId is not null
 
     // Extract or initialize non-scalar properties to separate variables
-    let { stigReviewers, packageIds, ...assetFields } = body
+    let { stigReviewers, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('nonnetwork')) {
@@ -222,9 +210,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, dept, nonnetwork)
+          (name, ip, deptId, packageId, nonnetwork)
         VALUES
-          (:name, :ip, :dept, :nonnetwork)`
+          (:name, :ip, :deptId, :packageId, :nonnetwork)`
       let [rows] = await connection.query(sqlInsert, binds)
       assetId = rows.insertId
     }
@@ -243,25 +231,6 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     }
     else {
       throw('Invalid writeAction')
-    }
-
-    // Process packageIds, spec requires for CREATE/REPLACE not for UPDATE
-    if (packageIds) {
-      if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-        // DELETE from asset_package_map
-        let sqlDeletePackages = 'DELETE FROM asset_package_map where assetId = ?'
-        await connection.execute(sqlDeletePackages, [assetId])
-      }
-      if (packageIds.length > 0) {
-        // INSERT into asset_package_map
-        let sqlInsertPackages = `
-          INSERT INTO 
-            asset_package_map (packageId,assetId)
-          VALUES
-            ?`      
-        let binds = packageIds.map(i => [i, assetId])
-        await connection.query(sqlInsertPackages, [binds])
-      }
     }
 
     // Process stigReviewers, spec requires for CREATE/REPLACE not for UPDATE

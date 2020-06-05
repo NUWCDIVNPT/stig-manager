@@ -191,7 +191,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
           user_stig_asset_map (userId, saId)
         VALUES (?, (SELECT saId from stig_asset_map WHERE benchmarkId = ? and assetId = ?))`      
       let binds = stigReviews.map(i => [userId, i.benchmarkId, i.assetId])
-      // INSERT into asset_package_map
+      // INSERT into user_stig_asset_map
       connection.prepare(sqlInsertStigAssets)
       for (const values of binds) {
         await connection.execute(sqlInsertStigAssets, values)
