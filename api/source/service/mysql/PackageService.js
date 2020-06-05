@@ -254,7 +254,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
       'left join stig_asset_map sa on ap.assetId=sa.assetId',
       'left join current_rev rev on sa.benchmarkId=rev.benchmarkId',
       'left join rev_group_map rg on rev.revId=rg.revId',
-      'left join group g on rg.groupId=g.groupId',
+      'left join `group` g on rg.groupId=g.groupId',
       'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
       'left join rule rules on rgr.ruleId=rules.ruleId',
       'left join (select distinct ruleId from rule_oval_map) scap on rgr.ruleId=scap.ruleId',
@@ -283,7 +283,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     }
 
     // Non-staff access control
-    if (userObjectaccessLevel === 2) {
+    if (userObject.accessLevel === 2) {
       predicates.statements.push('ap.assetId in (select assetId from asset where deptId=:deptId)')
       predicates.binds.deptId = userObject.dept.deptId
     } 
@@ -306,11 +306,11 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.groupId
         ,r.groupTitle
         ,r.severity
-        ,r.checkType
-        ,sum(CASE WHEN r.stateId = 4 THEN 1 ELSE 0 END) as "oCnt"
-        ,sum(CASE WHEN r.stateId = 3 THEN 1 ELSE 0 END) as "nfCnt"
-        ,sum(CASE WHEN r.stateId = 2 THEN 1 ELSE 0 END) as "naCnt"
-        ,sum(CASE WHEN r.stateId is null THEN 1 ELSE 0 END) as "nrCnt"
+        ,r.autoCheckAvailable
+        ,sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END) as "oCnt"
+        ,sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END) as "nfCnt"
+        ,sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END) as "naCnt"
+        ,sum(CASE WHEN r.resultId is null THEN 1 ELSE 0 END) as "nrCnt"
         ,sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END) as "approveCnt"
         ,sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END) as "rejectCnt"
         ,sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END) as "readyCnt"
@@ -322,7 +322,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
           ,rules.severity
           ,rg.groupId
           ,g.title as groupTitle
-          ,r.stateId
+          ,r.resultId
           ,r.statusId
           ,CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as "autoCheckAvailable"
         from
@@ -336,12 +336,12 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.severity
         ,r.groupId
         ,r.groupTitle
-        ,r.checkType
+        ,r.autoCheckAvailable
       order by
         substring(r.groupId from 3) + 0
     `
     // Send query
-    let connection = await dbUtils.pool.getConnection()
+    connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
     let [rows] = await connection.query(sql, predicates.binds)
     for (const row of rows) {

@@ -1517,76 +1517,6 @@ function uploadArchive(n) {
 					}
 				  
 				}
-
-				
-				// if(fp.getForm().isValid()){
-				// 	// Create two IFRAMEs.
-				// 	// One IFRAME will be the target of the file upload
-				// 	var iframe_upload = document.createElement("iframe");
-				// 	iframe_upload.setAttribute('name', 'frame_upload');
-
-				// 	// The other IFRAME will be the target of the import request
-				// 	// and will return progress updates
-				// 	var iframe_import = document.createElement("iframe");
-				// 	var filesize = Ext.getCmp('import-filesize').value;
-				// 	var filename = Ext.getCmp('import-filename').value;
-				// 	var modified = Ext.getCmp('import-modified').value;
-				// 	iframe_import.src = "pl/importResults.pl?"
-				// 		+ "packageId=" + n.attributes.packageId
-				// 		+ "&packageName=" + n.attributes.packageName
-				// 		+ "&filesize=" + filesize 
-				// 		+ "&filename=" + filename
-				// 		+ "&modified=" + modified
-				// 		+ "&source=" + 'package';
-					
-				// 	// Render the upload frame
-				// 	document.body.appendChild(iframe_upload);
-					
-				// 	// Submit to the upload frame, which starts the file upload
-				// 	fp.getForm().getEl().dom.action = 'pl/receiveFileUpload.pl';
-				// 	fp.getForm().getEl().dom.target = 'frame_upload';
-				// 	fp.getForm().getEl().dom.method = 'POST';
-				// 	fp.getForm().submit();
-				// 	window.close();
-				// 	initProgress("Importing file", "Initializing...", null, iframe_import);
-				// 	// render the import/progress frame, which will
-				// 	// start the import script on the server
-				// 	document.body.appendChild(iframe_import);
-
-				// if( fp.getForm().isValid() ){
-				// 	let formEl = fp.getForm().getEl().dom
-				// 	let formData = new FormData(formEl)
-
-				// 	fetch(`${STIGMAN.Env.apiBase}/reviews`, {
-				// 		method: 'POST',
-				// 		headers: new Headers({
-				// 			'Authorization': `Bearer ${window.keycloak.token}`
-				// 		}),
-				// 		body: formData
-				// 	})
-					// var xhr = new XMLHttpRequest();
-					// // Add any event handlers here...
-					// xhr.open('POST', `${STIGMAN.Env.apiBase}/reviews`, true);
-					// xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
-					// xhr.send(formData);
-				// }
-
-				// fp.getForm().submit({
-				// 	url: `${STIGMAN.Env.apiBase}/reviews`,
-				// 	waitMsg: 'Importing results...',
-				// 	success: function(f, o){
-				// 		window.close();
-				// 		Ext.Msg.alert(o.result.status, o.result.message);
-				// 		if (o.result.success == 'true') {
-				// 			groupGrid.getStore().reload();
-				// 		}
-				// 	},
-				// 	failure: function(f, o){
-				// 		window.close();
-				// 		Ext.Msg.alert(o.result.status, o.result.message);
-				// 		f.reset();
-				// 	}
-				// });
 			}
 		},
 		{
@@ -1680,7 +1610,7 @@ function uploadStigs(n) {
 						let formEl = fp.getForm().getEl().dom
 						let formData = new FormData(formEl)
 						formData.set('replace', 'true')
-						// appwindow.close();
+						appwindow.close();
 						initProgress("Importing file", "Initializing...");
 		
 						let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
@@ -1698,16 +1628,23 @@ function uploadStigs(n) {
 						updateStatusText (td.decode(value),true)
 						isdone = done
 						} while (!isdone)
+
 					}
 					else if (extension === 'zip') {
+						appwindow.close()
 						initProgress("Importing file", "Initializing...");
 						await processZip(input.files[0])
+						updateStatusText ('Done')
+						updateProgress(0, 'Done')
 					} else {
 						alert(`No handler for ${extension}`)
 					}
 				}
 				catch (e) {
 					alert(e)
+				}
+				finally {
+					Ext.getCmp('stigGrid').getStore().reload()
 				}
 
 				async function processZip (f) {
@@ -1758,7 +1695,9 @@ function uploadStigs(n) {
 		},
 		{
 			text: 'Cancel',
-			handler: function(){appwindow.close();}
+			handler: function() {
+				appwindow.close()
+			}
 		}
 		]
 	});

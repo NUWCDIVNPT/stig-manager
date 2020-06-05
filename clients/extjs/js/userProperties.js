@@ -79,7 +79,7 @@ async function showUserProperties(id, grid){
 				benchmarkId: stigAsset.benchmarkId,
 				assetId: stigAsset.asset.assetId,
 				assetName: stigAsset.asset.name,
-				assetDept: stigAsset.asset.dept
+				assetDept: stigAsset.asset.dept.name
 			}))
 			assignmentStore.loadData(assignmentData);
 		},
@@ -133,8 +133,7 @@ async function showUserProperties(id, grid){
 				header: 'Dept', 
 				dataIndex: 'assetDept',
 				sortable: true,
-				width: 100,
-				align: 'center'
+				width: 200
 			}
 		]
 		
@@ -514,7 +513,7 @@ async function showUserProperties(id, grid){
 					appwindow.close()
 				}
 				catch (e) {
-					alert(e.response.statusText)
+					alert(e.response.responseText)
 					// appwindow.close()
 				}
 			}
@@ -601,7 +600,7 @@ async function showUserProperties(id, grid){
 				iconCls: 'sm-stig-icon',
 				stigName: stig.benchmarkId,
 				assetName: apiAsset.name,
-				assetDept: apiAsset.dept,
+				assetDept: apiAsset.dept.name,
 				stigRevStr: stig.lastRevisionStr,
 				assetId: apiAsset.assetId,
 				benchmarkId: stig.benchmarkId,
@@ -669,7 +668,7 @@ async function showUserProperties(id, grid){
 				stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
 				assetId: asset.assetId,
 				benchmarkId: benchmarkId,
-				assetDept: asset.dept,
+				assetDept: asset.dept.name,
 				qtip: asset.name
 			})
 			)
@@ -705,7 +704,7 @@ async function showUserProperties(id, grid){
 					assignments.push({
 						benchmarkId: stig.benchmarkId,
 						assetName: asset.name,
-						assetDept: asset.dept,
+						assetDept: asset.dept.name,
 						assetId: asset.assetId
 					})
 				})
@@ -737,7 +736,7 @@ async function showUserProperties(id, grid){
 			let assignments = asset.stigs.map(stig => ({
 				benchmarkId: stig.benchmarkId,
 				assetName: asset.name,
-				assetDept: asset.dept,
+				assetDept: asset.dept.name,
 				assetId: assetId
 			}))
 			assignmentStore.loadData(assignments, true);	
@@ -770,7 +769,7 @@ async function showUserProperties(id, grid){
 					assignments.push({
 						benchmarkId: stig.benchmarkId,
 						assetName: asset.name,
-						assetDept: asset.dept,
+						assetDept: asset.dept.name,
 						assetId: asset.assetId
 					})
 				})

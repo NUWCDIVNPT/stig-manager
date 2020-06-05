@@ -103,30 +103,9 @@ function addUserAdmin() {
 					return val ? "Yes" : "No"
 				}
 			}
-			// ,{
-			// 	header: "Last Active",
-			// 	width: 150,
-			// 	dataIndex: 'lastActiveTime',
-			// 	xtype: 'datecolumn',
-			// 	format:'Y-m-d H:i',
-			// 	sortable: true
-			// }
 		],
 		view: new Ext.grid.GridView({
 			forceFit:false,
-			getRowClass: function(record){ 
-				if (record.data.lastActiveDays === "") { 
-					return ''; 
-				}
-				if(record.data.lastActiveDays >= 90 || !record.data.lastActiveTime)
-				{
-					return 'cs-grid3-row-overdue';
-				}
-				else 
-				{
-					return 'cs-grid3-row-pending';
-				}
-			},
 			// These listeners keep the grid in the same scroll position after the store is reloaded
 			listeners: {
 				beforerefresh: function(v) {
