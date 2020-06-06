@@ -299,7 +299,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
             sa.assetId
         from
             user_stig_asset_map usa 
-            left join stig_asset_map sa on usa.saId=sa.saId
+            left join stig_asset_map sa on (usa.saId=sa.saId and sa.benchmarkId = :benchmarkId) 
         where
             usa.userId=:userId)`)
       predicates.binds.userId = userObject.userId
@@ -313,13 +313,20 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.groupTitle as "groupTitle"
         ,r.severity as "severity"
         ,r.autoCheckAvailable as "autoCheckAvailable"
-        ,sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END) as "oCnt"
-        ,sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END) as "nfCnt"
-        ,sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END) as "naCnt"
-        ,sum(CASE WHEN r.resultId is null THEN 1 ELSE 0 END) as "nrCnt"
-        ,sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END) as "approveCnt"
-        ,sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END) as "rejectCnt"
-        ,sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END) as "readyCnt"
+        ,json_object(
+          KEY 'results' VALUE json_object(
+            KEY 'pass' VALUE sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
+            KEY 'fail' VALUE sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END),
+            KEY 'notapplicable' VALUE sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END),
+            KEY 'notchecked' VALUE sum(CASE WHEN r.resultId is null THEN 1 ELSE 0 END)
+          ),
+          KEY 'statuses' VALUE json_object(
+            KEY 'saved' VALUE sum(CASE WHEN r.statusId = 0 THEN 1 ELSE 0 END),
+            KEY 'submitted' VALUE sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END),
+            KEY 'rejected' VALUE sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END),
+            KEY 'accepted' VALUE sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END)
+          )
+        ) as "counts"
       from (
         select
           a.assetId
@@ -354,6 +361,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     let result = await connection.execute(sql, predicates.binds, options)
     for (const row of result.rows) {
       row.autoCheckAvailable = row.autoCheckAvailable === 1 ? true : false
+      row.counts = JSON.parse(row.counts)
     }
 
     return (result.rows.length > 0 ? result.rows : null)

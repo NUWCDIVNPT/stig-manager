@@ -2318,23 +2318,31 @@ components:
           $ref: '#/components/schemas/RuleSeverity'
         autoCheckAvailable:
           type: boolean
-        stats:
+        counts:
           type: object
           properties:
-            failCount:
-              type: integer
-            passCount:
-              type: integer
-            naCount:
-              type: integer
-            absentCount:
-              type: integer
-            submitCount:
-              type: integer
-            acceptCount:
-              type: integer
-            rejectCount:
-              type: integer
+            results:
+              type: object
+              properties:
+                pass:
+                  type: integer
+                fail:
+                  type: integer
+                notapplicable:
+                  type: integer
+                notchecked:
+                  type: integer
+            statuses:
+              type: object
+              properties:
+                saved:
+                  type: integer
+                submitted:
+                  type: integer
+                accepted:
+                  type: integer
+                rejected:
+                  type: integer
     ChecklistResult:
       description: The Review result
       type: string

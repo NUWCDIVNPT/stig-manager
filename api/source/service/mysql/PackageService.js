@@ -69,7 +69,7 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
                   'lastRevisionDate', cr.benchmarkDateSql,
                   'title', st.title)
               else null end 
-        order by a.name),
+            order by cr.benchmarkId),
             ''),
         ']')
       as json) as "stigs"`)
@@ -273,7 +273,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
             sa.assetId
         from
             user_stig_asset_map usa 
-            left join stig_asset_map sa on usa.saId=sa.saId
+            left join stig_asset_map sa on (usa.saId=sa.saId and sa.benchmarkId = :benchmarkId) 
         where
             usa.userId=:userId)`)
       predicates.binds.userId = userObject.userId
@@ -286,14 +286,21 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.groupId
         ,r.groupTitle
         ,r.severity
-        ,r.autoCheckAvailable
-        ,sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END) as "oCnt"
-        ,sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END) as "nfCnt"
-        ,sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END) as "naCnt"
-        ,sum(CASE WHEN r.resultId is null THEN 1 ELSE 0 END) as "nrCnt"
-        ,sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END) as "approveCnt"
-        ,sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END) as "rejectCnt"
-        ,sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END) as "readyCnt"
+        ,cast(r.autoCheckAvailable is true as json) as autoCheckAvailable
+        ,json_object(
+          'results', json_object(
+            'pass', sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
+            'fail', sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END),
+            'notapplicable', sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END),
+            'notchecked', sum(CASE WHEN r.resultId is null THEN 1 ELSE 0 END)
+          ),
+          'statuses', json_object(
+            'saved', sum(CASE WHEN r.statusId = 0 THEN 1 ELSE 0 END),
+            'submitted', sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END),
+            'rejected', sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END),
+            'accepted', sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END)
+          )
+        ) as counts
       from (
         select
           a.assetId
@@ -324,9 +331,9 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
     let [rows] = await connection.query(sql, predicates.binds)
-    for (const row of rows) {
-      row.autoCheckAvailable = row.autoCheckAvailable === 1 ? true : false
-    }
+    // for (const row of rows) {
+    //   row.autoCheckAvailable = row.autoCheckAvailable === 1 ? true : false
+    // }
     return (rows.length > 0 ? rows : null)
   }
   catch (err) {

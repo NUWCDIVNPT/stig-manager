@@ -311,16 +311,16 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
 
     let columns = [
       ':assetId as "assetId"',
-      'g.groupId',
       'r.ruleId',
-      'g.title as "groupTitle"',
       'r.title as "ruleTitle"',
+      'g.groupId',
+      'g.title as "groupTitle"',
       'r.severity',
-      `CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as "autoCheckAvailable"`,
+      `cast(scap.ruleId is true as json) as "autoCheckAvailable"`,
       `result.api as "result"`,
-      `review.autoResult as "autoResult"`,
+      `cast(review.autoResult is true as json) as "autoResult"`,
       `status.api as "status"`,
-      `CASE
+      `cast(CASE
         WHEN review.ruleId is null
         THEN 0
         ELSE
@@ -334,7 +334,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
               THEN 1
               ELSE 0 END
           END
-      END as "reviewComplete"`
+      END is true as json) as "reviewComplete"`
     ]
     let joins = [
       'current_rev rev',
@@ -382,20 +382,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     let formatted = connection.format(sql, predicates.binds)
 
     // let [rows] = await connection.query(sql, predicates.binds)
-    let [rows] = await connection.query({
-      sql: sql, 
-      typeCast: (field, next) => {
-        if ((field.type === "BIT") && (field.length === 1)) {
-          let bytes = field.buffer() || [0];
-          return( bytes[ 0 ] === 1 );
-        }
-        if (field.name === 'autoResult' || field.name === 'reviewComplete' || field.name === 'autoCheckAvailable') {
-          return field.string() === '1'
-        }
-        return next()
-      },
-      values: predicates.binds
-    })
+    let [rows] = await connection.query( sql, predicates.binds )
     return (rows)
   }
   catch (err) {

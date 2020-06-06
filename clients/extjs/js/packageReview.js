@@ -29,14 +29,14 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		// Common assets object
 		/******************************************************/
 		let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/package/${leaf.packageId}`,
+			url: `${STIGMAN.Env.apiBase}/assets/`,
 			params: {
-				elevate: curUser.canAdmin,
-				projection: ['assets']
+				packageId: leaf.packageId,
+				benchmarkId: leaf.benchmarkId
 			},
 			method: 'GET'
 		})
-		let packageAssets = JSON.parse(result.response.responseText).assets
+		let packageAssets = JSON.parse(result.response.responseText)
 
 		/******************************************************/
 		// START Group Grid
@@ -44,25 +44,32 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		var groupFields = Ext.data.Record.create([
 			{	
 				name:'oCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.results.fail'
 			},{	
 				name:'nfCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.results.pass'
 			},{	
 				name:'naCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.results.notapplicable'
 			},{	
 				name:'nrCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.results.notchecked'
 			},{	
 				name:'approveCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.statuses.accepted'
 			},{	
 				name:'rejectCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.statuses.rejected'
 			},{	
 				name:'readyCnt',
-				type: 'int'
+				type: 'int',
+				mapping: 'counts.statuses.submitted'
 			},{	
 				name:'groupId',
 				type: 'string',
@@ -77,17 +84,11 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 				name:'ruleTitle',
 				type: 'string'
 			},{
-				name:'cat',
+				name:'severity',
 				type:'string'
 			},{
-				name:'done',
-				type:'string'
-			},{
-				name:'checkType',
-				type:'string'
-			},{
-				name:'documentable',
-				type:'string'
+				name:'autoCheckAvailable',
+				type:'boolean'
 			}
 		]);
 
@@ -464,9 +465,10 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 					header: "CAT", 
 					width: 32,
 					align: 'center',
-					dataIndex: 'cat',
+					dataIndex: 'severity',
 					fixed: true,
-					sortable: true
+					sortable: true,
+					renderer: renderSeverity
 				}
 				,{ 	
 					id:'oCnt' + idAppend,
