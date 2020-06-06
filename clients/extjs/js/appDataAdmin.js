@@ -28,7 +28,7 @@ function addAppDataAdmin() {
                 downloadBlob(appdata.blob, appdata.filename)
               }
               catch (e) {
-                alert(e.statusText)
+                alert(e.blob)
               }
               finally {
                 Ext.getBody().unmask();
@@ -177,7 +177,7 @@ function addAppDataAdmin() {
           } else {
             reject({
               status: this.status,
-              statusText: xhr.statusText
+              blob: xhr.response
             })
           }
         }

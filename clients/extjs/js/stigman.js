@@ -86,6 +86,12 @@ function loadApp () {
 	//Ext.getBody().on("contextmenu", Ext.emptyFn, null, {preventDefault: true});  
 	Ext.getBody().on("contextmenu", myContextMenu);  
 	Ext.QuickTips.init();
+	Ext.apply(Ext.QuickTips.getQuickTip(), {
+		maxWidth: 200,
+		minWidth: 10,
+		showDelay: 50,      // Show 50ms after entering target
+		trackMouse: true
+	});
 	
 	var reviewItems = getReviewItems();
 	var reportItems = getReportItems();

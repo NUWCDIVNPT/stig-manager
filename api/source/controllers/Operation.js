@@ -38,12 +38,12 @@ module.exports.getAppData = async function getAppData (req, res, next) {
         user.deptId = user.dept.deptId
         delete user.dept
       })
-      let assets = await Asset.exportAssets( ['packages','stigReviewers'], elevate, req.userObject)
+      let assets = await Asset.exportAssets( ['stigReviewers'], elevate, req.userObject)
       assets.forEach(asset => {
-        asset.packageIds = asset.packages.map( p => p.packageId )
-        delete asset.packages
         asset.deptId = asset.dept.deptId
         delete asset.dept
+        asset.packageId = asset.package.packageId
+        delete asset.package
         asset.stigReviewers = asset.stigReviewers.map( s => ({
           benchmarkId: s.benchmarkId,
           userIds: s.reviewers.map( r => r.userId )
@@ -64,11 +64,11 @@ module.exports.getAppData = async function getAppData (req, res, next) {
       writer.writeJsonFile(res, response, 'stig-manager-appdata.json')
     }
     else {
-      writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    writer.writeJson(res, err, 500)
   }
 }
 

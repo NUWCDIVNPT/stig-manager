@@ -79,6 +79,25 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
     ]
 
     // PROJECTIONS
+    if (inProjection.includes('asset')) {
+      columns.push(`(select 
+        json_object(
+          'assetId', a.assetId,
+          'name', a.name,
+          'dept', json_object(
+            'deptId', d.deptId,
+            'name', d.name
+          ),
+          'package', json_object(
+            'packageId', p.packageId,
+            'name', p.name
+          )
+        )
+        from asset a 
+        left join department d on a.deptId = d.deptId
+        left join package p on a.packageId = p.packageId
+        where a.assetId = r.assetId) as "asset"`)
+    }
     if (inProjection.includes('stigs')) {
       columns.push(`(select json_arrayagg(json_object(
         'benchmarkId' , rev.benchmarkId,
@@ -89,6 +108,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         where rgr.ruleId = r.ruleId) as "stigs"`)
     }
     if (inProjection.includes('rule')) {
+      // Query hacks the possibility of a 1:n rule:group relationship
       columns.push(`(select
         json_object(
           'ruleId' , rule.ruleId
@@ -102,7 +122,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
           inner join rev_group_map rg on rgr.rgId=rg.rgId
           inner join \`group\` g on rg.groupId=g.groupId
         where
-          rule.ruleId = r.ruleId LIMIT 1) as "ruleInfo"`)
+          rule.ruleId = r.ruleId LIMIT 1) as "rule"`)
     }
     if (inProjection.includes('history')) {
       columns.push(`
@@ -244,7 +264,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       predicates.binds.action = inPredicates.action
     }
     if (inPredicates.packageId) {
-      predicates.statements.push('a.packageId = :packageId')
+      predicates.statements.push('asset.packageId = :packageId')
       predicates.binds.packageId = inPredicates.packageId
     }
     if (inPredicates.benchmarkId) {

@@ -62,7 +62,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
       // A bit more complex than the Oracle query because we can't use nested json_arrayagg's
       columns.push(`(select
-        json_arrayagg(byStig.stigAssetUsers) as stigReviewers 
+        CASE WHEN COUNT(byStig.stigAssetUsers) > 0 THEN json_arrayagg(byStig.stigAssetUsers) ELSE json_array() END
       from
         (select
           json_object('benchmarkId', r.benchmarkId, 'reviewers',

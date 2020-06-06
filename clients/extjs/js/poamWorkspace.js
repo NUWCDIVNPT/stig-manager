@@ -17,9 +17,9 @@ function addPoamWorkspace(conf) {
 			id: "1-Acitve_Directory_Domain-stigs-stig-node"
 			report: "stig"
 			revId: "IE8-1-10"
-			stigId: "IE8"
+			benchmarkId: "IE8"
 			packageId: "1"
-			stigId: "APACHE_SERVER_2.2_WINDOWS"
+			benchmarkId: "APACHE_SERVER_2.2_WINDOWS"
 		}
 	*/
 
@@ -33,7 +33,7 @@ function addPoamWorkspace(conf) {
 	if (conf.context == 'package') {
 		title += ' - ' + conf.attributes.packageName;
 	} else if (conf.context == 'stig') {
-		title += ' - ' + conf.attributes.packageName + ' : ' + conf.attributes.stigId;
+		title += ' - ' + conf.attributes.packageName + ' : ' + conf.attributes.benchmarkId;
 	}
 		
 	var packageControlValidationSet = [];
@@ -272,7 +272,7 @@ function addPoamWorkspace(conf) {
 								params:{
 									context: lo.params.context,
 									packageId: lo.params.packageId,
-									stigId: lo.params.stigId,
+									benchmarkId: lo.params.benchmarkId,
 									domain: lo.params.domain,
 									dept: lo.params.dept,
 									showUnapproved: 1
@@ -283,7 +283,7 @@ function addPoamWorkspace(conf) {
 								params:{
 									context: lo.params.context,
 									packageId: lo.params.packageId,
-									stigId: lo.params.stigId,
+									benchmarkId: lo.params.benchmarkId,
 									domain: lo.params.domain,
 									dept: lo.params.dept,
 									showUnapproved: 0
@@ -318,7 +318,7 @@ function addPoamWorkspace(conf) {
 					root: 'rows',
 					baseParams: {
 						packageId:conf.attributes.packageId,
-						stigId:conf.attributes.stigId,
+						benchmarkId:conf.attributes.benchmarkId,
 						attribute: 'dept'
 					}
 				}),
@@ -330,7 +330,7 @@ function addPoamWorkspace(conf) {
 							params:{
 								context: lo.params.context,
 								packageId: lo.params.packageId,
-								stigId: lo.params.stigId,
+								benchmarkId: lo.params.benchmarkId,
 								domain: lo.params.domain,
 								dept: r.data.dept,
 								showUnapproved: lo.params.showUnapproved
@@ -365,7 +365,7 @@ function addPoamWorkspace(conf) {
 					root: 'rows',
 					baseParams: {
 						packageId:conf.attributes.packageId,
-						stigId:conf.attributes.stigId,
+						benchmarkId:conf.attributes.benchmarkId,
 						attribute: 'domain'
 					}
 				}),
@@ -377,7 +377,7 @@ function addPoamWorkspace(conf) {
 							params:{
 								context: lo.params.context,
 								packageId: lo.params.packageId,
-								stigId: lo.params.stigId,
+								benchmarkId: lo.params.benchmarkId,
 								dept: lo.params.dept,
 								domain: r.data.domain,
 								showUnapproved: lo.params.showUnapproved
@@ -419,7 +419,7 @@ function addPoamWorkspace(conf) {
 							var locationUrl;
 							//if (conf.context == 'stig') {
 							var lo = findingsGrid.getStore().lastOptions;
-								locationUrl="pl/poamGenerator.pl?packageId=" + lo.params.packageId + "&stigId=" + lo.params.stigId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
+								locationUrl="pl/poamGenerator.pl?packageId=" + lo.params.packageId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
 ;
 							//} else {
 							//	locationUrl="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId;					
@@ -435,7 +435,7 @@ function addPoamWorkspace(conf) {
 					   icon: Ext.MessageBox.QUESTION
 					});
 					// if (conf.context == 'stig') {
-						// window.location="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId + "&stigId=" + conf.attributes.stigId;
+						// window.location="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId + "&benchmarkId=" + conf.attributes.benchmarkId;
 					// } else {
 						// window.location="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId;					
 					// }
@@ -454,7 +454,7 @@ function addPoamWorkspace(conf) {
 				handler: function(btn){
 					var locationUrl;
 					var lo = findingsGrid.getStore().lastOptions;
-					locationUrl="pl/rarGenerator.pl?packageId=" + lo.params.packageId + "&stigId=" + lo.params.stigId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
+					locationUrl="pl/rarGenerator.pl?packageId=" + lo.params.packageId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
 					window.location=locationUrl;
 				}
 			}
@@ -471,7 +471,7 @@ function addPoamWorkspace(conf) {
 				handler: function(btn){
 					var locationUrl;
 					var lo = findingsGrid.getStore().lastOptions;
-					locationUrl="pl/getPackageStigExcel.pl?packageId=" + lo.params.packageId + "&stigId=" + lo.params.stigId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
+					locationUrl="pl/getPackageStigExcel.pl?packageId=" + lo.params.packageId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
 					window.location=locationUrl;
 				}
 			}
@@ -1242,7 +1242,7 @@ function addPoamWorkspace(conf) {
 		ftGrid.getStore().load({
 			params:{
 				packageId:conf.attributes.packageId,
-				stigId:conf.attributes.stigId,
+				benchmarkId:conf.attributes.benchmarkId,
 				sourceId:record.data.sourceId,
 				showUnapproved: lo.params.showUnapproved
 			},
@@ -1282,7 +1282,7 @@ function addPoamWorkspace(conf) {
 		params:{
 			context:conf.context,
 			packageId:conf.attributes.packageId,
-			stigId:conf.attributes.stigId,
+			benchmarkId:conf.attributes.benchmarkId,
 			showUnapproved: 0
 		}
 	});

@@ -32,7 +32,7 @@ function addCompletionStatus(packageId,packageName) {
 				fields: [
 					{name:'id',type:'int'},
 					{name:'assetId',type:'int'},
-					{name:'stigId',type:'string'},
+					{name:'benchmarkId',type:'string'},
 					{name:'revId',type:'string'},
 
 					{name:'checksManual',type:'int'},
@@ -77,7 +77,7 @@ function addCompletionStatus(packageId,packageName) {
                     return "Checklist totals";
                 },
 			},
-			{header: "Checklist",width:35,dataIndex:'stigId',sortable:true,id:'completionGrid-'+ packageId + 'becnhmarkId',
+			{header: "Checklist",width:35,dataIndex:'benchmarkId',sortable:true,id:'completionGrid-'+ packageId + 'becnhmarkId',
 				summaryRenderer: function(v, params, data){
                     return "Asset totals";
                 },
@@ -132,8 +132,8 @@ function addCompletionStatus(packageId,packageName) {
 						attributes.report = "review";
 						attributes.assetId = r.get('assetId');
 						attributes.assetName = r.get('assetName');
-						attributes.stigId = r.get('stigId');
-						attributes.stigName = r.get('stigId');
+						attributes.benchmarkId = r.get('benchmarkId');
+						attributes.stigName = r.get('benchmarkId');
 						attributes.revId = r.get('revId');
 						n.attributes = attributes;
 						reviewsTreeClick(n);
@@ -162,7 +162,7 @@ function addCompletionStatus(packageId,packageName) {
 								Ext.getCmp('completionGrid-expandButton' + packageId).enable();
 								Ext.getCmp('completionGrid-collapseButton' + packageId).enable();
 								completionGrid.getView().group
-								completionGrid.getStore().groupBy('stigId');
+								completionGrid.getStore().groupBy('benchmarkId');
 							} else {
 								Ext.getCmp('completionGrid-expandButton' + packageId).disable();
 								Ext.getCmp('completionGrid-collapseButton' + packageId).disable();
@@ -232,7 +232,7 @@ function addCompletionStatus(packageId,packageName) {
 							// var filterField = Ext.getCmp('completionGrid-filterField' + packageId);
 							// if (btn.pressed) {
 								// filterField.enable();
-								// completionGrid.getStore().filterField = 'stigId';
+								// completionGrid.getStore().filterField = 'benchmarkId';
 								// if (filterField.getRawValue() == '') {
 									// filterField.emptyText = 'Enter a STIG filter...';
 									// filterField.setRawValue(filterField.emptyText);

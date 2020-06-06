@@ -3,7 +3,7 @@ $Id: packageReview.js 885 2018-02-20 16:26:08Z bmassey $
 */
 
 
-function addPackageReview(leaf,selectedRule,selectedAsset) {
+function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 
 	// 'selectedRule' is optional
 	/* Example of 'leaf': 
@@ -11,7 +11,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 			id: "1-Acitve_Directory_Domain-stigs-stig-node"
 			report: "stig"
 			revId: "IE8-1-10"
-			stigId: "IE8"
+			benchmarkId: "IE8"
 			packageId: "1"
 			stigName: "APACHE_SERVER_2.2_WINDOWS"
 		}
@@ -20,9 +20,9 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 	// Classic compatability. Remove after modernization
 	if (leaf.stigRevStr) {
 		let match = leaf.stigRevStr.match(/V(\d+)R(\d+)/)
-		leaf.revId = `${leaf.stigId}-${match[1]}-${match[2]}`
+		leaf.revId = `${leaf.benchmarkId}-${match[1]}-${match[2]}`
 	}
-	var idAppend = '-package_review-' + leaf.packageId + '-' + leaf.stigId.replace(".","_");
+	var idAppend = '-' + leaf.packageId + '-' + leaf.benchmarkId.replace(".","_");
 	var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 	
 /******************************************************/
@@ -81,7 +81,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 
 	var groupStore = new Ext.data.JsonStore({
 		proxy: new Ext.data.HttpProxy({
-			url: `${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.stigId}/latest`,
+			url: `${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.benchmarkId}/latest`,
 			method: 'GET'
 		}),
 		root: '',
@@ -228,7 +228,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 							tooltip: 'Download this checklist in DISA STIG Viewer format for each asset in the package',
 							handler: function(item,eventObject){
 								var lo = groupStore.lastOptions;
-								window.location='pl/getPackageCkls.pl' + '?stigId=' + lo.params.stigId + '&revId=' + lo.params.revId + '&packageId=' + lo.params.packageId;
+								window.location='pl/getPackageCkls.pl' + '?benchmarkId=' + lo.params.benchmarkId + '&revId=' + lo.params.revId + '&packageId=' + lo.params.packageId;
 							}
 						}
 					]
@@ -243,7 +243,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 					//===================================================
 					Ext.Msg.show({
 						title: 'Confirm review reset',
-						msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.stigId + '"<br/>for ALL aseets in Package "' + leaf.packageName + '"?',
+						msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in Package "' + leaf.packageName + '"?',
 						buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
 						icon: Ext.MessageBox.QUESTION,
 						closable: false,
@@ -254,8 +254,8 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 								//THE REVIEW RESET.
 								//===============================================
 								var unlockObject = new Object;
-								unlockObject.stigId = leaf.stigId;
-								//unlockObject.stigName = leaf.stigId;
+								unlockObject.benchmarkId = leaf.benchmarkId;
+								//unlockObject.stigName = leaf.benchmarkId;
 								unlockObject.assetId = -1;
 								unlockObject.assetName = '';
 								unlockObject.packageId =leaf.packageId;
@@ -354,7 +354,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 	var groupGrid = new Ext.grid.GridPanel({
 		region: 'north',
 		id: 'groupGrid' + idAppend,
-		sm_benchmarkId: leaf.stigId,
+		sm_benchmarkId: leaf.benchmarkId,
 		sm_revisionStr: leaf.stigRevStr,
 		filterState: 'All',
 		title: 'Checklist',
@@ -598,9 +598,9 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 	
 	var handleRevisionMenu = function (item, eventObject) {
 		let store = Ext.getCmp('groupGrid' + idAppend).getStore()
-		store.proxy.setUrl(`${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.stigId}/${item.revisionStr}`, true)
+		store.proxy.setUrl(`${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
 		store.load();
-		loadRevisionMenu(leaf.stigId, item.revisionStr, idAppend)
+		loadRevisionMenu(leaf.benchmarkId, item.revisionStr, idAppend)
 		groupGrid.sm_revisionStr = item.revisionStr
 	};
 	
@@ -696,9 +696,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 // START Reviews Panel
 /******************************************************/
 	var reviewsFields = Ext.data.Record.create([
-		{	name:'reviewId',
-			type: 'int'
-		},{	
+		{	
 			name:'assetId',
 			type: 'int'
 		},{	
@@ -768,7 +766,7 @@ function addPackageReview(leaf,selectedRule,selectedAsset) {
 				beforewrite: function (proxy, action, rs, params) {
 					// set params so server-side script can return counts for rules with updated reviews
 					params.packageId = thisTab.packageId;
-					params.stigId = thisTab.stigId;
+					params.benchmarkId = thisTab.benchmarkId;
 					params.revId = thisTab.revId;
 				},
 				write: function (proxy, action, data, response, rs, options) {
@@ -1752,184 +1750,6 @@ let contentTpl = new Ext.XTemplate(
 		
 	};
 
-	// function attachArtifact() {
-		// var reviewForm = Ext.getCmp('reviewForm' + idAppend);
-		// var assetId = reviewForm.groupGridRecord.data.assetId;
-		// var ruleId = reviewForm.groupGridRecord.data.ruleId;
-		
-		// var deptArtifactFields = Ext.data.Record.create([
-			// {
-				// name: 'artId',
-				// type: 'int'
-			// },{	
-				// name:'filename',
-				// type: 'string'
-			// },{
-				// name:'userName',
-				// type: 'string'
-			// },{
-				// name:'dept',
-				// type: 'string'
-			// },{
-				// name:'sha1',
-				// type: 'string'
-			// },{
-				// name:'description',
-				// type: 'string'
-			// },{
-				// name: 'ts',
-				// type: 'date',
-				// dateFormat: 'Y-m-d H:i:s'
-			// }
-		// ]);
-
-		// var deptArtifactStore = new Ext.data.JsonStore({
-			// url: 'pl/getArtifacts.pl',
-			// autoLoad: true,
-			// root: 'rows',
-			// fields: deptArtifactFields,
-			// totalProperty: 'records',
-			// idProperty: 'artId',
-			// listeners: {
-				// load: function (store,records) {
-					// deptArtifactGrid.getSelectionModel().selectFirstRow();
-				// }
-			// }
-		// });
-		
-		// var sm = new Ext.grid.RowSelectionModel({ 
-			// singleSelect: true,
-			// listeners: {
-				// rowselect: function (sm,rowIndex,r) {
-					// Ext.getCmp('dpt-attach-btn' + idAppend).setText('Attach "' + r.data.filename + '"');
-				// }
-			// }
-		// });
-
-		// var deptArtifactGrid = new Ext.grid.GridPanel({
-			// cls: 'artifact-grid',
-			// anchor: '100% -20',
-			// height: 200,
-			// store: deptArtifactStore,
-			// stripeRows:true,
-			// sm: sm,
-			// columns: [
-			// { 	
-				// header: "Artifact",
-				// width: 100,
-				// dataIndex: 'filename',
-				// sortable: true,
-				// align: 'left',
-				// renderer: function(value, metadata, record) {
-					// // var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">' + '<a href="pl/getArtifact.pl?artId=' + record.data.artId + '" style="color:#000;cursor:pointer;">' + value + '</a>';
-					// var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">' + value;
-					// return returnStr;
-				// }
-			// }
-			// ,{
-				// header: "Description",
-				// id: 'artifact-description',
-				// width: 100,
-				// dataIndex: 'description',
-				// sortable: true,
-				// align: 'left',
-			// }
-			// ],
-			// autoExpandColumn: 'artifact-description',
-			// view: new Ext.grid.GridView({
-				// autoFill:true,
-				// deferEmptyText:false
-			// }),
-			// loadMask: false,
-			// listeners: {
-				// // cellclick: function (grid,rowIndex,columnIndex,e) {
-						// // window.location='http://www.google.com';
-						// // var r = grid.getStore().getAt(rowIndex);
-						// // var header = grid.getColumnModel().getColumnHeader(columnIndex);
-						// // switch (header) {
-							// // case 'download':
-								// // //window.location='pl/getAttachment.pl?aiId=' + r.data.aiId;
-								// // window.location='pl/getAttachment.pl?aiId=11';
-								// // break;
-						// // }
-					// // //}
-				// // }
-			// },
-			// setValue: function(v) {
-			// },
-			// getValue: function() {
-				// //return this.getSelectionModel().getSelected().data.artId
-			// },
-			// markInvalid: function() {},
-			// clearInvalid: function() {},
-			// isValid: function() { return true},
-			// disabled: false,
-			// getName: function() {return this.name},
-			// validate: function() { return true},
-			// hideLabel: true,
-			// isFormField: true,
-			// name: 'artId'
-		// });
-	
-		
-
-		// var fp = new Ext.FormPanel({
-			// baseCls: 'x-plain',
-			// monitorValid: true,
-			// bodyStyle: 'padding: 10px 10px 0 10px;',
-			// labelWidth: 60,
-			// items: [
-			// deptArtifactGrid
-			// ],
-			// buttons: [{
-				// text: 'Attach',
-				// id: 'dpt-attach-btn' + idAppend,
-				// icon: 'img/attach-16.png',
-				// tooltip: 'Attach an artifact to this review.',
-				// formBind: true,
-				// handler: function(){
-					// if(fp.getForm().isValid()){
-						// fp.getForm().submit({
-							// url: 'pl/attachArtifact.pl',
-							// params: {
-								// assetId: assetId,
-								// ruleId: ruleId,
-								// artId: deptArtifactGrid.getSelectionModel().getSelected().data.artId
-								// },
-							// waitMsg: 'Attaching artifact...',
-							// success: function(f, o){
-								// window.close();
-								// attachStore.loadData(o.result.artifacts,true); // append new record
-								// attachStore.sort('filename');
-								// reviewForm.groupGridRecord.set('hasAttach',1);
-							// },
-							// failure: function(f, o){
-								// window.close();
-								// Ext.Msg.alert('Failure', o.result.message);
-							// }
-						// });
-					// }
-				// }
-			// }]
-		// });
-
-		// var window = new Ext.Window({
-			// title: 'Attach artifact',
-			// modal: true,
-			// width: 600,
-			// height:300,
-			// //minWidth: 500,
-			// //minHeight: 140,
-			// layout: 'fit',
-			// plain:true,
-			// bodyStyle:'padding:5px;',
-			// buttonAlign:'center',
-			// items: fp
-		// });
-
-		// window.show(document.body);
-	// };
-	
 /******************************************************/
 // End Resources Panel/Attachments
 /******************************************************/
@@ -2009,12 +1829,12 @@ let contentTpl = new Ext.XTemplate(
 	var thisTab = Ext.getCmp('reviews-center-tab').add({
 		id: 'packageReviewTab' + idAppend,
 		iconCls: 'sm-stig-icon',
-		title: leaf.packageName + " : " + leaf.stigId,
+		title: leaf.packageName + " : " + leaf.benchmarkId,
 		packageId: leaf.packageId,
 		revId: leaf.revId,
 		revisionStr: leaf.stigRevStr,
-		benchmarkId: leaf.stigId,
-		stigId: leaf.stigId,
+		benchmarkId: leaf.benchmarkId,
+		benchmarkId: leaf.benchmarkId,
 		closable:true,
 		layout: 'border',
 		items: tabItems,
@@ -2035,7 +1855,7 @@ let contentTpl = new Ext.XTemplate(
 			assetId: selectedAsset
 		}		
 	});
-	loadRevisionMenu(leaf.stigId, leaf.stigRevStr, idAppend)
+	loadRevisionMenu(leaf.benchmarkId, leaf.stigRevStr, idAppend)
   
 
 }; //end addReview();
@@ -2047,7 +1867,6 @@ async function handleGroupSelectionForPackage(record, idAppend, leaf, benchmarkI
 		method: 'GET',
 		params: {
 			projection: ['details','cci','checks','fixes']
-			// projection: 'details'
 		}
 	})
 	let content = JSON.parse(contentReq.response.responseText)
@@ -2059,8 +1878,9 @@ async function handleGroupSelectionForPackage(record, idAppend, leaf, benchmarkI
 		params: {
 			ruleId:record.data.ruleId,
 			packageId:leaf.packageId,
-			stigId:leaf.stigId,
-			revId:leaf.revId		}
+			benchmarkId:leaf.benchmarkId,
+			revId:leaf.revId
+		}
 	});
 }
 

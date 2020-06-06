@@ -312,7 +312,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.groupId as "groupId"
         ,r.groupTitle as "groupTitle"
         ,r.severity as "severity"
-        ,r.checkType as "checkType"
+        ,r.autoCheckAvailable as "autoCheckAvailable"
         ,sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END) as "oCnt"
         ,sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END) as "nfCnt"
         ,sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END) as "naCnt"
@@ -330,7 +330,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
           ,g.title as groupTitle
           ,r.resultId
           ,r.statusId
-          ,CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as "autoCheckAvailable"
+          ,CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as autoCheckAvailable
         from
           ${joins.join('\n')}
         where
@@ -342,7 +342,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
         ,r.severity
         ,r.groupId
         ,r.groupTitle
-        ,r.checkType
+        ,r.autoCheckAvailable
       order by
         DECODE(substr(r.groupId,1,2),'V-',lpad(substr(r.groupId,3),6,'0'),r.groupId) asc
     `

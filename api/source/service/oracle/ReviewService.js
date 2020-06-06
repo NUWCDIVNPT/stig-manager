@@ -78,6 +78,25 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
     ]
 
     // PROJECTIONS
+    if (inProjection.includes('asset')) {
+      columns.push(`(select 
+        json_object(
+          KEY 'assetId' VALUE a.assetId,
+          KEY 'name' VALUE a.name,
+          KEY 'dept' VALUE json_object(
+            KEY 'deptId' VALUE d.deptId,
+            KEY 'name' VALUE d.name
+          ),
+          KEY 'package' VALUE json_object(
+            KEY 'packageId' VALUE p.packageId,
+            KEY 'name' VALUE p.name
+          )
+        )
+        from asset a 
+        left join department d on a.deptId = d.deptId
+        left join package p on a.packageId = p.packageId
+        where a.assetId = r.assetId) as "asset"`)
+    }
     if (inProjection.includes('stigs')) {
       columns.push(`(select json_arrayagg(json_object(
         KEY 'benchmarkId' VALUE rev.benchmarkId,
@@ -102,7 +121,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
           inner join groups g on rg.groupId=g.groupId
         where
           ROWNUM = 1 and
-          rule.ruleId = r.ruleId) as "ruleInfo"`)
+          rule.ruleId = r.ruleId) as "rule"`)
     }
     if (inProjection.includes('history')) {
       columns.push(`(select
@@ -238,7 +257,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       predicates.binds.action = inPredicates.action
     }
     if (inPredicates.packageId) {
-      predicates.statements.push('a.packageId = :packageId')
+      predicates.statements.push('asset.packageId = :packageId')
       predicates.binds.packageId = inPredicates.packageId
     }
     if (inPredicates.benchmarkId) {
@@ -303,14 +322,14 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       let record = result.rows[x]
       record.reviewComplete = record.reviewComplete == 1 ? true : false
       record.autoResult = record.autoResult == 1 ? true : false
-      if (inProjection.includes('packages')) {
-         record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
+      if (inProjection.includes('asset')) {
+         record.asset = JSON.parse(record.asset)
        }
       if (inProjection.includes('stigs')) {
          record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
        }
-      if (inProjection.includes('ruleInfo')) {
-        record.ruleInfo = JSON.parse(record.ruleInfo)
+      if (inProjection.includes('rule')) {
+        record.rule = JSON.parse(record.rule)
       }
       if (inProjection.includes('history')) {
         record.history = JSON.parse(record.history) || []

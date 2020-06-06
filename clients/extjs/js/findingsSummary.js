@@ -4,7 +4,7 @@ $Id: findingsSummary.js 807 2017-07-27 13:04:19Z csmig $
 
 function addFindingsSummary(packageId,packageName) {
 	var idAppend = '-findings-summary-' + packageId;
-	var stigId = '';
+	var benchmarkId = '';
 	
 	var findingsGrid = new Ext.grid.GridPanel({
 		id: 'findingsGrid-' + packageId,
@@ -25,7 +25,7 @@ function addFindingsSummary(packageId,packageName) {
 			},
 			fields: [
 				{name:'cnt',type:'int'},
-				{name:'stigIds',type:'string'},
+				{name:'benchmarkIds',type:'string'},
 				{name:'groupId',type:'string',sortType: sortGroupId},
 				{name:'ruleId',type:'string'},
 				{name:'severity',type:'string'},
@@ -42,10 +42,10 @@ function addFindingsSummary(packageId,packageName) {
 			{header: "Group",width:15,dataIndex:'groupId',sortable:true},
 			{header: "Rule Title",width:45,dataIndex:'title',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ packageId + 'title'},
 			{header: "# Assets",width:15,align:'right',dataIndex:'cnt',sortable:true},
-			{header: "STIGs",width:40,dataIndex:'stigIds',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ packageId + 'stigIds'}
+			{header: "STIGs",width:40,dataIndex:'benchmarkIds',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ packageId + 'benchmarkIds'}
 			//{header: "Rule",width:25,dataIndex:'ruleId',sortable:true},
 		],
-		autoExpandColumn:'findingsGrid-'+ packageId + 'stigIds',
+		autoExpandColumn:'findingsGrid-'+ packageId + 'benchmarkIds',
 		border: false,
 		style: {
 			borderBottomWidth: "1px"
@@ -75,7 +75,7 @@ function addFindingsSummary(packageId,packageName) {
 							params:{
 								groupId: record.data.groupId, 
 								packageId: packageId,
-								stigId: lo.params.stigId,
+								benchmarkId: lo.params.benchmarkId,
 								dept: lo.params.dept,
 								domain: lo.params.domain,
 								status: lo.params.status
@@ -101,13 +101,13 @@ function addFindingsSummary(packageId,packageName) {
 				allowBlank: true,
 				editable: false,
 				forceSelection: true,
-				name: 'stigId',
+				name: 'benchmarkId',
 				mode: 'remote',
 				triggerAction: 'all',
-				displayField:'stigId',
+				displayField:'benchmarkId',
 				value: '--Any--',
 				store: new Ext.data.JsonStore({
-					fields: ['stigId'],
+					fields: ['benchmarkId'],
 					url: 'pl/getStigsForFindings.pl',
 					root: 'rows',
 					baseParams: {
@@ -123,7 +123,7 @@ function addFindingsSummary(packageId,packageName) {
 							params:{
 								context: lo.params.context,
 								packageId: lo.params.packageId,
-								stigId: r.data.stigId,
+								benchmarkId: r.data.benchmarkId,
 								domain: lo.params.domain,
 								dept: lo.params.dept
 							}
@@ -157,7 +157,7 @@ function addFindingsSummary(packageId,packageName) {
 					baseParams: {
 						workspace: 'report',
 						packageId:packageId,
-						stigId:stigId,
+						benchmarkId:benchmarkId,
 						attribute: 'dept'
 					}
 				}),
@@ -170,7 +170,7 @@ function addFindingsSummary(packageId,packageName) {
 							params:{
 								context: lo.params.context,
 								packageId: lo.params.packageId,
-								stigId: lo.params.stigId,
+								benchmarkId: lo.params.benchmarkId,
 								domain: lo.params.domain,
 								dept: r.data.dept
 							}
@@ -205,7 +205,7 @@ function addFindingsSummary(packageId,packageName) {
 					baseParams: {
 						workspace: 'report',
 						packageId:packageId,
-						stigId:stigId,
+						benchmarkId:benchmarkId,
 						attribute: 'domain'
 					}
 				}),
@@ -218,7 +218,7 @@ function addFindingsSummary(packageId,packageName) {
 							params:{
 								context: lo.params.context,
 								packageId: lo.params.packageId,
-								stigId: lo.params.stigId,
+								benchmarkId: lo.params.benchmarkId,
 								dept: lo.params.dept,
 								domain: r.data.domain
 							}
@@ -305,7 +305,7 @@ function addFindingsSummary(packageId,packageName) {
 				'domain',
 				{name:'ruleId',type:'string'},
 				//'userName',
-				'stigId',
+				'benchmarkId',
 				'ruleId',
 				'statusStr',
 				{name:'ts',type:'date',dateFormat:'Y-m-d H:i:s'}
@@ -338,7 +338,7 @@ function addFindingsSummary(packageId,packageName) {
 			{header: "Asset",width:40,dataIndex:'assetName',sortable:true},
 			{header: "Dept",width:5,dataIndex:'dept',sortable:true},
 			{header: "AssetGroup",width:40,dataIndex:'domain',sortable:true},
-			{header: "STIG", width:40, dataIndex: 'stigId', sortable: true},
+			{header: "STIG", width:40, dataIndex: 'benchmarkId', sortable: true},
 			{header: "Rule", width: 25, dataIndex: 'ruleId', sortable: true},
 			{header: "Status", width:50, dataIndex: 'statusStr', sortable: true},
 			{header: "Status changed", width: 50, dataIndex: 'ts', xtype: 'datecolumn',format:'Y-m-d',sortable: true}
@@ -403,8 +403,8 @@ function addFindingsSummary(packageId,packageName) {
 					fakeLeaf = new Object();
 					fakeLeaf.assetId = r.get('assetId');
 					fakeLeaf.assetName = r.get('assetName');
-					fakeLeaf.stigId = r.get('stigId');
-					fakeLeaf.stigName = r.get('stigId');
+					fakeLeaf.benchmarkId = r.get('benchmarkId');
+					fakeLeaf.stigName = r.get('benchmarkId');
 					fakeLeaf.revId = r.get('revId');
 					addReview(fakeLeaf,r.get('ruleId'));
 					

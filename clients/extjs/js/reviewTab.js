@@ -302,7 +302,7 @@ async function loadTree (node, cb) {
           assetName: r.name,
           stigRevStr: stig.lastRevisionStr,
           assetId: r.assetId,
-          stigId: stig.benchmarkId,
+          benchmarkId: stig.benchmarkId,
           assetGroup: null,
           qtip: stig.title
         })
@@ -332,7 +332,7 @@ async function loadTree (node, cb) {
           reqRar: r.reqRar,
           stigRevStr: stig.lastRevisionStr,
           id: `${packageId}-${stig.benchmarkId}-stigs-stig-node`,
-          stigId: stig.benchmarkId,
+          benchmarkId: stig.benchmarkId,
           qtip: stig.title
         })
       )
@@ -365,7 +365,7 @@ async function loadTree (node, cb) {
           assetName: asset.name,
           stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
           assetId: asset.assetId,
-          stigId: benchmarkId,
+          benchmarkId: benchmarkId,
           assetGroup: null,
           qtip: asset.name
         })
@@ -407,7 +407,7 @@ function addReviewHome() {
 			type: 'string'
 		}
 		,{
-			name: 'stigId',
+			name: 'benchmarkId',
 			type: 'string'
 		}
 		,{
@@ -434,7 +434,7 @@ function addReviewHome() {
 		groupField: 'assetName',
 		storeId: 'statusChangesStore' + idAppend,
 		sortInfo: {
-			field: 'stigId',
+			field: 'benchmarkId',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
 		reader:	new Ext.data.JsonReader({
@@ -502,10 +502,10 @@ function addReviewHome() {
 			align: 'left'
 		}
 		,{ 
-			id:'statusChangesGrid-stigId' + idAppend,
+			id:'statusChangesGrid-benchmarkId' + idAppend,
 			header: "STIG",
 			width: 170,
-			dataIndex: 'stigId',
+			dataIndex: 'benchmarkId',
 			sortable: true,
 			align: 'left'
 		}
@@ -574,7 +574,7 @@ function addReviewHome() {
 							if (btn.pressed) {
 								Ext.getCmp('statusChangesGrid-expandButton').enable();
 								Ext.getCmp('statusChangesGrid-collapseButton').enable();
-								statusChangesGrid.getStore().groupBy('stigId');
+								statusChangesGrid.getStore().groupBy('benchmarkId');
 							} else {
 								Ext.getCmp('statusChangesGrid-expandButton').disable();
 								Ext.getCmp('statusChangesGrid-collapseButton').disable();
@@ -643,7 +643,7 @@ function addReviewHome() {
 							var filterField = Ext.getCmp('statusChangesGrid-filterField');
 							if (btn.pressed) {
 								filterField.enable();
-								statusChangesStore.filterField = 'stigId';
+								statusChangesStore.filterField = 'benchmarkId';
 								if (filterField.getRawValue() == '') {
 									filterField.emptyText = 'Enter a STIG filter...';
 									filterField.setRawValue(filterField.emptyText);
@@ -718,21 +718,21 @@ function addReviewHome() {
 					var r = grid.getStore().getAt(rowIndex);
 					var idAppend,tab;
 					if (curUser.accessLevel === 3) {
-						idAppend = '-package_review-' + r.data.packageId + '-' + r.data.stigId.replace(".","_");
+						idAppend = '-package_review-' + r.data.packageId + '-' + r.data.benchmarkId.replace(".","_");
 						tab = Ext.getCmp('packageReviewTab' +  idAppend);
 						if (Ext.isDefined(tab)) {
 							tab.show();
 						} else {
 							fakeLeaf = new Object();
-							fakeLeaf.stigId = r.get('stigId');
+							fakeLeaf.benchmarkId = r.get('benchmarkId');
 							fakeLeaf.revId = r.get('revId');
 							fakeLeaf.packageId = r.get('packageId');
 							fakeLeaf.packageName = r.get('packageName');
-							//fakeLeaf.stigName = r.get('stigId');
+							//fakeLeaf.stigName = r.get('benchmarkId');
 							addPackageReview(fakeLeaf,r.data.ruleId,r.data.assetId);
 						}
 					} else {
-						idAppend = '-' + r.data.assetId + '-' + r.data.stigId.replace(".","_");
+						idAppend = '-' + r.data.assetId + '-' + r.data.benchmarkId.replace(".","_");
 						tab = Ext.getCmp('reviewTab' +  idAppend);
 						if (Ext.isDefined(tab)) {
 							tab.show();
@@ -760,9 +760,9 @@ function addReviewHome() {
 							fakeLeaf = new Object();
 							fakeLeaf.assetId = r.get('assetId');
 							fakeLeaf.assetName = r.get('assetName');
-							fakeLeaf.stigId = r.get('stigId');
+							fakeLeaf.benchmarkId = r.get('benchmarkId');
 							fakeLeaf.revId = r.get('revId');
-							//fakeLeaf.stigName = r.get('stigId');
+							//fakeLeaf.stigName = r.get('benchmarkId');
 							//Ext.getCmp('main-tabs').setActiveTab('tab-reviews');
 							addReview(fakeLeaf,r.get('ruleId'),'feedback-tab' +  idAppend);
 						}
@@ -890,7 +890,7 @@ function reviewsTreeClick(n) {
 	var tab;
 	
 	if (n.attributes.report == 'review') {
-		idAppend = '-' + n.attributes.assetId + '-' + n.attributes.stigId.replace(".","_");
+		idAppend = '-' + n.attributes.assetId + '-' + n.attributes.benchmarkId.replace(".","_");
 		tab = Ext.getCmp('reviews-center-tab').getItem('reviewTab' + idAppend);
 		if (tab) {
 			tab.show();
@@ -915,7 +915,7 @@ function reviewsTreeClick(n) {
 
 function openPackageReview(n) {
 	if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.canAdmin)) {
-		var idAppend = '-' + n.attributes.packageId + '-' + n.attributes.stigId.replace(".","_");
+		var idAppend = '-' + n.attributes.packageId + '-' + n.attributes.benchmarkId.replace(".","_");
 		var tab = Ext.getCmp('reviews-center-tab').getItem('packageReviewTab' + idAppend);
 		if (tab) {
 			tab.show();
@@ -932,7 +932,7 @@ function openPoamWorkspace(n) {
 		conf.idAppend = '-' + n.attributes.packageId;
 	} else if (n.attributes.report == 'stig') {
 		conf.context = 'stig';
-		conf.idAppend = '-' + n.attributes.packageId + '-' + n.attributes.stigId.replace(".","_");
+		conf.idAppend = '-' + n.attributes.packageId + '-' + n.attributes.benchmarkId.replace(".","_");
 	}
 	var tab = Ext.getCmp('reviews-center-tab').getItem('poamWorkspaceTab' + conf.idAppend);
 	if (tab) {

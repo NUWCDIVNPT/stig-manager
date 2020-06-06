@@ -242,45 +242,40 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-  # '/packages/{packageId}/findings':
-  #   parameters:
-  #     - $ref: '#/components/parameters/PackageIdPath'
-  #     - name: acceptedOnly
-  #       in: query
-  #       schema:
-  #         type: boolean
-  #         default: true
-  #     - $ref: '#/components/parameters/BenchmarkIdQuery'
-  #     - $ref: '#/components/parameters/DepartmentQuery'
-  #     - $ref: '#/components/parameters/FindingProjectionQuery'
-  #   get:
-  #     tags:
-  #       - Package
-  #     summary: Return the Findings for the specified Package
-  #     description: |
-  #       Request RBAC:
-  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
-  #       |-----|-----|-------|-------|
-  #       | All packages | Packages having department Assets | Packages having Assets with assigned Reviews | NA |
-  #     operationId: getFindingsByPackage
-  #     responses:
-  #       '200':
-  #         description: PackageFinding response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/FindingProjected'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:package:read'
+  '/packages/{packageId}/findings':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+      - name: acceptedOnly
+        in: query
+        schema:
+          type: boolean
+          default: true
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+      - $ref: '#/components/parameters/DepartmentQuery'
+      - $ref: '#/components/parameters/FindingProjectionQuery'
+    get:
+      tags:
+        - Package
+      summary: Return the Findings for the specified Package
+      operationId: getFindingsByPackage
+      responses:
+        '200':
+          description: PackageFinding response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FindingProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
   # '/packages/{packageId}/findings/poam_rar':
   #   parameters:
   #     - $ref: '#/components/parameters/PackageIdPath'
@@ -2470,9 +2465,13 @@ components:
     FindingProjected:
       type: object
       properties:
-        groupId:
+        ruleId:
           type: string
         ruleTitle:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'
@@ -2488,19 +2487,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AssetBasic'
-        poamRarSummary:
-            type: object
-            properties:
-              status:
-                type: string
-                nullable: true
-                enum:
-                  - ongoing
-                  - completed
-              poamComplete:
-                type: boolean
-              rarComplete:
-                type: boolean
+        # poamRarSummary:
+        #     type: object
+        #     properties:
+        #       status:
+        #         type: string
+        #         nullable: true
+        #         enum:
+        #           - ongoing
+        #           - completed
+        #       poamComplete:
+        #         type: boolean
+        #       rarComplete:
+        #         type: boolean
     Fix:
       type: object
       properties:
@@ -2607,6 +2606,8 @@ components:
       properties:
         assetId:
           type: integer
+        assetName:
+          type: string
         ruleId:
           type: string
         result:
@@ -2623,7 +2624,8 @@ components:
           $ref: '#/components/schemas/ReviewStatus'
         userId:
           type: integer
-          readOnly: true
+        username:
+          type: string
         ts:
           type: string
           readOnly: true
@@ -3066,10 +3068,10 @@ components:
             - assets
             - users
     DepartmentQuery:
-      name: department
+      name: deptId
       in: query
       schema:
-        type: string
+        type: integer
     ElevateQuery:
       name: elevate
       in: query

@@ -87,13 +87,13 @@ function getUnlockPrompt(unlockLevel, unlockObject, grid){
 									Ext.getCmp('promptText').setText('Do you want to reset ALL ' + unlockScopeString + ' reviews for ALL assets in Package, "' + unlockObject.packageName + '"?');
 									break;
 								case "STIG":
-									Ext.getCmp('promptText').setText('Do you want to reset ALL ' + unlockScopeString + ' reviews for ANY rule associated with ANY revision of STIG, "' + unlockObject.stigId + '", for ALL assets in this Package?');
+									Ext.getCmp('promptText').setText('Do you want to reset ALL ' + unlockScopeString + ' reviews for ANY rule associated with ANY revision of STIG, "' + unlockObject.benchmarkId + '", for ALL assets in this Package?');
 									break;
 								case "ASSET":
 									Ext.getCmp('promptText').setText('Do you want to reset ALL ' + unlockScopeString + ' reviews for asset, "' + unlockObject.assetName + '"?');
 									break;
 								case "STIG-ASSET":
-									Ext.getCmp('promptText').setText('Do you want to reset ALL ' + unlockScopeString + ' reviews for ANY revision of "' + unlockObject.stigId + '" for asset, "' + unlockObject.assetName + '"?');
+									Ext.getCmp('promptText').setText('Do you want to reset ALL ' + unlockScopeString + ' reviews for ANY revision of "' + unlockObject.benchmarkId + '" for asset, "' + unlockObject.assetName + '"?');
 									break;
 							}
 						}
@@ -1745,7 +1745,7 @@ function getUnlockInfo(n, unlockObject){
 		unlockObject.packageName = n.attributes.packageName;
 		unlockObject.assetId = -1;
 		unlockObject.assetName = '';
-		unlockObject.stigId = '';
+		unlockObject.benchmarkId = '';
 		//unlockObject.stigName = '';
 	}
 	else {
@@ -1758,7 +1758,7 @@ function getUnlockInfo(n, unlockObject){
 			//========================================
 			unlockObject.packageId = n.attributes.packageId;
 			unlockObject.packageName = '';
-			unlockObject.stigId = n.attributes.stigId;
+			unlockObject.benchmarkId = n.attributes.benchmarkId;
 			//unlockObject.stigName = n.attributes.text;
 			unlockObject.assetId = -1;
 			unlockObject.assetName = '';
@@ -1771,7 +1771,7 @@ function getUnlockInfo(n, unlockObject){
 			unlockObject.packageName = '';
 			unlockObject.assetId = n.attributes.assetId;
 			unlockObject.assetName = n.attributes.text;
-			unlockObject.stigId = '';
+			unlockObject.benchmarkId = '';
 			//unlockObject.stigName = '';
 		}
 	}
@@ -1798,7 +1798,7 @@ function batchReviewUnlock(unlockObject){
 			packageName: unlockObject.packageName,
 			assetId: unlockObject.assetId,
 			assetName: unlockObject.assetName,
-			stigId: unlockObject.stigId,
+			benchmarkId: unlockObject.benchmarkId,
 			unlockDepth: unlockObject.unlockDepth
 			//stigName: unlockObject.stigName
 		},
