@@ -39,7 +39,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       ) as "dept"`,
       `json_object (
         'packageId', p.packageId,
-        'name', d.name
+        'name', p.name
       ) as "package"`,
       'a.ip',
       'a.nonnetwork'
@@ -226,7 +226,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
               ?
             WHERE
               assetId = ?`
-        await connection.execute(sqlUpdate, [assetFields, assetId])
+        await connection.query(sqlUpdate, [assetFields, assetId])
       }
     }
     else {
@@ -263,10 +263,12 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
           // INSERT into user_stig_asset_map 
           let sqlInsertUserStigAsset = `INSERT INTO 
             stigman.user_stig_asset_map 
-              (userId, benchmarkId, assetId)
+              (userId, saId) 
             VALUES 
-              ?`
-          await connection.query(sqlInsertUserStigAsset, [binds.userStigAsset])
+              (?, (select saId from stig_asset_map where benchmarkId = ? and assetId = ?))`
+          for (const bind of binds.userStigAsset) {
+            await connection.execute(sqlInsertUserStigAsset, bind)
+          }
         }
       }
     }
