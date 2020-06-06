@@ -915,7 +915,7 @@ function reviewsTreeClick(n) {
 
 function openPackageReview(n) {
 	if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.canAdmin)) {
-		var idAppend = '-' + n.attributes.packageId + '-' + n.attributes.benchmarkId.replace(".","_");
+		var idAppend = '-package-' + n.attributes.packageId + '-' + n.attributes.benchmarkId.replace(".","_");
 		var tab = Ext.getCmp('reviews-center-tab').getItem('packageReviewTab' + idAppend);
 		if (tab) {
 			tab.show();
