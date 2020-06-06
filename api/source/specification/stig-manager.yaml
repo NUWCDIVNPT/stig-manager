@@ -2017,7 +2017,6 @@ components:
         - ip
         - nonnetwork
         - stigReviewers
-        - packageIds
       additionalProperties: false
       properties:
         name:
