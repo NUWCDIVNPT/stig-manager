@@ -26,7 +26,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
-		// Common assets object
+		// 'Global' pkgAssetsTpl object for reviewsGrid
 		/******************************************************/
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/assets/`,
@@ -36,7 +36,20 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 			},
 			method: 'GET'
 		})
-		let packageAssets = JSON.parse(result.response.responseText)
+		let pkgAssetsApi = JSON.parse(result.response.responseText)
+		let pkgAssets = pkgAssetsApi.map( pkgAsset => ({
+			assetId: pkgAsset.assetId,
+			assetName: pkgAsset.name,
+			result: null,
+			resultComment: null,
+			action: null,
+			actionComment: null,
+			autoResult: null,
+			userId: null,
+			username: null,
+			ts: null,
+			status: null
+		}))
 
 		/******************************************************/
 		// START Group Grid
@@ -786,7 +799,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 					}
 				}
 			}),
-			root: 'rows',
+			root: '',
 			//id: 'reviewStore' + idAppend,
 			fields: reviewsFields,
 			writer:new Ext.data.JsonWriter({
@@ -808,8 +821,8 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 					// reviewsGrid.getEl().mask(maskStr);
 				},
 				load: function () {
-					var ourGrid = Ext.getCmp('reviewsGrid' + idAppend);
-					ourGrid.getSelectionModel().selectFirstRow();
+					// var ourGrid = Ext.getCmp('reviewsGrid' + idAppend);
+					// ourGrid.getSelectionModel().selectFirstRow();
 				}
 				// write: function ( store, action, result, res, rs ) {
 					// var one = 1;
@@ -826,7 +839,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 					Ext.getBody().unmask();
 				}
 			},
-			idProperty: 'checkId'
+			idProperty: 'assetId'
 		});
 
 		// var expander = new Ext.ux.grid.RowExpander({
@@ -1091,7 +1104,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 						} else {
 							metadataStore.removeAll();
 							metadataGrid.disable();
-							attachStore.removeAll();
+							// attachStore.removeAll();
 							// attachGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
@@ -1109,7 +1122,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 						} else {
 							metadataStore.removeAll();
 							metadataGrid.disable();
-							attachStore.removeAll();
+							// attachStore.removeAll();
 							// attachGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
@@ -1190,7 +1203,95 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		});
 
 		reviewsGrid.on('beforeedit', beforeEdit, this );
+
+		async function getContent(benchmarkId, revisionStr, ruleId, groupId) {
+			try {
+				// Content panel
+				let contentPanel = Ext.getCmp('content-panel' + idAppend);
+				let contentReq = await Ext.Ajax.requestPromise({
+					url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${ruleId}`,
+					method: 'GET',
+					params: {
+						projection: ['details','cci','checks','fixes']
+					}
+				})
+				let content = JSON.parse(contentReq.response.responseText)
+				contentPanel.update(content)
+				contentPanel.setTitle('Rule for Group ' + groupId);
+			}
+			catch (e) {
+				alert(e.message)
+			}
+		}
+
+		async function getReviews(packageId, ruleId) {
+			try {
+				// Reviews grid
+				let reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
+				let reviewsReq = await Ext.Ajax.requestPromise({
+					url: `${STIGMAN.Env.apiBase}/reviews`,
+					method: 'GET',
+					params: {
+						packageId: packageId,
+						ruleId: ruleId,
+					}
+				})
+				let fetchedReviews = JSON.parse(reviewsReq.response.responseText)
+				let fetchedReviewsLookup = {}
+				for (const fetchedReview of fetchedReviews) {
+					fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
+				}
+				let pkgReviews = pkgAssets.map(pkgAsset => {
+					return {...pkgAsset, ...fetchedReviewsLookup[pkgAsset.assetId]}
+				})
+			
+				reviewsGrid.getStore().loadData(pkgReviews)
+				reviewsGrid.setTitle(`Reviews of ${ruleId}`)
+			}
+			catch (e) {
+				alert (e.message)
+			}
+		}
 		
+		function handleGroupSelectionForPackage(record, idAppend, leaf, benchmarkId, revisionStr) {
+			getContent(benchmarkId, revisionStr, record.data.ruleId, record.data.groupId)
+			getReviews(leaf.packageId, record.data.ruleId)
+
+			// // Content panel
+			// let contentPanel = Ext.getCmp('content-panel' + idAppend);
+			// let contentReq = await Ext.Ajax.requestPromise({
+			// 	url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${record.data.ruleId}`,
+			// 	method: 'GET',
+			// 	params: {
+			// 		projection: ['details','cci','checks','fixes']
+			// 	}
+			// })
+			// let content = JSON.parse(contentReq.response.responseText)
+			// contentPanel.update(content)
+			// contentPanel.setTitle('Rule for Group ' + record.data.groupId);
+		
+			// // Reviews grid
+			// let reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
+			// let reviewsReq = await Ext.Ajax.requestPromise({
+			// 	url: `${STIGMAN.Env.apiBase}/reviews`,
+			// 	method: 'GET',
+			// 	params: {
+			// 		packageId: leaf.packageId,
+			// 		ruleId: record.data.ruleId,
+			// 	}
+			// })
+			// let fetchedReviews = JSON.parse(reviewsReq.response.responseText)
+			// let fetchedReviewsLookup = {}
+			// for (const fetchedReview of fetchedReviews) {
+			// 	fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
+			// }
+			// let pkgReviews = pkgAssets.map(pkgAsset => {
+			// 	return {...pkgAsset, ...fetchedReviewsLookup[pkgAsset.assetId]}
+			// })
+		
+			// reviewsGrid.getStore().loadData(pkgReviews)
+		}
+
 		function setReviewsGridButtonStates() {
 			var sm = reviewsGrid.getSelectionModel();
 			var approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
@@ -1861,29 +1962,6 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 
 }; //end addReview();
 
-async function handleGroupSelectionForPackage(record, idAppend, leaf, benchmarkId, revisionStr) {
-	var contentPanel = Ext.getCmp('content-panel' + idAppend);
-	let contentReq = await Ext.Ajax.requestPromise({
-		url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${record.data.ruleId}`,
-		method: 'GET',
-		params: {
-			projection: ['details','cci','checks','fixes']
-		}
-	})
-	let content = JSON.parse(contentReq.response.responseText)
-	contentPanel.update(content)
-	contentPanel.setTitle('Rule for Group ' + record.data.groupId);
-
-	var reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
-	reviewsGrid.getStore().load({
-		params: {
-			ruleId:record.data.ruleId,
-			packageId:leaf.packageId,
-			benchmarkId:leaf.benchmarkId,
-			revId:leaf.revId
-		}
-	});
-}
 
 function renderOpen(value, metaData, record, rowIndex, colIndex, store) {
 	var returnValue = value;
