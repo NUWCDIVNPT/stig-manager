@@ -18,7 +18,7 @@ paths:
       tags:
         - Package
       summary: Return a list of Packages accessible to the requester
-      description: |
+      description: ''
       operationId: getPackages
       responses:
         '200':
@@ -42,7 +42,7 @@ paths:
       tags:
         - Package
       summary: Create a Package
-      description: |
+      description: ''
       operationId: createPackage
       parameters:
         - $ref: '#/components/parameters/PackageProjectionQuery'
@@ -71,7 +71,6 @@ paths:
         - oauth:
             - 'stig-manager:package'
   '/packages/{packageId}':
-  # TODO: Add packageGrant to projection
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - name: packageId
@@ -85,7 +84,7 @@ paths:
       tags:
         - Package
       summary: Return a Package
-      description: |
+      description: ''
       operationId: getPackage
       responses:
         '200':
@@ -107,7 +106,7 @@ paths:
       tags:
         - Package
       summary: Merge provided properties with a Package
-      description: |
+      description: ''
       operationId: updatePackage
       requestBody:
         required: true
@@ -283,112 +282,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-
-# '/packages/{packageId}/findings/poam_rar':
-  #   parameters:
-  #     - $ref: '#/components/parameters/PackageIdPath'
-  #     - name: artifact
-  #       in: query
-  #       required: true
-  #       schema:
-  #         type: string
-  #         enum:
-  #           - poam
-  #           - rar
-  #     - $ref: '#/components/parameters/BenchmarkIdQuery'
-  #   get:
-  #     tags:
-  #       - Package
-  #     summary: Return an eMASS POAM or RAR artifact in XLSX format
-  #     description: |
-  #       Generates a Plan of Action and Milestones (POAM) or Risk Assessment Report (RAR) for use as an eMASS artifact. The artifact is generated based on the currently accepted findings and incorporates the EMassPoamRarRecords managed by the {groupId} child endpoints.
-
-  #       RBAC table:
-  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
-  #       |-----|-----|-------|-------|
-  #       | All packages | Prohibited | Prohibited | NA |
-  #     operationId: getPoamOrRarByPackage
-  #     responses:
-  #       '200':
-  #         description: EMassPoamRar response
-  #         content:
-  #           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-  #             schema:
-  #               type: string
-  #               format: binary
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:package:read'
-  # '/packages/{packageId}/findings/poam_rar/{groupId}':
-  #   parameters:
-  #     - $ref: '#/components/parameters/PackageIdPath'
-  #     - $ref: '#/components/parameters/GroupIdPath'
-  #   get:
-  #     tags:
-  #       - Package
-  #     summary: Return the eMASS POAM/RAR record for the specified Package and Finding (groupId)
-  #     description: |
-  #       RBAC table:
-  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
-  #       |-----|-----|-------|-------|
-  #       | Any {packageId}<br>Any {groupId} | Prohibited | Prohibited | NA |
-  #     operationId: getPoamRecordByPackageGroup
-  #     responses:
-  #       '200':
-  #         description: PoamRecord response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/EmassPoamRarRecord'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:package:read'
-  #   put:
-  #     tags:
-  #       - Package
-  #     summary: Set all properties of the eMASS POAM/RAR record for a Finding (groupId)
-  #     operationId: setPoamRecordByPackageGroup
-  #     description: |
-  #       RBAC table:
-  #       | User Level 1 | User Level 2 | User Level 3 | elevated |
-  #       |-----|-----|-------|-------|
-  #       | Any {packageId}<br>Any {groupId} | Prohibited | Prohibited | NA |
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/EmassPoamRarRecordUpdate'
-  #     responses:
-  #       '200':
-  #         description: PoamRecord response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/EmassPoamRarRecord'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:package:read'
-    
-
   /assets:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -618,12 +511,21 @@ paths:
       tags:
         - Review
       summary: Return a list of Reviews accessible to the requester
-      description: |
+      description: >
         | RBAC | User Level 1 | User Level 2 | User Level 3 | elevated |
+
         |-----|-----|-------|-------|-------|
-        |Response| All reviews | All departmental reviews | All mapped reviews  | NA  |
+
+        |Response| All reviews | All departmental reviews | All mapped reviews 
+        | NA  |
       operationId: getReviews
       parameters:
+        - name: packageId
+          required: true
+          in: query
+          description: Selects Reviews mapped to a Package
+          schema:
+            type: integer
         - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
@@ -655,11 +557,6 @@ paths:
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
-        - name: packageId
-          in: query
-          description: Selects Reviews mapped to a Package
-          schema:
-            type: integer
         - $ref: '#/components/parameters/ReviewProjectionQuery'
       responses:
         '200':
@@ -682,12 +579,18 @@ paths:
     post:
       tags:
         - Review
-      summary: Import one or more Reviews from a JSON body, a STIGViewer CKL file, or an SCC XCCDF file
+      summary: >-
+        Import one or more Reviews from a JSON body, a STIGViewer CKL file, or
+        an SCC XCCDF file
       description: |
-        | RBAC | User Level 1 | User Level 2 | User Level 3 | elevated |
-        |-----|-----|-------|-------|-------|
-        |RequestBody| assetId: any<BR>ruleId: any|assetId: any departmental<BR>ruleId: any | assetId: any mapped asset<BR>ruleId: any ruleId from a mapped STIG on the asset |NA  |
       operationId: importReviews
+      parameters:
+        - name: packageId
+          required: true
+          in: query
+          description: Selects Reviews mapped to a Package
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -702,13 +605,15 @@ paths:
                 - importFile
               properties:
                 assetId:
-                  description: If provided, file contents will be checked for match
+                  description: 'If provided, file contents will be checked for match'
                   type: string
                 benchmarkId:
-                  description: If provided, file contents will be checked for match
+                  description: 'If provided, file contents will be checked for match'
                   type: string
                 importFile:
-                  description: Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)
+                  description: >-
+                    Extension .ckl from STIGVewer or .xml from SCAP Compliance
+                    Checker (SCC)
                   type: string
                   format: binary
       responses:
@@ -905,7 +810,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
           content:
@@ -926,11 +831,6 @@ paths:
       operationId: getUsers
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
-        - $ref: '#/components/parameters/UserAccessLevelQuery'
-        - name: canAdmin
-          in: query
-          schema:
-            type: boolean
       responses:
         '200':
           description: UserProjected response
@@ -1235,7 +1135,7 @@ paths:
         - Asset
       summary: Return Assets mapped to a STIG in the specified Package
       operationId: getAssetsByBenchmarkId
-      description: |
+      description: ''
       responses:
         '200':
           description: Revision response
@@ -1258,7 +1158,7 @@ paths:
       tags:
         - Asset
       summary: Set the Assets mapped to a STIG
-      description: |
+      description: ''
       operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
@@ -1709,7 +1609,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager'
+            - stig-manager
     post:
       tags:
         - Operation
@@ -1748,9 +1648,13 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager'
+            - stig-manager
 components:
   schemas:
+    AccessLevel:
+      type: integer
+      minimum: 1
+      maximum: 3
     ApiVersion:
       type: object
       properties:
@@ -1817,13 +1721,6 @@ components:
                 type: array
                 items:
                   type: integer
-    AssetForPackage:
-      type: object
-      properties:
-        assetId:
-          type: integer
-        name:
-          type: string
     AssetForDepartment:
       type: object
       properties:
@@ -1833,6 +1730,13 @@ components:
           type: string
         package:
           $ref: '#/components/schemas/PackageBasic'
+    AssetForPackage:
+      type: object
+      properties:
+        assetId:
+          type: integer
+        name:
+          type: string
     AssetProjected:
       allOf:
         - $ref: '#/components/schemas/Asset'
@@ -2239,19 +2143,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AssetBasic'
-        # poamRarSummary:
-        #     type: object
-        #     properties:
-        #       status:
-        #         type: string
-        #         nullable: true
-        #         enum:
-        #           - ongoing
-        #           - completed
-        #       poamComplete:
-        #         type: boolean
-        #       rarComplete:
-        #         type: boolean
     Fix:
       type: object
       properties:
@@ -2321,6 +2212,75 @@ components:
                 type: integer
               accessLevel:
                 type: integer
+    PackageGrant:
+      type: object
+      required:
+        - packageId
+        - accessLevel
+      additionalProperties: false
+      properties:
+        packageId:
+          type: integer
+        accessLevel:
+          type: integer
+    PackageGrantLevel1:
+      type: object
+      required:
+        - packageId
+        - accessLevel
+        - stigReviews
+      properties:
+        packageId:
+          type: integer
+        accessLevel:
+          type: integer
+          minimum: 1
+          maximum: 1
+        stigAssets:
+          type: array
+          items:
+            type: object
+            properties:
+              benchmarkId:
+                type: string
+              assetId:
+                type: integer
+    PackageGrantLevel1Projected:
+      type: object
+      properties:
+        packageId:
+          type: integer
+        accessLevel:
+          type: integer
+          minimum: 1
+          maximum: 1
+        stigAssets:
+          type: array
+          items:
+            type: object
+            properties:
+              benchmarkId:
+                type: string
+              asset:
+                type: object
+                properties:
+                  assetId:
+                    type: integer
+                  name:
+                    type: string
+    PackageGrantProjected:
+      type: object
+      additionalProperties: false
+      properties:
+        package:
+          type: object
+          properties:
+            packageId:
+              type: integer
+            name:
+              type: string
+        accessLevel:
+          type: integer
     PackageProjected:
       allOf:
         - $ref: '#/components/schemas/Package'
@@ -2338,7 +2298,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/UserGrantProjected'
-              
     PackageUpdate:
       additionalProperties: false
       type: object
@@ -2559,10 +2518,6 @@ components:
           type: string
         revisionStr:
           type: string
-    AccessLevel:
-      type: integer
-      minimum: 1
-      maximum: 3
     Rule:
       type: object
       properties:
@@ -2688,12 +2643,10 @@ components:
           type: string
         display:
           type: string
-        globalAccess:
-          type: boolean
-        canCreatePackage:
-          type: boolean
-        canAdmin:
-          type: boolean
+        email:
+          type: string
+        metadata:
+          type: object
     UserBasic:
       type: object
       properties:
@@ -2706,92 +2659,29 @@ components:
       required:
         - username
         - display
-        - globalAccess
-        - canCreatePackage
-        - canAdmin
-        - packageGrants
+        - email
+        - privileges
+        - grants
       type: object
       properties:
         username:
           type: string
         display:
           type: string
-        globalAccess:
-          type: boolean
-        canCreatePackage:
-          type: boolean
-        canAdmin:
-          type: boolean
+        email:
+          type: string
         metadata:
           type: object
-        packageGrants:
+        privileges:
+          $ref: '#/components/schemas/UserPrivileges'
+        grants:
           type: array
           items:
-            oneOf:
-            - $ref: '#/components/schemas/PackageGrantLevel1'
-            - $ref: '#/components/schemas/PackageGrant'
-    PackageGrant:
-      type: object
-      required:
-        - packageId
-        - accessLevel
-      additionalProperties: false
-      properties:
-        packageId:
-          type: integer
-        accessLevel:
-          type: integer
-          minimum: 2
-          maximum: 3
-    PackageGrantLevel1:
-      type: object
-      required:
-        - packageId
-        - accessLevel
-        - stigReviews
-      properties:
-        packageId:
-          type: integer
-        accessLevel:
-          type: integer
-          minimum: 1
-          maximum: 1
-        stigAssets:
-          type: array
-          items:
-            type: object
-            properties:
-              benchmarkId:
-                type: string
-              assetId:
-                type: integer
-    PackageGrantLevel1Projected:
-      type: object
-      properties:
-        packageId:
-          type: integer
-        accessLevel:
-          type: integer
-          minimum: 1
-          maximum: 1
-        stigAssets:
-          type: array
-          items:
-            type: object
-            properties:
-              benchmarkId:
-                type: string
-              asset:
-                type: object
-                properties:
-                  assetId:
-                    type: integer
-                  name:
-                    type: string
+            $ref: '#/components/schemas/PackageGrant'
     UserGrant:
       type: object
       required:
-        - packageId
+        - userId
         - accessLevel
       additionalProperties: false
       properties:
@@ -2803,9 +2693,6 @@ components:
           maximum: 4
     UserGrantProjected:
       type: object
-      required:
-        - packageId
-        - accessLevel
       additionalProperties: false
       properties:
         user:
@@ -2819,40 +2706,51 @@ components:
           type: integer
           minimum: 1
           maximum: 4
-
-      
-    
-    UserProjected:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            packageGrants:
-              type: array
-              items:
-                oneOf:
-                - $ref: '#/components/schemas/PackageGrantLevel1Projected'
-                - $ref: '#/components/schemas/PackageGrant'
-    UserUpdate:
+    UserPrivileges:
+      type: object
+      additionalProperties: false
+      required:
+        - globalAccess
+        - canCreatePackage
+        - canAdmin
       properties:
-        username:
-          type: string
-        display:
-          type: string
         globalAccess:
           type: boolean
         canCreatePackage:
           type: boolean
         canAdmin:
           type: boolean
+    
+    UserProjected:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            privileges:
+              $ref: '#/components/schemas/UserPrivileges'
+        - type: object
+          properties:
+            grants:
+              type: array
+              items:
+                $ref: '#/components/schemas/PackageGrantProjected'
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+        display:
+          type: string
+        email:
+          type: string
         metadata:
           type: object
-        packageGrants:
+        privileges:
+          $ref: '#/components/schemas/UserPrivileges'
+        grants:
           type: array
           items:
-            oneOf:
-            - $ref: '#/components/schemas/PackageGrantLevel1'
-            - $ref: '#/components/schemas/PackageGrant'
+            $ref: '#/components/schemas/PackageGrant'
   parameters:
     AssetIdPath:
       name: assetId
@@ -2930,8 +2828,7 @@ components:
     FindingProjectionQuery:
       name: projection
       in: query
-      description: >-
-        Optional properties to return
+      description: Optional properties to return
       style: form
       explode: false
       schema:
@@ -2969,6 +2866,19 @@ components:
           type: string
           enum:
             - rules
+    LevelProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - users
     PackageIdPath:
       name: packageId
       in: path
@@ -3053,19 +2963,6 @@ components:
       schema:
         pattern: ^(V\d+R\d+(\.\d+)?|latest)$
         type: string
-    LevelProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - users
     RuleIdPath:
       name: ruleId
       in: path
@@ -3115,6 +3012,11 @@ components:
           type: string
           enum:
             - reviewers
+    UserAccessLevelQuery:
+      name: accessLevel
+      in: query
+      schema:
+        $ref: '#/components/schemas/AccessLevel'
     UserProjectionQuery:
       name: projection
       in: query
@@ -3127,12 +3029,8 @@ components:
         items:
           type: string
           enum:
-            - stigReviews
-    UserAccessLevelQuery:
-      name: accessLevel
-      in: query
-      schema:
-        $ref: '#/components/schemas/AccessLevel'
+            - privileges
+            - grants
   securitySchemes:
     oauth:
       type: oauth2

@@ -10,7 +10,7 @@ function addUserAdmin() {
 
 	var userFields = Ext.data.Record.create([
 		{	name:'userId',
-			type: 'number'
+			type: 'integer'
 		},{
 			name:'username',
 			type: 'string'
@@ -18,22 +18,16 @@ function addUserAdmin() {
 			name: 'display',
 			type: 'string'
 		},{
-			name: 'dept.name',
-			type: 'string',
-			mapping: 'dept.name'
+			name: 'globalAccess',
+			type: 'boolean'
 		},{
-			name: 'accessLevel',
-			type: 'integer'
+			name: 'canCreatePackage',
+			type: 'boolean'
 		},{
 			name: 'canAdmin',
-			type: 'number'
+			type: 'boolean'
 		},{
-			name: 'lastActiveTime',
-			type: 'date',
-			dateFormat:'Y-m-d H:i:s'
-		},{
-			name: 'lastActiveDays',
-			type: 'number'
+			name: 'metadata'
 		}
 	]);
 

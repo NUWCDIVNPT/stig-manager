@@ -3,6 +3,7 @@ const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
+const _this = this
 
 /**
 Generalized queries for users
@@ -10,69 +11,42 @@ Generalized queries for users
 exports.queryUsers = async function (inProjection, inPredicates, elevate, userObject) {
   let connection
   try {
-    let context
-    if (elevate) {
-      context = dbUtils.CONTEXT_ALL
-    }
-    else {
-      switch (userObject.accessLevel) {
-        case 3:
-          context = dbUtils.CONTEXT_ALL
-          break
-        case 2:
-          context = dbUtils.CONTEXT_DEPT
-          break
-        case 1:
-          context = dbUtils.CONTEXT_USER
-          break
-        case ROLE.GUEST:
-          context = dbUtils.CONTEXT_GUEST
-          break;
-      }
-    }
-
     let columns = [
       'ud.userId',
       'ud.username',
       'ud.display',
-      `json_object (
-        'deptId', d.deptId,
-        'name', d.name
-      ) as "dept"`,
-      'ud.accessLevel',
+      'ud.email',
+      'ud.globalAccess',
+      'ud.canCreatePackage',
       'ud.canAdmin'
     ]
     let joins = [
-      'user_data ud',
-      'left join department d on ud.deptId = d.deptId'
+      'user_data ud'
+    ]
+    let groupBy = [
+      'ud.userId',
+      'ud.username',
+      'ud.display',
+      'ud.email',
+      'ud.globalAccess',
+      'ud.canCreatePackage',
+      'ud.canAdmin'
     ]
 
     // PROJECTIONS
-    if (inProjection && inProjection.includes('stigReviews')) {
-      columns.push(`(with cte as 
-        (select
-          json_arrayagg( 
-            json_object(
-              'benchmarkId', sa.benchmarkId,
-              'asset', json_object(
-                'assetId', a.assetid,
-                'name', a.name,
-                'dept', json_object (
-                  'deptId', a.deptId,
-                  'name', d.name
-                )
-              )
-            )
-          ) OVER (partition by userId ORDER BY benchmarkId desc, a.name desc)  as stigReviews,
-          ROW_NUMBER() OVER (partition by userId ORDER BY benchmarkId, a.name) as rn
-        FROM 
-          stig_asset_map sa
-          left join asset a on sa.assetId = a.assetId
-          left join department d on a.deptId = d.deptId
-          inner join user_stig_asset_map usa on sa.saId = usa.saId
-          WHERE usa.userId = ud.userId
+    if (inProjection && inProjection.includes('grants')) {
+      joins.push('left join package_grant pg on ud.userId = pg.userId')
+      joins.push('left join package p on pg.packageId = p.packageId')
+      columns.push(`case when count(pg.pgId) > 0 then 
+      json_arrayagg(
+        json_object(
+          'package', json_object(
+            'packageId', pg.packageId,
+            'name', p.name
+          ),
+          'accessLevel', pg.accessLevel
         )
-        SELECT COALESCE ((SELECT stigReviews from cte where rn = 1), json_array())) as "stigReviews"`)
+      ) else json_array() end as grants`)
     }
 
     // PREDICATES
@@ -84,31 +58,16 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       predicates.statements.push('ud.userid = :userId')
       predicates.binds.userId = inPredicates.userId
     }
-    if (inPredicates.accessLevel) {
-      predicates.statements.push('ud.accessLevel = :accessLevel')
-      predicates.binds.accessLevel = inPredicates.accessLevel
-    }
-    if (inPredicates.deptId) {
-      predicates.statements.push('ud.deptId = :deptId')
-      predicates.binds.deptId = inPredicates.deptId
-    }
-    if (inPredicates.canAdmin) {
-      predicates.statements.push('ud.canAdmin = :canAdmin')
-      predicates.binds.canAdmin = inPredicates.canAdmin ? 1 : 0
-    }
-    if (context == dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('ud.deptId = :deptId')
-      predicates.binds.deptId = userObject.dept.deptId
-    } 
 
     // CONSTRUCT MAIN QUERY
     let sql = 'SELECT '
-    sql+= columns.join(",\n")
+    sql+= columns.join(',\n')
     sql += ' FROM '
-    sql+= joins.join(" \n")
+    sql+= joins.join(' \n')
     if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
+      sql += '\nWHERE ' + predicates.statements.join(' and ')
     }
+    sql += '\nGROUP BY ' + groupBy.join(',\n')
     sql += ' order by ud.username'
   
     connection = await dbUtils.pool.getConnection()
@@ -133,13 +92,12 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     // REPLACE/UPDATE: assetId is not null
 
     // Extract or initialize non-scalar properties to separate variables
-    let { stigReviews, ...userFields } = body
-    stigReviews = stigReviews ? stigReviews : []
+    let { grants, ...userFields } = body
 
-    // Convert boolean value to database value (true=1 or false=0)
-    if ('canAdmin' in userFields) {
-      userFields.canAdmin = userFields.canAdmin ? 1 : 0
-    }
+    // Convert boolean values to database value (true=1 or false=0)
+    userFields.globalAccess = userFields.globalAccess ? 1 : 0
+    userFields.canCreatePackage = userFields.canCreatePackage ? 1 : 0
+    userFields.canAdmin = userFields.canAdmin ? 1 : 0
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
@@ -153,9 +111,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       let sqlInsert =
         `INSERT INTO
             user_data
-            ( username, display, deptId, accessLevel, canAdmin)
+            ( username, display, globalAccess, canCreatePackage, canAdmin)
           VALUES
-            (:username, :display, :deptId, :accessLevel, :canAdmin)`
+            (:username, :display, :globalAccess, :canCreatePackage, :canAdmin)`
       let [result] = await connection.query(sqlInsert, binds)
       userId = result.insertId
     }
@@ -179,22 +137,22 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       throw('Invalid writeAction')
     }
 
-    // Process stigReviews if present
-    if ( stigReviews || writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE ) {
-      // DELETE from user_stig_asset_map
-      let sqlDeleteStigAssets = 'DELETE FROM user_stig_asset_map where userId = ?'
-      await connection.query(sqlDeleteStigAssets, [userId])
-    }
-    if (stigReviews.length > 0) {
-      let sqlInsertStigAssets = `
-        INSERT INTO 
-          user_stig_asset_map (userId, saId)
-        VALUES (?, (SELECT saId from stig_asset_map WHERE benchmarkId = ? and assetId = ?))`      
-      let binds = stigReviews.map(i => [userId, i.benchmarkId, i.assetId])
-      // INSERT into user_stig_asset_map
-      connection.prepare(sqlInsertStigAssets)
-      for (const values of binds) {
-        await connection.execute(sqlInsertStigAssets, values)
+    // Process grants if present
+    if (grants) {
+      if ( writeAction !== dbUtils.WRITE_ACTION.CREATE ) {
+        // DELETE from package_grant
+        let sqlDeletePkgGrant = 'DELETE FROM package_grant where userId = ?'
+        await connection.query(sqlDeletePkgGrant, [userId])
+      }
+      if (grants.length > 0) {
+        let sqlInsertPkgGrant = `
+          INSERT INTO 
+            package_grant (userId, packageId, accessLevel)
+          VALUES
+            ?`      
+        binds = grants.map( grant => [userId, grant.packageId, grant.accessLevel])
+        // INSERT into package_grant
+        await connection.execute(sqlInsertPkgGrant, binds)
       }
     }
     // Commit the changes
@@ -212,7 +170,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
 
   // Fetch the new or updated User for the response
   try {
-    let row = await this.getUserByUserId(userId, projection, elevate, userObject)
+    let row = await _this.getUserByUserId(userId, projection, elevate, userObject)
     return row
   }
   catch (err) {
@@ -230,7 +188,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
  **/
 exports.createUser = async function(body, projection, elevate, userObject) {
   try {
-    let row = await this.addOrUpdateUser(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
     return (row)
   }
   catch (err) {
@@ -240,24 +198,17 @@ exports.createUser = async function(body, projection, elevate, userObject) {
 
 
 /**
- * Create a User
+ * Delete a User
  *
- * body UserAssign 
  * projection List Additional properties to include in the response.  (optional)
  * returns UserProjected
  **/
 exports.deleteUser = async function(userId, projection, elevate, userObject) {
   try {
-    let rows = await this.queryUsers(projection, {userId: userId}, elevate, userObject)
-    let sqlDelete = `DELETE FROM stigman.user_data where id = :userId`
-    let connection = await oracledb.getConnection()
-    let  options = {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-      autoCommit: true
-    }
-    await connection.execute(sqlDelete, [userId], options)
-    await connection.close()
-    return (rows[0])
+    let row = await _this.queryUsers(projection, { userId: userId }, elevate, userObject)
+    let sqlDelete = `DELETE FROM user_data where userId = ?`
+    await dbUtils.pool.query(sqlDelete, [userId])
+    return (row[0])
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -274,7 +225,7 @@ exports.deleteUser = async function(userId, projection, elevate, userObject) {
  **/
 exports.getUserByUserId = async function(userId, projection, elevate, userObject) {
   try {
-    let rows = await this.queryUsers( projection, {
+    let rows = await _this.queryUsers( projection, {
       userId: userId
     }, elevate, userObject)
     return (rows[0])
@@ -295,13 +246,9 @@ exports.getUserByUserId = async function(userId, projection, elevate, userObject
  * canAdmin Boolean Selects Users matching the condition (optional)
  * returns List of UserProjected
  **/
-exports.getUsers = async function(role, dept, canAdmin, projection, elevate, userObject) {
+exports.getUsers = async function(projection, elevate, userObject) {
   try {
-    let rows = await this.queryUsers( projection, {
-      role: role,
-      dept: dept,
-      canAdmin: canAdmin
-    }, elevate, userObject)
+    let rows = await _this.queryUsers( projection, {}, elevate, userObject)
     return (rows)
   }
   catch(err) {
@@ -311,7 +258,7 @@ exports.getUsers = async function(role, dept, canAdmin, projection, elevate, use
 
 exports.replaceUser = async function( userId, body, projection, elevate, userObject ) {
   try {
-    let row = await this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject)
     return (row)
   } 
   catch (err) {
@@ -321,7 +268,7 @@ exports.replaceUser = async function( userId, body, projection, elevate, userObj
 
 exports.updateUser = async function( userId, body, projection, elevate, userObject ) {
   try {
-    let row = await this.addOrUpdateUser(dbUtils.WRITE_ACTION.UPDATE, userId, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.UPDATE, userId, body, projection, elevate, userObject)
     return (row)
   } 
   catch (err) {

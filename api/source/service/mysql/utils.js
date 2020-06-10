@@ -90,8 +90,8 @@ module.exports.initializeDatabase = async function () {
     let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user_data')
     if (rows[0].users === 0) {
       await _this.pool.query(
-        'insert into user_data (username, display, globalAccess, canAdmin) VALUES (?, ?, ?, ?)',
-        [config.init.superuser, 'Superuser', 1, 1]
+        'insert into user_data (username, display, email, globalAccess, canCreatePackage, canAdmin) VALUES (?, ?, ?, ?, ?, ?)',
+        [config.init.superuser, 'Superuser', 'su@none.com', 1, 1, 1]
       )
       console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
     }

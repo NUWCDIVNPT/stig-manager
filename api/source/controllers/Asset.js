@@ -13,6 +13,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     let projection = req.swagger.params['projection'].value
     const body = req.swagger.params['body'].value
     const packageGrant = req.userObject.packageGrants.find( g => g.packageId === body.packageId )
+
     if ( elevate || (packageGrant && packageGrant.accessLevel >= 3) ) {
       // Does packageId exist?
       const packageObj = await Package.getPackage(body.packageId, ['grants'], elevate, req.userObject)
@@ -112,9 +113,10 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
     const packageGrant = req.userObject.packageGrants.find( g => g.packageId === packageId )
-    if ( elevate || packageGrant ) {
+
+    if ( elevate || req.userObject.globalAccess || packageGrant ) {
       // For now, lower accessLevels can't see other reviewers
-      if (packageGrant.accessLevel < 3 && !elevate) {
+      if (packageGrant && packageGrant.accessLevel < 3 && !elevate) {
         if (projection && projection.includes('stigReviewers')) {
           throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
         }

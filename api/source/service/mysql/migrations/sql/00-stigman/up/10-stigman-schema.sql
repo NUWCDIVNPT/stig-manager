@@ -646,6 +646,7 @@ CREATE TABLE `user_data` (
   `userId` int NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `display` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `globalAccess` bit(1) NOT NULL DEFAULT b'0',
   `canCreatePackage` bit(1) NOT NULL DEFAULT b'0',
   `canAdmin` bit(1) NOT NULL DEFAULT b'0',
@@ -653,6 +654,7 @@ CREATE TABLE `user_data` (
   PRIMARY KEY (`userId`),
   UNIQUE KEY `INDEX_username` (`username`),
   KEY `INDEX_display` (`display`),
+  KEY `email` (`email`),
   KEY `INDEX_globalAccess` (`globalAccess`),
   KEY `INDEX_canAdmin` (`canAdmin`),
   KEY `INDEX_canCreatePackage` (`canCreatePackage`)
