@@ -26,16 +26,6 @@ INSERT INTO `action` VALUES (1,'remediate','Remediate'),(2,'mitigate','Mitigate'
 UNLOCK TABLES;
 
 --
--- Dumping data for table `department`
---
-
-LOCK TABLES `department` WRITE;
-/*!40000 ALTER TABLE `department` DISABLE KEYS */;
-INSERT INTO `department` VALUES (1,'Default');
-/*!40000 ALTER TABLE `department` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Dumping data for table `reject_string`
 --
 

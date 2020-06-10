@@ -258,52 +258,6 @@ module.exports.USER_ROLE = {
   Staff: {id: 4, display: "IA Staff"}
 }
 
-
-// Returns Boolean
-module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
-  try {
-    let context, sql
-    if (userObject.accessLevel === 3 || elevate ) {
-      return true
-    } 
-    else if (userObject.accessLevel === 2) {
-      context = dbUtils.CONTEXT_DEPT
-      sql = `
-        SELECT
-          a.assetId
-        FROM
-          asset a
-        WHERE
-          a.assetId = :assetId and a.dept = :dept
-      `
-      let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [assetId, userObject.dept.deptId])
-      await connection.close()
-      return result.rows.length > 0   
-    } else {
-      sql = `
-        SELECT
-          sa.assetId,
-          rgr.ruleId
-        FROM
-          user_stig_asset_map usa
-          inner join stig_asset_map sa on usa.saId = sa.saId
-          inner join revision rev on sa.benchmarkId = rev.benchmarkId
-          inner join rev_group_map rg on rev.revId = rg.revId
-          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
-        WHERE
-          usa.userId = :userId and assetId = :assetId and ruleId = :ruleId`
-      let connection = await oracledb.getConnection()
-      let result = await connection.execute(sql, [userObject.userId, assetId, ruleId])
-      await connection.close()
-      return result.rows.length > 0   
-    }
-  }
-  catch (e) {
-    throw (e)
-  }
-}
-
 // Returns Boolean
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {

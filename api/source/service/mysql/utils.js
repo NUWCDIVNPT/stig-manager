@@ -90,8 +90,8 @@ module.exports.initializeDatabase = async function () {
     let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user_data')
     if (rows[0].users === 0) {
       await _this.pool.query(
-        'insert into user_data (username, display, deptId, accessLevel, canAdmin) VALUES (?, ?, ?, ?, ?)',
-        [config.init.superuser, 'Superuser', 1, 3, 1]
+        'insert into user_data (username, display, globalAccess, canAdmin) VALUES (?, ?, ?, ?)',
+        [config.init.superuser, 'Superuser', 1, 1]
       )
       console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
     }
@@ -104,25 +104,37 @@ module.exports.initializeDatabase = async function () {
 module.exports.getUserObject = async function (username) {
   let sql, binds
   try {    
-    sql = `
-    SELECT
+    sql = `SELECT
+      ud.userId,
+      ud.username,
+      ud.display,
+      cast (ud.globalAccess is true as json) as globalAccess,
+      cast (ud.canAdmin is true as json) as canAdmin,
+      CASE WHEN COUNT(pg.packageId) > 0
+        THEN 
+          json_arrayagg(
+            json_object(
+              'packageId', pg.packageId,
+              'accessLevel', pg.accessLevel
+            )
+          )
+        ELSE
+          json_array()
+      END as packageGrants
+    from 
+      user_data ud
+      left join package_grant pg on ud.userId = pg.userId
+    where
+      UPPER(username)=UPPER(?)
+    group by
     ud.userId,
-    ud.username,
-    ud.display,
-    json_object(
-      'deptId', d.deptId,
-      'name', d.name
-    ) as "dept",
-    ud.accessLevel,
-    ud.canAdmin
-  from 
-    user_data ud
-    left join department d on d.deptId = ud.deptId
-  where
-    UPPER(username)=UPPER(?)
-  `
+      ud.username,
+      ud.display,
+      ud.globalAccess,
+      ud.canAdmin`
+  
     binds = [username]
-    const [rows] = await _this.pool.query(sql, binds)
+    const [rows] = await _this.pool.execute(sql, binds)
     return (rows[0])
   }
   catch (err) {
@@ -150,73 +162,28 @@ module.exports.parseRevisionStr = function (revisionStr) {
 }
 
 // Returns Boolean
-module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
-  try {
-    let context, sql
-    if (userObject.accessLevel === 3 || elevate) {
-      return true
-    } else if (userObject.accessLevel === 2) {
-      context = dbUtils.CONTEXT_DEPT
-      sql = `
-        SELECT
-          a.assetId
-        FROM
-          asset a
-        WHERE
-          a.assetId = ? and a.deptId = ?
-      `
-      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept.deptId])
-      return rows.length > 0   
-    } else {
-      sql = `
-        SELECT
-          sa.assetId,
-          rgr.ruleId
-        FROM
-          user_stig_asset_map usa
-          inner join stig_asset_map sa on usa.saId = sa.saId
-          inner join revision rev on sa.benchmarkId = rev.benchmarkId
-          inner join rev_group_map rg on rev.revId = rg.revId
-          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
-        WHERE
-          usa.userId = ? and assetId = ? and ruleId = ?`
-      let [rows] = await _this.pool.query(sql, [userObject.userId, assetId, ruleId])
-      return rows.length > 0   
-    }
-  }
-  catch (e) {
-    throw (e)
-  }
-}
-
-// Returns Boolean
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {
     let sql
-    if (userObject.accessLevel === 3 || elevate) {
+    if (userObject.globalAccess) {
       return true
-    } else if (userObject.accessLevel === 2) {
-      sql = `
-        SELECT
-          a.assetId
-        FROM
-          asset a
-        WHERE
-          a.assetId = ? and a.deptId = ?
-      `
-      let [rows] = await _this.pool.query(sql, [assetId, userObject.dept.deptId])
-      return rows.length > 0   
-    } else {
-      sql = `
-        SELECT
-          sa.assetId,
-          sa.benchmarkId
-        FROM
-          user_stig_asset_map usa
-          inner join stig_asset_map sa on usa.saId = sa.saId
-        WHERE
-          usa.userId = ? and assetId = ? and benchmarkId = ?`
-      let [rows] = await _this.pool.query(sql, [userObject.userId, assetId, benchmarkId])
+    } 
+    else {
+      sql = `select
+        distinct sa.benchmarkId,
+        sa.assetId
+      from
+        stig_asset_map sa
+        left join asset a on sa.assetId = a.assetId
+        left join package_grant pg on a.packageId = pg.packageId
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+      where
+        pg.userId = ?
+        and sa.benchmarkId = ?
+        and sa.assetId = ?
+        and (pg.accessLevel >= 2 or (pg.accessLevel = 1 and usa.userId = pg.userId))`
+
+      let [rows] = await _this.pool.query(sql, [userObject.userId, benchmarkId, assetId])
       return rows.length > 0   
     }
   }
@@ -231,46 +198,43 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
 // @param userObject Object
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
   try {
-    let context, sql, permitted = [], rejected = []
-    if (userObject.accessLevel === 3 || elevate) {
+    const permitted = [], rejected = []
+    if (userObject.globalAccess || elevate) {
       permitted = reviews
-    } 
-    else if (userObject.accessLevel === 2) {
-      context = dbUtils.CONTEXT_DEPT
-      sql = `
-        SELECT
-          a.assetId
-        FROM
-          asset a
-        WHERE
-          a.assetId = ? and a.deptId = ?
-      `
-      let [allowedAssets] = await _this.pool.query(sql, [assetId, userObject.dept.deptId])
-      // allowedAssets has permitted assetIds
-      reviews.forEach(review => {
-        if (allowedAssets.includes(review.assetId)) {
-          permitted.push(review)
-        }
-        else {
-          rejected.push(review)
-        }
-      })
-    } 
+    }
     else {
-      sql = `
-        SELECT
-          CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
-        FROM
-          user_stig_asset_map usa
-          inner join stig_asset_map sa on usa.saId = sa.saId
-          inner join revision rev on sa.benchmarkId = rev.benchmarkId
-          inner join rev_group_map rg on rev.revId = rg.revId
-          inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
-        WHERE
-          usa.userId = ?`
-      let [rows] = await _this.pool.query(sql, [userObject.userId])
+      const sql = `SELECT
+        CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
+      FROM
+        package_grant pg
+        inner join asset a on pg.packageId = a.packageId
+        inner join stig_asset_map sa on a.assetId = sa.assetId
+        inner join revision rev on sa.benchmarkId = rev.benchmarkId
+        inner join rev_group_map rg on rev.revId = rg.revId
+        inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+      WHERE
+        pg.userId = ?
+        and pg.accessLevel != 1
+      GROUP BY
+        sa.assetId, rgr.ruleId
+      UNION
+      SELECT
+        CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
+      FROM
+        package_grant pg
+        inner join asset a on pg.packageId = a.packageId
+        inner join stig_asset_map sa on a.assetId = sa.assetId
+        inner join user_stig_asset_map usa on (sa.saId = usa.saId and pg.userId = usa.userId)
+        inner join revision rev on sa.benchmarkId = rev.benchmarkId
+        inner join rev_group_map rg on rev.revId = rg.revId
+        inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
+      WHERE
+        pg.userId = ?
+        and pg.accessLevel = 1
+      GROUP BY
+        sa.assetId, rgr.ruleId`
+      let [rows] = await _this.pool.query(sql, [userObject.userId, userObject.userId])
       let allowedAssetRules = rows.map(r => r.permitted)
-      await connection.close()
       reviews.forEach(review => {
         if (allowedAssetRules.includes(`${review.assetId}-${review.ruleId}`)) {
           permitted.push(review)
@@ -284,7 +248,6 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
       permitted: permitted,
       rejected: rejected
     }
-
   }
   catch (e) {
     throw (e)

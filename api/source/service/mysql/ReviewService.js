@@ -84,17 +84,12 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         json_object(
           'assetId', a.assetId,
           'name', a.name,
-          'dept', json_object(
-            'deptId', d.deptId,
-            'name', d.name
-          ),
           'package', json_object(
             'packageId', p.packageId,
             'name', p.name
           )
         )
         from asset a 
-        left join department d on a.deptId = d.deptId
         left join package p on a.packageId = p.packageId
         where a.assetId = r.assetId) as "asset"`)
     }

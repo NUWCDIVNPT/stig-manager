@@ -276,7 +276,7 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
         const result = results[vuln.STATUS]
         // Skip unreviewed
         if (result) {
-          let ruleId, action
+          let ruleId
           // Array.some() stops once a true value is returned
           vuln.STIG_DATA.some(stigDatum => {
             if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
@@ -284,17 +284,17 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
               return true
             }
           })
-          if (result == 'fail') {
-            action = "remediate"
+          let action = null
+          if (result === 'fail') {
             if (vuln.COMMENTS.startsWith("Mitigate:")) {
               action = "mitigate"
             } 
             else if (vuln.COMMENTS.startsWith("Exception:")) {
               action = "exception "
             } 
-          }
-          else {
-            action = null
+            else if (vuln.COMMENTS.startsWith("Remediate:")) {
+              action = "remediate "
+            } 
           }
           vulnArray.push({
             assetId: assetId,

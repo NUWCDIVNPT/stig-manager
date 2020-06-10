@@ -43,18 +43,16 @@ DROP TABLE IF EXISTS `asset`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset` (
-  `assetId` int(11) NOT NULL AUTO_INCREMENT,
+  `assetId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
-  `deptId` int(11) NOT NULL,
-  `packageId` int(11) NOT NULL,
+  `packageId` int NOT NULL,
   `ip` varchar(45) DEFAULT NULL,
-  `nonnetwork` bit(1) DEFAULT 0,
+  `nonnetwork` bit(1) NOT NULL DEFAULT b'0',
+  `metadata` json DEFAULT NULL,
   PRIMARY KEY (`assetId`),
-  KEY `INDEX_NAME` (`name`),
+  UNIQUE KEY `INDEX_NAMEPACKAGE` (`name`, `packageId`),
   KEY `INDEX_NONNETWORK` (`nonnetwork`),
-  KEY `INDEX_DEPTID` (`deptId`),
   KEY `INDEX_PACKAGEID` (`packageId`),
-  CONSTRAINT `FK_ASSET_1` FOREIGN KEY (`deptId`) REFERENCES `department` (`deptId`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`packageId`) REFERENCES `package` (`packageId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -141,21 +139,6 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
--- Table structure for table `department`
---
-
-DROP TABLE IF EXISTS `department`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `department` (
-  `deptId` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) NOT NULL,
-  PRIMARY KEY (`deptId`),
-  UNIQUE KEY `INDEX_NAME` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `fix`
 --
 
@@ -191,16 +174,34 @@ DROP TABLE IF EXISTS `package`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `package` (
-  `packageId` int(11) NOT NULL AUTO_INCREMENT,
+  `packageId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
-  `emassId` varchar(45) DEFAULT NULL,
-  `reqrar` bit(1) DEFAULT 0,
-  `pocname` varchar(50) DEFAULT NULL,
-  `pocemail` varchar(50) DEFAULT NULL,
-  `pocphone` varchar(50) DEFAULT NULL,
+  `workflow` varchar(45) NOT NULL,
+  `metadata` json NOT NULL,
   PRIMARY KEY (`packageId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `package_grant`
+--
+
+DROP TABLE IF EXISTS `package_grant`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `package_grant` (
+  `pgId` int NOT NULL AUTO_INCREMENT,
+  `packageId` int NOT NULL,
+  `userId` int NOT NULL,
+  `accessLevel` int NOT NULL,
+  PRIMARY KEY (`pgId`),
+  UNIQUE KEY `INDEX_USER` (`userId`,`packageId`),
+  KEY `INDEX_PACKAGE` (`packageId`,`accessLevel`),
+  CONSTRAINT `fk_package_grant_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_package_grant_2` FOREIGN KEY (`packageId`) REFERENCES `package` (`packageId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 --
 -- Table structure for table `poam_rar_entry`
@@ -642,19 +643,20 @@ DROP TABLE IF EXISTS `user_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_data` (
-  `userId` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) NOT NULL ,
-  `display` varchar(255) NOT NULL ,
-  `deptId` int(11) NOT NULL,
-  `accessLevel` int(11) NOT NULL,
-  `canAdmin` bit(1) DEFAULT 0,
+  `userId` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `display` varchar(255) NOT NULL,
+  `globalAccess` bit(1) NOT NULL DEFAULT b'0',
+  `canCreatePackage` bit(1) NOT NULL DEFAULT b'0',
+  `canAdmin` bit(1) NOT NULL DEFAULT b'0',
+  `metadata` json DEFAULT NULL,
   PRIMARY KEY (`userId`),
-  UNIQUE KEY `INDEX_USERNAME` (`username`),
-  UNIQUE KEY `INDEX_DISPLAY` (`display`),
-  KEY `INDEX_DEPTID` (`deptId`),
-  KEY `INDEX_ACCESSLEVEL` (`accessLevel`),
-  KEY `INDEX_CANADMIN` (`canAdmin`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `INDEX_username` (`username`),
+  KEY `INDEX_display` (`display`),
+  KEY `INDEX_globalAccess` (`globalAccess`),
+  KEY `INDEX_canAdmin` (`canAdmin`),
+  KEY `INDEX_canCreatePackage` (`canCreatePackage`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

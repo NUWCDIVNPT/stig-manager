@@ -4,44 +4,46 @@ const writer = require('../utils/writer.js');
 const config = require('../utils/config')
 const Asset = require(`../service/${config.database.type}/AssetService`);
 const User = require(`../service/${config.database.type}/UserService`);
+const Package = require(`../service/${config.database.type}/PackageService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.accessLevel >= 2 ) {
-      let projection = req.swagger.params['projection'].value
-      let body = req.swagger.params['body'].value
-      if ( req.userObject.accessLevel === 2 && !elevate ) {
-        if ( body.deptId !== req.userObject.dept.deptId ) {
-          // Level 2 can only create assets for their department
-          throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to create asset with deptId: ${body.deptId}.`} ) )
-        }
-        // Check stigReviewers to ensure only departmental users are requested
-        if (body.stigReviewers) {
-          let userIdsFromRequest = []
-          for (sr of body.stigReviewers) {
-            for (userId of sr.userIds) {
-              userIdsFromRequest.push(userId)
-            }
+    const elevate = req.swagger.params['elevate'].value
+    let projection = req.swagger.params['projection'].value
+    const body = req.swagger.params['body'].value
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === body.packageId )
+    if ( elevate || (packageGrant && packageGrant.accessLevel >= 3) ) {
+      // Does packageId exist?
+      const packageObj = await Package.getPackage(body.packageId, ['grants'], elevate, req.userObject)
+      if (!packageObj) {
+        throw ( writer.respondWithCode ( 400, {message: `Invalid property "packageId": ${body.packageId}`} ) )
+      }
+      // Check stigReviewers to ensure only users with packageGrants are requested
+      if (body.stigReviewers) {
+        let userIdsFromRequest = []
+        for (const sr of body.stigReviewers) {
+          for (const userId of sr.userIds) {
+            userIdsFromRequest.push(userId)
           }
-          if (userIdsFromRequest.length > 0) {
-            const deptUsers = await User.getUsers(null, null, null, null, false, req.userObject)
-            const deptUserIds = deptUsers.map(u => u.userId)
-            const allowed = userIdsFromRequest.every(i => deptUserIds.includes(i))
-            if (! allowed) {
-              // Level 2 can only map Users from their department
-              throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to map non-department Users.`} ) )
-            }
+        }
+        if (userIdsFromRequest.length > 0) {
+          // Filter out users with incompatible grants (accessLevels != 1)
+          const packageUsers = packageObj.grants.filter(g => g.accessLevel === 1)
+          const packageUserIds = packageUsers.map(g => g.user.userId)
+          // Check every requested userId
+          const allowed = userIdsFromRequest.every(i => packageUserIds.includes(i))
+          if (! allowed) {
+            // Can only map Users with an existing grant
+            throw ( writer.respondWithCode ( 400, {message: `One or more users have incompatible or missing grants in packageId ${body.packageId}.`} ) )
           }
         }
       }
-
       let asset = await Asset.createAsset( body, projection, elevate, req.userObject)    
       writer.writeJson(res, asset, 201)
     }
     else {
-      // Not elevated or >= 2
+      // Not elevated or having packageGrant
       throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }
   }
@@ -53,18 +55,18 @@ module.exports.createAsset = async function createAsset (req, res, next) {
 module.exports.deleteAsset = async function deleteAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.accessLevel >= 2 ) {
-      let assetId = req.swagger.params['assetId'].value
-      let projection = req.swagger.params['projection'].value
-      if (req.userObject.accessLevel === 2 && !elevate) {
-        // Unelevated Level 2, check if user can fetch Asset
-        let assetToDelete = await Asset.getAsset(assetId, projection, elevate, req.userObject)
-        if (!assetToDelete) {
-          throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
-        }
-      }
+    let assetId = req.swagger.params['assetId'].value
+    let projection = req.swagger.params['projection'].value
+    let assetToDelete = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+    // Can the user fetch this Asset?
+    if (!assetToDelete) {
+      throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+    }
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === assetToDelete.packageId )
+    // Is the granted accessLevel high enough?
+    if ( elevate || (packageGrant && packageGrant.accessLevel >= 3) ) {
       let row = await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
-      writer.writeJson(res, row)
+      writer.writeJson(res, assetToDelete)
     }
     else {
       throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
@@ -90,11 +92,11 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     let assetId = req.swagger.params['assetId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
-    if (req.userObject.accessLevel <= 1 && !elevate) {
-      if (projection && projection.includes('stigReviewers')) {
-        throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
-      }
-    }
+    // if (req.userObject.accessLevel <= 1 && !elevate) {
+    //   if (projection && projection.includes('stigReviewers')) {
+    //     throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
+    //   }
+    // }
     let response = await Asset.getAsset(assetId, projection, elevate, req.userObject )
     writer.writeJson(res, response)
   }
@@ -107,23 +109,29 @@ module.exports.getAssets = async function getAssets (req, res, next) {
   try {
     let packageId = req.swagger.params['packageId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
-    let deptId = req.swagger.params['deptId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
-    if (req.userObject.accessLevel <= 1 && !elevate) {
-      if (projection && projection.includes('stigReviewers')) {
-        throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === packageId )
+    if ( elevate || packageGrant ) {
+      // For now, lower accessLevels can't see other reviewers
+      if (packageGrant.accessLevel < 3 && !elevate) {
+        if (projection && projection.includes('stigReviewers')) {
+          throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigReviewers'.`} ) )
+        }
       }
+      let response = await Asset.getAssets(packageId, benchmarkId, projection, elevate, req.userObject )
+      writer.writeJson(res, response)
     }
-    let response = await Asset.getAssets(packageId, benchmarkId, deptId, projection, elevate, req.userObject )
-    writer.writeJson(res, response)
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
   }
   catch (err) {
     writer.writeJson(res, err)
   }
 }
 
-module.exports.getAssetsByBenchmarkId = async function getAssets (req, res, next) {
+module.exports.getAssetsByBenchmarkId = async function getAssetsByBenchmarkId (req, res, next) {
   try {
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let projection = req.swagger.params['projection'].value

@@ -130,7 +130,7 @@ function loadApp () {
 							tag: 'span',
 							cls: 'x-tab-strip-text',
 							//html: '<a href="#" onclick="showAbout()" style="text-decoration:none;">' + appName + ' ' + appVersion + '</a>'
-							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.display + ' (Level ' + curUser.accessLevel + ') - Logout</span>'
+							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.display + ' - Logout</span>'
 						}]
 					};
 					var edge = tp.getEl().child('.x-tab-edge');

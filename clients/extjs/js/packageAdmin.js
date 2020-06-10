@@ -662,7 +662,7 @@ function addPackageAdmin() {
 							delete Object.assign(values, { ['assetIds']: values['assets'] })['assets']
 							let url, method
 							if (packageId) {
-								url = `${STIGMAN.Env.apiBase}/packages/package?elevate=${curUser.canAdmin}`
+								url = `${STIGMAN.Env.apiBase}/packages/${packageId}?elevate=${curUser.canAdmin}`
 								method = 'PUT'
 							}
 							else {
@@ -775,7 +775,7 @@ function addPackageAdmin() {
 
 		if (packageId) {
 			let result = await Ext.Ajax.requestPromise({
-				url: `${STIGMAN.Env.apiBase}/packages/package`,
+				url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
 				params: {
 					elevate: curUser.canAdmin,
 					projection: ['assets']

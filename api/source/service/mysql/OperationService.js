@@ -35,18 +35,10 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         sqlInsert: `INSERT INTO
         package (
           packageId,
-          name, 
-          emassId,
-          reqRar,
-          pocName,
-          pocEmail,
-          pocPhone 
+          name,
+          workflow,
+          metadata 
         ) VALUES ?`,
-        insertBinds: []
-      },
-      department: {
-        sqlDelete: `DELETE FROM department`,
-        sqlInsert: `INSERT INTO department (deptId, name) VALUES ?`,
         insertBinds: []
       },
       userData: {
@@ -56,9 +48,20 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
           userId,
           username, 
           display,
-          deptId,
-          accessLevel,
-          canAdmin
+          globalAccess,
+          canCreatePackage,
+          canAdmin,
+          metadata
+        ) VALUES ?`,
+        insertBinds: []
+      },
+      packageGrant: {
+        sqlDelete: `DELETE FROM package_grant`,
+        sqlInsert: `INSERT INTO
+        package_grant (
+          packageId,
+          userId,
+          accessLevel
         ) VALUES ?`,
         insertBinds: []
       },
@@ -66,11 +69,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
         sqlDelete: `DELETE FROM asset`,
         sqlInsert: `INSERT INTO asset (
           assetId,
+          packageId,
           name,
           ip,
-          deptId,
-          packageId,
-          nonnetwork
+          nonnetwork,
+          metadata
         ) VALUES ?`,
         insertBinds: []
       },
@@ -142,49 +145,47 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // Process appdata object
 
-    // Table: package
-    for (const p of packages) {
-      dml.package.insertBinds.push([
-        p.packageId,
-        p.name, 
-        p.emassId,
-        p.reqRar ? 1 : 0,
-        p.pocName,
-        p.pocEmail,
-        p.pocPhone 
-      ])
-    }
-
-    // Table: department
-    for (const d of departments) {
-      dml.department.insertBinds.push([
-        d.deptId,
-        d.name
-      ])
-    }
-
-    // Table: user
+    // Table: user_data
     for (const u of users) {
-      dml.userData.insertBinds .push([
+      dml.userData.insertBinds.push([
         u.userId,
         u.username, 
         u.display,
-        u.deptId,
-        u.accessLevel,
-        u.canAdmin ? 1 : 0
+        u.globalAccess ? 1 : 0,
+        u.canCreatePackage ? 1 : 0,
+        u.canAdmin ? 1 : 0,
+        JSON.stringify(u.metadata)
       ])
     }
+    
+    // Tables: package, package_grant_map
+    for (const p of packages) {
+      dml.package.insertBinds.push([
+        p.packageId,
+        p.name,
+        p.workflow,
+        JSON.stringify(p.metadata)
+      ])
+      for (const grant of p.grants) {
+        dml.packageGrant.insertBinds.push([
+          p.packageId,
+          grant.userId,
+          grant.accessLevel
+        ])
+      }
+    }
 
-    // Tables: assets, asset_package_map, stig_asset_map, user_stig_asset_map
+
+    // Tables: asset, stig_asset_map, user_stig_asset_map
     for (const asset of assets) {
       let { stigReviewers, ...assetFields} = asset
       dml.asset.insertBinds.push([
         assetFields.assetId,
+        assetFields.packageId,
         assetFields.name,
         assetFields.ip,
-        assetFields.deptId,
-        assetFields.packageId,
-        assetFields.nonnetwork ? 1: 0
+        assetFields.nonnetwork ? 1: 0,
+        JSON.stringify(assetFields.metadata)
       ])
       let assetId = assetFields.assetId
       for (const sr of stigReviewers) {
@@ -264,10 +265,10 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       'review',
       'userStigAssetMap',
       'stigAssetMap',
+      'packageGrant',
       'package',
       'asset',
       'userData',
-      'department'
     ]
     for (const table of tableOrder) {
       hrstart = process.hrtime() 
@@ -279,9 +280,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // Inserts
     tableOrder = [
-      'package',
-      'department',
       'userData',
+      'package',
+      'packageGrant',
       'asset',
       'stigAssetMap',
       'userStigAssetMap',

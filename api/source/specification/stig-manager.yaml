@@ -14,17 +14,11 @@ paths:
   /packages:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      - $ref: '#/components/parameters/PackageProjectionQuery'
     get:
       tags:
         - Package
       summary: Return a list of Packages accessible to the requester
       description: |
-        |User accessLevel|Request|Response|
-        |:---:|---|---|
-        |**1**|Permitted|Packages having assigned assets<br/>- assets: Assigned assets<br>- stigs: STIGs mapped to assigned assets|
-        |**2**|Permitted|Packages having department assets<br/>- assets: Department assets<br>- stigs: STIGs mapped to department assets|
-        |**3<br>elevate**|Permitted|All packages<br>- assets: All mapped assets<br/>- stigs: All STIGs mapped to mapped assets| 
       operationId: getPackages
       responses:
         '200':
@@ -34,7 +28,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PackageProjected'
+                  $ref: '#/components/schemas/Package'
         default:
           description: unexpected error
           content:
@@ -49,13 +43,9 @@ paths:
         - Package
       summary: Create a Package
       description: |
-        |User accessLevel        |Request        |RequestBody        |Response|
-        |---         |---            |---                |---|
-        |**3** | Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
-        |**2**    | Forbidden     | --                | -- |
-        |**1**| Forbidden     |--                 |--|
-        |**elevated**| Permitted     |Any [assetId]      | All packages<br>-->All mapped assets<br>-->All mapped STIGs | 
       operationId: createPackage
+      parameters:
+        - $ref: '#/components/parameters/PackageProjectionQuery'
       requestBody:
         required: true
         content:
@@ -81,6 +71,7 @@ paths:
         - oauth:
             - 'stig-manager:package'
   '/packages/{packageId}':
+  # TODO: Add packageGrant to projection
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - name: packageId
@@ -95,12 +86,6 @@ paths:
         - Package
       summary: Return a Package
       description: |
-        |User accessLevel        |Request        |Parameters|Response|
-        |---         |---            |---                |---|
-        |**3** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
-        |**2**    | Permitted     |Any {packageId} | IF {packageId} HAS *department assets* THEN<br>Package:<br>--> assets: Mapped department assets<br>--> stigs: STIGs mapped to department assets|
-        |**1**| Permitted     |Any {packageId}  |IF {packageId} HAS *assigned assets* THEN<br>Package:<br>--> assets: Assigned assets<br>--> stigs: STIGs mapped to assigned assets|
-        |**elevated** | Permitted     |Any {packageId} | IF {packageId} EXISTS THEN<br>Package:<br>--> assets: All mapped assets<br>--> stigs: All mapped STIGs | 
       operationId: getPackage
       responses:
         '200':
@@ -123,10 +108,6 @@ paths:
         - Package
       summary: Merge provided properties with a Package
       description: |
-        RBAC table:
-        | 3 | 2 | 1 | elevated |
-        |-----|-----|-------|-------|
-        | Any packageId | Prohibited | Prohibited | Any packageId |
       operationId: updatePackage
       requestBody:
         required: true
@@ -249,9 +230,9 @@ paths:
         in: query
         schema:
           type: boolean
-          default: true
+          default: false
       - $ref: '#/components/parameters/BenchmarkIdQuery'
-      - $ref: '#/components/parameters/DepartmentQuery'
+      - $ref: '#/components/parameters/AssetIdQuery'
       - $ref: '#/components/parameters/FindingProjectionQuery'
     get:
       tags:
@@ -276,7 +257,34 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package:read'
-  # '/packages/{packageId}/findings/poam_rar':
+  '/packages/{packageId}/stigs':
+    parameters:
+      - $ref: '#/components/parameters/PackageIdPath'
+    get:
+      tags:
+        - Package
+      summary: Return the STIGs mapped in the specified Package
+      operationId: getStigsByPackage
+      responses:
+        '200':
+          description: PackageFinding response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+
+# '/packages/{packageId}/findings/poam_rar':
   #   parameters:
   #     - $ref: '#/components/parameters/PackageIdPath'
   #     - name: artifact
@@ -392,6 +400,7 @@ paths:
       operationId: getAssets
       parameters:
         - name: packageId
+          required: true
           in: query
           description: Selects Assets mapped to a Package
           schema:
@@ -401,11 +410,6 @@ paths:
           description: Selects Assets mapped to a STIG
           schema:
             type: string
-        - name: deptId
-          in: query
-          description: Selects Assets with a departmentId
-          schema:
-            type: integer
       responses:
         '200':
           description: AssetProjected response
@@ -454,12 +458,7 @@ paths:
   '/assets/{assetId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      - name: assetId
-        in: path
-        description: A path parameter that indentifies an Asset
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
@@ -928,10 +927,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
         - $ref: '#/components/parameters/UserAccessLevelQuery'
-        - name: deptId
-          in: query
-          schema:
-            type: integer
         - name: canAdmin
           in: query
           schema:
@@ -1095,202 +1090,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-  # /accessLevels:
-  #   parameters:
-  #     - $ref: '#/components/parameters/ElevateQuery'
-  #   get:
-  #     tags:
-  #       - User
-  #     summary: Return the list of Level names
-  #     operationId: getLevels
-  #     parameters:
-  #       - $ref: '#/components/parameters/LevelProjectionQuery'
-  #     responses:
-  #       '200':
-  #         description: Levels response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/LevelProjected'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:user:read'
-  #   put:
-  #     tags:
-  #       - User
-  #     summary: Set the list of Level names
-  #     operationId: setLevels
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/LevelNamesReplace'
-  #     responses:
-  #       '200':
-  #         description: UserProjected response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Level'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:user'
-  /departments:
-    parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
-    get:
-      tags:
-        - Department
-      summary: Return a list of Departments
-      operationId: getDepartments
-      responses:
-        '200':
-          description: List of Department
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    departmentId:
-                      type: integer
-                    name:
-                      type: string
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager'
-    post:
-      tags:
-        - Department
-      summary: Create a Department
-      operationId: createDepartment
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DepartmentCreateOrReplace'
-      responses:
-        '201':
-          description: Department response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Department'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager'
-  '/departments/{deptId}':
-    parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
-      - name: deptId
-        in: path
-        description: A path parameter that indentifies a Department
-        required: true
-        schema:
-          type: integer
-      - $ref: '#/components/parameters/DepartmentProjectionQuery'
-    get:
-      tags:
-        - Department
-      summary: Return a Department
-      operationId: getDepartment
-      responses:
-        '200':
-          description: DepartmentProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DepartmentProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager'
-    put:
-      tags:
-        - Department
-      summary: Set the name of a Department
-      operationId: replaceDepartment
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DepartmentCreateOrReplace'
-      responses:
-        '200':
-          description: DepartmentProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DepartmentProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager'
-    delete:
-      tags:
-        - Department
-      summary: Delete a Department
-      operationId: deleteDepartment
-      responses:
-        '200':
-          description: DepartmentProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DepartmentProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package'
   /stigs:
     get:
       tags:
@@ -1420,9 +1219,10 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
-  '/stigs/{benchmarkId}/assets':
+  '/packages/{packageId}/stigs/{benchmarkId}/assets':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/PackageIdPath'
       - $ref: '#/components/parameters/StigAssetProjectionQuery'
       - name: benchmarkId
         in: path
@@ -1433,17 +1233,9 @@ paths:
     get:
       tags:
         - Asset
-      summary: Return Assets that are targets of evaluation against a STIG
+      summary: Return Assets mapped to a STIG in the specified Package
       operationId: getAssetsByBenchmarkId
       description: |
-        Request RBAC:
-        | Level 1 | Level 2 | Level 3 | elevated |
-        |-----|-----|-------|-------|
-        | Any {benchmarkId} | Any {benchmarkId} | Any {benchmarkId}  | Any {benchmarkId}  |
-        Response RBAC:
-        | Level 1 | Level 2 | Level 3 | elevated |
-        |-----|-----|-------|-------|
-        | All assets<br>All mapped reviewers | All departmental assets<br>All mapped reviewers | All assigned assets<br>Projection ['reviewers'] prohibited  | All assets<br>All mapped reviewers  |
       responses:
         '200':
           description: Revision response
@@ -1467,16 +1259,10 @@ paths:
         - Asset
       summary: Set the Assets mapped to a STIG
       description: |
-        |Level|Request|RequestBody|Response|
-        |---|---|---|---|
-        |**3**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
-        |**2**|Any {benchmarkId} | Department [assetId] | All assets in department<br>-->All mapped reviewers| 
-        |**1**|Prohibited |--|--|
-        |**elevated**|Any {benchmarkId}|Any [assetId]|All assets<br>-->All mapped reviewers| 
       operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
-        description: A list of assetIds
+        description: A list of assetIds from the specified Package
         content:
           application/json:
             schema:
@@ -1983,8 +1769,6 @@ components:
         name:
           type: string
           nullable: false
-        dept:
-          $ref: '#/components/schemas/Department'
         package:
           $ref: '#/components/schemas/PackageBasic'
         ip:
@@ -2000,14 +1784,9 @@ components:
           type: integer
         name:
           type: string
-        dept:
-          $ref: '#/components/schemas/Department'
-        package:
-          $ref: '#/components/schemas/PackageBasic'
     AssetCreateOrReplace:
       required:
         - name
-        - deptId
         - packageId
         - ip
         - nonnetwork
@@ -2016,9 +1795,6 @@ components:
       properties:
         name:
           type: string
-          nullable: false
-        deptId:
-          type: integer
           nullable: false
         packageId:
           description: The packageId mapped to this Asset
@@ -2048,8 +1824,6 @@ components:
           type: integer
         name:
           type: string
-        dept:
-          $ref: '#/components/schemas/Department'
     AssetForDepartment:
       type: object
       properties:
@@ -2092,9 +1866,6 @@ components:
       properties:
         name:
           type: string
-          nullable: false
-        deptId:
-          type: integer
           nullable: false
         packageId:
           type: integer
@@ -2361,33 +2132,6 @@ components:
         - accepted
         - rejected
         - null
-    Department:
-      type: object
-      properties:
-        deptId:
-          type: integer
-        name:
-          type: string
-    DepartmentProjected:
-      allOf:
-        - $ref: '#/components/schemas/Department'
-        - type: object
-          properties:
-            assets:
-              type: array
-              items:
-                $ref: '#/components/schemas/AssetForDepartment'
-            users:
-              type: array
-              items:
-                $ref: '#/components/schemas/UserBasic'
-    DepartmentCreateOrReplace:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
     EmassAp:
       type: object
       properties:
@@ -2542,22 +2286,10 @@ components:
           nullable: false
         name:
           type: string
-          nullable: false
-        emassId:
-          type: string
-          nullable: true
-        pocName:
-          type: string
-          nullable: true
-        pocEmail:
-          type: string
-          nullable: true
-        pocPhone:
-          type: string
-          nullable: true
-        reqRar:
-          type: boolean
-          nullable: true
+        workflow:
+          $ref: '#/components/schemas/PackageWorkflow'
+        metadata:
+          type: object
     PackageBasic:
       type: object
       properties:
@@ -2568,31 +2300,27 @@ components:
     PackageCreateOrReplace:
       required:
         - name
-        - emassId
-        - pocName
-        - pocEmail
-        - pocPhone
-        - reqRar
+        - workflow
+        - metadata
+        - grants
       additionalProperties: false
       type: object
       properties:
         name:
           type: string
-          nullable: false
-        emassId:
-          type: string
-          nullable: true
-        pocName:
-          type: string
-          nullable: true
-        pocEmail:
-          type: string
-          nullable: true
-        pocPhone:
-          type: string
-          nullable: true
-        reqRar:
-          type: boolean
+        workflow:
+          $ref: '#/components/schemas/PackageWorkflow'
+        metadata:
+          type: object
+        grants:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+              accessLevel:
+                type: integer
     PackageProjected:
       allOf:
         - $ref: '#/components/schemas/Package'
@@ -2606,9 +2334,35 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/STIG'
+            grants:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserGrantProjected'
+              
     PackageUpdate:
-      allOf:
-        - $ref: '#/components/schemas/Package'
+      additionalProperties: false
+      type: object
+      properties:
+        name:
+          type: string
+        workflow:
+          $ref: '#/components/schemas/PackageWorkflow'
+        metadata:
+          type: object
+        grants:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+              accessLevel:
+                type: integer
+    PackageWorkflow:
+      type: string
+      enum:
+        - continuous
+        - emass
     Review:
       type: object
       properties:
@@ -2934,10 +2688,10 @@ components:
           type: string
         display:
           type: string
-        dept:
-          $ref: '#/components/schemas/Department'
-        accessLevel:
-          $ref: '#/components/schemas/AccessLevel'
+        globalAccess:
+          type: boolean
+        canCreatePackage:
+          type: boolean
         canAdmin:
           type: boolean
     UserBasic:
@@ -2951,50 +2705,154 @@ components:
     UserCreateOrReplace:
       required:
         - username
-        - deptId
         - display
-        - accessLevel
+        - globalAccess
+        - canCreatePackage
+        - canAdmin
+        - packageGrants
       type: object
       properties:
         username:
           type: string
         display:
           type: string
-        deptId:
+        globalAccess:
+          type: boolean
+        canCreatePackage:
+          type: boolean
+        canAdmin:
+          type: boolean
+        metadata:
+          type: object
+        packageGrants:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/PackageGrantLevel1'
+            - $ref: '#/components/schemas/PackageGrant'
+    PackageGrant:
+      type: object
+      required:
+        - packageId
+        - accessLevel
+      additionalProperties: false
+      properties:
+        packageId:
           type: integer
         accessLevel:
           type: integer
-        canAdmin:
-          type: boolean
-        stigReviews:
+          minimum: 2
+          maximum: 3
+    PackageGrantLevel1:
+      type: object
+      required:
+        - packageId
+        - accessLevel
+        - stigReviews
+      properties:
+        packageId:
+          type: integer
+        accessLevel:
+          type: integer
+          minimum: 1
+          maximum: 1
+        stigAssets:
           type: array
           items:
-            $ref: '#/components/schemas/StigAssetBasic'
+            type: object
+            properties:
+              benchmarkId:
+                type: string
+              assetId:
+                type: integer
+    PackageGrantLevel1Projected:
+      type: object
+      properties:
+        packageId:
+          type: integer
+        accessLevel:
+          type: integer
+          minimum: 1
+          maximum: 1
+        stigAssets:
+          type: array
+          items:
+            type: object
+            properties:
+              benchmarkId:
+                type: string
+              asset:
+                type: object
+                properties:
+                  assetId:
+                    type: integer
+                  name:
+                    type: string
+    UserGrant:
+      type: object
+      required:
+        - packageId
+        - accessLevel
+      additionalProperties: false
+      properties:
+        userId:
+          type: integer
+        accessLevel:
+          type: integer
+          minimum: 1
+          maximum: 4
+    UserGrantProjected:
+      type: object
+      required:
+        - packageId
+        - accessLevel
+      additionalProperties: false
+      properties:
+        user:
+          type: object
+          properties:
+            userId:
+              type: integer
+            username:
+              type: string
+        accessLevel:
+          type: integer
+          minimum: 1
+          maximum: 4
+
+      
+    
     UserProjected:
       allOf:
         - $ref: '#/components/schemas/User'
         - type: object
           properties:
-            stigReviews:
+            packageGrants:
               type: array
               items:
-                $ref: '#/components/schemas/StigAssetExtended'
+                oneOf:
+                - $ref: '#/components/schemas/PackageGrantLevel1Projected'
+                - $ref: '#/components/schemas/PackageGrant'
     UserUpdate:
       properties:
         username:
           type: string
         display:
           type: string
-        deptId:
-          type: integer
-        accessLevel:
-          type: integer
+        globalAccess:
+          type: boolean
+        canCreatePackage:
+          type: boolean
         canAdmin:
           type: boolean
-        stigReviews:
+        metadata:
+          type: object
+        packageGrants:
           type: array
           items:
-            $ref: '#/components/schemas/StigAssetBasic'
+            oneOf:
+            - $ref: '#/components/schemas/PackageGrantLevel1'
+            - $ref: '#/components/schemas/PackageGrant'
   parameters:
     AssetIdPath:
       name: assetId
@@ -3061,25 +2919,6 @@ components:
             - fullrules
             - checks
             - fixes
-    DepartmentProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - assets
-            - users
-    DepartmentQuery:
-      name: deptId
-      in: query
-      schema:
-        type: integer
     ElevateQuery:
       name: elevate
       in: query
@@ -3157,6 +2996,7 @@ components:
           enum:
             - assets
             - stigs
+            - grants
     ReviewActionQuery:
       name: action
       in: query

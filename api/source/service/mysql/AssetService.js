@@ -12,31 +12,11 @@ Generalized queries for asset(s).
 exports.queryAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   let connection
   try {
-    let context
-    if (elevate) {
-      context = dbUtils.CONTEXT_ALL
-    }
-    else {
-      switch (userObject.accessLevel) {
-        case 3:
-          context = dbUtils.CONTEXT_ALL
-          break
-        case 2:
-          context = dbUtils.CONTEXT_DEPT
-          break
-        case 1:
-          context = dbUtils.CONTEXT_USER
-          break
-      }
-    }
+    const context = userObject.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
 
-    let columns = [
+    const columns = [
       'a.assetId',
       'a.name',
-      `json_object (
-        'deptId', d.deptId,
-        'name', d.name
-      ) as "dept"`,
       `json_object (
         'packageId', p.packageId,
         'name', p.name
@@ -46,8 +26,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     ]
     let joins = [
       'asset a',
-      'left join department d on a.deptId = d.deptId',
       'left join package p on a.packageId = p.packageId',
+      'left join package_grant pg on p.packageId = pg.packageId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
@@ -75,18 +55,13 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
           case when ud.userId is not null then
             json_object(
               'userId', ud.userId, 
-              'username', ud.username, 
-              'dept', json_object(
-                'deptId', d.deptId,
-                'name', d.name
-              )
+              'username', ud.username
             ) 
           else NULL end as reviewers
           FROM 
             stig_asset_map sa
             left join user_stig_asset_map usa on sa.saId = usa.saId
             left join user_data ud on usa.userId = ud.userId
-            left join department d on ud.deptId = d.deptId
           WHERE
           sa.assetId = a.assetId) as r
         group by r.benchmarkId) as byStig) as "stigReviewers"`)
@@ -97,7 +72,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       columns.push(`(select
           case when count(u.userId > 0) then json_arrayagg(
           -- if no user, return null instead of object with null property values
-          case when u.userId is not null then json_object('userId', u.userId, 'username', u.username, 'dept', u.dept) else NULL end) 
+          case when u.userId is not null then json_object('userId', u.userId, 'username', u.username) else NULL end) 
           else json_array() end as reviewers
         FROM 
           stig_asset_map sa
@@ -144,16 +119,9 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.statements.push('sa.benchmarkId = :benchmarkId')
       predicates.binds.benchmarkId = inPredicates.benchmarkId
     }
-    if (inPredicates.deptId) {
-      predicates.statements.push('a.deptId = :deptId')
-      predicates.binds.deptId = inPredicates.deptId
-    }
-    if (context == dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('a.deptId = :deptId')
-      predicates.binds.deptId = userObject.dept.deptId
-    } 
-    else if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('usa.userId = :userId')
+    if (context == dbUtils.CONTEXT_USER) {
+      predicates.statements.push('pg.userId = :userId')
+      predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
       predicates.binds.userId = userObject.userId
 
     }
@@ -166,7 +134,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.deptId, a.packageId, a.ip, a.nonnetwork, p.packageId, p.name, d.deptId, d.name'
+    sql += ' group by a.assetId, a.name, a.packageId, a.ip, a.nonnetwork, p.packageId, p.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -210,9 +178,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, deptId, packageId, nonnetwork)
+          (name, ip, packageId, nonnetwork)
         VALUES
-          (:name, :ip, :deptId, :packageId, :nonnetwork)`
+          (:name, :ip, :packageId, :nonnetwork)`
       let [rows] = await connection.query(sqlInsert, binds)
       assetId = rows.insertId
     }
@@ -722,12 +690,11 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(packageId, benchmarkId, dept, projection, elevate, userObject) {
+exports.getAssets = async function(packageId, benchmarkId, projection, elevate, userObject) {
   try {
     let rows = await _this.queryAssets(projection, {
       packageId: packageId,
-      benchmarkId: benchmarkId,
-      dept: dept
+      benchmarkId: benchmarkId
     }, elevate, userObject)
     return (rows)
   }

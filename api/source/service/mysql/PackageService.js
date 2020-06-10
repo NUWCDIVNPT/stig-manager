@@ -10,10 +10,8 @@ Generalized queries for package(s).
 exports.queryPackages = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   try {
     let context
-    if (userObject.accessLevel === 3 || elevate) {
+    if (userObject.globalAccess || elevate) {
       context = dbUtils.CONTEXT_ALL
-    } else if (userObject.accessLevel === 2) {
-      context = dbUtils.CONTEXT_DEPT
     } else {
       context = dbUtils.CONTEXT_USER
     }
@@ -21,17 +19,14 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
     let columns = [
       'p.packageId',
       'p.name',
-      'p.emassId',
-      'p.pocName',
-      'p.pocEmail',
-      'p.pocPhone',
-      'p.reqRar'
+      'p.workflow',
+      'p.metadata'
     ]
     let joins = [
       'package p',
+      'left join package_grant pg on p.packageId = pg.packageId',
       'left join asset a on p.packageId = a.packageId',
-      'left join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join department d on a.deptId = d.deptId'
+      'left join stig_asset_map sa on a.assetId = sa.assetId'
     ]
 
     // PROJECTIONS
@@ -43,11 +38,7 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
               case when a.assetId is not null then 
                 json_object(
                   'assetId', a.assetId, 
-                  'name', a.name, 
-                  'dept', json_object (
-                    'deptId', d.deptId,
-                    'name', d.name
-                  )
+                  'name', a.name
                 )
               else null end 
             order by a.name),
@@ -74,25 +65,33 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
         ']')
       as json) as "stigs"`)
     }
+    if (inProjection.includes('grants')) {
+      columns.push(`(select
+      json_arrayagg(
+        json_object(
+          'user', json_object(
+            'userId', user_data.userId,
+            'username', user_data.username
+            ),
+          'accessLevel', accessLevel
+        )
+      )
+      from package_grant left join user_data using (userId) where packageId = p.packageId) as "grants"`)
+    }
 
     // PREDICATES
     let predicates = {
       statements: [],
       binds: []
     }
-    if (inPredicates.packageId) {
+    if (inPredicates.hasOwnProperty('packageId')) {
       predicates.statements.push('p.packageId = ?')
       predicates.binds.push( inPredicates.packageId )
     }
-    if (context == dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('a.deptId = ?')
-      predicates.binds.push( userObject.dept.deptId )
-    } 
-    else if (context == dbUtils.CONTEXT_USER) {
+    if (context == dbUtils.CONTEXT_USER) {
       joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
-      predicates.statements.push('usa.userId = ?')
-      predicates.binds.push( userObject.userId )
-
+      predicates.statements.push('(pg.userId = ? AND CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END)')
+      predicates.binds.push( userObject.userId, userObject.userId )
     }
 
     // CONSTRUCT MAIN QUERY
@@ -103,7 +102,7 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
+    sql += ' group by p.packageId, p.name, p.workflow, p.metadata'
     sql += ' order by p.name'
     
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -114,15 +113,15 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
   }
 }
 
-exports.addOrUpdatePackage = async function(writeAction, packageId, packageFields, projection, userObject) {
+exports.addOrUpdatePackage = async function(writeAction, packageId, body, projection, userObject) {
   // CREATE: packageId will be null
   // REPLACE/UPDATE: packageId is not null
   let connection // available to try, catch, and finally blocks
   try {
-    
-    // Convert boolean scalar values to database values (true=1 or false=0)
-    if ('reqRar' in packageFields) {
-      packageFields.reqRar = packageFields.reqRar ? 1 : 0
+    const {grants, ...packageFields} = body
+    // Stringify JSON values
+    if ('metadata' in packageFields) {
+      packageFields.metadata = JSON.stringify(packageFields.metadata)
     }
   
     // Connect to MySQL
@@ -137,9 +136,9 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, packageField
       let sqlInsert =
       `INSERT INTO
           package
-          (name, emassId, pocName, pocEmail, pocPhone, reqRar)
+          (name, workflow, metadata)
         VALUES
-          (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)`
+          (:name, :workflow, :metadata)`
       let [rows] = await connection.execute(sqlInsert, binds)
       packageId = rows.insertId
     }
@@ -159,6 +158,24 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, packageField
     else {
       throw('Invalid writeAction')
     }
+
+    // Process grants
+    if (grants && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+      // DELETE from package_grant
+      let sqlDeleteGrants = 'DELETE FROM package_grant where packageId = ?'
+      await connection.execute(sqlDeleteGrants, [packageId])
+    }
+    if (grants.length > 0) {
+      // INSERT into package_grant
+      let sqlInsertGrants = `
+        INSERT INTO 
+        package_grant (packageId, userId, accessLevel)
+        VALUES
+          ?`      
+      let binds = grants.map(i => [packageId, i.userId, i.accessLevel])
+      await connection.query(sqlInsertGrants, [binds])
+    }
+    
 
     // Commit the changes
     await connection.commit()
@@ -229,7 +246,7 @@ exports.deletePackage = async function(packageId, projection, elevate, userObjec
 exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revisionStr, userObject ) {
   let connection
   try {
-    let joins = [
+    const joins = [
       'asset a',
       'left join stig_asset_map sa on a.assetId=sa.assetId',
       'left join current_rev rev on sa.benchmarkId=rev.benchmarkId',
@@ -241,7 +258,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
       'left join review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
     ]
 
-    let predicates = {
+    const predicates = {
       statements: [
         'a.packageId = :packageId',
         'rev.benchmarkId = :benchmarkId'
@@ -255,31 +272,30 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     // Non-current revision
     if (revisionStr !== 'latest') {
       joins.splice(2, 1, 'left join revision rev on sa.benchmarkId=rev.benchmarkId')
-      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+      const results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
       predicates.statements.push('rev.version = :version')
       predicates.statements.push('rev.release = :release')
       predicates.binds.version = results[1]
       predicates.binds.release = results[2]
     }
 
-    // Non-staff access control
-    if (userObject.accessLevel === 2) {
-      predicates.statements.push('a.assetId in (select assetId from asset where dept=:dept)')
-      predicates.binds.deptId = userObject.dept.deptId
+    // Access control
+    if (!userObject.globalAccess) {
+      const packageGrant = req.userObject.packageGrants.find( g => g.packageId === packageId )
+      if (packageGrant && packageGrant.accessLevel === 1) {
+        predicates.statements.push(`a.assetId in (
+          select
+              sa.assetId
+          from
+              user_stig_asset_map usa 
+              left join stig_asset_map sa on (usa.saId=sa.saId and sa.benchmarkId = :benchmarkId) 
+          where
+              usa.userId=:userId)`)
+        predicates.binds.userId = userObject.userId
+      }
     } 
-    else if (userObject.accessLevel === 1) {
-      predicates.statements.push(`a.assetId in (
-        select
-            sa.assetId
-        from
-            user_stig_asset_map usa 
-            left join stig_asset_map sa on (usa.saId=sa.saId and sa.benchmarkId = :benchmarkId) 
-        where
-            usa.userId=:userId)`)
-      predicates.binds.userId = userObject.userId
-    }
   
-    let sql = `
+    const sql = `
       select
         r.ruleId
         ,r.ruleTitle
@@ -330,7 +346,7 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
     // Send query
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    let [rows] = await connection.query(sql, predicates.binds)
+    const [rows] = await connection.query(sql, predicates.binds)
     // for (const row of rows) {
     //   row.autoCheckAvailable = row.autoCheckAvailable === 1 ? true : false
     // }

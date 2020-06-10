@@ -40,6 +40,26 @@ function addStigAdmin() {
 		}
 	});
 
+	let taStore = new Ext.data.JsonStore({
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/stigs`,
+			method: 'GET'
+		}),
+		root: '',
+		fields: stigFields,
+		idProperty: 'benchmarkId',
+		sortInfo: {
+			field: 'benchmarkId',
+			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
+		},
+		listeners: {
+			load: function (store,records) {
+			},
+			remove: function (store,record,index) {
+			}
+		}
+	})
+
 	var stigGrid = new Ext.grid.GridPanel({
 		id: 'stigGrid',
 		store: stigStore,
@@ -115,10 +135,53 @@ function addStigAdmin() {
 			}
 		},{
 			iconCls: 'sm-stig-icon',
-			text: 'Fetch STIGs',
-			disabled: false,
-			handler: function() {
-				fetchStigs();
+			xtype: 'combo',
+			store: taStore,
+			mode: 'local',
+			displayField: 'benchmarkId',
+			valueField: 'benchmarkId',
+			forceSelection: true,
+			allowBlank: false,
+			typeAhead: true,
+			minChars: 2,
+			hideTrigger: true,
+			lastQuery: '',
+			doQuery : function(q, forceAll){
+				q = Ext.isEmpty(q) ? '' : q;
+				var qe = {
+					query: q,
+					forceAll: forceAll,
+					combo: this,
+					cancel:false
+				};
+				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
+					return false;
+				}
+				q = qe.query;
+				forceAll = qe.forceAll;
+				if(forceAll === true || (q.length >= this.minChars)){
+					if(this.lastQuery !== q){
+						this.lastQuery = q;
+						if(this.mode == 'local'){
+							this.selectedIndex = -1;
+							if(forceAll){
+								this.store.clearFilter();
+							}else{
+								this.store.filter(this.displayField, q, true, false);
+							}
+							this.onLoad();
+						}else{
+							this.store.baseParams[this.queryParam] = q;
+							this.store.load({
+								params: this.getParams(q)
+							});
+							this.expand();
+						}
+					}else{
+						this.selectedIndex = -1;
+						this.onLoad();
+					}
+				}
 			}
 		}],
 		bbar: new Ext.Toolbar({
@@ -465,4 +528,5 @@ function addStigAdmin() {
 	// Show the tab
 	thisTab.show();
 	stigGrid.getStore().load();
+	taStore.load();
 } // end addStigAdmin()
