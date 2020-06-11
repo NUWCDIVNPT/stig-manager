@@ -20,6 +20,9 @@ paths:
       summary: Return a list of Packages accessible to the requester
       description: ''
       operationId: getPackages
+      parameters:
+        - $ref: '#/components/parameters/NameQuery'
+        - $ref: '#/components/parameters/PackageWorkflowQuery'
       responses:
         '200':
           description: PackageProjected response
@@ -2866,19 +2869,12 @@ components:
           type: string
           enum:
             - rules
-    LevelProjectionQuery:
-      name: projection
+    NameQuery:
+      name: name
       in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
+      description: Matches a string anywhere in the object name 
       schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - users
+        type: string
     PackageIdPath:
       name: packageId
       in: path
@@ -2907,6 +2903,15 @@ components:
             - assets
             - stigs
             - grants
+    PackageWorkflowQuery:
+      name: workflow
+      in: query
+      description: Match Packages having a specific workflow.
+      schema:
+        type: string
+        enum:
+          - continuous
+          - emass
     ReviewActionQuery:
       name: action
       in: query

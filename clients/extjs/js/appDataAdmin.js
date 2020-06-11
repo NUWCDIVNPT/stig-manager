@@ -208,10 +208,10 @@ function addAppDataAdmin() {
   }
 
 
-  let thisTab = Ext.getCmp('admin-center-tab').add({
+  let thisTab = Ext.getCmp('reviews-center-tab').add({
     id: 'appdata-admin-tab',
-    iconCls: 'sm-database-icon',
-    title: 'API',
+    iconCls: 'sm-database-save-icon',
+    title: 'Application Data',
     closable: true,
     items: [apiPanel]
   })

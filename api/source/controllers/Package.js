@@ -65,12 +65,10 @@ module.exports.getPackage = async function getPackage (req, res, next) {
     const packageId = req.swagger.params['packageId'].value
     const projection = req.swagger.params['projection'].value
     const elevate = req.swagger.params['elevate'].value
+    
     const packageGrant = req.userObject.packageGrants.find( g => g.packageId === packageId )
     if (packageGrant || req.userObject.globalAccess || elevate ) {
       const response = await Package.getPackage(packageId, projection, elevate, req.userObject )
-      // if (response.hasOwnProperty('grants') && packageGrant.accessLevel < 3) {
-      //   response.grants = response.grants.filter(g => g.userId === req.userObject.userId)
-      // }
       writer.writeJson(res, response)
     }
     else {
@@ -86,7 +84,12 @@ module.exports.getPackages = async function getPackages (req, res, next) {
   try {
     const projection = []
     const elevate = req.swagger.params['elevate'].value
-    const response = await Package.getPackages(projection, elevate, req.userObject)
+    const name = req.swagger.params['name'].value
+    const workflow = req.swagger.params['workflow'].value
+    const response = await Package.getPackages({
+      name: name,
+      workflow: workflow
+    }, projection, elevate, req.userObject)
     writer.writeJson(res, response)
   }
   catch (err) {

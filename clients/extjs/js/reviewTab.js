@@ -94,26 +94,23 @@ function getReviewItems() {
 				}
 			}
 		}),
-		rootVisible: false,
 		autoScroll: true,
 		split: true,
 		collapsible: true,
-		title: 'STIG Manager Reviews',
+		title: '<span onclick="window.keycloak.logout()">' + curUser.display + ' - Logout</span>',
 		bodyStyle:'padding:5px;',
-		width: 220,
-		minSize: 160,
+		width: 280,
+		minSize: 220,
 		root: {
 			nodeType: 'async',
-			id: 'reviews-root',
-			text: '',
+			id: 'stigman-root',
 			expanded: true
 		},
+		rootVisible: false,
 		loader: new Ext.tree.TreeLoader ({
 			directFn: loadTree
 		}),
-		rootVisible: false,
 		loadMask: 'Loading...',
-		
 		listeners: {
 			click: reviewsTreeClick,
 			//dblclick: reviewsTreeClickNode,
@@ -215,8 +212,50 @@ function getReviewItems() {
 async function loadTree (node, cb) {
   try {
     let match
-    // Root node
-    if (node === 'reviews-root') {
+	// Root node
+	if (node == 'stigman-root') {
+		let content = []
+		let adminChildren = []
+		if (curUser.canAdmin) {
+			content.push(
+				{
+					id: `admin-root`,
+					node: 'admin',
+					text: 'Administration',
+					iconCls: 'sm-setting-icon',
+					expanded: true,
+					children: [{
+						id: 'user-admin',
+						text: 'Users',
+						leaf: true,
+						iconCls: 'sm-users-icon'
+					},{
+						id: 'stig-admin',
+						text: 'STIG and SCAP Benchmarks',
+						leaf: true,
+						iconCls: 'sm-stig-icon'
+					},{
+						id: 'appdata-admin',
+						text: 'Application Data ',
+						leaf: true,
+						iconCls: 'sm-database-save-icon'
+					}]
+				}  
+			)
+		}
+		content.push(
+			{
+				id: `packages-root`,
+				node: 'packages',
+				text: 'Packages',
+				iconCls: 'sm-package-icon',
+				expanded: true
+			}
+		)  
+		cb(content, {status: true})
+		return
+	}
+    if (node === 'packages-root') {
       let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/packages`,
         method: 'GET'
@@ -250,7 +289,7 @@ async function loadTree (node, cb) {
             iconCls: 'sm-stig-icon'
           }]
         })
-      )
+	  )
       cb(content, {status: true})
       return
     }
@@ -270,7 +309,7 @@ async function loadTree (node, cb) {
           id: `${packageId}-${asset.assetId}-assets-asset-node`,
           text: asset.name,
           report: 'asset',
-          packageId: packageId,
+          packageId: parseInt(packageId),
           assetId: asset.assetId,
           iconCls: 'sm-asset-icon',
           qtip: asset.name
@@ -302,7 +341,8 @@ async function loadTree (node, cb) {
           assetName: r.name,
           stigRevStr: stig.lastRevisionStr,
           assetId: r.assetId,
-          benchmarkId: stig.benchmarkId,
+		  packageId: parseInt(packageId),
+		  benchmarkId: stig.benchmarkId,
           assetGroup: null,
           qtip: stig.title
         })
@@ -327,6 +367,7 @@ async function loadTree (node, cb) {
           packageId: packageId,
           text: stig.benchmarkId,
           packageName: r.name,
+          packageId: parseInt(packageId),
           report: 'stig',
           iconCls: 'sm-stig-icon',
           reqRar: r.reqRar,
@@ -349,8 +390,8 @@ async function loadTree (node, cb) {
         url: `${STIGMAN.Env.apiBase}/assets`,
         method: 'GET',
         params: {
-          packageId: packageId,
-          benchmarkId: benchmarkId,
+			    packageId: parseInt(packageId),
+			    benchmarkId: benchmarkId,
           projection: 'stigs'
         }
       })
@@ -365,6 +406,7 @@ async function loadTree (node, cb) {
           assetName: asset.name,
           stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
           assetId: asset.assetId,
+          packageId: parseInt(packageId),
           benchmarkId: benchmarkId,
           assetGroup: null,
           qtip: asset.name
@@ -911,6 +953,18 @@ function reviewsTreeClick(n) {
 			addScanManagement(n);
 		}
 	}
+	switch(n.id) {
+		case 'user-admin':
+			addUserAdmin();
+			break;
+		case 'stig-admin':
+			addStigAdmin();
+			break;
+		case 'appdata-admin':
+			addAppDataAdmin();
+			break;
+	}	
+
 }
 
 function openPackageReview(n) {

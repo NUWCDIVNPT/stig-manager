@@ -206,14 +206,14 @@ function addUserAdmin() {
 
 		
 
-	var thisTab = Ext.getCmp('admin-center-tab').add({
+	var thisTab = Ext.getCmp('reviews-center-tab').add({
 		id: 'user-admin-tab',
 		iconCls: 'sm-users-icon',
 		title: 'Users',
 		closable:true,
 		layout: 'fit',
 		items: [userGrid]
-		});
+	});
 	if (!curUser.canAdmin) { // only show the modify button for non-admins
 		var tb = userGrid.getTopToolbar();
 		var items = tb.find();

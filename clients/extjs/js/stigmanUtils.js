@@ -1055,7 +1055,7 @@ function encodeStoreDone(store,field){
 	return Ext.util.JSON.encode(myArray);
 }
 
-async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend, benchmarkId, revisionStr) {
+async function handleGroupSelectionForAsset (groupGridRecord, packageId, assetId, idAppend, benchmarkId, revisionStr) {
 	try {
 		// CONTENT
 		let contentPanel = Ext.getCmp('content-panel' + idAppend)
@@ -1075,7 +1075,8 @@ async function handleGroupSelectionForAsset (groupGridRecord, assetId, idAppend,
 		let reviewsReq = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/reviews`,
 			method: 'GET',
-			params: { 
+			params: {
+				packageId: packageId,
 				ruleId: groupGridRecord.data.ruleId
 			}
 		})

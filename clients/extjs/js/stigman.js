@@ -3,7 +3,7 @@ $Id: stigman.js 807 2017-07-27 13:04:19Z csmig $
 */
 
 var appName = 'STIG Manager';
-var appVersion = "2.0";
+var appVersion = "3.0";
 var copyrightStr = '';
 var licenseStr = "This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\
 \n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\
@@ -94,16 +94,11 @@ function loadApp () {
 	});
 	
 	var reviewItems = getReviewItems();
-	var reportItems = getReportItems();
 	var viewport = new Ext.Viewport({
 		layout: 'fit',
-		items: [{
-			xtype: 'tabpanel',
-			id: 'main-tabs',
-			activeTab: 'tab-reviews',
-			items: [
+		items: [
 			{
-				title: 'Reviews',
+				// title: 'Reviews',
 				iconCls: 'sm-stig-icon',
 				layout: 'border',
 				id: 'tab-reviews',
@@ -113,43 +108,10 @@ function loadApp () {
 						addReviewHome();
 					}
 				}
-			},{
-				title: 'Reports',
-				iconCls: 'sm-report-icon',
-				layout: 'border',
-				id: 'tab-reports',
-				items: reportItems
-			}],
-			listeners: {
-				render: function (tp) {
-					var appStr = {
-						tag: 'li',
-						cls: 'x-tab-strip-active',
-						style: 'right: 0px; position: absolute; padding-right: 10px;',
-						cn: [{
-							tag: 'span',
-							cls: 'x-tab-strip-text',
-							//html: '<a href="#" onclick="showAbout()" style="text-decoration:none;">' + appName + ' ' + appVersion + '</a>'
-							html: '<span onclick="window.keycloak.logout()">' + appName + ' ' + appVersion + ' - ' + curUser.display + ' - Logout</span>'
-						}]
-					};
-					var edge = tp.getEl().child('.x-tab-edge');
-					var appStrEl = edge.insertSibling(appStr,'after');
-				}
 			}
-		}]
-	});
-	if (curUser.canAdmin || curUser.accessLevel === 2 || curUser.accessLevel === 3) {
-		var adminItems = getAdministrationItems();
-		Ext.getCmp('main-tabs').add({
-			title: 'Administration',
-			iconCls: 'sm-setting-icon',
-			layout: 'border',
-			id: 'tab-admin',
-			items: adminItems
-		});
-	}
-	
+		]
+	})
+
 	Ext.get('loading').remove();
 	Ext.get('loading-mask').fadeOut({duration: 1, remove:true});
 } //end loadApp()

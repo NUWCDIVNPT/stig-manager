@@ -546,7 +546,7 @@ function addReview(leaf, selectedRule, selectedResource) {
         },
         rowselect: {
           fn: function (sm, index, record) {
-            handleGroupSelectionForAsset(record, leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
+            handleGroupSelectionForAsset(record, parseInt(leaf.packageId), leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
           }
         }
       }

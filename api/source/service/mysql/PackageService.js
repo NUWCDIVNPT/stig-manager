@@ -84,9 +84,17 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
       statements: [],
       binds: []
     }
-    if (inPredicates.hasOwnProperty('packageId')) {
+    if ( inPredicates.packageId ) {
       predicates.statements.push('p.packageId = ?')
       predicates.binds.push( inPredicates.packageId )
+    }
+    if ( inPredicates.name ) {
+      predicates.statements.push('p.name LIKE ?')
+      predicates.binds.push( `%${inPredicates.name}%` )
+    }
+    if ( inPredicates.workflow ) {
+      predicates.statements.push('p.workflow = ?')
+      predicates.binds.push( inPredicates.workflow )
     }
     if (context == dbUtils.CONTEXT_USER) {
       joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
@@ -387,9 +395,9 @@ exports.getPackage = async function(packageId, projection, elevate, userObject) 
  *
  * returns List
  **/
-exports.getPackages = async function(projection, elevate, userObject) {
+exports.getPackages = async function(predicates, projection, elevate, userObject) {
   try {
-    let rows = await _this.queryPackages(projection, {}, elevate, userObject)
+    let rows = await _this.queryPackages(projection, predicates, elevate, userObject)
     return (rows)
   }
   catch (err) {

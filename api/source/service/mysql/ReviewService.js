@@ -11,16 +11,8 @@ Generalized queries for review(s).
 exports.queryReviews = async function (inProjection = [], inPredicates = {}, userObject) {
   let connection
   try {
-    let context
-    if (userObject.accessLevel === 3 ) {
-      context = dbUtils.CONTEXT_ALL
-    } else if (userObject.accessLevel === 2) {
-      context = dbUtils.CONTEXT_DEPT
-    } else {
-      context = dbUtils.CONTEXT_USER
-    }
-
-    let columns = [
+    const context = userObject.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+    const columns = [
       'r.assetId',
       'asset.name as "assetName"',
       'r.ruleId',
@@ -51,7 +43,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
           END
       END as "reviewComplete"`
     ]
-    let groupBy = [
+    const groupBy = [
       'r.assetId',
       'asset.name',
       'r.ruleId',
@@ -69,7 +61,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       'r.rejectText',
       'r.rejectUserId'
     ]
-    let joins = [
+    const joins = [
       'review r',
       'left join result on r.resultId = result.resultId',
       'left join status on r.statusId = status.statusId',
