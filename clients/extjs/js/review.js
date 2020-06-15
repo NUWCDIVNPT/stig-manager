@@ -4,7 +4,7 @@ $Id: review.js 894 2018-08-15 19:34:58Z csmig $
 
 
 
-function addReview(leaf, selectedRule, selectedResource) {
+async function addReview(leaf, selectedRule, selectedResource) {
   // 'selectedRule' is optional
 	/* Example of 'leaf': 
 		leaf = {
@@ -21,6 +21,12 @@ function addReview(leaf, selectedRule, selectedResource) {
 			text: "C27WEBNWPT02"
 		}
 	*/
+  let result = await Ext.Ajax.requestPromise({
+    url: `${STIGMAN.Env.apiBase}/packages/${leaf.packageId}`,
+    method: 'GET'
+  })
+  let apiPackage = JSON.parse(result.response.responseText)
+
 
   // Classic compatability. Remove after modernization
   if (leaf.stigRevStr) {
@@ -72,7 +78,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       type: 'boolean'
     }, {
       name: 'autoCheckAvailable',
-      type: 'string'
+      type: 'boolean'
     }
   ]);
 
@@ -233,7 +239,7 @@ function addReview(leaf, selectedRule, selectedResource) {
                 try {
                   document.body.style.cursor = 'wait'
                   let ckl = await item.getCkl(leaf)
-                  item.downloadBlob(ckl.blob, ckl.filename)               
+                  item.downloadBlob(ckl.blob, ckl.filename)
                   document.body.style.cursor = 'default'
                 }
                 catch (e) {
@@ -241,47 +247,47 @@ function addReview(leaf, selectedRule, selectedResource) {
                 }
               },
               getCkl: function (leaf) {
-                return new Promise ( (resolve, reject) => {
+                return new Promise((resolve, reject) => {
                   var xhr = new XMLHttpRequest()
                   var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
                   xhr.open('GET', url)
                   xhr.responseType = 'blob'
                   xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
                   xhr.onload = function () {
-                      if (this.status >= 200 && this.status < 300) {
-                          var contentDispo = this.getResponseHeader('Content-Disposition')
-                          //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
-                          var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]           
-                          resolve({
-                              blob: xhr.response,
-                              filename: fileName
-                          })
-                      } else {
-                          reject({
-                              status: this.status,
-                              message: xhr.statusText
-                            })
-                      }
+                    if (this.status >= 200 && this.status < 300) {
+                      var contentDispo = this.getResponseHeader('Content-Disposition')
+                      //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                      resolve({
+                        blob: xhr.response,
+                        filename: fileName
+                      })
+                    } else {
+                      reject({
+                        status: this.status,
+                        message: xhr.statusText
+                      })
+                    }
                   }
                   xhr.onerror = function () {
-                      reject({
-                          status: this.status,
-                          message: xhr.responseText
-                        })
+                    reject({
+                      status: this.status,
+                      message: xhr.responseText
+                    })
                   }
-                  xhr.send()        
+                  xhr.send()
                 })
               },
               downloadBlob: function (blob, filename) {
                 let a = document.createElement('a')
-                a.style.display= "none"
-                let url =  window.URL.createObjectURL(blob)
+                a.style.display = "none"
+                let url = window.URL.createObjectURL(blob)
                 a.href = url
                 a.download = filename
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                window.URL.revokeObjectURL(url)               
+                window.URL.revokeObjectURL(url)
               }
             }
           ]
@@ -560,8 +566,8 @@ function addReview(leaf, selectedRule, selectedResource) {
       },
       deferEmptyText: false,
       getRowClass: function (record, index) {
-        var checkType = record.get('checkType');
-        if (checkType === true) {
+        var autoCheckAvailable = record.get('autoCheckAvailable');
+        if (autoCheckAvailable === true) {
           return 'sm-scap-grid-item';
         } else {
           return 'sm-manual-grid-item';
@@ -875,7 +881,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     }, {
       name: 'result',
       type: 'string'
-    },  {
+    }, {
       name: 'action',
       type: 'string'
     }, {
@@ -975,12 +981,7 @@ function addReview(leaf, selectedRule, selectedResource) {
         sortable: true,
         align: 'left',
         renderer: function (value, metaData, record, rowIndex, colIndex, store) {
-          var iconPath;
-          if (record.data.assetGroup == TEMPLATE_STR) {
-            metaData.css += ' sm-cell-template';
-          } else {
-            metaData.css += ' sm-cell-asset';
-          }
+          metaData.css += ' sm-cell-asset';
           return value;
         }
       },
@@ -1471,6 +1472,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     monitorValid: false,
     trackResetOnLoad: false,
     reviewChanged: function () { // STIG Manager defined property
+      // Issue: actionCombo value changes from null to '' once it is pulled down, even if no value is chosen
       var resultCombo = Ext.getCmp('result-combo' + idAppend);
       var resultComment = Ext.getCmp('result-comment' + idAppend);
       var actionCombo = Ext.getCmp('action-combo' + idAppend);
@@ -1930,7 +1932,7 @@ function addReview(leaf, selectedRule, selectedResource) {
     id: 'reviewTab' + idAppend,
     iconCls: 'sm-stig-icon',
     //title: '<img src=/icons/security_firewall_on.png height=12 width=12> ' + leaf.stigName + ' (' + leaf.assetName + ')',
-    title: leaf.assetName + " : " + leaf.stigName,
+    title: `${apiPackage.name} : ${leaf.assetName} : ${leaf.stigName}`,
     closable: true,
     layout: 'border',
     sm_TabType: 'asset_review',
@@ -1999,7 +2001,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
       let jsonData = {
         result: fvalues.result,
-        resultComment:fvalues.resultComment === "" ? null : fvalues.resultComment,
+        resultComment: fvalues.resultComment === "" ? null : fvalues.resultComment,
         action: fvalues.action === "" ? null : fvalues.action,
         actionComment: fvalues.actionComment === "" ? null : fvalues.actionComment,
         autoResult: fvalues.autoResult === 'true' ? true : false
@@ -2049,10 +2051,10 @@ function addReview(leaf, selectedRule, selectedResource) {
           reviewFromApi = JSON.parse(result.response.responseText)
           break
       }
-      resultCombo = Ext.getCmp('result-combo'+idAppend)
-      resultComment = Ext.getCmp('result-comment'+idAppend)
-      actionCombo = Ext.getCmp('action-combo'+idAppend)
-      actionComment = Ext.getCmp('action-comment'+idAppend)				
+      resultCombo = Ext.getCmp('result-combo' + idAppend)
+      resultComment = Ext.getCmp('result-comment' + idAppend)
+      actionCombo = Ext.getCmp('action-combo' + idAppend)
+      actionComment = Ext.getCmp('action-comment' + idAppend)
       resultCombo.changed = false
       actionCombo.changed = false
       fp.groupGridRecord.data.result = reviewFromApi.result
@@ -2061,7 +2063,7 @@ function addReview(leaf, selectedRule, selectedResource) {
       fp.groupGridRecord.commit()
 
       let extDate = new Date(reviewFromApi.ts)
-      Ext.getCmp('editor'+idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
+      Ext.getCmp('editor' + idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
 
       filterGroupStore()
 
@@ -2072,17 +2074,17 @@ function addReview(leaf, selectedRule, selectedResource) {
       actionComment.lastSavedData = actionComment.getValue()
 
       //Continue the action that triggered this save (if any):					
-      if (saveParams.source == "closeTab"){
+      if (saveParams.source == "closeTab") {
         Ext.getCmp('reviews-center-tab').remove('reviewTab' + idAppend)
-      
+
       }
-      else if (saveParams.source == "selectGroup"){
+      else if (saveParams.source == "selectGroup") {
         saveParams.sm.selectRow(saveParams.index);
       }
       //Ext.Msg.alert('Success','Successfully updated review.');
     }
     catch (e) {
-      Ext.Msg.alert('Fail',`Failed to update review.\n${e.message}`)
+      Ext.Msg.alert('Fail', `Failed to update review.\n${e.message}`)
     }
     finally {
       Ext.getBody().unmask()
@@ -2194,7 +2196,7 @@ function addReview(leaf, selectedRule, selectedResource) {
                 body: formData
               })
               let json = await response.json()
-							updateStatusText (JSON.stringify(json, null, 2))
+              updateStatusText(JSON.stringify(json, null, 2))
 
               // const reader = response.body.getReader()
               // const td = new TextDecoder("utf-8")
@@ -2207,7 +2209,7 @@ function addReview(leaf, selectedRule, selectedResource) {
             }
           }
           catch (e) {
-            alert (e.message)
+            alert(e.message)
           }
         }
       },

@@ -577,3 +577,95 @@ Ext.override(Ext.TabPanel, {
         '</em></a></li>'
    )
 })
+
+// Send query parameters even when there is JSON data for the body
+// Allows PUT and POST requests to have query parameters
+// Source: Carl Smigielski
+Ext.override(Ext.data.HttpProxy, {
+    /**
+ * HttpProxy implementation of DataProxy#doRequest
+ * @param {String} action The crud action type (create, read, update, destroy)
+ * @param {Ext.data.Record/Ext.data.Record[]} rs If action is load, rs will be null
+ * @param {Object} params An object containing properties which are to be used as HTTP parameters
+ * for the request to the remote server.
+ * @param {Ext.data.DataReader} reader The Reader object which converts the data
+ * object into a block of Ext.data.Records.
+ * @param {Function} callback
+ * <div class="sub-desc"><p>A function to be called after the request.
+ * The <tt>callback</tt> is passed the following arguments:<ul>
+ * <li><tt>r</tt> : Ext.data.Record[] The block of Ext.data.Records.</li>
+ * <li><tt>options</tt>: Options object from the action request</li>
+ * <li><tt>success</tt>: Boolean success indicator</li></ul></p></div>
+ * @param {Object} scope The scope (<code>this</code> reference) in which the callback function is executed. Defaults to the browser window.
+ * @param {Object} arg An optional argument which is passed to the callback as its second parameter.
+ * @protected
+ */
+doRequest : function(action, rs, params, reader, cb, scope, arg) {
+    var  o = {
+        method: (this.api[action]) ? this.api[action]['method'] : undefined,
+        request: {
+            callback : cb,
+            scope : scope,
+            arg : arg
+        },
+        reader: reader,
+        callback : this.createCallback(action, rs),
+        scope: this
+    };
+
+    // If possible, transmit data using jsonData || xmlData on Ext.Ajax.request (An installed DataWriter would have written it there.).
+    // Use std HTTP params otherwise.
+    if (params.jsonData) {
+        // csmig modification start
+        let {jsonData, ...notJsonData } = params
+        o.jsonData = jsonData;
+        o.params = notJsonData || {}
+        // csmig modification stop
+    } else if (params.xmlData) {
+        o.xmlData = params.xmlData;
+    } else {
+        o.params = params || {};
+    }
+    // Set the connection url.  If this.conn.url is not null here,
+    // the user must have overridden the url during a beforewrite/beforeload event-handler.
+    // this.conn.url is nullified after each request.
+    this.conn.url = this.buildUrl(action, rs);
+
+    if(this.useAjax){
+
+        Ext.applyIf(o, this.conn);
+
+        // If a currently running read request is found, abort it
+        if (action == Ext.data.Api.actions.read && this.activeRequest[action]) {
+            Ext.Ajax.abort(this.activeRequest[action]);
+        }
+        this.activeRequest[action] = Ext.Ajax.request(o);
+    }else{
+        this.conn.request(o);
+    }
+    // request is sent, nullify the connection url in preparation for the next request
+    this.conn.url = null;
+}
+})
+
+// Promisified JsonStore.load() method
+// Source: Carl Smigielski
+Ext.override(Ext.data.JsonStore, {
+    loadPromise : function (params) {
+        return new Promise ( (resolve, reject) => {
+            this.load({
+                params: params,
+                callback: function (records, options, success) {
+                    if (success) {
+                        resolve ({
+                            records: records,
+                            options: options
+                        })
+                    } else {
+                        reject ('Load failed')
+                    }
+                }
+            })
+        })
+    }
+})

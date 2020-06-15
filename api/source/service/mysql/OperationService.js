@@ -21,9 +21,9 @@ exports.getVersion = async function(userObject) {
   }
 }
 
-exports.replaceAppData = async function (importOpts, appData, userObject ) {
+exports.replaceAppData = async function (importOpts, appData, userObject, res ) {
   function dmlObjectFromAppData (appdata) {
-    let {packages, departments, assets, users, reviews} = appdata
+    let {packages, assets, users, reviews} = appdata
 
     let dml = {
       preload: [
@@ -126,7 +126,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       },
       review: {
         sqlDelete: `DELETE FROM review`,
-        sqlInsert: `INSERT INTO review (
+        sqlInsert: `INSERT IGNORE INTO review (
           assetId,
           ruleId,
           resultId,
@@ -240,6 +240,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
   let connection
   try {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.write('replaceAppData()\n')
     let result, hrstart, hrend, tableOrder, dml, stats = {}
     let totalstart = process.hrtime() 
 
@@ -247,6 +250,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     dml = dmlObjectFromAppData(appData)
     hrend = process.hrtime(hrstart)
     stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    res.write('dmlObjectFromAppData()\n')
 
     // Connect to MySQL and start transaction
     connection = await dbUtils.pool.getConnection()
@@ -279,8 +283,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       stats[table] = {}
       stats[table].delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     }
+    res.write('deletes\n')
 
     // Inserts
+
+  
     tableOrder = [
       'userData',
       'package',
@@ -293,8 +300,14 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     ]
     for (const table of tableOrder) {
       if (dml[table].insertBinds.length > 0) {
-        hrstart = process.hrtime() 
-        ;[result] = await connection.query(dml[table].sqlInsert, [dml[table].insertBinds])
+        hrstart = process.hrtime()
+
+        let i, j, bindchunk, chunk = 5000;
+        for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
+          res.write(`table: ${table} chunk: ${i}\n`)
+          bindchunk = dml[table].insertBinds.slice(i,i+chunk);
+          ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
+        }
         hrend = process.hrtime(hrstart)
         stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       }
@@ -302,7 +315,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     
     // Commit
     hrstart = process.hrtime() 
+    res.write(`before commit\n`)
     await connection.query('COMMIT')
+    res.write(`after commit\n`)
     hrend = process.hrtime(hrstart)
     stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
@@ -317,8 +332,10 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
     // Total time calculation
     hrend = process.hrtime(totalstart)
     stats.total = `TOTAL in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    res.write(JSON.stringify(stats))
+    res.end()
 
-    return (stats)
+    // return (stats)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {

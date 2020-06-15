@@ -63,7 +63,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     if (!assetToDelete) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === assetToDelete.packageId )
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === assetToDelete.package.packageId )
     // Is the granted accessLevel high enough?
     if ( elevate || (packageGrant && packageGrant.accessLevel >= 3) ) {
       let row = await Asset.deleteAsset( assetId, projection, elevate, req.userObject )

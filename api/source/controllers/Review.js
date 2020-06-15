@@ -33,7 +33,13 @@ module.exports.importReviews = async function importReviews (req, res, next) {
       reviewsRequested = body
     }
 
-    let reviewsByStatus = await dbUtils.scrubReviewsByUser(reviewsRequested, false, req.userObject)
+    // let reviewsByStatus = await dbUtils.scrubReviewsByUser(reviewsRequested, false, req.userObject)
+    // reviewsByStatus.errors = await Review.putReviews(reviewsByStatus.permitted, req.userObject)
+
+    let reviewsByStatus = {
+      permitted: reviewsRequested,
+      rejected: []
+    }
     reviewsByStatus.errors = await Review.putReviews(reviewsByStatus.permitted, req.userObject)
 
     writer.writeJson(res, reviewsByStatus)

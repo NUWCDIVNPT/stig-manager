@@ -109,6 +109,7 @@ module.exports.getUserObject = async function (username) {
       ud.username,
       ud.display,
       cast (ud.globalAccess is true as json) as globalAccess,
+      cast (ud.canCreatePackage is true as json) as canCreatePackage,
       cast (ud.canAdmin is true as json) as canAdmin,
       CASE WHEN COUNT(pg.packageId) > 0
         THEN 

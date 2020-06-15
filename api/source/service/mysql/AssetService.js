@@ -39,7 +39,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         'stigAssignedCount', COUNT(distinct usa.saId)
         ) as "adminStats"`)
     }
-    if (inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
+    if (inProjection.includes('stigReviewers')) {
       // A bit more complex than the Oracle query because we can't use nested json_arrayagg's
       columns.push(`(select
         CASE WHEN COUNT(byStig.stigAssetUsers) > 0 THEN json_arrayagg(byStig.stigAssetUsers) ELSE json_array() END
@@ -66,7 +66,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
           sa.assetId = a.assetId) as r
         group by r.benchmarkId) as byStig) as "stigReviewers"`)
     }
-    if ( inProjection.includes('reviewers') && context !== dbUtils.CONTEXT_USER) {
+    if ( inProjection.includes('reviewers')) {
       // This projection is only available for endpoint /stigs/{benchmarkId}/assets
       // Subquery relies on predicate :benchmarkId being set
       columns.push(`(select
@@ -284,7 +284,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'g.groupId',
       'g.title as "groupTitle"',
       'r.severity',
-      `cast(scap.ruleId is true as json) as "autoCheckAvailable"`,
+      `cast(scap.ruleId is not null as json) as "autoCheckAvailable"`,
       `result.api as "result"`,
       `cast(review.autoResult is true as json) as "autoResult"`,
       `status.api as "status"`,

@@ -587,13 +587,6 @@ paths:
         an SCC XCCDF file
       description: |
       operationId: importReviews
-      parameters:
-        - name: packageId
-          required: true
-          in: query
-          description: Selects Reviews mapped to a Package
-          schema:
-            type: integer
       requestBody:
         content:
           application/json:
@@ -1683,7 +1676,8 @@ components:
           nullable: true
         nonnetwork:
           type: boolean
-          nullable: true
+        metadata:
+          type: object
     AssetBasic:
       type: object
       properties:
@@ -1697,6 +1691,7 @@ components:
         - packageId
         - ip
         - nonnetwork
+        - metadata
         - stigReviewers
       additionalProperties: false
       properties:
@@ -1711,7 +1706,8 @@ components:
           nullable: true
         nonnetwork:
           type: boolean
-          nullable: true
+        metadata:
+          type: object
         stigReviewers:
           description: The benchmarkIds and reviewers mapped to this Asset
           type: array
@@ -1724,15 +1720,6 @@ components:
                 type: array
                 items:
                   type: integer
-    AssetForDepartment:
-      type: object
-      properties:
-        assetId:
-          type: integer
-        name:
-          type: string
-        package:
-          $ref: '#/components/schemas/PackageBasic'
     AssetForPackage:
       type: object
       properties:
@@ -1782,7 +1769,8 @@ components:
           nullable: true
         nonnetwork:
           type: boolean
-          nullable: true
+        metadata:
+          type: object
         stigReviewers:
           description: The benchmarkIds and reviewers mapped to this Asset
           type: array

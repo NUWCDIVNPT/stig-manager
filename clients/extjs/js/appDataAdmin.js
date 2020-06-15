@@ -85,7 +85,7 @@ function addAppDataAdmin() {
           id: 'form-file',
           emptyText: 'Browse for a file...',
           name: 'importFile',
-          accept: '.json',
+          accept: '.json,.zip',
           buttonText: 'Browse...',
           buttonCfg: {
             icon: "img/disc_drive.png"

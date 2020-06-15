@@ -241,13 +241,13 @@ function updateProgress (value,text) {
 	pb.updateProgress(value,Ext.util.Format.htmlEncode(text));
 }
 
-function updateStatusText (text,noNL) {
+function updateStatusText (text, noNL, replace) {
 	var noNL = noNL || false;
 	var st = Ext.getCmp("statusText1");
 	if (noNL) {
-		statusText += text;
+		statusText = text;
 	} else {
-		statusText += text + "\n";
+		statusText = text + "\n";
 	}
 	st.setRawValue(statusText);
 	st.getEl().dom.scrollTop = 99999; // scroll to bottom
@@ -963,16 +963,16 @@ function getFileIcon (filename) {
 }
 
 function isReviewComplete (state,resultComment,action,actionComment) {
-	if (state == 4) { // Open
+	if (state === 'fail') { // Open
 		if (resultComment != '' && undefined != resultComment) {
-			if (action != '' && undefined != action) {
-				if (actionComment != '' && undefined != actionComment) {
+			if (action != null && action != '') {
+				if (actionComment != '' && actionComment != null) {
 					return true;
 				}
 			}
 		}
 	} else { // not Open
-		if (resultComment != '' && undefined != resultComment) {
+		if (resultComment != '' && resultComment != null) {
 			return true;
 		}
 	}			

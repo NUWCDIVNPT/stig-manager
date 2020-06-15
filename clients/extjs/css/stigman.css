@@ -1,3 +1,7 @@
+.sm-tree-node-create {
+	font-style: italic
+}
+
 .x-grid3-row.x-stigman-cross-department {
 	opacity: 0.40
 }
@@ -278,8 +282,11 @@
     background-image:none;
 }
 
+.sm-add-icon {
+ background-image: url(../img/icons8-add-16.png) !important;
+}
 .sm-disc-drive {
- background-image: url(../img/disc_drive.png) !important;
+	background-image: url(../img/disc_drive.png) !important;
 }
 .sm-internet-search {
  background-image: url(../img/internet_search.png) !important;

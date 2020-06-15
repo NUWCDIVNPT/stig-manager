@@ -604,7 +604,6 @@ async function showUserProperties(id, grid){
 				stigRevStr: stig.lastRevisionStr,
 				assetId: apiAsset.assetId,
 				benchmarkId: stig.benchmarkId,
-				assetGroup: null,
 				qtip: stig.title
 			})
 			)

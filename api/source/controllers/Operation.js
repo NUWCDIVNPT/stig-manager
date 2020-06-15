@@ -9,6 +9,8 @@ const Department = require(`./Department`)
 const Package = require(`./Package`)
 const User = require(`./User`)
 const Review = require(`./Review`)
+const JSZip = require("jszip");
+
 
 module.exports.getVersion = async function getVersion (req, res, next) {
   try {
@@ -77,16 +79,26 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
     let elevate = req.swagger.params['elevate'].value
     let appdata
     if ( elevate ) {
-      if (req.file && req.file.mimetype === 'application/json') {
+      if (req.file && (req.file.mimetype === 'application/json' || req.file.mimetype === 'application/zip')) {
         let data = await fs.readFile(req.file.path)
+        if (req.file.mimetype === 'application/zip') {
+          let zipIn = new JSZip()
+          let contents = await zipIn.loadAsync(data)
+          let fns = Object.keys(contents.files)
+          if (fns.length > 1) {
+            throw( writer.respondWithCode ( 400, {message: `ZIP archive has too many files.`} ) )
+          }
+          let fn = fns[0]
+          data = await contents.files[fn].async("nodebuffer")
+        }
         appdata = JSON.parse(data)
       }
       else {
         appdata = req.swagger.params['body'].value
       }
       let options = []
-      let response = await Operation.replaceAppData(options, appdata, req.userObject )
-      writer.writeJson(res, response)
+      let response = await Operation.replaceAppData(options, appdata, req.userObject, res )
+      // writer.writeJson(res, response)
     }
     else {
       writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )

@@ -10,6 +10,7 @@ var licenseStr = "This program is free software: you can redistribute it and/or 
 \n\nThe GNU General Public License is available at  <http://www.gnu.org/licenses/>.";
 
 var curUser;
+Ext.Ajax.timeout = 30000000
 
 function GetXmlHttpObject() {
 	if (window.XMLHttpRequest)

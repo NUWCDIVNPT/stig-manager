@@ -492,7 +492,6 @@ exports.insertManualBenchmark = async function (b) {
     let {revision, ...benchmarkBinds} = b
     // TABLE: benchmark
     dml.stig.binds = benchmarkBinds
-    // TODO: handle SCAP benchmark, indicated by boolean property: scap
     delete dml.stig.binds.scap
 
     let {groups, ...revisionBinds} = revision
@@ -652,6 +651,79 @@ exports.insertManualBenchmark = async function (b) {
   }
 }
 
+exports.insertScapBenchmark = async function (b) {
+  function dmlObjectFromBenchmarkData (b) {
+    let dml = {
+      ruleOvalMap: {
+        sqlDelete: `DELETE FROM rule_oval_map WHERE benchmarkId = ?`,
+        deleteBind: '',
+        sqlInsert: `INSERT INTO rule_oval_map (ruleId, ovalRef, benchmarkId, releaseinfo) VALUES ?`,
+        insertBinds: []
+      }
+    }
+
+    let {revision, ...benchmarkFields} = b
+    dml.ruleOvalMap.deleteBind = benchmarkFields.benchmarkId
+    let {groups, ...revisionFields} = revision
+    groups.forEach( group => {
+      group.rules.forEach( rule => {
+          rule.checks.forEach( check => {
+            dml.ruleOvalMap.insertBinds.push([
+              rule.ruleId.replace('xccdf_mil.disa.stig_rule_', ''),
+              check.content.name,
+              benchmarkFields.benchmarkId.replace('xccdf_mil.disa.stig_benchmark_', ''),
+              revisionFields.releaseInfo
+            ])
+          })
+        })
+      })
+    return dml
+  }
+
+  let connection
+  try {
+    let result, hrstart, hrend, tableOrder, dml, stats = {}
+    let totalstart = process.hrtime() 
+
+    hrstart = process.hrtime() 
+    dml = dmlObjectFromBenchmarkData(b)
+    hrend = process.hrtime(hrstart)
+    stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    let pp = dbUtils.pool
+    connection = await pp.getConnection()
+
+    tableOrder = [
+      'ruleOvalMap'
+    ]
+
+    for (const table of tableOrder) {
+      hrstart = process.hrtime()
+      ;[result] = await connection.query(dml[table].sqlDelete, [dml[table].deleteBind])
+      ;[result] = await connection.query(dml[table].sqlInsert, [dml[table].insertBinds])
+      hrend = process.hrtime(hrstart)
+      stats[table] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    }
+
+    hrend = process.hrtime(totalstart)
+    stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    // await connection.rollback()
+    await connection.commit()
+    return (stats)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
 
 /**
  * Deletes the specified revision of a STIG
