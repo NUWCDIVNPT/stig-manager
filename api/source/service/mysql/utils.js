@@ -105,7 +105,7 @@ module.exports.getUserObject = async function (username) {
   let sql, binds
   try {    
     sql = `SELECT
-      ud.userId,
+      CAST(ud.userId as char) as userId,
       ud.username,
       ud.display,
       cast (ud.globalAccess is true as json) as globalAccess,
@@ -115,7 +115,7 @@ module.exports.getUserObject = async function (username) {
         THEN 
           json_arrayagg(
             json_object(
-              'packageId', pg.packageId,
+              'packageId', CAST(pg.packageId as char),
               'accessLevel', pg.accessLevel
             )
           )

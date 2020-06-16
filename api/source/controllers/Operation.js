@@ -5,7 +5,6 @@ const {promises: fs} = require('fs')
 const config = require('../utils/config')
 const Operation = require(`../service/${config.database.type}/OperationService`)
 const Asset = require(`./Asset`)
-const Department = require(`./Department`)
 const Package = require(`./Package`)
 const User = require(`./User`)
 const Review = require(`./Review`)
@@ -33,7 +32,6 @@ module.exports.getAppData = async function getAppData (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     if ( elevate ) {
-      let departments = await Department.exportDepartments(elevate, req.UserObject)
       let packages = await Package.exportPackages( [], elevate, req.userObject )
       let users = await User.exportUsers( [], elevate, req.userObject)
       users.forEach(user => {

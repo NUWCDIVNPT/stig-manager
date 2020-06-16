@@ -42,8 +42,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
   var groupFields = Ext.data.Record.create([
     {
-      name: 'assetId',
-      type: 'integer'
+      name: 'assetId'
     }, {
       name: 'groupId',
       type: 'string',

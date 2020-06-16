@@ -13,7 +13,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
   try {
     const context = userObject.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
     const columns = [
-      'r.assetId',
+      'CAST(r.assetId as char) as assetId',
       'asset.name as "assetName"',
       'r.ruleId',
       'result.api as "result"',
@@ -74,10 +74,10 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
     if (inProjection.includes('asset')) {
       columns.push(`(select 
         json_object(
-          'assetId', a.assetId,
+          'assetId', CAST(a.assetId as char),
           'name', a.name,
           'package', json_object(
-            'packageId', p.packageId,
+            'packageId', CAST(p.packageId as char),
             'name', p.name
           )
         )

@@ -58,8 +58,7 @@ function addAssetAdmin ( packageId, packageName ) {
 	});
 
 	var assetFields = Ext.data.Record.create([
-		{	name:'assetId',
-			type: 'number'
+		{	name:'assetId'
 		},{
 			name: 'name',
 			type: 'string'

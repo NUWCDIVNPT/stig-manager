@@ -17,7 +17,7 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
     }
 
     let columns = [
-      'p.packageId',
+      'CAST(p.packageId as char) as packageId',
       'p.name',
       'p.workflow',
       'p.metadata'
@@ -37,7 +37,7 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
             group_concat(distinct 
               case when a.assetId is not null then 
                 json_object(
-                  'assetId', a.assetId, 
+                  'assetId', CAST(a.assetId as char), 
                   'name', a.name
                 )
               else null end 
@@ -70,7 +70,7 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
       json_arrayagg(
         json_object(
           'user', json_object(
-            'userId', user_data.userId,
+            'userId', CAST(user_data.userId as char),
             'username', user_data.username
             ),
           'accessLevel', accessLevel

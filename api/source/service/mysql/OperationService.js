@@ -149,7 +149,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     // Table: user_data
     for (const u of users) {
       dml.userData.insertBinds.push([
-        u.userId,
+        parseInt(u.userId) || null,
         u.username, 
         u.display,
         u.email,
@@ -163,15 +163,15 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     // Tables: package, package_grant_map
     for (const p of packages) {
       dml.package.insertBinds.push([
-        p.packageId,
+        parseInt(p.packageId) || null,
         p.name,
         p.workflow,
         JSON.stringify(p.metadata)
       ])
       for (const grant of p.grants) {
         dml.packageGrant.insertBinds.push([
-          p.packageId,
-          grant.userId,
+          parseInt(p.packageId) || null,
+          parseInt(grant.userId) || null,
           grant.accessLevel
         ])
       }
@@ -182,8 +182,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     for (const asset of assets) {
       let { stigReviewers, ...assetFields} = asset
       dml.asset.insertBinds.push([
-        assetFields.assetId,
-        assetFields.packageId,
+        parseInt(assetFields.assetId) || null,
+        parseInt(assetFields.packageId) || null,
         assetFields.name,
         assetFields.ip,
         assetFields.nonnetwork ? 1: 0,
@@ -194,11 +194,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         const userIds = []
         if (sr.userIds && sr.userIds.length > 0) {
           for (const userId of sr.userIds) {
-            userIds.push(userId)
+            userIds.push(parseInt(userId) || null)
           }
         }
         dml.stigAssetMap.insertBinds.push([
-          assetId,
+          parseInt(assetId) || null,
           sr.benchmarkId,
           JSON.stringify(userIds)
         ])
@@ -220,17 +220,17 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         ])
       }
       dml.review.insertBinds.push([
-        review.assetId,
+        parseInt(review.assetId) || null,
         review.ruleId,
         dbUtils.REVIEW_RESULT_API[review.result],
         review.resultComment,
         review.action ? dbUtils.REVIEW_ACTION_API[review.action] : null,
         review.actionComment,
-        review.userId,
+        parseInt(review.userId) || null,
         review.autoState ? 1 : 0,
         new Date(review.ts),
         review.rejectText,
-        review.rejectUserId,
+        parseInt(review.rejectUserId) || null,
         review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0
       ])
     }

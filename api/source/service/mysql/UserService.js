@@ -12,7 +12,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   let connection
   try {
     let columns = [
-      'ud.userId',
+      'CAST(ud.userId as char) as userId',
       'ud.username',
       'ud.display',
       'ud.email',
@@ -41,7 +41,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       json_arrayagg(
         json_object(
           'package', json_object(
-            'packageId', pg.packageId,
+            'packageId', CAST(pg.packageId as char),
             'name', p.name
           ),
           'accessLevel', pg.accessLevel

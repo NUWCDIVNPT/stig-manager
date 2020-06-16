@@ -15,10 +15,10 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     const context = userObject.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
 
     const columns = [
-      'a.assetId',
+      'CAST(a.assetId as char) as assetId',
       'a.name',
       `json_object (
-        'packageId', p.packageId,
+        'packageId', CAST(p.packageId as char),
         'name', p.name
       ) as "package"`,
       'a.ip',
@@ -54,7 +54,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
           -- if no user, return null instead of object with null property values
           case when ud.userId is not null then
             json_object(
-              'userId', ud.userId, 
+              'userId', CAST(ud.userId as char), 
               'username', ud.username
             ) 
           else NULL end as reviewers
@@ -72,7 +72,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       columns.push(`(select
           case when count(u.userId > 0) then json_arrayagg(
           -- if no user, return null instead of object with null property values
-          case when u.userId is not null then json_object('userId', u.userId, 'username', u.username) else NULL end) 
+          case when u.userId is not null then json_object('userId', CAST(u.userId as char), 'username', u.username) else NULL end) 
           else json_array() end as reviewers
         FROM 
           stig_asset_map sa
@@ -278,7 +278,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     }
 
     let columns = [
-      ':assetId as "assetId"',
+      'CAST(:assetId as char) as "assetId"',
       'r.ruleId',
       'r.title as "ruleTitle"',
       'g.groupId',

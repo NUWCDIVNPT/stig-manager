@@ -391,7 +391,7 @@ async function loadTree(node, cb) {
     // Package-Assets node
     match = node.match(/(\d+)-assets-node/)
     if (match) {
-      let packageId = parseInt(match[1])
+      let packageId = match[1]
       let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
         method: 'GET',
@@ -416,8 +416,8 @@ async function loadTree(node, cb) {
     // Package-Assets-STIG node
     match = node.match(/(\d+)-(\d+)-assets-asset-node/)
     if (match) {
-      let packageId = parseInt(match[1])
-      let assetId = parseInt(match[2])
+      let packageId = match[1]
+      let assetId = match[2]
       let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
         method: 'GET',
@@ -448,7 +448,7 @@ async function loadTree(node, cb) {
     // Package-STIGs node
     match = node.match(/(\d+)-stigs-node/)
     if (match) {
-      let packageId = parseInt(match[1])
+      let packageId = match[1]
       let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
         method: 'GET',
@@ -477,7 +477,7 @@ async function loadTree(node, cb) {
     // Package-STIGs-Asset node
     match = node.match(/(\d+)-(.*)-stigs-stig-node/)
     if (match) {
-      let packageId = parseInt(match[1])
+      let packageId = match[1]
       let benchmarkId = match[2]
       let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/assets`,
@@ -520,8 +520,7 @@ function addReviewHome() {
 
   var statusChangesFields = Ext.data.Record.create([
     {
-      name: 'assetId',
-      type: 'int'
+      name: 'assetId'
     }
     , {
       name: 'assetName',
