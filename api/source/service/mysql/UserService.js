@@ -18,7 +18,8 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.email',
       'ud.globalAccess',
       'ud.canCreatePackage',
-      'ud.canAdmin'
+      'ud.canAdmin',
+      'ud.metadata'
     ]
     let joins = [
       'user_data ud'
@@ -80,7 +81,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.close()
+      await connection.release()
     }
   }
 }

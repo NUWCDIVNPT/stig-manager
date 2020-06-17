@@ -1,5 +1,3 @@
-'use strict';
-
 const writer = require('../utils/writer.js')
 const {promises: fs} = require('fs')
 const config = require('../utils/config')
@@ -32,16 +30,16 @@ module.exports.getAppData = async function getAppData (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     if ( elevate ) {
-      let packages = await Package.exportPackages( [], elevate, req.userObject )
+      let packages = await Package.exportPackages( ['grants'], elevate, req.userObject )
+      for (const package of packages) {
+          for (const grant of package.grants) {
+            grant.userId = grant.user.userId
+            delete grant.user
+          }
+      }
       let users = await User.exportUsers( [], elevate, req.userObject)
-      users.forEach(user => {
-        user.deptId = user.dept.deptId
-        delete user.dept
-      })
       let assets = await Asset.exportAssets( ['stigReviewers'], elevate, req.userObject)
       assets.forEach(asset => {
-        asset.deptId = asset.dept.deptId
-        delete asset.dept
         asset.packageId = asset.package.packageId
         delete asset.package
         asset.stigReviewers = asset.stigReviewers.map( s => ({
@@ -49,19 +47,29 @@ module.exports.getAppData = async function getAppData (req, res, next) {
           userIds: s.reviewers.map( r => r.userId )
         }))
       })
+      // let reviews = []
       let reviews = await Review.exportReviews(['history'], req.userObject)
       reviews.forEach(r => {
         ['assetName','username','reviewComplete'].forEach(k => delete r[k])
         r.history.forEach(h => delete h.username)
       })      
       let response = {
-        packages: packages,
-        departments: departments,
         users: users,
+        packages: packages,
         assets: assets,
         reviews: reviews
       }
-      writer.writeJsonFile(res, response, 'stig-manager-appdata.json')
+      let zip = new JSZip()
+      zip.file("stig-manager-appdata.json", JSON.stringify(response))
+      let buffer = await zip.generateAsync({
+        type: 'nodebuffer',
+        compression: "DEFLATE",
+        compressionOptions: {
+            level: 3
+        }
+      })
+      writer.writeZipFile(res, buffer, 'stig-manager-appdata.json.zip')
+      // writer.writeJsonFile(res, response, 'stig-manager-appdata.json')
     }
     else {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )

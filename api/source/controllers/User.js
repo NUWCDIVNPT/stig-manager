@@ -54,7 +54,6 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
 
 module.exports.exportUsers = async function exportUsers (projection, elevate, userObject) {
   try {
-    let elevate = req.swagger.params['elevate'].value
     if (elevate) {
       return await User.getUsers(null, null, null, projection, elevate, userObject )
     }
@@ -97,14 +96,9 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res, next)
 module.exports.getUsers = async function getUsers (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate ) {
-      let projection = req.swagger.params['projection'].value
-      let response = await User.getUsers( projection, elevate, req.userObject)
-      writer.writeJson(res, response)
-    }
-    else {
-      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
-    }
+    let projection = req.swagger.params['projection'].value
+    let response = await User.getUsers( projection, elevate, req.userObject)
+    writer.writeJson(res, response)
   }
   catch(err) {
     writer.writeJson(res, err)

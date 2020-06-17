@@ -29,9 +29,48 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
         this.store.loadData(data)
     }
 })
+Ext.reg('sm-workflow-combo', SM.WorkflowComboBox);
 
+SM.AccessLevelStrings = [
+    'Undefined',
+    'Assignments',
+    'All resources',
+    'Configuration',
+    'Owner'
+]
 
-SM.PackageMetadataGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function() {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false      
+        }
+        let me = this
+        let data = [
+            [1, SM.AccessLevelStrings[1]],
+            [2, SM.AccessLevelStrings[2]],
+            [3, SM.AccessLevelStrings[3]],
+            [4, SM.AccessLevelStrings[4]],
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value','display']
+        })
+        this.store.on('load',function(store){
+            me.setValue(store.getAt(0).get('value'))
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.AccessLevelField.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+Ext.reg('sm-accesslevel-field', SM.AccessLevelField);
+
+SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
         let id = Ext.id()
         let fields = ['key','value']
@@ -193,11 +232,289 @@ SM.PackageMetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageMetadataGrid.superclass.initComponent.call(this);
+        SM.MetadataGrid.superclass.initComponent.call(this);
     }
 })
-Ext.reg('sm-package-metadata-grid', SM.PackageMetadataGrid)
+Ext.reg('sm-metadata-grid', SM.MetadataGrid)
 
+SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
+    initComponent: function() {
+        const userStore = new Ext.data.JsonStore({
+            fields: [
+                {	name:'userId',
+                    type: 'string'
+                },{
+                    name:'username',
+                    type: 'string'
+                }
+            ],
+            autoLoad: true,
+            url: `${STIGMAN.Env.apiBase}/users`,
+            root: '',
+            sortInfo: {
+                field: 'username',
+                direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
+            },
+            idProperty: 'userId'
+        })
+        const config = {
+            store: userStore,
+            filteringStore: this.filteringStore || null,
+            displayField: 'username',
+            valueField: 'userId',
+            mode: 'local',
+            forceSelection: true,
+			allowBlank: true,
+			typeAhead: true,
+			minChars: 0,
+            hideTrigger: false,
+            triggerAction: 'all',
+            lastQuery: '',
+			doQuery : function(q, forceAll){
+				q = Ext.isEmpty(q) ? '' : q;
+				var qe = {
+					query: q,
+					forceAll: forceAll,
+					combo: this,
+					cancel:false
+				};
+				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
+					return false;
+				}
+				q = qe.query;
+				forceAll = qe.forceAll;
+				if(forceAll === true || (q.length >= this.minChars)){
+					if(this.lastQuery !== q){
+						this.lastQuery = q;
+						if(this.mode == 'local'){
+							this.selectedIndex = -1;
+							if(forceAll){
+								this.store.clearFilter();
+							}else{
+								this.store.filter(this.displayField, q, false, false);
+							}
+							this.onLoad();
+						}else{
+							this.store.baseParams[this.queryParam] = q;
+							this.store.load({
+								params: this.getParams(q)
+							});
+							this.expand();
+						}
+					}else{
+						this.selectedIndex = -1;
+						this.onLoad();
+					}
+                }
+            },
+            listeners: {
+                afterrender: (combo) => {
+                    combo.getEl().dom.setAttribute('spellcheck', 'false')
+                },
+                expand: (combo) => {
+                    if (combo.filteringStore) {
+                        combo.store.filterBy(
+                            function (record, id) {
+                                return combo.filteringStore.indexOfId(id) === -1
+                            }
+                        )
+                    }
+                }
+            }       
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.UserSelectionField.superclass.initComponent.call(this)
+    }
+})
+Ext.reg('sm-user-selection-field', SM.UserSelectionField);
+
+SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent: function() {
+        const me = this
+        const fields = [
+            { 
+                name: 'userId',
+                mapping: 'user.userId'
+            },
+            {
+                name: 'username',
+                mapping: 'user.username'
+            },
+            {
+                name: 'accessLevel'
+            }
+        ]
+        const newFields = [
+            { 
+                name: 'userId'
+            },
+            {
+                name: 'username'
+            },
+            {
+                name: 'accessLevel'
+            }
+        ]
+        this.newRecordConstructor = Ext.data.Record.create(newFields)
+        const totalTextCmp = new Ext.Toolbar.TextItem ({
+            text: '0 records',
+            width: 80
+        })
+        const grantStore = new Ext.data.JsonStore({
+            grid: this,
+            root: '',
+            fields: newFields,
+            idProperty: 'userId',
+            sortInfo: {
+                field: 'username',
+                direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
+            },
+            listeners: {
+                load: function (store,records) {
+                    totalTextCmp.setText(records.length + ' records');
+                },
+                remove: function (store,record,index) {
+                    totalTextCmp.setText(store.getCount() + ' records');
+                }
+            }
+        })
+        const userSelectionField = new SM.UserSelectionField({
+            submitValue: false,
+            allowBlank: false,
+            filteringStore: grantStore
+        })
+        const accessLevelField = new SM.AccessLevelField({
+            submitValue: false,
+            allowBlank: false
+        })
+        const columns = [
+            { 	
+				header: "Username",
+				width: 15,
+                dataIndex: 'username',
+                sortable: true,
+                editor: userSelectionField
+            },
+            { 	
+				header: "Access Level",
+				width: 10,
+                dataIndex: 'accessLevel',
+                sortable: true,
+                renderer: (v) => SM.AccessLevelStrings[v],
+                editor: accessLevelField
+            }
+        ]
+        this.editor =  new Ext.ux.grid.RowEditor({
+            saveText: 'Save',
+            grid: this,
+            userSelectionField: userSelectionField,
+            accessLevelField: accessLevelField,
+            clicksToEdit: 2,
+            errorSummary: false, // don't display errors during validation monitoring
+            listeners: {
+                validateedit: function (editor, changes, record, index) {
+                    // RowEditor unhelpfully sets changes.username to the userId value. 
+                    if (changes.hasOwnProperty('username')) {
+                        let userEditor = editor.userSelectionField
+                        let userRecord = userEditor.store.getAt(userEditor.selectedIndex) 
+                        changes.username = userRecord.data.username
+                        changes.userId = userRecord.data.userId
+                    }
+                },
+                canceledit: function (editor,forced) {
+                    // The 'editing' property is set by RowEditorToolbar.js
+                    if (editor.record.editing === true) { // was the edit on a new record?
+                        this.grid.store.suspendEvents(false);
+                        this.grid.store.remove(editor.record);
+                        this.grid.store.resumeEvents();
+                        this.grid.getView().refresh();
+                    }
+                },
+                afteredit: function (editor, changes, record, index) {
+                    // "Save" the record by reconfiguring the store's data collection
+                    // Corrects the bug where new records don't deselect when clicking away
+                    let mc = record.store.data
+                    let generatedId = record.id
+                    record.id = record.data.userId
+                    record.phantom = false
+                    record.dirty = false
+                    delete mc.map[generatedId]
+                    mc.map[record.id] = record
+                    for (let x=0,l=mc.keys.length; x<l; x++) {
+                        if (mc.keys[x] === generatedId) {
+                            mc.keys[x] = record.id
+                        }
+                    }
+                }
+
+            }
+        })
+        const config = {
+            //title: this.title || 'Parent',
+            isFormField: true,
+            name: 'grants',
+            allowBlank: true,
+            layout: 'fit',
+            height: 150,
+            plugins: [this.editor],
+            border: true,
+            store: grantStore,
+            cm: new Ext.grid.ColumnModel ({
+                columns: columns   
+            }),
+            sm: new Ext.grid.RowSelectionModel({
+                singleSelect: true,
+                listeners: {
+                    selectionchange: function (sm) {
+                    }
+                }
+            }),
+            view: new Ext.grid.GridView({
+                emptyText: this.emptyText || 'No records to display',
+                deferEmptyText: false,
+                forceFit:true,
+                markDirty: false
+            }),
+            listeners: {
+            },
+            bbar: new SM.RowEditorToolbar({
+                itemString: 'Grant',
+                editor: this.editor,
+                gridId: this.id,
+                deleteProperty: 'userId',
+                newRecord: this.newRecordConstructor
+            }),
+
+            getValue: function() {
+                let grants = []
+                grantStore.data.items.forEach((i) => {
+                    grants.push({
+                        userId: i.data.userId,
+                        accessLevel: i.data.accessLevel
+                    })
+                })
+                return grants
+            },
+            setValue: function(v) {
+                const data = v.map( (g) => ({
+                    userId: g.user.userId,
+                    username: g.user.username,
+                    accessLevel: g.accessLevel
+                }))
+                grantStore.loadData(data)
+            },
+            markInvalid: function() {},
+            clearInvalid: function() {},
+            isValid: () => true,
+            getName: () => this.name,
+            validate: () => true
+        }
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.UserGrantsGrid.superclass.initComponent.call(this)
+    }
+})
+Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 
 SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function() {
@@ -228,30 +545,42 @@ SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
                 return o
             },
             items: [
-            {
-                xtype: 'fieldset',
-                title: '<b>Package information</b>',
-                items: [
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: 'Name',
-                        name: 'name',
-                        allowBlank: false,
-                        anchor:'100%'  // anchor width by percentage
-                    },{
-                        xtype: 'sm-workflow-combo',
-                        fieldLabel: 'Workflow',
-                        name: 'workflow',
-                        margins: '0 10 0 0',
-                        width: 200
-                    },{
-                        xtype: 'sm-package-metadata-grid',
-                        fieldLabel: 'Metadata',
-                        name: 'metadata',
-                        anchor: '100%'
-                    }
-                ]
-            }],
+                {
+                    xtype: 'fieldset',
+                    title: '<b>Package information</b>',
+                    items: [
+                        {
+                            xtype: 'textfield',
+                            fieldLabel: 'Name',
+                            name: 'name',
+                            allowBlank: false,
+                            anchor:'100%'  // anchor width by percentage
+                        },{
+                            xtype: 'sm-workflow-combo',
+                            fieldLabel: 'Workflow',
+                            name: 'workflow',
+                            margins: '0 10 0 0',
+                            width: 200
+                        },{
+                            xtype: 'sm-metadata-grid',
+                            fieldLabel: 'Metadata',
+                            name: 'metadata',
+                            anchor: '100%'
+                        }
+                    ]
+                },
+                {
+                    xtype: 'fieldset',
+                    title: '<b>Access Control</b>',
+                    items: [
+                        {
+                            xtype: 'sm-user-grants-grid',
+                            fieldLabel: 'Grants',
+                            anchor: '100%'
+                        }
+                    ]
+                }
+            ],
             buttons: [{
                 text: this.btnText || 'Save',
                 formBind: true,
@@ -262,5 +591,5 @@ SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
         SM.PackageForm.superclass.initComponent.call(this);
     }
 })
+
 Ext.reg('sm-package-form', SM.PackageForm);
-Ext.reg('sm-workflow-combo', SM.WorkflowComboBox);

@@ -54,6 +54,15 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
   response.end(payload);
 }
 
+exports.writeZipFile = function(response, buffer, filename) {
+  response.writeHead(200, {
+    'Content-Type': 'application/zip', 
+    'Content-Disposition': `attachment; filename="${filename}"`,
+    'Access-Control-Expose-Headers': 'Content-Disposition'
+  })
+  response.write(buffer)
+  response.end()
+}
 exports.writeJsonFile = function(response, payload, filename) {
   response.writeHead(200, {
     'Content-Type': 'application/json', 

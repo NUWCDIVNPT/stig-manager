@@ -80,7 +80,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
 
 module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
   try {
-    let assets =  await Asset.getAssets(null, null, null, projection, elevate, userObject )
+    let assets =  await Asset.getAssets(null, null, projection, elevate, userObject )
     return assets
   }
   catch (err) {

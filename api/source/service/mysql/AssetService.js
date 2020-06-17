@@ -622,7 +622,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
   }
   finally {
     if (typeof connection !== 'undefinied') {
-      await connection.close()
+      await connection.release()
     }
   }
 }

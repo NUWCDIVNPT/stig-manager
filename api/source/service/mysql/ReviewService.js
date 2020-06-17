@@ -570,7 +570,7 @@ exports.patchReview = async function(projection, assetId, ruleId, body, userObje
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.close()
+      await connection.release()
     }
   }
 }

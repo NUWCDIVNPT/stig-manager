@@ -99,7 +99,7 @@ module.exports.getPackages = async function getPackages (req, res, next) {
 
 module.exports.exportPackages = async function exportPackages (projection, elevate, userObject) {
   try {
-    return await Package.getPackages( projection, elevate, userObject )
+    return await Package.getPackages( {}, projection, elevate, userObject )
   }
   catch (err) {
     throw (err)

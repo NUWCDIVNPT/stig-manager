@@ -96,21 +96,14 @@ function loadApp () {
 	
 	var reviewItems = getReviewItems();
 	var viewport = new Ext.Viewport({
-		layout: 'fit',
-		items: [
-			{
-				// title: 'Reviews',
-				iconCls: 'sm-stig-icon',
-				layout: 'border',
-				id: 'tab-reviews',
-				items: reviewItems,
-				listeners: {
-					render: function () {
-						addReviewHome();
-					}
-				}
+		layout: 'border',
+		id: 'app-viewport',
+		items: reviewItems,
+		listeners: {
+			render: function () {
+				addReviewHome();
 			}
-		]
+		}
 	})
 
 	Ext.get('loading').remove();
