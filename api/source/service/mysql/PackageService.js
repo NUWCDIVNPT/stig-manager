@@ -67,16 +67,20 @@ exports.queryPackages = async function (inProjection = [], inPredicates = {}, el
     }
     if (inProjection.includes('grants')) {
       columns.push(`(select
-      json_arrayagg(
-        json_object(
-          'user', json_object(
-            'userId', CAST(user_data.userId as char),
-            'username', user_data.username
-            ),
-          'accessLevel', accessLevel
+        coalesce(
+          (select json_arrayagg(
+            json_object(
+              'user', json_object(
+                'userId', CAST(user_data.userId as char),
+                'username', user_data.username
+                ),
+              'accessLevel', accessLevel
+            )
+          )
+          from package_grant left join user_data using (userId) where packageId = p.packageId)
+        ,  json_array()
         )
-      )
-      from package_grant left join user_data using (userId) where packageId = p.packageId) as "grants"`)
+      ) as "grants"`)
     }
 
     // PREDICATES
