@@ -1,4 +1,10 @@
-.sm-tree-node-create {
+/* Adjust position of the grid checkbox */
+/* Required by SM.SelectingGridToolbar */
+.x-grid3-row-selected-checkonly .x-grid3-row-checker {
+	background-position: -22px 3px;
+}
+  
+  .sm-tree-node-create {
 	font-style: italic
 }
 

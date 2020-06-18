@@ -33,6 +33,7 @@ function loadScripts() {
         "js/overrides.js",
         "js/RowEditor.js",
         "js/RowExpander.js",
+        "js/SM/SelectingGridToolbar.js",
         "js/SM/AppNavTree.js",
         "js/SM/RowEditorToolbar.js",
         "js/SM/PackageForm.js",
