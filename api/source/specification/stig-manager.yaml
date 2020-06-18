@@ -452,6 +452,259 @@ paths:
       security:
         - oauth:
             - 'stig-manager:package'
+  '/assets/{assetId}/stigs':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/AssetIdPath'
+    get:
+      tags:
+        - Asset
+      summary: Return an Asset's STIG assignments
+      operationId: getAssetStigs
+      responses:
+        '200':
+          description: STIGs response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIGs'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+    put:
+      tags:
+        - Asset
+      summary: Set all the STIG assignments of an Asset
+      operationId: setAssetStigs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                type: string
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+    delete:
+      tags:
+        - Asset
+      summary: Delete all STIG assignments to an Asset
+      operationId: deleteAssetStigs
+      responses:
+        '200':
+          description: AssetStigs response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIGs'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+
+  '/assets/{assetId}/stigs/{benchmarkId}':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+    put:
+      tags:
+        - Asset
+      summary: Assign a STIG to an Asset
+      operationId: setAssetStig
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIGs'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+    delete:
+      tags:
+        - Asset
+      summary: Delete a STIG assignment to an Asset
+      operationId: deleteAssetStig
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIGs'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+  '/assets/{assetId}/stigs/{benchmarkId}/grants':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+    get:
+      tags:
+        - Asset
+      summary: Return all the grants to a STIG-Asset combination
+      operationId: getAssetStigGrants
+      responses:
+        '200':
+          description: STIGs response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package:read'
+    put:
+      tags:
+        - Asset
+      summary: Set all the grants to a STIG-Asset combination
+      operationId: setAssetStigGrants
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  description: A List of userIds with accessLevel 1 on the Asset's Package
+                  type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+    delete:
+      tags:
+        - Asset
+      summary: Delete all the grants to a STIG-Asset combination
+      operationId: deleteAssetStigGrants
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+
+  '/assets/{assetId}/stigs/{benchmarkId}/grants/{userId}':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/UserIdPath'
+    put:
+      tags:
+        - Asset
+      summary: Set a grant to a STIG-Asset combination
+      operationId: setAssetStigGrant
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+    delete:
+      tags:
+        - Asset
+      summary: Delete a grant to a STIG-Asset combination
+      operationId: deleteAssetStigGrant
+      responses:
+        '200':
+          description: AssetProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:package'
+
   '/assets/{assetId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
       - name: assetId
@@ -1116,36 +1369,12 @@ paths:
         required: true
         schema:
           type: string
-    get:
-      tags:
-        - Asset
-      summary: Return Assets mapped to a STIG in the specified Package
-      operationId: getAssetsByBenchmarkId
-      description: ''
-      responses:
-        '200':
-          description: Revision response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StigAssetProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:package:read'
     put:
       tags:
         - Asset
       summary: Set the Assets mapped to a STIG
       description: ''
-      operationId: setStigAssetsByBenchmarkId
+      operationId: replaceStigAssetsByBenchmarkId
       requestBody:
         required: true
         description: A list of assetIds from the specified Package
@@ -1682,7 +1911,7 @@ components:
         - ip
         - nonnetwork
         - metadata
-        - stigReviewers
+        - stigs
       additionalProperties: false
       properties:
         name:
@@ -1698,18 +1927,11 @@ components:
           type: boolean
         metadata:
           type: object
-        stigReviewers:
+        stigs:
           description: The benchmarkIds and reviewers mapped to this Asset
           type: array
           items:
-            type: object
-            properties:
-              benchmarkId:
-                type: string
-              userIds:
-                type: array
-                items:
-                  type: string
+            $ref: '#/components/schemas/AssetStigAssignmentBasic'
     AssetForPackage:
       type: object
       properties:
@@ -1734,18 +1956,31 @@ components:
               description: The benchmarkIds mapped to this Asset
               items:
                 $ref: '#/components/schemas/STIG'
-            stigReviewers:
+            stigGrants:
               type: array
-              description: The benchmarkIds and reviewers mapped to this Asset
               items:
-                type: object
-                properties:
-                  benchmarkId:
-                    type: string
-                  reviewers:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserBasic'
+                $ref: '#/components/schemas/AssetStigAssignmentWithGrant'
+    AssetStigAssignment:
+      oneOf:
+        - $ref: '#/components/schemas/AssetStigAssignmentBasic'
+        - $ref: '#/components/schemas/AssetStigAssignmentWithGrant'
+    AssetStigAssignmentBasic:
+      type: string
+    AssetStigAssignmentWithGrant:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        userIds:
+          type: array
+          items:
+            type: string
+    STIGs:
+      description: List of STIG
+      type: array
+      items:
+        $ref: '#/components/schemas/STIG'
+    
     AssetUpdate:
       properties:
         name:
@@ -1761,18 +1996,11 @@ components:
           type: boolean
         metadata:
           type: object
-        stigReviewers:
+        stigs:
           description: The benchmarkIds and reviewers mapped to this Asset
           type: array
           items:
-            type: object
-            properties:
-              benchmarkId:
-                type: string
-              userIds:
-                type: array
-                items:
-                  type: string
+            $ref: '#/components/schemas/AssetStigAssignmentBasic'
     Cci:
       type: object
       properties:
@@ -2760,7 +2988,7 @@ components:
           enum:
             - adminStats
             - stigs
-            - stigReviewers
+            - stigGrants
     BenchmarkIdPath:
       name: benchmarkId
       in: path

@@ -43,7 +43,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       KEY 'stigAssignedCount' VALUE COUNT(Distinct usa.saId)
       ) as "adminStats"`)
   }
-  if (inProjection && inProjection.includes('stigReviewers') && context !== dbUtils.CONTEXT_USER) {
+  if (inProjection && inProjection.includes('stigGrants') && context !== dbUtils.CONTEXT_USER) {
     columns.push(`(select
           replace(
               replace(
@@ -67,7 +67,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       left join stigman.user_stig_asset_map usa on sa.saId = usa.saId
       left join stigman.user_data u on usa.userId = u.id
       WHERE sa.assetId = a.assetId
-      group by sa.stigId) as "stigReviewers"`)
+      group by sa.stigId) as "stigGrants"`)
   }
   if (inProjection && inProjection.includes('reviewers') && context !== dbUtils.CONTEXT_USER) {
     // Subquery relies on predicate :stigId to be set
@@ -183,8 +183,8 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       if ('adminStats' in record) {
         record.adminStats = JSON.parse(record.adminStats) || {}
       }
-      if ('stigReviewers' in record) {
-        record.stigReviewers = JSON.parse(record.stigReviewers) || []
+      if ('stigGrants' in record) {
+        record.stigGrants = JSON.parse(record.stigGrants) || []
       }
       if ('reviewers' in record) {
         record.reviewers = JSON.parse(record.reviewers) || []
@@ -204,8 +204,8 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // REPLACE/UPDATE: assetId is not null
 
     // Extract or initialize non-scalar properties to separate variables
-    let { stigReviewers, benchmarkIds, packageIds, ...assetFields } = body
-    stigReviewers = stigReviewers ? stigReviewers : []
+    let { stigGrants, benchmarkIds, packageIds, ...assetFields } = body
+    stigGrants = stigGrants ? stigGrants : []
     benchmarkIds = benchmarkIds ? benchmarkIds : []
     packageIds = packageIds ? packageIds : []
 
@@ -286,7 +286,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       await connection.executeMany(sqlInsertPackages, binds)
     }
 
-    // Process benchmarkIds and/or stigReviewers  
+    // Process benchmarkIds and/or stigGrants  
     binds = {
       insert: {
         stigAsset: [],
@@ -306,15 +306,15 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       binds.notdelete.stigAsset = benchmarkIds.map(i => i)
     }
 
-    if (stigReviewers.length > 0) {
+    if (stigGrants.length > 0) {
       // Append these for insert into STIG_ASSET_MAP
-      binds.insert.stigAsset = binds.insert.stigAsset.concat(stigReviewers.map(i => [i.benchmarkId, assetId]))
+      binds.insert.stigAsset = binds.insert.stigAsset.concat(stigGrants.map(i => [i.benchmarkId, assetId]))
       // Exclude these benchmarkIds from notdelete STIG_ASSET_MAP since the user mappings will be replaced
-      let removeThese = stigReviewers.map(i => i.benchmarkId)
+      let removeThese = stigGrants.map(i => i.benchmarkId)
       binds.notdelete.stigAsset = binds.notdelete.stigAsset.filter( benchmarkId => !removeThese.contains(benchmarkId))
 
       // Bind the USER_STIG_ASSET_MAP values
-      stigReviewers.forEach( e => {
+      stigGrants.forEach( e => {
         binds.delete.userStigAsset.push([e.benchmarkId, assetId])
         if (e.userIds && e.userIds.length > 0) {
           e.userIds.forEach(userId => {
@@ -328,7 +328,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       })
     }
 
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE || 'benchmarkIds' in body || 'stigReviewers' in body) {
+    if (writeAction === dbUtils.WRITE_ACTION.REPLACE || 'benchmarkIds' in body || 'stigGrants' in body) {
       let sqlDeleteBenchmarks = 'DELETE FROM stigman.stig_asset_map WHERE assetId = :assetId'
       if (binds.notdelete.stigAsset.length > 0) {
         sqlDeleteBenchmarks += ` AND stigId NOT IN (${binds.notdelete.stigAsset.map((name, index) => `:${index}`).join(", ")})`

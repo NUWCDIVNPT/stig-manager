@@ -214,7 +214,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // ASSETS, ASSET_PACAKGE_MAP, STIG_ASSET_MAP, USER_STIG_ASSET_MAP
     for (const asset of assets) {
-      let { packageIds, stigReviewers, ...assetFields} = asset
+      let { packageIds, stigGrants, ...assetFields} = asset
       assetFields.nonnetwork = assetFields.nonnetwork ? 1: 0
       delete assetFields.scanexempt // TODO: Remove this when scanexempt no longer provided
       dml.assets.insertBinds.push(assetFields)
@@ -222,7 +222,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
       for (const packageId of packageIds) {
         dml.assetPackageMap.insertBinds.push([assetId, packageId])
       }
-      for (const sr of stigReviewers) {
+      for (const sr of stigGrants) {
         dml.stigAssetMap.insertBinds.push({
           assetId: assetId,
           benchmarkId: sr.benchmarkId

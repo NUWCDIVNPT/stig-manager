@@ -180,7 +180,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 
     // Tables: asset, stig_asset_map, user_stig_asset_map
     for (const asset of assets) {
-      let { stigReviewers, ...assetFields} = asset
+      let { stigGrants, ...assetFields} = asset
       dml.asset.insertBinds.push([
         parseInt(assetFields.assetId) || null,
         parseInt(assetFields.packageId) || null,
@@ -190,7 +190,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         JSON.stringify(assetFields.metadata)
       ])
       let assetId = assetFields.assetId
-      for (const sr of stigReviewers) {
+      for (const sr of stigGrants) {
         const userIds = []
         if (sr.userIds && sr.userIds.length > 0) {
           for (const userId of sr.userIds) {

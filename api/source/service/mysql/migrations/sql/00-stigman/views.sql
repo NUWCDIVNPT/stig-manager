@@ -16,16 +16,16 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Temporary view structure for view `asset_stigReviewers`
+-- Temporary view structure for view `asset_stigGrants`
 --
 
-DROP TABLE IF EXISTS `asset_stigReviewers`;
-/*!50001 DROP VIEW IF EXISTS `asset_stigReviewers`*/;
+DROP TABLE IF EXISTS `asset_stigGrants`;
+/*!50001 DROP VIEW IF EXISTS `asset_stigGrants`*/;
 SET @saved_cs_client     = @@character_set_client;
 /*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `asset_stigReviewers` AS SELECT 
+/*!50001 CREATE VIEW `asset_stigGrants` AS SELECT 
  1 AS `assetId`,
- 1 AS `stigReviewers`*/;
+ 1 AS `stigGrants`*/;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -79,10 +79,10 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
--- Final view structure for view `asset_stigReviewers`
+-- Final view structure for view `asset_stigGrants`
 --
 
-/*!50001 DROP VIEW IF EXISTS `asset_stigReviewers`*/;
+/*!50001 DROP VIEW IF EXISTS `asset_stigGrants`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
@@ -91,7 +91,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `asset_stigReviewers` AS select `byAsset`.`assetId` AS `assetId`,json_arrayagg(`byAsset`.`stigAssetUsers`) AS `stigReviewers` from (select `r`.`assetId` AS `assetId`,json_object('benchmarkId',`r`.`benchmarkId`,'reviewers',(case when (count(`r`.`reviewers`) > 0) then json_arrayagg(`r`.`reviewers`) else json_array() end)) AS `stigAssetUsers` from (select `sa`.`assetId` AS `assetId`,`sa`.`benchmarkId` AS `benchmarkId`,(case when (`ud`.`userId` is not null) then json_object('userId',`ud`.`userId`,'username',`ud`.`username`,'dept',json_object('deptId',`d`.`deptId`,'name',`d`.`name`)) else NULL end) AS `reviewers` from (((`stig_asset_map` `sa` left join `user_stig_asset_map` `usa` on((`sa`.`saId` = `usa`.`saId`))) left join `user_data` `ud` on((`usa`.`userId` = `ud`.`userId`))) left join `department` `d` on((`ud`.`deptId` = `d`.`deptId`)))) `r` group by `r`.`assetId`,`r`.`benchmarkId`) `byAsset` group by `byAsset`.`assetId` */;
+/*!50001 VIEW `asset_stigGrants` AS select `byAsset`.`assetId` AS `assetId`,json_arrayagg(`byAsset`.`stigAssetUsers`) AS `stigGrants` from (select `r`.`assetId` AS `assetId`,json_object('benchmarkId',`r`.`benchmarkId`,'reviewers',(case when (count(`r`.`reviewers`) > 0) then json_arrayagg(`r`.`reviewers`) else json_array() end)) AS `stigAssetUsers` from (select `sa`.`assetId` AS `assetId`,`sa`.`benchmarkId` AS `benchmarkId`,(case when (`ud`.`userId` is not null) then json_object('userId',`ud`.`userId`,'username',`ud`.`username`,'dept',json_object('deptId',`d`.`deptId`,'name',`d`.`name`)) else NULL end) AS `reviewers` from (((`stig_asset_map` `sa` left join `user_stig_asset_map` `usa` on((`sa`.`saId` = `usa`.`saId`))) left join `user_data` `ud` on((`usa`.`userId` = `ud`.`userId`))) left join `department` `d` on((`ud`.`deptId` = `d`.`deptId`)))) `r` group by `r`.`assetId`,`r`.`benchmarkId`) `byAsset` group by `byAsset`.`assetId` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;

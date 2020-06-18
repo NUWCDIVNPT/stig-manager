@@ -181,11 +181,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject ) {
 
     // ASSETS, ASSET_PACAKGE_MAP, STIG_ASSET_MAP, USER_STIG_ASSET_MAP
     for (const asset of assets) {
-      let { stigReviewers, ...assetFields} = asset
+      let { stigGrants, ...assetFields} = asset
       let assetId = assetFields.assetId
       assetFields.nonnetwork = assetFields.nonnetwork ? 1: 0
       dml.asset.insertBinds.push(assetFields)
-      for (const sr of stigReviewers) {
+      for (const sr of stigGrants) {
         dml.stigAssetMap.insertBinds.push({
           assetId: assetId,
           benchmarkId: sr.benchmarkId

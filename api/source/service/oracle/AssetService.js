@@ -62,7 +62,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
         KEY 'stigAssignedCount' VALUE COUNT(Distinct usa.saId)
         ) as "adminStats"`)
     }
-    if (inProjection && inProjection.includes('stigReviewers')) {
+    if (inProjection && inProjection.includes('stigGrants')) {
       columns.push(`(select
             replace(
                 replace(
@@ -89,7 +89,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
         left join user_data u on usa.userId = u.userid
         left join department d on u.deptId = d.deptId
         WHERE sa.assetId = a.assetId
-        group by sa.benchmarkId) as "stigReviewers"`)
+        group by sa.benchmarkId) as "stigGrants"`)
     }
     if (inProjection && inProjection.includes('reviewers')) {
       // This projection is specified by /stigs/{benchmarkId}/assets}
@@ -193,8 +193,8 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       if (inProjection && inProjection.includes('adminStats')) {
         record.adminStats = JSON.parse(record.adminStats) || {}
       }
-      if (inProjection && inProjection.includes('stigReviewers')) {
-        record.stigReviewers = JSON.parse(record.stigReviewers) || []
+      if (inProjection && inProjection.includes('stigGrants')) {
+        record.stigGrants = JSON.parse(record.stigGrants) || []
       }
       if (inProjection && inProjection.includes('reviewers')) {
         record.reviewers = JSON.parse(record.reviewers) || []
@@ -219,7 +219,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // REPLACE/UPDATE: assetId is not null
 
     // Extract non-scalar properties to separate variables
-    let { stigReviewers, ...assetFields } = body
+    let { stigGrants, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('nonnetwork')) {
@@ -265,9 +265,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       throw('Invalid writeAction')
     }
 
-    // Process stigReviewers, spec requires for CREATE/REPLACE not for UPDATE
+    // Process stigGrants, spec requires for CREATE/REPLACE not for UPDATE
     // In all cases, the property value replaces the current mappings
-    if (stigReviewers) {
+    if (stigGrants) {
       binds = {
         stigAsset: [],
         userStigAsset: []
@@ -277,7 +277,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
         // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
         await connection.execute(sqlDeleteBenchmarks, [assetId])
       }
-      for (const stigReview of stigReviewers) {
+      for (const stigReview of stigGrants) {
         binds.stigAsset.push([stigReview.benchmarkId, assetId])
         for (const userId of stigReview.userIds) {
           binds.userStigAsset.push([userId, stigReview.benchmarkId, assetId])

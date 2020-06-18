@@ -38,11 +38,11 @@ module.exports.getAppData = async function getAppData (req, res, next) {
           }
       }
       let users = await User.exportUsers( [], elevate, req.userObject)
-      let assets = await Asset.exportAssets( ['stigReviewers'], elevate, req.userObject)
+      let assets = await Asset.exportAssets( ['stigGrants'], elevate, req.userObject)
       assets.forEach(asset => {
         asset.packageId = asset.package.packageId
         delete asset.package
-        asset.stigReviewers = asset.stigReviewers.map( s => ({
+        asset.stigGrants = asset.stigGrants.map( s => ({
           benchmarkId: s.benchmarkId,
           userIds: s.reviewers.map( r => r.userId )
         }))
