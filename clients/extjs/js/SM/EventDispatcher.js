@@ -7,5 +7,6 @@ SM.Dispatcher.addEvents(
     'packagecreated',
     'packagedeleted',
     'assetcreated',
-    'assetdeleted'
+    'assetdeleted',
+    'assetchanged'
 )

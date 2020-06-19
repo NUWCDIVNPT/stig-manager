@@ -173,7 +173,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             }
         }
-        config.onPackageCreate = function (package) {
+        config.onPackageCreated = function (package) {
           let newNode = {
             id: `${package.packageId}-package-node`,
             node: 'package',
@@ -230,13 +230,20 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
           packageRoot.sort(sortFn)
       }
-  
+      config.onAssetChanged = (apiAsset) => {
+        let packageRoot = this.getNodeById('packages-root')
+        let assetNode = packageRoot.findChild('assetId', apiAsset.assetId, true)
+        if (assetNode) {
+          assetNode.setText(apiAsset.name)
+        }
+       }
 
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.AppNavTree.superclass.initComponent.call(this)
+      Ext.apply(this, Ext.apply(this.initialConfig, config))
+      SM.AppNavTree.superclass.initComponent.call(this)
 
-        // Attach handlers for app events
-        SM.Dispatcher.addListener('packagecreated', me.onPackageCreate)
+      // Attach handlers for app events
+      SM.Dispatcher.addListener('packagecreated', me.onPackageCreated)
+      SM.Dispatcher.addListener('assetchanged', me.onAssetChanged, me)
 
     },
     loadTree: async function (node, cb) {

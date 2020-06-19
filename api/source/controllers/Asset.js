@@ -289,13 +289,12 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
 module.exports.replaceAsset = async function replaceAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.accessLevel >= 2 ) {
-      let assetId = req.swagger.params['assetId'].value
-      let projection = req.swagger.params['projection'].value
-      let body = req.swagger.params['body'].value
-      if (!elevate && req.userObject.accessLevel === 2) {
-        await verifyDeptUpdateOrReplace(assetId, body, req.userObject)
-      }
+    let assetId = req.swagger.params['assetId'].value
+    let projection = req.swagger.params['projection'].value
+    let body = req.swagger.params['body'].value
+
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === body.packageId )
+    if ( elevate || (packageGrant && packageGrant.accessLevel >= 3) ) {
       let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
@@ -487,13 +486,12 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
 module.exports.updateAsset = async function updateAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
-    if ( elevate || req.userObject.accessLevel >= 2 ) {
-      let assetId = req.swagger.params['assetId'].value
-      let projection = req.swagger.params['projection'].value
-      let body = req.swagger.params['body'].value
-      if (!elevate && req.userObject.accessLevel === 2) {
-        await verifyDeptUpdateOrReplace(assetId, body, req.userObject)
-      }
+    let assetId = req.swagger.params['assetId'].value
+    let projection = req.swagger.params['projection'].value
+    let body = req.swagger.params['body'].value
+
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === body.packageId )
+    if ( elevate || (packageGrant && packageGrant.accessLevel >= 3) ) {
       let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }

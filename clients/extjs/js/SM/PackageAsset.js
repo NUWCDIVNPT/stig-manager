@@ -81,7 +81,15 @@ SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
     }
 })
 
+/* 
+@cfg packageId 
+@cfg url
+*/
 SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
+    onAssetChanged: function (apiAsset) {
+        let record = this.store.getById(apiAsset.assetId)
+        this.store.loadData(apiAsset, true) // append with replace
+    },
     initComponent: function() {
         let me = this
         id = Ext.id()
@@ -210,7 +218,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     fn: function(grid,rowIndex,e) {
                         var r = grid.getStore().getAt(rowIndex);
                         Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-                        showAssetProps(r.get('assetId'));
+                        showAssetProps(r.get('assetId'), me.packageId);
                     }
                 }
             },
@@ -221,7 +229,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'New asset',
                         handler: function() {
                             Ext.getBody().mask('Loading form...');
-                            showAssetProps();            
+                            showAssetProps( null, me.packageId);            
                         }
                     }
                     ,'-'
@@ -246,7 +254,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                                 })
                             }
                             catch (e) {
-                                alert(e.message)
+                                alert(e.stack)
                             }
                         }
                     }
@@ -294,7 +302,9 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageAssetGrid.superclass.initComponent.call(this);
+        SM.PackageAssetGrid.superclass.initComponent.call(this)
+
+        SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
     }   
 })
 
@@ -331,7 +341,7 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             valueField: 'benchmarkId',
             mode: 'local',
             forceSelection: true,
-			allowBlank: true,
+			allowBlank: false,
 			typeAhead: true,
 			minChars: 0,
             hideTrigger: false,
@@ -341,16 +351,76 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
                 },
-                expand: (combo) => {
-                    if (combo.filteringStore) {
-                        combo.store.filterBy(
-                            function (record, id) {
-                                return combo.filteringStore.indexOfId(id) === -1
+                // expand: (combo) => {
+                //     if (combo.filteringStore) {
+                //         combo.store.filterBy(
+                //             function (record, id) {
+                //                 return combo.filteringStore.indexOfId(id) === -1
+                //             }
+                //         )
+                //     }
+                // }
+            },
+            doQuery : function(q, forceAll){
+				q = Ext.isEmpty(q) ? '' : q;
+				var qe = {
+					query: q,
+					forceAll: forceAll,
+					combo: this,
+					cancel:false
+				};
+				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
+					return false;
+				}
+				q = qe.query;
+				forceAll = qe.forceAll;
+				if (forceAll === true || (q.length >= this.minChars)){
+					if (this.lastQuery !== q) {
+						this.lastQuery = q;
+						if (this.mode == 'local') {
+							this.selectedIndex = -1
+							if (forceAll) {
+								this.store.clearFilter()
                             }
-                        )
+                            else {
+                                let filters = [
+                                    {
+                                        fn: (record) =>  {
+                                            return this.filteringStore.indexOfId(record.id) === -1
+                                        },
+                                        scope: this
+                                    }
+                                ]
+                                if (q) {
+                                    filters.push(
+                                        {
+                                            property: this.displayField,
+                                            value: q
+                                        }
+                                    )
+                                }
+								this.store.filter(filters)
+							}
+							this.onLoad()
+                        } 
+                        else {
+							this.store.baseParams[this.queryParam] = q
+							this.store.load({
+								params: this.getParams(q)
+							})
+							this.expand()
+						}
                     }
-                }
-            }       
+                    else {
+						this.selectedIndex = -1
+						this.onLoad()
+					}
+				}
+            },
+            validator: (value) => {
+                let index = this.store.indexOfId(value)
+                return (index !== -1)
+            }     
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.StigSelectionField.superclass.initComponent.call(this)
@@ -440,7 +510,9 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 
         let config = {
             isFormField: true,
-            allowBlank: true,
+            submitValue: true,
+            allowBlank: false,
+            forceSelection: true,
             layout: 'fit',
             // height: 150,
             plugins: [this.editor],
@@ -472,14 +544,11 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 newRecord: this.newRecordConstructor
             }),
             getValue: function() {
-                let stigReviewers = []
+                let stigs = []
                 stigAssignedStore.data.items.forEach((i) => {
-                    stigReviewers.push({
-                        benchmarkId: i.data.benchmarkId,
-                        userIds: []
-                    })
+                    stigs.push(i.data.benchmarkId)
                 })
-                return stigReviewers
+                return stigs
             },
             setValue: function(v) {
                 const data = v.map( (sr) => ({
@@ -781,9 +850,13 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
         let me = this
         let idAppend = Ext.id()
-        this.stigGrid = new SM.AssetStigGrid({
-            name: 'stigReviewers'
+        this.stigGrid = new SM.AssetStigsGrid({
+            name: 'stigs'
         })
+        if (! this.initialPackageId) {
+            throw ('missing property initialPackageId')
+        }
+ 
         let config = {
             baseCls: 'x-plain',
             // height: 400,
@@ -831,9 +904,15 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                         },
                         {
                             xtype: 'sm-metadata-grid',
+                            submitValue: true,
                             fieldLabel: 'Metadata',
                             name: 'metadata',
                             anchor: '100%'
+                        },
+                        {
+                            xtype: 'hidden',
+                            name: 'packageId',
+                            value: this.initialPackageId
                         }
                     ]
                 },
@@ -846,7 +925,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                         this.stigGrid
                         // {
                         //     xtype: 'sm-asset-stig-grid',
-                        //     name: 'stigReviewers',
+                        //     name: 'stigGrants',
                         //     fieldLabel: 'STIGs',
                         //     // anchor: '100%'
                         // }
@@ -862,44 +941,69 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.AssetProperties.superclass.initComponent.call(this);
+        SM.AssetProperties.superclass.initComponent.call(this)
+
+        this.getForm().getFieldValues = function(dirtyOnly, getDisabled){
+            var o = {},
+                n,
+                key,
+                val;
+            this.items.each(function(f) {
+                // Added condition for f.submitValue
+                if ( f.submitValue && (!f.disabled || getDisabled) && (dirtyOnly !== true || f.isDirty())) {
+                    n = f.getName();
+                    key = o[n];
+                    val = f.getValue();
+    
+                    if(Ext.isDefined(key)){
+                        if(Ext.isArray(key)){
+                            o[n].push(val);
+                        }else{
+                            o[n] = [key, val];
+                        }
+                    }else{
+                        o[n] = val;
+                    }
+                }
+            });
+            return o;
+        }
+    
+
     },
-    initPanel: async function () {
-        try {
-            await this.stigGrid.store.loadPromise()
-        }
-        catch (e) {
-            alert (e)
-        }
-    }
+    // initPanel: async function () {
+    //     try {
+    //         await this.stigGrid.store.loadPromise()
+    //     }
+    //     catch (e) {
+    //         alert (e)
+    //     }
+    // }
 })
 
 
-async function showAssetProps(assetId) {
+async function showAssetProps( assetId, initialPackageId ) {
     try {
         let assetPropsFormPanel = new SM.AssetProperties({
+            initialPackageId: initialPackageId,
             btnHandler: async function(){
                 try {
                     if (assetPropsFormPanel.getForm().isValid()) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
                         // change "packages" to "packageIds"
-                        delete Object.assign(values, {['packageIds']: values['packages'] })['packages']
-                        let url, method
-                        if (assetId) {
-                            url = `${STIGMAN.Env.apiBase}/assets/${assetId}?elevate=${curUser.canAdmin}`
-                            method = 'PUT'
-                        }
-                        else {
-                            url = `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.canAdmin}`
-                            method = 'POST'
-                        }
+                        let method = assetId ? 'PUT' : 'POST'
                         let result = await Ext.Ajax.requestPromise({
-                            url: url,
+                            url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                             method: method,
+                            params: {
+                                elevate: curUser.canAdmin,
+                                projection: ['stigs', 'adminStats']
+                            },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values
                         })
-                        apiAsset = JSON.parse(result.response.responseText)
+                        const apiAsset = JSON.parse(result.response.responseText)
+                        SM.Dispatcher.fireEvent('assetchanged', apiAsset)
 
                         //TODO: This is expensive, should update the specific record instead of reloading entire set
                         // Ext.getCmp(`assetGrid-${packageId}`).getView().holdPosition = true
@@ -908,7 +1012,7 @@ async function showAssetProps(assetId) {
                     }
                 }
                 catch (e) {
-                    alert(e.message)
+                    alert(e.stack)
                 }
             }
         })
@@ -931,18 +1035,20 @@ async function showAssetProps(assetId) {
         });
         
         appwindow.render(document.body)
-        await assetPropsFormPanel.initPanel()
+        // await assetPropsFormPanel.initPanel()
 
         if (assetId) {
             let result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                 params: {
                     elevate: curUser.canAdmin,
-                    projection: ['stigReviewers']
+                    projection: ['stigs']
                 },
                 method: 'GET'
             })
             let apiAsset = JSON.parse(result.response.responseText)
+            apiAsset.packageId = apiAsset.package.packageId
+            delete apiAsset.package
             assetPropsFormPanel.getForm().setValues(apiAsset)
         }
                 

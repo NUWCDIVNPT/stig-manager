@@ -282,11 +282,15 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // REPLACE/UPDATE: assetId is not null
 
     // Extract or initialize non-scalar properties to separate variables
+    let binds
     let { stigs, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('nonnetwork')) {
       assetFields.nonnetwork = assetFields.nonnetwork ? 1 : 0
+    }
+    if (assetFields.hasOwnProperty('metadata')) {
+      assetFields.metadata = JSON.stringify(assetFields.metadata)
     }
 
     connection = await dbUtils.pool.getConnection()
@@ -294,16 +298,16 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     await connection.query('START TRANSACTION')
 
     // Process scalar properties
-    let binds = { ...assetFields}
+    binds = { ...assetFields}
 
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
     // INSERT into assets
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, packageId, nonnetwork)
+          (name, ip, packageId, nonnetwork, metadata)
         VALUES
-          (:name, :ip, :packageId, :nonnetwork)`
+          (:name, :ip, :packageId, :nonnetwork, :metadata)`
       let [rows] = await connection.query(sqlInsert, binds)
       assetId = rows.insertId
     }
@@ -324,31 +328,30 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       throw('Invalid writeAction')
     }
 
-    // Process stigGrants, spec requires for CREATE/REPLACE not for UPDATE
+    // Process stigs, spec requires for CREATE/REPLACE not for UPDATE
     if (stigs) {
-      let binds = stigs
       if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
         let sqlDeleteBenchmarks = `
           DELETE FROM 
             stig_asset_map
           WHERE 
-            assetId = ?
-            and benchmarkId NOT IN ?`
+            assetId = ?`
+        if (stigs.length > 0) {
+          sqlDeleteBenchmarks += ` and benchmarkId NOT IN ?`
+        }
         // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
-        await connection.execute(sqlDeleteBenchmarks, [assetId, stigs])
+        await connection.query(sqlDeleteBenchmarks, [ assetId, [stigs] ])
       }
-      // Push any bind values
-      stigs.forEach( benchmarkId => {
-        binds.stigAsset.push([benchmarkId, assetId])
-      })
-      if (binds.stigAsset.length > 0) {
+      if (stigs.length > 0) {
+        // Map bind values
+        let stigAssetMapBinds = stigs.map( benchmarkId => [benchmarkId, assetId])
         // INSERT into stig_asset_map
         let sqlInsertBenchmarks = `
-        INSERT IGNORE INTO 
-          stigman.stig_asset_map (benchmarkId, assetId)
-        VALUES
-          ?`
-        await connection.query(sqlInsertBenchmarks, [binds.stigAsset])
+          INSERT IGNORE INTO 
+            stigman.stig_asset_map (benchmarkId, assetId)
+          VALUES
+            ?`
+        await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
       }
     }
     // Commit the changes
