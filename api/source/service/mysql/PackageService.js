@@ -409,6 +409,16 @@ exports.getPackages = async function(predicates, projection, elevate, userObject
   }
 }
 
+exports.getStigsByPackage = async function( packageId, elevate, userObject ) {
+  try {
+    let rows = await _this.queryPackages(['stigs'], { packageId: packageId }, elevate, userObject)
+    return (rows[0].stigs)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+
+}
 
 /**
  * Replace all properties of a Package

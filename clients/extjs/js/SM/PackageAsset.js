@@ -157,19 +157,16 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "Asset",
 				width: 15,
                 dataIndex: 'name',
-                editor   : new Ext.form.TextField(),
 				sortable: true
 			},{ 	
 				header: "IP",
 				width: 10,
                 dataIndex: 'ip',
-                editor   : new Ext.form.TextField(),
 				sortable: true
 			},{ 	
 				header: "Not Networked",
 				width: 5,
                 dataIndex: 'nonnetwork',
-                editor   : new Ext.form.Checkbox(),
 				align: "center",
 				tooltip:"Is the asset connected to a network",
 				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -345,23 +342,15 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
 			typeAhead: true,
 			minChars: 0,
             hideTrigger: false,
-            triggerAction: 'all',
-            lastQuery: '',
+            triggerAction: 'query',
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
                 },
-                // expand: (combo) => {
-                //     if (combo.filteringStore) {
-                //         combo.store.filterBy(
-                //             function (record, id) {
-                //                 return combo.filteringStore.indexOfId(id) === -1
-                //             }
-                //         )
-                //     }
-                // }
             },
-            doQuery : function(q, forceAll){
+            doQuery : (q, forceAll) => {
+                // Custom re-implementation of the original ExtJS method
+                // Initial lines were retained
 				q = Ext.isEmpty(q) ? '' : q;
 				var qe = {
 					query: q,
@@ -369,52 +358,50 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
 					combo: this,
 					cancel:false
 				};
-				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
+				if ( this.fireEvent('beforequery', qe) === false || qe.cancel ) {
 					return false;
 				}
 				q = qe.query;
 				forceAll = qe.forceAll;
-				if (forceAll === true || (q.length >= this.minChars)){
-					if (this.lastQuery !== q) {
-						this.lastQuery = q;
-						if (this.mode == 'local') {
-							this.selectedIndex = -1
-							if (forceAll) {
-								this.store.clearFilter()
-                            }
-                            else {
-                                let filters = [
+				if ( forceAll === true || (q.length >= this.minChars) ) {
+					// Removed test against this.lastQuery
+                    if (this.mode == 'local') {
+                        this.selectedIndex = -1
+                        if (forceAll) {
+                            this.store.clearFilter()
+                        }
+                        else {
+                            // Build array of filter functions
+                            let filters = []
+                            if (this.filteringStore) {
+                                // Include records from the combo store that are NOT in filteringStore
+                                filters.push(
                                     {
-                                        fn: (record) =>  {
-                                            return this.filteringStore.indexOfId(record.id) === -1
-                                        },
+                                        fn: (record) =>  this.filteringStore.indexOfId(record.id) === -1,
                                         scope: this
                                     }
-                                ]
-                                if (q) {
-                                    filters.push(
-                                        {
-                                            property: this.displayField,
-                                            value: q
-                                        }
-                                    )
-                                }
-								this.store.filter(filters)
-							}
-							this.onLoad()
-                        } 
-                        else {
-							this.store.baseParams[this.queryParam] = q
-							this.store.load({
-								params: this.getParams(q)
-							})
-							this.expand()
-						}
-                    }
+                                )
+                            }
+                            if (q) {
+                                // Include records that partially match the combo value
+                                filters.push(
+                                    {
+                                        property: this.displayField,
+                                        value: q
+                                    }
+                                )
+                            }
+                            this.store.filter(filters)
+                        }
+                        this.onLoad()
+                    } 
                     else {
-						this.selectedIndex = -1
-						this.onLoad()
-					}
+                        this.store.baseParams[this.queryParam] = q
+                        this.store.load({
+                            params: this.getParams(q)
+                        })
+                        this.expand()
+                    }
 				}
             },
             validator: (value) => {
@@ -474,7 +461,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         ]
         this.editor =  new Ext.ux.grid.RowEditor({
-            saveText: 'Save',
+            saveText: 'OK',
             grid: this,
             stigSelectionField: stigSelectionField,
             clicksToEdit: 2,
@@ -514,7 +501,6 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             allowBlank: false,
             forceSelection: true,
             layout: 'fit',
-            // height: 150,
             plugins: [this.editor],
             border: true,
             store: stigAssignedStore,

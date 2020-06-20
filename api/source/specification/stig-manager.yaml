@@ -261,6 +261,7 @@ paths:
             - 'stig-manager:package:read'
   '/packages/{packageId}/stigs':
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/PackageIdPath'
     get:
       tags:

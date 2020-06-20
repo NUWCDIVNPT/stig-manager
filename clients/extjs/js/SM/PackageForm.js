@@ -592,4 +592,69 @@ SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
     }
 })
 
-Ext.reg('sm-package-form', SM.PackageForm);
+SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
+    initComponent: function() {
+        let config = {
+            // baseCls: 'x-plain',
+            // border: false,
+            labelWidth: 100,
+            // monitorValid: true,
+            getFieldValues: function (dirtyOnly) {
+                // Override Ext.form.FormPanel implementation to check submitValue
+                let o = {}, n, key, val;
+                this.items.each(function(f) {
+                    if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
+                        n = f.getName()
+                        key = o[n]
+                        val = f.getValue()   
+                        if (Ext.isDefined(key)){
+                            if (Ext.isArray(key)){
+                                o[n].push(val);
+                            } else {
+                                o[n] = [key, val]
+                            }
+                        } else {
+                            o[n] = val
+                        }
+                    }
+                })
+                return o
+            },
+            items: [
+                {
+                    xtype: 'fieldset',
+                    title: '<b>Package information</b>',
+                    items: [
+                        {
+                            xtype: 'textfield',
+                            fieldLabel: 'Name',
+                            name: 'name',
+                            allowBlank: false,
+                            anchor:'100%'  // anchor width by percentage
+                        },{
+                            xtype: 'sm-workflow-combo',
+                            fieldLabel: 'Workflow',
+                            name: 'workflow',
+                            margins: '0 10 0 0',
+                            width: 200
+                        },{
+                            xtype: 'sm-metadata-grid',
+                            fieldLabel: 'Metadata',
+                            name: 'metadata',
+                            anchor: '100%'
+                        }
+                    ]
+                }
+            ],
+            // buttons: [{
+            //     text: this.btnText || 'Save',
+            //     formBind: true,
+            //     handler: this.btnHandler || function () {}
+            // }]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.PackagePanel.superclass.initComponent.call(this);
+    }
+})
+
+Ext.reg('sm-package-panel', SM.PackagePanel);

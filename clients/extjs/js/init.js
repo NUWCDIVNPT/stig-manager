@@ -38,6 +38,7 @@ function loadScripts() {
         "js/SM/RowEditorToolbar.js",
         "js/SM/PackageForm.js",
         "js/SM/PackageAsset.js",
+        "js/SM/PackageStig.js",
         "js/packageManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",

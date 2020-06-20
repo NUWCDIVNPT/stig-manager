@@ -97,6 +97,26 @@ module.exports.getPackages = async function getPackages (req, res, next) {
   }
 }
 
+module.exports.getStigsByPackage = async function getStigsByPackage (req, res, next) {
+  try {
+    const packageId = req.swagger.params['packageId'].value
+    const elevate = req.swagger.params['elevate'].value
+    const packageGrant = req.userObject.packageGrants.find( g => g.packageId === packageId )
+    if (packageGrant || req.userObject.globalAccess || elevate ) {
+      const response = await Package.getStigsByPackage( packageId, elevate, req.userObject )
+      writer.writeJson(res, response)
+      }
+    else {
+      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }
+}
+
+
+
 module.exports.exportPackages = async function exportPackages (projection, elevate, userObject) {
   try {
     return await Package.getPackages( {}, projection, elevate, userObject )
