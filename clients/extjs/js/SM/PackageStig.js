@@ -60,23 +60,23 @@ SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         let columns = [
             { 	
 				header: "BenchmarkId",
-				width: 10,
+				width: 100,
                 dataIndex: 'benchmarkId',
 				sortable: true
 			},{ 	
 				header: "Title",
-				width: 15,
+				width: 150,
                 dataIndex: 'title',
 				sortable: true
 			},{ 	
 				header: "Latest Revision",
-				width: 5,
+				width: 50,
                 dataIndex: 'lastRevisionStr',
                 align: "center",
                 sortable: true
 			},{ 	
 				header: "Date",
-				width: 5,
+				width: 50,
 				dataIndex: 'lastRevisionDate',
 				sortable: true
 			}

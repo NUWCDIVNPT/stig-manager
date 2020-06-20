@@ -1,20 +1,34 @@
 async function addPackageManager( packageId, packageName ) {
 	try {
-		let assetGrid = new SM.PackageAssetGrid({
-			packageId: packageId,
-			url: `${STIGMAN.Env.apiBase}/assets`,
-			title: 'Assets',
-			region: 'center'
-		})
 		let packagePanel = new SM.PackagePanel({
 			packageId: packageId,
 			region: 'north',
 			padding: '10px 10px 10px 10px',
 			border: false,
 			split: true,
-			height: 270
+			layout: 'fit',
+			height: 300
 		})
-		let stigsGrid = new SM.PackageStigsGrid({
+		let grantGrid = new SM.UserGrantsGrid({
+			packageId: packageId,
+			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			baseParams: {
+				elevate: curUser.canAdmin,
+				projection: 'grants'
+			},
+			title: 'Grants',
+			border: false,
+			region: 'center'
+		})
+		let assetGrid = new SM.PackageAssetGrid({
+			packageId: packageId,
+			url: `${STIGMAN.Env.apiBase}/assets`,
+			title: 'Assets',
+			region: 'north',
+			split: true,
+			height: '50%'
+		})
+		let stigGrid = new SM.PackageStigsGrid({
 			packageId: packageId,
 			url: `${STIGMAN.Env.apiBase}/packages/${packageId}/stigs`,
 			title: 'STIGs',
@@ -28,20 +42,22 @@ async function addPackageManager( packageId, packageName ) {
 			layout: 'border',
 			items: [
 				{
-					region: 'center',
+					region: 'west',
+					width: 500,
+					split: true,
+					border: true,
 					layout: 'border',
 					items: [
 						packagePanel,
-						assetGrid 
+						grantGrid 
 					]
 				},
 				{
-					region: 'east',
-					split: true,
-					width: '50%',
+					region: 'center',
 					layout: 'border',
 					items: [
-						stigsGrid
+						assetGrid,
+						stigGrid
 					]
 	
 				}
@@ -51,7 +67,8 @@ async function addPackageManager( packageId, packageName ) {
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
 			params: {
-				elevate: curUser.canAdmin
+				elevate: curUser.canAdmin,
+				projection: 'grants'
 			},
 			method: 'GET'
 		})
@@ -59,8 +76,13 @@ async function addPackageManager( packageId, packageName ) {
 	
 		thisTab.show();
 		packagePanel.getForm().setValues(apiPackage)
+		grantGrid.getStore().loadData(apiPackage.grants.map( g => ({
+			userId: g.user.userId,
+			username: g.user.username,
+			accessLevel: g.accessLevel
+		})))
 		assetGrid.getStore().load()
-		stigsGrid.getStore().load()
+		stigGrid.getStore().load()
 	}
 	catch( e) {
 		throw (e)

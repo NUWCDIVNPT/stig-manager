@@ -360,8 +360,26 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             text: '0 records',
             width: 80
         })
+        this.proxy = new Ext.data.HttpProxy({
+            restful: true,
+            url: this.url,
+            headers: { 'Content-Type': 'application/json;charset=utf-8' },
+            listeners: {
+                exception: function ( proxy, type, action, options, response, arg ) {
+                    let message
+                    if (response.responseText) {
+                        message = response.responseText
+                    } else {
+                        message = "Unknown error"
+                    }
+                    Ext.Msg.alert('Error', message);
+                }
+            }
+        })
         const grantStore = new Ext.data.JsonStore({
             grid: this,
+            proxy: this.proxy,
+            baseParams: this.baseParams,
             root: '',
             fields: newFields,
             idProperty: 'userId',
@@ -390,14 +408,14 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         const columns = [
             { 	
 				header: "Username",
-				width: 15,
+				width: 150,
                 dataIndex: 'username',
                 sortable: true,
                 editor: userSelectionField
             },
             { 	
 				header: "Access Level",
-				width: 10,
+				width: 100,
                 dataIndex: 'accessLevel',
                 sortable: true,
                 renderer: (v) => SM.AccessLevelStrings[v],
@@ -457,7 +475,6 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             layout: 'fit',
             height: 150,
             plugins: [this.editor],
-            border: true,
             store: grantStore,
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   
@@ -472,7 +489,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             view: new Ext.grid.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true,
+                forceFit: true,
                 markDirty: false
             }),
             listeners: {
@@ -593,7 +610,8 @@ SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
 })
 
 SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
-    initComponent: function() {
+// SM.PackagePanel = Ext.extend(Ext.Panel, {
+        initComponent: function() {
         let config = {
             // baseCls: 'x-plain',
             // border: false,
@@ -623,7 +641,7 @@ SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
             items: [
                 {
                     xtype: 'fieldset',
-                    title: '<b>Package information</b>',
+                    title: '<b>Package properties</b>',
                     items: [
                         {
                             xtype: 'textfield',
@@ -641,7 +659,7 @@ SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
                             xtype: 'sm-metadata-grid',
                             fieldLabel: 'Metadata',
                             name: 'metadata',
-                            anchor: '100%'
+                            anchor: '100%, -56'
                         }
                     ]
                 }

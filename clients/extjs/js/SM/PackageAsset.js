@@ -155,17 +155,17 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         let columns = [
             { 	
 				header: "Asset",
-				width: 15,
+				width: 150,
                 dataIndex: 'name',
 				sortable: true
 			},{ 	
 				header: "IP",
-				width: 10,
+				width: 100,
                 dataIndex: 'ip',
 				sortable: true
 			},{ 	
 				header: "Not Networked",
-				width: 5,
+				width: 50,
                 dataIndex: 'nonnetwork',
 				align: "center",
 				tooltip:"Is the asset connected to a network",
@@ -175,14 +175,14 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true
 			},{ 	
 				header: "STIGs",
-				width: 5,
+				width: 50,
 				dataIndex: 'stigCount',
 				align: "center",
 				tooltip:"Total STIGs Assigned",
 				sortable: true
 			},{ 	
 				header: "Unassigned",
-				width: 7,
+				width: 70,
 				dataIndex: 'stigUnassignedCount',
 				align: "center",
 				tooltip:"STIGs Missing User Assignments",
