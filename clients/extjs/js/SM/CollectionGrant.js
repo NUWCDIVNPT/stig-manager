@@ -3,10 +3,10 @@
 Ext.ns('SM')
 
 /* 
-@cfg packageId 
+@cfg collectionId 
 @cfg url
 */
-SM.PackageGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
         let me = this
         id = Ext.id()
@@ -39,7 +39,7 @@ SM.PackageGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             proxy: this.proxy,
             baseParams: {
-                packageId: this.packageId,
+                collectionId: this.collectionId,
                 projection: ['adminStats']
             },
             root: '',
@@ -121,7 +121,7 @@ SM.PackageGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     fn: function(grid,rowIndex,e) {
                         var r = grid.getStore().getAt(rowIndex);
                         Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-                        showAssetProps(r.get('assetId'), me.packageId);
+                        showAssetProps(r.get('assetId'), me.collectionId);
                     }
                 }
             },
@@ -132,7 +132,7 @@ SM.PackageGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'New asset',
                         handler: function() {
                             Ext.getBody().mask('Loading form...');
-                            showAssetProps( null, me.packageId);            
+                            showAssetProps( null, me.collectionId);            
                         }
                     }
                     ,'-'
@@ -205,7 +205,7 @@ SM.PackageGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageGrantsGrid.superclass.initComponent.call(this)
+        SM.CollectionGrantsGrid.superclass.initComponent.call(this)
 
         SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
     }   

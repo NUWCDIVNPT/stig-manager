@@ -76,13 +76,13 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         json_object(
           'assetId', CAST(a.assetId as char),
           'name', a.name,
-          'package', json_object(
-            'packageId', CAST(p.packageId as char),
+          'collection', json_object(
+            'collectionId', CAST(p.collectionId as char),
             'name', p.name
           )
         )
         from asset a 
-        left join package p on a.packageId = p.packageId
+        left join collection p on a.collectionId = p.collectionId
         where a.assetId = r.assetId) as "asset"`)
     }
     if (inProjection.includes('stigs')) {
@@ -183,11 +183,11 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         // Delete property so it is not processed by later code
         delete inPredicates.ruleId
       }
-      if (inPredicates.packageId) {
-        aclPredicates.push('a.packageId = :packageId')
-        predicates.binds.packageId = inPredicates.packageId
+      if (inPredicates.collectionId) {
+        aclPredicates.push('a.collectionId = :collectionId')
+        predicates.binds.collectionId = inPredicates.collectionId
         // Delete property so it is not processed by later code
-        delete inPredicates.packageId
+        delete inPredicates.collectionId
       }
       // If predicates include benchmarkId and revisionStr (which must occur together)
       if (inPredicates.benchmarkId) {
@@ -250,9 +250,9 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       predicates.statements.push('action.api = :action')
       predicates.binds.action = inPredicates.action
     }
-    if (inPredicates.packageId) {
-      predicates.statements.push('asset.packageId = :packageId')
-      predicates.binds.packageId = inPredicates.packageId
+    if (inPredicates.collectionId) {
+      predicates.statements.push('asset.collectionId = :collectionId')
+      predicates.binds.collectionId = inPredicates.collectionId
     }
     if (inPredicates.benchmarkId) {
       if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
@@ -344,7 +344,7 @@ exports.deleteReview = async function(reviewId, projection, userObject) {
  * ruleId String Selects Reviews of a Rule (optional)
  * benchmarkId String Selects Reviews mapped to a STIG (optional)
  * assetId String Selects Reviews mapped to an Asset (optional)
- * packageId Integer Selects Reviews mapped to a Package (optional)
+ * collectionId Integer Selects Reviews mapped to a Collection (optional)
  * returns List
  **/
 exports.getReviews = async function(projection, predicates, userObject) {

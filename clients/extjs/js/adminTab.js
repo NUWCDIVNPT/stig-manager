@@ -51,8 +51,8 @@ function addAdminTab(adminAttributes) {
 		case 'user-admin':
 			addUserAdmin();
 			break;
-		case 'package-admin':
-			addPackageAdmin();
+		case 'collection-admin':
+			addCollectionAdmin();
 			break;
 		case 'stig-admin':
 			addStigAdmin();
@@ -83,10 +83,10 @@ function getTree() {
 	}
 	if (curUser.canAdmin || curUser.accessLevel === 3) {
 		children.push({
-			id: 'package-admin',
-			text: 'Packages',
+			id: 'collection-admin',
+			text: 'Collections',
 			leaf: true,
-			iconCls: 'sm-package-icon'
+			iconCls: 'sm-collection-icon'
 		})
 	}
 	children.push({

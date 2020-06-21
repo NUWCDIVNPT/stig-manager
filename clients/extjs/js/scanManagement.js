@@ -12,13 +12,13 @@ $Id: scanManagement.js 807 2017-07-27 13:04:19Z csmig $
 // Returns: undef
 //
 // Creates and displays a Tab item that implements the Scan Management interface 
-// for a specific packageId
+// for a specific collectionId
 //
 function addScanManagement(node) {
 
-	var packageId = node.attributes.packageId;
-	var packageName = node.attributes.packageName;
-	var idAppend = "-scan-mgmt-" + packageId;
+	var collectionId = node.attributes.collectionId;
+	var collectionName = node.attributes.collectionName;
+	var idAppend = "-scan-mgmt-" + collectionId;
 	
 	/****************************************************
 	 BROWSE CONTEXT MENU
@@ -100,7 +100,7 @@ function addScanManagement(node) {
 					params: {
 						reqd: Ext.util.JSON.encode({
 							targetType: item.sm_browseType,
-							packageId: packageId
+							collectionId: collectionId
 						})
 					}
 					,sm_selectedTargetId: item.sm_targetId
@@ -456,7 +456,7 @@ function addScanManagement(node) {
 			},
 			{ 	
 				id:'col-scanSumGrid-assetName' + idAppend,
-				header: "Package Asset",
+				header: "Collection Asset",
 				width: 120,
 				dataIndex: 'assetName',
 				sortable: true,
@@ -575,7 +575,7 @@ function addScanManagement(node) {
 									params: {
 										reqd: Ext.util.JSON.encode({
 											targetType: targetType,
-											packageId: packageId
+											collectionId: collectionId
 										})
 									},
 									callback: function (r,o,s) {
@@ -610,7 +610,7 @@ function addScanManagement(node) {
 								browseTargetCombo.store.load({
 									params: {
 										reqd: Ext.util.JSON.encode({
-											packageId: packageId,
+											collectionId: collectionId,
 											targetType: targetType
 										})
 									}
@@ -673,7 +673,7 @@ function addScanManagement(node) {
 									reqd: Ext.util.JSON.encode({
 										targetType: c.sm_targetType,
 										targetId: r.data.targetId,
-										packageId: packageId
+										collectionId: collectionId
 									})
 								}
 							});
@@ -848,7 +848,7 @@ function addScanManagement(node) {
 	// Returns: undef
 	//
 	// Click handler for the Action button. Sends an API batch request that assigns or unassigns
-	// assetId/scanId combinations AND retrieves the resulting Package Scan summary.
+	// assetId/scanId combinations AND retrieves the resulting Collection Scan summary.
 	//
 	function handleScanAssignment(b,e){
 
@@ -858,7 +858,7 @@ function addScanManagement(node) {
 		var assign_req = {
 			req: 'assign',
 			reqd: {
-				packageId: packageId,
+				collectionId: collectionId,
 				assign: []
 			}
 		};
@@ -875,7 +875,7 @@ function addScanManagement(node) {
 		var pkgScanSummary_req = {
 			req: 'pkgScanSummary',
 			reqd: {
-				packageId: packageId
+				collectionId: collectionId
 			}
 		};
 
@@ -1296,7 +1296,7 @@ function addScanManagement(node) {
 			,borderBottomWidth: '1px'
 		},
 		id: 'pkgSumGrid' + idAppend,
-		//title: 'Package scan summary',
+		//title: 'Collection scan summary',
 		store: pkgSumStore,
 		stripeRows:true,
 		sm: new Ext.grid.RowSelectionModel ({
@@ -1307,7 +1307,7 @@ function addScanManagement(node) {
 						params:{
 							reqd: Ext.util.JSON.encode({
 								pluginId: record.data.pluginId,
-								packageId: packageId
+								collectionId: collectionId
 							})
 						}
 					});
@@ -1389,8 +1389,8 @@ function addScanManagement(node) {
 			,{
 				xtype: 'exportbutton',
 				hasMenu: true,
-				gridBasename: 'Package Scan Summary (grid)',
-				storeBasename: 'Package Scan Summary (store)',
+				gridBasename: 'Collection Scan Summary (grid)',
+				storeBasename: 'Collection Scan Summary (store)',
 				iconCls: 'sm-artifact-download-icon',
 				text: 'Export'
 			}
@@ -1400,10 +1400,10 @@ function addScanManagement(node) {
 				xtype: 'tbbutton',
 				iconCls: 'sm-zip-icon',
 				text: 'Generate artifacts',
-				tooltip: 'Generate and download package scan artifacts',
+				tooltip: 'Generate and download collection scan artifacts',
 				width: 20,
 				handler: function(btn){
-					createPackageScan();
+					createCollectionScan();
 				}
 			},{
 				xtype: 'tbseparator'
@@ -1419,7 +1419,7 @@ function addScanManagement(node) {
 	});
 	
 	//
-	// createPackageScan()
+	// createCollectionScan()
 	//
 	// Arguments:
 	//		None
@@ -1428,13 +1428,13 @@ function addScanManagement(node) {
 	//
 	// Renders an inline frame element that receives the unbuffered
 	// output of a middleware process that generates the 
-	// package scan archive file.
+	// collection scan archive file.
 	//
-	function createPackageScan() {
+	function createCollectionScan() {
 		var iframe = document.createElement("iframe");
 		iframe.setAttribute('id','progress' + idAppend)
 		iframe.src = "pl/createPkgScan.pl?"
-			+ "packageId=" + packageId
+			+ "collectionId=" + collectionId
 		;
 		// Render the iframe
 		document.body.appendChild(iframe);
@@ -1443,7 +1443,7 @@ function addScanManagement(node) {
 		// It creates a window with a progress bar, a text area, and two buttons
 		// The iframe element is passed so closing the window will close the
 		// iframe's request to the middleware 
-		initProgress("Create package scan","Initializing...",null,iframe);
+		initProgress("Create collection scan","Initializing...",null,iframe);
 		
 	};
 
@@ -1541,7 +1541,7 @@ function addScanManagement(node) {
 			,borderBottomWidth: '1px'
 		},
 		id: 'pkgDetailGrid' + idAppend,
-		title: 'Package scan finding details',
+		title: 'Collection scan finding details',
 		store: pkgDetailStore,
 		stripeRows:true,
 		sm: new Ext.grid.RowSelectionModel ({
@@ -1588,7 +1588,7 @@ function addScanManagement(node) {
 			},
 			{ 	
 				id:'col-pkgDetailGrid-assetName' + idAppend,
-				header: "Package Asset",
+				header: "Collection Asset",
 				width: 100,
 				dataIndex: 'assetName',
 				sortable: true,
@@ -1631,8 +1631,8 @@ function addScanManagement(node) {
 			,{
 				xtype: 'exportbutton',
 				hasMenu: true,
-				gridBasename: 'Package Scan Detail (grid)',
-				storeBasename: 'Package Scan Detail (store)',
+				gridBasename: 'Collection Scan Detail (grid)',
+				storeBasename: 'Collection Scan Detail (store)',
 				iconCls: 'sm-artifact-download-icon',
 				text: 'Export'
 			}
@@ -1650,7 +1650,7 @@ function addScanManagement(node) {
 	/**************************************************
 	 THE TAB: Construct the tab, display it, and initialize the grids
 	 *************************************************/
-	var workspaceTitle = packageName + ": Scan management";
+	var workspaceTitle = collectionName + ": Scan management";
 	var workspaceTab = Ext.getCmp('reviews-center-tab').add({
 		id: 'buildScan' + idAppend,
 		iconCls: 'sm-nessus-16-icon',
@@ -1679,7 +1679,7 @@ function addScanManagement(node) {
 			region: 'center'
 			,split: false
 			,width: 680
-			,title: "Package scan findings"
+			,title: "Collection scan findings"
 			,headerStyle: "height: 15px"
 			,frame: true
 			,margins: '8 8 8 4'
@@ -1702,14 +1702,14 @@ function addScanManagement(node) {
 		req: 'scanSummary',
 		reqd: {
 			targetType: 'best',
-			packageId: packageId
+			collectionId: collectionId
 		}
 	};
 	
 	var pkgScanSummary_req = {
 		req: 'pkgScanSummary',
 		reqd: {
-			packageId: packageId
+			collectionId: collectionId
 		}
 	};
 	

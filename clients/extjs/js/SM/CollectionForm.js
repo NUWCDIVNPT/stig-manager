@@ -14,7 +14,7 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
         let me = this
         let data = [
             ['continuous','Continuous'],
-            ['emass', 'RMF Package']
+            ['emass', 'RMF Collection']
         ]
         this.store = new Ext.data.SimpleStore({
             fields: ['value','display']
@@ -533,7 +533,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 
-SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
+SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function() {
         let config = {
             baseCls: 'x-plain',
@@ -564,7 +564,7 @@ SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
             items: [
                 {
                     xtype: 'fieldset',
-                    title: '<b>Package information</b>',
+                    title: '<b>Collection information</b>',
                     items: [
                         {
                             xtype: 'textfield',
@@ -605,12 +605,12 @@ SM.PackageForm = Ext.extend(Ext.form.FormPanel, {
             }]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageForm.superclass.initComponent.call(this);
+        SM.CollectionForm.superclass.initComponent.call(this);
     }
 })
 
-SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
-// SM.PackagePanel = Ext.extend(Ext.Panel, {
+SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
+// SM.CollectionPanel = Ext.extend(Ext.Panel, {
         initComponent: function() {
         let config = {
             // baseCls: 'x-plain',
@@ -641,7 +641,7 @@ SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
             items: [
                 {
                     xtype: 'fieldset',
-                    title: '<b>Package properties</b>',
+                    title: '<b>Collection properties</b>',
                     items: [
                         {
                             xtype: 'textfield',
@@ -671,8 +671,8 @@ SM.PackagePanel = Ext.extend(Ext.form.FormPanel, {
             // }]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackagePanel.superclass.initComponent.call(this);
+        SM.CollectionPanel.superclass.initComponent.call(this);
     }
 })
 
-Ext.reg('sm-package-panel', SM.PackagePanel);
+Ext.reg('sm-collection-panel', SM.CollectionPanel);

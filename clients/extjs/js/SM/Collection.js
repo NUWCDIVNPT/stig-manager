@@ -1,11 +1,11 @@
 'use strict'
 
-class Package {
-    constructor (config) {
+class Collection {
+    constructor (api) {
         this.config = config
         this.infoUi = config.infoUi || {}        
         this.assetUi = config.assetUi || {}
-        this.userUi = config.userUi || {}        
+        this.grantUi = config.grantUi || {}        
         this.stigUi = config.stignUi || {}        
     }
 
@@ -13,7 +13,7 @@ class Package {
     async updateBackend(putData) {
         try {
             let result = await Ext.Ajax.requestPromise({
-                url: `${CMSAT.Env.apiBase}/packages/${this.config.packageId}`,
+                url: `${CMSAT.Env.apiBase}/collections/${this.config.collectionId}`,
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json;charset=utf-8' },
                 jsonData: putData
@@ -26,10 +26,10 @@ class Package {
         }
     }
 
-    async deletePackage() {
+    async deleteCollection() {
         try {
             let results = await Ext.Ajax.requestPromise({
-                url: `${CMSAT.Env.apiBase}/packages/${this.config.packageId}`,
+                url: `${CMSAT.Env.apiBase}/collections/${this.config.collectionId}`,
                 method: 'DELETE'
             })
             return results

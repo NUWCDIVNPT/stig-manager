@@ -40,7 +40,7 @@ function getReportItems() {
 }
 
 function reportsTreeClick(n) {
-	var tab = Ext.getCmp('reports-center-tab').getItem('report-tab-' + n.attributes.packageId + '-' + n.attributes.report);
+	var tab = Ext.getCmp('reports-center-tab').getItem('report-tab-' + n.attributes.collectionId + '-' + n.attributes.report);
 	if (tab) {
 		tab.show();
 	} else {
@@ -51,10 +51,10 @@ function reportsTreeClick(n) {
 function addReportTab(reportAttributes) {
 	switch(reportAttributes.report) {
 		case 'comp':
-			addCompletionStatus(reportAttributes.packageId,reportAttributes.packageName);
+			addCompletionStatus(reportAttributes.collectionId,reportAttributes.collectionName);
 			break;
 		case 'find':
-			addFindingsSummary(reportAttributes.packageId,reportAttributes.packageName);
+			addFindingsSummary(reportAttributes.collectionId,reportAttributes.collectionName);
 			break;
 		// case 'review':
 			// addReview(reportAttributes);

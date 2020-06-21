@@ -45,15 +45,15 @@ DROP TABLE IF EXISTS `asset`;
 CREATE TABLE `asset` (
   `assetId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
-  `packageId` int NOT NULL,
+  `collectionId` int NOT NULL,
   `ip` varchar(45) DEFAULT NULL,
   `nonnetwork` bit(1) NOT NULL DEFAULT b'0',
   `metadata` json DEFAULT NULL,
   PRIMARY KEY (`assetId`),
-  UNIQUE KEY `INDEX_NAMEPACKAGE` (`name`, `packageId`),
+  UNIQUE KEY `INDEX_NAMECOLLECTION` (`name`, `collectionId`),
   KEY `INDEX_NONNETWORK` (`nonnetwork`),
-  KEY `INDEX_PACKAGEID` (`packageId`),
-  CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`packageId`) REFERENCES `package` (`packageId`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `INDEX_COLLECTIONID` (`collectionId`),
+  CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -167,38 +167,38 @@ CREATE TABLE `group` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `package`
+-- Table structure for table `collection`
 --
 
-DROP TABLE IF EXISTS `package`;
+DROP TABLE IF EXISTS `collection`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `package` (
-  `packageId` int NOT NULL AUTO_INCREMENT,
+CREATE TABLE `collection` (
+  `collectionId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `workflow` varchar(45) NOT NULL,
   `metadata` json NOT NULL,
-  PRIMARY KEY (`packageId`)
+  PRIMARY KEY (`collectionId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `package_grant`
+-- Table structure for table `collection_grant`
 --
 
-DROP TABLE IF EXISTS `package_grant`;
+DROP TABLE IF EXISTS `collection_grant`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `package_grant` (
+CREATE TABLE `collection_grant` (
   `pgId` int NOT NULL AUTO_INCREMENT,
-  `packageId` int NOT NULL,
+  `collectionId` int NOT NULL,
   `userId` int NOT NULL,
   `accessLevel` int NOT NULL,
   PRIMARY KEY (`pgId`),
-  UNIQUE KEY `INDEX_USER` (`userId`,`packageId`),
-  KEY `INDEX_PACKAGE` (`packageId`,`accessLevel`),
-  CONSTRAINT `fk_package_grant_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_package_grant_2` FOREIGN KEY (`packageId`) REFERENCES `package` (`packageId`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `INDEX_USER` (`userId`,`collectionId`),
+  KEY `INDEX_COLLECTION` (`collectionId`,`accessLevel`),
+  CONSTRAINT `fk_collection_grant_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_grant_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -212,7 +212,7 @@ DROP TABLE IF EXISTS `poam_rar_entry`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `poam_rar_entry` (
   `preId` int(11) NOT NULL AUTO_INCREMENT,
-  `packageId` int(11) NOT NULL,
+  `collectionId` int(11) NOT NULL,
   `findingType` varchar(50) DEFAULT NULL,
   `sourceId` varchar(45) NOT NULL,
   `iacontrol` varchar(45) DEFAULT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE `poam_rar_entry` (
   `remdesc` longtext,
   `rarComment` longtext,
   PRIMARY KEY (`preId`),
-  UNIQUE KEY `PACKAGEID_RULEID` (`packageId`,`sourceId`),
+  UNIQUE KEY `COLLECTIONID_RULEID` (`collectionId`,`sourceId`),
   KEY `FINDINGTYPE` (`findingType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -648,7 +648,7 @@ CREATE TABLE `user_data` (
   `display` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `globalAccess` bit(1) NOT NULL DEFAULT b'0',
-  `canCreatePackage` bit(1) NOT NULL DEFAULT b'0',
+  `canCreateCollection` bit(1) NOT NULL DEFAULT b'0',
   `canAdmin` bit(1) NOT NULL DEFAULT b'0',
   `metadata` json DEFAULT NULL,
   PRIMARY KEY (`userId`),
@@ -657,7 +657,7 @@ CREATE TABLE `user_data` (
   KEY `email` (`email`),
   KEY `INDEX_globalAccess` (`globalAccess`),
   KEY `INDEX_canAdmin` (`canAdmin`),
-  KEY `INDEX_canCreatePackage` (`canCreatePackage`)
+  KEY `INDEX_canCreateCollection` (`canCreateCollection`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

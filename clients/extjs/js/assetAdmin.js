@@ -2,7 +2,7 @@
 $Id: assetAdmin.js 820 2017-08-31 14:14:41Z csmig $
 */
 
-function addAssetAdmin ( packageId, packageName ) {
+function addAssetAdmin ( collectionId, collectionName ) {
 
 	var stigFields = Ext.data.Record.create([
 		{	name:'benchmarkId',
@@ -32,29 +32,29 @@ function addAssetAdmin ( packageId, packageName ) {
 		},
 		idProperty: 'benchmarkId'
 	});
-	var packageFields = Ext.data.Record.create([
-		{	name:'packageId',
+	var collectionFields = Ext.data.Record.create([
+		{	name:'collectionId',
 			type: 'number'
 		},{
 			name:'name',
 			type: 'string'
 		}
 	]);
-	var packageStore = new Ext.data.JsonStore({
+	var collectionStore = new Ext.data.JsonStore({
 		listeners: {
 			load: function () {
 				let one = 1
 			}
 		},
-		url: `${STIGMAN.Env.apiBase}/packages?elevate=${curUser.canAdmin}`,
+		url: `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.canAdmin}`,
 		autoLoad: true,
-		fields: packageFields,
+		fields: collectionFields,
 		root: '',
 		sortInfo: {
 			field: 'name',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 		},
-		idProperty: 'packageId'
+		idProperty: 'collectionId'
 	});
 
 	var assetFields = Ext.data.Record.create([
@@ -101,11 +101,11 @@ function addAssetAdmin ( packageId, packageName ) {
 		listeners: {
 			load: function (store,records) {
 				store.isLoaded = true,
-				Ext.getCmp(`assetGrid-${packageId}-totalText`).setText(records.length + ' records');
+				Ext.getCmp(`assetGrid-${collectionId}-totalText`).setText(records.length + ' records');
 				assetGrid.getSelectionModel().selectFirstRow();
 			},
 			remove: function (store,record,index) {
-				Ext.getCmp(`assetGrid-${packageId}-totalText`).setText(store.getCount() + ' records');
+				Ext.getCmp(`assetGrid-${collectionId}-totalText`).setText(store.getCount() + ' records');
 			}
 		}
 	});
@@ -114,15 +114,15 @@ function addAssetAdmin ( packageId, packageName ) {
 		//region: 'center',
 		//split: true,
 		//title: 'Asset administration',
-		id: `assetGrid-${packageId}`,
+		id: `assetGrid-${collectionId}`,
 		store: assetStore,
 		stripeRows:true,
 		sm: new Ext.grid.RowSelectionModel({
 			singleSelect: true,
 			listeners: {
 				selectionchange: function (sm) {
-					Ext.getCmp(`assetGrid-${packageId}-modifyBtn`).setDisabled(!sm.hasSelection());
-					Ext.getCmp(`assetGrid-${packageId}-deleteBtn`).setDisabled(!sm.hasSelection());
+					Ext.getCmp(`assetGrid-${collectionId}-modifyBtn`).setDisabled(!sm.hasSelection());
+					Ext.getCmp(`assetGrid-${collectionId}-deleteBtn`).setDisabled(!sm.hasSelection());
 				}
 			}
 		}),
@@ -204,7 +204,7 @@ function addAssetAdmin ( packageId, packageName ) {
 		, {
 			ref: '../removeBtn',
 			iconCls: 'icon-del',
-			id: `assetGrid-${packageId}-deleteBtn`,
+			id: `assetGrid-${collectionId}-deleteBtn`,
 			text: 'Delete asset',
 			disabled: true,
 			handler: function() {
@@ -230,7 +230,7 @@ function addAssetAdmin ( packageId, packageName ) {
 		,{
 			iconCls: 'sm-asset-icon',
 			disabled: true,
-			id: `assetGrid-${packageId}-modifyBtn`,
+			id: `assetGrid-${collectionId}-modifyBtn`,
 			text: 'Modify asset properties',
 			handler: function() {
 				var r = assetGrid.getSelectionModel().getSelected();
@@ -253,7 +253,7 @@ function addAssetAdmin ( packageId, packageName ) {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbbutton',
-				id: `assetGrid-${packageId}-csvBtn`,
+				id: `assetGrid-${collectionId}-csvBtn`,
 				iconCls: 'icon-save',
 				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 				width: 20,
@@ -268,7 +268,7 @@ function addAssetAdmin ( packageId, packageName ) {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbtext',
-				id: `assetGrid-${packageId}-totalText`,
+				id: `assetGrid-${collectionId}-totalText`,
 				text: '0 records',
 				width: 80
 			}]
@@ -284,9 +284,9 @@ function addAssetAdmin ( packageId, packageName ) {
 			let apiAsset
 			let userAssignments = {}
 			/******************************************************/
-			// Packages
+			// Collections
 			/******************************************************/
-			var packageSm = new Ext.grid.CheckboxSelectionModel({
+			var collectionSm = new Ext.grid.CheckboxSelectionModel({
 				checkOnly: true,
 				onRefresh: function() {
 					var ds = this.grid.store, index;
@@ -299,17 +299,17 @@ function addAssetAdmin ( packageId, packageName ) {
 					}
 				}
 			});
-			var packageGrid = new Ext.grid.GridPanel({
-				title:'Package assignments',
+			var collectionGrid = new Ext.grid.GridPanel({
+				title:'Collection assignments',
 				hideHeaders: true,
 				flex: 30,
-				id: 'assets-packagesGrid',
+				id: 'assets-collectionsGrid',
 				hideLabel: true,
 				isFormField: true,
-				store: packageStore,
+				store: collectionStore,
 				columns: [
-					packageSm,
-					{ header: "Packages", 
+					collectionSm,
+					{ header: "Collections", 
 						width: 95,
 						dataIndex: 'name',
 						sortable: true
@@ -318,24 +318,24 @@ function addAssetAdmin ( packageId, packageName ) {
 				viewConfig: {
 					forceFit: true
 				},
-				sm: packageSm,
+				sm: collectionSm,
 				setValue: function(v) {
 					var selRecords = [];
 					for(y=0;y<v.length;y++) {
-						var record = packageStore.getById(v[y].packageId);
+						var record = collectionStore.getById(v[y].collectionId);
 						selRecords.push(record);
 					}
-					packageSm.selectRecords(selRecords);
+					collectionSm.selectRecords(selRecords);
 				},
 				getValue: function() {
-					return JSON.parse(encodeSm(packageSm,'packageId'))
+					return JSON.parse(encodeSm(collectionSm,'collectionId'))
 				},
 				markInvalid: function() {},
 				clearInvalid: function() {},
 				validate: function() { return true},
 				isValid: function() { return true;},
 				getName: function() {return this.name},
-				fieldLabel: 'Packages',
+				fieldLabel: 'Collections',
 				tbar: new Ext.Toolbar({
 					items: [
 					{
@@ -351,16 +351,16 @@ function addAssetAdmin ( packageId, packageName ) {
 								this.triggerBlur();
 								this.blur();
 								this.setValue('');
-								filterPackageStore();
+								filterCollectionStore();
 							},
-							id: 'assets-packageGrid-filterField',
+							id: 'assets-collectionGrid-filterField',
 							width: 140,
 							submitValue: false,
 							enableKeyEvents:true,
-							emptyText:'Enter a package filter...',
+							emptyText:'Enter a collection filter...',
 							listeners: {
 								keyup: function (field,e) {
-									filterPackageStore();
+									filterCollectionStore();
 									return false;
 								}
 							}
@@ -370,17 +370,17 @@ function addAssetAdmin ( packageId, packageName ) {
 							xtype: 'tbbutton',
 							icon: 'img/tick_white.png',
 							tooltip: 'Show assignments only',
-							id: 'assets-packageGrid-filterButton',
-							toggleGroup: 'package-selector',
+							id: 'assets-collectionGrid-filterButton',
+							toggleGroup: 'collection-selector',
 							enableToggle:true,
 							allowDepress: true,
 							toggleHandler: function (btn,state) {
-								filterPackageStore();
+								filterCollectionStore();
 							}
 						}]
 					}]
 				}),
-				name: 'packages'
+				name: 'collections'
 			});
 
 			/******************************************************/
@@ -651,7 +651,7 @@ function addAssetAdmin ( packageId, packageName ) {
 						align: 'stretch'
 					},
 					items: [
-						packageGrid,stigGrid
+						collectionGrid,stigGrid
 					]
 				}
 				], // end form items
@@ -668,8 +668,8 @@ function addAssetAdmin ( packageId, packageName ) {
 						try {
 							if (assetPropsFormPanel.getForm().isValid()) {
 								let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-								// change "packages" to "packageIds"
-								delete Object.assign(values, {['packageIds']: values['packages'] })['packages']
+								// change "collections" to "collectionIds"
+								delete Object.assign(values, {['collectionIds']: values['collections'] })['collections']
 								let url, method
 								if (assetId) {
 									url = `${STIGMAN.Env.apiBase}/assets/${assetId}?elevate=${curUser.canAdmin}`
@@ -688,8 +688,8 @@ function addAssetAdmin ( packageId, packageName ) {
 								apiAsset = JSON.parse(result.response.responseText)
 
 								//TODO: This is expensive, should update the specific record instead of reloading entire set
-								Ext.getCmp(`assetGrid-${packageId}`).getView().holdPosition = true
-								Ext.getCmp(`assetGrid-${packageId}`).getStore().reload()
+								Ext.getCmp(`assetGrid-${collectionId}`).getView().holdPosition = true
+								Ext.getCmp(`assetGrid-${collectionId}`).getStore().reload()
 								appwindow.close()
 							}
 						}
@@ -750,20 +750,20 @@ function addAssetAdmin ( packageId, packageName ) {
 			};
 
 			/******************************************************/
-			// filterPackageStore ()
+			// filterCollectionStore ()
 			/******************************************************/
-			function filterPackageStore () {
-				var value = Ext.getCmp('assets-packageGrid-filterField').getValue();
-				var selectionsOnly = Ext.getCmp('assets-packageGrid-filterButton').pressed;
+			function filterCollectionStore () {
+				var value = Ext.getCmp('assets-collectionGrid-filterField').getValue();
+				var selectionsOnly = Ext.getCmp('assets-collectionGrid-filterButton').pressed;
 				if (value == '') {
 					if (selectionsOnly) {
-						packageStore.filterBy(filterChecked,packageSm);
+						collectionStore.filterBy(filterChecked,collectionSm);
 					} else {
-						packageStore.clearFilter();
+						collectionStore.clearFilter();
 					}
 				} else {
 					if (selectionsOnly) {
-						packageStore.filter([
+						collectionStore.filter([
 							{
 								property:'name',
 								value:value,
@@ -771,11 +771,11 @@ function addAssetAdmin ( packageId, packageName ) {
 								caseSensitive:false
 							},{
 								fn: filterChecked,
-								scope: packageSm
+								scope: collectionSm
 							}
 						]);
 					} else {
-						packageStore.filter({property:'name',value:value,anyMatch:true,caseSensitive:false});
+						collectionStore.filter({property:'name',value:value,anyMatch:true,caseSensitive:false});
 					}
 				}
 			};
@@ -1041,7 +1041,7 @@ function addAssetAdmin ( packageId, packageName ) {
 			// Load store(s), show window, and get properties
 			/******************************************************/
 
-			packageStore.clearFilter();
+			collectionStore.clearFilter();
 			stigStore.clearFilter();
 
 			// Get departments for the combo box
@@ -1094,9 +1094,9 @@ function addAssetAdmin ( packageId, packageName ) {
 	} //end showAssetProps
 
 	var thisTab = Ext.getCmp('admin-center-tab').add({
-		id: `asset-admin-tab-${packageId}`,
+		id: `asset-admin-tab-${collectionId}`,
 		iconCls: 'sm-asset-icon',
-		title: `Assets (${packageName})`,
+		title: `Assets (${collectionName})`,
 		closable:true,
 		layout: 'fit',
 		items: [assetGrid]
@@ -1108,7 +1108,7 @@ function addAssetAdmin ( packageId, packageName ) {
 	
 	assetGrid.getStore().load({
 		params: {
-			packageId: packageId,
+			collectionId: collectionId,
 			projection: ['adminStats'],
 			elevate: curUser.canAdmin
 		}

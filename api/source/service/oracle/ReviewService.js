@@ -87,14 +87,14 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
             KEY 'deptId' VALUE d.deptId,
             KEY 'name' VALUE d.name
           ),
-          KEY 'package' VALUE json_object(
-            KEY 'packageId' VALUE p.packageId,
+          KEY 'collection' VALUE json_object(
+            KEY 'collectionId' VALUE p.collectionId,
             KEY 'name' VALUE p.name
           )
         )
         from asset a 
         left join department d on a.deptId = d.deptId
-        left join package p on a.packageId = p.packageId
+        left join collection p on a.collectionId = p.collectionId
         where a.assetId = r.assetId) as "asset"`)
     }
     if (inProjection.includes('stigs')) {
@@ -189,11 +189,11 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
         // Delete property so it is not processed by later code
         delete inPredicates.ruleId
       }
-      if (inPredicates.packageId) {
-        aclPredicates.push('a.packageId = :packageId')
-        predicates.binds.packageId = inPredicates.packageId
+      if (inPredicates.collectionId) {
+        aclPredicates.push('a.collectionId = :collectionId')
+        predicates.binds.collectionId = inPredicates.collectionId
         // Delete property so it is not processed by later code
-        delete inPredicates.packageId
+        delete inPredicates.collectionId
       }
       // If predicates include benchmarkId and revisionStr (which must occur together)
       if (inPredicates.benchmarkId) {
@@ -256,9 +256,9 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       predicates.statements.push('action.api = :action')
       predicates.binds.action = inPredicates.action
     }
-    if (inPredicates.packageId) {
-      predicates.statements.push('asset.packageId = :packageId')
-      predicates.binds.packageId = inPredicates.packageId
+    if (inPredicates.collectionId) {
+      predicates.statements.push('asset.collectionId = :collectionId')
+      predicates.binds.collectionId = inPredicates.collectionId
     }
     if (inPredicates.benchmarkId) {
       if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
@@ -317,7 +317,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'reviewComplete' and 'autoResult'
-    // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
+    // * Oracle doesn't support a JSON type, so we parse string values from 'collections' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
       record.reviewComplete = record.reviewComplete == 1 ? true : false
@@ -377,7 +377,7 @@ exports.deleteReview = async function(reviewId, projection, userObject) {
  * ruleId String Selects Reviews of a Rule (optional)
  * benchmarkId String Selects Reviews mapped to a STIG (optional)
  * assetId String Selects Reviews mapped to an Asset (optional)
- * packageId Integer Selects Reviews mapped to a Package (optional)
+ * collectionId Integer Selects Reviews mapped to a Collection (optional)
  * returns List
  **/
 exports.getReviews = async function(projection, predicates, userObject) {

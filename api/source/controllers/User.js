@@ -4,7 +4,7 @@ const writer = require('../utils/writer.js')
 const config = require('../utils/config')
 const User = require(`../service/${config.database.type}/UserService`)
 const Asset = require(`../service/${config.database.type}/AssetService`)
-const Package = require(`../service/${config.database.type}/PackageService`)
+const Collection = require(`../service/${config.database.type}/CollectionService`)
 
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -14,11 +14,11 @@ module.exports.createUser = async function createUser (req, res, next) {
       let projection = req.swagger.params['projection'].value
 
       if (body.hasOwnProperty('grants') ) {
-        // Verify each grant for a valid packageId
-        let requestedPkgIds = body.grants.map( g => g.packageId )
-        let availablePkgIds = await Package.getPackages([], elevate, req.userObject)
+        // Verify each grant for a valid collectionId
+        let requestedPkgIds = body.grants.map( g => g.collectionId )
+        let availablePkgIds = await Collection.getCollections([], elevate, req.userObject)
         if (! requestedPkgIds.every( id => availablePkgIds.includes(id) ) ) {
-          throw( writer.respondWithCode ( 400, {message: `One or more packageIds are invalid.`} ) )    
+          throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
 
@@ -114,11 +114,11 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       let projection = req.swagger.params['projection'].value
 
       if (body.hasOwnProperty('grants') ) {
-        // Verify each grant for a valid packageId
-        let requestedPkgIds = body.grants.map( g => g.packageId )
-        let availablePkgIds = await Package.getPackages([], elevate, req.userObject)
+        // Verify each grant for a valid collectionId
+        let requestedPkgIds = body.grants.map( g => g.collectionId )
+        let availablePkgIds = await Collection.getCollections([], elevate, req.userObject)
         if (! requestedPkgIds.every( id => availablePkgIds.includes(id) ) ) {
-          throw( writer.respondWithCode ( 400, {message: `One or more packageIds are invalid.`} ) )    
+          throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
 
@@ -143,11 +143,11 @@ module.exports.updateUser = async function updateUser (req, res, next) {
       let projection = req.swagger.params['projection'].value
 
       if (body.hasOwnProperty('grants') ) {
-        // Verify each grant for a valid packageId
-        let requestedPkgIds = body.grants.map( g => g.packageId )
-        let availablePkgIds = await Package.getPackages([], elevate, req.userObject)
+        // Verify each grant for a valid collectionId
+        let requestedPkgIds = body.grants.map( g => g.collectionId )
+        let availablePkgIds = await Collection.getCollections([], elevate, req.userObject)
         if (! requestedPkgIds.every( id => availablePkgIds.includes(id) ) ) {
-          throw( writer.respondWithCode ( 400, {message: `One or more packageIds are invalid.`} ) )    
+          throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
 

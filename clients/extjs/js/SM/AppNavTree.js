@@ -7,7 +7,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             id: 'app-nav-tree',
             contextMenu: new Ext.menu.Menu({
               items: [{
-                id: 'open-package-review',
+                id: 'open-collection-review',
                 text: 'Open Approval workspace',
                 iconCls: 'sm-application-go-icon'
               }
@@ -30,7 +30,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 xtype: 'menuseparator'
               }
                 , {
-                id: 'unlock-all-package-reviews',
+                id: 'unlock-all-collection-reviews',
                 text: 'Reset reviews...',
                 iconCls: 'sm-unlock-icon'
               }
@@ -39,7 +39,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 xtype: 'menuseparator'
               }
                 , {
-                id: 'unlock-package-stig-reviews',
+                id: 'unlock-collection-stig-reviews',
                 text: 'Reset reviews...',
                 iconCls: 'sm-unlock-icon'
               }, {
@@ -47,7 +47,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 xtype: 'menuseparator'
               }
                 , {
-                id: 'unlock-package-asset-reviews',
+                id: 'unlock-collection-asset-reviews',
                 text: 'Reset reviews...',
                 iconCls: 'sm-unlock-icon'
               }
@@ -57,8 +57,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 itemclick: function (item) {
                   var n = item.parentMenu.contextNode;
                   switch (item.id) {
-                    case 'open-package-review':
-                      openPackageReview(n);
+                    case 'open-collection-review':
+                      openCollectionReview(n);
                       break;
                     case 'open-poam-workspace':
                       openPoamWorkspace(n);
@@ -66,7 +66,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                     case 'open-hbss-control':
                       openHbssControl(n);
                       break;
-                    case 'unlock-all-package-reviews':
+                    case 'unlock-all-collection-reviews':
                       //====================================================
                       //RESET ALL REVIEWS FOR PACKAGE AFTER PROMPTING USER.
                       //====================================================
@@ -74,7 +74,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                       getUnlockInfo(n, unlockObject);
                       getUnlockPrompt("PACKAGE", unlockObject, undefined);
                       break;
-                    case 'unlock-package-stig-reviews':
+                    case 'unlock-collection-stig-reviews':
                       //====================================================
                       //RESET ALL REVIEWS FOR THE STIG IN SPECIFIC PACKAGE.
                       //====================================================
@@ -82,7 +82,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                       getUnlockInfo(n, unlockObject);
                       getUnlockPrompt("STIG", unlockObject, undefined);
                       break;
-                    case 'unlock-package-asset-reviews':
+                    case 'unlock-collection-asset-reviews':
                       //====================================================
                       //UNLOCK ALL REVIEWS FOR ASSET IN SPECIFIC PACKAGE.
                       //====================================================
@@ -120,41 +120,41 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 //===============================================
                 //HIDE ALL BATCH RESET OPTIONS FROM THE ONSET
                 //===============================================
-                Ext.getCmp('open-package-review').hide();
+                Ext.getCmp('open-collection-review').hide();
                 Ext.getCmp('open-poam-workspace').hide();
                 Ext.getCmp('app-nav-tree-separator-1').hide();
                 Ext.getCmp('open-hbss-control').hide();
                 Ext.getCmp('app-nav-tree-separator-2').hide();
-                Ext.getCmp('unlock-all-package-reviews').hide();
+                Ext.getCmp('unlock-all-collection-reviews').hide();
                 Ext.getCmp('app-nav-tree-separator-3').hide();
-                Ext.getCmp('unlock-package-stig-reviews').hide();
+                Ext.getCmp('unlock-collection-stig-reviews').hide();
                 Ext.getCmp('app-nav-tree-separator-4').hide();
-                Ext.getCmp('unlock-package-asset-reviews').hide();
+                Ext.getCmp('unlock-collection-asset-reviews').hide();
         
-                if ((node.attributes.node === 'package' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.canAdmin)) {
+                if ((node.attributes.node === 'collection' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.canAdmin)) {
                   var c = node.getOwnerTree().contextMenu;
                   c.contextNode = node;
-                  if (node.attributes.node == 'package') {
+                  if (node.attributes.node == 'collection') {
                     Ext.getCmp('open-poam-workspace').show();   //Open Poam workspace
                     Ext.getCmp('app-nav-tree-separator-1').show(); //Disable HBSS SCAP Imports
                     Ext.getCmp('open-hbss-control').show();
                     if (curUser.accessLevel === 3) { //Staff
                       //===============================================
-                      //Include package-accessLevel reset options
+                      //Include collection-accessLevel reset options
                       //===============================================
                       Ext.getCmp('app-nav-tree-separator-2').show();
-                      Ext.getCmp('unlock-all-package-reviews').show();
+                      Ext.getCmp('unlock-all-collection-reviews').show();
                     }
                     c.showAt(e.getXY());
                   } else if (node.attributes.report == 'stig') {
-                    Ext.getCmp('open-package-review').show(); //Open Approval Workspace
+                    Ext.getCmp('open-collection-review').show(); //Open Approval Workspace
                     Ext.getCmp('open-poam-workspace').show();
                     if (curUser.accessLevel === 3) {
                       //===============================================
                       //Include STIG-accessLevel unlock options
                       //===============================================
                       Ext.getCmp('app-nav-tree-separator-3').show();
-                      Ext.getCmp('unlock-package-stig-reviews').show();
+                      Ext.getCmp('unlock-collection-stig-reviews').show();
                     }
                     c.showAt(e.getXY());
                   } else {
@@ -162,7 +162,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                       //===============================================
                       //Include ASSET-accessLevel reset options
                       //===============================================
-                      Ext.getCmp('unlock-package-asset-reviews').show();
+                      Ext.getCmp('unlock-collection-asset-reviews').show();
                       c.showAt(e.getXY());
                     }
                   }
@@ -173,51 +173,51 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             }
         }
-        config.onPackageCreated = function (package) {
+        config.onCollectionCreated = function (collection) {
           let newNode = {
-            id: `${package.packageId}-package-node`,
-            node: 'package',
-            text: package.name,
-            packageId: package.packageId,
-            packageName: package.name,
-            iconCls: 'sm-package-icon',
+            id: `${collection.collectionId}-collection-node`,
+            node: 'collection',
+            text: collection.name,
+            collectionId: collection.collectionId,
+            collectionName: collection.name,
+            iconCls: 'sm-collection-icon',
             children: [
               {
-                id: `${package.packageId}-pkgconfig-node`,
-                text: 'Package configuration...',
-                packageId: package.packageId,
-                packageName: package.name,
-                action: 'package-management',
+                id: `${collection.collectionId}-pkgconfig-node`,
+                text: 'Collection configuration...',
+                collectionId: collection.collectionId,
+                collectionName: collection.name,
+                action: 'collection-management',
                 iconCls: 'sm-setting-icon',
                 leaf: true
               },{
-                id: `${package.packageId}-import-result-node`,
+                id: `${collection.collectionId}-import-result-node`,
                 text: 'Import STIG results...',
-                packageId: package.packageId,
-                packageName: package.name,
+                collectionId: collection.collectionId,
+                collectionName: collection.name,
                 iconCls: 'sm-import-icon',
                 action: 'import',
                 leaf: true
               },{
-                id: `${package.packageId}-assets-node`,
+                id: `${collection.collectionId}-assets-node`,
                 node: 'assets',
                 text: 'Assets',
                 iconCls: 'sm-asset-icon'
               },{
-                id: `${package.packageId}-stigs-node`,
+                id: `${collection.collectionId}-stigs-node`,
                 node: 'stigs',
                 text: 'STIGs',
                 iconCls: 'sm-stig-icon'
               }
             ]
           }
-          let packageRoot = me.getNodeById('packages-root')
-          packageRoot.appendChild(newNode)
+          let collectionRoot = me.getNodeById('collections-root')
+          collectionRoot.appendChild(newNode)
           function sortFn (a, b) {
-            if (a.attributes.id === 'package-create-leaf') {
+            if (a.attributes.id === 'collection-create-leaf') {
               return -1
             }
-            if (b.attributes.id === 'package-create-leaf') {
+            if (b.attributes.id === 'collection-create-leaf') {
               return 1
             }
             if (a.text < b.text) {
@@ -228,11 +228,11 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             }
             return 0
           }
-          packageRoot.sort(sortFn)
+          collectionRoot.sort(sortFn)
       }
       config.onAssetChanged = (apiAsset) => {
-        let packageRoot = this.getNodeById('packages-root')
-        let assetNode = packageRoot.findChild('assetId', apiAsset.assetId, true)
+        let collectionRoot = this.getNodeById('collections-root')
+        let assetNode = collectionRoot.findChild('assetId', apiAsset.assetId, true)
         if (assetNode) {
           assetNode.setText(apiAsset.name)
         }
@@ -242,13 +242,13 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
       SM.AppNavTree.superclass.initComponent.call(this)
 
       // Attach handlers for app events
-      SM.Dispatcher.addListener('packagecreated', me.onPackageCreated)
+      SM.Dispatcher.addListener('collectioncreated', me.onCollectionCreated)
       SM.Dispatcher.addListener('assetchanged', me.onAssetChanged, me)
 
     },
     loadTree: async function (node, cb) {
         try {
-          let match, packageGrant
+          let match, collectionGrant
           // Root node
           if (node == 'stigman-root') {
             let content = []
@@ -281,88 +281,88 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             }
             content.push(
               {
-                id: `packages-root`,
-                node: 'packages',
-                text: 'Packages',
-                iconCls: 'sm-package-icon',
+                id: `collections-root`,
+                node: 'collections',
+                text: 'Collections',
+                iconCls: 'sm-collection-icon',
                 expanded: true
               }
             )
             cb(content, { status: true })
             return
           }
-          if (node === 'packages-root') {
+          if (node === 'collections-root') {
             let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/packages`,
+              url: `${STIGMAN.Env.apiBase}/collections`,
               method: 'GET'
             })
             let r = JSON.parse(result.response.responseText)
-            let content = r.map(package => {
+            let content = r.map(collection => {
                 let children = []
-                packageGrant = curUser.packageGrants.find( g => g.packageId === package.packageId )
-                if (packageGrant && packageGrant.accessLevel >= 3) {
+                collectionGrant = curUser.collectionGrants.find( g => g.collectionId === collection.collectionId )
+                if (collectionGrant && collectionGrant.accessLevel >= 3) {
                   children.push({
-                    id: `${package.packageId}-pkgconfig-node`,
-                    text: 'Package configuration...',
-                    packageId: package.packageId,
-                    packageName: package.name,
-                    action: 'package-management',
+                    id: `${collection.collectionId}-pkgconfig-node`,
+                    text: 'Collection configuration...',
+                    collectionId: collection.collectionId,
+                    collectionName: collection.name,
+                    action: 'collection-management',
                     iconCls: 'sm-setting-icon',
                     leaf: true
                   })
                 }
                 children.push(
                   {
-                    id: `${package.packageId}-import-result-node`,
+                    id: `${collection.collectionId}-import-result-node`,
                     text: 'Import STIG results...',
-                    packageId: package.packageId,
-                    packageName: package.name,
+                    collectionId: collection.collectionId,
+                    collectionName: collection.name,
                     iconCls: 'sm-import-icon',
                     action: 'import',
                     leaf: true
                   },{
-                    id: `${package.packageId}-assets-node`,
+                    id: `${collection.collectionId}-assets-node`,
                     node: 'assets',
                     text: 'Assets',
                     iconCls: 'sm-asset-icon'
                   },{
-                    id: `${package.packageId}-stigs-node`,
+                    id: `${collection.collectionId}-stigs-node`,
                     node: 'stigs',
                     text: 'STIGs',
                     iconCls: 'sm-stig-icon'
                   }
                 )
                 let node = {
-                  id: `${package.packageId}-package-node`,
-                  node: 'package',
-                  text: package.name,
-                  packageId: package.packageId,
-                  packageName: package.name,
-                  iconCls: 'sm-package-icon',
+                  id: `${collection.collectionId}-collection-node`,
+                  node: 'collection',
+                  text: collection.name,
+                  collectionId: collection.collectionId,
+                  collectionName: collection.name,
+                  iconCls: 'sm-collection-icon',
                   children: children
                 }
                 return node
             })
-            if (curUser.canCreatePackage) {
+            if (curUser.canCreateCollection) {
               content.unshift({
-                id: `package-create-leaf`,
-                action: 'package-create',
-                text: 'Create Package...',
+                id: `collection-create-leaf`,
+                action: 'collection-create',
+                text: 'Create Collection...',
                 cls: 'sm-tree-node-create',
                 iconCls: 'sm-add-icon',
-                qtip: 'Create a new STIG Manager Package',
+                qtip: 'Create a new STIG Manager Collection',
                 leaf: true
               })
             }
             cb(content, { status: true })
             return
           }
-          // Package-Assets node
+          // Collection-Assets node
           match = node.match(/(\d+)-assets-node/)
           if (match) {
-            let packageId = match[1]
+            let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
               method: 'GET',
               params: {
                 projection: 'assets'
@@ -370,10 +370,10 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             })
             let r = JSON.parse(result.response.responseText)
             let content = r.assets.map(asset => ({
-                id: `${packageId}-${asset.assetId}-assets-asset-node`,
+                id: `${collectionId}-${asset.assetId}-assets-asset-node`,
                 text: asset.name,
                 report: 'asset',
-                packageId: packageId,
+                collectionId: collectionId,
                 assetId: asset.assetId,
                 iconCls: 'sm-asset-icon',
                 qtip: asset.name
@@ -382,10 +382,10 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             cb(content, { status: true })
             return
           }
-          // Package-Assets-STIG node
+          // Collection-Assets-STIG node
           match = node.match(/(\d+)-(\d+)-assets-asset-node/)
           if (match) {
-            let packageId = match[1]
+            let collectionId = match[1]
             let assetId = match[2]
             let result = await Ext.Ajax.requestPromise({
               url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
@@ -396,7 +396,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             })
             let r = JSON.parse(result.response.responseText)
             let content = r.stigs.map(stig => ({
-              id: `${packageId}-${assetId}-${stig.benchmarkId}-leaf`,
+              id: `${collectionId}-${assetId}-${stig.benchmarkId}-leaf`,
               text: stig.benchmarkId,
               leaf: true,
               report: 'review',
@@ -405,7 +405,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               assetName: r.name,
               stigRevStr: stig.lastRevisionStr,
               assetId: r.assetId,
-              packageId: packageId,
+              collectionId: collectionId,
               benchmarkId: stig.benchmarkId,
               qtip: stig.title
             })
@@ -414,12 +414,12 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
       
-          // Package-STIGs node
+          // Collection-STIGs node
           match = node.match(/(\d+)-stigs-node/)
           if (match) {
-            let packageId = match[1]
+            let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
               method: 'GET',
               params: {
                 projection: 'stigs'
@@ -427,15 +427,15 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             })
             let r = JSON.parse(result.response.responseText)
             let content = r.stigs.map(stig => ({
-              packageId: packageId,
+              collectionId: collectionId,
               text: stig.benchmarkId,
-              packageName: r.name,
-              packageId: packageId,
+              collectionName: r.name,
+              collectionId: collectionId,
               report: 'stig',
               iconCls: 'sm-stig-icon',
               reqRar: r.reqRar,
               stigRevStr: stig.lastRevisionStr,
-              id: `${packageId}-${stig.benchmarkId}-stigs-stig-node`,
+              id: `${collectionId}-${stig.benchmarkId}-stigs-stig-node`,
               benchmarkId: stig.benchmarkId,
               qtip: stig.title
             })
@@ -443,23 +443,23 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             cb(content, { status: true })
             return
           }
-          // Package-STIGs-Asset node
+          // Collection-STIGs-Asset node
           match = node.match(/(\d+)-(.*)-stigs-stig-node/)
           if (match) {
-            let packageId = match[1]
+            let collectionId = match[1]
             let benchmarkId = match[2]
             let result = await Ext.Ajax.requestPromise({
               url: `${STIGMAN.Env.apiBase}/assets`,
               method: 'GET',
               params: {
-                packageId: packageId,
+                collectionId: collectionId,
                 benchmarkId: benchmarkId,
                 projection: 'stigs'
               }
             })
             let r = JSON.parse(result.response.responseText)
             let content = r.map(asset => ({
-              id: `${packageId}-${asset.assetId}-${benchmarkId}-leaf`,
+              id: `${collectionId}-${asset.assetId}-${benchmarkId}-leaf`,
               text: asset.name,
               leaf: true,
               report: 'review',
@@ -468,7 +468,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               assetName: asset.name,
               stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
               assetId: asset.assetId,
-              packageId: packageId,
+              collectionId: collectionId,
               benchmarkId: benchmarkId,
               qtip: asset.name
             })
@@ -499,13 +499,13 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         if (n.attributes.action == 'import') {
           uploadArchive(n);
         }
-        if (n.attributes.action == 'package-create') {
-          let packageRootNode = n.parentNode
-          let fp = new SM.PackageForm({
+        if (n.attributes.action == 'collection-create') {
+          let collectionRootNode = n.parentNode
+          let fp = new SM.CollectionForm({
             btnText: 'Create',
             btnHandler: () => {
               let values = fp.getForm().getFieldValues()
-              createPackage(values, curUser.userId)
+              createCollection(values, curUser.userId)
             }
           })
           fp.getForm().setValues({
@@ -532,8 +532,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           appwindow.show(document.body)
         }
       
-        if (n.attributes.action == 'package-management') {
-            addPackageManager(n.attributes.packageId, n.attributes.packageName)
+        if (n.attributes.action == 'collection-management') {
+            addCollectionManager(n.attributes.collectionId, n.attributes.collectionName)
         }
       
         switch (n.id) {

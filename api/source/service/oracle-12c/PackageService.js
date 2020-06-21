@@ -5,9 +5,9 @@ const dbUtils = require('./utils')
 
 
 /**
-Generalized queries for package(s).
+Generalized queries for collection(s).
 **/
-exports.queryPackages = async function (inProjection, inPredicates, elevate, userObject) {
+exports.queryCollections = async function (inProjection, inPredicates, elevate, userObject) {
   let context
   if (userObject.role == 'Staff' || (userObject.canAdmin && elevate)) {
     context = dbUtils.CONTEXT_ALL
@@ -18,7 +18,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   }
 
   let columns = [
-    'p.PACKAGEID as "packageId"',
+    'p.COLLECTIONID as "collectionId"',
     'p.NAME as "name"',
     'p.EMASSID as "emassId"',
     'p.POCNAME as "pocName"',
@@ -27,8 +27,8 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     'p.REQRAR as "reqRar"'
   ]
   let joins = [
-    'stigman.packages p',
-    'left join stigman.asset_package_map ap on p.packageId=ap.packageId',
+    'stigman.collections p',
+    'left join stigman.asset_collection_map ap on p.collectionId=ap.collectionId',
     'left join stigman.assets a on ap.assetId = a.assetId',
     'left join stigman.stig_asset_map sa on a.assetId = sa.assetId'
   ]
@@ -53,9 +53,9 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
     statements: [],
     binds: []
   }
-  if (inPredicates.packageId) {
-    predicates.statements.push('p.packageId = :packageId')
-    predicates.binds.push( inPredicates.packageId )
+  if (inPredicates.collectionId) {
+    predicates.statements.push('p.collectionId = :collectionId')
+    predicates.binds.push( inPredicates.collectionId )
   }
   if (context == dbUtils.CONTEXT_DEPT) {
     predicates.statements.push('a.dept = :dept')
@@ -76,7 +76,7 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by p.packageId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
+  sql += ' group by p.collectionId, p.name, p.emassid, p.pocname, p.pocemail, p.pocphone, p.reqrar'
   sql += ' order by p.name'
   try {
     let  options = {
@@ -142,17 +142,17 @@ exports.queryPackages = async function (inProjection, inPredicates, elevate, use
   }
 }
 
-exports.addOrUpdatePackage = async function(writeAction, packageId, body, projection, userObject) {
-  // CREATE: packageId will be null
-  // REPLACE/UPDATE: packageId is not null
+exports.addOrUpdateCollection = async function(writeAction, collectionId, body, projection, userObject) {
+  // CREATE: collectionId will be null
+  // REPLACE/UPDATE: collectionId is not null
   let connection // available to try, catch, and finally blocks
   try {
     // Extract non-scalar properties to separate variables
-    let { assetIds, ...packageFields } = body
+    let { assetIds, ...collectionFields } = body
     
     // Convert boolean scalar values to database values (true=1 or false=0)
-    if ('reqRar' in packageFields) {
-      packageFields.reqRar = packageFields.reqRar ? 1 : 0
+    if ('reqRar' in collectionFields) {
+      collectionFields.reqRar = collectionFields.reqRar ? 1 : 0
     }
   
     // Connect to Oracle
@@ -162,32 +162,32 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
     connection = await oracledb.getConnection()
 
     // Process scalar properties
-    let binds = { ...packageFields}
+    let binds = { ...collectionFields}
     if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
-      // INSERT into packages
+      // INSERT into collections
       let sqlInsert =
       `INSERT INTO
-          stigman.packages
+          stigman.collections
           (name, emassId, pocName, pocEmail, pocPhone, reqRar)
         VALUES
           (:name, :emassId, :pocName, :pocEmail, :pocPhone, :reqRar)
         RETURNING
-          packageId into :packageId`
-      binds.packageId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
+          collectionId into :collectionId`
+      binds.collectionId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
       let result = await connection.execute(sqlInsert, binds, options)
-      packageId = result.outBinds.packageId[0]
+      collectionId = result.outBinds.collectionId[0]
     }
     else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
       if (Object.keys(binds).length > 0) {
-        // UPDATE into packages
+        // UPDATE into collections
         let sqlUpdate =
         `UPDATE
-            stigman.packages
+            stigman.collections
           SET
-            ${dbUtils.objectBindObject(packageFields, binds)}
+            ${dbUtils.objectBindObject(collectionFields, binds)}
           WHERE
-            packageId = :packageId`
-        binds.packageId = packageId
+            collectionId = :collectionId`
+        binds.collectionId = collectionId
         await connection.execute(sqlUpdate, binds, options)
       }
     }
@@ -197,17 +197,17 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
 
     // Process assetIds
     if (assetIds && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-      // DELETE from asset_package_map
-      let sqlDeleteAssets = 'DELETE FROM stigman.asset_package_map where packageId = :packageId'
-      await connection.execute(sqlDeleteAssets, [packageId])
+      // DELETE from asset_collection_map
+      let sqlDeleteAssets = 'DELETE FROM stigman.asset_collection_map where collectionId = :collectionId'
+      await connection.execute(sqlDeleteAssets, [collectionId])
     }
     if (assetIds.length > 0) {
-      // INSERT into asset_package_map
+      // INSERT into asset_collection_map
       let sqlInsertAssets = `
         INSERT INTO 
-          stigman.asset_package_map (packageId,assetId)
-        VALUES (:packageId, :assetId)`      
-      let binds = assetIds.map(i => [packageId, i])
+          stigman.asset_collection_map (collectionId,assetId)
+        VALUES (:collectionId, :assetId)`      
+      let binds = assetIds.map(i => [collectionId, i])
       await connection.executeMany(sqlInsertAssets, binds)
     }
 
@@ -225,7 +225,7 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
   }
 
   try {
-    let row = await this.getPackage(packageId, projection, true, userObject)
+    let row = await this.getCollection(collectionId, projection, true, userObject)
     return row
   }
   catch (err) {
@@ -234,14 +234,14 @@ exports.addOrUpdatePackage = async function(writeAction, packageId, body, projec
 }
 
 /**
- * Create a Package
+ * Create a Collection
  *
- * body PackageAssign  (optional)
+ * body CollectionAssign  (optional)
  * returns List
  **/
-exports.createPackage = async function(body, projection, userObject) {
+exports.createCollection = async function(body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
+    let row = await this.addOrUpdateCollection(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
     return (row)
   }
   catch (err) {
@@ -251,21 +251,21 @@ exports.createPackage = async function(body, projection, userObject) {
 
 
 /**
- * Delete a Package
+ * Delete a Collection
  *
- * packageId Integer A path parameter that indentifies a Package
- * returns PackageInfo
+ * collectionId Integer A path parameter that indentifies a Collection
+ * returns CollectionInfo
  **/
-exports.deletePackage = async function(packageId, projection, elevate, userObject) {
+exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
   try {
-    let row = await this.queryPackages(projection, { packageId: packageId }, elevate, userObject)
-    let sqlDelete = `DELETE FROM stigman.packages where packageId = :packageId`
+    let row = await this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
+    let sqlDelete = `DELETE FROM stigman.collections where collectionId = :collectionId`
     let connection = await oracledb.getConnection()
     let  options = {
       outFormat: oracledb.OUT_FORMAT_OBJECT,
       autoCommit: true
     }
-    await connection.execute(sqlDelete, [packageId], options)
+    await connection.execute(sqlDelete, [collectionId], options)
     await connection.close()
     return (row)
   }
@@ -276,18 +276,18 @@ exports.deletePackage = async function(packageId, projection, elevate, userObjec
 
 
 /**
- * Return the Checklist for the supplied Package and STIG 
+ * Return the Checklist for the supplied Collection and STIG 
  *
- * packageId Integer A path parameter that indentifies a Package
+ * collectionId Integer A path parameter that indentifies a Collection
  * benchmarkId String A path parameter that indentifies a STIG
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
- * returns PackageChecklist
+ * returns CollectionChecklist
  **/
-exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revisionStr, userObject ) {
+exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId, revisionStr, userObject ) {
   let connection
   try {
     let joins = [
-      'stigman.asset_package_map ap',
+      'stigman.asset_collection_map ap',
       'left join stigman.stig_asset_map sa on ap.assetId=sa.assetId',
       'left join stigs.current_revs rev on sa.stigId=rev.stigId',
       'left join stigs.rev_group_map rg on rev.revId=rg.revId',
@@ -300,11 +300,11 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
 
     let predicates = {
       statements: [
-        'ap.packageId = :packageId',
+        'ap.collectionId = :collectionId',
         'rev.stigId = :benchmarkId'
       ],
       binds: {
-        packageId: packageId,
+        collectionId: collectionId,
         benchmarkId: benchmarkId
       }
     }
@@ -400,15 +400,15 @@ exports.getChecklistByPackageStig = async function (packageId, benchmarkId, revi
 
 
 /**
- * Return a Package
+ * Return a Collection
  *
- * packageId Integer A path parameter that indentifies a Package
- * returns PackageInfo
+ * collectionId Integer A path parameter that indentifies a Collection
+ * returns CollectionInfo
  **/
-exports.getPackage = async function(packageId, projection, elevate, userObject) {
+exports.getCollection = async function(collectionId, projection, elevate, userObject) {
   try {
-    let rows = await this.queryPackages(projection, {
-      packageId: packageId
+    let rows = await this.queryCollections(projection, {
+      collectionId: collectionId
     }, elevate, userObject)
   return (rows[0])
   }
@@ -419,13 +419,13 @@ exports.getPackage = async function(packageId, projection, elevate, userObject) 
 
 
 /**
- * Return a list of Packages accessible to the user
+ * Return a list of Collections accessible to the user
  *
  * returns List
  **/
-exports.getPackages = async function(projection, elevate, userObject) {
+exports.getCollections = async function(projection, elevate, userObject) {
   try {
-    let rows = await this.queryPackages(projection, {}, elevate, userObject)
+    let rows = await this.queryCollections(projection, {}, elevate, userObject)
     return (rows)
   }
   catch (err) {
@@ -435,15 +435,15 @@ exports.getPackages = async function(projection, elevate, userObject) {
 
 
 /**
- * Replace all properties of a Package
+ * Replace all properties of a Collection
  *
- * body PackageAssign  (optional)
- * packageId Integer A path parameter that indentifies a Package
- * returns PackageInfo
+ * body CollectionAssign  (optional)
+ * collectionId Integer A path parameter that indentifies a Collection
+ * returns CollectionInfo
  **/
-exports.replacePackage = async function( packageId, body, projection, userObject) {
+exports.replaceCollection = async function( collectionId, body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.REPLACE, packageId, body, projection, userObject)
+    let row = await this.addOrUpdateCollection(dbUtils.WRITE_ACTION.REPLACE, collectionId, body, projection, userObject)
     return (row)
   } 
   catch (err) {
@@ -453,15 +453,15 @@ exports.replacePackage = async function( packageId, body, projection, userObject
 
 
 /**
- * Merge updates to a Package
+ * Merge updates to a Collection
  *
- * body PackageAssign  (optional)
- * packageId Integer A path parameter that indentifies a Package
- * returns PackageInfo
+ * body CollectionAssign  (optional)
+ * collectionId Integer A path parameter that indentifies a Collection
+ * returns CollectionInfo
  **/
-exports.updatePackage = async function( packageId, body, projection, userObject) {
+exports.updateCollection = async function( collectionId, body, projection, userObject) {
   try {
-    let row = await this.addOrUpdatePackage(dbUtils.WRITE_ACTION.UPDATE, packageId, body, projection, userObject)
+    let row = await this.addOrUpdateCollection(dbUtils.WRITE_ACTION.UPDATE, collectionId, body, projection, userObject)
     return (row)
   } 
   catch (err) {

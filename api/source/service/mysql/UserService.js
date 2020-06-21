@@ -17,7 +17,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.display',
       'ud.email',
       'ud.globalAccess',
-      'ud.canCreatePackage',
+      'ud.canCreateCollection',
       'ud.canAdmin',
       'ud.metadata'
     ]
@@ -30,19 +30,19 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.display',
       'ud.email',
       'ud.globalAccess',
-      'ud.canCreatePackage',
+      'ud.canCreateCollection',
       'ud.canAdmin'
     ]
 
     // PROJECTIONS
     if (inProjection && inProjection.includes('grants')) {
-      joins.push('left join package_grant pg on ud.userId = pg.userId')
-      joins.push('left join package p on pg.packageId = p.packageId')
+      joins.push('left join collection_grant pg on ud.userId = pg.userId')
+      joins.push('left join collection p on pg.collectionId = p.collectionId')
       columns.push(`case when count(pg.pgId) > 0 then 
       json_arrayagg(
         json_object(
-          'package', json_object(
-            'packageId', CAST(pg.packageId as char),
+          'collection', json_object(
+            'collectionId', CAST(pg.collectionId as char),
             'name', p.name
           ),
           'accessLevel', pg.accessLevel
@@ -97,7 +97,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
 
     // Convert boolean values to database value (true=1 or false=0)
     userFields.globalAccess = userFields.globalAccess ? 1 : 0
-    userFields.canCreatePackage = userFields.canCreatePackage ? 1 : 0
+    userFields.canCreateCollection = userFields.canCreateCollection ? 1 : 0
     userFields.canAdmin = userFields.canAdmin ? 1 : 0
 
     connection = await dbUtils.pool.getConnection()
@@ -112,9 +112,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       let sqlInsert =
         `INSERT INTO
             user_data
-            ( username, display, globalAccess, canCreatePackage, canAdmin)
+            ( username, display, globalAccess, canCreateCollection, canAdmin)
           VALUES
-            (:username, :display, :globalAccess, :canCreatePackage, :canAdmin)`
+            (:username, :display, :globalAccess, :canCreateCollection, :canAdmin)`
       let [result] = await connection.query(sqlInsert, binds)
       userId = result.insertId
     }
@@ -141,18 +141,18 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     // Process grants if present
     if (grants) {
       if ( writeAction !== dbUtils.WRITE_ACTION.CREATE ) {
-        // DELETE from package_grant
-        let sqlDeletePkgGrant = 'DELETE FROM package_grant where userId = ?'
+        // DELETE from collection_grant
+        let sqlDeletePkgGrant = 'DELETE FROM collection_grant where userId = ?'
         await connection.query(sqlDeletePkgGrant, [userId])
       }
       if (grants.length > 0) {
         let sqlInsertPkgGrant = `
           INSERT INTO 
-            package_grant (userId, packageId, accessLevel)
+            collection_grant (userId, collectionId, accessLevel)
           VALUES
             ?`      
-        binds = grants.map( grant => [userId, grant.packageId, grant.accessLevel])
-        // INSERT into package_grant
+        binds = grants.map( grant => [userId, grant.collectionId, grant.accessLevel])
+        // INSERT into collection_grant
         await connection.execute(sqlInsertPkgGrant, binds)
       }
     }

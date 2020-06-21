@@ -2,7 +2,7 @@
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 const Asset = require(`./AssetService`);
-const Package = require(`./PackageService`);
+const Collection = require(`./CollectionService`);
 // const User = require(`./UserService`);
 // const Reviews = require(`./ReviewService`);
 
@@ -23,18 +23,18 @@ exports.getVersion = async function(userObject) {
 
 exports.replaceAppData = async function (importOpts, appData, userObject, res ) {
   function dmlObjectFromAppData (appdata) {
-    let {packages, assets, users, reviews} = appdata
+    let {collections, assets, users, reviews} = appdata
 
     let dml = {
       preload: [
       ],
       postload: [
       ],
-      package: {
-        sqlDelete: `DELETE FROM package`,
+      collection: {
+        sqlDelete: `DELETE FROM collection`,
         sqlInsert: `INSERT INTO
-        package (
-          packageId,
+        collection (
+          collectionId,
           name,
           workflow,
           metadata 
@@ -50,17 +50,17 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           display,
           email,
           globalAccess,
-          canCreatePackage,
+          canCreateCollection,
           canAdmin,
           metadata
         ) VALUES ?`,
         insertBinds: []
       },
-      packageGrant: {
-        sqlDelete: `DELETE FROM package_grant`,
+      collectionGrant: {
+        sqlDelete: `DELETE FROM collection_grant`,
         sqlInsert: `INSERT INTO
-        package_grant (
-          packageId,
+        collection_grant (
+          collectionId,
           userId,
           accessLevel
         ) VALUES ?`,
@@ -70,7 +70,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         sqlDelete: `DELETE FROM asset`,
         sqlInsert: `INSERT INTO asset (
           assetId,
-          packageId,
+          collectionId,
           name,
           ip,
           nonnetwork,
@@ -154,23 +154,23 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         u.display,
         u.email,
         u.globalAccess ? 1 : 0,
-        u.canCreatePackage ? 1 : 0,
+        u.canCreateCollection ? 1 : 0,
         u.canAdmin ? 1 : 0,
         JSON.stringify(u.metadata)
       ])
     }
     
-    // Tables: package, package_grant_map
-    for (const p of packages) {
-      dml.package.insertBinds.push([
-        parseInt(p.packageId) || null,
+    // Tables: collection, collection_grant_map
+    for (const p of collections) {
+      dml.collection.insertBinds.push([
+        parseInt(p.collectionId) || null,
         p.name,
         p.workflow,
         JSON.stringify(p.metadata)
       ])
       for (const grant of p.grants) {
-        dml.packageGrant.insertBinds.push([
-          parseInt(p.packageId) || null,
+        dml.collectionGrant.insertBinds.push([
+          parseInt(p.collectionId) || null,
           parseInt(grant.userId) || null,
           grant.accessLevel
         ])
@@ -183,7 +183,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       let { stigGrants, ...assetFields} = asset
       dml.asset.insertBinds.push([
         parseInt(assetFields.assetId) || null,
-        parseInt(assetFields.packageId) || null,
+        parseInt(assetFields.collectionId) || null,
         assetFields.name,
         assetFields.ip,
         assetFields.nonnetwork ? 1: 0,
@@ -271,8 +271,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'review',
       'userStigAssetMap',
       'stigAssetMap',
-      'packageGrant',
-      'package',
+      'collectionGrant',
+      'collection',
       'asset',
       'userData',
     ]
@@ -290,8 +290,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
   
     tableOrder = [
       'userData',
-      'package',
-      'packageGrant',
+      'collection',
+      'collectionGrant',
       'asset',
       'stigAssetMap',
       'userStigAssetMap',

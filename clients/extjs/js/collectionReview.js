@@ -1,9 +1,9 @@
 /*
-$Id: packageReview.js 885 2018-02-20 16:26:08Z bmassey $
+$Id: collectionReview.js 885 2018-02-20 16:26:08Z bmassey $
 */
 
 
-async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
+async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 	try {
 		// 'selectedRule' is optional
 		/* Example of 'leaf': 
@@ -12,7 +12,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 				report: "stig"
 				revId: "IE8-1-10"
 				benchmarkId: "IE8"
-				packageId: "1"
+				collectionId: "1"
 				stigName: "APACHE_SERVER_2.2_WINDOWS"
 			}
 		*/
@@ -22,7 +22,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 			let match = leaf.stigRevStr.match(/V(\d+)R(\d+)/)
 			leaf.revId = `${leaf.benchmarkId}-${match[1]}-${match[2]}`
 		}
-		var idAppend = '-package-' + leaf.packageId + '-' + leaf.benchmarkId.replace(".","_");
+		var idAppend = '-collection-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
@@ -31,7 +31,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/assets/`,
 			params: {
-				packageId: leaf.packageId,
+				collectionId: leaf.collectionId,
 				benchmarkId: leaf.benchmarkId
 			},
 			method: 'GET'
@@ -108,7 +108,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 
 		var groupStore = new Ext.data.JsonStore({
 			proxy: new Ext.data.HttpProxy({
-				url: `${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.benchmarkId}/latest`,
+				url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/latest`,
 				method: 'GET'
 			}),
 			root: '',
@@ -252,10 +252,10 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 							{
 								text: 'CKL (Zip archive)',
 								iconCls: 'sm-export-icon',
-								tooltip: 'Download this checklist in DISA STIG Viewer format for each asset in the package',
+								tooltip: 'Download this checklist in DISA STIG Viewer format for each asset in the collection',
 								handler: function(item,eventObject){
 									var lo = groupStore.lastOptions;
-									window.location='pl/getPackageCkls.pl' + '?benchmarkId=' + lo.params.benchmarkId + '&revId=' + lo.params.revId + '&packageId=' + lo.params.packageId;
+									window.location='pl/getCollectionCkls.pl' + '?benchmarkId=' + lo.params.benchmarkId + '&revId=' + lo.params.revId + '&collectionId=' + lo.params.collectionId;
 								}
 							}
 						]
@@ -270,7 +270,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 						//===================================================
 						Ext.Msg.show({
 							title: 'Confirm review reset',
-							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in Package "' + leaf.packageName + '"?',
+							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in Collection "' + leaf.collectionName + '"?',
 							buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
 							icon: Ext.MessageBox.QUESTION,
 							closable: false,
@@ -285,8 +285,8 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 									//unlockObject.stigName = leaf.benchmarkId;
 									unlockObject.assetId = -1;
 									unlockObject.assetName = '';
-									unlockObject.packageId =leaf.packageId;
-									unlockObject.packageName=leaf.packageName;
+									unlockObject.collectionId =leaf.collectionId;
+									unlockObject.collectionName=leaf.collectionName;
 									unlockObject.gridTorefresh = groupGrid;
 									batchReviewUnlock(unlockObject);
 									//===============================================
@@ -402,7 +402,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 				listeners: {
 					rowselect: {
 						fn: function(sm,index,record) {
-							handleGroupSelectionForPackage(record, idAppend, leaf, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined below
+							handleGroupSelectionForCollection(record, idAppend, leaf, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined below
 						}
 					}
 				}
@@ -626,7 +626,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		
 		var handleRevisionMenu = function (item, eventObject) {
 			let store = Ext.getCmp('groupGrid' + idAppend).getStore()
-			store.proxy.setUrl(`${STIGMAN.Env.apiBase}/packages/${leaf.packageId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
+			store.proxy.setUrl(`${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
 			store.load();
 			loadRevisionMenu(leaf.benchmarkId, item.revisionStr, idAppend)
 			groupGrid.sm_revisionStr = item.revisionStr
@@ -777,7 +777,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 				listeners: {
 					beforewrite: function (proxy, action, rs, params) {
 						// set params so server-side script can return counts for rules with updated reviews
-						params.packageId = thisTab.packageId;
+						params.collectionId = thisTab.collectionId;
 						params.benchmarkId = thisTab.benchmarkId;
 						params.revId = thisTab.revId;
 					},
@@ -1224,7 +1224,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		}
 
-		async function getReviews(packageId, ruleId) {
+		async function getReviews(collectionId, ruleId) {
 			try {
 				// Reviews grid
 				let reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
@@ -1232,7 +1232,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 					url: `${STIGMAN.Env.apiBase}/reviews`,
 					method: 'GET',
 					params: {
-						packageId: packageId,
+						collectionId: collectionId,
 						ruleId: ruleId,
 					}
 				})
@@ -1253,9 +1253,9 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		}
 		
-		function handleGroupSelectionForPackage(record, idAppend, leaf, benchmarkId, revisionStr) {
+		function handleGroupSelectionForCollection(record, idAppend, leaf, benchmarkId, revisionStr) {
 			getContent(benchmarkId, revisionStr, record.data.ruleId, record.data.groupId)
-			getReviews(leaf.packageId, record.data.ruleId)
+			getReviews(leaf.collectionId, record.data.ruleId)
 
 			// // Content panel
 			// let contentPanel = Ext.getCmp('content-panel' + idAppend);
@@ -1276,7 +1276,7 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 			// 	url: `${STIGMAN.Env.apiBase}/reviews`,
 			// 	method: 'GET',
 			// 	params: {
-			// 		packageId: leaf.packageId,
+			// 		collectionId: leaf.collectionId,
 			// 		ruleId: record.data.ruleId,
 			// 	}
 			// })
@@ -1926,10 +1926,10 @@ async function addPackageReview ( leaf, selectedRule, selectedAsset ) {
 		];
 		
 		var thisTab = Ext.getCmp('reviews-center-tab').add({
-			id: 'packageReviewTab' + idAppend,
+			id: 'collectionReviewTab' + idAppend,
 			iconCls: 'sm-stig-icon',
-			title: leaf.packageName + " : " + leaf.benchmarkId,
-			packageId: leaf.packageId,
+			title: leaf.collectionName + " : " + leaf.benchmarkId,
+			collectionId: leaf.collectionId,
 			revId: leaf.revId,
 			revisionStr: leaf.stigRevStr,
 			benchmarkId: leaf.benchmarkId,

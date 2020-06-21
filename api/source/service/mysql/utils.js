@@ -90,7 +90,7 @@ module.exports.initializeDatabase = async function () {
     let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user_data')
     if (rows[0].users === 0) {
       await _this.pool.query(
-        'insert into user_data (username, display, email, globalAccess, canCreatePackage, canAdmin) VALUES (?, ?, ?, ?, ?, ?)',
+        'insert into user_data (username, display, email, globalAccess, canCreateCollection, canAdmin) VALUES (?, ?, ?, ?, ?, ?)',
         [config.init.superuser, 'Superuser', 'su@none.com', 1, 1, 1]
       )
       console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
@@ -109,22 +109,22 @@ module.exports.getUserObject = async function (username) {
       ud.username,
       ud.display,
       cast (ud.globalAccess is true as json) as globalAccess,
-      cast (ud.canCreatePackage is true as json) as canCreatePackage,
+      cast (ud.canCreateCollection is true as json) as canCreateCollection,
       cast (ud.canAdmin is true as json) as canAdmin,
-      CASE WHEN COUNT(pg.packageId) > 0
+      CASE WHEN COUNT(pg.collectionId) > 0
         THEN 
           json_arrayagg(
             json_object(
-              'packageId', CAST(pg.packageId as char),
+              'collectionId', CAST(pg.collectionId as char),
               'accessLevel', pg.accessLevel
             )
           )
         ELSE
           json_array()
-      END as packageGrants
+      END as collectionGrants
     from 
       user_data ud
-      left join package_grant pg on ud.userId = pg.userId
+      left join collection_grant pg on ud.userId = pg.userId
     where
       UPPER(username)=UPPER(?)
     group by
@@ -176,7 +176,7 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
       from
         stig_asset_map sa
         left join asset a on sa.assetId = a.assetId
-        left join package_grant pg on a.packageId = pg.packageId
+        left join collection_grant pg on a.collectionId = pg.collectionId
         left join user_stig_asset_map usa on sa.saId = usa.saId
       where
         pg.userId = ?
@@ -207,8 +207,8 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
       const sql = `SELECT
         CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
       FROM
-        package_grant pg
-        inner join asset a on pg.packageId = a.packageId
+        collection_grant pg
+        inner join asset a on pg.collectionId = a.collectionId
         inner join stig_asset_map sa on a.assetId = sa.assetId
         inner join revision rev on sa.benchmarkId = rev.benchmarkId
         inner join rev_group_map rg on rev.revId = rg.revId
@@ -222,8 +222,8 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
       SELECT
         CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
       FROM
-        package_grant pg
-        inner join asset a on pg.packageId = a.packageId
+        collection_grant pg
+        inner join asset a on pg.collectionId = a.collectionId
         inner join stig_asset_map sa on a.assetId = sa.assetId
         inner join user_stig_asset_map usa on (sa.saId = usa.saId and pg.userId = usa.userId)
         inner join revision rev on sa.benchmarkId = rev.benchmarkId

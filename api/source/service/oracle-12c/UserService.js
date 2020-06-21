@@ -98,7 +98,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast columns 'nonnetwork' and 'scanexempt'
-    // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
+    // * Oracle doesn't support a JSON type, so we parse string values from 'collections' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
       // Handle booleans
@@ -199,7 +199,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
           stigman.user_stig_asset_map (userId,saId)
         VALUES (:userId, (SELECT saId from stigman.stig_asset_map WHERE stigId=:benchmarkId and assetId=:assetId))`      
       let binds = stigReviews.map(i => [userId, i.benchmarkId, i.assetId])
-      // INSERT into asset_package_map
+      // INSERT into asset_collection_map
       await connection.executeMany(sqlInsertStigAssets, binds)
     }
     // Commit the changes

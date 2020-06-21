@@ -2,12 +2,12 @@
 $Id: findingsSummary.js 807 2017-07-27 13:04:19Z csmig $
 */
 
-function addFindingsSummary(packageId,packageName) {
-	var idAppend = '-findings-summary-' + packageId;
+function addFindingsSummary(collectionId,collectionName) {
+	var idAppend = '-findings-summary-' + collectionId;
 	var benchmarkId = '';
 	
 	var findingsGrid = new Ext.grid.GridPanel({
-		id: 'findingsGrid-' + packageId,
+		id: 'findingsGrid-' + collectionId,
 		title: 'Findings with Counts',
 		region:'center',
 		height:50,
@@ -33,19 +33,19 @@ function addFindingsSummary(packageId,packageName) {
 			],
 			listeners: {
 				load: function (store,records) {
-					Ext.getCmp('findingsGrid-' + packageId + '-totalText').setText(records.length + ' records');
+					Ext.getCmp('findingsGrid-' + collectionId + '-totalText').setText(records.length + ' records');
 				}
 			}
 		}),
 		columns: [
 			{header: "Severity",align:'center',width:10,dataIndex:'severity',sortable:true,renderer:renderSeverity},
 			{header: "Group",width:15,dataIndex:'groupId',sortable:true},
-			{header: "Rule Title",width:45,dataIndex:'title',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ packageId + 'title'},
+			{header: "Rule Title",width:45,dataIndex:'title',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ collectionId + 'title'},
 			{header: "# Assets",width:15,align:'right',dataIndex:'cnt',sortable:true},
-			{header: "STIGs",width:40,dataIndex:'benchmarkIds',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ packageId + 'benchmarkIds'}
+			{header: "STIGs",width:40,dataIndex:'benchmarkIds',renderer:columnWrap,sortable:true,id:'findingsGrid-'+ collectionId + 'benchmarkIds'}
 			//{header: "Rule",width:25,dataIndex:'ruleId',sortable:true},
 		],
-		autoExpandColumn:'findingsGrid-'+ packageId + 'benchmarkIds',
+		autoExpandColumn:'findingsGrid-'+ collectionId + 'benchmarkIds',
 		border: false,
 		style: {
 			borderBottomWidth: "1px"
@@ -74,7 +74,7 @@ function addFindingsSummary(packageId,packageName) {
 						hostGrid.getStore().load({
 							params:{
 								groupId: record.data.groupId, 
-								packageId: packageId,
+								collectionId: collectionId,
 								benchmarkId: lo.params.benchmarkId,
 								dept: lo.params.dept,
 								domain: lo.params.domain,
@@ -111,7 +111,7 @@ function addFindingsSummary(packageId,packageName) {
 					url: 'pl/getStigsForFindings.pl',
 					root: 'rows',
 					baseParams: {
-						packageId:packageId
+						collectionId:collectionId
 					}
 				}),
 				listeners: {
@@ -122,7 +122,7 @@ function addFindingsSummary(packageId,packageName) {
 						findingsGrid.getStore().load({
 							params:{
 								context: lo.params.context,
-								packageId: lo.params.packageId,
+								collectionId: lo.params.collectionId,
 								benchmarkId: r.data.benchmarkId,
 								domain: lo.params.domain,
 								dept: lo.params.dept
@@ -156,7 +156,7 @@ function addFindingsSummary(packageId,packageName) {
 					root: 'rows',
 					baseParams: {
 						workspace: 'report',
-						packageId:packageId,
+						collectionId:collectionId,
 						benchmarkId:benchmarkId,
 						attribute: 'dept'
 					}
@@ -169,7 +169,7 @@ function addFindingsSummary(packageId,packageName) {
 						findingsGrid.getStore().load({
 							params:{
 								context: lo.params.context,
-								packageId: lo.params.packageId,
+								collectionId: lo.params.collectionId,
 								benchmarkId: lo.params.benchmarkId,
 								domain: lo.params.domain,
 								dept: r.data.dept
@@ -204,7 +204,7 @@ function addFindingsSummary(packageId,packageName) {
 					root: 'rows',
 					baseParams: {
 						workspace: 'report',
-						packageId:packageId,
+						collectionId:collectionId,
 						benchmarkId:benchmarkId,
 						attribute: 'domain'
 					}
@@ -217,7 +217,7 @@ function addFindingsSummary(packageId,packageName) {
 						findingsGrid.getStore().load({
 							params:{
 								context: lo.params.context,
-								packageId: lo.params.packageId,
+								collectionId: lo.params.collectionId,
 								benchmarkId: lo.params.benchmarkId,
 								dept: lo.params.dept,
 								domain: r.data.domain
@@ -250,7 +250,7 @@ function addFindingsSummary(packageId,packageName) {
 				// handler: function(btn){
 					// var ourStore = findingsGrid.getStore();
 					// var lo = ourStore.lastOptions;
-					// window.location=ourStore.url + '?xls=1&packageId=' + lo.params.packageId;
+					// window.location=ourStore.url + '?xls=1&collectionId=' + lo.params.collectionId;
 				// }
 			// }
 			,{
@@ -261,7 +261,7 @@ function addFindingsSummary(packageId,packageName) {
 				handler: function(btn){
 					var ourStore = findingsGrid.getStore();
 					var lo = ourStore.lastOptions;
-					window.location=ourStore.url + '?csv=1&packageId=' + lo.params.packageId;
+					window.location=ourStore.url + '?csv=1&collectionId=' + lo.params.collectionId;
 				}
 			},{
 				xtype: 'tbfill'
@@ -269,7 +269,7 @@ function addFindingsSummary(packageId,packageName) {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbtext',
-				id: 'findingsGrid-' + packageId + '-totalText',
+				id: 'findingsGrid-' + collectionId + '-totalText',
 				text: '0 records',
 				width: 80
 			}]
@@ -282,7 +282,7 @@ function addFindingsSummary(packageId,packageName) {
 	});
 	
 	var hostGrid = new Ext.grid.GridPanel({
-		id: 'hostsByFindingGrid-' + packageId,
+		id: 'hostsByFindingGrid-' + collectionId,
 		parent: findingsGrid,
 		height:300,
 		title:'Finding details',
@@ -312,9 +312,9 @@ function addFindingsSummary(packageId,packageName) {
 			],
 			listeners: {
 				load: function (store,records) {
-					Ext.getCmp('hostsByFindingGrid-' + packageId + '-totalText').setText(records.length + ' records');
-					Ext.getCmp('hostsByFindingGrid-' + packageId + '-csvBtn').enable();
-					Ext.getCmp('hostsByFindingGrid-' + packageId + '-refreshBtn').enable();
+					Ext.getCmp('hostsByFindingGrid-' + collectionId + '-totalText').setText(records.length + ' records');
+					Ext.getCmp('hostsByFindingGrid-' + collectionId + '-csvBtn').enable();
+					Ext.getCmp('hostsByFindingGrid-' + collectionId + '-refreshBtn').enable();
 					// if (records.length > 0) {
 						// Ext.getCmp(network + '-hostAuditGrid-csvBtn').enable();
 						// Ext.getCmp(network + '-hostAuditGrid-refreshBtn').enable();
@@ -358,7 +358,7 @@ function addFindingsSummary(packageId,packageName) {
 			items: [
 			{
 				xtype: 'tbbutton',
-				id: 'hostsByFindingGrid-' + packageId + '-refreshBtn',
+				id: 'hostsByFindingGrid-' + collectionId + '-refreshBtn',
 				iconCls: 'icon-refresh',
 				tooltip: 'Reload this grid',
 				disabled:true,
@@ -370,7 +370,7 @@ function addFindingsSummary(packageId,packageName) {
 				xtype: 'tbseparator'
 			},			{
 				xtype: 'tbbutton',
-				id: 'hostsByFindingGrid-' + packageId + '-csvBtn',
+				id: 'hostsByFindingGrid-' + collectionId + '-csvBtn',
 				iconCls: 'icon-save',
 				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 				disabled:true,
@@ -379,7 +379,7 @@ function addFindingsSummary(packageId,packageName) {
 					var ourStore = hostGrid.getStore();
 					var lo = ourStore.lastOptions;
 					// window.location=ourStore.url + '?csv=1&db=' + lo.params.db + '&type=' + lo.params.type + '&ip=' + lo.params.ip;
-					window.location=ourStore.url + '?csv=1&packageId=' + lo.params.packageId + '&ruleId=' + lo.params.ruleId;					
+					window.location=ourStore.url + '?csv=1&collectionId=' + lo.params.collectionId + '&ruleId=' + lo.params.ruleId;					
 				}
 			},{
 				xtype: 'tbfill'
@@ -387,7 +387,7 @@ function addFindingsSummary(packageId,packageName) {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbtext',
-				id: 'hostsByFindingGrid-' + packageId + '-totalText',
+				id: 'hostsByFindingGrid-' + collectionId + '-totalText',
 				text: '0 records',
 				width: 80
 			}]
@@ -415,16 +415,16 @@ function addFindingsSummary(packageId,packageName) {
 	});
 
 	var thisTab = Ext.getCmp('reports-center-tab').add({
-		id: 'findingsTab-' + packageId,
+		id: 'findingsTab-' + collectionId,
 		iconCls: 'sm-report-icon',
-		title: 'Findings Summary (' + packageName + ')',
+		title: 'Findings Summary (' + collectionName + ')',
 		closable:true,
 		layout: 'border',
 		items: [findingsGrid,hostGrid]
 	});
 	thisTab.show();
 	
-	findingsGrid.getStore().load({params:{packageId: packageId}});
+	findingsGrid.getStore().load({params:{collectionId: collectionId}});
 
 }; //end addCompletionReport();
 

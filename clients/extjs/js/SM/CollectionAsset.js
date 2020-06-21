@@ -2,14 +2,14 @@
 
 Ext.ns('SM')
 
-SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
+SM.CollectionAssetTree = Ext.extend(Ext.tree.TreePanel, {
     loadTree: async function (nodeId, cb) {
         let match
         match = nodeId.match(/(\d+)-project-asset-tree-root/)
         if (match) {
-            let packageId = parseInt(match[1])
+            let collectionId = parseInt(match[1])
             let result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+                url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
                 method: 'GET',
                 params: {
                   projection: 'assets'
@@ -17,10 +17,10 @@ SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
               })
             let r = JSON.parse(result.response.responseText)
             let content = r.assets.map(asset => ({
-                id: `${packageId}-${asset.assetId}-project-asset-tree-asset-node`,
+                id: `${collectionId}-${asset.assetId}-project-asset-tree-asset-node`,
                 text: asset.name,
                 report: 'asset',
-                packageId: packageId,
+                collectionId: collectionId,
                 assetId: asset.assetId,
                 iconCls: 'sm-asset-icon',
                 qtip: asset.name
@@ -31,7 +31,7 @@ SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
         }
         match = nodeId.match(/(\d+)-(\d+)-project-asset-tree-asset-node/)
         if (match) {
-            let packageId = parseInt(match[1])
+            let collectionId = parseInt(match[1])
             let assetId = parseInt(match[2])
             let result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
@@ -42,7 +42,7 @@ SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
             })
             let r = JSON.parse(result.response.responseText)
             let content = r.stigs.map(stig => ({
-                id: `${packageId}-${assetId}-${stig.benchmarkId}-leaf`,
+                id: `${collectionId}-${assetId}-${stig.benchmarkId}-leaf`,
                 text: stig.benchmarkId,
                 leaf: true,
                 report: 'review',
@@ -51,7 +51,7 @@ SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
                 assetName: r.name,
                 stigRevStr: stig.lastRevisionStr,
                 assetId: r.assetId,
-                packageId: packageId,
+                collectionId: collectionId,
                 benchmarkId: stig.benchmarkId,
                 qtip: stig.title
                 })
@@ -82,10 +82,10 @@ SM.PackageAssetTree = Ext.extend(Ext.tree.TreePanel, {
 })
 
 /* 
-@cfg packageId 
+@cfg collectionId 
 @cfg url
 */
-SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
     onAssetChanged: function (apiAsset) {
         let record = this.store.getById(apiAsset.assetId)
         this.store.loadData(apiAsset, true) // append with replace
@@ -133,7 +133,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             proxy: this.proxy,
             baseParams: {
-                packageId: this.packageId,
+                collectionId: this.collectionId,
                 projection: ['adminStats']
             },
             root: '',
@@ -215,7 +215,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     fn: function(grid,rowIndex,e) {
                         var r = grid.getStore().getAt(rowIndex);
                         Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-                        showAssetProps(r.get('assetId'), me.packageId);
+                        showAssetProps(r.get('assetId'), me.collectionId);
                     }
                 }
             },
@@ -226,7 +226,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'New asset',
                         handler: function() {
                             Ext.getBody().mask('Loading form...');
-                            showAssetProps( null, me.packageId);            
+                            showAssetProps( null, me.collectionId);            
                         }
                     }
                     ,'-'
@@ -299,7 +299,7 @@ SM.PackageAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageAssetGrid.superclass.initComponent.call(this)
+        SM.CollectionAssetGrid.superclass.initComponent.call(this)
 
         SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
     }   
@@ -561,8 +561,8 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
         this.stigGrid = new SM.AssetStigsGrid({
             name: 'stigs'
         })
-        if (! this.initialPackageId) {
-            throw ('missing property initialPackageId')
+        if (! this.initialCollectionId) {
+            throw ('missing property initialCollectionId')
         }
  
         let config = {
@@ -619,8 +619,8 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                         },
                         {
                             xtype: 'hidden',
-                            name: 'packageId',
-                            value: this.initialPackageId
+                            name: 'collectionId',
+                            value: this.initialCollectionId
                         }
                     ]
                 },
@@ -690,15 +690,15 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
 })
 
 
-async function showAssetProps( assetId, initialPackageId ) {
+async function showAssetProps( assetId, initialCollectionId ) {
     try {
         let assetPropsFormPanel = new SM.AssetProperties({
-            initialPackageId: initialPackageId,
+            initialCollectionId: initialCollectionId,
             btnHandler: async function(){
                 try {
                     if (assetPropsFormPanel.getForm().isValid()) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-                        // change "packages" to "packageIds"
+                        // change "collections" to "collectionIds"
                         let method = assetId ? 'PUT' : 'POST'
                         let result = await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
@@ -714,8 +714,8 @@ async function showAssetProps( assetId, initialPackageId ) {
                         SM.Dispatcher.fireEvent('assetchanged', apiAsset)
 
                         //TODO: This is expensive, should update the specific record instead of reloading entire set
-                        // Ext.getCmp(`assetGrid-${packageId}`).getView().holdPosition = true
-                        // Ext.getCmp(`assetGrid-${packageId}`).getStore().reload()
+                        // Ext.getCmp(`assetGrid-${collectionId}`).getView().holdPosition = true
+                        // Ext.getCmp(`assetGrid-${collectionId}`).getStore().reload()
                         appwindow.close()
                     }
                 }
@@ -755,8 +755,8 @@ async function showAssetProps( assetId, initialPackageId ) {
                 method: 'GET'
             })
             let apiAsset = JSON.parse(result.response.responseText)
-            apiAsset.packageId = apiAsset.package.packageId
-            delete apiAsset.package
+            apiAsset.collectionId = apiAsset.collection.collectionId
+            delete apiAsset.collection
             assetPropsFormPanel.getForm().setValues(apiAsset)
         }
                 
@@ -779,15 +779,15 @@ async function showAssetProps( assetId, initialPackageId ) {
 } //end showAssetProps
 
 
-SM.PackageAssetPanel = Ext.extend(Ext.Panel, {
+SM.CollectionAssetPanel = Ext.extend(Ext.Panel, {
     initComponent: function() {
         let gridCfg = this.gridCfg || {}
         let formCfg = this.formCfg || {}
 
-        this.grid = new SM.PackageAssetGrid ( gridCfg )
+        this.grid = new SM.CollectionAssetGrid ( gridCfg )
 
         formCfg.parent = this.grid
-        this.form = new SM.PackageAssetProperties ( formCfg )
+        this.form = new SM.CollectionAssetProperties ( formCfg )
         this.grid.child = this.form
 
         let config = {
@@ -799,6 +799,6 @@ SM.PackageAssetPanel = Ext.extend(Ext.Panel, {
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageAssetPanel.superclass.initComponent.call(this);
+        SM.CollectionAssetPanel.superclass.initComponent.call(this);
     }
 })

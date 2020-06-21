@@ -3,7 +3,7 @@ const {promises: fs} = require('fs')
 const config = require('../utils/config')
 const Operation = require(`../service/${config.database.type}/OperationService`)
 const Asset = require(`./Asset`)
-const Package = require(`./Package`)
+const Collection = require(`./Collection`)
 const User = require(`./User`)
 const Review = require(`./Review`)
 const JSZip = require("jszip");
@@ -30,9 +30,9 @@ module.exports.getAppData = async function getAppData (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     if ( elevate ) {
-      let packages = await Package.exportPackages( ['grants'], elevate, req.userObject )
-      for (const package of packages) {
-          for (const grant of package.grants) {
+      let collections = await Collection.exportCollections( ['grants'], elevate, req.userObject )
+      for (const collection of collections) {
+          for (const grant of collection.grants) {
             grant.userId = grant.user.userId
             delete grant.user
           }
@@ -40,8 +40,8 @@ module.exports.getAppData = async function getAppData (req, res, next) {
       let users = await User.exportUsers( [], elevate, req.userObject)
       let assets = await Asset.exportAssets( ['stigGrants'], elevate, req.userObject)
       assets.forEach(asset => {
-        asset.packageId = asset.package.packageId
-        delete asset.package
+        asset.collectionId = asset.collection.collectionId
+        delete asset.collection
         asset.stigGrants = asset.stigGrants.map( s => ({
           benchmarkId: s.benchmarkId,
           userIds: s.reviewers.map( r => r.userId )
@@ -55,7 +55,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
       })      
       let response = {
         users: users,
-        packages: packages,
+        collections: collections,
         assets: assets,
         reviews: reviews
       }

@@ -395,12 +395,12 @@ function addStigAdmin() {
 							// change "assets" to "assetIds"
 							delete Object.assign(values, {['assetIds']: values['assets'] })['assets']
 							let url, method
-							if (packageId) {
-								url = `${STIGMAN.Env.apiBase}/packages/${packageId}?elevate=${curUser.canAdmin}`
+							if (collectionId) {
+								url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${curUser.canAdmin}`
 								method = 'PUT'
 							}
 							else {
-								url = `${STIGMAN.Env.apiBase}/packages?elevate=${curUser.canAdmin}`
+								url = `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.canAdmin}`
 								method = 'POST'
 							}
 							let result = await Ext.Ajax.requestPromise({
@@ -409,11 +409,11 @@ function addStigAdmin() {
 								headers: { 'Content-Type': 'application/json;charset=utf-8' },
 								jsonData: values
 							  })
-							apiPackage = JSON.parse(result.response.responseText)
+							apiCollection = JSON.parse(result.response.responseText)
 
 							//TODO: This is expensive, should update the specific record instead of reloading entire set
-							Ext.getCmp('packageGrid').getView().holdPosition = true
-							Ext.getCmp('packageGrid').getStore().reload()
+							Ext.getCmp('collectionGrid').getView().holdPosition = true
+							Ext.getCmp('collectionGrid').getStore().reload()
 							appwindow.close()
 						}
 					}

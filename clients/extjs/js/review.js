@@ -22,10 +22,10 @@ async function addReview(leaf, selectedRule, selectedResource) {
 		}
 	*/
   let result = await Ext.Ajax.requestPromise({
-    url: `${STIGMAN.Env.apiBase}/packages/${leaf.packageId}`,
+    url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
     method: 'GET'
   })
-  let apiPackage = JSON.parse(result.response.responseText)
+  let apiCollection = JSON.parse(result.response.responseText)
 
 
   // Classic compatability. Remove after modernization
@@ -551,7 +551,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         },
         rowselect: {
           fn: function (sm, index, record) {
-            handleGroupSelectionForAsset(record, parseInt(leaf.packageId), leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
+            handleGroupSelectionForAsset(record, parseInt(leaf.collectionId), leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
           }
         }
       }
@@ -1931,7 +1931,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
     id: 'reviewTab' + idAppend,
     iconCls: 'sm-stig-icon',
     //title: '<img src=/icons/security_firewall_on.png height=12 width=12> ' + leaf.stigName + ' (' + leaf.assetName + ')',
-    title: `${apiPackage.name} : ${leaf.assetName} : ${leaf.stigName}`,
+    title: `${apiCollection.name} : ${leaf.assetName} : ${leaf.stigName}`,
     closable: true,
     layout: 'border',
     sm_TabType: 'asset_review',
@@ -2120,7 +2120,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         {
           xtype: 'hidden',
           id: 'import-benchmarkId',
-          name: 'packageId'
+          name: 'collectionId'
         },
         {
           xtype: 'hidden',
@@ -2250,8 +2250,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
     unlockObject.stigName = leaf.stigName;
     unlockObject.assetId = leaf.assetId;
     unlockObject.assetName = leaf.assetName;
-    unlockObject.packageId = -1;
-    unlockObject.packageName = -1;
+    unlockObject.collectionId = -1;
+    unlockObject.collectionName = -1;
     unlockObject.gridTorefresh = groupGrid;
     unlockObject.unlockDepth = "STIG-ASSET";
     getUnlockPrompt("STIG-ASSET", unlockObject, groupGrid);

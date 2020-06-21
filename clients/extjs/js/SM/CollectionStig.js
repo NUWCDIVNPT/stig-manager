@@ -2,8 +2,8 @@
 
 Ext.ns('SM')
 
-SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
-    onPackageStigsChanged: function () {
+SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
+    onCollectionStigsChanged: function () {
     },
     initComponent: function() {
         let me = this
@@ -38,7 +38,7 @@ SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             proxy: this.proxy,
             baseParams: {
-                packageId: this.packageId,
+                collectionId: this.collectionId,
                 projection: ['stigs']
             },
             root: '',
@@ -102,7 +102,7 @@ SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 rowdblclick: {
                     fn: function(grid,rowIndex,e) {
                         var r = grid.getStore().getAt(rowIndex);
-                        showPackageStigProps(r.get('benchmarkId'), me.packageId);
+                        showCollectionStigProps(r.get('benchmarkId'), me.collectionId);
                     }
                 }
             },
@@ -112,7 +112,7 @@ SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'icon-add',
                         text: 'Assign new STIG',
                         handler: function() {
-                            showPackageStigProps( null, me.packageId);            
+                            showCollectionStigProps( null, me.collectionId);            
                         }
                     }
                     ,'-'
@@ -149,7 +149,7 @@ SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'Modify STIG assignments',
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
-                            showPackageStigProps(r.get('benchmarkId'), me.packageId);
+                            showCollectionStigProps(r.get('benchmarkId'), me.collectionId);
                         }
                     }                    
                 ]
@@ -184,12 +184,12 @@ SM.PackageStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageStigsGrid.superclass.initComponent.call(this)
+        SM.CollectionStigsGrid.superclass.initComponent.call(this)
 
-        SM.Dispatcher.addListener('packagestigschanged', this.onPackageStigsChanged, this)
+        SM.Dispatcher.addListener('collectionstigschanged', this.onCollectionStigsChanged, this)
     }   
 })
-Ext.reg('sm-package-stigs-grid', SM.PackageStigsGrid)
+Ext.reg('sm-collection-stigs-grid', SM.CollectionStigsGrid)
 
 SM.StigAssetSelectionField = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
@@ -206,7 +206,7 @@ SM.StigAssetSelectionField = Ext.extend(Ext.form.ComboBox, {
             url: `${STIGMAN.Env.apiBase}/assets`,
             baseParams: {
                 elevate: curUser.canAdmin,
-                packageId: this.packageId,
+                collectionId: this.collectionId,
                 benchmarkId: this.benchmarkId
             },
             root: '',
@@ -359,7 +359,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             url: `${STIGMAN.Env.apiBase}/assets`,
             baseParams: {
                 elevate: curUser.canAdmin,
-                packageId: this.packageId
+                collectionId: this.collectionId
             },
             grid: this,
             reader: reader,
@@ -554,7 +554,7 @@ SM.StigAssetsComboGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         const assetSelectionField = new SM.StigAssetSelectionField({
-            packageId: this.packageId,
+            collectionId: this.collectionId,
             benchmarkId: this.benchmarkId,
             submitValue: false,
             allowBlank: false,
@@ -664,17 +664,17 @@ SM.StigAssetsComboGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-stig-assets-combo-grid', SM.StigAssetsComboGrid)
 
-SM.PackageStigProperties = Ext.extend(Ext.form.FormPanel, {
+SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
         let me = this
         let idAppend = Ext.id()
         this.stigAssetsGrid = new SM.StigAssetsGrid({
             name: 'assets',
             benchmarkId: this.benchmarkId,
-            packageId: this.packageId
+            collectionId: this.collectionId
         })
-        if (! this.packageId) {
-            throw ('missing property packageId')
+        if (! this.collectionId) {
+            throw ('missing property collectionId')
         }
  
         let config = {
@@ -698,8 +698,8 @@ SM.PackageStigProperties = Ext.extend(Ext.form.FormPanel, {
                         },
                         {
                             xtype: 'hidden',
-                            name: 'packageId',
-                            value: this.packageId
+                            name: 'collectionId',
+                            value: this.collectionId
                         }
                     ]
                 },
@@ -728,7 +728,7 @@ SM.PackageStigProperties = Ext.extend(Ext.form.FormPanel, {
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PackageStigProperties.superclass.initComponent.call(this)
+        SM.CollectionStigProperties.superclass.initComponent.call(this)
 
         // this.getForm().getFieldValues = function(dirtyOnly, getDisabled){
         //     var o = {},
@@ -769,18 +769,18 @@ SM.PackageStigProperties = Ext.extend(Ext.form.FormPanel, {
 })
 
 
-async function showPackageStigProps( benchmarkId, packageId ) {
+async function showCollectionStigProps( benchmarkId, collectionId ) {
     try {
-        let stigPropsFormPanel = new SM.PackageStigProperties({
-            packageId: packageId,
+        let stigPropsFormPanel = new SM.CollectionStigProperties({
+            collectionId: collectionId,
             benchmarkId: benchmarkId,
             btnHandler: async function(){
                 try {
                     if (stigPropsFormPanel.getForm().isValid()) {
                         let values = stigPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-                        // change "packages" to "packageIds"
+                        // change "collections" to "collectionIds"
                         let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/packages/${packageId}/stigs/${benchmarkId}/assets`,
+                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
                             method: 'PUT',
                             params: {
                                 elevate: curUser.canAdmin
@@ -804,7 +804,7 @@ async function showPackageStigProps( benchmarkId, packageId ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
-            title: 'STIG Assignments, Package ID ' + packageId,
+            title: 'STIG Assignments, Collection ID ' + collectionId,
             modal: true,
             hidden: true,
             width: 660,
@@ -823,7 +823,7 @@ async function showPackageStigProps( benchmarkId, packageId ) {
             url: `${STIGMAN.Env.apiBase}/assets`,
             params: {
                 elevate: curUser.canAdmin,
-                packageId: packageId,
+                collectionId: collectionId,
                 benchmarkId: benchmarkId
             },
             method: 'GET'

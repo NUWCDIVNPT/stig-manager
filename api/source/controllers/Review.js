@@ -96,7 +96,7 @@ module.exports.getReviews = async function getReviews (req, res, next) {
         benchmarkId: req.swagger.params['benchmarkId'].value,
         revisionStr: req.swagger.params['revisionStr'].value,
         assetId: req.swagger.params['assetId'].value,
-        packageId: req.swagger.params['packageId'].value
+        collectionId: req.swagger.params['collectionId'].value
       }, req.userObject)
     writer.writeJson(res, response)
   }

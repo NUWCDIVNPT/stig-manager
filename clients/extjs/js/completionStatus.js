@@ -2,7 +2,7 @@
 $Id: completionStatus.js 807 2017-07-27 13:04:19Z csmig $
 */
 
-function addCompletionStatus(packageId,packageName) {
+function addCompletionStatus(collectionId,collectionName) {
 
 	var groupRow = [
 		{header: ' ', colspan: 2, align: 'center'},
@@ -15,9 +15,9 @@ function addCompletionStatus(packageId,packageName) {
 	var summary = new Ext.ux.grid.GroupSummary();
 
 	var completionGrid = new Ext.grid.GridPanel({
-		id: 'completionGrid-' + packageId,
+		id: 'completionGrid-' + collectionId,
         plugins: summary,
-		//title: 'Checklist Status (' + packageName + ')',
+		//title: 'Checklist Status (' + collectionName + ')',
 		region:'center',
 		layout:'fit',
 		store: new Ext.data.GroupingStore ({
@@ -67,7 +67,7 @@ function addCompletionStatus(packageId,packageName) {
 			}),
 			listeners: {
 				load: function (store,records) {
-					Ext.getCmp('completionGrid-' + packageId + '-totalText').setText(records.length + ' records');
+					Ext.getCmp('completionGrid-' + collectionId + '-totalText').setText(records.length + ' records');
 				}
 			}
 		}),
@@ -77,7 +77,7 @@ function addCompletionStatus(packageId,packageName) {
                     return "Checklist totals";
                 },
 			},
-			{header: "Checklist",width:35,dataIndex:'benchmarkId',sortable:true,id:'completionGrid-'+ packageId + 'becnhmarkId',
+			{header: "Checklist",width:35,dataIndex:'benchmarkId',sortable:true,id:'completionGrid-'+ collectionId + 'becnhmarkId',
 				summaryRenderer: function(v, params, data){
                     return "Asset totals";
                 },
@@ -93,7 +93,7 @@ function addCompletionStatus(packageId,packageName) {
 			{header: "Cat 3",width:10,dataIndex:'cat3Count',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}
 			
 		],
-		//autoExpandColumn:'completionGrid-'+ packageId + 'becnhmarkId',
+		//autoExpandColumn:'completionGrid-'+ collectionId + 'becnhmarkId',
 		//border: false,
 		//style: {
 		//	borderBottomWidth: "1px"
@@ -153,19 +153,19 @@ function addCompletionStatus(packageId,packageName) {
 						xtype: 'tbbutton',
 						icon: 'img/security_firewall_on.png',
 						tooltip: 'Group by STIG',
-						toggleGroup: 'completionGrid-groupBy' + packageId,
+						toggleGroup: 'completionGrid-groupBy' + collectionId,
 						enableToggle:true,
 						allowDepress: false,
 						width: 20,
 						handler: function(btn){
 							if (btn.pressed) {
-								Ext.getCmp('completionGrid-expandButton' + packageId).enable();
-								Ext.getCmp('completionGrid-collapseButton' + packageId).enable();
+								Ext.getCmp('completionGrid-expandButton' + collectionId).enable();
+								Ext.getCmp('completionGrid-collapseButton' + collectionId).enable();
 								completionGrid.getView().group
 								completionGrid.getStore().groupBy('benchmarkId');
 							} else {
-								Ext.getCmp('completionGrid-expandButton' + packageId).disable();
-								Ext.getCmp('completionGrid-collapseButton' + packageId).disable();
+								Ext.getCmp('completionGrid-expandButton' + collectionId).disable();
+								Ext.getCmp('completionGrid-collapseButton' + collectionId).disable();
 								completionGrid.getStore().clearGrouping();
 							}
 						}
@@ -173,19 +173,19 @@ function addCompletionStatus(packageId,packageName) {
 						xtype: 'tbbutton',
 						icon: 'img/mycomputer1-16.png',
 						tooltip: 'Group by asset',
-						toggleGroup: 'completionGrid-groupBy' + packageId,
+						toggleGroup: 'completionGrid-groupBy' + collectionId,
 						enableToggle:true,
 						allowDepress: false,
 						pressed: true,
 						width: 20,
 						handler: function(btn){
 							if (btn.pressed) {
-								Ext.getCmp('completionGrid-expandButton' + packageId).enable();
-								Ext.getCmp('completionGrid-collapseButton' + packageId).enable();
+								Ext.getCmp('completionGrid-expandButton' + collectionId).enable();
+								Ext.getCmp('completionGrid-collapseButton' + collectionId).enable();
 								completionGrid.getStore().groupBy('assetName');
 							} else {
-								Ext.getCmp('completionGrid-expandButton' + packageId).disable();
-								Ext.getCmp('completionGrid-collapseButton' + packageId).disable();
+								Ext.getCmp('completionGrid-expandButton' + collectionId).disable();
+								Ext.getCmp('completionGrid-collapseButton' + collectionId).disable();
 								completionGrid.getStore().clearGrouping();
 							}
 						}
@@ -195,7 +195,7 @@ function addCompletionStatus(packageId,packageName) {
 						xtype: 'tbbutton',
 						//icon: 'img/chevron.png',
 						icon: 'img/minus-grey.png',
-						id: 'completionGrid-collapseButton' + packageId,
+						id: 'completionGrid-collapseButton' + collectionId,
 						tooltip: 'Collapse all groups',
 						width: 20,
 						handler: function(btn){
@@ -205,7 +205,7 @@ function addCompletionStatus(packageId,packageName) {
 						xtype: 'tbbutton',
 						//icon: 'img/chevron_expand.png',
 						icon: 'img/plus-grey.png',
-						id: 'completionGrid-expandButton' + packageId,
+						id: 'completionGrid-expandButton' + collectionId,
 						tooltip: 'Expand all groups',
 						width: 20,
 						handler: function(btn){
@@ -223,13 +223,13 @@ function addCompletionStatus(packageId,packageName) {
 						// xtype: 'tbbutton',
 						// icon: 'img/security_firewall_on.png',
 						// tooltip: 'Filter by STIG id',
-						// toggleGroup: 'completionGrid-filterBy' + packageId,
+						// toggleGroup: 'completionGrid-filterBy' + collectionId,
 						// enableToggle:true,
 						// allowDepress: true,
 						// pressed: false,
 						// width: 20,
 						// handler: function(btn){
-							// var filterField = Ext.getCmp('completionGrid-filterField' + packageId);
+							// var filterField = Ext.getCmp('completionGrid-filterField' + collectionId);
 							// if (btn.pressed) {
 								// filterField.enable();
 								// completionGrid.getStore().filterField = 'benchmarkId';
@@ -250,12 +250,12 @@ function addCompletionStatus(packageId,packageName) {
 						// xtype: 'tbbutton',
 						// icon: 'img/mycomputer1-16.png',
 						// tooltip: 'Filter by asset name',
-						// toggleGroup: 'completionGrid-filterBy' + packageId,
+						// toggleGroup: 'completionGrid-filterBy' + collectionId,
 						// enableToggle:true,
 						// allowDepress: true,
 						// width: 20,
 						// handler: function(btn){
-							// var filterField = Ext.getCmp('completionGrid-filterField' + packageId);
+							// var filterField = Ext.getCmp('completionGrid-filterField' + collectionId);
 							// if (btn.pressed) {
 								// filterField.enable();
 								// completionGrid.getStore().filterField = 'assetName';
@@ -284,7 +284,7 @@ function addCompletionStatus(packageId,packageName) {
 							// this.setValue('');
 							// filterStatusChangesStore();
 						// },
-						// id: 'completionGrid-filterField' + packageId,
+						// id: 'completionGrid-filterField' + collectionId,
 						// width: 140,
 						// submitValue: false,
 						// disabled: true,
@@ -323,7 +323,7 @@ function addCompletionStatus(packageId,packageName) {
 				// handler: function(btn){
 					// var ourStore = completionGrid.getStore();
 					// var lo = ourStore.lastOptions;
-					// window.location=ourStore.url + '?xls=1&packageId=' + lo.params.packageId;
+					// window.location=ourStore.url + '?xls=1&collectionId=' + lo.params.collectionId;
 				// }
 			// }
 			,{
@@ -334,7 +334,7 @@ function addCompletionStatus(packageId,packageName) {
 				handler: function(btn){
 					var ourStore = completionGrid.getStore();
 					var lo = ourStore.lastOptions;
-					window.location=ourStore.url + '?csv=1&packageId=' + lo.params.packageId;
+					window.location=ourStore.url + '?csv=1&collectionId=' + lo.params.collectionId;
 				}
 			},{
 				xtype: 'tbfill'
@@ -342,7 +342,7 @@ function addCompletionStatus(packageId,packageName) {
 				xtype: 'tbseparator'
 			},{
 				xtype: 'tbtext',
-				id: 'completionGrid-' + packageId + '-totalText',
+				id: 'completionGrid-' + collectionId + '-totalText',
 				text: '0 records',
 				width: 80
 			}]
@@ -350,16 +350,16 @@ function addCompletionStatus(packageId,packageName) {
 	});
 	
 	var thisTab = Ext.getCmp('reports-center-tab').add({
-		id: 'completionTab-' + packageId,
+		id: 'completionTab-' + collectionId,
 		iconCls: 'sm-report-icon',
-		title: 'Completion Status (' + packageName + ')',
+		title: 'Completion Status (' + collectionName + ')',
 		closable:true,
 		layout: 'border',
 		items: [completionGrid]
 	});
 	thisTab.show();
 	
-	completionGrid.getStore().load({params:{packageId: packageId}});
+	completionGrid.getStore().load({params:{collectionId: collectionId}});
 
 }; //end addCompletionReport();
 

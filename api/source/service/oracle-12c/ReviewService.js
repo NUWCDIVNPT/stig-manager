@@ -83,17 +83,17 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       'left join stigman.actions action on r.actionId = action.actionId',
       'left join stigman.user_data ud on r.userId = ud.id',
       'left join stigman.assets asset on r.assetId = asset.assetId',
-      'left join stigman.asset_package_map ap on asset.assetId = ap.assetId'
+      'left join stigman.asset_collection_map ap on asset.assetId = ap.assetId'
     ]
 
     // PROJECTIONS
-    if (inProjection.includes('packages')) {
+    if (inProjection.includes('collections')) {
       columns.push(`(select json_arrayagg(json_object(
-        KEY 'packageId' VALUE p.packageId,
+        KEY 'collectionId' VALUE p.collectionId,
         KEY 'name' VALUE  p.name))
-        from stigman.asset_package_map ap 
-        left join stigman.packages p on ap.packageId = p.packageId
-        where ap.assetId = r.assetId) as "packages"`)
+        from stigman.asset_collection_map ap 
+        left join stigman.collections p on ap.collectionId = p.collectionId
+        where ap.assetId = r.assetId) as "collections"`)
     }
     if (inProjection.includes('stigs')) {
       columns.push(`(select json_arrayagg(json_object(
@@ -169,7 +169,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       let aclJoins = [
         'stigman.user_stig_asset_map usa',
         'inner join stigman.stig_asset_map sa on sa.said = usa.said',
-        'left join stigman.asset_package_map ap on ap.assetId = sa.assetId',
+        'left join stigman.asset_collection_map ap on ap.assetId = sa.assetId',
         'inner join stigs.current_revs rev on rev.stigId = sa.stigId',
         'inner join stigs.rev_group_map rg on rev.revId = rg.revId',
         'inner join stigs.rev_group_rule_map rgr on rg.rgId = rgr.rgId'
@@ -187,11 +187,11 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
         // Delete property so it is not processed by later code
         delete inPredicates.ruleId
       }
-      if (inPredicates.packageId) {
-        aclPredicates.push('ap.packageId = :packageId')
-        predicates.binds.packageId = inPredicates.packageId
+      if (inPredicates.collectionId) {
+        aclPredicates.push('ap.collectionId = :collectionId')
+        predicates.binds.collectionId = inPredicates.collectionId
         // Delete property so it is not processed by later code
-        delete inPredicates.packageId
+        delete inPredicates.collectionId
       }
       // If predicates include benchmarkId and revisionStr (which must occur together)
       if (inPredicates.benchmarkId) {
@@ -254,9 +254,9 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
       predicates.statements.push('action.action = :action')
       predicates.binds.action = inPredicates.action
     }
-    if (inPredicates.packageId) {
-      predicates.statements.push('ap.packageId = :packageId')
-      predicates.binds.packageId = inPredicates.packageId
+    if (inPredicates.collectionId) {
+      predicates.statements.push('ap.collectionId = :collectionId')
+      predicates.binds.collectionId = inPredicates.collectionId
     }
     if (inPredicates.benchmarkId) {
       if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
@@ -315,13 +315,13 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, ele
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast the columns 'done' and 'autoState'
-    // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
+    // * Oracle doesn't support a JSON type, so we parse string values from 'collections' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
       record.done = record.done == 1 ? true : false
       record.autoState = record.autoState == 1 ? true : false
-      if (inProjection.includes('packages')) {
-         record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages)
+      if (inProjection.includes('collections')) {
+         record.collections = record.collections == '[{}]' ? [] : JSON.parse(record.collections)
        }
       if (inProjection.includes('stigs')) {
          record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs)
@@ -360,7 +360,7 @@ exports.importReviews = async function(body, elevate, file, userObject, response
     //   userId: userObject.id,
     //   assetId: body.assetId,
     //   benchmarkId: body.benchmarkId,
-    //   packageId: body.packageId,
+    //   collectionId: body.collectionId,
     //   source: body.source,
     //   filename: file.originalname,
     //   filesize: file.size
@@ -433,7 +433,7 @@ exports.getReview = async function(reviewId, projection, elevate, userObject) {
  * ruleId String Selects Reviews of a Rule (optional)
  * benchmarkId String Selects Reviews mapped to a STIG (optional)
  * assetId String Selects Reviews mapped to an Asset (optional)
- * packageId Integer Selects Reviews mapped to a Package (optional)
+ * collectionId Integer Selects Reviews mapped to a Collection (optional)
  * returns List
  **/
 exports.getReviews = async function(projection, predicates, elevate, userObject) {

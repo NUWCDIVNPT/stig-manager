@@ -379,10 +379,10 @@ module.exports.insertJobRecord = async function (record) {
 	let sql = `
 	insert into imported_jobs (
     startTime ,userId	,source	,assetId ,benchmarkId
-    ,packageId ,filename ,filesize
+    ,collectionId ,filename ,filesize
 	)
 	VALUES
-		(SYSDATE, :userId, :source, :assetId, :benchmarkId, :packageId, :filename, :filesize)
+		(SYSDATE, :userId, :source, :assetId, :benchmarkId, :collectionId, :filename, :filesize)
 	RETURNING
 		jobId into :jobId
 `

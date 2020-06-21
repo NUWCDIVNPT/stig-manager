@@ -324,8 +324,8 @@
 .sm-template-icon {
  background-image: url(../img/template.png) !important;
 }
-.sm-package-icon {
- background-image: url(../img/package.png) !important;
+.sm-collection-icon {
+ background-image: url(../img/collection.png) !important;
 }
 .sm-department-icon {
  background-image: url(../img/department-16.png) !important;
@@ -623,11 +623,7 @@
 
 .sm-background-blue {
 	/*background-color:#99bbe8 !important;*/
-<<<<<<< Updated upstream
-	background-color: #f1f1f1 !important
-=======
 	background-color: #eee !important;
->>>>>>> Stashed changes
 }
 
 .sm-artifact-file-icon {

@@ -134,7 +134,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
       // * Oracle doesn't support a JSON type, so we parse string values from 'rules' into objects
       for (let x = 0, l = result.rows.length; x < l; x++) {
         let record = result.rows[x]
-        // Handle packages
+        // Handle collections
         if (record.rules) {
         // Check for "empty" arrays 
           record.rules = record.rules == '[{}]' ? [] : JSON.parse(record.rules)

@@ -26,17 +26,17 @@ exports.queryStigs = async function ( inPredicates ) {
   //     KEY 'assetId' VALUE a.assetId, 
   //     KEY 'name' VALUE a.name, 
   //     KEY 'dept' VALUE a.dept ABSENT ON NULL
-  //     ), ',')) || ']' as "packages"`)
+  //     ), ',')) || ']' as "collections"`)
   // }
-  // if (inProjection && inProjection.includes('packages')) {
+  // if (inProjection && inProjection.includes('collections')) {
   //   if (! inProjection.includes('assets')) {
   //     // Push dependent table
   //     joins.push('left join stigman.stig_asset_map sa on s.stigId = sa.stigId' )
   //   }
-  //   joins.push('left join stigman.asset_package_map ap on sa.assetId = ap.assetId' )
-  //   joins.push('left join stigman.packages p on ap.packageId = p.packageId' )
+  //   joins.push('left join stigman.asset_collection_map ap on sa.assetId = ap.assetId' )
+  //   joins.push('left join stigman.collections p on ap.collectionId = p.collectionId' )
   //   columns.push(`'[' || strdagg_param(param_array(json_object(
-  //     KEY 'packageId' VALUE p.packageId, 
+  //     KEY 'collectionId' VALUE p.collectionId, 
   //     KEY 'name' VALUE p.name ABSENT ON NULL
   //     ), ',')) || ']' as "stigs"`)
   // }
@@ -153,11 +153,11 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
       // * Oracle doesn't support a JSON type, so we parse string values from 'rules' into objects
       for (let x = 0, l = result.rows.length; x < l; x++) {
         let record = result.rows[x]
-        // Handle packages
+        // Handle collections
         if (record.rules) {
         // Check for "empty" arrays 
           record.rules = record.rules == '[{}]' ? [] : JSON.parse(record.rules)
-          // Sort by package name
+          // Sort by collection name
           record.rules.sort((a,b) => {
             let c = 0
             if (a.ruleId > b.ruleId) { c= 1 }

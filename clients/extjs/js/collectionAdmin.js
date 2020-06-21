@@ -1,4 +1,4 @@
-function addPackageAdmin() {
+function addCollectionAdmin() {
 	var assetFields = Ext.data.Record.create([
 		{
 			name: 'assetId',
@@ -52,9 +52,9 @@ function addPackageAdmin() {
 		idProperty: 'benchmarkId'
 	});
 
-	var packageFields = Ext.data.Record.create([
+	var collectionFields = Ext.data.Record.create([
 		{
-			name: 'packageId',
+			name: 'collectionId',
 			type: 'number'
 		}, {
 			name: 'name',
@@ -80,15 +80,15 @@ function addPackageAdmin() {
 		}
 	]);
 
-	var packageStore = new Ext.data.JsonStore({
+	var collectionStore = new Ext.data.JsonStore({
 		proxy: new Ext.data.HttpProxy({
-			url: `${STIGMAN.Env.apiBase}/packages`,
+			url: `${STIGMAN.Env.apiBase}/collections`,
 			method: 'GET'
 		}),
 		root: '',
-		fields: packageFields,
+		fields: collectionFields,
 		totalProperty: 'records',
-		idProperty: 'packageId',
+		idProperty: 'collectionId',
 		sortInfo: {
 			field: 'name',
 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
@@ -96,22 +96,22 @@ function addPackageAdmin() {
 		listeners: {
 			load: function (store, records) {
 				store.isLoaded = true,
-					Ext.getCmp('packageGrid-totalText').setText(records.length + ' records');
-				packageGrid.getSelectionModel().selectFirstRow();
+					Ext.getCmp('collectionGrid-totalText').setText(records.length + ' records');
+				collectionGrid.getSelectionModel().selectFirstRow();
 			},
 			remove: function (store, record, index) {
-				Ext.getCmp('packageGrid-totalText').setText(store.getCount() + ' records');
+				Ext.getCmp('collectionGrid-totalText').setText(store.getCount() + ' records');
 			}
 		}
 	});
 
-	var packageGrid = new Ext.grid.EditorGridPanel({
-		id: 'packageGrid',
+	var collectionGrid = new Ext.grid.EditorGridPanel({
+		id: 'collectionGrid',
 		region: 'west',
 		split: true,
-		title: 'Package List',
+		title: 'Collection List',
 		width: 400,
-		store: packageStore,
+		store: collectionStore,
 		stripeRows: true,
 		sm: new Ext.grid.RowSelectionModel({
 			singleSelect: true,
@@ -120,7 +120,7 @@ function addPackageAdmin() {
 					assetStore.parentName = record.data.name
 					assetStore.load({
 						params: {
-							packageId: record.data.packageId,
+							collectionId: record.data.collectionId,
 							projection: ['adminStats'],
 							elevate: curUser.canAdmin
 						}
@@ -129,7 +129,7 @@ function addPackageAdmin() {
 			}
 		}),
 		columns: [{
-			header: "Package",
+			header: "Collection",
 			width: 300,
 			dataIndex: 'name',
 			sortable: true
@@ -161,7 +161,7 @@ function addPackageAdmin() {
 				fn: function (grid, rowIndex, e) {
 					var r = grid.getStore().getAt(rowIndex);
 					Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-					showPackageProps(r.get('packageId'));
+					showCollectionProps(r.get('collectionId'));
 				}
 			}
 		},
@@ -170,15 +170,15 @@ function addPackageAdmin() {
 			tooltip: 'Create',
 			handler: function () {
 				Ext.getBody().mask('Loading form...');
-				showPackageProps(0);
+				showCollectionProps(0);
 			}
 		}, '-', {
 			iconCls: 'icon-edit',
 			tooltip: 'Edit',
 			handler: function () {
-				var r = packageGrid.getSelectionModel().getSelected();
+				var r = collectionGrid.getSelectionModel().getSelected();
 				Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-				showPackageProps(r.get('packageId'));
+				showCollectionProps(r.get('collectionId'));
 			}
 		}, '->', {
 			ref: '../removeBtn',
@@ -187,15 +187,15 @@ function addPackageAdmin() {
 			disabled: !(curUser.canAdmin),
 			handler: function () {
 				try {
-					var confirmStr = "Deleteing this package will <b>permanently remove</b> all data associated with the package. This includes all the package's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the package?";
+					var confirmStr = "Deleteing this collection will <b>permanently remove</b> all data associated with the collection. This includes all the collection's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the collection?";
 					Ext.Msg.confirm("Confirm", confirmStr, async function (btn, text) {
 						if (btn == 'yes') {
-							var package = packageGrid.getSelectionModel().getSelected();
+							var collection = collectionGrid.getSelectionModel().getSelected();
 							let result = await Ext.Ajax.requestPromise({
-								url: `${STIGMAN.Env.apiBase}/packages/${package.data.packageId}?elevate=true`,
+								url: `${STIGMAN.Env.apiBase}/collections/${collection.data.collectionId}?elevate=true`,
 								method: 'DELETE'
 							})
-							packageStore.remove(package);
+							collectionStore.remove(collection);
 						}
 					})
 				}
@@ -208,7 +208,7 @@ function addPackageAdmin() {
 			items: [
 				{
 					xtype: 'tbbutton',
-					id: 'packageGrid-csvBtn',
+					id: 'collectionGrid-csvBtn',
 					iconCls: 'icon-save',
 					tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 					width: 20,
@@ -223,7 +223,7 @@ function addPackageAdmin() {
 					xtype: 'tbseparator'
 				}, {
 					xtype: 'tbtext',
-					id: 'packageGrid-totalText',
+					id: 'collectionGrid-totalText',
 					text: '0 records',
 					width: 80
 				}]
@@ -277,12 +277,12 @@ function addPackageAdmin() {
 		listeners: {
 			load: function (store, records) {
 				store.isLoaded = true,
-				Ext.getCmp(`assetGrid-package-totalText`).setText(records.length + ' records');
+				Ext.getCmp(`assetGrid-collection-totalText`).setText(records.length + ' records');
 				assetGrid.getSelectionModel().selectFirstRow();
-				assetGrid.setTitle(`Assets in Package "${store.parentName}"`)
+				assetGrid.setTitle(`Assets in Collection "${store.parentName}"`)
 			},
 			remove: function (store, record, index) {
-				Ext.getCmp(`assetGrid-package-totalText`).setText(store.getCount() + ' records');
+				Ext.getCmp(`assetGrid-collection-totalText`).setText(store.getCount() + ' records');
 			}
 		}
 	});
@@ -290,15 +290,15 @@ function addPackageAdmin() {
 	var assetGrid = new Ext.grid.GridPanel({
 		region: 'center',
 		title: 'Asset administration',
-		id: `assetGrid-package`,
+		id: `assetGrid-collection`,
 		store: assetStore,
 		stripeRows: true,
 		sm: new Ext.grid.RowSelectionModel({
 			singleSelect: true,
 			listeners: {
 				selectionchange: function (sm) {
-					Ext.getCmp(`assetGrid-package-modifyBtn`).setDisabled(!sm.hasSelection());
-					Ext.getCmp(`assetGrid-package-deleteBtn`).setDisabled(!sm.hasSelection());
+					Ext.getCmp(`assetGrid-collection-modifyBtn`).setDisabled(!sm.hasSelection());
+					Ext.getCmp(`assetGrid-collection-deleteBtn`).setDisabled(!sm.hasSelection());
 				}
 			}
 		}),
@@ -380,7 +380,7 @@ function addPackageAdmin() {
 			, {
 				ref: '../removeBtn',
 				iconCls: 'icon-del',
-				id: `assetGrid-package-deleteBtn`,
+				id: `assetGrid-collection-deleteBtn`,
 				text: 'Delete asset',
 				disabled: true,
 				handler: function () {
@@ -406,7 +406,7 @@ function addPackageAdmin() {
 			, {
 				iconCls: 'sm-asset-icon',
 				disabled: true,
-				id: `assetGrid-package-modifyBtn`,
+				id: `assetGrid-collection-modifyBtn`,
 				text: 'Modify asset properties',
 				handler: function () {
 					var r = assetGrid.getSelectionModel().getSelected();
@@ -429,7 +429,7 @@ function addPackageAdmin() {
 					xtype: 'tbseparator'
 				}, {
 					xtype: 'tbbutton',
-					id: `assetGrid-package-csvBtn`,
+					id: `assetGrid-collection-csvBtn`,
 					iconCls: 'icon-save',
 					tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 					width: 20,
@@ -444,7 +444,7 @@ function addPackageAdmin() {
 					xtype: 'tbseparator'
 				}, {
 					xtype: 'tbtext',
-					id: `assetGrid-package-totalText`,
+					id: `assetGrid-collection-totalText`,
 					text: '0 records',
 					width: 80
 				}]
@@ -454,8 +454,8 @@ function addPackageAdmin() {
 	});
 
 
-	async function showPackageProps(packageId) {
-		let apiPackage
+	async function showCollectionProps(collectionId) {
+		let apiCollection
 		/******************************************************/
 		// Assets
 		/******************************************************/
@@ -476,7 +476,7 @@ function addPackageAdmin() {
 			title: 'Asset assignments',
 			hideHeaders: false,
 			anchor: "100% -150",
-			id: 'packages-assetGrid',
+			id: 'collections-assetGrid',
 			hideLabel: true,
 			isFormField: true,
 			store: assetStore,
@@ -533,7 +533,7 @@ function addPackageAdmin() {
 									this.setValue('');
 									filterAssetStore();
 								},
-								id: 'packages-assetGrid-filterField',
+								id: 'collections-assetGrid-filterField',
 								width: 140,
 								submitValue: false,
 								enableKeyEvents: true,
@@ -550,7 +550,7 @@ function addPackageAdmin() {
 								xtype: 'tbbutton',
 								icon: 'img/tick_white.png',
 								tooltip: 'Show assignments only',
-								id: 'packages-assetGrid-filterButton',
+								id: 'collections-assetGrid-filterButton',
 								toggleGroup: 'asset-selector',
 								enableToggle: true,
 								allowDepress: true,
@@ -566,14 +566,14 @@ function addPackageAdmin() {
 		/******************************************************/
 		// Form panel
 		/******************************************************/
-		var packagePropsFormPanel = new Ext.form.FormPanel({
+		var collectionPropsFormPanel = new Ext.form.FormPanel({
 			baseCls: 'x-plain',
 			labelWidth: 95,
 			monitorValid: true,
 			items: [
 				{ // start fieldset config
 					xtype: 'fieldset',
-					title: 'Package Information',
+					title: 'Collection Information',
 					autoHeight: true,
 					items: [
 						{ // start asset column config
@@ -587,9 +587,9 @@ function addPackageAdmin() {
 									items: [
 										{
 											xtype: 'textfield',
-											fieldLabel: 'Package Name',
+											fieldLabel: 'Collection Name',
 											anchor: '-20',
-											emptyText: 'Enter package name...',
+											emptyText: 'Enter collection name...',
 											allowBlank: false,
 											name: 'name'
 										}
@@ -656,17 +656,17 @@ function addPackageAdmin() {
 				id: 'submit-button',
 				handler: async function () {
 					try {
-						if (packagePropsFormPanel.getForm().isValid()) {
-							let values = packagePropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+						if (collectionPropsFormPanel.getForm().isValid()) {
+							let values = collectionPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
 							// change "assets" to "assetIds"
 							delete Object.assign(values, { ['assetIds']: values['assets'] })['assets']
 							let url, method
-							if (packageId) {
-								url = `${STIGMAN.Env.apiBase}/packages/${packageId}?elevate=${curUser.canAdmin}`
+							if (collectionId) {
+								url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${curUser.canAdmin}`
 								method = 'PUT'
 							}
 							else {
-								url = `${STIGMAN.Env.apiBase}/packages?elevate=${curUser.canAdmin}`
+								url = `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.canAdmin}`
 								method = 'POST'
 							}
 							let result = await Ext.Ajax.requestPromise({
@@ -675,11 +675,11 @@ function addPackageAdmin() {
 								headers: { 'Content-Type': 'application/json;charset=utf-8' },
 								jsonData: values
 							})
-							apiPackage = JSON.parse(result.response.responseText)
+							apiCollection = JSON.parse(result.response.responseText)
 
 							//TODO: This is expensive, should update the specific record instead of reloading entire set
-							Ext.getCmp('packageGrid').getView().holdPosition = true
-							Ext.getCmp('packageGrid').getStore().reload()
+							Ext.getCmp('collectionGrid').getView().holdPosition = true
+							Ext.getCmp('collectionGrid').getStore().reload()
 							appwindow.close()
 						}
 					}
@@ -688,18 +688,18 @@ function addPackageAdmin() {
 					}
 				},
 				handlerOriginal: function () {
-					packagePropsFormPanel.getForm().submit({
+					collectionPropsFormPanel.getForm().submit({
 						submitEmptyText: false,
 						params: {
-							id: packageid,
+							id: collectionid,
 							assets: encodeSm(assetSm, 'assetId'),
 							req: 'update'
 						},
 						waitMsg: 'Saving changes...',
 						success: function (f, a) {
-							Ext.getCmp('packageGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
-							Ext.getCmp('packageGrid').getStore().reload();
-							Ext.Msg.alert('Success', 'Package ID ' + a.result.id + ' has been updated.');
+							Ext.getCmp('collectionGrid').getView().holdPosition = true; //sets variable used in override in varsUtils.js
+							Ext.getCmp('collectionGrid').getStore().reload();
+							Ext.Msg.alert('Success', 'Collection ID ' + a.result.id + ' has been updated.');
 							appwindow.close();
 						},
 						failure: function (form, action) {
@@ -722,8 +722,8 @@ function addPackageAdmin() {
 		// Form window
 		/******************************************************/
 		var appwindow = new Ext.Window({
-			id: 'packagePropsWindow',
-			title: packageId ? 'Package Properties, ID ' + packageId : 'Create new Package',
+			id: 'collectionPropsWindow',
+			title: collectionId ? 'Collection Properties, ID ' + collectionId : 'Create new Collection',
 			modal: true,
 			hidden: true,
 			width: 730,
@@ -732,7 +732,7 @@ function addPackageAdmin() {
 			plain: true,
 			bodyStyle: 'padding:5px;',
 			buttonAlign: 'right',
-			items: packagePropsFormPanel
+			items: collectionPropsFormPanel
 		});
 
 
@@ -740,8 +740,8 @@ function addPackageAdmin() {
 		// filterAssetStore ()
 		/******************************************************/
 		function filterAssetStore() {
-			var value = Ext.getCmp('packages-assetGrid-filterField').getValue();
-			var selectionsOnly = Ext.getCmp('packages-assetGrid-filterButton').pressed;
+			var value = Ext.getCmp('collections-assetGrid-filterField').getValue();
+			var selectionsOnly = Ext.getCmp('collections-assetGrid-filterButton').pressed;
 			if (value == '') {
 				if (selectionsOnly) {
 					assetStore.filterBy(filterChecked, assetSm);
@@ -773,21 +773,21 @@ function addPackageAdmin() {
 		assetStore.clearFilter()
 		appwindow.render(document.body)
 
-		if (packageId) {
+		if (collectionId) {
 			let result = await Ext.Ajax.requestPromise({
-				url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+				url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 				params: {
 					elevate: curUser.canAdmin,
 					projection: ['assets']
 				},
 				method: 'GET'
 			})
-			apiPackage = JSON.parse(result.response.responseText)
-			packagePropsFormPanel.getForm().setValues(apiPackage)
+			apiCollection = JSON.parse(result.response.responseText)
+			collectionPropsFormPanel.getForm().setValues(apiCollection)
 		}
 		Ext.getBody().unmask()
 		appwindow.show(document.body)
-	} //end showPackageProps
+	} //end showCollectionProps
 
 	async function showAssetProps(assetId) {
 		try {
@@ -969,7 +969,7 @@ function addPackageAdmin() {
 				items: [
 				{
 					xtype: 'hidden',
-					name: 'packageId',
+					name: 'collectionId',
 					// override, because Ext insists on returning the string value from DOM
 					getValue: function () {
 						return this.value
@@ -1099,8 +1099,8 @@ function addPackageAdmin() {
 								apiAsset = JSON.parse(result.response.responseText)
 
 								//TODO: This is expensive, should update the specific record instead of reloading entire set
-								Ext.getCmp(`assetGrid-package`).getView().holdPosition = true
-								Ext.getCmp(`assetGrid-package`).getStore().reload()
+								Ext.getCmp(`assetGrid-collection`).getView().holdPosition = true
+								Ext.getCmp(`assetGrid-collection`).getStore().reload()
 								appwindow.close()
 							}
 						}
@@ -1446,7 +1446,7 @@ function addPackageAdmin() {
 				})
 				apiAsset = JSON.parse(result.response.responseText)
 				apiAsset.deptId = apiAsset.dept.deptId
-				apiAsset.packageId = apiAsset.package.packageId
+				apiAsset.collectionId = apiAsset.collection.collectionId
 				assetPropsFormPanel.getForm().setValues(apiAsset)
 
 				var nonnetworked = Ext.getCmp('assetProps-nonnetwork').getValue();
@@ -1475,20 +1475,20 @@ function addPackageAdmin() {
 
 
 	var thisTab = Ext.getCmp('admin-center-tab').add({
-		id: 'package-admin-tab',
-		iconCls: 'sm-package-icon',
-		title: 'Packages',
+		id: 'collection-admin-tab',
+		iconCls: 'sm-collection-icon',
+		title: 'Collections',
 		closable: true,
 		layout: 'border',
-		items: [packageGrid, assetGrid]
+		items: [collectionGrid, assetGrid]
 	});
 	thisTab.show();
 
-	packageGrid.getStore().load({
+	collectionGrid.getStore().load({
 		params: {
 			elevate: curUser.canAdmin
 		}
 	});
 
 
-} // end addPackageAdmin()
+} // end addCollectionAdmin()

@@ -41,16 +41,16 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
         KEY 'name' VALUE d.name
       ) as "dept"`,
       `json_object(
-        KEY 'packageId' VALUE p.packageId,
+        KEY 'collectionId' VALUE p.collectionId,
         KEY 'name' VALUE p.name
-      ) as "package"`,
+      ) as "collection"`,
       'a.IP as "ip"',
       'a.NONNETWORK as "nonnetwork"'
     ]
     let joins = [
       'asset a',
       'left join department d on a.deptId = d.deptId',
-      'left join package p on a.packageId = p.packageId',
+      'left join collection p on a.collectionId = p.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
@@ -142,9 +142,9 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       predicates.statements.push('a.assetId = :assetId')
       predicates.binds.assetId = inPredicates.assetId
     }
-    if (inPredicates.packageId) {
-      predicates.statements.push('a.packageId = :packageId')
-      predicates.binds.packageId = inPredicates.packageId
+    if (inPredicates.collectionId) {
+      predicates.statements.push('a.collectionId = :collectionId')
+      predicates.binds.collectionId = inPredicates.collectionId
     }
     if (inPredicates.benchmarkId) {
       predicates.statements.push('sa.benchmarkId = :benchmarkId')
@@ -172,7 +172,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.deptId, a.packageId, a.ip, a.nonnetwork, p.packageId, p.name, d.deptId, d.name'
+    sql += ' group by a.assetId, a.name, a.deptId, a.collectionId, a.ip, a.nonnetwork, p.collectionId, p.name, d.deptId, d.name'
     sql += ' order by a.name'
 
     let  options = {
@@ -186,7 +186,7 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
       let record = result.rows[x]
       record.nonnetwork = record.nonnetwork == 1 ? true : false
       record.dept = JSON.parse(record.dept)
-      record.package = JSON.parse(record.package)
+      record.collection = JSON.parse(record.collection)
       if (inProjection && inProjection.includes('stigs')) {
         record.stigs = record.stigs == '[{}]' ? [] : JSON.parse(record.stigs) || []
       }
@@ -238,9 +238,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, deptId, packageId, nonnetwork)
+          (name, ip, deptId, collectionId, nonnetwork)
         VALUES
-          (:name, :ip, :deptId, :packageId, :nonnetwork)
+          (:name, :ip, :deptId, :collectionId, :nonnetwork)
         RETURNING
           assetId into :assetId`
       binds.assetId = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER}
@@ -764,15 +764,15 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
 /**
  * Return a list of Assets accessible to the user
  *
- * packageId Integer Selects Assets mapped to a Package (optional)
+ * collectionId Integer Selects Assets mapped to a Collection (optional)
  * benchmarkId String Selects Assets mapped to a STIG (optional)
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(packageId, benchmarkId, deptId, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, benchmarkId, deptId, projection, elevate, userObject) {
   try {
     let rows = await this.queryAssets(projection, {
-      packageId: packageId,
+      collectionId: collectionId,
       benchmarkId: benchmarkId,
       deptId: deptId
     }, elevate, userObject)

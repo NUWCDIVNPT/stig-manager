@@ -1,7 +1,7 @@
-async function addPackageManager( packageId, packageName ) {
+async function addCollectionManager( collectionId, collectionName ) {
 	try {
-		let packagePanel = new SM.PackagePanel({
-			packageId: packageId,
+		let collectionPanel = new SM.CollectionPanel({
+			collectionId: collectionId,
 			region: 'north',
 			padding: '10px 10px 10px 10px',
 			border: false,
@@ -10,8 +10,8 @@ async function addPackageManager( packageId, packageName ) {
 			height: 300
 		})
 		let grantGrid = new SM.UserGrantsGrid({
-			packageId: packageId,
-			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			collectionId: collectionId,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			baseParams: {
 				elevate: curUser.canAdmin,
 				projection: 'grants'
@@ -20,24 +20,24 @@ async function addPackageManager( packageId, packageName ) {
 			border: false,
 			region: 'center'
 		})
-		let assetGrid = new SM.PackageAssetGrid({
-			packageId: packageId,
+		let assetGrid = new SM.CollectionAssetGrid({
+			collectionId: collectionId,
 			url: `${STIGMAN.Env.apiBase}/assets`,
 			title: 'Assets',
 			region: 'north',
 			split: true,
 			height: '50%'
 		})
-		let stigGrid = new SM.PackageStigsGrid({
-			packageId: packageId,
-			url: `${STIGMAN.Env.apiBase}/packages/${packageId}/stigs`,
+		let stigGrid = new SM.CollectionStigsGrid({
+			collectionId: collectionId,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
 			title: 'STIGs',
 			region: 'center'
 		})
 		let thisTab = Ext.getCmp('reviews-center-tab').add({
-			id: `${packageId}-package-manager-tab`,
-			iconCls: 'sm-package-icon',
-			title: `${packageName} : Configuration`,
+			id: `${collectionId}-collection-manager-tab`,
+			iconCls: 'sm-collection-icon',
+			title: `${collectionName} : Configuration`,
 			closable: true,
 			layout: 'border',
 			items: [
@@ -48,7 +48,7 @@ async function addPackageManager( packageId, packageName ) {
 					border: true,
 					layout: 'border',
 					items: [
-						packagePanel,
+						collectionPanel,
 						grantGrid 
 					]
 				},
@@ -65,18 +65,18 @@ async function addPackageManager( packageId, packageName ) {
 		})
 	
 		let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			params: {
 				elevate: curUser.canAdmin,
 				projection: 'grants'
 			},
 			method: 'GET'
 		})
-		let apiPackage = JSON.parse(result.response.responseText)
+		let apiCollection = JSON.parse(result.response.responseText)
 	
 		thisTab.show();
-		packagePanel.getForm().setValues(apiPackage)
-		grantGrid.getStore().loadData(apiPackage.grants.map( g => ({
+		collectionPanel.getForm().setValues(apiCollection)
+		grantGrid.getStore().loadData(apiCollection.grants.map( g => ({
 			userId: g.user.userId,
 			username: g.user.username,
 			accessLevel: g.accessLevel

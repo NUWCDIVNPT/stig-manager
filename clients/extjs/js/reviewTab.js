@@ -46,7 +46,7 @@ function getReviewItems() {
 
 // async function loadTree(node, cb) {
 //   try {
-//     let match, packageGrant
+//     let match, collectionGrant
 //     let tree = Ext.getCmp('reviews-nav-tree')
 //     let nodeObj = tree.getNodeById(node)
 //     // Root node
@@ -81,89 +81,89 @@ function getReviewItems() {
 //       }
 //       content.push(
 //         {
-//           id: `packages-root`,
-//           node: 'packages',
-//           text: 'Packages',
-//           iconCls: 'sm-package-icon',
+//           id: `collections-root`,
+//           node: 'collections',
+//           text: 'Collections',
+//           iconCls: 'sm-collection-icon',
 //           expanded: true
 //         }
 //       )
 //       cb(content, { status: true })
 //       return
 //     }
-//     if (node === 'packages-root') {
+//     if (node === 'collections-root') {
 //       let result = await Ext.Ajax.requestPromise({
-//         url: `${STIGMAN.Env.apiBase}/packages`,
+//         url: `${STIGMAN.Env.apiBase}/collections`,
 //         method: 'GET'
 //       })
 //       let r = JSON.parse(result.response.responseText)
-//       let content = r.map(package => {
+//       let content = r.map(collection => {
 //           let children = []
-//           packageGrant = curUser.packageGrants.find( g => g.packageId === package.packageId )
-//           if (packageGrant && packageGrant.accessLevel >= 3) {
+//           collectionGrant = curUser.collectionGrants.find( g => g.collectionId === collection.collectionId )
+//           if (collectionGrant && collectionGrant.accessLevel >= 3) {
 //             children.push({
-//               id: `${package.packageId}-pkgconfig-node`,
-//               text: 'Package configuration...',
-//               packageId: package.packageId,
-//               packageName: package.name,
-//               action: 'package-management',
+//               id: `${collection.collectionId}-pkgconfig-node`,
+//               text: 'Collection configuration...',
+//               collectionId: collection.collectionId,
+//               collectionName: collection.name,
+//               action: 'collection-management',
 //               iconCls: 'sm-setting-icon',
 //               leaf: true
 //             })
 //           }
 //           children.push(
 //             {
-//               id: `${package.packageId}-import-result-node`,
+//               id: `${collection.collectionId}-import-result-node`,
 //               text: 'Import STIG results...',
-//               packageId: package.packageId,
-//               packageName: package.name,
+//               collectionId: collection.collectionId,
+//               collectionName: collection.name,
 //               iconCls: 'sm-import-icon',
 //               action: 'import',
 //               leaf: true
 //             },{
-//               id: `${package.packageId}-assets-node`,
+//               id: `${collection.collectionId}-assets-node`,
 //               node: 'assets',
 //               text: 'Assets',
 //               iconCls: 'sm-asset-icon'
 //             },{
-//               id: `${package.packageId}-stigs-node`,
+//               id: `${collection.collectionId}-stigs-node`,
 //               node: 'stigs',
 //               text: 'STIGs',
 //               iconCls: 'sm-stig-icon'
 //             }
 //           )
 //           let node = {
-//             id: `${package.packageId}-package-node`,
-//             node: 'package',
-//             text: package.name,
-//             packageId: package.packageId,
-//             packageName: package.name,
-//             iconCls: 'sm-package-icon',
-//             reqRar: package.reqRar,
+//             id: `${collection.collectionId}-collection-node`,
+//             node: 'collection',
+//             text: collection.name,
+//             collectionId: collection.collectionId,
+//             collectionName: collection.name,
+//             iconCls: 'sm-collection-icon',
+//             reqRar: collection.reqRar,
 //             children: children
 //           }
 //           return node
 //       })
-//       if (curUser.canCreatePackage) {
+//       if (curUser.canCreateCollection) {
 //         content.unshift({
-//           id: `package-create-leaf`,
-//           action: 'package-create',
-//           text: 'Create Package...',
+//           id: `collection-create-leaf`,
+//           action: 'collection-create',
+//           text: 'Create Collection...',
 //           cls: 'sm-tree-node-create',
 //           iconCls: 'sm-add-icon',
-//           qtip: 'Create a new STIG Manager Package',
+//           qtip: 'Create a new STIG Manager Collection',
 //           leaf: true
 //         })
 //       }
 //       cb(content, { status: true })
 //       return
 //     }
-//     // Package-Assets node
+//     // Collection-Assets node
 //     match = node.match(/(\d+)-assets-node/)
 //     if (match) {
-//       let packageId = match[1]
+//       let collectionId = match[1]
 //       let result = await Ext.Ajax.requestPromise({
-//         url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+//         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 //         method: 'GET',
 //         params: {
 //           projection: 'assets'
@@ -171,10 +171,10 @@ function getReviewItems() {
 //       })
 //       let r = JSON.parse(result.response.responseText)
 //       let content = r.assets.map(asset => ({
-//           id: `${packageId}-${asset.assetId}-assets-asset-node`,
+//           id: `${collectionId}-${asset.assetId}-assets-asset-node`,
 //           text: asset.name,
 //           report: 'asset',
-//           packageId: packageId,
+//           collectionId: collectionId,
 //           assetId: asset.assetId,
 //           iconCls: 'sm-asset-icon',
 //           qtip: asset.name
@@ -183,10 +183,10 @@ function getReviewItems() {
 //       cb(content, { status: true })
 //       return
 //     }
-//     // Package-Assets-STIG node
+//     // Collection-Assets-STIG node
 //     match = node.match(/(\d+)-(\d+)-assets-asset-node/)
 //     if (match) {
-//       let packageId = match[1]
+//       let collectionId = match[1]
 //       let assetId = match[2]
 //       let result = await Ext.Ajax.requestPromise({
 //         url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
@@ -197,7 +197,7 @@ function getReviewItems() {
 //       })
 //       let r = JSON.parse(result.response.responseText)
 //       let content = r.stigs.map(stig => ({
-//         id: `${packageId}-${assetId}-${stig.benchmarkId}-leaf`,
+//         id: `${collectionId}-${assetId}-${stig.benchmarkId}-leaf`,
 //         text: stig.benchmarkId,
 //         leaf: true,
 //         report: 'review',
@@ -206,7 +206,7 @@ function getReviewItems() {
 //         assetName: r.name,
 //         stigRevStr: stig.lastRevisionStr,
 //         assetId: r.assetId,
-//         packageId: packageId,
+//         collectionId: collectionId,
 //         benchmarkId: stig.benchmarkId,
 //         qtip: stig.title
 //       })
@@ -215,12 +215,12 @@ function getReviewItems() {
 //       return
 //     }
 
-//     // Package-STIGs node
+//     // Collection-STIGs node
 //     match = node.match(/(\d+)-stigs-node/)
 //     if (match) {
-//       let packageId = match[1]
+//       let collectionId = match[1]
 //       let result = await Ext.Ajax.requestPromise({
-//         url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+//         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 //         method: 'GET',
 //         params: {
 //           projection: 'stigs'
@@ -228,15 +228,15 @@ function getReviewItems() {
 //       })
 //       let r = JSON.parse(result.response.responseText)
 //       let content = r.stigs.map(stig => ({
-//         packageId: packageId,
+//         collectionId: collectionId,
 //         text: stig.benchmarkId,
-//         packageName: r.name,
-//         packageId: packageId,
+//         collectionName: r.name,
+//         collectionId: collectionId,
 //         report: 'stig',
 //         iconCls: 'sm-stig-icon',
 //         reqRar: r.reqRar,
 //         stigRevStr: stig.lastRevisionStr,
-//         id: `${packageId}-${stig.benchmarkId}-stigs-stig-node`,
+//         id: `${collectionId}-${stig.benchmarkId}-stigs-stig-node`,
 //         benchmarkId: stig.benchmarkId,
 //         qtip: stig.title
 //       })
@@ -244,23 +244,23 @@ function getReviewItems() {
 //       cb(content, { status: true })
 //       return
 //     }
-//     // Package-STIGs-Asset node
+//     // Collection-STIGs-Asset node
 //     match = node.match(/(\d+)-(.*)-stigs-stig-node/)
 //     if (match) {
-//       let packageId = match[1]
+//       let collectionId = match[1]
 //       let benchmarkId = match[2]
 //       let result = await Ext.Ajax.requestPromise({
 //         url: `${STIGMAN.Env.apiBase}/assets`,
 //         method: 'GET',
 //         params: {
-//           packageId: packageId,
+//           collectionId: collectionId,
 //           benchmarkId: benchmarkId,
 //           projection: 'stigs'
 //         }
 //       })
 //       let r = JSON.parse(result.response.responseText)
 //       let content = r.map(asset => ({
-//         id: `${packageId}-${asset.assetId}-${benchmarkId}-leaf`,
+//         id: `${collectionId}-${asset.assetId}-${benchmarkId}-leaf`,
 //         text: asset.name,
 //         leaf: true,
 //         report: 'review',
@@ -269,7 +269,7 @@ function getReviewItems() {
 //         assetName: asset.name,
 //         stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
 //         assetId: asset.assetId,
-//         packageId: packageId,
+//         collectionId: collectionId,
 //         benchmarkId: benchmarkId,
 //         qtip: asset.name
 //       })
@@ -318,11 +318,11 @@ function addReviewHome() {
       type: 'string'
     }
     , {
-      name: 'packageName',
+      name: 'collectionName',
       type: 'string'
     }
     , {
-      name: 'packageId',
+      name: 'collectionId',
       type: 'int'
     }
   ]);
@@ -389,10 +389,10 @@ function addReviewHome() {
         }
       }
       , {
-        id: 'statusChangesGrid-packageName' + idAppend,
-        header: "Package",
+        id: 'statusChangesGrid-collectionName' + idAppend,
+        header: "Collection",
         width: 170,
-        dataIndex: 'packageName',
+        dataIndex: 'collectionName',
         sortable: true,
         align: 'left'
       }
@@ -621,18 +621,18 @@ function addReviewHome() {
           var r = grid.getStore().getAt(rowIndex);
           var idAppend, tab;
           if (curUser.accessLevel === 3) {
-            idAppend = '-package_review-' + r.data.packageId + '-' + r.data.benchmarkId.replace(".", "_");
-            tab = Ext.getCmp('packageReviewTab' + idAppend);
+            idAppend = '-collection_review-' + r.data.collectionId + '-' + r.data.benchmarkId.replace(".", "_");
+            tab = Ext.getCmp('collectionReviewTab' + idAppend);
             if (Ext.isDefined(tab)) {
               tab.show();
             } else {
               fakeLeaf = new Object();
               fakeLeaf.benchmarkId = r.get('benchmarkId');
               fakeLeaf.revId = r.get('revId');
-              fakeLeaf.packageId = r.get('packageId');
-              fakeLeaf.packageName = r.get('packageName');
+              fakeLeaf.collectionId = r.get('collectionId');
+              fakeLeaf.collectionName = r.get('collectionName');
               //fakeLeaf.stigName = r.get('benchmarkId');
-              addPackageReview(fakeLeaf, r.data.ruleId, r.data.assetId);
+              addCollectionReview(fakeLeaf, r.data.ruleId, r.data.assetId);
             }
           } else {
             idAppend = '-' + r.data.assetId + '-' + r.data.benchmarkId.replace(".", "_");
@@ -804,13 +804,13 @@ function addReviewHome() {
 //   if (n.attributes.action == 'import') {
 //     uploadArchive(n);
 //   }
-//   if (n.attributes.action == 'package-create') {
-//     let packageRootNode = n.parentNode
-//     let fp = new SM.PackageForm({
+//   if (n.attributes.action == 'collection-create') {
+//     let collectionRootNode = n.parentNode
+//     let fp = new SM.CollectionForm({
 //       btnText: 'Create',
 //       btnHandler: () => {
 //         let values = fp.getForm().getFieldValues()
-//         createPackage(values, curUser.userId)
+//         createCollection(values, curUser.userId)
 //       }
 //     })
 //     let appwindow = new Ext.Window({
@@ -828,8 +828,8 @@ function addReviewHome() {
 //     appwindow.show(document.body)
 //   }
 
-//   if (n.attributes.action == 'package-management') {
-//       addPackageManager(n.attributes.packageId, n.attributes.packageName)
+//   if (n.attributes.action == 'collection-management') {
+//       addCollectionManager(n.attributes.collectionId, n.attributes.collectionName)
 //   }
 
 //   switch (n.id) {
@@ -846,26 +846,26 @@ function addReviewHome() {
 
 // }
 
-function openPackageReview(n) {
+function openCollectionReview(n) {
   if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.canAdmin)) {
-    var idAppend = '-package-' + n.attributes.packageId + '-' + n.attributes.benchmarkId.replace(".", "_");
-    var tab = Ext.getCmp('reviews-center-tab').getItem('packageReviewTab' + idAppend);
+    var idAppend = '-collection-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
+    var tab = Ext.getCmp('reviews-center-tab').getItem('collectionReviewTab' + idAppend);
     if (tab) {
       tab.show();
     } else {
-      addPackageReview(n.attributes);
+      addCollectionReview(n.attributes);
     }
   }
 }
 
 function openPoamWorkspace(n) {
   var conf = {};
-  if (n.attributes.node == 'package') {
-    conf.context = 'package';
-    conf.idAppend = '-' + n.attributes.packageId;
+  if (n.attributes.node == 'collection') {
+    conf.context = 'collection';
+    conf.idAppend = '-' + n.attributes.collectionId;
   } else if (n.attributes.report == 'stig') {
     conf.context = 'stig';
-    conf.idAppend = '-' + n.attributes.packageId + '-' + n.attributes.benchmarkId.replace(".", "_");
+    conf.idAppend = '-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
   }
   var tab = Ext.getCmp('reviews-center-tab').getItem('poamWorkspaceTab' + conf.idAppend);
   if (tab) {
@@ -876,25 +876,25 @@ function openPoamWorkspace(n) {
   }
 }
 
-async function createPackage( packageObj, ownerId ) {
+async function createCollection( collectionObj, ownerId ) {
   try {
-    packageObj.grants = [
+    collectionObj.grants = [
       {
         userId: ownerId || curUser.userId,
         accessLevel: 4
       }
     ]
     let result = await Ext.Ajax.requestPromise({
-      url: `${STIGMAN.Env.apiBase}/packages?elevate=${curUser.canAdmin}`,
+      url: `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.canAdmin}`,
       headers: { 'Content-Type': 'application/json;charset=utf-8' },
       method: 'POST',
-      jsonData: packageObj
+      jsonData: collectionObj
     })
-    let package = JSON.parse(result.response.responseText)
+    let collection = JSON.parse(result.response.responseText)
 
-    SM.Dispatcher.fireEvent('packagecreated', package)
+    SM.Dispatcher.fireEvent('collectioncreated', collection)
 
-    addPackageManager( package.packageId, package.name )
+    addCollectionManager( collection.collectionId, collection.name )
   }
   catch (e) {
     alert (e.message)

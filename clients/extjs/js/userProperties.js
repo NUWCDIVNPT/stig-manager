@@ -302,8 +302,8 @@ async function showUserProperties(id, grid){
 					contextMenu: new Ext.menu.Menu({
 						id: 'assignContextMenu',
 						items: [{
-								id: 'assign-package',
-								text: 'Assign all Assets in this Package',
+								id: 'assign-collection',
+								text: 'Assign all Assets in this Collection',
 								iconCls: 'sm-assign-icon', 
 								iconAlign: 'left'									
 							},{
@@ -355,23 +355,23 @@ async function showUserProperties(id, grid){
 							//NEXT, WE DETERMINE WHICH CONTEXT MENU ITEMS TO SHOW
 							//====================================================
 							switch (node.attributes.node){
-								case 'package':
+								case 'collection':
 									Ext.getCmp('addButton').enable();
-									Ext.getCmp('assign-package').show();
+									Ext.getCmp('assign-collection').show();
 									Ext.getCmp('assign-assets-asset').hide();
 									Ext.getCmp('assign-stigs-stig').hide();
 									Ext.getCmp('assign-asset-stig').hide();
 									break;
 								case 'stigs-stig':
 									Ext.getCmp('addButton').enable();
-									Ext.getCmp('assign-package').hide();
+									Ext.getCmp('assign-collection').hide();
 									Ext.getCmp('assign-assets-asset').hide();
 									Ext.getCmp('assign-stigs-stig').show();
 									Ext.getCmp('assign-asset-stig').hide();
 									break;
 								case 'assets-asset':
 									Ext.getCmp('addButton').enable();
-									Ext.getCmp('assign-package').hide();
+									Ext.getCmp('assign-collection').hide();
 									Ext.getCmp('assign-assets-asset').show();
 									Ext.getCmp('assign-stigs-stig').hide();
 									Ext.getCmp('assign-asset-stig').hide();
@@ -379,14 +379,14 @@ async function showUserProperties(id, grid){
 								case 'asset-stig':
 								case 'stig-asset':
 									Ext.getCmp('addButton').enable();
-									Ext.getCmp('assign-package').hide();
+									Ext.getCmp('assign-collection').hide();
 									Ext.getCmp('assign-assets-asset').hide();
 									Ext.getCmp('assign-stigs-stig').hide();
 									Ext.getCmp('assign-asset-stig').show();
 									break;
 								default:
 									Ext.getCmp('addButton').disable();
-									Ext.getCmp('assign-package').hide();
+									Ext.getCmp('assign-collection').hide();
 									Ext.getCmp('assign-assets-asset').hide();
 									Ext.getCmp('assign-stigs-stig').hide();
 									Ext.getCmp('assign-asset-stig').hide();
@@ -396,7 +396,7 @@ async function showUserProperties(id, grid){
 						},
 						click: function(node, e) {
 								switch (node.attributes.node){
-									case 'package':
+									case 'collection':
 									case 'stigs-stig':
 									case 'assets-asset':
 									case 'asset-stig':
@@ -526,25 +526,25 @@ async function showUserProperties(id, grid){
 		// Root node
 		if (node === 'assignment-root') {
 			let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/packages`,
+			url: `${STIGMAN.Env.apiBase}/collections`,
 			method: 'GET'
 			})
 			let r = JSON.parse(result.response.responseText)
-			let content = r.map( package => ({
-				id: `${package.packageId}-assignment-package-node`,
-				node: 'package',
-				text: package.name,
-				packageId: package.packageId,
-				packageName: package.name,
-				iconCls: 'sm-package-icon',
-				reqRar: package.reqRar,
+			let content = r.map( collection => ({
+				id: `${collection.collectionId}-assignment-collection-node`,
+				node: 'collection',
+				text: collection.name,
+				collectionId: collection.collectionId,
+				collectionName: collection.name,
+				iconCls: 'sm-collection-icon',
+				reqRar: collection.reqRar,
 				children: [{
-					id: `${package.packageId}-assignment-assets-node`,
+					id: `${collection.collectionId}-assignment-assets-node`,
 					node: 'assets',
 					text: 'Assets',
 					iconCls: 'sm-asset-icon'
 				},{
-					id: `${package.packageId}-assignment-stigs-node`,
+					id: `${collection.collectionId}-assignment-stigs-node`,
 					node: 'stigs',
 					text: 'STIGs',
 					iconCls: 'sm-stig-icon'
@@ -554,12 +554,12 @@ async function showUserProperties(id, grid){
 			cb(content, {status: true})
 			return
 		}
-		// Package-Assets node
+		// Collection-Assets node
 		match = node.match(/(\d+)-assignment-assets-node/)
 		if (match) {
-			let packageId = match[1]
+			let collectionId = match[1]
 			let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			method: 'GET',
 			params: {
 				projection: 'assets'
@@ -567,10 +567,10 @@ async function showUserProperties(id, grid){
 			})
 			let r = JSON.parse(result.response.responseText)
 			let content = r.assets.map( asset => ({
-				id: `${packageId}-${asset.assetId}-assignment-assets-asset-node`,
+				id: `${collectionId}-${asset.assetId}-assignment-assets-asset-node`,
 				text: asset.name,
 				node: 'assets-asset',
-				packageId: packageId,
+				collectionId: collectionId,
 				assetId: asset.assetId,
 				iconCls: 'sm-asset-icon',
 				qtip: asset.name
@@ -579,10 +579,10 @@ async function showUserProperties(id, grid){
 			cb(content, {status: true})
 			return
 		}
-		// Package-Assets-STIG node
+		// Collection-Assets-STIG node
 		match = node.match(/(\d+)-(\d+)-assignment-assets-asset-node/)
 		if (match) {
-			let packageId = match[1]
+			let collectionId = match[1]
 			let assetId = match[2]
 			let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
@@ -593,7 +593,7 @@ async function showUserProperties(id, grid){
 			})
 			let apiAsset = JSON.parse(result.response.responseText)
 			let content = apiAsset.stigs.map( stig => ({
-				id: `${packageId}-${assetId}-${stig.benchmarkId}-assignment-leaf`,
+				id: `${collectionId}-${assetId}-${stig.benchmarkId}-assignment-leaf`,
 				text: stig.benchmarkId,
 				leaf: true,
 				node: 'asset-stig',
@@ -611,12 +611,12 @@ async function showUserProperties(id, grid){
 			return
 		}
 		
-			// Package-STIGs node
+			// Collection-STIGs node
 		match = node.match(/(\d+)-assignment-stigs-node/)
 		if (match) {
-			let packageId = match[1]
+			let collectionId = match[1]
 			let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/packages/${packageId}`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			method: 'GET',
 			params: {
 				projection: 'stigs'
@@ -624,15 +624,15 @@ async function showUserProperties(id, grid){
 			})
 			let r = JSON.parse(result.response.responseText)
 			let content = r.stigs.map( stig => ({
-				packageId: packageId,
+				collectionId: collectionId,
 				text: stig.benchmarkId,
 				node: 'stigs-stig',
-				packageName: r.name,
+				collectionName: r.name,
 				report: 'stig',
 				iconCls: 'sm-stig-icon',
 				reqRar: r.reqRar,
 				stigRevStr: stig.lastRevisionStr,
-				id: `${packageId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
+				id: `${collectionId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
 				benchmarkId: stig.benchmarkId,
 				qtip: stig.title
 			})
@@ -640,24 +640,24 @@ async function showUserProperties(id, grid){
 			cb(content, {status: true})
 			return
 			}
-			// Package-STIGs-Asset node
+			// Collection-STIGs-Asset node
 		match = node.match(/(\d+)-(.*)-assignment-stigs-stig-node/)
 		if (match) {
 			// TODO: Call API /stigs endpoint when it is implemented
-			let packageId = match[1]
+			let collectionId = match[1]
 			let benchmarkId = match[2]
 			let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/assets`,
 			method: 'GET',
 			params: {
-				packageId: packageId,
+				collectionId: collectionId,
 				benchmarkId: benchmarkId,
 				projection: 'stigs'
 			}
 			})
 			let apiAssets = JSON.parse(result.response.responseText)
 			let content = apiAssets.map( asset => ({
-				id: `${packageId}-${benchmarkId}-${asset.assetId}-assignment-leaf`,
+				id: `${collectionId}-${benchmarkId}-${asset.assetId}-assignment-leaf`,
 				text: asset.name,
 				leaf: true,
 				node: 'stig-asset',
@@ -682,9 +682,9 @@ async function showUserProperties(id, grid){
 		}
 	}
 
-	async function assignPackage(theNode){
+	async function assignCollection(theNode){
 		//=======================================================================
-		//Assigns the whole package to a user
+		//Assigns the whole collection to a user
 		//=======================================================================
 		try {
 			let result = await Ext.Ajax.requestPromise({
@@ -692,7 +692,7 @@ async function showUserProperties(id, grid){
 				method: 'GET',
 				params: { 
 					elevate: `${curUser.canAdmin}`,
-					packageId: theNode.attributes.packageId,
+					collectionId: theNode.attributes.collectionId,
 					projection: 'stigs'
 				}
 			})
@@ -718,7 +718,7 @@ async function showUserProperties(id, grid){
 	async function assignAsset(theNode){
 		//=======================================================
 		// Assigns all of the STIGS of a specific Asset (in a)
-		// specific package to a user.
+		// specific collection to a user.
 		//=======================================================
 		try {
 			let assetIdMatches = theNode.id.match(/\d+-(\d+)-assignment-assets-asset-node/);
@@ -748,7 +748,7 @@ async function showUserProperties(id, grid){
 	async function assignStig(theNode){
 		//=======================================================
 		// Assigns all of the ASSETS associated to this STIG IN a
-		// specific package to a user.
+		// specific collection to a user.
 		//=======================================================
 		try {
 			let result = await Ext.Ajax.requestPromise({
@@ -756,7 +756,7 @@ async function showUserProperties(id, grid){
 				method: 'GET',
 				params: { 
 					elevate: `${curUser.canAdmin}`,
-					packageId: theNode.attributes.packageId,
+					collectionId: theNode.attributes.collectionId,
 					benchmarkId: theNode.attributes.benchmarkId,
 					projection: 'stigs'
 				}
@@ -802,22 +802,22 @@ async function showUserProperties(id, grid){
 		//MAY NEED TO EXPAND TREE FOR BULK OPERATIONS.
 		//=========================================================
 		switch (selectedNode.attributes.node){
-			case 'package':
+			case 'collection':
 				//=================================================
-				//A Package was selected
+				//A Collection was selected
 				//=================================================
-				assignPackage(selectedNode);
+				assignCollection(selectedNode);
 				break;
 			case 'stigs-stig':
 				//=================================================
-				//A STIG in the list of Package STIGS was selected
+				//A STIG in the list of Collection STIGS was selected
 				//=================================================
 				assignStig(selectedNode);
 				break;
 			case 'assets-asset':
 				assignAsset(selectedNode);
 				//=================================================
-				//An asset in the list of Package Assets was selected
+				//An asset in the list of Collection Assets was selected
 				//=================================================
 				break;
 			case 'asset-stig':

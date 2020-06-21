@@ -144,8 +144,8 @@ function addArtifactAdmin() {
 			// rowdblclick: {
 				// fn: function(grid,rowIndex,e) {
 					// var r = grid.getStore().getAt(rowIndex);
-					// Ext.getBody().mask('Getting properties of ' + r.get('packageName') + '...');
-					// showPackageProps(r.get('packageId'));
+					// Ext.getBody().mask('Getting properties of ' + r.get('collectionName') + '...');
+					// showCollectionProps(r.get('collectionId'));
 				// }
 			// }
 		},

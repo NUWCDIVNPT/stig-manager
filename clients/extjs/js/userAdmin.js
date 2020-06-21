@@ -21,7 +21,7 @@ function addUserAdmin() {
 			name: 'globalAccess',
 			type: 'boolean'
 		},{
-			name: 'canCreatePackage',
+			name: 'canCreateCollection',
 			type: 'boolean'
 		},{
 			name: 'canAdmin',

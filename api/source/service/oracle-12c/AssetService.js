@@ -27,15 +27,15 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
   ]
   let joins = [
     'stigman.assets a',
-    'left join stigman.asset_package_map ap on a.assetId=ap.assetId',
-    'left join stigman.packages p on ap.packageId=p.packageId',
+    'left join stigman.asset_collection_map ap on a.assetId=ap.assetId',
+    'left join stigman.collections p on ap.collectionId=p.collectionId',
     'left join stigman.stig_asset_map sa on a.assetId = sa.assetId',
     'left join stigman.user_stig_asset_map usa on sa.saId = usa.saId'
   ]
 
   // PROJECTIONS
-  if (inProjection && inProjection.includes('packages')) {
-    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'packageId' VALUE p.packageId, KEY 'name' VALUE p.name ABSENT ON NULL), ',')) || ']' as "packages"`)
+  if (inProjection && inProjection.includes('collections')) {
+    columns.push(`'[' || strdagg_param(param_array(json_object(KEY 'collectionId' VALUE p.collectionId, KEY 'name' VALUE p.name ABSENT ON NULL), ',')) || ']' as "collections"`)
   }
   if (inProjection && inProjection.includes('adminStats')) {
     columns.push(`json_object(
@@ -111,9 +111,9 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
     predicates.statements.push('a.assetId = :assetId')
     predicates.binds.assetId = inPredicates.assetId
   }
-  if (inPredicates.packageId) {
-    predicates.statements.push('ap.packageId = :packageId')
-    predicates.binds.packageId = inPredicates.packageId
+  if (inPredicates.collectionId) {
+    predicates.statements.push('ap.collectionId = :collectionId')
+    predicates.binds.collectionId = inPredicates.collectionId
   }
   if (inPredicates.benchmarkId) {
     predicates.statements.push('sa.stigId = :benchmarkId')
@@ -154,16 +154,16 @@ exports.queryAssets = async function (inProjection, inPredicates, elevate, userO
 
     // Post-process each row, unfortunately.
     // * Oracle doesn't have a BOOLEAN data type, so we must cast columns 'nonnetwork' and 'scanexempt'
-    // * Oracle doesn't support a JSON type, so we parse string values from 'packages' and 'stigs' into objects
+    // * Oracle doesn't support a JSON type, so we parse string values from 'collections' and 'stigs' into objects
     for (let x = 0, l = result.rows.length; x < l; x++) {
       let record = result.rows[x]
       // Handle booleans
       record.nonnetwork = record.nonnetwork == 1 ? true : false
-      if ('packages' in record) {
+      if ('collections' in record) {
        // Check for "empty" arrays 
-        record.packages = record.packages == '[{}]' ? [] : JSON.parse(record.packages) || []
-        // Sort by package name
-        record.packages.sort((a,b) => {
+        record.collections = record.collections == '[{}]' ? [] : JSON.parse(record.collections) || []
+        // Sort by collection name
+        record.collections.sort((a,b) => {
           let c = 0
           if (a.name > b.name) { c= 1 }
           if (a.name < b.name) { c = -1 }
@@ -204,10 +204,10 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     // REPLACE/UPDATE: assetId is not null
 
     // Extract or initialize non-scalar properties to separate variables
-    let { stigGrants, benchmarkIds, packageIds, ...assetFields } = body
+    let { stigGrants, benchmarkIds, collectionIds, ...assetFields } = body
     stigGrants = stigGrants ? stigGrants : []
     benchmarkIds = benchmarkIds ? benchmarkIds : []
-    packageIds = packageIds ? packageIds : []
+    collectionIds = collectionIds ? collectionIds : []
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('nonnetwork')) {
@@ -270,20 +270,20 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       throw('Invalid writeAction')
     }
 
-    // Process packageIds if present
+    // Process collectionIds if present
     if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      // DELETE from asset_package_map
-      let sqlDeletePackages = 'DELETE FROM stigman.asset_package_map where assetId = :assetId'
-      await connection.execute(sqlDeletePackages, [assetId])
+      // DELETE from asset_collection_map
+      let sqlDeleteCollections = 'DELETE FROM stigman.asset_collection_map where assetId = :assetId'
+      await connection.execute(sqlDeleteCollections, [assetId])
     }
-    if (packageIds.length > 0) {
-      let sqlInsertPackages = `
-        INSERT /*+ ignore_row_on_dupkey_index(asset_package_map(packageId, assetId)) */ INTO 
-          stigman.asset_package_map (packageId,assetId)
-        VALUES (:packageId, :assetId)`      
-      let binds = packageIds.map(i => [i, assetId])
-      // INSERT into asset_package_map
-      await connection.executeMany(sqlInsertPackages, binds)
+    if (collectionIds.length > 0) {
+      let sqlInsertCollections = `
+        INSERT /*+ ignore_row_on_dupkey_index(asset_collection_map(collectionId, assetId)) */ INTO 
+          stigman.asset_collection_map (collectionId,assetId)
+        VALUES (:collectionId, :assetId)`      
+      let binds = collectionIds.map(i => [i, assetId])
+      // INSERT into asset_collection_map
+      await connection.executeMany(sqlInsertCollections, binds)
     }
 
     // Process benchmarkIds and/or stigGrants  
@@ -806,15 +806,15 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
 /**
  * Return a list of Assets accessible to the user
  *
- * packageId Integer Selects Assets mapped to a Package (optional)
+ * collectionId Integer Selects Assets mapped to a Collection (optional)
  * benchmarkId String Selects Assets mapped to a STIG (optional)
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(packageId, benchmarkId, dept, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, benchmarkId, dept, projection, elevate, userObject) {
   try {
     let rows = await this.queryAssets(projection, {
-      packageId: packageId,
+      collectionId: collectionId,
       benchmarkId: benchmarkId,
       dept: dept
     }, elevate, userObject)

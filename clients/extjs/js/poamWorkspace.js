@@ -7,7 +7,7 @@ function addPoamWorkspace(conf) {
 
 	/* conf = {
 			attributes: object
-			context: [package|stig]
+			context: [collection|stig]
 			idAppend:
 		}
 	*/
@@ -18,7 +18,7 @@ function addPoamWorkspace(conf) {
 			report: "stig"
 			revId: "IE8-1-10"
 			benchmarkId: "IE8"
-			packageId: "1"
+			collectionId: "1"
 			benchmarkId: "APACHE_SERVER_2.2_WINDOWS"
 		}
 	*/
@@ -30,13 +30,13 @@ function addPoamWorkspace(conf) {
 	} else {
 		title = "POAM";
 	}
-	if (conf.context == 'package') {
-		title += ' - ' + conf.attributes.packageName;
+	if (conf.context == 'collection') {
+		title += ' - ' + conf.attributes.collectionName;
 	} else if (conf.context == 'stig') {
-		title += ' - ' + conf.attributes.packageName + ' : ' + conf.attributes.benchmarkId;
+		title += ' - ' + conf.attributes.collectionName + ' : ' + conf.attributes.benchmarkId;
 	}
 		
-	var packageControlValidationSet = [];
+	var collectionControlValidationSet = [];
 	
 //******************************************************/
 // START Findings View
@@ -97,9 +97,9 @@ function addPoamWorkspace(conf) {
 		// url: 'pl/getPoamFindings.pl',
 		// listeners: {
 			// load: function (proxy,o,options){
-				// var i = o.reader.jsonData.packageControlValidationSet.length;
-				// packageControlValidationSet.length = 0;
-				// while(i--) packageControlValidationSet[i] = [o.reader.jsonData.packageControlValidationSet[i]];
+				// var i = o.reader.jsonData.collectionControlValidationSet.length;
+				// collectionControlValidationSet.length = 0;
+				// while(i--) collectionControlValidationSet[i] = [o.reader.jsonData.collectionControlValidationSet[i]];
 			// }			
 		// }
 	// });
@@ -120,9 +120,9 @@ function addPoamWorkspace(conf) {
 				Ext.getCmp('findingsGrid-totalText' + idAppend).setText(records.length + ' records');
 				var ourGrid = Ext.getCmp('poamFindingsGrid' + idAppend);
 				ourGrid.getSelectionModel().selectFirstRow();
-				var i = store.reader.jsonData.packageControlValidationSet.length;
-				packageControlValidationSet.length = 0;
-				while(i--) packageControlValidationSet[i] = [store.reader.jsonData.packageControlValidationSet[i]];
+				var i = store.reader.jsonData.collectionControlValidationSet.length;
+				collectionControlValidationSet.length = 0;
+				while(i--) collectionControlValidationSet[i] = [store.reader.jsonData.collectionControlValidationSet[i]];
 			}
 		}
 	});
@@ -271,7 +271,7 @@ function addPoamWorkspace(conf) {
 							findingsGrid.getStore().load({
 								params:{
 									context: lo.params.context,
-									packageId: lo.params.packageId,
+									collectionId: lo.params.collectionId,
 									benchmarkId: lo.params.benchmarkId,
 									domain: lo.params.domain,
 									dept: lo.params.dept,
@@ -282,7 +282,7 @@ function addPoamWorkspace(conf) {
 							findingsGrid.getStore().load({
 								params:{
 									context: lo.params.context,
-									packageId: lo.params.packageId,
+									collectionId: lo.params.collectionId,
 									benchmarkId: lo.params.benchmarkId,
 									domain: lo.params.domain,
 									dept: lo.params.dept,
@@ -317,7 +317,7 @@ function addPoamWorkspace(conf) {
 					url: 'pl/getAssetAttrForFindings.pl',
 					root: 'rows',
 					baseParams: {
-						packageId:conf.attributes.packageId,
+						collectionId:conf.attributes.collectionId,
 						benchmarkId:conf.attributes.benchmarkId,
 						attribute: 'dept'
 					}
@@ -329,7 +329,7 @@ function addPoamWorkspace(conf) {
 						findingsGrid.getStore().load({
 							params:{
 								context: lo.params.context,
-								packageId: lo.params.packageId,
+								collectionId: lo.params.collectionId,
 								benchmarkId: lo.params.benchmarkId,
 								domain: lo.params.domain,
 								dept: r.data.dept,
@@ -364,7 +364,7 @@ function addPoamWorkspace(conf) {
 					url: 'pl/getAssetAttrForFindings.pl',
 					root: 'rows',
 					baseParams: {
-						packageId:conf.attributes.packageId,
+						collectionId:conf.attributes.collectionId,
 						benchmarkId:conf.attributes.benchmarkId,
 						attribute: 'domain'
 					}
@@ -376,7 +376,7 @@ function addPoamWorkspace(conf) {
 						findingsGrid.getStore().load({
 							params:{
 								context: lo.params.context,
-								packageId: lo.params.packageId,
+								collectionId: lo.params.collectionId,
 								benchmarkId: lo.params.benchmarkId,
 								dept: lo.params.dept,
 								domain: r.data.domain,
@@ -419,10 +419,10 @@ function addPoamWorkspace(conf) {
 							var locationUrl;
 							//if (conf.context == 'stig') {
 							var lo = findingsGrid.getStore().lastOptions;
-								locationUrl="pl/poamGenerator.pl?packageId=" + lo.params.packageId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
+								locationUrl="pl/poamGenerator.pl?collectionId=" + lo.params.collectionId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
 ;
 							//} else {
-							//	locationUrl="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId;					
+							//	locationUrl="pl/poamGenerator.pl?collectionId=" + conf.attributes.collectionId;					
 							//}
 							if (btnId == 'yes') {
 								locationUrl+="&includeAssets=1";
@@ -435,9 +435,9 @@ function addPoamWorkspace(conf) {
 					   icon: Ext.MessageBox.QUESTION
 					});
 					// if (conf.context == 'stig') {
-						// window.location="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId + "&benchmarkId=" + conf.attributes.benchmarkId;
+						// window.location="pl/poamGenerator.pl?collectionId=" + conf.attributes.collectionId + "&benchmarkId=" + conf.attributes.benchmarkId;
 					// } else {
-						// window.location="pl/poamGenerator.pl?packageId=" + conf.attributes.packageId;					
+						// window.location="pl/poamGenerator.pl?collectionId=" + conf.attributes.collectionId;					
 					// }
 				}
 			},{
@@ -454,7 +454,7 @@ function addPoamWorkspace(conf) {
 				handler: function(btn){
 					var locationUrl;
 					var lo = findingsGrid.getStore().lastOptions;
-					locationUrl="pl/rarGenerator.pl?packageId=" + lo.params.packageId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
+					locationUrl="pl/rarGenerator.pl?collectionId=" + lo.params.collectionId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
 					window.location=locationUrl;
 				}
 			}
@@ -465,13 +465,13 @@ function addPoamWorkspace(conf) {
 				xtype: 'tbbutton',
 				iconCls: 'icon-excel',
 				text: 'Merged XLS',
-				hidden: conf.context == 'package',
+				hidden: conf.context == 'collection',
 				width: 20,
 				tooltip: 'Generate and download merged XLS',
 				handler: function(btn){
 					var locationUrl;
 					var lo = findingsGrid.getStore().lastOptions;
-					locationUrl="pl/getPackageStigExcel.pl?packageId=" + lo.params.packageId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
+					locationUrl="pl/getCollectionStigExcel.pl?collectionId=" + lo.params.collectionId + "&benchmarkId=" + lo.params.benchmarkId + "&dept=" + lo.params.dept + "&domain=" + lo.params.domain + "&showUnapproved=" + lo.params.showUnapproved;
 					window.location=locationUrl;
 				}
 			}
@@ -506,7 +506,7 @@ function addPoamWorkspace(conf) {
 			url: 'pl/getPoamRarEntry.pl',
 			iaControls: record.data.iaControls,
 			params: {
-				packageId: conf.attributes.packageId,
+				collectionId: conf.attributes.collectionId,
 				findingType: record.data.findingType,
 				sourceId: record.data.sourceId,
 			},
@@ -523,7 +523,7 @@ function addPoamWorkspace(conf) {
 					}
 					iaControlsStore.loadData(controlsData);
 				} else {
-					iaControlsStore.loadData(packageControlValidationSet);
+					iaControlsStore.loadData(collectionControlValidationSet);
 				}
 								
 				// disable RAR items if status = 'Completed'
@@ -618,7 +618,7 @@ function addPoamWorkspace(conf) {
 		items: [
 		{
 			xtype: 'hidden',
-			name: 'packageId'
+			name: 'collectionId'
 		},
 		{
 			xtype: 'hidden',
@@ -1131,7 +1131,7 @@ function addPoamWorkspace(conf) {
 				//Ext.getBody().mask('Saving...');
 				poamRarFormPanel.getForm().submit({
 					// params : {
-						// packageId: ,
+						// collectionId: ,
 					// },
 					submitEmptyText : false,
 					success: function (f,a) {
@@ -1241,7 +1241,7 @@ function addPoamWorkspace(conf) {
 		var record = ourGrid.getSelectionModel().getSelected();
 		ftGrid.getStore().load({
 			params:{
-				packageId:conf.attributes.packageId,
+				collectionId:conf.attributes.collectionId,
 				benchmarkId:conf.attributes.benchmarkId,
 				sourceId:record.data.sourceId,
 				showUnapproved: lo.params.showUnapproved
@@ -1281,7 +1281,7 @@ function addPoamWorkspace(conf) {
 	findingsStore.load({
 		params:{
 			context:conf.context,
-			packageId:conf.attributes.packageId,
+			collectionId:conf.attributes.collectionId,
 			benchmarkId:conf.attributes.benchmarkId,
 			showUnapproved: 0
 		}

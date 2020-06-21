@@ -18,16 +18,16 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       'CAST(a.assetId as char) as assetId',
       'a.name',
       `json_object (
-        'packageId', CAST(p.packageId as char),
+        'collectionId', CAST(p.collectionId as char),
         'name', p.name
-      ) as "package"`,
+      ) as "collection"`,
       'a.ip',
       'a.nonnetwork'
     ]
     let joins = [
       'asset a',
-      'left join package p on a.packageId = p.packageId',
-      'left join package_grant pg on p.packageId = pg.packageId',
+      'left join collection p on a.collectionId = p.collectionId',
+      'left join collection_grant pg on p.collectionId = pg.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
@@ -111,9 +111,9 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.statements.push('a.assetId = :assetId')
       predicates.binds.assetId = inPredicates.assetId
     }
-    if (inPredicates.packageId) {
-      predicates.statements.push('a.packageId = :packageId')
-      predicates.binds.packageId = inPredicates.packageId
+    if (inPredicates.collectionId) {
+      predicates.statements.push('a.collectionId = :collectionId')
+      predicates.binds.collectionId = inPredicates.collectionId
     }
     if (inPredicates.benchmarkId) {
       predicates.statements.push('sa.benchmarkId = :benchmarkId')
@@ -134,7 +134,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.packageId, a.ip, a.nonnetwork, p.packageId, p.name'
+    sql += ' group by a.assetId, a.name, a.collectionId, a.ip, a.nonnetwork, p.collectionId, p.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -164,8 +164,8 @@ exports.queryAssetStigs = async function (inPredicates = {}, elevate = false, us
     ]
     let joins = [
       'asset a',
-      'left join package p on a.packageId = p.packageId',
-      'left join package_grant pg on p.packageId = pg.packageId',
+      'left join collection p on a.collectionId = p.collectionId',
+      'left join collection_grant pg on p.collectionId = pg.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
       'inner join current_rev cr on sa.benchmarkId=cr.benchmarkId',
@@ -223,8 +223,8 @@ exports.queryAssetStigGrants = async function (inPredicates = {}, elevate = fals
     ]
     let joins = [
       'asset a',
-      'inner join package p on a.packageId = p.packageId',
-      'inner join package_grant pg on p.packageId = pg.packageId',
+      'inner join collection p on a.collectionId = p.collectionId',
+      'inner join collection_grant pg on p.collectionId = pg.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'inner join user_stig_asset_map usa on sa.saId = usa.saId',
       'inner join user_data ud on usa.userId = ud.userId',
@@ -305,9 +305,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, packageId, nonnetwork, metadata)
+          (name, ip, collectionId, nonnetwork, metadata)
         VALUES
-          (:name, :ip, :packageId, :nonnetwork, :metadata)`
+          (:name, :ip, :collectionId, :nonnetwork, :metadata)`
       let [rows] = await connection.query(sqlInsert, binds)
       assetId = rows.insertId
     }
@@ -840,15 +840,15 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
 /**
  * Return a list of Assets accessible to the user
  *
- * packageId Integer Selects Assets mapped to a Package (optional)
+ * collectionId Integer Selects Assets mapped to a Collection (optional)
  * benchmarkId String Selects Assets mapped to a STIG (optional)
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(packageId, benchmarkId, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, benchmarkId, projection, elevate, userObject) {
   try {
     let rows = await _this.queryAssets(projection, {
-      packageId: packageId,
+      collectionId: collectionId,
       benchmarkId: benchmarkId
     }, elevate, userObject)
     return (rows)

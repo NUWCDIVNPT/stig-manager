@@ -4,8 +4,8 @@ Ext.ns('SM')
 
 SM.Dispatcher = new Ext.util.Observable()
 SM.Dispatcher.addEvents(
-    'packagecreated',
-    'packagedeleted',
+    'collectioncreated',
+    'collectiondeleted',
     'assetcreated',
     'assetdeleted',
     'assetchanged'
