@@ -55,7 +55,7 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
 module.exports.exportUsers = async function exportUsers (projection, elevate, userObject) {
   try {
     if (elevate) {
-      return await User.getUsers(null, null, null, projection, elevate, userObject )
+      return await User.getUsers(null, projection, elevate, userObject )
     }
     else {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    

@@ -46,9 +46,9 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         CASE WHEN COUNT(byStig.stigAssetUsers) > 0 THEN json_arrayagg(byStig.stigAssetUsers) ELSE json_array() END
       from
         (select
-          json_object('benchmarkId', r.benchmarkId, 'userIds',
+          json_object('benchmarkId', r.benchmarkId, 'users',
           -- empty array on null handling 
-          case when count(r.userIds) > 0 then json_arrayagg(r.userIds) else json_array() end ) as stigAssetUsers
+          case when count(r.users) > 0 then json_arrayagg(r.users) else json_array() end ) as stigAssetUsers
         from
         (select
           sa.benchmarkId,
@@ -58,7 +58,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
               'userId', CAST(ud.userId as char), 
               'username', ud.username
             ) 
-          else NULL end as userIds
+          else NULL end as users
           FROM 
             stig_asset_map sa
             left join user_stig_asset_map usa on sa.saId = usa.saId
@@ -926,7 +926,7 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
   }
 }
 
-exports.setAssetStigs = async function(assetId, benchmarkIds, elevate, userObject) {
+exports.setStigAssetsByBenchmarkId = async function(assetId, benchmarkIds, elevate, userObject) {
   let connection
   try {
     connection = await dbUtils.pool.getConnection()

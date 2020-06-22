@@ -307,37 +307,24 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
   }
 }
 
-module.exports.replaceStigAssetsByBenchmarkId = async function replaceStigAssetsByBenchmarkId (req, res, next) {
+module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchmarkId (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
+    let collectionId = req.swagger.params['collectionId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let assetIds = req.swagger.params['body'].value
     let projection = req.swagger.params['projection'].value
 
-    if (elevate || req.userObject.accessLevel >= 2) {
-      if (req.userObject.accessLevel === 2 && !elevated) {
-        // Level 2 can only change the mapped Assets from their department
-        // E.g. If the request incudes an empty asset array, then only departmental assets are unmapped
-        // Get all assets currently mapped to this STIG by making an internal elevated request
-        let currentAssetMap = await Asset.getAssetsByBenchmarkId(benchmarkId, null, true, req.userObject)
-        // Filter into dept and non-dept arrays
-        let currentAssetIds = {
-          nonDept: currentAssetMap.filter(a => a.dept.deptId !== req.userObject.dept.deptId),
-          dept: currentAssetMap.filter(a => a.dept.deptId === req.userObject.dept.deptId)
-        }
-        // Get departmental assets
-        let deptAssets = await Asset.getAssets(null, null, null, null, elevate, req.userObject)
-        let deptAssetIds = deptAssets.map(a => a.assetId)
-        // Check there are not any non-dept assets in the request
-        let assetCheck = assetIds.every(a => deptAssetIds.includes(a))
-        if ( ! assetCheck ) {
-          throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to map non-department Assets.`} ) )
-        }
-        // Re-write the request assetIds by concatenating the current non-dept assets with the new dept assets
-        assetIds = currentAssetIds.nonDept.concat(assetIds) 
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+      let collection = Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
+      if (assetIds.every( a => collection.assets.includes(a))) {
+        let response = await Asset.setStigAssetsByBenchmarkId( benchmarkId, assetIds, projection, elevate, req.userObject )
+        writer.writeJson(res, response)
       }
-      let response = await Asset.setStigAssetsByBenchmarkId( benchmarkId, assetIds, projection, elevate, req.userObject )
-      writer.writeJson(res, response)
+      else {
+        throw( writer.respondWithCode ( 403, {message: `One or more assetId is not a Collection member.`} ) )
+      }
     }
     else {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    

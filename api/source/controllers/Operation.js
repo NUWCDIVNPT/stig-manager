@@ -37,22 +37,22 @@ module.exports.getAppData = async function getAppData (req, res, next) {
             delete grant.user
           }
       }
-      let users = await User.exportUsers( [], elevate, req.userObject)
+      let users = await User.exportUsers( ['privileges'], elevate, req.userObject)
       let assets = await Asset.exportAssets( ['stigGrants'], elevate, req.userObject)
       assets.forEach(asset => {
         asset.collectionId = asset.collection.collectionId
         delete asset.collection
         asset.stigGrants = asset.stigGrants.map( s => ({
           benchmarkId: s.benchmarkId,
-          userIds: s.reviewers.map( r => r.userId )
+          userIds: s.users.map( r => r.userId )
         }))
       })
-      // let reviews = []
-      let reviews = await Review.exportReviews(['history'], req.userObject)
-      reviews.forEach(r => {
-        ['assetName','username','reviewComplete'].forEach(k => delete r[k])
-        r.history.forEach(h => delete h.username)
-      })      
+      let reviews = []
+      // let reviews = await Review.exportReviews(['history'], req.userObject)
+      // reviews.forEach(r => {
+      //   ['assetName','username','reviewComplete'].forEach(k => delete r[k])
+      //   r.history.forEach(h => delete h.username)
+      // })      
       let response = {
         users: users,
         collections: collections,

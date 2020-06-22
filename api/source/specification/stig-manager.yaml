@@ -1305,7 +1305,7 @@ paths:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/StigAssetProjectionQuery'
+      - $ref: '#/components/parameters/StigAssetsProjectionQuery'
       - name: benchmarkId
         in: path
         description: A path parameter that indentifies a STIG
@@ -1317,7 +1317,7 @@ paths:
         - Asset
       summary: Set the Assets mapped to a STIG
       description: ''
-      operationId: replaceStigAssetsByBenchmarkId
+      operationId: setStigAssetsByBenchmarkId
       requestBody:
         required: true
         description: A list of assetIds from the specified Collection
@@ -1871,10 +1871,10 @@ components:
         metadata:
           type: object
         stigs:
-          description: The benchmarkIds and reviewers mapped to this Asset
+          description: The benchmarkIds mapped to this Asset
           type: array
           items:
-            $ref: '#/components/schemas/AssetStigAssignmentBasic'
+            type: string
     AssetForCollection:
       type: object
       properties:
@@ -1902,22 +1902,16 @@ components:
             stigGrants:
               type: array
               items:
-                $ref: '#/components/schemas/AssetStigAssignmentWithGrant'
-    AssetStigAssignment:
-      oneOf:
-        - $ref: '#/components/schemas/AssetStigAssignmentBasic'
-        - $ref: '#/components/schemas/AssetStigAssignmentWithGrant'
-    AssetStigAssignmentBasic:
-      type: string
-    AssetStigAssignmentWithGrant:
+                $ref: '#/components/schemas/StigGrantProjected'
+    StigGrantProjected:
       type: object
       properties:
         benchmarkId:
           type: string
-        userIds:
+        users:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/UserBasic'
     STIGs:
       description: List of STIG
       type: array
@@ -1940,10 +1934,10 @@ components:
         metadata:
           type: object
         stigs:
-          description: The benchmarkIds and reviewers mapped to this Asset
+          description: The benchmarkIds mapped to this Asset
           type: array
           items:
-            $ref: '#/components/schemas/AssetStigAssignmentBasic'
+            type: string
     Cci:
       type: object
       properties:
@@ -2780,7 +2774,7 @@ components:
         - $ref: '#/components/schemas/AssetBasic'
         - type: object
           properties:
-            reviewers:
+            userGrants:
               type: array
               items:
                 $ref: '#/components/schemas/UserBasic'
@@ -3168,7 +3162,7 @@ components:
           type: string
           enum:
             - details
-    StigAssetProjectionQuery:
+    StigAssetsProjectionQuery:
       name: projection
       in: query
       description: |
@@ -3180,7 +3174,7 @@ components:
         items:
           type: string
           enum:
-            - reviewers
+            - userGrants
     UserAccessLevelQuery:
       name: accessLevel
       in: query
