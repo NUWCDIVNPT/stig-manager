@@ -303,7 +303,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 if (collectionGrant && collectionGrant.accessLevel >= 3) {
                   children.push({
                     id: `${collection.collectionId}-pkgconfig-node`,
-                    text: 'Collection configuration...',
+                    text: 'Configuration',
                     collectionId: collection.collectionId,
                     collectionName: collection.name,
                     action: 'collection-management',
@@ -406,6 +406,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               stigRevStr: stig.lastRevisionStr,
               assetId: r.assetId,
               collectionId: collectionId,
+              workflow: r.collection.workflow,
               benchmarkId: stig.benchmarkId,
               qtip: stig.title
             })

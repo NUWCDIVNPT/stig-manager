@@ -1073,10 +1073,9 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 
 		// REVIEW
 		let reviewsReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/reviews`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 			method: 'GET',
 			params: {
-				collectionId: collectionId,
 				ruleId: groupGridRecord.data.ruleId
 			}
 		})
@@ -1128,7 +1127,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 
 		// History
 		let historyReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
 			method: 'GET',
 			params: { 
 				projection: 'history'
@@ -1501,7 +1500,7 @@ function uploadArchive(n) {
 							fd.append('collectionId', n.attributes.collectionId)
 							fd.append('source', 'collection')
 
-							let response = await fetch(`${STIGMAN.Env.apiBase}/reviews`, {
+							let response = await fetch(`${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`, {
 								method: 'POST',
 								headers: new Headers({
 								  'Authorization': `Bearer ${window.keycloak.token}`

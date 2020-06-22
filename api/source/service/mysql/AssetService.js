@@ -19,7 +19,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       'a.name',
       `json_object (
         'collectionId', CAST(p.collectionId as char),
-        'name', p.name
+        'name', p.name,
+        'workflow', p.workflow
       ) as "collection"`,
       'a.ip',
       'a.nonnetwork'
@@ -123,7 +124,6 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.statements.push('pg.userId = :userId')
       predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
       predicates.binds.userId = userObject.userId
-
     }
 
     // CONSTRUCT MAIN QUERY

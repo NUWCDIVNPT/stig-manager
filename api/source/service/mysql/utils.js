@@ -193,6 +193,16 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
   }
 }
 
+// Returns Boolean
+// Called when a User's Colection grant is accessLevel 1
+module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, userObject) {
+  try {
+  }
+  catch (e) {
+    throw (e)
+  }
+}
+
 
 // @param reviews Array List of Review objects
 // @param elevate Boolean 

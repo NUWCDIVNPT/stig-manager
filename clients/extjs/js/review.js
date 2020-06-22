@@ -2010,7 +2010,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         case 'submit':
         case 'unsubmit':
           result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
+            url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: {
@@ -2022,7 +2022,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         case 'save and unsubmit':
           jsonData.status = 'saved'
           result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
+            url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: jsonData
@@ -2032,7 +2032,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         case 'save and submit':
           jsonData.status = 'submitted'
           result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
+            url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: jsonData
@@ -2042,7 +2042,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         case 'save':
           jsonData.status = 'saved'
           result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
+            url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: jsonData
@@ -2105,29 +2105,29 @@ async function addReview(leaf, selectedRule, selectedResource) {
         allowBlank: false
       },
       items: [
-        {
-          xtype: 'hidden',
-          id: 'import-assetId',
-          name: 'assetId',
-          value: leaf.assetId
-        },
-        {
-          xtype: 'hidden',
-          id: 'import-benchmarkId',
-          name: 'benchmarkId',
-          value: leaf.benchmarkId
-        },
-        {
-          xtype: 'hidden',
-          id: 'import-benchmarkId',
-          name: 'collectionId'
-        },
-        {
-          xtype: 'hidden',
-          id: 'import-source',
-          name: 'source',
-          value: 'review'
-        },
+        // {
+        //   xtype: 'hidden',
+        //   id: 'import-assetId',
+        //   name: 'assetId',
+        //   value: leaf.assetId
+        // },
+        // {
+        //   xtype: 'hidden',
+        //   id: 'import-benchmarkId',
+        //   name: 'benchmarkId',
+        //   value: leaf.benchmarkId
+        // },
+        // {
+        //   xtype: 'hidden',
+        //   id: 'import-benchmarkId',
+        //   name: 'collectionId'
+        // },
+        // {
+        //   xtype: 'hidden',
+        //   id: 'import-source',
+        //   name: 'source',
+        //   value: 'review'
+        // },
         { // start fieldset config
           xtype: 'fieldset',
           title: 'Instructions',
@@ -2151,19 +2151,19 @@ async function addReview(leaf, selectedRule, selectedResource) {
             icon: "img/disc_drive.png"
           },
           listeners: {
-            fileselected: function (field, filename) {
-              var i = field.fileInput.dom.files[0];
-              var extension = i.name.substr(i.name.lastIndexOf('.') + 1).toLowerCase();
-              if (extension != 'ckl' && extension != 'xml') {
-                field.setValue("");
-                alert("Invalid file extension");
-                return;
-              }
-              // Ext.getCmp('import-filesize').setValue(i.size);
-              // Ext.getCmp('import-filename').setValue(i.name);
-              // Ext.getCmp('import-modified').setValue(Math.floor(i.lastModified / 1000));
-              // Ext.getCmp('import-uuid').setValue(getUuid());
-            }
+            // fileselected: function (field, filename) {
+            //   var i = field.fileInput.dom.files[0];
+            //   var extension = i.name.substr(i.name.lastIndexOf('.') + 1).toLowerCase();
+            //   if (extension != 'ckl' && extension != 'xml') {
+            //     field.setValue("");
+            //     alert("Invalid file extension");
+            //     return;
+            //   }
+            //   // Ext.getCmp('import-filesize').setValue(i.size);
+            //   // Ext.getCmp('import-filename').setValue(i.name);
+            //   // Ext.getCmp('import-modified').setValue(Math.floor(i.lastModified / 1000));
+            //   // Ext.getCmp('import-uuid').setValue(getUuid());
+            // }
           }
         },
         {
@@ -2187,7 +2187,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
               appwindow.close();
               initProgress("Importing file", "Initializing...", 'groupStore' + idAppend);
 
-              let response = await fetch(`${STIGMAN.Env.apiBase}/reviews`, {
+              let response = await fetch(`${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}`, {
                 method: 'POST',
                 headers: new Headers({
                   'Authorization': `Bearer ${window.keycloak.token}`

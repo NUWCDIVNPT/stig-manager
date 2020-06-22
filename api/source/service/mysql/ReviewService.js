@@ -8,7 +8,7 @@ let _this = this
 /**
 Generalized queries for review(s).
 **/
-exports.queryReviews = async function (inProjection = [], inPredicates = {}, userObject) {
+exports.getReviews = async function (inProjection = [], inPredicates = {}, userObject) {
   let connection
   try {
     const context = userObject.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
@@ -67,7 +67,11 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
       'left join status on r.statusId = status.statusId',
       'left join action on r.actionId = action.actionId',
       'left join user_data ud on r.userId = ud.userId',
-      'left join asset on r.assetId = asset.assetId'
+      'left join asset on r.assetId = asset.assetId',
+      'left join collection p on asset.collectionId = p.collectionId',
+      'left join collection_grant pg on p.collectionId = pg.collectionId',
+      'left join stig_asset_map sa on asset.assetId = sa.assetId',
+      'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
     // PROJECTIONS
@@ -78,7 +82,8 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
           'name', a.name,
           'collection', json_object(
             'collectionId', CAST(p.collectionId as char),
-            'name', p.name
+            'name', p.name,
+            'workflow', p.workflow
           )
         )
         from asset a 
@@ -148,81 +153,10 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
     
     // Role/Assignment based access control 
     // CONTEXT_USER
-    if (context === dbUtils.CONTEXT_USER) {
-      
-      // Construct an 'aclSubquery' to determine allowed assetId/ruleId pairs
-      let aclColumns = [
-        'DISTINCT sa.assetId',
-        'rgr.ruleId'
-      ]
-      let aclPredicates = [
-        'usa.userId = :context_user'
-      ]
-      predicates.binds.context_user = userObject.userId
-
-      // item 3 ('inner join current_rev') handles the common case where revisionStr is 'latest'
-      // Will replace aclJoins[3] for other revisionStr values
-      let aclJoins = [
-        'user_stig_asset_map usa',
-        'inner join stig_asset_map sa on sa.said = usa.said',
-        'left join asset a on a.assetId = sa.assetId',
-        'inner join current_rev rev on rev.benchmarkId = sa.benchmarkId',
-        'inner join rev_group_map rg on rev.revId = rg.revId',
-        'inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId'
-      ]
-
-      if (inPredicates.assetId) {
-        aclPredicates.push('sa.assetId = :assetId')
-        predicates.binds.assetId = inPredicates.assetId
-        // Delete property so it is not processed by later code
-        delete inPredicates.assetId
-      }
-      if (inPredicates.ruleId) {
-        aclPredicates.push('rgr.ruleId = :ruleId')
-        predicates.binds.ruleId = inPredicates.ruleId
-        // Delete property so it is not processed by later code
-        delete inPredicates.ruleId
-      }
-      if (inPredicates.collectionId) {
-        aclPredicates.push('a.collectionId = :collectionId')
-        predicates.binds.collectionId = inPredicates.collectionId
-        // Delete property so it is not processed by later code
-        delete inPredicates.collectionId
-      }
-      // If predicates include benchmarkId and revisionStr (which must occur together)
-      if (inPredicates.benchmarkId) {
-        aclPredicates.push('sa.benchmarkId = :benchmarkId')
-        predicates.binds.benchmarkId = inPredicates.benchmarkId
-        // Delete property so it is not processed by later code
-        delete inPredicates.benchmarkId
-      }
-      if (inPredicates.revisionStr && inPredicates.revisionStr !== 'latest') {
-        // Join to revisions so we can specify a revId
-        aclJoins[3] = 'inner join revision rev on rev.benchmarkId = sa.benchmarkId'
-        // Calculate the revId
-        let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-        let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
-        aclPredicates.push('rev.revId = :revId')
-        predicates.binds.revId = revId
-        // Delete property so it is not processed by later code
-        delete inPredicates.revisionStr
-      }
-      let aclSubquery = `
-      SELECT
-        ${aclColumns.join(",\n")}
-      FROM
-        ${aclJoins.join(" \n")}
-      WHERE
-        ${aclPredicates.join(" and ")}
-      `
-      // Splice the subquery onto the main query
-      joins.splice(0, 1, `(${aclSubquery}) acl`, 'inner join review r on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)')
-      //joins.push(`inner join (${aclSubquery}) acl on (acl.assetId = r.assetId AND acl.ruleId = r.ruleId)`)
-    }
-    // CONTEXT_DEPT
-    else if (context === dbUtils.CONTEXT_DEPT) {
-      predicates.statements.push('asset.deptId = :deptId')
-      predicates.binds.deptId = userObject.dept.deptId
+    if (context == dbUtils.CONTEXT_USER) {
+      predicates.statements.push('pg.userId = :userId')
+      predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
+      predicates.binds.userId = userObject.userId
     }
 
       // COMMON
@@ -330,31 +264,7 @@ exports.queryReviews = async function (inProjection = [], inPredicates = {}, use
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.deleteReview = async function(reviewId, projection, userObject) {
-}
-
-
-/**
- * Return a list of Reviews accessible to the requester
- *
- * projection List Additional properties to include in the response.  (optional)
- * state ReviewState  (optional)
- * action ReviewAction  (optional)
- * status ReviewStatus  (optional)
- * ruleId String Selects Reviews of a Rule (optional)
- * benchmarkId String Selects Reviews mapped to a STIG (optional)
- * assetId String Selects Reviews mapped to an Asset (optional)
- * collectionId Integer Selects Reviews mapped to a Collection (optional)
- * returns List
- **/
-exports.getReviews = async function(projection, predicates, userObject) {
-  try {
-    let rows = await _this.queryReviews(projection, predicates, userObject)
-    return (rows)
-  }
-  catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
+exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, userObject) {
 }
 
 
@@ -367,7 +277,7 @@ exports.getReviews = async function(projection, predicates, userObject) {
  * body Object The Review content (required)
  * returns Review
  **/
-exports.putReview = async function(projection, assetId, ruleId, body, userObject) {
+exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body, userObject) {
   let connection
   try {
     let values = {
@@ -412,7 +322,7 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
       ;[result] = await connection.query(sqlInsert, binds)
       status = 'updated'
     }
-    let rows = await _this.queryReviews(projection, {
+    let rows = await _this.getReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
     }, userObject)
@@ -432,16 +342,7 @@ exports.putReview = async function(projection, assetId, ruleId, body, userObject
 }
 
 
-/**
- * Create or update a complete Review
- *
- * projection List Additional properties to include in the response.  (optional)
- * ruleId String Selects Reviews of a Rule (optional)
- * assetId String Selects Reviews mapped to an Asset (optional)
- * body Object The Review content (required)
- * returns Review
- **/
-exports.putReviews = async function( reviews, userObject) {
+exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
   let connection
   try {
     let sqlMerge = `
@@ -466,16 +367,16 @@ exports.putReviews = async function( reviews, userObject) {
       statusId = VALUES(statusId),
       userId = VALUES(userId)`
     let binds = []
-    reviews.forEach(member => {
+    reviews.forEach(review => {
       let values = [
-        member.assetId,
-        member.ruleId,
-        dbUtils.REVIEW_RESULT_API[member.result],
-        member.resultComment,
-        member.autoResult? 1 : 0,
-        member.action ? dbUtils.REVIEW_ACTION_API[member.action] : null,
-        member.actionComment || null,
-        member.status ? dbUtils.REVIEW_STATUS_API[member.status] : 0,
+        assetId,
+        review.ruleId,
+        dbUtils.REVIEW_RESULT_API[review.result],
+        review.resultComment,
+        review.autoResult? 1 : 0,
+        review.action ? dbUtils.REVIEW_ACTION_API[review.action] : null,
+        review.actionComment || null,
+        review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0,
         userObject.userId
       ]
       binds.push(values)
@@ -509,7 +410,7 @@ exports.putReviews = async function( reviews, userObject) {
  * body Object The Review content (required)
  * returns Review
  **/
-exports.patchReview = async function(projection, assetId, ruleId, body, userObject) {
+exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, body, userObject) {
   let connection
   try {
     let values = {
@@ -554,7 +455,7 @@ exports.patchReview = async function(projection, assetId, ruleId, body, userObje
     if (result.affectedRows == 0) {
       throw ({message: "Review must exist to be patched."})
     }
-    let rows = await this.queryReviews(projection, {
+    let rows = await _this.getReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
     }, userObject)
@@ -574,23 +475,3 @@ exports.patchReview = async function(projection, assetId, ruleId, body, userObje
     }
   }
 }
-
-
-/**
- * Merge updates to a Review
- *
- * reviewId Integer A path parameter that indentifies a Review
- * body AssetAssign 
- * projection List Additional properties to include in the response.  (optional)
- * returns ReviewProjected
- **/
-exports.updateReview = async function(reviewId, body, projection, userObject) {
-  try {
-    let rows = await _this.METHOD()
-    return (rows)
-  }
-  catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
-}
-

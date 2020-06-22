@@ -7,54 +7,70 @@ const Review = require(`../service/${config.database.type}/ReviewService`)
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const {promises: fs} = require('fs')
 
-module.exports.importReviews = async function importReviews (req, res, next) {
+module.exports.importReviewsByAsset = async function importReviewsByAsset (req, res, next) {
   try {
     let reviewsRequested, reviews
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
     let body = req.swagger.params['body'].value
-    if (req.file) {
-      let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
-      if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
-        throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
+
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      if (req.file) {
+        let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
+        if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
+          throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
+        }
+        let assetId = parseInt(body.assetId)
+        let data = await fs.readFile(req.file.path)
+        let result
+        switch (extension) {
+          case 'ckl':
+            result = await Parsers.reviewsFromCkl(data, assetId)
+            break
+          case 'xml':
+            result = Parsers.reviewsFromScc(data, assetId)
+            break
+        }
+        reviewsRequested = result.reviews
       }
-      let assetId = parseInt(body.assetId)
-      let data = await fs.readFile(req.file.path)
-      let result
-      switch (extension) {
-        case 'ckl':
-          result = await Parsers.reviewsFromCkl(data, assetId)
-          break
-        case 'xml':
-          result = Parsers.reviewsFromScc(data, assetId)
-          break
+      else {
+        reviewsRequested = body
       }
-      reviewsRequested = result.reviews
+
+      //TODO: Check individual rules for grants with accessLevel 1
+      // let reviewsByStatus = await dbUtils.scrubReviewsByUser(reviewsRequested, false, req.userObject)
+      let reviewsByStatus = {
+        permitted: reviewsRequested,
+        rejected: []
+      }
+      reviewsByStatus.errors = await Review.putReviewsByAsset(assetId, reviewsByStatus.permitted, req.userObject)
+      writer.writeJson(res, reviewsByStatus)
     }
     else {
-      reviewsRequested = body
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }
-
-    // let reviewsByStatus = await dbUtils.scrubReviewsByUser(reviewsRequested, false, req.userObject)
-    // reviewsByStatus.errors = await Review.putReviews(reviewsByStatus.permitted, req.userObject)
-
-    let reviewsByStatus = {
-      permitted: reviewsRequested,
-      rejected: []
-    }
-    reviewsByStatus.errors = await Review.putReviews(reviewsByStatus.permitted, req.userObject)
-
-    writer.writeJson(res, reviewsByStatus)
   }
   catch(err) {
     writer.writeJson(res, err)
   }
 }
 
-module.exports.deleteReview = async function deleteReview (req, res, next) {
-  let reviewId = req.swagger.params['reviewId'].value
-  let projection = req.swagger.params['projection'].value
-  try {
-    let response = await Review.deleteReview(reviewId, projection, req.userObject)
-    writer.writeJson(res, response)
+module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule (req, res, next) {
+try {
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
+    let ruleId = req.swagger.params['ruleId'].value
+    let projection = req.swagger.params['projection'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      //TODO: For grants with accessLevel 1, check asset/rule is allowed
+      let response = await Review.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject)
+      writer.writeJson(res, response)
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
   }
   catch(err) {
     writer.writeJson(res, err)
@@ -71,104 +87,107 @@ module.exports.exportReviews = async function exportReviews (projection, userObj
 } 
 
 module.exports.getReviewByAssetRule = async function (req, res, next) {
-  let projection = req.swagger.params['projection'].value
   try {
-    let response = await Review.getReviews( projection,
-      {
-        assetId: req.swagger.params['assetId'].value,
-        ruleId: req.swagger.params['ruleId'].value
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
+    let ruleId = req.swagger.params['ruleId'].value
+    let projection = req.swagger.params['projection'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      let response = await Review.getReviews( projection, {
+        collectionId: collectionId,
+        assetId: assetId,
+        ruleId: ruleId
       }, req.userObject)
-    writer.writeJson(res, response[0])
+      writer.writeJson(res, response[0])
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
   }
   catch(err) {
     writer.writeJson(res, err)
   }
 }
 
-module.exports.getReviews = async function getReviews (req, res, next) {
-  let projection = req.swagger.params['projection'].value
+module.exports.getReviewsByCollection = async function getReviewsByCollection (req, res, next) {
   try {
-    let response = await Review.getReviews( projection, {
+    let projection = req.swagger.params['projection'].value
+    let collectionId = req.swagger.params['collectionId'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      let response = await Review.getReviews( projection, {
+        collectionId: collectionId,
+        assetId: req.swagger.params['assetId'].value,
         result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
         ruleId: req.swagger.params['ruleId'].value,
         benchmarkId: req.swagger.params['benchmarkId'].value,
         revisionStr: req.swagger.params['revisionStr'].value,
-        assetId: req.swagger.params['assetId'].value,
-        collectionId: req.swagger.params['collectionId'].value
       }, req.userObject)
-    writer.writeJson(res, response)
+      writer.writeJson(res, response)
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
   }
   catch(err) {
     writer.writeJson(res, err)
   }
 }
 
-module.exports.getReviewsByAssetId = async function (req, res, next) {
-  let projection = req.swagger.params['projection'].value
+module.exports.getReviewsByAsset = async function (req, res, next) {
   try {
-    let response = await Review.getReviews( projection, {
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
+    let projection = req.swagger.params['projection'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      let response = await Review.getReviews( projection, {
+        collectionId: collectionId,
+        assetId: assetId,
         result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
         benchmarkId: req.swagger.params['benchmarkId'].value,
         revisionStr: req.swagger.params['revisionStr'].value,
-        assetId: req.swagger.params['assetId'].value
       }, req.userObject )
-    writer.writeJson(res, response)
-  }
-  catch(err) {
-    writer.writeJson(res, err)
-  }
-}
-
-module.exports.putReview = async function (req, res, next) {
-  let projection = req.swagger.params['projection'].value
-  let assetId = req.swagger.params['assetId'].value
-  let ruleId = req.swagger.params['ruleId'].value
-  let body = req.swagger.params['body'].value
-  try {
-    if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
-      let response = await Review.putReview( projection, assetId, ruleId, body, req.userObject)
-      if (response.status === 'created') {
-        writer.writeJson(res, response.row, 201)
-      } else {
-        writer.writeJson(res, response.row )
-      }
-    }
-    else {
-      throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
-    }
-  }
-  catch (err) {
-    writer.writeJson(res, err)
-  }  
-}
-
-module.exports.putReviews = async function (req, res, next) {
-  let body = req.swagger.params['body'].value
-  try {
-    let response = await Review.putReviews(body, req.userObject)
-    writer.writeJson(res, response)
-  }
-  catch (err) {
-    writer.writeJson(res, err)
-  }  
-}
-
-module.exports.patchReview = async function (req, res, next) {
-  let projection = req.swagger.params['projection'].value
-  let assetId = req.swagger.params['assetId'].value
-  let ruleId = req.swagger.params['ruleId'].value
-  let body = req.swagger.params['body'].value
-  try {
-    if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
-      let response = await Review.patchReview( projection, assetId, ruleId, body, req.userObject)
       writer.writeJson(res, response)
     }
     else {
-      throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
+
+module.exports.putReviewByAssetRule = async function (req, res, next) {
+  try {
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
+    let ruleId = req.swagger.params['ruleId'].value
+    let body = req.swagger.params['body'].value
+    let projection = req.swagger.params['projection'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      // TODO For accessLevel 1, check asset/rule
+      // if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
+        let response = await Review.putReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
+        if (response.status === 'created') {
+          writer.writeJson(res, response.row, 201)
+        } else {
+          writer.writeJson(res, response.row )
+        }
+      // }
+      // else {
+      //   throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      // }
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }
   }
   catch (err) {
@@ -176,15 +195,53 @@ module.exports.patchReview = async function (req, res, next) {
   }  
 }
 
-module.exports.updateReview = async function updateReview (req, res, next) {
-  let reviewId = req.swagger.params['reviewId'].value
-  let body = req.swagger.params['body'].value
-  let projection = req.swagger.params['projection'].value
+module.exports.putReviewsByAsset = async function (req, res, next) {
   try {
-    let response = await Review.updateReview(reviewId, body, projection, req.userObject)
-    writer.writeJson(res, response)
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
+    let reviews = req.swagger.params['body'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      // TODO For accessLevel 1, check asset/rules
+      let response = await Review.putReviewsByAsset(assetId, reviews, req.userObject)
+      writer.writeJson(res, response)
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
   }
-  catch(err) {
+  catch (err) {
     writer.writeJson(res, err)
+  }  
+}
+
+module.exports.patchReviewByAssetRule = async function (req, res, next) {
+  try {
+    let collectionId = req.swagger.params['collectionId'].value
+    let assetId = req.swagger.params['assetId'].value
+    let ruleId = req.swagger.params['ruleId'].value
+    let body = req.swagger.params['body'].value
+    let projection = req.swagger.params['projection'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    if ( collectionGrant ) {
+      // TODO For accessLevel 1, check asset/rule
+      // if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
+        let response = await Review.patchReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
+        if (response.status === 'created') {
+          writer.writeJson(res, response.row, 201)
+        } else {
+          writer.writeJson(res, response.row )
+        }
+      // }
+      // else {
+      //   throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      // }
+    }
+    else {
+      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
   }
+  catch (err) {
+    writer.writeJson(res, err)
+  }  
 }

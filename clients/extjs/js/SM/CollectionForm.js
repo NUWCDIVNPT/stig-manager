@@ -494,7 +494,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            bbar: new SM.RowEditorToolbar({
+            tbar: new SM.RowEditorToolbar({
                 itemString: 'Grant',
                 editor: this.editor,
                 gridId: this.id,

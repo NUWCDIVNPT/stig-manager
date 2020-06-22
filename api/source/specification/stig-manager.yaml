@@ -76,12 +76,7 @@ paths:
   '/collections/{collectionId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      - name: collectionId
-        in: path
-        description: A path parameter that indentifies a Collection
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/CollectionProjectionQuery'
     get:
       tags:
@@ -183,12 +178,7 @@ paths:
             - 'stig-manager:collection'
   '/collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
-      - name: collectionId
-        in: path
-        description: A path parameter that indentifies a Collection
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/CollectionIdPath'
       - name: benchmarkId
         in: path
         description: A path parameter that indentifies a STIG
@@ -763,54 +753,57 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  /reviews:
+  /collections/{collectionId}/reviews:
     get:
       tags:
         - Review
       summary: Return a list of Reviews accessible to the requester
-      description: >
-        | RBAC | User Level 1 | User Level 2 | User Level 3 | elevated |
-
-        |-----|-----|-------|-------|-------|
-
-        |Response| All reviews | All departmental reviews | All mapped reviews 
-        | NA  |
-      operationId: getReviews
+      description: |
+      operationId: getReviewsByCollection
       parameters:
-        - name: collectionId
-          required: true
-          in: query
-          description: Selects Reviews mapped to a Collection
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/CollectionIdPath'
         - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
-        - name: ruleId
-          in: query
-          description: Selects Reviews of a Rule
-          schema:
-            type: string
+        - $ref: '#/components/parameters/RuleIdQuery'
         - $ref: '#/components/parameters/UserIdQuery'
-        - name: assetId
-          in: query
-          description: Selects Reviews mapped to an Asset
-          schema:
-            type: string
-        - name: benchmarkId
-          in: query
-          description: Selects Reviews mapped to a STIG; requires revisionStr
-          schema:
-            type: string
-        - name: revisionStr
-          in: query
-          description: >-
-            Selects Reviews mapped to a Revision [ V{version_num}R{release_num}
-            | 'latest' ]; requires benchmarkId
-          schema:
-            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-            type: string
+        - $ref: '#/components/parameters/AssetIdQuery'
+        - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/RevisionStrQuery'
         - $ref: '#/components/parameters/ReviewProjectionQuery'
+      responses:
+        '200':
+          description: ReviewProjected response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/reviews/{assetId}':
+    get:
+      tags:
+        - Review
+      summary: Return a list of Reviews for an Asset
+      operationId: getReviewsByAsset
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/AssetIdPath'
+        - $ref: '#/components/parameters/ReviewProjectionQuery'
+        - $ref: '#/components/parameters/ReviewResultQuery'
+        - $ref: '#/components/parameters/ReviewActionQuery'
+        - $ref: '#/components/parameters/ReviewStatusQuery'
+        - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/RevisionStrQuery'
       responses:
         '200':
           description: ReviewProjected response
@@ -836,7 +829,10 @@ paths:
         Import one or more Reviews from a JSON body, a STIGViewer CKL file, or
         an SCC XCCDF file
       description: |
-      operationId: importReviews
+      operationId: importReviewsByAsset
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/AssetIdPath'
       requestBody:
         content:
           application/json:
@@ -851,12 +847,10 @@ paths:
                 - importFile
                 - assetId
               properties:
-                assetId:
-                  description: The assetId to which the reviews apply
-                  type: string
                 strictAssetCheck:
                   description: Whether file contents will be checked for asset name match
                   type: boolean
+                  default: false
                 benchmarkId:
                   description: 'If provided, file contents will be checked for match'
                   type: string
@@ -882,64 +876,11 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/reviews/{assetId}':
+  '/collections/{collectionId}/reviews/{assetId}/{ruleId}':
     parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/AssetIdPath'
-      - $ref: '#/components/parameters/ReviewProjectionQuery'
-    get:
-      tags:
-        - Review
-      summary: Return a list of Reviews for an Asset
-      operationId: getReviewsByAssetId
-      parameters:
-        - $ref: '#/components/parameters/ReviewResultQuery'
-        - $ref: '#/components/parameters/ReviewActionQuery'
-        - $ref: '#/components/parameters/ReviewStatusQuery'
-        - name: benchmarkId
-          in: query
-          description: Selects Reviews mapped to a STIG; requires revisionStr
-          schema:
-            type: string
-        - name: revisionStr
-          in: query
-          description: >-
-            Selects Reviews mapped to a Revision [ V{version_num}R{release_num}
-            | 'latest' ]; requires benchmarkId
-          schema:
-            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-            type: string
-      responses:
-        '200':
-          description: ReviewProjected response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ReviewProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
-  '/reviews/{assetId}/{ruleId}':
-    parameters:
-      - name: assetId
-        in: path
-        description: A path parameter that indentifies an Asset
-        required: true
-        schema:
-          type: string
-      - name: ruleId
-        in: path
-        description: A path parameter that indentifies a Rule
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/RuleIdPath'
       - $ref: '#/components/parameters/ReviewIndividualProjectionQuery'
     get:
       tags:
@@ -969,7 +910,7 @@ paths:
       description: >-
         Create a new Review, or update all properties of an existing Review,
         setting missing properties to null
-      operationId: putReview
+      operationId: putReviewByAssetRule
       requestBody:
         required: true
         content:
@@ -997,7 +938,7 @@ paths:
         - Review
       summary: Merge provided properties with a Review
       description: 'Update the given properties of a Review, if it exists'
-      operationId: patchReview
+      operationId: patchReviewByAssetRule
       requestBody:
         required: true
         content:
@@ -1024,7 +965,7 @@ paths:
       tags:
         - Review
       summary: Delete a Review
-      operationId: deleteReview
+      operationId: deleteReviewByAssetRule
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
       responses:
@@ -2398,6 +2339,8 @@ components:
           type: string
         name:
           type: string
+        workflow:
+          $ref: '#/components/schemas/CollectionWorkflow'
     CollectionCreateOrReplace:
       required:
         - name
@@ -2650,10 +2593,7 @@ components:
       type: object
       required:
         - result
-        - resultComment
       properties:
-        assetId:
-          type: string
         ruleId:
           type: string
         result:
@@ -3175,6 +3115,15 @@ components:
       schema:
         pattern: ^(V\d+R\d+(\.\d+)?|latest)$
         type: string
+    RevisionStrQuery:      
+      name: revisionStr
+      in: query
+      description: >-
+        Selects Reviews mapped to a Revision [ V{version_num}R{release_num}
+        | 'latest' ]; requires benchmarkId
+      schema:
+        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+        type: string
     RuleIdPath:
       name: ruleId
       in: path
@@ -3182,6 +3131,13 @@ components:
       required: true
       schema:
         type: string
+    RuleIdQuery:
+      name: ruleId
+      in: query
+      description: Selects Reviews of a Rule
+      schema:
+        type: string
+
     RuleProjectionQuery:
       name: projection
       in: query

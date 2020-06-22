@@ -297,7 +297,6 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
             } 
           }
           vulnArray.push({
-            assetId: assetId,
             ruleId: ruleId,
             result: result,
             resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
@@ -561,7 +560,6 @@ module.exports.reviewsFromScc = function (sccFileContent, assetId) {
       result = results[ruleResult.result]
       if (result) {
         reviews.push({
-          assetId: assetId,
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
           result: result,
           resultComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,

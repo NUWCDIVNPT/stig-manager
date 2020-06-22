@@ -700,8 +700,9 @@ async function showAssetProps( assetId, initialCollectionId ) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
                         // change "collections" to "collectionIds"
                         let method = assetId ? 'PUT' : 'POST'
+                        let url = assetId ? `${STIGMAN.Env.apiBase}/assets/${assetId}` : `${STIGMAN.Env.apiBase}/assets`
                         let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
+                            url: url,
                             method: method,
                             params: {
                                 elevate: curUser.canAdmin,
