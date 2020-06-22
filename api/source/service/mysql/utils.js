@@ -166,7 +166,7 @@ module.exports.parseRevisionStr = function (revisionStr) {
 module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
   try {
     let sql
-    if (userObject.globalAccess) {
+    if (userObject.privileges.globalAccess) {
       return true
     } 
     else {
@@ -210,7 +210,7 @@ module.exports.userHasAssetRule = async function (assetId, ruleId, elevate, user
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
   try {
     const permitted = [], rejected = []
-    if (userObject.globalAccess || elevate) {
+    if (userObject.privileges.globalAccess || elevate) {
       permitted = reviews
     }
     else {

@@ -153,9 +153,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         u.username, 
         u.display,
         u.email,
-        u.globalAccess ? 1 : 0,
-        u.canCreateCollection ? 1 : 0,
-        u.canAdmin ? 1 : 0,
+        u.privileges.globalAccess ? 1 : 0,
+        u.privileges.canCreateCollection ? 1 : 0,
+        u.privileges.canAdmin ? 1 : 0,
         JSON.stringify(u.metadata)
       ])
     }

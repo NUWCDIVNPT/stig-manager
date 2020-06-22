@@ -995,7 +995,7 @@ function filterChecked (record,sm) {
 }
 
 function filterDept (record,sm) {
-	if (curUser.canAdmin) {
+	if (curUser.privileges.canAdmin) {
 		return true;
 	}
 	if (record.data.deptId == curUser.deptId) {

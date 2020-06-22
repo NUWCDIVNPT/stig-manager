@@ -32,7 +32,7 @@ function addUserAdmin() {
 	]);
 
 	var userStore = new Ext.data.JsonStore({
-		url: `${STIGMAN.Env.apiBase}/users${curUser.canAdmin ? '?elevate=true' : ''}`,
+		url: `${STIGMAN.Env.apiBase}/users${curUser.privileges.canAdmin ? '?elevate=true' : ''}`,
 		root: '',
 		fields: userFields,
 		isLoaded: false, // custom property
@@ -126,7 +126,7 @@ function addUserAdmin() {
 		tbar: [{
 			iconCls: 'icon-add',
 			text: 'New User',
-			disabled: !(curUser.canAdmin),
+			disabled: !(curUser.privileges.canAdmin),
 			handler: function() {
 				Ext.getBody().mask('Loading form...');
 				showUserProperties(0, userGrid);            
@@ -135,7 +135,7 @@ function addUserAdmin() {
 			ref: '../removeBtn',
 			iconCls: 'icon-del',
 			text: 'Delete User',
-			disabled: !(curUser.canAdmin),
+			disabled: !(curUser.privileges.canAdmin),
 			handler: function() {
 				//var confirmStr="Delete this user?";
 				
@@ -214,7 +214,7 @@ function addUserAdmin() {
 		layout: 'fit',
 		items: [userGrid]
 	});
-	if (!curUser.canAdmin) { // only show the modify button for non-admins
+	if (!curUser.privileges.canAdmin) { // only show the modify button for non-admins
 		var tb = userGrid.getTopToolbar();
 		var items = tb.find();
 		for (var x=0;x<items.length;x++) {

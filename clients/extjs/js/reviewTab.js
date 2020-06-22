@@ -52,7 +52,7 @@ function getReviewItems() {
 //     // Root node
 //     if (node == 'stigman-root') {
 //       let content = []
-//       if (curUser.canAdmin) {
+//       if (curUser.privileges.canAdmin) {
 //         content.push(
 //           {
 //             id: `admin-root`,
@@ -144,7 +144,7 @@ function getReviewItems() {
 //           }
 //           return node
 //       })
-//       if (curUser.canCreateCollection) {
+//       if (curUser.privileges.canCreateCollection) {
 //         content.unshift({
 //           id: `collection-create-leaf`,
 //           action: 'collection-create',
@@ -847,7 +847,7 @@ function addReviewHome() {
 // }
 
 function openCollectionReview(n) {
-  if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.canAdmin)) {
+  if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.privileges.canAdmin)) {
     var idAppend = '-collection-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
     var tab = Ext.getCmp('reviews-center-tab').getItem('collectionReviewTab' + idAppend);
     if (tab) {
@@ -885,7 +885,7 @@ async function createCollection( collectionObj, ownerId ) {
       }
     ]
     let result = await Ext.Ajax.requestPromise({
-      url: `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.canAdmin}`,
+      url: `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.privileges.canAdmin}`,
       headers: { 'Content-Type': 'application/json;charset=utf-8' },
       method: 'POST',
       jsonData: collectionObj

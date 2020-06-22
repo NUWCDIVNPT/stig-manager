@@ -53,7 +53,7 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
 }
 
 module.exports.deleteStigById = async function deleteStigById (req, res, next) {
-  if ( req.userObject.canAdmin ) {
+  if ( req.userObject.privileges.canAdmin ) {
     try {
       let benchmarkId = req.swagger.params['benchmarkId'].value
       let response = await STIG.deleteStigById(benchmarkId, req.userObject)

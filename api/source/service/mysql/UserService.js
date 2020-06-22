@@ -16,9 +16,6 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.username',
       'ud.display',
       'ud.email',
-      'ud.globalAccess',
-      'ud.canCreateCollection',
-      'ud.canAdmin',
       'ud.metadata'
     ]
     let joins = [
@@ -29,13 +26,24 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.username',
       'ud.display',
       'ud.email',
-      'ud.globalAccess',
-      'ud.canCreateCollection',
-      'ud.canAdmin'
+      'ud.metadata'
     ]
 
     // PROJECTIONS
-    if (inProjection && inProjection.includes('grants')) {
+    if (inProjection && inProjection.includes('privileges')) {
+      columns.push(`json_object(
+          'globalAccess', cast (ud.globalAccess is true as json),
+          'canCreateCollection', cast (ud.canCreateCollection is true as json),
+          'canAdmin', cast (ud.canAdmin is true as json)
+        ) as privileges`)
+      groupBy.push(
+        'ud.globalAccess',
+        'ud.canCreateCollection',
+        'ud.canAdmin'
+      )
+    }
+
+    if (inProjection && inProjection.includes('collectionGrants')) {
       joins.push('left join collection_grant pg on ud.userId = pg.userId')
       joins.push('left join collection p on pg.collectionId = p.collectionId')
       columns.push(`case when count(pg.pgId) > 0 then 
@@ -47,7 +55,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
           ),
           'accessLevel', pg.accessLevel
         )
-      ) else json_array() end as grants`)
+      ) else json_array() end as collectionGrants`)
     }
 
     // PREDICATES
@@ -56,8 +64,12 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       binds: {}
     }
     if (inPredicates.userId) {
-      predicates.statements.push('ud.userid = :userId')
+      predicates.statements.push('ud.userId = :userId')
       predicates.binds.userId = inPredicates.userId
+    }
+    if (inPredicates.username) {
+      predicates.statements.push('ud.username = :username')
+      predicates.binds.username = inPredicates.username
     }
 
     // CONSTRUCT MAIN QUERY
@@ -93,12 +105,13 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     // REPLACE/UPDATE: assetId is not null
 
     // Extract or initialize non-scalar properties to separate variables
-    let { grants, ...userFields } = body
+    let { collectionGrants, ...userFields } = body
 
-    // Convert boolean values to database value (true=1 or false=0)
-    userFields.globalAccess = userFields.globalAccess ? 1 : 0
-    userFields.canCreateCollection = userFields.canCreateCollection ? 1 : 0
-    userFields.canAdmin = userFields.canAdmin ? 1 : 0
+    // Handle userFields.privileges object
+    userFields.globalAccess = userFields.privileges.globalAccess ? 1 : 0
+    userFields.canCreateCollection = userFields.privileges.canCreateCollection ? 1 : 0
+    userFields.canAdmin = userFields.privileges.canAdmin ? 1 : 0
+    delete userFields.privileges
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
@@ -112,9 +125,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       let sqlInsert =
         `INSERT INTO
             user_data
-            ( username, display, globalAccess, canCreateCollection, canAdmin)
+            ( username, display, email, globalAccess, canCreateCollection, canAdmin, metadata)
           VALUES
-            (:username, :display, :globalAccess, :canCreateCollection, :canAdmin)`
+            (:username, :display, :email, :globalAccess, :canCreateCollection, :canAdmin, :metadata)`
       let [result] = await connection.query(sqlInsert, binds)
       userId = result.insertId
     }
@@ -139,7 +152,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     }
 
     // Process grants if present
-    if (grants) {
+    if (collectionGrants) {
       if ( writeAction !== dbUtils.WRITE_ACTION.CREATE ) {
         // DELETE from collection_grant
         let sqlDeletePkgGrant = 'DELETE FROM collection_grant where userId = ?'
@@ -151,7 +164,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
             collection_grant (userId, collectionId, accessLevel)
           VALUES
             ?`      
-        binds = grants.map( grant => [userId, grant.collectionId, grant.accessLevel])
+        binds = collectionGrants.map( grant => [userId, grant.collectionId, grant.accessLevel])
         // INSERT into collection_grant
         await connection.execute(sqlInsertPkgGrant, binds)
       }
@@ -247,9 +260,11 @@ exports.getUserByUserId = async function(userId, projection, elevate, userObject
  * canAdmin Boolean Selects Users matching the condition (optional)
  * returns List of UserProjected
  **/
-exports.getUsers = async function(projection, elevate, userObject) {
+exports.getUsers = async function(username, projection, elevate, userObject) {
   try {
-    let rows = await _this.queryUsers( projection, {}, elevate, userObject)
+    let rows = await _this.queryUsers( projection, {
+      username: username
+    }, elevate, userObject)
     return (rows)
   }
   catch(err) {

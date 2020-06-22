@@ -1944,7 +1944,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		thisTab.show();
 
 		// History is not ready for users to see
-		// if (!curUser.canAdmin) {
+		// if (!curUser.privileges.canAdmin) {
 			// Ext.getCmp('resources-tab-panel' + idAppend).hideTabStripItem('history-tab' + idAppend);
 		// }
 		

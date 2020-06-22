@@ -10,7 +10,7 @@ Generalized queries for collection(s).
 exports.queryCollections = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   try {
     let context
-    if (userObject.globalAccess || elevate) {
+    if (userObject.privileges.globalAccess || elevate) {
       context = dbUtils.CONTEXT_ALL
     } else {
       context = dbUtils.CONTEXT_USER
@@ -292,7 +292,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     }
 
     // Access control
-    if (!userObject.globalAccess) {
+    if (!userObject.privileges.globalAccess) {
       const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
       if (collectionGrant && collectionGrant.accessLevel === 1) {
         predicates.statements.push(`a.assetId in (

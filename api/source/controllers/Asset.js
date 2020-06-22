@@ -11,7 +11,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     const elevate = req.swagger.params['elevate'].value
     let projection = req.swagger.params['projection'].value
     const body = req.swagger.params['body'].value
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === body.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
 
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       // // Does collectionId exist?
@@ -64,7 +64,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
@@ -91,7 +91,7 @@ module.exports.deleteAssetStig = async function deleteAssetStig (req, res, next)
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.deleteAssetStig(assetId, benchmarkId, elevate, req.userObject )
@@ -117,7 +117,7 @@ module.exports.deleteAssetStigs = async function deleteAssetStigs (req, res, nex
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.deleteAssetStigs(assetId, elevate, req.userObject )
@@ -145,7 +145,7 @@ module.exports.deleteAssetStigGrant = async function deleteAssetStigGrant (req, 
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.deleteAssetStigGrant(assetId, benchmarkId, userId, elevate, req.userObject )
@@ -172,7 +172,7 @@ module.exports.deleteAssetStigGrants = async function deleteAssetStigGrants (req
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.deleteAssetStigGrants(assetId, benchmarkId, elevate, req.userObject )
@@ -216,9 +216,9 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
 
-    if ( elevate || req.userObject.globalAccess || collectionGrant ) {
+    if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
       // For now, lower accessLevels can't see other reviewers
       if (collectionGrant && collectionGrant.accessLevel < 3 && !elevate) {
         if (projection && projection.includes('stigGrants')) {
@@ -293,7 +293,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
     let projection = req.swagger.params['projection'].value
     let body = req.swagger.params['body'].value
 
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === body.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
       writer.writeJson(res, response)
@@ -360,7 +360,7 @@ module.exports.setAssetStig = async function setAssetStig (req, res, next) {
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.setAssetStig(assetId, benchmarkId, elevate, req.userObject )
@@ -387,7 +387,7 @@ module.exports.setAssetStigs = async function setAssetStigs (req, res, next) {
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.setAssetStigs(assetId, body, elevate, req.userObject )
@@ -415,7 +415,7 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const requesterCollectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const requesterCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the requester's granted accessLevel high enough?
     if ( elevate || (requesterCollectionGrant && requesterCollectionGrant.accessLevel >= 3) ) {
       // Verify the userId has accessLevel 1 on the Asset's Collection
@@ -454,7 +454,7 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    const requesterCollectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === assetToAffect.collection.collectionId )
+    const requesterCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the requester's granted accessLevel high enough?
     if ( elevate || (requesterCollectionGrant && requesterCollectionGrant.accessLevel >= 3) ) {
       // Verify all the userIds have accessLevel 1 on the Asset's Collection
@@ -490,7 +490,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
     let projection = req.swagger.params['projection'].value
     let body = req.swagger.params['body'].value
 
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === body.collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
       writer.writeJson(res, response)

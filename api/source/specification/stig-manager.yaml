@@ -1009,6 +1009,7 @@ paths:
   /users:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/UsernameQuery'
       - $ref: '#/components/parameters/UserProjectionQuery'
     get:
       tags:
@@ -2811,7 +2812,7 @@ components:
         - display
         - email
         - privileges
-        - grants
+        - collectionGrants
       type: object
       properties:
         username:
@@ -2824,7 +2825,7 @@ components:
           type: object
         privileges:
           $ref: '#/components/schemas/UserPrivileges'
-        grants:
+        collectionGrants:
           type: array
           items:
             $ref: '#/components/schemas/CollectionGrant'
@@ -2880,7 +2881,7 @@ components:
               $ref: '#/components/schemas/UserPrivileges'
         - type: object
           properties:
-            grants:
+            collectionGrants:
               type: array
               items:
                 $ref: '#/components/schemas/CollectionGrantProjected'
@@ -2897,7 +2898,7 @@ components:
           type: object
         privileges:
           $ref: '#/components/schemas/UserPrivileges'
-        grants:
+        collectionGrants:
           type: array
           items:
             $ref: '#/components/schemas/CollectionGrant'
@@ -3198,6 +3199,12 @@ components:
       description: A path parameter that indentifies a User
       schema:
         type: string
+    UsernameQuery:
+      name: username
+      in: query
+      description: A query parameter that filters on a username
+      schema:
+        type: string
     UserProjectionQuery:
       name: projection
       in: query
@@ -3211,7 +3218,7 @@ components:
           type: string
           enum:
             - privileges
-            - grants
+            - collectionGrants
   securitySchemes:
     oauth:
       type: oauth2

@@ -12,7 +12,7 @@ Generalized queries for asset(s).
 exports.queryAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   let connection
   try {
-    const context = userObject.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+    const context = userObject.privileges.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
 
     const columns = [
       'CAST(a.assetId as char) as assetId',
@@ -155,7 +155,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 exports.queryAssetStigs = async function (inPredicates = {}, elevate = false, userObject) {
   let connection
   try {
-    const context = userObject.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+    const context = userObject.privileges.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
     const columns = [
       'distinct cr.benchmarkId', 
       `concat('V', cr.version, 'R', cr.release) as lastRevisionStr`, 
@@ -216,7 +216,7 @@ exports.queryAssetStigs = async function (inPredicates = {}, elevate = false, us
 exports.queryAssetStigGrants = async function (inPredicates = {}, elevate = false, userObject) {
   let connection
   try {
-    const context = userObject.globalAccess || elevate ? 'CONTEXT_ALL' : 'CONTEXT_USER'
+    const context = userObject.privileges.globalAccess || elevate ? 'CONTEXT_ALL' : 'CONTEXT_USER'
     const columns = [
       'ud.userId',
       'ud.username'

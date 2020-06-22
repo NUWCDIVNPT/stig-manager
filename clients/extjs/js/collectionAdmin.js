@@ -12,7 +12,7 @@ function addCollectionAdmin() {
 		}
 	]);
 	var assetStore = new Ext.data.JsonStore({
-		url: `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.canAdmin}`,
+		url: `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.privileges.canAdmin}`,
 		fields: assetFields,
 		autoLoad: true,
 		root: '',
@@ -122,7 +122,7 @@ function addCollectionAdmin() {
 						params: {
 							collectionId: record.data.collectionId,
 							projection: ['adminStats'],
-							elevate: curUser.canAdmin
+							elevate: curUser.privileges.canAdmin
 						}
 					})
 				}
@@ -184,7 +184,7 @@ function addCollectionAdmin() {
 			ref: '../removeBtn',
 			iconCls: 'icon-del',
 			tooltip: 'Delete',
-			disabled: !(curUser.canAdmin),
+			disabled: !(curUser.privileges.canAdmin),
 			handler: function () {
 				try {
 					var confirmStr = "Deleteing this collection will <b>permanently remove</b> all data associated with the collection. This includes all the collection's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the collection?";
@@ -662,11 +662,11 @@ function addCollectionAdmin() {
 							delete Object.assign(values, { ['assetIds']: values['assets'] })['assets']
 							let url, method
 							if (collectionId) {
-								url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${curUser.canAdmin}`
+								url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${curUser.privileges.canAdmin}`
 								method = 'PUT'
 							}
 							else {
-								url = `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.canAdmin}`
+								url = `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.privileges.canAdmin}`
 								method = 'POST'
 							}
 							let result = await Ext.Ajax.requestPromise({
@@ -777,7 +777,7 @@ function addCollectionAdmin() {
 			let result = await Ext.Ajax.requestPromise({
 				url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 				params: {
-					elevate: curUser.canAdmin,
+					elevate: curUser.privileges.canAdmin,
 					projection: ['assets']
 				},
 				method: 'GET'
@@ -949,7 +949,7 @@ function addCollectionAdmin() {
 					name: 'name',
 					type: 'string'
 				}],
-				url: `${STIGMAN.Env.apiBase}/departments?elevate=${curUser.canAdmin}`,
+				url: `${STIGMAN.Env.apiBase}/departments?elevate=${curUser.privileges.canAdmin}`,
 				root: '',
 				sortInfo: {
 					field: 'name',
@@ -995,7 +995,7 @@ function addCollectionAdmin() {
 								width: 150,
 								emptyText: 'Enter asset name...',
 								allowBlank: false,
-								//disabled: !(curUser.canAdmin),
+								//disabled: !(curUser.privileges.canAdmin),
 								name: 'name'
 							},{
 								xtype: 'textfield',
@@ -1025,8 +1025,8 @@ function addCollectionAdmin() {
 								name: 'deptId',
 								mode: 'local',
 								triggerAction: 'all',
-								hideTrigger: !(curUser.canAdmin || curUser.accessLevel == 4),
-								readOnly: !(curUser.canAdmin || curUser.accessLevel == 4),
+								hideTrigger: !(curUser.privileges.canAdmin || curUser.accessLevel == 4),
+								readOnly: !(curUser.privileges.canAdmin || curUser.accessLevel == 4),
 								//fieldClass: "x-item-disabled",
 								displayField:'name',
 								valueField: 'deptId',
@@ -1037,7 +1037,7 @@ function addCollectionAdmin() {
 								id: 'assetProps-nonnetwork',
 								name: 'nonnetwork',
 								value: 'off',
-								//disabled: !(curUser.canAdmin),
+								//disabled: !(curUser.privileges.canAdmin),
 								boxLabel: 'Not networked',
 								handler: function (cb,checked){
 									var tf_ip = Ext.getCmp('assetProps-ip');
@@ -1083,11 +1083,11 @@ function addCollectionAdmin() {
 								let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
 								let url, method
 								if (assetId) {
-									url = `${STIGMAN.Env.apiBase}/assets/${assetId}?elevate=${curUser.canAdmin}`
+									url = `${STIGMAN.Env.apiBase}/assets/${assetId}?elevate=${curUser.privileges.canAdmin}`
 									method = 'PUT'
 								}
 								else {
-									url = `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.canAdmin}`
+									url = `${STIGMAN.Env.apiBase}/assets?elevate=${curUser.privileges.canAdmin}`
 									method = 'POST'
 								}
 								let result = await Ext.Ajax.requestPromise({
@@ -1247,7 +1247,7 @@ function addCollectionAdmin() {
 						viewConfig: {
 							forceFit: true,
 							getRowClass: function(record, rowIndex, rp, ds) {
-								if (curUser.accessLevel === 2 && !curUser.canAdmin) {
+								if (curUser.accessLevel === 2 && !curUser.privileges.canAdmin) {
 									if (record.data.deptId !== curUser.deptId) {
 										return 'x-stigman-cross-department'
 									}
@@ -1361,13 +1361,13 @@ function addCollectionAdmin() {
 					let result = await Ext.Ajax.requestPromise({
 						url: `${STIGMAN.Env.apiBase}/users`,
 						params: {
-							elevate: curUser.canAdmin,
+							elevate: curUser.privileges.canAdmin,
 							accessLevel: 1
 						},
 						method: 'GET'
 					})
 					let apiUsers = JSON.parse(result.response.responseText)
-					if (curUser.accessLevel === 2 && !curUser.canAdmin) {
+					if (curUser.accessLevel === 2 && !curUser.privileges.canAdmin) {
 						// merge users from assignedUsers, ExtJS will handle any duplicate ids
 						apiUsers = apiUsers.concat(assignedUsers)
 					}
@@ -1427,7 +1427,7 @@ function addCollectionAdmin() {
 			let resultDept = await Ext.Ajax.requestPromise({
 				url: `${STIGMAN.Env.apiBase}/departments`,
 				params: {
-					elevate: curUser.canAdmin
+					elevate: curUser.privileges.canAdmin
 				},
 				method: 'GET'
 			})
@@ -1439,7 +1439,7 @@ function addCollectionAdmin() {
 				let result = await Ext.Ajax.requestPromise({
 					url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
 					params: {
-						elevate: curUser.canAdmin,
+						elevate: curUser.privileges.canAdmin,
 						projection: ['stigReviewers']
 					},
 					method: 'GET'
@@ -1460,7 +1460,7 @@ function addCollectionAdmin() {
 			else {
 				// For new asset, set default department
 				assetPropsFormPanel.getForm().setValues({
-					deptId: curUser.canAdmin ? 0 : curUser.dept.deptId
+					deptId: curUser.privileges.canAdmin ? 0 : curUser.dept.deptId
 				})
 			}
 			
@@ -1486,7 +1486,7 @@ function addCollectionAdmin() {
 
 	collectionGrid.getStore().load({
 		params: {
-			elevate: curUser.canAdmin
+			elevate: curUser.privileges.canAdmin
 		}
 	});
 

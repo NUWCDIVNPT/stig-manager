@@ -107,7 +107,7 @@ async function showUserProperties(id, grid){
 		viewConfig: {
 			forceFit:true,
 			getRowClass: function(record, rowIndex, rp, ds) {
-				if (curUser.accessLevel === 2 && !curUser.canAdmin) {
+				if (curUser.accessLevel === 2 && !curUser.privileges.canAdmin) {
 					if (record.data.assetDeptId !== curUser.deptId) {
 						return 'x-stigman-cross-department'
 					}
@@ -152,7 +152,7 @@ async function showUserProperties(id, grid){
 			name: 'name',
 			type: 'string'
 		}],
-		url: `${STIGMAN.Env.apiBase}/departments?elevate=${curUser.canAdmin}`,
+		url: `${STIGMAN.Env.apiBase}/departments?elevate=${curUser.privileges.canAdmin}`,
 		root: '',
 		sortInfo: {
 			field: 'name',
@@ -185,7 +185,7 @@ async function showUserProperties(id, grid){
 						xtype: 'textfield',
 						fieldLabel: 'Account',
 						width: 250,
-						disabled: !(curUser.canAdmin),
+						disabled: !(curUser.privileges.canAdmin),
 						emptyText: 'Enter account name...',
 						allowBlank: false,
 						name: 'username'
@@ -199,7 +199,7 @@ async function showUserProperties(id, grid){
 					},{
 						xtype: 'checkbox',
 						name: 'canAdmin',
-						disabled: !(curUser.canAdmin),
+						disabled: !(curUser.privileges.canAdmin),
 						boxLabel: 'Administrator'
 					}
 					] // end column #1 items
@@ -214,7 +214,7 @@ async function showUserProperties(id, grid){
 						xtype: 'combo',
 						fieldLabel: 'Department',
 						width: 100,
-						disabled: !(curUser.canAdmin),
+						disabled: !(curUser.privileges.canAdmin),
 						emptyText: 'Department...',
 						allowBlank: false,
 						editable: false,
@@ -229,7 +229,7 @@ async function showUserProperties(id, grid){
 					{
 						xtype: 'combo',
 						id: 'userPropsLevelCombo',
-						disabled: !(curUser.canAdmin),
+						disabled: !(curUser.privileges.canAdmin),
 						fieldLabel: 'Level',
 						width: 100,
 						emptyText: 'Level...',
@@ -492,11 +492,11 @@ async function showUserProperties(id, grid){
 					let values = userPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
 					let url, method
 					if (id) {
-						url = `${STIGMAN.Env.apiBase}/users/${id}?elevate=${curUser.canAdmin}`
+						url = `${STIGMAN.Env.apiBase}/users/${id}?elevate=${curUser.privileges.canAdmin}`
 						method = 'PUT'
 					}
 					else {
-						url = `${STIGMAN.Env.apiBase}/users?elevate=${curUser.canAdmin}`
+						url = `${STIGMAN.Env.apiBase}/users?elevate=${curUser.privileges.canAdmin}`
 						method = 'POST'
 					}
 					let result = await Ext.Ajax.requestPromise({
@@ -691,7 +691,7 @@ async function showUserProperties(id, grid){
 				url: `${STIGMAN.Env.apiBase}/assets/`,
 				method: 'GET',
 				params: { 
-					elevate: `${curUser.canAdmin}`,
+					elevate: `${curUser.privileges.canAdmin}`,
 					collectionId: theNode.attributes.collectionId,
 					projection: 'stigs'
 				}
@@ -727,7 +727,7 @@ async function showUserProperties(id, grid){
 				url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
 				method: 'GET',
 				params: { 
-					elevate: `${curUser.canAdmin}`,
+					elevate: `${curUser.privileges.canAdmin}`,
 					projection: 'stigs'
 				}
 			})
@@ -755,7 +755,7 @@ async function showUserProperties(id, grid){
 				url: `${STIGMAN.Env.apiBase}/assets/`,
 				method: 'GET',
 				params: { 
-					elevate: `${curUser.canAdmin}`,
+					elevate: `${curUser.privileges.canAdmin}`,
 					collectionId: theNode.attributes.collectionId,
 					benchmarkId: theNode.attributes.benchmarkId,
 					projection: 'stigs'
@@ -858,7 +858,7 @@ async function showUserProperties(id, grid){
 	let resultDept = await Ext.Ajax.requestPromise({
 		url: `${STIGMAN.Env.apiBase}/departments`,
 		params: {
-			elevate: curUser.canAdmin
+			elevate: curUser.privileges.canAdmin
 		},
 		method: 'GET'
 	})
@@ -873,7 +873,7 @@ async function showUserProperties(id, grid){
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/users/${id}`,
 			params: {
-				elevate: curUser.canAdmin,
+				elevate: curUser.privileges.canAdmin,
 				projection: ['stigReviews']
 			},
 			method: 'GET'
@@ -886,7 +886,7 @@ async function showUserProperties(id, grid){
 	else {
 		// For new user, set default department
 		userPropsFormPanel.getForm().setValues({
-			deptId: curUser.canAdmin ? 0 : curUser.dept.deptId
+			deptId: curUser.privileges.canAdmin ? 0 : curUser.dept.deptId
 		})
 	}
 

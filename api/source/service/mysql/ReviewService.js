@@ -11,7 +11,7 @@ Generalized queries for review(s).
 exports.getReviews = async function (inProjection = [], inPredicates = {}, userObject) {
   let connection
   try {
-    const context = userObject.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+    const context = userObject.privileges.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
     const columns = [
       'CAST(r.assetId as char) as assetId',
       'asset.name as "assetName"',

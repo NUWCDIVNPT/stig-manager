@@ -13,7 +13,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 			collectionId: collectionId,
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			baseParams: {
-				elevate: curUser.canAdmin,
+				elevate: curUser.privileges.canAdmin,
 				projection: 'grants'
 			},
 			title: 'Grants',
@@ -67,7 +67,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			params: {
-				elevate: curUser.canAdmin,
+				elevate: curUser.privileges.canAdmin,
 				projection: 'grants'
 			},
 			method: 'GET'

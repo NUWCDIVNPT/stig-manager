@@ -205,7 +205,7 @@ SM.StigAssetSelectionField = Ext.extend(Ext.form.ComboBox, {
             autoLoad: true,
             url: `${STIGMAN.Env.apiBase}/assets`,
             baseParams: {
-                elevate: curUser.canAdmin,
+                elevate: curUser.privileges.canAdmin,
                 collectionId: this.collectionId,
                 benchmarkId: this.benchmarkId
             },
@@ -358,7 +358,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
         let store = new Ext.data.JsonStore({
             url: `${STIGMAN.Env.apiBase}/assets`,
             baseParams: {
-                elevate: curUser.canAdmin,
+                elevate: curUser.privileges.canAdmin,
                 collectionId: this.collectionId
             },
             grid: this,
@@ -783,7 +783,7 @@ async function showCollectionStigProps( benchmarkId, collectionId ) {
                             url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
                             method: 'PUT',
                             params: {
-                                elevate: curUser.canAdmin
+                                elevate: curUser.privileges.canAdmin
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values
@@ -822,7 +822,7 @@ async function showCollectionStigProps( benchmarkId, collectionId ) {
         let result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/assets`,
             params: {
-                elevate: curUser.canAdmin,
+                elevate: curUser.privileges.canAdmin,
                 collectionId: collectionId,
                 benchmarkId: benchmarkId
             },

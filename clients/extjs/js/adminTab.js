@@ -68,7 +68,7 @@ function addAdminTab(adminAttributes) {
 
 function getTree() {
 	let children = []
-	if (curUser.canAdmin) {
+	if (curUser.privileges.canAdmin) {
 		children.push({
 			id: 'appdata-admin',
 			text: 'Application Data ',
@@ -81,7 +81,7 @@ function getTree() {
 			iconCls: 'sm-department-icon'
 		})
 	}
-	if (curUser.canAdmin || curUser.accessLevel === 3) {
+	if (curUser.privileges.canAdmin || curUser.accessLevel === 3) {
 		children.push({
 			id: 'collection-admin',
 			text: 'Collections',

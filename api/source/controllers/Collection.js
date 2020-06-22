@@ -27,7 +27,7 @@ module.exports.deleteCollection = async function deleteCollection (req, res, nex
     const elevate = req.swagger.params['elevate'].value
     const collectionId = req.swagger.params['collectionId'].value
     const projection = req.swagger.params['projection'].value
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (elevate || (collectionGrant && collectionGrant.accessLevel === 4)) {
       const response = await Collection.deleteCollection(collectionId, projection, elevate, req.userObject)
       writer.writeJson (res, response)
@@ -46,8 +46,8 @@ module.exports.getChecklistByCollectionStig = async function getChecklistByColle
     const collectionId = req.swagger.params['collectionId'].value
     const benchmarkId = req.swagger.params['benchmarkId'].value
     const revisionStr = req.swagger.params['revisionStr'].value
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.globalAccess ) {
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const response = await Collection.getChecklistByCollectionStig(collectionId, benchmarkId, revisionStr, req.userObject )
       writer.writeJson(res, response)
     }
@@ -66,8 +66,8 @@ module.exports.getCollection = async function getCollection (req, res, next) {
     const projection = req.swagger.params['projection'].value
     const elevate = req.swagger.params['elevate'].value
     
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
-    if (collectionGrant || req.userObject.globalAccess || elevate ) {
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
       const response = await Collection.getCollection(collectionId, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
@@ -101,8 +101,8 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
   try {
     const collectionId = req.swagger.params['collectionId'].value
     const elevate = req.swagger.params['elevate'].value
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
-    if (collectionGrant || req.userObject.globalAccess || elevate ) {
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
       const response = await Collection.getStigsByCollection( collectionId, elevate, req.userObject )
       writer.writeJson(res, response)
       }
@@ -132,7 +132,7 @@ module.exports.replaceCollection = async function updateCollection (req, res, ne
     const collectionId = req.swagger.params['collectionId'].value
     const projection = req.swagger.params['projection'].value
     const body = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       const response = await Collection.replaceCollection(collectionId, body, projection, req.userObject)
       writer.writeJson(res, response)
@@ -153,7 +153,7 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
     const collectionId = req.swagger.params['collectionId'].value
     const projection = req.swagger.params['projection'].value
     const body = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Collection.replaceCollection(collectionId, body, projection, req.userObject)
       writer.writeJson(res, response)

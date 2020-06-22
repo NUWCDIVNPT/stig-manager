@@ -599,7 +599,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                             xtype: 'checkbox',
                             name: 'nonnetwork',
                             value: 'off',
-                            //disabled: !(curUser.canAdmin),
+                            //disabled: !(curUser.privileges.canAdmin),
                             boxLabel: 'Not networked',
                             handler: function (cb,checked){
                                 var tf_ip = Ext.getCmp(`asset-props-${idAppend}`)
@@ -705,7 +705,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
                             url: url,
                             method: method,
                             params: {
-                                elevate: curUser.canAdmin,
+                                elevate: curUser.privileges.canAdmin,
                                 projection: ['stigs', 'adminStats']
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
@@ -750,7 +750,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
             let result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                 params: {
-                    elevate: curUser.canAdmin,
+                    elevate: curUser.privileges.canAdmin,
                     projection: ['stigs']
                 },
                 method: 'GET'

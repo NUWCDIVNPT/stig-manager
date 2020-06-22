@@ -131,7 +131,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 Ext.getCmp('app-nav-tree-separator-4').hide();
                 Ext.getCmp('unlock-collection-asset-reviews').hide();
         
-                if ((node.attributes.node === 'collection' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.canAdmin)) {
+                if ((node.attributes.node === 'collection' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.privileges.canAdmin)) {
                   var c = node.getOwnerTree().contextMenu;
                   c.contextNode = node;
                   if (node.attributes.node == 'collection') {
@@ -252,7 +252,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           // Root node
           if (node == 'stigman-root') {
             let content = []
-            if (curUser.canAdmin) {
+            if (curUser.privileges.canAdmin) {
               content.push(
                 {
                   id: `admin-root`,
@@ -260,22 +260,26 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                   text: 'Administration',
                   iconCls: 'sm-setting-icon',
                   expanded: true,
-                  children: [{
-                    id: 'user-admin',
-                    text: 'Users',
-                    leaf: true,
-                    iconCls: 'sm-users-icon'
-                  }, {
-                    id: 'stig-admin',
-                    text: 'STIG and SCAP Benchmarks',
-                    leaf: true,
-                    iconCls: 'sm-stig-icon'
-                  }, {
-                    id: 'appdata-admin',
-                    text: 'Application Data ',
-                    leaf: true,
-                    iconCls: 'sm-database-save-icon'
-                  }]
+                  children: [
+                    {
+                      id: 'user-admin',
+                      text: 'Users',
+                      leaf: true,
+                      iconCls: 'sm-users-icon'
+                    },
+                    {
+                      id: 'stig-admin',
+                      text: 'STIG and SCAP Benchmarks',
+                      leaf: true,
+                      iconCls: 'sm-stig-icon'
+                    },
+                    {
+                      id: 'appdata-admin',
+                      text: 'Application Data ',
+                      leaf: true,
+                      iconCls: 'sm-database-save-icon'
+                    }
+                  ]
                 }
               )
             }
@@ -299,7 +303,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             let r = JSON.parse(result.response.responseText)
             let content = r.map(collection => {
                 let children = []
-                collectionGrant = curUser.collectionGrants.find( g => g.collectionId === collection.collectionId )
+                collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
                 if (collectionGrant && collectionGrant.accessLevel >= 3) {
                   children.push({
                     id: `${collection.collectionId}-pkgconfig-node`,
@@ -312,20 +316,22 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                   })
                 }
                 children.push(
+                  // {
+                  //   id: `${collection.collectionId}-import-result-node`,
+                  //   text: 'Import STIG results...',
+                  //   collectionId: collection.collectionId,
+                  //   collectionName: collection.name,
+                  //   iconCls: 'sm-import-icon',
+                  //   action: 'import',
+                  //   leaf: true
+                  // },
                   {
-                    id: `${collection.collectionId}-import-result-node`,
-                    text: 'Import STIG results...',
-                    collectionId: collection.collectionId,
-                    collectionName: collection.name,
-                    iconCls: 'sm-import-icon',
-                    action: 'import',
-                    leaf: true
-                  },{
                     id: `${collection.collectionId}-assets-node`,
                     node: 'assets',
                     text: 'Assets',
                     iconCls: 'sm-asset-icon'
-                  },{
+                  },
+                  {
                     id: `${collection.collectionId}-stigs-node`,
                     node: 'stigs',
                     text: 'STIGs',
@@ -343,7 +349,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 }
                 return node
             })
-            if (curUser.canCreateCollection) {
+            if (curUser.privileges.canCreateCollection) {
               content.unshift({
                 id: `collection-create-leaf`,
                 action: 'collection-create',
