@@ -97,6 +97,27 @@ module.exports.getCollections = async function getCollections (req, res, next) {
   }
 }
 
+module.exports.getFindingsByCollection = async function getFindingsByCollection (req, res, next) {
+  try {
+    const collectionId = req.swagger.params['collectionId'].value
+    const benchmarkId = req.swagger.params['benchmarkId'].value
+    const assetId = req.swagger.params['assetId'].value
+    const acceptedOnly = req.swagger.params['acceptedOnly'].value
+    const projection = req.swagger.params['projection'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+      const response = await Collection.getFindingsByCollection( collectionId, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
+      writer.writeJson(res, response)
+      }
+    else {
+      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }
+}
+
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value

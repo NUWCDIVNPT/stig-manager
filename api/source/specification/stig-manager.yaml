@@ -2952,7 +2952,7 @@ components:
         Optional properties to return. Selecting "checks" or "fixes" will also
         select "fullrules"
       style: form
-      explode: false
+      explode: true
       schema:
         type: array
         items:
@@ -2975,14 +2975,14 @@ components:
       in: query
       description: Optional properties to return
       style: form
-      explode: false
+      explode: true
       schema:
         type: array
         items:
           type: string
           enum:
             - assets
-            - benchmarkIds
+            - stigs
             - ccis
             - poamRarSummary
     GroupIdPath:

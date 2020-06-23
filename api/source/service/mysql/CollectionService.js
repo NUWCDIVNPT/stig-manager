@@ -125,6 +125,102 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
   }
 }
 
+exports.queryFindings = async function (inProjection = [], inPredicates = {}, userObject) {
+  try {
+    let context
+    if (userObject.privileges.globalAccess) {
+      context = dbUtils.CONTEXT_ALL
+    } else {
+      context = dbUtils.CONTEXT_USER
+    }
+
+    let columns = [
+      'ru.ruleId',
+      'ru.title as ruleTitle',
+      'rg.groupId',
+      'gr.title as groupTitle',
+      'ru.severity',
+      'count(distinct a.name) as "assetCount"'
+    ]
+    let joins = [
+      'asset a',
+      'left join collection p on a.collectionId = p.collectionId',
+      'left join collection_grant pg on p.collectionId = pg.collectionId',
+      'left join stig_asset_map sa on a.assetId = sa.assetId',
+      'left join user_stig_asset_map usa on sa.saId = usa.saId',
+      'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
+      'left join rev_group_map rg on cr.revId = rg.revId',
+      'left join rev_group_rule_map rgr on rg.rgId = rgr.rgId', 
+      'left join rule ru on ru.ruleId=rgr.ruleId',
+      'left join `group` gr on gr.groupId=rg.groupId',
+      'left join review rv on (rv.assetId=a.assetId and rv.ruleId=ru.ruleId)'
+    ]
+
+    // PROJECTIONS
+    if (inProjection.includes('assets')) {
+      columns.push(`cast( concat( '[', group_concat(distinct 
+        json_object (
+          'assetId', a.assetId,
+          'name', a.name
+        )), ']' ) as json ) as "assets"`)
+    }
+    if (inProjection.includes('stigs')) {
+      columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+    }
+    if (inProjection.includes('ccis')) {
+      joins.push('left join rule_cci_map rc on ru.ruleId = rc.ruleId')
+      columns.push(`cast( concat( '[', group_concat(distinct concat('"',rc.cci,'"')), ']' ) as json ) as "ccis"`)
+    }
+
+
+    // PREDICATES
+    let predicates = {
+      statements: ['rv.resultId = ?'],
+      binds: [4]
+    }
+    
+    if ( inPredicates.collectionId ) {
+      predicates.statements.push('a.collectionId = ?')
+      predicates.binds.push( inPredicates.collectionId )
+    }
+    if ( inPredicates.assetId ) {
+      predicates.statements.push('a.assetId = ?')
+      predicates.binds.push( inPredicates.assetId )
+    }
+    if ( inPredicates.acceptedOnly ) {
+      predicates.statements.push('rv.statusId = ?')
+      predicates.binds.push( 3 )
+    }
+    if ( inPredicates.benchmarkId ) {
+      predicates.statements.push('cr.benchmarkId = ?')
+      predicates.binds.push( inPredicates.benchmarkId )
+    }
+    if (context == dbUtils.CONTEXT_USER) {
+      predicates.statements.push('(pg.userId = ? AND CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END)')
+      predicates.binds.push( userObject.userId, userObject.userId )
+    }
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += ' group by ru.ruleId, ru.title, rg.groupId, gr.title, ru.severity'
+    sql += ` order by substring(rg.groupId from 3) + 0`
+    
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+    return (rows)
+  }
+  catch (err) {
+    throw err
+  }
+  // finally {
+
+  // }
+}
+
 exports.addOrUpdateCollection = async function(writeAction, collectionId, body, projection, userObject) {
   // CREATE: collectionId will be null
   // REPLACE/UPDATE: collectionId is not null
@@ -409,9 +505,26 @@ exports.getCollections = async function(predicates, projection, elevate, userObj
   }
 }
 
+exports.getFindingsByCollection = async function( collectionId, benchmarkId, assetId, acceptedOnly, projection, userObject ) {
+  try {
+    let rows = await _this.queryFindings(projection, { 
+      collectionId: collectionId,
+      benchmarkId: benchmarkId,
+      assetId: assetId,
+      acceptedOnly: acceptedOnly
+    }, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+
+}
+
+
 exports.getStigsByCollection = async function( collectionId, elevate, userObject ) {
   try {
-    let rows = await _this.queryCollections(['stigs'], { collectionId: collectionId }, elevate, userObject)
+    let rows = await _this.queryFinidings(['stigs'], { collectionId: collectionId }, elevate, userObject)
     return (rows[0].stigs)
   }
   catch (err) {

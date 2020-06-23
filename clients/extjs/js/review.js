@@ -1,26 +1,4 @@
-/*
-$Id: review.js 894 2018-08-15 19:34:58Z csmig $
-*/
-
-
-
 async function addReview(leaf, selectedRule, selectedResource) {
-  // 'selectedRule' is optional
-	/* Example of 'leaf': 
-		leaf = {
-			icon: "/icons/mycomputer1.png"
-			id: "1-benchmarkId179-C27WEBNWPT02-leaf"
-			leaf: "true"
-			qtip: "C27WEBNWPT02"
-			report: "review"
-			revId: "IE8-1-10"
-			assetId: "86"
-			assetName: "C27WEBNWPT02"
-			benchmarkId: "IE8"
-			stigName: "APACHE_SERVER_2.2_WINDOWS"
-			text: "C27WEBNWPT02"
-		}
-	*/
   let result = await Ext.Ajax.requestPromise({
     url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
     method: 'GET'
@@ -1992,10 +1970,14 @@ async function addReview(leaf, selectedRule, selectedResource) {
     // index,
     // type
     // }
-
+    let fp
     try {
-      let fp = Ext.getCmp('reviewForm' + idAppend)
-      Ext.getBody().mask('Saving...')
+      fp = Ext.getCmp('reviewForm' + idAppend)
+      fp.getEl().mask('Saving...')
+      // masktask = new Ext.util.DelayedTask(function(){
+      //   Ext.getBody().mask('Saving...')
+      // })
+      // masktask.delay(100)
 
       let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
       let jsonData = {
@@ -2086,7 +2068,10 @@ async function addReview(leaf, selectedRule, selectedResource) {
       Ext.Msg.alert('Fail', `Failed to update review.\n${e.message}`)
     }
     finally {
-      Ext.getBody().unmask()
+      // masktask.cancel()
+      fp.getEl().unmask()
+
+      // Ext.getBody().unmask()
     }
   } //end saveReview();
 

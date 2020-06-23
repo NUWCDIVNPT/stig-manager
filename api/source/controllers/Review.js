@@ -15,7 +15,7 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
     let body = req.swagger.params['body'].value
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       if (req.file) {
         let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
         if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
@@ -63,7 +63,7 @@ try {
     let ruleId = req.swagger.params['ruleId'].value
     let projection = req.swagger.params['projection'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       //TODO: For grants with accessLevel 1, check asset/rule is allowed
       let response = await Review.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject)
       writer.writeJson(res, response)
@@ -93,7 +93,7 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
     let ruleId = req.swagger.params['ruleId'].value
     let projection = req.swagger.params['projection'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
@@ -115,7 +115,7 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
     let projection = req.swagger.params['projection'].value
     let collectionId = req.swagger.params['collectionId'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
         assetId: req.swagger.params['assetId'].value,
@@ -143,7 +143,7 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
     let assetId = req.swagger.params['assetId'].value
     let projection = req.swagger.params['projection'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
@@ -172,7 +172,7 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
     let body = req.swagger.params['body'].value
     let projection = req.swagger.params['projection'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       // TODO For accessLevel 1, check asset/rule
       // if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
         let response = await Review.putReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
@@ -201,7 +201,7 @@ module.exports.putReviewsByAsset = async function (req, res, next) {
     let assetId = req.swagger.params['assetId'].value
     let reviews = req.swagger.params['body'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       // TODO For accessLevel 1, check asset/rules
       let response = await Review.putReviewsByAsset(assetId, reviews, req.userObject)
       writer.writeJson(res, response)
@@ -223,15 +223,11 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
     let body = req.swagger.params['body'].value
     let projection = req.swagger.params['projection'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
+    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       // TODO For accessLevel 1, check asset/rule
       // if (await dbUtils.userHasAssetRule(assetId, ruleId, false, req.userObject)) {
         let response = await Review.patchReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
-        if (response.status === 'created') {
-          writer.writeJson(res, response.row, 201)
-        } else {
-          writer.writeJson(res, response.row )
-        }
+        writer.writeJson(res, response )
       // }
       // else {
       //   throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
