@@ -342,7 +342,7 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
 			typeAhead: true,
 			minChars: 0,
             hideTrigger: false,
-            triggerAction: 'query',
+            triggerAction: this.triggerAction || 'query',
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
@@ -413,6 +413,7 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
         SM.StigSelectionField.superclass.initComponent.call(this)
     }
 })
+Ext.reg('sm-stig-selection-field', SM.StigSelectionField)
 
 SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {

@@ -326,6 +326,15 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                   //   leaf: true
                   // },
                   {
+                    id: `${collection.collectionId}-findings-node`,
+                    text: 'Findings',
+                    collectionId: collection.collectionId,
+                    collectionName: collection.name,
+                    iconCls: 'sm-report-icon',
+                    action: 'findings',
+                    leaf: true
+                  },
+                  {
                     id: `${collection.collectionId}-assets-node`,
                     node: 'assets',
                     text: 'Assets',
@@ -505,6 +514,9 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
         if (n.attributes.action == 'import') {
           uploadArchive(n);
+        }
+        if (n.attributes.action == 'findings') {
+          addFindingsSummary(n.attributes.collectionId, n.attributes.collectionName);
         }
         if (n.attributes.action == 'collection-create') {
           let collectionRootNode = n.parentNode

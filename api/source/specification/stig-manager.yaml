@@ -218,6 +218,7 @@ paths:
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/FindingAggregatorQuery'
       - name: acceptedOnly
         in: query
         schema:
@@ -229,7 +230,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return the Findings for the specified Collection
+      summary: Return the Findings for the specified Collection aggregated by groupId
       operationId: getFindingsByCollection
       responses:
         '200':
@@ -2970,6 +2971,17 @@ components:
         (canAdmin)
       schema:
         type: boolean
+    FindingAggregatorQuery:
+      name: aggregator
+      required: true
+      in: query 
+      description: Aggregate the findings on this property
+      schema:
+        type: string
+        enum:
+          - ruleId
+          - groupId
+          - cci
     FindingProjectionQuery:
       name: projection
       in: query
@@ -2982,6 +2994,8 @@ components:
           type: string
           enum:
             - assets
+            - groups
+            - rules
             - stigs
             - ccis
             - poamRarSummary

@@ -216,13 +216,13 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
 
   if ( inProjection && inProjection.includes('cci') ) {
     columns.push(`(select json_arrayagg(json_object(
-      'cci', rgrc.cci,
-      'ap', cci.apAcronym,
+      'cci', rc.cci,
+      'apAcronym', cci.apAcronym,
       'control',  cr.indexDisa)) 
-      from rev_group_rule_cci_map rgrc 
-      left join cci cci on rgrc.cci = cci.cci
+      from rule_cci_map rc 
+      left join cci cci on rc.cci = cci.cci
       left join cci_reference_map cr on cci.cci = cr.cci
-      where rgrc.rgrId = rgr.rgrId) as "ccis"`)
+      where rc.ruleId = r.ruleId) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
@@ -430,24 +430,11 @@ exports.insertManualBenchmark = async function (b) {
            ) AS tt
         WHERE rg.revId = :revId`
       },
-      revGroupRuleCciMap: {
-        sql: `INSERT IGNORE INTO rev_group_rule_cci_map
-        (rgrId, cci)
-        SELECT 
-          rgr.rgrId,
-          tt.cci
-        FROM
-          rev_group_map rg,
-          rev_group_rule_map rgr,
-          JSON_TABLE(
-            rgr.ccis,
-            "$[*]" COLUMNS(
-				      cci VARCHAR(60) PATH "$"
-			      )
-          ) AS tt
-		    WHERE 
-          rg.revId = :revId
-          AND rg.rgId=rgr.rgId`
+      ruleCciMap: {
+        sql: `INSERT IGNORE INTO rule_cci_map
+        (ruleId, cci)
+        VALUES ?`,
+        binds: []
       },
       revGroupRuleCheckMap: {
         sql: `INSERT IGNORE INTO rev_group_rule_check_map
@@ -554,7 +541,7 @@ exports.insertManualBenchmark = async function (b) {
 
         idents.forEach(ident => {
           if (ident.system === 'http://iase.disa.mil/cci' || ident.system === 'http://cyber.mil/cci') {
-            identsMap.push(ident.ident.replace('CCI-',''))
+            dml.ruleCciMap.binds.push([rule.ruleId, ident.ident.replace('CCI-','')])
           }
         })
 
@@ -578,8 +565,6 @@ exports.insertManualBenchmark = async function (b) {
 
       // TABLE: rev_group_rule_map
       dml.revGroupRuleMap.binds = { revId: revisionBinds.revId }
-      // TABLE: rev_group_rule_cci_map
-      dml.revGroupRuleCciMap.binds = { revId: revisionBinds.revId }
       // TABLE: rev_group_rule_check_map
       dml.revGroupRuleCheckMap.binds = { revId: revisionBinds.revId }
       // TABLE: rev_group_rule_fix_map
@@ -615,22 +600,75 @@ exports.insertManualBenchmark = async function (b) {
       'revGroupRuleMap',
       'revGroupRuleCheckMap',
       'revGroupRuleFixMap',
-      'revGroupRuleCciMap'
+      'ruleCciMap'
     ]
 
     for (const table of tableOrder) {
       hrstart = process.hrtime()
       if (Array.isArray(dml[table].binds)) {
         if (dml[table].binds.length === 0) { continue }
-        ;[result] = await connection.query(dml[table].sql, [dml[table].binds])
+        ;[result] = await connection.query(dml[ table ].sql, [ dml[ table ].binds ])
       }
       else {
-        ;[result] = await connection.query(dml[table].sql, dml[table].binds)
+        ;[result] = await connection.query(dml[ table ].sql, dml[ table ].binds)
       }
       hrend = process.hrtime(hrstart)
       stats[table] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     }
 
+    // Update current_rev
+    
+    let sqlUpdateCurrentRev = `INSERT IGNORE INTO current_rev (
+      revId,
+      benchmarkId,
+      \`version\`, 
+      \`release\`, 
+      benchmarkDate,
+      benchmarkDateSql,
+      status,
+      statusDate,
+      description,
+      active)
+      SELECT 
+        revId,
+        benchmarkId,
+        \`version\`,
+        \`release\`,
+        benchmarkDate,
+        benchmarkDateSql,
+        status,
+        statusDate,
+        description,
+        active
+      FROM
+        v_current_rev
+      WHERE
+        v_current_rev.benchmarkId = ?`
+    hrstart = process.hrtime()
+    ;[result] = await connection.query(sqlUpdateCurrentRev, [ dml.stig.binds.benchmarkId ])
+    hrend = process.hrtime(hrstart)
+    stats['currentRev'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    // update current_group_rule
+    let sqlDeleteCurrentGroupRule = 'DELETE FROM current_group_rule WHERE benchmarkId = ?'
+    let sqlInsertCurrentGroupRule = `INSERT INTO current_group_rule (groupId, ruleId, benchmarkId)
+      SELECT rg.groupId,
+        rgr.ruleId,
+        cr.benchmarkId
+      from
+        current_rev cr
+        left join rev_group_map rg on rg.revId=cr.revId
+        left join rev_group_rule_map rgr on rgr.rgId=rg.rgId
+      where
+        cr.benchmarkId = ?
+      order by
+        rg.groupId,rgr.ruleId,cr.benchmarkId`
+      hrstart = process.hrtime()
+      ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
+      ;[result] = await connection.query(sqlInsertCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
+      hrend = process.hrtime(hrstart)
+      stats['currentGroupRule'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+      
     hrend = process.hrtime(totalstart)
     stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 

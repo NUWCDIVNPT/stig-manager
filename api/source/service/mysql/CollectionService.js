@@ -125,7 +125,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
   }
 }
 
-exports.queryFindings = async function (inProjection = [], inPredicates = {}, userObject) {
+exports.queryFindings = async function (aggregator, inProjection = [], inPredicates = {}, userObject) {
   try {
     let context
     if (userObject.privileges.globalAccess) {
@@ -134,53 +134,95 @@ exports.queryFindings = async function (inProjection = [], inPredicates = {}, us
       context = dbUtils.CONTEXT_USER
     }
 
-    let columns = [
-      'ru.ruleId',
-      'ru.title as ruleTitle',
-      'rg.groupId',
-      'gr.title as groupTitle',
-      'ru.severity',
-      'count(distinct a.name) as "assetCount"'
-    ]
+    let columns, groupBy, orderBy
+    switch (aggregator) {
+      case 'ruleId':
+        columns = [
+          'ru.ruleId',
+          'ru.severity',
+          'ru.title'
+        ]
+        groupBy = [
+          'ru.ruleId',
+          'ru.title'
+        ]
+        orderBy = 'ru.ruleId'
+        break
+      case 'groupId':
+        columns = [
+          'g.groupId',
+          'g.title'
+        ]
+        groupBy = [
+          'g.groupId',
+          'g.title'
+        ]
+        orderBy = 'substring(rg.groupId from 3) + 0'
+        break
+      case 'cci':
+        columns = [
+          'cci.cci',
+          'cci.apAcronym',
+          'cci.definition'
+        ]
+        groupBy = [
+          'cci.cci',
+          'cci.apAcronym',
+          'cci.definition'
+        ]
+        orderBy = 'cci.cci'
+        break
+    }
     let joins = [
-      'asset a',
-      'left join collection p on a.collectionId = p.collectionId',
-      'left join collection_grant pg on p.collectionId = pg.collectionId',
-      'left join stig_asset_map sa on a.assetId = sa.assetId',
+      'collection c',
+      'left join asset a on c.collectionId = a.collectionId',
+      'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
-      'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
-      'left join rev_group_map rg on cr.revId = rg.revId',
-      'left join rev_group_rule_map rgr on rg.rgId = rgr.rgId', 
-      'left join rule ru on ru.ruleId=rgr.ruleId',
-      'left join `group` gr on gr.groupId=rg.groupId',
-      'left join review rv on (rv.assetId=a.assetId and rv.ruleId=ru.ruleId)'
+      'inner join current_rev cr on sa.benchmarkId = cr.benchmarkId',
+      'inner join rev_group_map rg on cr.revId = rg.revId',
+      'inner join `group` g on rg.groupId = g.groupId',
+      'inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId',
+      'inner join rule ru on rgr.ruleId = ru.ruleId',
+      'inner join review rv on (ru.ruleId = rv.ruleId and a.assetId = rv.assetId and rv.resultId = 4)',
+      'left join rule_cci_map rulecci on ru.ruleId = rulecci.ruleId',
+      'left join cci on rulecci.cci = cci.cci'
     ]
 
     // PROJECTIONS
+    if (inProjection.includes('rules')) {
+      columns.push(`cast(concat('[', group_concat(distinct json_object (
+        'ruleId', ru.ruleId,
+        'severity', ru.severity,
+        'title', ru.title) order by ru.ruleId), ']') as json) as "rules"`)
+    }
+    if (inProjection.includes('groups')) {
+      columns.push(`cast(concat('[', group_concat(distinct json_object (
+        'groupId', g.groupId,
+        'title', g.title) order by g.groupId), ']') as json) as "groups"`)
+    }
     if (inProjection.includes('assets')) {
-      columns.push(`cast( concat( '[', group_concat(distinct 
-        json_object (
-          'assetId', a.assetId,
-          'name', a.name
-        )), ']' ) as json ) as "assets"`)
+      columns.push(`cast(concat('[', group_concat(distinct json_object (
+        'assetId', a.assetId,
+        'name', a.name) order by a.name), ']') as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
       columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
     }
     if (inProjection.includes('ccis')) {
-      joins.push('left join rule_cci_map rc on ru.ruleId = rc.ruleId')
-      columns.push(`cast( concat( '[', group_concat(distinct concat('"',rc.cci,'"')), ']' ) as json ) as "ccis"`)
+      columns.push(`cast(concat('[', group_concat(distinct json_object (
+        'cci', rulecci.cci,
+        'definition', cci.definition,
+        'apAcronym', cci.apAcronym) order by rulecci.cci), ']') as json) as "ccis"`)
     }
-
 
     // PREDICATES
     let predicates = {
-      statements: ['rv.resultId = ?'],
-      binds: [4]
+      statements: [],
+      binds: []
     }
     
     if ( inPredicates.collectionId ) {
-      predicates.statements.push('a.collectionId = ?')
+      predicates.statements.push('c.collectionId = ?')
       predicates.binds.push( inPredicates.collectionId )
     }
     if ( inPredicates.assetId ) {
@@ -202,13 +244,13 @@ exports.queryFindings = async function (inProjection = [], inPredicates = {}, us
     // CONSTRUCT MAIN QUERY
     let sql = 'SELECT '
     sql+= columns.join(",\n")
-    sql += ' FROM '
+    sql += '\nFROM '
     sql+= joins.join(" \n")
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by ru.ruleId, ru.title, rg.groupId, gr.title, ru.severity'
-    sql += ` order by substring(rg.groupId from 3) + 0`
+    sql += '\ngroup by ' + groupBy.join(',')
+    sql += '\norder by ' + orderBy
     
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)
@@ -505,9 +547,9 @@ exports.getCollections = async function(predicates, projection, elevate, userObj
   }
 }
 
-exports.getFindingsByCollection = async function( collectionId, benchmarkId, assetId, acceptedOnly, projection, userObject ) {
+exports.getFindingsByCollection = async function( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, userObject ) {
   try {
-    let rows = await _this.queryFindings(projection, { 
+    let rows = await _this.queryFindings(aggregator, projection, { 
       collectionId: collectionId,
       benchmarkId: benchmarkId,
       assetId: assetId,

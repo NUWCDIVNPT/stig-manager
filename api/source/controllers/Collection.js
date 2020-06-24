@@ -100,13 +100,14 @@ module.exports.getCollections = async function getCollections (req, res, next) {
 module.exports.getFindingsByCollection = async function getFindingsByCollection (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value
+    const aggregator = req.swagger.params['aggregator'].value
     const benchmarkId = req.swagger.params['benchmarkId'].value
     const assetId = req.swagger.params['assetId'].value
     const acceptedOnly = req.swagger.params['acceptedOnly'].value
     const projection = req.swagger.params['projection'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
-      const response = await Collection.getFindingsByCollection( collectionId, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
+      const response = await Collection.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
       writer.writeJson(res, response)
       }
     else {
