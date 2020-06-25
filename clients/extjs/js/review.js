@@ -1905,11 +1905,16 @@ async function addReview(leaf, selectedRule, selectedResource) {
     }
   ];
 
-  var thisTab = Ext.getCmp('reviews-center-tab').add({
+  let reviewTab = new Ext.Panel ({
     id: 'reviewTab' + idAppend,
+    collectionId: leaf.collectionId,
+    collectionName: apiCollection.name,
+    assetName: leaf.assetName,
+    stigName: leaf.stigName,
     iconCls: 'sm-stig-icon',
     //title: '<img src=/icons/security_firewall_on.png height=12 width=12> ' + leaf.stigName + ' (' + leaf.assetName + ')',
-    title: `${apiCollection.name} : ${leaf.assetName} : ${leaf.stigName}`,
+    // title: `${apiCollection.name} : ${leaf.assetName} : ${leaf.stigName}`,
+    title: ' ',
     closable: true,
     layout: 'border',
     sm_TabType: 'asset_review',
@@ -1957,7 +1962,19 @@ async function addReview(leaf, selectedRule, selectedResource) {
         }
       }
     }
-  });
+  })
+  reviewTab.updateTitle = function () {
+    reviewTab.setTitle(`${reviewTab.collectionName} : ${reviewTab.assetName} : ${reviewTab.stigName}`)
+  }
+  reviewTab.addListener('collectionchanged', change => {
+    if (change.name) {
+      reviewTab.collectionName = change.name
+      reviewTab.updateTitle()
+    }
+  })
+
+  var thisTab = Ext.getCmp('reviews-center-tab').add(reviewTab);
+  reviewTab.updateTitle()
   thisTab.show();
 
   groupGrid.getStore().load();

@@ -128,7 +128,8 @@ CREATE TABLE `collection` (
   `name` varchar(45) NOT NULL,
   `workflow` varchar(45) NOT NULL,
   `metadata` json NOT NULL,
-  PRIMARY KEY (`collectionId`)
+  PRIMARY KEY (`collectionId`),
+  UNIQUE KEY `index2` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

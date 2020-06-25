@@ -145,7 +145,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             listeners: {
                 load: function (store,records) {
-                    me.totalTextCmp.setText(records.length + ' records');
+                    me.totalTextCmp.setText(store.getCount() + ' records');
                 },
                 remove: function (store,record,index) {
                     me.totalTextCmp.setText(store.getCount() + ' records');
@@ -285,8 +285,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     },{
                         xtype: 'exportbutton',
                         hasMenu: false,
-                        gridBasename: 'Vendors (grid)',
-                        storeBasename: 'Vendors (store)',
+                        gridBasename: 'Assets (grid)',
+                        storeBasename: 'Assets (store)',
                         iconCls: 'icon-save',
                         text: 'Export'
                     },{
@@ -304,6 +304,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
     }   
 })
+Ext.reg('sm-collection-asset-grid', SM.CollectionAssetGrid)
+
 
 SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {

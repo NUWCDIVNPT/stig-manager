@@ -170,8 +170,8 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     },{
                         xtype: 'exportbutton',
                         hasMenu: false,
-                        gridBasename: 'Vendors (grid)',
-                        storeBasename: 'Vendors (store)',
+                        gridBasename: 'STIGs (grid)',
+                        storeBasename: 'STIGs (store)',
                         iconCls: 'icon-save',
                         text: 'Export'
                     },{

@@ -323,7 +323,7 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
       let sqlDeleteGrants = 'DELETE FROM collection_grant where collectionId = ?'
       await connection.execute(sqlDeleteGrants, [collectionId])
     }
-    if (grants.length > 0) {
+    if (grants && grants.length > 0) {
       // INSERT into collection_grant
       let sqlInsertGrants = `
         INSERT INTO 

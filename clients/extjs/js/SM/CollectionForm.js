@@ -611,7 +611,69 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
 
 SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
 // SM.CollectionPanel = Ext.extend(Ext.Panel, {
-        initComponent: function() {
+    initComponent: function() {
+        let me = this
+        let nameField = new Ext.form.TextField({
+            fieldLabel: 'Name',
+            name: 'name',
+            allowBlank: false,
+            anchor:'100%',
+            listeners: {
+                change: async (field, newValue, oldValue) => {
+                    try {
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                            method: 'PATCH',
+                            jsonData: {
+                                name: newValue
+                            }
+                        })
+                        // let apiCollection = JSON.parse(result.response.responseText)
+                        SM.Dispatcher.fireEvent('collectionchanged', {
+                            collectionId: me.collectionId,
+                            name: newValue
+                        })
+
+                        // alert (result.response.responseText)
+                    }
+                    catch (e) {
+                        alert ("Name update failed")
+                        field.setValue(oldValue)
+                    }
+                }
+            }            
+        })
+        let workflowCombo = new SM.WorkflowComboBox({
+            fieldLabel: 'Workflow',
+            name: 'workflow',
+            margins: '0 10 0 0',
+            width: 200,
+            listeners: {
+                beforeselect: async (combo, record, index) => {
+                    try {
+                        if (combo.getValue() !== record.data.value) {
+                            // value has changed
+                            let result = await Ext.Ajax.requestPromise({
+                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                                method: 'PATCH',
+                                jsonData: {
+                                    workflow: record.data.value
+                                }
+                            })
+                            SM.Dispatcher.fireEvent('collectionchanged', {
+                                collectionId: me.collectionId,
+                                workflow: record.data.value
+                            })
+                        }
+                        return true
+                    }
+                    catch (e) {
+                        alert ("Workflow update failed")
+                        return false
+                    }
+                }
+            }            
+        })
         let config = {
             // baseCls: 'x-plain',
             // border: false,
@@ -643,19 +705,23 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                     xtype: 'fieldset',
                     title: '<b>Collection properties</b>',
                     items: [
+                        nameField,
+                        workflowCombo,
+                        // {
+                        //     xtype: 'textfield',
+                        //     fieldLabel: 'Name',
+                        //     name: 'name',
+                        //     allowBlank: false,
+                        //     anchor:'100%'  // anchor width by percentage
+                        // },
+                        // {
+                        //     xtype: 'sm-workflow-combo',
+                        //     fieldLabel: 'Workflow',
+                        //     name: 'workflow',
+                        //     margins: '0 10 0 0',
+                        //     width: 200
+                        // },
                         {
-                            xtype: 'textfield',
-                            fieldLabel: 'Name',
-                            name: 'name',
-                            allowBlank: false,
-                            anchor:'100%'  // anchor width by percentage
-                        },{
-                            xtype: 'sm-workflow-combo',
-                            fieldLabel: 'Workflow',
-                            name: 'workflow',
-                            margins: '0 10 0 0',
-                            width: 200
-                        },{
                             xtype: 'sm-metadata-grid',
                             fieldLabel: 'Metadata',
                             name: 'metadata',

@@ -2,178 +2,178 @@ Ext.ns('SM')
 
 SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     initComponent: function() {
-        let me = this
-        let config = {
-            id: 'app-nav-tree',
-            contextMenu: new Ext.menu.Menu({
-              items: [{
-                id: 'open-collection-review',
-                text: 'Open Approval workspace',
-                iconCls: 'sm-application-go-icon'
-              }
-                , {
-                id: 'open-poam-workspace',
-                text: 'Open POAM/RAR workspace',
-                iconCls: 'sm-application-go-icon'
-              }
-                , {
-                id: 'app-nav-tree-separator-1',
-                xtype: 'menuseparator'
-              }
-                , {
-                id: 'open-hbss-control',
-                text: 'Disable HBSS SCAP imports...',
-                iconCls: 'sm-list-remove-16-icon'
-              }
-                , {
-                id: 'app-nav-tree-separator-2',
-                xtype: 'menuseparator'
-              }
-                , {
-                id: 'unlock-all-collection-reviews',
-                text: 'Reset reviews...',
-                iconCls: 'sm-unlock-icon'
-              }
-                , {
-                id: 'app-nav-tree-separator-3',
-                xtype: 'menuseparator'
-              }
-                , {
-                id: 'unlock-collection-stig-reviews',
-                text: 'Reset reviews...',
-                iconCls: 'sm-unlock-icon'
-              }, {
-                id: 'app-nav-tree-separator-4',
-                xtype: 'menuseparator'
-              }
-                , {
-                id: 'unlock-collection-asset-reviews',
-                text: 'Reset reviews...',
-                iconCls: 'sm-unlock-icon'
-              }
-        
-              ],
-              listeners: {
-                itemclick: function (item) {
-                  var n = item.parentMenu.contextNode;
-                  switch (item.id) {
-                    case 'open-collection-review':
-                      openCollectionReview(n);
-                      break;
-                    case 'open-poam-workspace':
-                      openPoamWorkspace(n);
-                      break;
-                    case 'open-hbss-control':
-                      openHbssControl(n);
-                      break;
-                    case 'unlock-all-collection-reviews':
-                      //====================================================
-                      //RESET ALL REVIEWS FOR PACKAGE AFTER PROMPTING USER.
-                      //====================================================
-                      var unlockObject = new Object;
-                      getUnlockInfo(n, unlockObject);
-                      getUnlockPrompt("PACKAGE", unlockObject, undefined);
-                      break;
-                    case 'unlock-collection-stig-reviews':
-                      //====================================================
-                      //RESET ALL REVIEWS FOR THE STIG IN SPECIFIC PACKAGE.
-                      //====================================================
-                      var unlockObject = new Object;
-                      getUnlockInfo(n, unlockObject);
-                      getUnlockPrompt("STIG", unlockObject, undefined);
-                      break;
-                    case 'unlock-collection-asset-reviews':
-                      //====================================================
-                      //UNLOCK ALL REVIEWS FOR ASSET IN SPECIFIC PACKAGE.
-                      //====================================================
-                      var unlockObject = new Object;
-                      getUnlockInfo(n, unlockObject);
-                      getUnlockPrompt("ASSET", unlockObject, undefined);
-                      break;
-                  }
-                }
-              }
-            }),
-            autoScroll: true,
-            split: true,
-            collapsible: true,
-            title: '<span onclick="window.keycloak.logout()">' + curUser.display + ' - Logout</span>',
-            bodyStyle: 'padding:5px;',
-            width: me.width || 280,
-            minSize: 220,
-            root: {
-              nodeType: 'async',
-              id: 'stigman-root',
-              expanded: true
-            },
-            rootVisible: false,
-            loader: new Ext.tree.TreeLoader({
-              directFn: me.loadTree
-            }),
-            loadMask: 'Loading...',
+      let me = this
+      let config = {
+          id: 'app-nav-tree',
+          contextMenu: new Ext.menu.Menu({
+            items: [{
+              id: 'open-collection-review',
+              text: 'Open Approval workspace',
+              iconCls: 'sm-application-go-icon'
+            }
+              , {
+              id: 'open-poam-workspace',
+              text: 'Open POAM/RAR workspace',
+              iconCls: 'sm-application-go-icon'
+            }
+              , {
+              id: 'app-nav-tree-separator-1',
+              xtype: 'menuseparator'
+            }
+              , {
+              id: 'open-hbss-control',
+              text: 'Disable HBSS SCAP imports...',
+              iconCls: 'sm-list-remove-16-icon'
+            }
+              , {
+              id: 'app-nav-tree-separator-2',
+              xtype: 'menuseparator'
+            }
+              , {
+              id: 'unlock-all-collection-reviews',
+              text: 'Reset reviews...',
+              iconCls: 'sm-unlock-icon'
+            }
+              , {
+              id: 'app-nav-tree-separator-3',
+              xtype: 'menuseparator'
+            }
+              , {
+              id: 'unlock-collection-stig-reviews',
+              text: 'Reset reviews...',
+              iconCls: 'sm-unlock-icon'
+            }, {
+              id: 'app-nav-tree-separator-4',
+              xtype: 'menuseparator'
+            }
+              , {
+              id: 'unlock-collection-asset-reviews',
+              text: 'Reset reviews...',
+              iconCls: 'sm-unlock-icon'
+            }
+      
+            ],
             listeners: {
-              click: me.treeClick,
-              contextmenu: function (node, e) {
-                //          Register the context node with the menu so that a Menu Item's handler function can access
-                //          it via its parentMenu property.
-                node.select();
-                //===============================================
-                //HIDE ALL BATCH RESET OPTIONS FROM THE ONSET
-                //===============================================
-                Ext.getCmp('open-collection-review').hide();
-                Ext.getCmp('open-poam-workspace').hide();
-                Ext.getCmp('app-nav-tree-separator-1').hide();
-                Ext.getCmp('open-hbss-control').hide();
-                Ext.getCmp('app-nav-tree-separator-2').hide();
-                Ext.getCmp('unlock-all-collection-reviews').hide();
-                Ext.getCmp('app-nav-tree-separator-3').hide();
-                Ext.getCmp('unlock-collection-stig-reviews').hide();
-                Ext.getCmp('app-nav-tree-separator-4').hide();
-                Ext.getCmp('unlock-collection-asset-reviews').hide();
-        
-                if ((node.attributes.node === 'collection' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.privileges.canAdmin)) {
-                  var c = node.getOwnerTree().contextMenu;
-                  c.contextNode = node;
-                  if (node.attributes.node == 'collection') {
-                    Ext.getCmp('open-poam-workspace').show();   //Open Poam workspace
-                    Ext.getCmp('app-nav-tree-separator-1').show(); //Disable HBSS SCAP Imports
-                    Ext.getCmp('open-hbss-control').show();
-                    if (curUser.accessLevel === 3) { //Staff
-                      //===============================================
-                      //Include collection-accessLevel reset options
-                      //===============================================
-                      Ext.getCmp('app-nav-tree-separator-2').show();
-                      Ext.getCmp('unlock-all-collection-reviews').show();
-                    }
-                    c.showAt(e.getXY());
-                  } else if (node.attributes.report == 'stig') {
-                    Ext.getCmp('open-collection-review').show(); //Open Approval Workspace
-                    Ext.getCmp('open-poam-workspace').show();
-                    if (curUser.accessLevel === 3) {
-                      //===============================================
-                      //Include STIG-accessLevel unlock options
-                      //===============================================
-                      Ext.getCmp('app-nav-tree-separator-3').show();
-                      Ext.getCmp('unlock-collection-stig-reviews').show();
-                    }
-                    c.showAt(e.getXY());
-                  } else {
-                    if (curUser.accessLevel === 3) {
-                      //===============================================
-                      //Include ASSET-accessLevel reset options
-                      //===============================================
-                      Ext.getCmp('unlock-collection-asset-reviews').show();
-                      c.showAt(e.getXY());
-                    }
-                  }
+              itemclick: function (item) {
+                var n = item.parentMenu.contextNode;
+                switch (item.id) {
+                  case 'open-collection-review':
+                    openCollectionReview(n);
+                    break;
+                  case 'open-poam-workspace':
+                    openPoamWorkspace(n);
+                    break;
+                  case 'open-hbss-control':
+                    openHbssControl(n);
+                    break;
+                  case 'unlock-all-collection-reviews':
+                    //====================================================
+                    //RESET ALL REVIEWS FOR PACKAGE AFTER PROMPTING USER.
+                    //====================================================
+                    var unlockObject = new Object;
+                    getUnlockInfo(n, unlockObject);
+                    getUnlockPrompt("PACKAGE", unlockObject, undefined);
+                    break;
+                  case 'unlock-collection-stig-reviews':
+                    //====================================================
+                    //RESET ALL REVIEWS FOR THE STIG IN SPECIFIC PACKAGE.
+                    //====================================================
+                    var unlockObject = new Object;
+                    getUnlockInfo(n, unlockObject);
+                    getUnlockPrompt("STIG", unlockObject, undefined);
+                    break;
+                  case 'unlock-collection-asset-reviews':
+                    //====================================================
+                    //UNLOCK ALL REVIEWS FOR ASSET IN SPECIFIC PACKAGE.
+                    //====================================================
+                    var unlockObject = new Object;
+                    getUnlockInfo(n, unlockObject);
+                    getUnlockPrompt("ASSET", unlockObject, undefined);
+                    break;
                 }
-              },
-              beforeexpandnode: function (n) {
-                n.loaded = false; // always reload from the server
               }
             }
-        }
-        config.onCollectionCreated = function (collection) {
+          }),
+          autoScroll: true,
+          split: true,
+          collapsible: true,
+          title: '<span onclick="window.keycloak.logout()">' + curUser.display + ' - Logout</span>',
+          bodyStyle: 'padding:5px;',
+          width: me.width || 280,
+          minSize: 220,
+          root: {
+            nodeType: 'async',
+            id: 'stigman-root',
+            expanded: true
+          },
+          rootVisible: false,
+          loader: new Ext.tree.TreeLoader({
+            directFn: me.loadTree
+          }),
+          loadMask: 'Loading...',
+          listeners: {
+            click: me.treeClick,
+            contextmenu: function (node, e) {
+              //          Register the context node with the menu so that a Menu Item's handler function can access
+              //          it via its parentMenu property.
+              node.select();
+              //===============================================
+              //HIDE ALL BATCH RESET OPTIONS FROM THE ONSET
+              //===============================================
+              Ext.getCmp('open-collection-review').hide();
+              Ext.getCmp('open-poam-workspace').hide();
+              Ext.getCmp('app-nav-tree-separator-1').hide();
+              Ext.getCmp('open-hbss-control').hide();
+              Ext.getCmp('app-nav-tree-separator-2').hide();
+              Ext.getCmp('unlock-all-collection-reviews').hide();
+              Ext.getCmp('app-nav-tree-separator-3').hide();
+              Ext.getCmp('unlock-collection-stig-reviews').hide();
+              Ext.getCmp('app-nav-tree-separator-4').hide();
+              Ext.getCmp('unlock-collection-asset-reviews').hide();
+      
+              if ((node.attributes.node === 'collection' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.privileges.canAdmin)) {
+                var c = node.getOwnerTree().contextMenu;
+                c.contextNode = node;
+                if (node.attributes.node == 'collection') {
+                  Ext.getCmp('open-poam-workspace').show();   //Open Poam workspace
+                  Ext.getCmp('app-nav-tree-separator-1').show(); //Disable HBSS SCAP Imports
+                  Ext.getCmp('open-hbss-control').show();
+                  if (curUser.accessLevel === 3) { //Staff
+                    //===============================================
+                    //Include collection-accessLevel reset options
+                    //===============================================
+                    Ext.getCmp('app-nav-tree-separator-2').show();
+                    Ext.getCmp('unlock-all-collection-reviews').show();
+                  }
+                  c.showAt(e.getXY());
+                } else if (node.attributes.report == 'stig') {
+                  Ext.getCmp('open-collection-review').show(); //Open Approval Workspace
+                  Ext.getCmp('open-poam-workspace').show();
+                  if (curUser.accessLevel === 3) {
+                    //===============================================
+                    //Include STIG-accessLevel unlock options
+                    //===============================================
+                    Ext.getCmp('app-nav-tree-separator-3').show();
+                    Ext.getCmp('unlock-collection-stig-reviews').show();
+                  }
+                  c.showAt(e.getXY());
+                } else {
+                  if (curUser.accessLevel === 3) {
+                    //===============================================
+                    //Include ASSET-accessLevel reset options
+                    //===============================================
+                    Ext.getCmp('unlock-collection-asset-reviews').show();
+                    c.showAt(e.getXY());
+                  }
+                }
+              }
+            },
+            beforeexpandnode: function (n) {
+              n.loaded = false; // always reload from the server
+            }
+          }
+      }
+      this.onCollectionCreated = function (collection) {
           let newNode = {
             id: `${collection.collectionId}-collection-node`,
             node: 'collection',
@@ -230,20 +230,35 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
           collectionRoot.sort(sortFn)
       }
-      config.onAssetChanged = (apiAsset) => {
+      this.onAssetChanged = (apiAsset) => {
         let collectionRoot = this.getNodeById('collections-root')
         let assetNode = collectionRoot.findChild('assetId', apiAsset.assetId, true)
         if (assetNode) {
           assetNode.setText(apiAsset.name)
         }
-       }
-
+      }
+      this.onCollectionChanged = function (changes) {
+        if ('name' in changes) {
+          let collectionRoot = me.getNodeById('collections-root')
+          let collectionNode = collectionRoot.findChild('id', `${changes.collectionId}-collection-node`, true)
+          if (collectionNode) {
+            collectionNode.setText(changes.name)
+            collectionNode.collectionName = changes.name
+            collectionNode.eachChild( child => {
+              if (child.attributes.collectionName) {
+                child.attributes.collectionName = changes.name
+              }
+            })
+          }
+        }
+      }
       Ext.apply(this, Ext.apply(this.initialConfig, config))
       SM.AppNavTree.superclass.initComponent.call(this)
 
       // Attach handlers for app events
-      SM.Dispatcher.addListener('collectioncreated', me.onCollectionCreated)
-      SM.Dispatcher.addListener('assetchanged', me.onAssetChanged, me)
+      SM.Dispatcher.addListener('collectioncreated', this.onCollectionCreated)
+      SM.Dispatcher.addListener('collectionchanged', this.onCollectionChanged)
+      SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, me)
 
     },
     loadTree: async function (node, cb) {

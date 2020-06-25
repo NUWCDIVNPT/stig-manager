@@ -34,10 +34,11 @@ async function addCollectionManager( collectionId, collectionName ) {
 			title: 'STIGs',
 			region: 'center'
 		})
-		let thisTab = Ext.getCmp('reviews-center-tab').add({
+		let managerTab = new Ext.Panel({
 			id: `${collectionId}-collection-manager-tab`,
+			collectionId: collectionId,
+			collectionName: collectionName,
 			iconCls: 'sm-collection-icon',
-			title: `${collectionName} : Configuration`,
 			closable: true,
 			layout: 'border',
 			items: [
@@ -63,7 +64,20 @@ async function addCollectionManager( collectionId, collectionName ) {
 				}
 			]
 		})
-	
+		managerTab.updateTitle = function () {
+			managerTab.setTitle(`${managerTab.collectionName} : Configuration`)
+		}
+		managerTab.addListener('collectionchanged', change => {
+		if (change.name) {
+			managerTab.collectionName = change.name
+			managerTab.updateTitle()
+		}
+		})
+		
+
+		let thisTab = Ext.getCmp('reviews-center-tab').add(managerTab)
+		managerTab.updateTitle()
+
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			params: {

@@ -23,7 +23,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         'workflow', p.workflow
       ) as "collection"`,
       'a.ip',
-      'a.nonnetwork'
+      'a.nonnetwork',
+      'a.metadata'
     ]
     let joins = [
       'asset a',

@@ -4,43 +4,52 @@ function getReviewItems() {
   let mainNavTree = new SM.AppNavTree({
     region: 'west'
   })
-
-  return [
-    mainNavTree,
-    {
-      region: 'center',
-      xtype: 'tabpanel',
-      plugins: new Ext.ux.TabCloseOnMiddleClick(),
-      id: 'reviews-center-tab',
-      title: 'STIGManager',
-      enableTabScroll: true,
-      activeTab: 0,
-      listeners: {
-        beforetabchange: function (tabPanel, newTab, currentTab) {
-          // For IE: Keep the panels in the same scroll position after tab changes
-          if (Ext.isIE) {
-            if (Ext.isDefined(currentTab)) {
-              if (currentTab.sm_TabType == 'asset_review') {
-                var vCur = currentTab.sm_GroupGridView;
-                vCur.scrollTop = vCur.scroller.dom.scrollTop;
-                vCur.scrollHeight = vCur.scroller.dom.scrollHeight;
-              }
+  let mainTabPanel = new Ext.TabPanel({
+    region: 'center',
+    plugins: new Ext.ux.TabCloseOnMiddleClick(),
+    id: 'reviews-center-tab',
+    title: 'STIGManager',
+    enableTabScroll: true,
+    activeTab: 0,
+    listeners: {
+      beforetabchange: function (tabPanel, newTab, currentTab) {
+        // For IE: Keep the panels in the same scroll position after tab changes
+        if (Ext.isIE) {
+          if (Ext.isDefined(currentTab)) {
+            if (currentTab.sm_TabType == 'asset_review') {
+              var vCur = currentTab.sm_GroupGridView;
+              vCur.scrollTop = vCur.scroller.dom.scrollTop;
+              vCur.scrollHeight = vCur.scroller.dom.scrollHeight;
             }
-            if (Ext.isDefined(newTab)) {
-              if (newTab.sm_TabType == 'asset_review') {
-                var vNew = newTab.sm_GroupGridView;
-                if (Ext.isDefined(vNew.scroller)) {
-                  setTimeout(function () {
-                    vNew.scroller.dom.scrollTop = vNew.scrollTop + (vNew.scrollTop == 0 ? 0 : vNew.scroller.dom.scrollHeight - vNew.scrollHeight);
-                  }, 100);
-                }
+          }
+          if (Ext.isDefined(newTab)) {
+            if (newTab.sm_TabType == 'asset_review') {
+              var vNew = newTab.sm_GroupGridView;
+              if (Ext.isDefined(vNew.scroller)) {
+                setTimeout(function () {
+                  vNew.scroller.dom.scrollTop = vNew.scrollTop + (vNew.scrollTop == 0 ? 0 : vNew.scroller.dom.scrollHeight - vNew.scrollHeight);
+                }, 100);
               }
             }
           }
         }
-      },
-      items: []
+      }
+    },
+    
+    items: []
+  })
+  mainTabPanel.onCollectionChanged = change => {
+    for (const tab of mainTabPanel.items.items) {
+      if (tab.collectionId === change.collectionId) {
+        tab.fireEvent('collectionchanged', change)
+      }
     }
+  }
+  SM.Dispatcher.addListener('collectionchanged', mainTabPanel.onCollectionChanged)
+
+  return [
+    mainNavTree,
+    mainTabPanel,
   ]
 }
 

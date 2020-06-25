@@ -6,6 +6,7 @@ SM.Dispatcher = new Ext.util.Observable()
 SM.Dispatcher.addEvents(
     'collectioncreated',
     'collectiondeleted',
+    'collectionchanged',
     'assetcreated',
     'assetdeleted',
     'assetchanged'
