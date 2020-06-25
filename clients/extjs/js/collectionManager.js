@@ -65,18 +65,10 @@ async function addCollectionManager( collectionId, collectionName ) {
 			]
 		})
 		managerTab.updateTitle = function () {
-			managerTab.setTitle(`${managerTab.collectionName} : Configuration`)
+			this.setTitle(`${this.collectionName} : Configuration`)
 		}
-		managerTab.addListener('collectionchanged', change => {
-		if (change.name) {
-			managerTab.collectionName = change.name
-			managerTab.updateTitle()
-		}
-		})
-		
-
 		let thisTab = Ext.getCmp('reviews-center-tab').add(managerTab)
-		managerTab.updateTitle()
+		managerTab.updateTitle.call(managerTab)
 
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,

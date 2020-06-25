@@ -387,12 +387,18 @@ function addFindingsSummary(collectionId, collectionName) {
 
 	var thisTab = Ext.getCmp('reviews-center-tab').add({
 		id: 'findingsTab-' + collectionId,
+		collectionId: collectionId,
+		collectionName: collectionName,
 		iconCls: 'sm-report-icon',
 		title: 'Findings Summary (' + collectionName + ')',
 		closable: true,
 		layout: 'border',
 		items: [findingsGrid, hostGrid]
 	});
+	thisTab.updateTitle = function () {
+		this.setTitle(`${this.collectionName} : Findings`)
+	}
+	thisTab.updateTitle.call(thisTab)
 	thisTab.show();
 
 	findingsGrid.getStore().load({

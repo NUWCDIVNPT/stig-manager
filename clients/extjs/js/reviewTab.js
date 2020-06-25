@@ -39,9 +39,12 @@ function getReviewItems() {
     items: []
   })
   mainTabPanel.onCollectionChanged = change => {
-    for (const tab of mainTabPanel.items.items) {
-      if (tab.collectionId === change.collectionId) {
-        tab.fireEvent('collectionchanged', change)
+    if (change.name) {
+      for (const tab of mainTabPanel.items.items) {
+        if (tab.collectionId === change.collectionId) {
+          tab.collectionName = change.name
+          tab.updateTitle.call(tab)
+        }
       }
     }
   }

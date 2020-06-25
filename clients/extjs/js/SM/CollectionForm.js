@@ -106,8 +106,8 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                             mc.keys[x] = record.id
                         }
                     }
+                    editor.grid.fireEvent('metadatachanged', editor.grid)
                 }
-
             }
         })
         this.totalTextCmp = new Ext.Toolbar.TextItem ({
@@ -140,6 +140,9 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                 restful: true,
                 idProperty: 'key',
                 listeners: {
+                    remove: (store, record, index) => {
+                        store.grid.fireEvent('metadatachanged', store.grid)
+                    }
                 }
             }),
             view: new Ext.grid.GridView({
@@ -182,7 +185,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                                     return true
                                 }
                                 if (v === "") { return "Blank values no allowed" }
-                                // Is there an item oin the store like me?
+                                // Is there an item in the store like me?
                                 let searchIdx = this.grid.store.findExact('key',v)
                                 // Is it me?
                                 let isMe = this.grid.selModel.isSelected(searchIdx)
@@ -674,6 +677,31 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }            
         })
+        let metadataGrid = new SM.MetadataGrid({
+            fieldLabel: 'Metadata',
+            name: 'metadata',
+            anchor: '100%, -56',
+            listeners: {
+                metadatachanged: async grid => {
+                    try {
+                        let data = grid.getValue()
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                            method: 'PATCH',
+                            jsonData: {
+                                metadata: data
+                            }
+                        })
+                        let collection = JSON.parse(result.response.responseText)
+                        grid.setValue(collection.metadata)
+                    }
+                    catch (e) {
+                        alert ('Metadata save failed')
+                    }
+                }
+            }
+
+        }) 
         let config = {
             // baseCls: 'x-plain',
             // border: false,
@@ -707,26 +735,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                     items: [
                         nameField,
                         workflowCombo,
-                        // {
-                        //     xtype: 'textfield',
-                        //     fieldLabel: 'Name',
-                        //     name: 'name',
-                        //     allowBlank: false,
-                        //     anchor:'100%'  // anchor width by percentage
-                        // },
-                        // {
-                        //     xtype: 'sm-workflow-combo',
-                        //     fieldLabel: 'Workflow',
-                        //     name: 'workflow',
-                        //     margins: '0 10 0 0',
-                        //     width: 200
-                        // },
-                        {
-                            xtype: 'sm-metadata-grid',
-                            fieldLabel: 'Metadata',
-                            name: 'metadata',
-                            anchor: '100%, -56'
-                        }
+                        metadataGrid
                     ]
                 }
             ],
