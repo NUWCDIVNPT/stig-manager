@@ -108,9 +108,9 @@ module.exports.getUserObject = async function (username) {
       CAST(ud.userId as char) as userId,
       ud.username,
       ud.display,
-      cast (ud.globalAccess is true as json) as globalAccess,
-      cast (ud.canCreateCollection is true as json) as canCreateCollection,
-      cast (ud.canAdmin is true as json) as canAdmin,
+      cast(ud.globalAccess is true as json) as globalAccess,
+      cast(ud.canCreateCollection is true as json) as canCreateCollection,
+      cast(ud.canAdmin is true as json) as canAdmin,
       CASE WHEN COUNT(pg.collectionId) > 0
         THEN 
           json_arrayagg(

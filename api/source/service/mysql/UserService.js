@@ -32,9 +32,9 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     // PROJECTIONS
     if (inProjection && inProjection.includes('privileges')) {
       columns.push(`json_object(
-          'globalAccess', cast (ud.globalAccess is true as json),
-          'canCreateCollection', cast (ud.canCreateCollection is true as json),
-          'canAdmin', cast (ud.canAdmin is true as json)
+          'globalAccess', cast(ud.globalAccess is true as json),
+          'canCreateCollection', cast(ud.canCreateCollection is true as json),
+          'canAdmin', cast(ud.canAdmin is true as json)
         ) as privileges`)
       groupBy.push(
         'ud.globalAccess',

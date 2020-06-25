@@ -25,13 +25,15 @@ function addFindingsSummary(collectionId, collectionName) {
 			},
 			root: '',
 			fields: [
+				{ name: 'severity', type: 'string' },
 				{ name: 'assetCount', type: 'int' },
 				{ name: 'stigs' },
 				{ name: 'groupId', type: 'string', sortType: sortGroupId },
 				{ name: 'ruleId', type: 'string' },
-				{ name: 'severity', type: 'string' },
-				{ name: 'ruleTitle', type: 'string' },
-				{ name: 'groupTitle', type: 'string' }
+				{ name: 'title', type: 'string' },
+				{ name: 'cci', type: 'string' },
+				{ name: 'definition', type: 'string' },
+				{ name: 'apAcronym', type: 'string' },
 			],
 			listeners: {
 				load: function (store, records) {
@@ -40,23 +42,87 @@ function addFindingsSummary(collectionId, collectionName) {
 			}
 		}),
 		columns: [
-			{ header: "Severity", align: 'center', width: 10, dataIndex: 'severity', sortable: true, renderer: renderSeverity },
-			{ header: "Group", width: 15, dataIndex: 'groupId', sortable: true },
-			{ header: "Rule Title", width: 45, dataIndex: 'ruleTitle', renderer: columnWrap, sortable: true, id: 'findingsGrid-' + collectionId + 'title' },
-			{ header: "# Assets", width: 15, align: 'right', dataIndex: 'assetCount', sortable: true },
+			{ 
+				header: "Severity", 
+				hidden: false,
+				align: 'center', 
+				width: 60, 
+				dataIndex: 'severity', 
+				sortable: true, 
+				renderer: renderSeverity
+			 },
+			 { 
+				header: "Group", 
+				hidden: false,
+				width: 80, 
+				dataIndex: 'groupId', 
+				sortable: true, 
+				id: 'findingsGrid-' + collectionId + 'groupId' 
+			},
+			{ 
+				header: "Rule", 
+				hidden: true,
+				width: 80, 
+				dataIndex: 'ruleId', 
+				sortable: true, 
+				id: 'findingsGrid-' + collectionId + 'ruleId' 
+			},
+			{ 
+				header: "CCI", 
+				hidden: true,
+				width: 80, 
+				dataIndex: 'cci', 
+				sortable: true, 
+				id: 'findingsGrid-' + collectionId + 'cci' 
+			},
+			{ 
+				header: "AP Acronym", 
+				hidden: true,
+				width: 80, 
+				dataIndex: 'apAcronym', 
+				sortable: true, 
+				id: 'findingsGrid-' + collectionId + 'apAcronym' 
+			},
+			{ 
+				header: "Title", 
+				hidden: false,
+				width: 270, 
+				dataIndex: 'title', 
+				renderer: columnWrap, 
+				sortable: true, 
+				id: 'findingsGrid-' + collectionId + 'title' 
+			},
+			{ 
+				header: "Definition", 
+				hidden: true,
+				width: 135, 
+				dataIndex: 'definition', 
+				renderer: columnWrap, 
+				sortable: true, 
+				id: 'findingsGrid-' + collectionId + 'definition' 
+			},
+			{ 
+				header: "Assets", 
+				hidden: false,
+				width: 75, 
+				align: 'center', 
+				dataIndex: 'assetCount', 
+				sortable: true 
+			},
 			{ 
 				header: "STIGs",
+				hidden: false,
 				width: 40, 
 				dataIndex: 'stigs', 
 				renderer: v => {
 					return columnWrap(v.join('\n'))
 				}, 
 				sortable: true, 
-				id: 'findingsGrid-' + collectionId + 'benchmarkIds'
+				id: 'findingsGrid-' + collectionId + 'stigs'
 			}
 			//{header: "Rule",width:25,dataIndex:'ruleId',sortable:true},
 		],
-		autoExpandColumn: 'findingsGrid-' + collectionId + 'benchmarkIds',
+		autoExpandColumn: 'findingsGrid-' + collectionId + 'stigs',
 		border: false,
 		style: {
 			borderBottomWidth: "1px"
@@ -64,7 +130,7 @@ function addFindingsSummary(collectionId, collectionName) {
 		loadMask: true,
 		stripeRows: true,
 		view: new Ext.grid.GridView({
-			forceFit: true,
+			forceFit: false,
 			emptyText: 'No records found.',
 			getRowClass: function (record, rowIndex, rp, ds) { // rp = rowParams
 				if (record.data.severity == 'high') {
@@ -108,7 +174,9 @@ function addFindingsSummary(collectionId, collectionName) {
 				, {
 					xtype: 'sm-stig-selection-field',
 					id: 'combo-stig' + idAppend,
-					width: 150,
+					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}?projection=stigs`,
+					root: 'stigs',
+					width: 300,
 					triggerAction: 'all',
 					allowBlank: true,
 					editable: false,
@@ -119,6 +187,7 @@ function addFindingsSummary(collectionId, collectionName) {
 							hostGrid.getStore().removeAll();
 							findingsGrid.getStore().load({
 								params: {
+									aggregator: 'groupId',
 									benchmarkId: r.data.benchmarkId
 								}
 							});
@@ -326,7 +395,11 @@ function addFindingsSummary(collectionId, collectionName) {
 	});
 	thisTab.show();
 
-	findingsGrid.getStore().load();
+	findingsGrid.getStore().load({
+		params: {
+			aggregator: 'groupId'
+		}
+	})
 
 }; //end addCompletionReport();
 

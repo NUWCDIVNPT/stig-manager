@@ -34,7 +34,7 @@ function loadScripts() {
         "js/RowEditor.js",
         "js/RowExpander.js",
         "js/SM/SelectingGridToolbar.js",
-        "js/SM/AppNavTree.js",
+        "js/SM/NavTree.js",
         "js/SM/RowEditorToolbar.js",
         "js/SM/CollectionForm.js",
         "js/SM/CollectionAsset.js",

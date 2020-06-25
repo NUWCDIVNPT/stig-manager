@@ -139,42 +139,49 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       case 'ruleId':
         columns = [
           'ru.ruleId',
+          'ru.title',
           'ru.severity',
-          'ru.title'
+          'count(distinct a.assetId) as assetCount'
         ]
         groupBy = [
           'ru.ruleId',
-          'ru.title'
+          'ru.title',
+          'ru.severity'
         ]
         orderBy = 'ru.ruleId'
         break
       case 'groupId':
         columns = [
           'g.groupId',
-          'g.title'
+          'g.title',
+          'g.severity',
+          'count(distinct a.assetId) as assetCount'
         ]
         groupBy = [
           'g.groupId',
-          'g.title'
+          'g.title',
+          'g.severity'
         ]
         orderBy = 'substring(rg.groupId from 3) + 0'
         break
       case 'cci':
         columns = [
           'cci.cci',
+          'cci.definition',
           'cci.apAcronym',
-          'cci.definition'
+          'count(distinct a.assetId) as assetCount'
         ]
         groupBy = [
           'cci.cci',
-          'cci.apAcronym',
-          'cci.definition'
+          'cci.definition',
+          'cci.apAcronym'
         ]
         orderBy = 'cci.cci'
         break
     }
     let joins = [
       'collection c',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join asset a on c.collectionId = a.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
@@ -192,13 +199,14 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     if (inProjection.includes('rules')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
         'ruleId', ru.ruleId,
-        'severity', ru.severity,
-        'title', ru.title) order by ru.ruleId), ']') as json) as "rules"`)
+        'title', ru.title,
+        'severity', ru.severity) order by ru.ruleId), ']') as json) as "rules"`)
     }
     if (inProjection.includes('groups')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
         'groupId', g.groupId,
-        'title', g.title) order by g.groupId), ']') as json) as "groups"`)
+        'title', g.title,
+        'severity', g.severity) order by g.groupId), ']') as json) as "groups"`)
     }
     if (inProjection.includes('assets')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
@@ -238,7 +246,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       predicates.binds.push( inPredicates.benchmarkId )
     }
     if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('(pg.userId = ? AND CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END)')
+      predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
       predicates.binds.push( userObject.userId, userObject.userId )
     }
     // CONSTRUCT MAIN QUERY
@@ -566,7 +574,7 @@ exports.getFindingsByCollection = async function( collectionId, aggregator, benc
 
 exports.getStigsByCollection = async function( collectionId, elevate, userObject ) {
   try {
-    let rows = await _this.queryFinidings(['stigs'], { collectionId: collectionId }, elevate, userObject)
+    let rows = await _this.queryCollections(['stigs'], { collectionId: collectionId }, elevate, userObject)
     return (rows[0].stigs)
   }
   catch (err) {

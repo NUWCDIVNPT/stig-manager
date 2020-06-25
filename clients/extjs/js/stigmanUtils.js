@@ -245,9 +245,9 @@ function updateStatusText (text, noNL, replace) {
 	var noNL = noNL || false;
 	var st = Ext.getCmp("statusText1");
 	if (noNL) {
-		statusText = text;
+		statusText += text;
 	} else {
-		statusText = text + "\n";
+		statusText += text + "\n";
 	}
 	st.setRawValue(statusText);
 	st.getEl().dom.scrollTop = 99999; // scroll to bottom
@@ -1221,16 +1221,14 @@ function renderSeverity(val) {
 	switch (val) {
 		case 'high':
 			return '1';
-			break;
 		case 'medium':
 			return '2';
-			break;
 		case 'low':
 			return '3';
-			break;
+		case 'mixed':
+			return 'M';
 		default:
-			return '4';
-			break;
+			return 'U';
 	}
 }
 

@@ -191,16 +191,17 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       ])
       let assetId = assetFields.assetId
       for (const sr of stigGrants) {
-        const userIds = []
-        if (sr.userIds && sr.userIds.length > 0) {
-          for (const userId of sr.userIds) {
-            userIds.push(parseInt(userId) || null)
-          }
-        }
+        sr.userIds = sr.userIds.map( u => parseInt(u))
+        // const userIds = []
+        // if (sr.userIds && sr.userIds.length > 0) {
+        //   for (const userId of sr.userIds) {
+        //     userIds.push(parseInt(userId) || null)
+        //   }
+        // }
         dml.stigAssetMap.insertBinds.push([
           parseInt(assetId) || null,
           sr.benchmarkId,
-          JSON.stringify(userIds)
+          JSON.stringify(sr.userIds)
         ])
       }
     }

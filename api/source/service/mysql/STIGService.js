@@ -370,7 +370,19 @@ exports.insertManualBenchmark = async function (b) {
         )`,
       },
       group: {
-        sql: "INSERT ignore into `group` (groupId, title) VALUES ?",
+        sql: `INSERT into \`group\` (
+          groupId, 
+          title, 
+          severity
+        ) VALUES ?
+        ON DUPLICATE KEY UPDATE
+          groupId = VALUES (groupId),
+          title = VALUES(title),
+          severity = CASE WHEN severity <> VALUES(severity) THEN
+            'mixed'
+          ELSE
+            VALUES(severity)
+          END`,
         binds: []
       },
       fix: {
@@ -492,16 +504,19 @@ exports.insertManualBenchmark = async function (b) {
 
     groups.forEach( group => {
       let {rules, ...groupBinds} = group
-      // TABLE: group
-      dml.group.binds.push([
-        groupBinds.groupId, 
-        groupBinds.title
-      ])
+
       let ruleMap = []
       let identsMap = []
-
+      let groupSeverity
       rules.forEach(rule => {
         let {checks, fixes, idents, ...ruleBinds} = rule
+        // Group severity calculation
+        if (!groupSeverity) {
+          groupSeverity = ruleBinds.severity
+        }
+        else if (groupSeverity !== ruleBinds.severity) {
+          groupSeverity = 'mixed'
+        }
         // TABLE: rule
         dml.rule.binds.push([
           ruleBinds.ruleId,
@@ -555,6 +570,12 @@ exports.insertManualBenchmark = async function (b) {
   
       }) // end rules.forEach
 
+      // TABLE: group
+      dml.group.binds.push([
+        groupBinds.groupId, 
+        groupBinds.title,
+        groupSeverity
+      ])
 
       // TABLE: rev_group_map
       dml.revGroupMap.binds.push([
@@ -588,6 +609,7 @@ exports.insertManualBenchmark = async function (b) {
     let pp = dbUtils.pool
     connection = await pp.getConnection()
     connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION')
 
     tableOrder = [
       'stig',

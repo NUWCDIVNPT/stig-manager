@@ -323,8 +323,8 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 }
             ],
             autoLoad: true,
-            url: `${STIGMAN.Env.apiBase}/stigs`,
-            root: '',
+            url: this.url || `${STIGMAN.Env.apiBase}/stigs`,
+            root: this.root || '',
             sortInfo: {
                 field: 'benchmarkId',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
