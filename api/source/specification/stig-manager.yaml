@@ -197,7 +197,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return the Checklist for the supplied Collection and STIG
+      summary: Return the Checklist for a STIG in a Collection
       operationId: getChecklistByCollectionStig
       responses:
         '200':
@@ -230,7 +230,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return the Findings for the specified Collection aggregated by groupId
+      summary: Return the Findings for the specified Collection
       operationId: getFindingsByCollection
       responses:
         '200':

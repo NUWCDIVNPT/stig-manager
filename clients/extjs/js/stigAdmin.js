@@ -109,81 +109,86 @@ function addStigAdmin() {
 			deferEmptyText:false
 		}),
 		listeners: {
-			rowdblclick: {
-				fn: function(grid,rowIndex,e) {
-					var r = grid.getStore().getAt(rowIndex);
-					Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
-					showStigAssignments(r.get('benchmarkId'));
-				}
-			}
+			// rowdblclick: {
+			// 	fn: function(grid,rowIndex,e) {
+			// 		var r = grid.getStore().getAt(rowIndex);
+			// 		Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
+			// 		showStigAssignments(r.get('benchmarkId'));
+			// 	}
+			// }
 		},
-		tbar: [{
-			iconCls: 'sm-asset-icon',
-			text: 'Assign assets',
-			disabled: false,
-			handler: function() {
-				var r = stigGrid.getSelectionModel().getSelected();
-				Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
-				showStigAssignments(r.get('benchmarkId'));
-			}
-		},'-',{
-			iconCls: 'sm-stig-icon',
-			text: 'Import STIGs',
-			disabled: false,
-			handler: function() {
-				uploadStigs();
-			}
-		},{
-			iconCls: 'sm-stig-icon',
-			xtype: 'combo',
-			store: taStore,
-			mode: 'local',
-			displayField: 'benchmarkId',
-			valueField: 'benchmarkId',
-			forceSelection: true,
-			allowBlank: false,
-			typeAhead: true,
-			minChars: 2,
-			hideTrigger: true,
-			lastQuery: '',
-			doQuery : function(q, forceAll){
-				q = Ext.isEmpty(q) ? '' : q;
-				var qe = {
-					query: q,
-					forceAll: forceAll,
-					combo: this,
-					cancel:false
-				};
-				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
-					return false;
+		tbar: [
+			// {
+			// 	iconCls: 'sm-asset-icon',
+			// 	text: 'Assign assets',
+			// 	disabled: false,
+			// 	handler: function() {
+			// 		var r = stigGrid.getSelectionModel().getSelected();
+			// 		Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
+			// 		showStigAssignments(r.get('benchmarkId'));
+			// }
+			// },
+			// '-',
+			{
+				iconCls: 'sm-stig-icon',
+				text: 'Import STIGs',
+				disabled: false,
+				handler: function() {
+					uploadStigs();
 				}
-				q = qe.query;
-				forceAll = qe.forceAll;
-				if(forceAll === true || (q.length >= this.minChars)){
-					if(this.lastQuery !== q){
-						this.lastQuery = q;
-						if(this.mode == 'local'){
-							this.selectedIndex = -1;
-							if(forceAll){
-								this.store.clearFilter();
-							}else{
-								this.store.filter(this.displayField, q, true, false);
-							}
-							this.onLoad();
-						}else{
-							this.store.baseParams[this.queryParam] = q;
-							this.store.load({
-								params: this.getParams(q)
-							});
-							this.expand();
-						}
-					}else{
-						this.selectedIndex = -1;
-						this.onLoad();
-					}
-				}
-			}
-		}],
+			},
+			// {
+			// 	iconCls: 'sm-stig-icon',
+			// 	xtype: 'combo',
+			// 	store: taStore,
+			// 	mode: 'local',
+			// 	displayField: 'benchmarkId',
+			// 	valueField: 'benchmarkId',
+			// 	forceSelection: true,
+			// 	allowBlank: false,
+			// 	typeAhead: true,
+			// 	minChars: 2,
+			// 	hideTrigger: true,
+			// 	lastQuery: '',
+			// 	doQuery : function(q, forceAll){
+			// 		q = Ext.isEmpty(q) ? '' : q;
+			// 		var qe = {
+			// 			query: q,
+			// 			forceAll: forceAll,
+			// 			combo: this,
+			// 			cancel:false
+			// 		};
+			// 		if(this.fireEvent('beforequery', qe)===false || qe.cancel){
+			// 			return false;
+			// 		}
+			// 		q = qe.query;
+			// 		forceAll = qe.forceAll;
+			// 		if(forceAll === true || (q.length >= this.minChars)){
+			// 			if(this.lastQuery !== q){
+			// 				this.lastQuery = q;
+			// 				if(this.mode == 'local'){
+			// 					this.selectedIndex = -1;
+			// 					if(forceAll){
+			// 						this.store.clearFilter();
+			// 					}else{
+			// 						this.store.filter(this.displayField, q, true, false);
+			// 					}
+			// 					this.onLoad();
+			// 				}else{
+			// 					this.store.baseParams[this.queryParam] = q;
+			// 					this.store.load({
+			// 						params: this.getParams(q)
+			// 					});
+			// 					this.expand();
+			// 				}
+			// 			}else{
+			// 				this.selectedIndex = -1;
+			// 				this.onLoad();
+			// 			}
+			// 		}
+			// 	}
+			// }
+		],
 		bbar: new Ext.Toolbar({
 			items: [
 			{

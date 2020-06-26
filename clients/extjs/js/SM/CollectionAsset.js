@@ -701,7 +701,6 @@ async function showAssetProps( assetId, initialCollectionId ) {
                 try {
                     if (assetPropsFormPanel.getForm().isValid()) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-                        // change "collections" to "collectionIds"
                         let method = assetId ? 'PUT' : 'POST'
                         let url = assetId ? `${STIGMAN.Env.apiBase}/assets/${assetId}` : `${STIGMAN.Env.apiBase}/assets`
                         let result = await Ext.Ajax.requestPromise({
@@ -716,10 +715,6 @@ async function showAssetProps( assetId, initialCollectionId ) {
                         })
                         const apiAsset = JSON.parse(result.response.responseText)
                         SM.Dispatcher.fireEvent('assetchanged', apiAsset)
-
-                        //TODO: This is expensive, should update the specific record instead of reloading entire set
-                        // Ext.getCmp(`assetGrid-${collectionId}`).getView().holdPosition = true
-                        // Ext.getCmp(`assetGrid-${collectionId}`).getStore().reload()
                         appwindow.close()
                     }
                 }
