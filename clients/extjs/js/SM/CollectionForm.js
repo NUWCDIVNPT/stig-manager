@@ -334,19 +334,6 @@ Ext.reg('sm-user-selection-field', SM.UserSelectionField);
 SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
         const me = this
-        const fields = [
-            { 
-                name: 'userId',
-                mapping: 'user.userId'
-            },
-            {
-                name: 'username',
-                mapping: 'user.username'
-            },
-            {
-                name: 'accessLevel'
-            }
-        ]
         const newFields = [
             { 
                 name: 'userId'
@@ -396,6 +383,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 },
                 remove: function (store,record,index) {
                     totalTextCmp.setText(store.getCount() + ' records');
+                    store.grid.fireEvent('grantschanged', store.grid)
                 }
             }
         })
@@ -466,6 +454,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                             mc.keys[x] = record.id
                         }
                     }
+                    editor.grid.fireEvent('grantschanged', editor.grid)
                 }
 
             }
@@ -621,7 +610,22 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             name: 'name',
             allowBlank: false,
             anchor:'100%',
+            enableKeyEvents: true,
+            keys: [
+                { 
+                    key: Ext.EventObject.ENTER,
+                    fn: (a , b, c) => {
+                        let one = a
+                        nameField.getEl().blur()
+                    }
+                }
+            ],
             listeners: {
+                specialkey: (field, e) => {
+                    if (e.getKey() == e.ENTER) {
+                        field.getEl().blur()
+                    }
+                },
                 change: async (field, newValue, oldValue) => {
                     try {
                         let result = await Ext.Ajax.requestPromise({

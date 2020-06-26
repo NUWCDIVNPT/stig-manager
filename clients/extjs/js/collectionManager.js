@@ -18,7 +18,26 @@ async function addCollectionManager( collectionId, collectionName ) {
 			},
 			title: 'Grants',
 			border: false,
-			region: 'center'
+			region: 'center',
+			listeners: {
+				grantschanged: async grid => {
+                    try {
+                        let data = grid.getValue()
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}?projection=grants`,
+                            method: 'PATCH',
+                            jsonData: {
+                                grants: data
+                            }
+                        })
+                        let collection = JSON.parse(result.response.responseText)
+                        grid.setValue(collection.grants)
+                    }
+                    catch (e) {
+                        alert ('Grants save failed')
+                    }
+				}
+			}
 		})
 		let assetGrid = new SM.CollectionAssetGrid({
 			collectionId: collectionId,

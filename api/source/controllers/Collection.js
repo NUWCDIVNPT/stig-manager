@@ -9,7 +9,7 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const projection = req.swagger.params['projection'].value
     const elevate = req.swagger.params['elevate'].value
     const body = req.swagger.params['body'].value
-    if ( elevate || req.userObject.canCreateCollection ) {
+    if ( elevate || req.userObject.privileges.canCreateCollection ) {
       const response = await Collection.createCollection( body, projection, req.userObject)
       writer.writeJson(res, response)
     }
