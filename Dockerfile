@@ -17,7 +17,7 @@ WORKDIR /home/node
 USER node
 
 # Install app dependencies
-COPY package*.json ./api/source
+COPY ./api/source/package*.json .
 RUN npm install
 # RUN npm audit fix
 
