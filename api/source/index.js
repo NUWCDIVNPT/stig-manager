@@ -61,7 +61,8 @@ oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${con
 oasTools.configure(options)
 oasTools.initialize(oasDoc, app, function () {
   // app.use('/stig-manager/ui', )
-  app.use('/stig-manager/ui', express.static(path.join(__dirname, '../../clients/extjs')))
+  // app.use('/stig-manager/ui', express.static(path.join(__dirname, '../../clients/extjs')))
+  app.use('/stig-manager/ui', express.static(path.join(__dirname, './clients/extjs')))
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
       oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
     }))
