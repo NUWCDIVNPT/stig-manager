@@ -7,7 +7,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
     },
     initComponent: function() {
         let me = this
-        id = Ext.id()
+        const id = Ext.id()
         let fieldsConstructor = Ext.data.Record.create([
             {name: 'benchmarkId', type: 'string'},
             {name: 'title', type: 'string'},
@@ -91,6 +91,10 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
                 listeners: {
+                    selectionchange: function (sm) {
+                        Ext.getCmp(`stigGrid-${id}-modifyBtn`).setDisabled(!sm.hasSelection());
+                        Ext.getCmp(`stigGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection());
+                    }
                 }
             }),
             view: new Ext.grid.GridView({
@@ -102,7 +106,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 rowdblclick: {
                     fn: function(grid,rowIndex,e) {
                         var r = grid.getStore().getAt(rowIndex);
-                        showCollectionStigProps(r.get('benchmarkId'), me.collectionId);
+                        showCollectionStigProps(r.get('benchmarkId'), me.collectionId, grid);
                     }
                 }
             },
@@ -110,16 +114,16 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 items: [
                     {
                         iconCls: 'icon-add',
-                        text: 'Assign new STIG',
+                        text: 'Attach STIG...',
                         handler: function() {
-                            showCollectionStigProps( null, me.collectionId);            
+                            showCollectionStigProps( null, me.collectionId, me);            
                         }
                     }
                     ,'-'
                     , {
                         ref: '../removeBtn',
                         iconCls: 'icon-del',
-                        id: `assetGrid-${id}-deleteBtn`,
+                        id: `stigGrid-${id}-deleteBtn`,
                         text: 'Remove STIG',
                         disabled: true,
                         handler: function() {
@@ -143,10 +147,10 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                     ,'-'
                     ,{
-                        iconCls: 'sm-stig-icon',
+                        iconCls: 'sm-asset-icon',
                         disabled: true,
-                        id: `assetGrid-${id}-modifyBtn`,
-                        text: 'Modify STIG assignments',
+                        id: `stigGrid-${id}-modifyBtn`,
+                        text: 'Change assigned Assets...',
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
                             showCollectionStigProps(r.get('benchmarkId'), me.collectionId);
@@ -390,7 +394,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         let sm = new Ext.grid.CheckboxSelectionModel({
             checkOnly: true,
-            header: '',
+            // header: '',
             listeners: {
             },
             onRefresh: function() {
@@ -490,6 +494,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                 ]
             }),
             getValue: function() {
+                return JSON.parse(encodeSm(sm,'assetId'))
             },
             setValue: function (resp) {
                 let sm = this.getSelectionModel()
@@ -508,7 +513,9 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             markInvalid: function() {},
             clearInvalid: function() {},
-            isValid: () => true,
+            isValid: () => {
+                return this.getSelectionModel().getCount() > 0
+            },
             getName: () => this.name,
             validate: () => true
         }
@@ -676,11 +683,33 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
         if (! this.collectionId) {
             throw ('missing property collectionId')
         }
+        let stigField
+        if (this.benchmarkId) {
+            stigField = new Ext.form.TextField({
+                fieldLabel: 'BenchmarkId',
+                allowBlank: true,
+                readOnly: true,
+                name: 'benchmarkId',
+                value: this.benchmarkId
+            })
+        }
+        else {
+            stigField = new SM.StigSelectionField({
+                name: 'benchmarkId',
+                submitValue: false,
+                fieldLabel: 'BenchmarkId',
+                hideTrigger: false,
+                width: 350,
+                autoLoad: true,
+                allowBlank: false,
+                filteringStore: this.stigFilteringStore
+            })
+        }
  
         let config = {
             baseCls: 'x-plain',
             // height: 400,
-            labelWidth: 70,
+            labelWidth: 80,
             monitorValid: true,
             trackResetOnLoad: true,
             items: [
@@ -688,19 +717,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
                     xtype: 'fieldset',
                     title: '<b>STIG information</b>',
                     items: [
-                        {
-                            xtype: 'textfield',
-                            fieldLabel: 'BenchmarkId',
-                            width: 150,
-                            emptyText: 'Enter benchmarkId...',
-                            allowBlank: false,
-                            name: 'benchmarkId'
-                        },
-                        {
-                            xtype: 'hidden',
-                            name: 'collectionId',
-                            value: this.collectionId
-                        }
+                        stigField
                     ]
                 },
                 {
@@ -710,12 +727,6 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
                     layout: 'fit',
                     items: [
                         this.stigAssetsGrid
-                        // {
-                        //     xtype: 'sm-asset-stig-grid',
-                        //     name: 'stigGrants',
-                        //     fieldLabel: 'STIGs',
-                        //     // anchor: '100%'
-                        // }
                     ]
                 }
 
@@ -769,24 +780,25 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
 })
 
 
-async function showCollectionStigProps( benchmarkId, collectionId ) {
+async function showCollectionStigProps( benchmarkId, collectionId, parentGrid ) {
     try {
         let stigPropsFormPanel = new SM.CollectionStigProperties({
             collectionId: collectionId,
             benchmarkId: benchmarkId,
+            stigFilteringStore: parentGrid.store,
             btnHandler: async function(){
                 try {
                     if (stigPropsFormPanel.getForm().isValid()) {
                         let values = stigPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
                         // change "collections" to "collectionIds"
                         let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
+                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${values.benchmarkId}/assets`,
                             method: 'PUT',
                             params: {
                                 elevate: curUser.privileges.canAdmin
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                            jsonData: values
+                            jsonData: values.assets
                         })
                         const apiStigAsset = JSON.parse(result.response.responseText)
                         SM.Dispatcher.fireEvent('stig-assets-changed', apiStigAsset)
@@ -817,18 +829,23 @@ async function showCollectionStigProps( benchmarkId, collectionId ) {
         });
         
         appwindow.render(document.body)
-        await stigPropsFormPanel.initPanel()
+        await stigPropsFormPanel.initPanel() // Load asset grid store
 
-        let result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/assets`,
-            params: {
-                elevate: curUser.privileges.canAdmin,
-                collectionId: collectionId,
-                benchmarkId: benchmarkId
-            },
-            method: 'GET'
-        })
-        let apiStigAssets = JSON.parse(result.response.responseText)
+        let apiStigAssets
+        if (benchmarkId) {
+            let result = await Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
+                params: {
+                    elevate: curUser.privileges.canAdmin
+                },
+                method: 'GET'
+            })
+            apiStigAssets = JSON.parse(result.response.responseText)            
+        }
+        else {
+            apiStigAssets = []
+        }
+
         stigPropsFormPanel.getForm().setValues({
             benchmarkId: benchmarkId,
             assets: apiStigAssets

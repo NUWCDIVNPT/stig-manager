@@ -9,7 +9,7 @@ Ext.ns('SM')
 SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
         let me = this
-        id = Ext.id()
+        const id = Ext.id()
         let fieldsConstructor = Ext.data.Record.create([
             {name: 'userId', type: 'string'},
             {name: 'username', type: 'string'},

@@ -197,7 +197,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return the Checklist for a STIG in a Collection
+      summary: Return the Checklist for the supplied Collection and STIG
       operationId: getChecklistByCollectionStig
       responses:
         '200':
@@ -230,7 +230,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return the Findings for the specified Collection
+      summary: Return the Findings for the specified Collection aggregated by groupId
       operationId: getFindingsByCollection
       responses:
         '200':
@@ -1306,16 +1306,37 @@ paths:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
       - $ref: '#/components/parameters/StigAssetsProjectionQuery'
-      - name: benchmarkId
-        in: path
-        description: A path parameter that indentifies a STIG
-        required: true
-        schema:
-          type: string
+    get:
+      tags:
+        - Asset
+        - Collection
+      summary: Get the Assets in a Collection attached to a STIG
+      description: ''
+      operationId: getStigAssetsByBenchmarkId
+      responses:
+        '200':
+          description: Revision response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StigAssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
     put:
       tags:
         - Asset
+        - Collection
       summary: Set the Assets mapped to a STIG
       description: ''
       operationId: setStigAssetsByBenchmarkId

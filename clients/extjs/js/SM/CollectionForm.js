@@ -72,7 +72,7 @@ Ext.reg('sm-accesslevel-field', SM.AccessLevelField);
 
 SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
-        let id = Ext.id()
+        const id = Ext.id()
         let fields = ['key','value']
         let newFields = ['key','value']
         let fieldsConstructor = Ext.data.Record.create(fields) 

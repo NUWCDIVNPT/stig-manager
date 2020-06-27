@@ -286,6 +286,27 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
   }
 }
 
+module.exports.getStigAssetsByBenchmarkId = async function getStigAssetsByBenchmarkId (req, res, next) {
+  try {
+    let elevate = req.swagger.params['elevate'].value
+    let collectionId = req.swagger.params['collectionId'].value
+    let benchmarkId = req.swagger.params['benchmarkId'].value
+    let projection = req.swagger.params['projection'].value
+
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+        let response = await Asset.getStigAssetsByBenchmarkId( collectionId, benchmarkId, projection, elevate, req.userObject )
+        writer.writeJson(res, response)
+    }
+    else {
+      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+    }
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }
+}
+
 module.exports.replaceAsset = async function replaceAsset (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
@@ -317,9 +338,11 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let collection = Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
-      if (assetIds.every( a => collection.assets.includes(a))) {
-        let response = await Asset.setStigAssetsByBenchmarkId( benchmarkId, assetIds, projection, elevate, req.userObject )
+      let collection = await Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
+      let collectionAssets = collection.assets.map( a => a.assetId)
+      if (assetIds.every( a => collectionAssets.includes(a))) {
+        await Asset.setStigAssetsByBenchmarkId( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
+        let response = await Asset.getStigAssetsByBenchmarkId( collectionId, benchmarkId, projection, elevate, req.userObject )
         writer.writeJson(res, response)
       }
       else {

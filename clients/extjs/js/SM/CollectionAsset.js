@@ -92,7 +92,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
     },
     initComponent: function() {
         let me = this
-        id = Ext.id()
+        const id = Ext.id()
         let fieldsConstructor = Ext.data.Record.create([
             {name: 'assetId', type: 'string'},
             {name: 'name', type: 'string'},
@@ -223,7 +223,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 items: [
                     {
                         iconCls: 'icon-add',
-                        text: 'New asset',
+                        text: 'Create Asset...',
                         handler: function() {
                             Ext.getBody().mask('Loading form...');
                             showAssetProps( null, me.collectionId);            
@@ -234,7 +234,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         ref: '../removeBtn',
                         iconCls: 'icon-del',
                         id: `assetGrid-${id}-deleteBtn`,
-                        text: 'Delete asset',
+                        text: 'Delete Asset',
                         disabled: true,
                         handler: function() {
                             try {
@@ -260,7 +260,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'sm-asset-icon',
                         disabled: true,
                         id: `assetGrid-${id}-modifyBtn`,
-                        text: 'Modify asset properties',
+                        text: 'Change Asset properties...',
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
                             Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
@@ -324,7 +324,7 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                     type: 'string'
                 }
             ],
-            autoLoad: true,
+            autoLoad: this.autoLoad,
             url: this.url || `${STIGMAN.Env.apiBase}/stigs`,
             root: this.root || '',
             sortInfo: {
@@ -343,7 +343,6 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
 			allowBlank: false,
 			typeAhead: true,
 			minChars: 0,
-            hideTrigger: false,
             triggerAction: this.triggerAction || 'query',
             listeners: {
                 afterrender: (combo) => {
@@ -451,6 +450,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const stigSelectionField = new SM.StigSelectionField({
             submitValue: false,
+            autoLoad: true,
             allowBlank: false,
             filteringStore: stigAssignedStore
         })
