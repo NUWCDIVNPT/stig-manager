@@ -12,8 +12,10 @@ const swaggerUi = require('swagger-ui-express')
 const jsyaml = require('js-yaml');
 const fs = require('fs')
 const multer  = require('multer')
-const upload = multer({ dest: 'uploads/' })
+const upload = multer({ dest: path.join(__dirname, './uploads/') })
 const writer = require('./utils/writer.js')
+
+console.log(JSON.stringify(config, null, 2))
 
 
 const app = express();
@@ -55,7 +57,7 @@ for (const path in oasDoc.paths) {
 
 // Replace host with environmental values
 oasDoc.servers[0].url = config.swaggerUi.server
-oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.oauth.authority}/protocol/openid-connect/auth`
+oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.swaggerUi.authority}/protocol/openid-connect/auth`
 
 // Initialize the Swagger middleware
 oasTools.configure(options)
@@ -84,12 +86,12 @@ oasTools.initialize(oasDoc, app, function () {
   startServer(app)
  })
 
-function setupClient(app, __dirname) {
-  app.use('/stig-manager/ui', express.static(path.join(__dirname)))
+function setupClient(app, directory) {
+  app.use('/client', express.static(path.join(__dirname, directory)))
 
   const envsub = require('envsub');
-  let templateFile = `${__dirname}/js/Env.js.template`
-  let outputFile = `${__dirname}/js/Env.js`
+  let templateFile = path.join(__dirname, directory, '/js/Env.js.template')
+  let outputFile = path.join(__dirname, directory, '/js/Env.js')
   let options = {
     all: false, // see --all flag
     diff: false, // see --diff flag
@@ -106,8 +108,8 @@ function setupClient(app, __dirname) {
     console.error(err.message)
   })
 
-  templateFile = `${__dirname}/js/keycloak.json.template`
-  outputFile = `${__dirname}/js/keycloak.json`
+  templateFile = path.join(__dirname, directory, '/js/keycloak.json.template')
+  outputFile = path.join(__dirname, directory, '/js/keycloak.json')
   envsub({templateFile, outputFile, options}).then((envobj) => {
     console.log(envobj.templateFile)
     console.log(envobj.templateContents)

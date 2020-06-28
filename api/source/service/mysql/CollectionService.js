@@ -100,6 +100,13 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       predicates.statements.push('p.workflow = ?')
       predicates.binds.push( inPredicates.workflow )
     }
+    if ( inPredicates.metadata ) {
+      for (const pair of inPredicates.metadata) {
+        const [key, value] = pair.split(':')
+        predicates.statements.push('JSON_CONTAINS(p.metadata, ?, ?)')
+        predicates.binds.push( `"${value}"`,  `$.${key}`)
+      }
+    }
     if (context == dbUtils.CONTEXT_USER) {
       joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
       predicates.statements.push('(pg.userId = ? AND CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END)')

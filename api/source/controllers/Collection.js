@@ -86,9 +86,11 @@ module.exports.getCollections = async function getCollections (req, res, next) {
     const elevate = req.swagger.params['elevate'].value
     const name = req.swagger.params['name'].value
     const workflow = req.swagger.params['workflow'].value
+    const metadata = req.swagger.params['metadata'].value
     const response = await Collection.getCollections({
       name: name,
-      workflow: workflow
+      workflow: workflow,
+      metadata: metadata
     }, projection, elevate, req.userObject)
     writer.writeJson(res, response)
   }

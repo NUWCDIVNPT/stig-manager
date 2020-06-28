@@ -18,12 +18,12 @@ USER node
 
 # Install app dependencies
 #COPY ./api/source/package*.json .
-COPY ./api/source .
+COPY --chown=node:node ./api/source .
 RUN npm install
 # RUN npm audit fix
 
 RUN mkdir client
-COPY ./clients/extjs ./client
+COPY --chown=node:node ./clients/extjs ./client
 
 # Set environment
 ENV COMMIT_SHA=${COMMIT_SHA} \

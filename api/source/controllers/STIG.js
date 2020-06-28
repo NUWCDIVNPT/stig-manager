@@ -37,6 +37,11 @@ module.exports.importManualBenchmark = async function importManualBenchmark (req
   catch(err) {
     writer.writeJson(res, err)
   }
+  finally {
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path)
+    }
+  }
 }
 
 

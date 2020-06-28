@@ -54,6 +54,11 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
   catch(err) {
     writer.writeJson(res, err)
   }
+  finally {
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path)
+    }
+  }
 }
 
 module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule (req, res, next) {

@@ -9,7 +9,7 @@ info:
     email: carl.a.smigielski@saic.com
   version: 1.0.0
 servers:
-  - url: 'http://localhost:54000/stig-manager/api'
+  - url: 'http://localhost:54000/api'
 paths:
   /collections:
     parameters:
@@ -23,6 +23,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/CollectionWorkflowQuery'
+        - $ref: '#/components/parameters/CollectionMetadataQuery'
       responses:
         '200':
           description: CollectionProjected response
@@ -3072,6 +3073,14 @@ components:
       description: A query parameter that indentifies a Collection
       schema:
         type: string
+    CollectionMetadataQuery:
+      name: metadata
+      in: query
+      description: A query parameter that specifies metadata key:value pairs to select matching Collections
+      schema:
+        type: array
+        items:
+          type: string
     CollectionProjectionQuery:
       name: projection
       in: query
