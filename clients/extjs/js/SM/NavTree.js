@@ -230,11 +230,160 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
           collectionRoot.sort(sortFn)
       }
-      this.onAssetChanged = (apiAsset) => {
-        let collectionRoot = this.getNodeById('collections-root')
-        let assetNode = collectionRoot.findChild('assetId', apiAsset.assetId, true)
-        if (assetNode) {
-          assetNode.setText(apiAsset.name)
+      this.sortNodes = (a, b) => a.text < b.text ? -1 : 1
+      this.onAssetChanged = async (apiAsset) => {
+        let apiAssetBenchmarkIds = apiAsset.stigs.map( stig => stig.benchmarkId )
+        let assetsNode = this.getNodeById(`${apiAsset.collection.collectionId}-assets-node`)
+        if (assetsNode && assetsNode.isExpanded() ) {
+          let assetNode = assetsNode.findChild('assetId', apiAsset.assetId)
+          if (assetNode) {
+            if (assetNode.attributes.text !== apiAsset.name) {
+              assetNode.setText(apiAsset.name)
+              assetsNode.sort(me.sortNodes)  
+            }
+            if (assetNode.isExpanded()) {
+              // Node has STIG childen
+              let assetNodeBenchmarkIds = []
+              // Remove STIGs no longer mapped to this Asset
+              const nodesToRemove = []
+              for (let assetStigNode of assetNode.childNodes) {
+                if (!apiAssetBenchmarkIds.includes(assetStigNode.attributes.benchmarkId)) {
+                  nodesToRemove.push(assetStigNode)
+                }
+                else {
+                  assetNodeBenchmarkIds.push(assetStigNode.attributes.benchmarkId)
+                }
+              }
+              for (let nodeToRemove of nodesToRemove) {
+                nodeToRemove.remove(true)
+              }
+              // Add new STIG(s), if any
+              for (let apiAssetStig of apiAsset.stigs) {
+                if (!assetNodeBenchmarkIds.includes(apiAssetStig.benchmarkId)) {
+                  assetNode.appendChild({
+                    id: `${apiAsset.collection.collectionId}-${apiAsset.assetId}-${apiAssetStig.benchmarkId}-leaf`,
+                    text: apiAssetStig.benchmarkId,
+                    leaf: true,
+                    report: 'review',
+                    iconCls: 'sm-stig-icon',
+                    stigName: apiAssetStig.benchmarkId,
+                    assetName: apiAsset.name,
+                    stigRevStr: apiAssetStig.lastRevisionStr,
+                    assetId: apiAsset.assetId,
+                    collectionId: apiAsset.collection.collectionId,
+                    workflow: apiAsset.collection.workflow,
+                    benchmarkId: apiAssetStig.benchmarkId,
+                    qtip: apiAssetStig.title
+                  })
+                  assetNode.sort(me.sortNodes)
+                }
+              }
+            }
+          }
+        }
+        let stigsNode = this.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
+        if (stigsNode && stigsNode.isExpanded()) {
+          // changing this asset might have changed the Collection STIG list
+          let result = await Ext.Ajax.requestPromise({
+            url: `${STIGMAN.Env.apiBase}/collections/${apiAsset.collection.collectionId}`,
+            method: 'GET',
+            params: {
+              projection: 'stigs'
+            }
+          })
+          let collectionStigs = JSON.parse(result.response.responseText).stigs
+          let collectionBenchmarkIds= collectionStigs.map( stig => stig.benchmarkId )
+          let stigsNodeBenchmarkIds = []
+          let stigNodesToRemove = []
+          // Iterate existing STIG nodes
+          for ( let stigNode of stigsNode.childNodes) {
+            if ( collectionBenchmarkIds.includes( stigNode.attributes.benchmarkId ) ) {
+              // The collection includes this STIG
+              stigsNodeBenchmarkIds.push(stigNode.attributes.benchmarkId)
+              if ( stigNode.isExpanded() ) {
+                // The node is expanded and showing Assets
+
+                // Does the Asset include this STIG
+                stigIsMappedToAsset = apiAssetBenchmarkIds.includes(stigNode.attributes.benchmarkId)
+                let stigAssetNode = stigNode.findChild('assetId', apiAsset.assetId)
+
+                if (stigIsMappedToAsset) {
+                  // The STIG is mapped to this Asset
+                  if (stigAssetNode) {
+                    // The Asset node exists
+                    if (stigAssetNode.attributes.text !== apiAsset.name) {
+                      stigAssetNode.setText(apiAsset.name)
+                      stigNode.sort(me.sortNodes)
+                    }
+                  }
+                  else {
+                    // The Asset node does not exist -- create it
+                    stigNode.appendChild({
+                      id: `${apiAsset.collection.collectionId}-${apiAsset.assetId}-${stigNode.attributes.benchmarkId}-leaf`,
+                      text: apiAsset.name,
+                      leaf: true,
+                      report: 'review',
+                      iconCls: 'sm-asset-icon',
+                      stigName: stigNode.attributes.benchmarkId,
+                      assetName: apiAsset.name,
+                      stigRevStr: stigNode.attributes.lastRevisionStr,
+                      assetId: apiAsset.assetId,
+                      collectionId: apiAsset.collection.collectionId,
+                      benchmarkId: stigNode.attributes.benchmarkId,
+                      qtip: apiAsset.name
+                    })
+                    stigNode.sort(me.sortNodes)
+                  }
+                }
+                else {
+                  // The STIG is NOT mapped to this Asset
+                  if (stigAssetNode) {
+                    // The Asset node exists -- remove it
+                    stigAssetNode.remove(true)
+                  }
+                }
+              }
+            }
+            else {
+              // The collection no longer includes this STIG
+              stigNodesToRemove.push(stigNode)
+            }           
+          }
+          for (let stigNodeToRemove of stigNodesToRemove) {
+            stigNodeToRemove.remove(true)
+          }
+          // Add new STIG node(s), if any
+          for (let collectionStig of collectionStigs) {
+            if (!stigsNodeBenchmarkIds.includes(collectionStig.benchmarkId)) {
+              stigsNode.appendChild({
+                collectionId: apiAsset.collection.collectionId,
+                text: collectionStig.benchmarkId,
+                collectionName: apiAsset.collection.name,
+                collectionId: apiAsset.collection.collectionId,
+                report: 'stig',
+                iconCls: 'sm-stig-icon',
+                stigRevStr: collectionStig.lastRevisionStr,
+                id: `${apiAsset.collection.collectionId}-${collectionStig.benchmarkId}-stigs-stig-node`,
+                benchmarkId: collectionStig.benchmarkId,
+                qtip: collectionStig.title
+              })
+              stigsNode.sort(me.sortNodes)
+            }
+          }
+        }
+      }
+      this.onAssetCreated = (apiAsset) => {
+        let assetsNode = this.getNodeById(`${apiAsset.collection.collectionId}-assets-node`, true)
+        if ( assetsNode && assetsNode.isExpanded() ) {
+          assetsNode.appendChild({
+              id: `${apiAsset.collection.collectionId}-${apiAsset.assetId}-assets-asset-node`,
+              text: apiAsset.name,
+              report: 'asset',
+              collectionId: apiAsset.collection.collectionId,
+              assetId: apiAsset.assetId,
+              iconCls: 'sm-asset-icon',
+              qtip: apiAsset.name
+            })
         }
       }
       this.onCollectionChanged = function (changes) {
@@ -259,6 +408,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
       SM.Dispatcher.addListener('collectioncreated', this.onCollectionCreated)
       SM.Dispatcher.addListener('collectionchanged', this.onCollectionChanged)
       SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, me)
+      SM.Dispatcher.addListener('assetcreated', this.onAssetCreated, me)
 
     },
     loadTree: async function (node, cb) {

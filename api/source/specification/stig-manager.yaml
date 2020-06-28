@@ -2345,6 +2345,8 @@ components:
           nullable: false
         name:
           type: string
+        description:
+          type: string
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
@@ -2361,6 +2363,7 @@ components:
     CollectionCreateOrReplace:
       required:
         - name
+        - description
         - workflow
         - metadata
         - grants
@@ -2368,6 +2371,8 @@ components:
       type: object
       properties:
         name:
+          type: string
+        description:
           type: string
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
@@ -2473,6 +2478,8 @@ components:
       type: object
       properties:
         name:
+          type: string
+        description:
           type: string
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'

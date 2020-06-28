@@ -206,7 +206,5 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.CollectionGrantsGrid.superclass.initComponent.call(this)
-
-        SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
     }   
 })

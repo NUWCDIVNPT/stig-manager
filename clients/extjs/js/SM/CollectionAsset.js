@@ -87,7 +87,9 @@ SM.CollectionAssetTree = Ext.extend(Ext.tree.TreePanel, {
 */
 SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
     onAssetChanged: function (apiAsset) {
-        let record = this.store.getById(apiAsset.assetId)
+        this.store.loadData(apiAsset, true) // append with replace
+    },
+    onAssetCreated: function (apiAsset) {
         this.store.loadData(apiAsset, true) // append with replace
     },
     initComponent: function() {
@@ -302,6 +304,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         SM.CollectionAssetGrid.superclass.initComponent.call(this)
 
         SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
+        SM.Dispatcher.addListener('assetcreated', this.onAssetCreated, this)
     }   
 })
 Ext.reg('sm-collection-asset-grid', SM.CollectionAssetGrid)
@@ -714,7 +717,8 @@ async function showAssetProps( assetId, initialCollectionId ) {
                             jsonData: values
                         })
                         const apiAsset = JSON.parse(result.response.responseText)
-                        SM.Dispatcher.fireEvent('assetchanged', apiAsset)
+                        const event = assetId ? 'assetchanged' : 'assetcreated'
+                        SM.Dispatcher.fireEvent(event, apiAsset)
                         appwindow.close()
                     }
                 }
@@ -776,28 +780,3 @@ async function showAssetProps( assetId, initialCollectionId ) {
         Ext.getBody().unmask()
     }	
 } //end showAssetProps
-
-
-SM.CollectionAssetPanel = Ext.extend(Ext.Panel, {
-    initComponent: function() {
-        let gridCfg = this.gridCfg || {}
-        let formCfg = this.formCfg || {}
-
-        this.grid = new SM.CollectionAssetGrid ( gridCfg )
-
-        formCfg.parent = this.grid
-        this.form = new SM.CollectionAssetProperties ( formCfg )
-        this.grid.child = this.form
-
-        let config = {
-            layout: 'border',
-            border: false,
-            items: [
-                this.grid
-                ,this.form 
-            ]
-        }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.CollectionAssetPanel.superclass.initComponent.call(this);
-    }
-})
