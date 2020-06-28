@@ -8,8 +8,8 @@ services:
     image: ${STIGMAN_DOCKER_REPO}/auth:${STIGMAN_DOCKER_TAG}
     build: ./keycloak
     ports:
-      - "8080:8080"
-      - "8443:8443"
+      "8080:8080"
+      "8443:8443"
   db:
     image: mysql:8.0
     ports:

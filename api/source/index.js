@@ -60,16 +60,18 @@ oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${con
 // Initialize the Swagger middleware
 oasTools.configure(options)
 oasTools.initialize(oasDoc, app, function () {
-  // app.use('/stig-manager/ui', )
-  // app.use('/stig-manager/ui', express.static(path.join(__dirname, '../../clients/extjs')))
-  app.use('/stig-manager/ui', express.static(path.join(__dirname, './clients/extjs')))
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
+  if (config.client.enabled === 'true') {
+    setupClient(app, config.client.directory)
+  }
+  if (config.swaggerUi.enabled === 'true') {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
       oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
     }))
-  app.get('/swagger.json', function(req, res) {
-      res.setHeader('Content-Type', 'application/json');
-      res.send(oasDoc);
-  })
+    app.get('/swagger.json', function(req, res) {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(oasDoc);
+    })
+  }
   app.use((err, req, res, next) => {
     if (err) {
       console.log('Invalid Request data')
@@ -81,6 +83,40 @@ oasTools.initialize(oasDoc, app, function () {
   
   startServer(app)
  })
+
+function setupClient(app, __dirname) {
+  app.use('/stig-manager/ui', express.static(path.join(__dirname)))
+
+  const envsub = require('envsub');
+  let templateFile = `${__dirname}/js/Env.js.template`
+  let outputFile = `${__dirname}/js/Env.js`
+  let options = {
+    all: false, // see --all flag
+    diff: false, // see --diff flag
+    protect: false, // see --protect flag
+    syntax: 'default', // see --syntax flag
+    system: true // see --system flag
+  }
+  envsub({templateFile, outputFile, options}).then((envobj) => {
+    console.log(envobj.templateFile)
+    console.log(envobj.templateContents)
+    console.log(envobj.outputFile)
+    console.log(envobj.outputContents)
+  }).catch((err) => {
+    console.error(err.message)
+  })
+
+  templateFile = `${__dirname}/js/keycloak.json.template`
+  outputFile = `${__dirname}/js/keycloak.json`
+  envsub({templateFile, outputFile, options}).then((envobj) => {
+    console.log(envobj.templateFile)
+    console.log(envobj.templateContents)
+    console.log(envobj.outputFile)
+    console.log(envobj.outputContents)
+  }).catch((err) => {
+    console.error(err.message)
+  })
+}
 
 async function startServer(app) {
   try {

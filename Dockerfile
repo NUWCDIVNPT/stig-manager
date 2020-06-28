@@ -17,16 +17,13 @@ WORKDIR /home/node
 USER node
 
 # Install app dependencies
-COPY ./api/source/package*.json .
+#COPY ./api/source/package*.json .
+COPY ./api/source .
 RUN npm install
 # RUN npm audit fix
 
-# Copy app source code
-COPY ./api/source .
-RUN npx patch-package
-RUN mkdir ./clients
-RUN mkdir ./clients/extjs
-COPY ./clients/extjs ./clients/extjs
+RUN mkdir client
+COPY ./clients/extjs ./client
 
 # Set environment
 ENV COMMIT_SHA=${COMMIT_SHA} \

@@ -1,5 +1,9 @@
 let config = {
     apiVersion: '1.0',
+    client: {
+        enabled: process.env.STIGMAN_CLIENT_ENABLED || true,
+        directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client"
+    },
     http: {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
         port: process.env.STIGMAN_API_PORT || 54000
