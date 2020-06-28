@@ -1,99 +1,119 @@
 Ext.ns('SM')
 
+SM.CollectionNodeConfig = function (collection) {
+  let children = []
+  collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
+  if (collectionGrant && collectionGrant.accessLevel >= 3) {
+    children.push({
+      id: `${collection.collectionId}-pkgconfig-node`,
+      text: 'Configuration',
+      collectionId: collection.collectionId,
+      collectionName: collection.name,
+      action: 'collection-management',
+      iconCls: 'sm-setting-icon',
+      leaf: true
+    })
+  }
+  children.push(
+    {
+      id: `${collection.collectionId}-findings-node`,
+      text: 'Findings',
+      collectionId: collection.collectionId,
+      collectionName: collection.name,
+      iconCls: 'sm-report-icon',
+      action: 'findings',
+      leaf: true
+    },
+    {
+      id: `${collection.collectionId}-assets-node`,
+      node: 'assets',
+      text: 'Assets',
+      iconCls: 'sm-asset-icon'
+    },
+    {
+      id: `${collection.collectionId}-stigs-node`,
+      node: 'stigs',
+      text: 'STIGs',
+      iconCls: 'sm-stig-icon'
+    }
+  )
+  let node = {
+    id: `${collection.collectionId}-collection-node`,
+    node: 'collection',
+    text: collection.name,
+    collectionId: collection.collectionId,
+    collectionName: collection.name,
+    iconCls: 'sm-collection-icon',
+    children: children
+  }
+  return node
+}
+
+SM.AssetNodeConfig = function (collectionId, asset) {
+  return {
+    id: `${collectionId}-${asset.assetId}-assets-asset-node`,
+    text: asset.name,
+    report: 'asset',
+    collectionId: collectionId,
+    assetId: asset.assetId,
+    iconCls: 'sm-asset-icon',
+    qtip: asset.name
+  }
+}
+
+SM.AssetStigNodeConfig = function (asset, stig) {
+  return {
+    id: `${asset.collection.collectionId}-${asset.assetId}-${stig.benchmarkId}-leaf`,
+    text: stig.benchmarkId,
+    leaf: true,
+    report: 'review',
+    iconCls: 'sm-stig-icon',
+    stigName: stig.benchmarkId,
+    assetName: asset.name,
+    stigRevStr: stig.lastRevisionStr,
+    assetId: asset.assetId,
+    collectionId: asset.collection.collectionId,
+    workflow: asset.collection.workflow,
+    benchmarkId: stig.benchmarkId,
+    qtip: stig.title
+  }
+}
+
+SM.StigNodeConfig = function (collectionId, stig) {
+  return {
+    collectionId: collectionId,
+    text: stig.benchmarkId,
+    report: 'stig',
+    iconCls: 'sm-stig-icon',
+    stigRevStr: stig.lastRevisionStr,
+    id: `${collectionId}-${stig.benchmarkId}-stigs-stig-node`,
+    benchmarkId: stig.benchmarkId,
+    qtip: stig.title
+  }
+}
+
+SM.StigAssetNodeObj = function (stig, asset) {
+  return {
+    id: `${asset.collection.collectionId}-${asset.assetId}-${stig.benchmarkId}-leaf`,
+    text: asset.name,
+    leaf: true,
+    report: 'review',
+    iconCls: 'sm-asset-icon',
+    stigName: stig.benchmarkId,
+    assetName: asset.name,
+    stigRevStr: stig.lastRevisionStr, // HACK: relies on exclusion of other assigned stigs from /assets
+    assetId: asset.assetId,
+    collectionId: asset.collection.collectionId,
+    benchmarkId: stig.benchmarkId,
+    qtip: asset.name
+  }
+}
+
 SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     initComponent: function() {
       let me = this
       let config = {
           id: 'app-nav-tree',
-          contextMenu: new Ext.menu.Menu({
-            items: [{
-              id: 'open-collection-review',
-              text: 'Open Approval workspace',
-              iconCls: 'sm-application-go-icon'
-            }
-              , {
-              id: 'open-poam-workspace',
-              text: 'Open POAM/RAR workspace',
-              iconCls: 'sm-application-go-icon'
-            }
-              , {
-              id: 'app-nav-tree-separator-1',
-              xtype: 'menuseparator'
-            }
-              , {
-              id: 'open-hbss-control',
-              text: 'Disable HBSS SCAP imports...',
-              iconCls: 'sm-list-remove-16-icon'
-            }
-              , {
-              id: 'app-nav-tree-separator-2',
-              xtype: 'menuseparator'
-            }
-              , {
-              id: 'unlock-all-collection-reviews',
-              text: 'Reset reviews...',
-              iconCls: 'sm-unlock-icon'
-            }
-              , {
-              id: 'app-nav-tree-separator-3',
-              xtype: 'menuseparator'
-            }
-              , {
-              id: 'unlock-collection-stig-reviews',
-              text: 'Reset reviews...',
-              iconCls: 'sm-unlock-icon'
-            }, {
-              id: 'app-nav-tree-separator-4',
-              xtype: 'menuseparator'
-            }
-              , {
-              id: 'unlock-collection-asset-reviews',
-              text: 'Reset reviews...',
-              iconCls: 'sm-unlock-icon'
-            }
-      
-            ],
-            listeners: {
-              itemclick: function (item) {
-                var n = item.parentMenu.contextNode;
-                switch (item.id) {
-                  case 'open-collection-review':
-                    openCollectionReview(n);
-                    break;
-                  case 'open-poam-workspace':
-                    openPoamWorkspace(n);
-                    break;
-                  case 'open-hbss-control':
-                    openHbssControl(n);
-                    break;
-                  case 'unlock-all-collection-reviews':
-                    //====================================================
-                    //RESET ALL REVIEWS FOR PACKAGE AFTER PROMPTING USER.
-                    //====================================================
-                    var unlockObject = new Object;
-                    getUnlockInfo(n, unlockObject);
-                    getUnlockPrompt("PACKAGE", unlockObject, undefined);
-                    break;
-                  case 'unlock-collection-stig-reviews':
-                    //====================================================
-                    //RESET ALL REVIEWS FOR THE STIG IN SPECIFIC PACKAGE.
-                    //====================================================
-                    var unlockObject = new Object;
-                    getUnlockInfo(n, unlockObject);
-                    getUnlockPrompt("STIG", unlockObject, undefined);
-                    break;
-                  case 'unlock-collection-asset-reviews':
-                    //====================================================
-                    //UNLOCK ALL REVIEWS FOR ASSET IN SPECIFIC PACKAGE.
-                    //====================================================
-                    var unlockObject = new Object;
-                    getUnlockInfo(n, unlockObject);
-                    getUnlockPrompt("ASSET", unlockObject, undefined);
-                    break;
-                }
-              }
-            }
-          }),
           autoScroll: true,
           split: true,
           collapsible: true,
@@ -113,61 +133,6 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           loadMask: 'Loading...',
           listeners: {
             click: me.treeClick,
-            contextmenu: function (node, e) {
-              //          Register the context node with the menu so that a Menu Item's handler function can access
-              //          it via its parentMenu property.
-              node.select();
-              //===============================================
-              //HIDE ALL BATCH RESET OPTIONS FROM THE ONSET
-              //===============================================
-              Ext.getCmp('open-collection-review').hide();
-              Ext.getCmp('open-poam-workspace').hide();
-              Ext.getCmp('app-nav-tree-separator-1').hide();
-              Ext.getCmp('open-hbss-control').hide();
-              Ext.getCmp('app-nav-tree-separator-2').hide();
-              Ext.getCmp('unlock-all-collection-reviews').hide();
-              Ext.getCmp('app-nav-tree-separator-3').hide();
-              Ext.getCmp('unlock-collection-stig-reviews').hide();
-              Ext.getCmp('app-nav-tree-separator-4').hide();
-              Ext.getCmp('unlock-collection-asset-reviews').hide();
-      
-              if ((node.attributes.node === 'collection' || node.attributes.report === 'stig' || node.attributes.report === 'asset') && (curUser.accessLevel === 3 || curUser.privileges.canAdmin)) {
-                var c = node.getOwnerTree().contextMenu;
-                c.contextNode = node;
-                if (node.attributes.node == 'collection') {
-                  Ext.getCmp('open-poam-workspace').show();   //Open Poam workspace
-                  Ext.getCmp('app-nav-tree-separator-1').show(); //Disable HBSS SCAP Imports
-                  Ext.getCmp('open-hbss-control').show();
-                  if (curUser.accessLevel === 3) { //Staff
-                    //===============================================
-                    //Include collection-accessLevel reset options
-                    //===============================================
-                    Ext.getCmp('app-nav-tree-separator-2').show();
-                    Ext.getCmp('unlock-all-collection-reviews').show();
-                  }
-                  c.showAt(e.getXY());
-                } else if (node.attributes.report == 'stig') {
-                  Ext.getCmp('open-collection-review').show(); //Open Approval Workspace
-                  Ext.getCmp('open-poam-workspace').show();
-                  if (curUser.accessLevel === 3) {
-                    //===============================================
-                    //Include STIG-accessLevel unlock options
-                    //===============================================
-                    Ext.getCmp('app-nav-tree-separator-3').show();
-                    Ext.getCmp('unlock-collection-stig-reviews').show();
-                  }
-                  c.showAt(e.getXY());
-                } else {
-                  if (curUser.accessLevel === 3) {
-                    //===============================================
-                    //Include ASSET-accessLevel reset options
-                    //===============================================
-                    Ext.getCmp('unlock-collection-asset-reviews').show();
-                    c.showAt(e.getXY());
-                  }
-                }
-              }
-            },
             beforeexpandnode: function (n) {
               n.loaded = false; // always reload from the server
             }
@@ -260,21 +225,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               // Add new STIG(s), if any
               for (let apiAssetStig of apiAsset.stigs) {
                 if (!assetNodeBenchmarkIds.includes(apiAssetStig.benchmarkId)) {
-                  assetNode.appendChild({
-                    id: `${apiAsset.collection.collectionId}-${apiAsset.assetId}-${apiAssetStig.benchmarkId}-leaf`,
-                    text: apiAssetStig.benchmarkId,
-                    leaf: true,
-                    report: 'review',
-                    iconCls: 'sm-stig-icon',
-                    stigName: apiAssetStig.benchmarkId,
-                    assetName: apiAsset.name,
-                    stigRevStr: apiAssetStig.lastRevisionStr,
-                    assetId: apiAsset.assetId,
-                    collectionId: apiAsset.collection.collectionId,
-                    workflow: apiAsset.collection.workflow,
-                    benchmarkId: apiAssetStig.benchmarkId,
-                    qtip: apiAssetStig.title
-                  })
+                  assetNode.appendChild( SM.AssetStigNodeConfig(apiAsset, apiAssetStig) )
                   assetNode.sort(me.sortNodes)
                 }
               }
@@ -318,20 +269,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                   }
                   else {
                     // The Asset node does not exist -- create it
-                    stigNode.appendChild({
-                      id: `${apiAsset.collection.collectionId}-${apiAsset.assetId}-${stigNode.attributes.benchmarkId}-leaf`,
-                      text: apiAsset.name,
-                      leaf: true,
-                      report: 'review',
-                      iconCls: 'sm-asset-icon',
-                      stigName: stigNode.attributes.benchmarkId,
-                      assetName: apiAsset.name,
-                      stigRevStr: stigNode.attributes.lastRevisionStr,
-                      assetId: apiAsset.assetId,
-                      collectionId: apiAsset.collection.collectionId,
-                      benchmarkId: stigNode.attributes.benchmarkId,
-                      qtip: apiAsset.name
-                    })
+                    stigNode.appendChild(SM.StigAssetNodeObj(stigNode.attributes, apiAsset))
                     stigNode.sort(me.sortNodes)
                   }
                 }
@@ -355,18 +293,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           // Add new STIG node(s), if any
           for (let collectionStig of collectionStigs) {
             if (!stigsNodeBenchmarkIds.includes(collectionStig.benchmarkId)) {
-              stigsNode.appendChild({
-                collectionId: apiAsset.collection.collectionId,
-                text: collectionStig.benchmarkId,
-                collectionName: apiAsset.collection.name,
-                collectionId: apiAsset.collection.collectionId,
-                report: 'stig',
-                iconCls: 'sm-stig-icon',
-                stigRevStr: collectionStig.lastRevisionStr,
-                id: `${apiAsset.collection.collectionId}-${collectionStig.benchmarkId}-stigs-stig-node`,
-                benchmarkId: collectionStig.benchmarkId,
-                qtip: collectionStig.title
-              })
+              stigsNode.appendChild(SM.StigNodeConfig(apiAsset.collection.collectionId, collectionStig))
               stigsNode.sort(me.sortNodes)
             }
           }
@@ -410,6 +337,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
       SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, me)
       SM.Dispatcher.addListener('assetcreated', this.onAssetCreated, me)
 
+    
     },
     loadTree: async function (node, cb) {
         try {
@@ -466,63 +394,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               method: 'GET'
             })
             let r = JSON.parse(result.response.responseText)
-            let content = r.map(collection => {
-                let children = []
-                collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
-                if (collectionGrant && collectionGrant.accessLevel >= 3) {
-                  children.push({
-                    id: `${collection.collectionId}-pkgconfig-node`,
-                    text: 'Configuration',
-                    collectionId: collection.collectionId,
-                    collectionName: collection.name,
-                    action: 'collection-management',
-                    iconCls: 'sm-setting-icon',
-                    leaf: true
-                  })
-                }
-                children.push(
-                  // {
-                  //   id: `${collection.collectionId}-import-result-node`,
-                  //   text: 'Import STIG results...',
-                  //   collectionId: collection.collectionId,
-                  //   collectionName: collection.name,
-                  //   iconCls: 'sm-import-icon',
-                  //   action: 'import',
-                  //   leaf: true
-                  // },
-                  {
-                    id: `${collection.collectionId}-findings-node`,
-                    text: 'Findings',
-                    collectionId: collection.collectionId,
-                    collectionName: collection.name,
-                    iconCls: 'sm-report-icon',
-                    action: 'findings',
-                    leaf: true
-                  },
-                  {
-                    id: `${collection.collectionId}-assets-node`,
-                    node: 'assets',
-                    text: 'Assets',
-                    iconCls: 'sm-asset-icon'
-                  },
-                  {
-                    id: `${collection.collectionId}-stigs-node`,
-                    node: 'stigs',
-                    text: 'STIGs',
-                    iconCls: 'sm-stig-icon'
-                  }
-                )
-                let node = {
-                  id: `${collection.collectionId}-collection-node`,
-                  node: 'collection',
-                  text: collection.name,
-                  collectionId: collection.collectionId,
-                  collectionName: collection.name,
-                  iconCls: 'sm-collection-icon',
-                  children: children
-                }
-                return node
-            })
+            let content = r.map(collection => SM.CollectionNodeConfig(collection))
             if (curUser.privileges.canCreateCollection) {
               content.unshift({
                 id: `collection-create-leaf`,
@@ -549,16 +421,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             })
             let r = JSON.parse(result.response.responseText)
-            let content = r.assets.map(asset => ({
-                id: `${collectionId}-${asset.assetId}-assets-asset-node`,
-                text: asset.name,
-                report: 'asset',
-                collectionId: collectionId,
-                assetId: asset.assetId,
-                iconCls: 'sm-asset-icon',
-                qtip: asset.name
-              })
-            )
+            let content = r.assets.map(asset => SM.AssetNodeConfig(collectionId, asset))
             cb(content, { status: true })
             return
           }
@@ -574,23 +437,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 projection: 'stigs'
               }
             })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.stigs.map(stig => ({
-              id: `${collectionId}-${assetId}-${stig.benchmarkId}-leaf`,
-              text: stig.benchmarkId,
-              leaf: true,
-              report: 'review',
-              iconCls: 'sm-stig-icon',
-              stigName: stig.benchmarkId,
-              assetName: r.name,
-              stigRevStr: stig.lastRevisionStr,
-              assetId: r.assetId,
-              collectionId: collectionId,
-              workflow: r.collection.workflow,
-              benchmarkId: stig.benchmarkId,
-              qtip: stig.title
-            })
-            )
+            let asset = JSON.parse(result.response.responseText)
+            let content = asset.stigs.map(stig => SM.AssetStigNodeConfig(asset, stig))
             cb(content, { status: true })
             return
           }
@@ -607,21 +455,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             })
             let r = JSON.parse(result.response.responseText)
-            let content = r.stigs.map(stig => ({
-              collectionId: collectionId,
-              text: stig.benchmarkId,
-              collectionName: r.name,
-              collectionId: collectionId,
-              report: 'stig',
-              iconCls: 'sm-stig-icon',
-              reqRar: r.reqRar,
-              stigRevStr: stig.lastRevisionStr,
-              id: `${collectionId}-${stig.benchmarkId}-stigs-stig-node`,
-              benchmarkId: stig.benchmarkId,
-              qtip: stig.title
-            })
-            )
-            cb(content, { status: true })
+            let content = r.stigs.map( stig => SM.StigNodeConfig( collectionId, stig ) )
+            cb( content, { status: true } )
             return
           }
           // Collection-STIGs-Asset node
@@ -639,21 +474,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             })
             let r = JSON.parse(result.response.responseText)
-            let content = r.map(asset => ({
-              id: `${collectionId}-${asset.assetId}-${benchmarkId}-leaf`,
-              text: asset.name,
-              leaf: true,
-              report: 'review',
-              iconCls: 'sm-asset-icon',
-              stigName: benchmarkId,
-              assetName: asset.name,
-              stigRevStr: asset.stigs[0].lastRevisionStr, // BUG: relies on exclusion of other assigned stigs from /assets
-              assetId: asset.assetId,
-              collectionId: collectionId,
-              benchmarkId: benchmarkId,
-              qtip: asset.name
-            })
-            )
+            let content = r.map(asset => SM.StigAssetNodeObj(asset.stigs[0], asset))
             cb(content, { status: true })
             return
           }
@@ -732,9 +553,5 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             break;
         }
       
-    },
-    
-      
-      
-
+    }
 })
