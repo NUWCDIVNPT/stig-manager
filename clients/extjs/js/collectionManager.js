@@ -83,6 +83,9 @@ async function addCollectionManager( collectionId, collectionName ) {
 				}
 			]
 		})
+		let assetsChanged = (apiAsset) => {
+			stigGrid.getStore().reload()
+		}
 		managerTab.updateTitle = function () {
 			this.setTitle(`${this.collectionName} : Configuration`)
 		}
@@ -108,6 +111,9 @@ async function addCollectionManager( collectionId, collectionName ) {
 		})))
 		assetGrid.getStore().load()
 		stigGrid.getStore().load()
+		SM.Dispatcher.addListener('assetchanged', assetsChanged)
+		SM.Dispatcher.addListener('assetcreated', assetsChanged)
+		SM.Dispatcher.addListener('assetdeleted', assetsChanged)
 	}
 	catch( e) {
 		throw (e)

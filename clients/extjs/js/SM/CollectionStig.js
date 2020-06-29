@@ -37,10 +37,10 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         let stigStore = new Ext.data.JsonStore({
             grid: this,
             proxy: this.proxy,
-            baseParams: {
-                collectionId: this.collectionId,
-                projection: ['stigs']
-            },
+            // baseParams: {
+            //     collectionId: this.collectionId,
+            //     projection: ['stigs']
+            // },
             root: '',
             fields: fieldsConstructor,
             idProperty: 'benchmarkId',

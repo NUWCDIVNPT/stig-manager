@@ -238,24 +238,27 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         id: `assetGrid-${id}-deleteBtn`,
                         text: 'Delete Asset',
                         disabled: true,
-                        handler: function() {
+                        handler: async function () {
                             try {
                                 var confirmStr="Deleteing this asset will <b>permanently remove</b> all data associated with the asset. This includes all the asset's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the asset?";
                                 Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
                                     if (btn == 'yes') {
-                                        let asset = me.getSelectionModel().getSelected()
+                                        let assetRecord = me.getSelectionModel().getSelected()
                                         let result = await Ext.Ajax.requestPromise({
-                                            url: `${STIGMAN.Env.apiBase}/assets/${asset.data.assetId}`,
+                                            url: `${STIGMAN.Env.apiBase}/assets/${assetRecord.data.assetId}`,
                                             method: 'DELETE'
                                         })
-                                        me.store.remove(asset)
+                                        let apiAsset = JSON.parse(result.response.responseText)
+                                        me.store.remove(assetRecord)
+                                        SM.Dispatcher.fireEvent('assetdeleted', apiAsset)
                                     }
                                 })
                             }
                             catch (e) {
                                 alert(e.stack)
                             }
-                        }
+                        },
+                    
                     }
                     ,'-'
                     ,{

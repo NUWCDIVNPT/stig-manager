@@ -3080,6 +3080,7 @@ components:
       schema:
         type: array
         items:
+          pattern: ^([\w\.]+\:.*?)$
           type: string
     CollectionProjectionQuery:
       name: projection
