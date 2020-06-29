@@ -128,12 +128,14 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                                 var confirmStr="Removing this STIG will remove all related Asset assignments. If the STIG is added in the future, the assignments will need to be established again.";
                                 Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
                                     if (btn == 'yes') {
-                                        let asset = me.getSelectionModel().getSelected()
+                                        let stigRecord = me.getSelectionModel().getSelected()
                                         let result = await Ext.Ajax.requestPromise({
-                                            url: `${STIGMAN.Env.apiBase}`,
-                                            method: 'DELETE'
+                                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/stigs/${stigRecord.data.benchmarkId}/assets`,
+                                            method: 'PUT',
+                                            jsonData: []
                                         })
-                                        me.store.remove(asset)
+                                        me.store.remove(stigRecord)
+                                        SM.Dispatcher.fireEvent('stigassetschanged', me.collectionId, stigRecord.data.benchmarkId, [] )
                                     }
                                 })
                             }
@@ -720,7 +722,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
                 {
                     xtype: 'fieldset',
                     title: '<b>Asset Assignments</b>',
-                    anchor: "100% -270",
+                    anchor: "100% -70",
                     layout: 'fit',
                     items: [
                         this.stigAssetsGrid
@@ -738,33 +740,6 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.CollectionStigProperties.superclass.initComponent.call(this)
-
-        // this.getForm().getFieldValues = function(dirtyOnly, getDisabled){
-        //     var o = {},
-        //         n,
-        //         key,
-        //         val;
-        //     this.items.each(function(f) {
-        //         // Added condition for f.submitValue
-        //         if ( f.submitValue && (!f.disabled || getDisabled) && (dirtyOnly !== true || f.isDirty())) {
-        //             n = f.getName();
-        //             key = o[n];
-        //             val = f.getValue();
-    
-        //             if(Ext.isDefined(key)){
-        //                 if(Ext.isArray(key)){
-        //                     o[n].push(val);
-        //                 }else{
-        //                     o[n] = [key, val];
-        //                 }
-        //             }else{
-        //                 o[n] = val;
-        //             }
-        //         }
-        //     });
-        //     return o;
-        // }
-    
 
     },
     initPanel: async function () {
@@ -799,8 +774,8 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
                             jsonData: values.assets
                         })
                         const apiStigAssets = JSON.parse(result.response.responseText)
+                        parentGrid.getStore().reload()
                         SM.Dispatcher.fireEvent('stigassetschanged', btn.collectionId, values.benchmarkId, apiStigAssets)
-
                         appwindow.close()
                     }
                 }
@@ -817,7 +792,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
             title: 'STIG Assignments, Collection ID ' + collectionId,
             modal: true,
             hidden: true,
-            width: 660,
+            width: 510,
             height:660,
             layout: 'fit',
             plain:true,

@@ -9,5 +9,6 @@ SM.Dispatcher.addEvents(
     'collectionchanged',
     'assetcreated',
     'assetdeleted',
-    'assetchanged'
+    'assetchanged',
+    'stigassetschanged'
 )
