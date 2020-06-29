@@ -37,10 +37,6 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         let stigStore = new Ext.data.JsonStore({
             grid: this,
             proxy: this.proxy,
-            // baseParams: {
-            //     collectionId: this.collectionId,
-            //     projection: ['stigs']
-            // },
             root: '',
             fields: fieldsConstructor,
             idProperty: 'benchmarkId',
@@ -106,7 +102,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 rowdblclick: {
                     fn: function(grid,rowIndex,e) {
                         var r = grid.getStore().getAt(rowIndex);
-                        showCollectionStigProps(r.get('benchmarkId'), me.collectionId, grid);
+                        showCollectionStigProps( r.get('benchmarkId'), grid );
                     }
                 }
             },
@@ -115,8 +111,9 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     {
                         iconCls: 'icon-add',
                         text: 'Attach STIG...',
-                        handler: function() {
-                            showCollectionStigProps( null, me.collectionId, me);            
+                        grid: me,
+                        handler: function(btn) {
+                            showCollectionStigProps( null, btn.grid );            
                         }
                     }
                     ,'-'
@@ -733,6 +730,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
             ],
             buttons: [{
                 text: this.btnText || 'Save',
+                collectionId: me.collectionId,
                 formBind: true,
                 handler: this.btnHandler || function () {}
             }]
@@ -780,19 +778,19 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
 })
 
 
-async function showCollectionStigProps( benchmarkId, collectionId, parentGrid ) {
+async function showCollectionStigProps( benchmarkId, parentGrid ) {
     try {
+        let collectionId = parentGrid.collectionId
         let stigPropsFormPanel = new SM.CollectionStigProperties({
             collectionId: collectionId,
             benchmarkId: benchmarkId,
             stigFilteringStore: parentGrid.store,
-            btnHandler: async function(){
+            btnHandler: async function( btn ){
                 try {
                     if (stigPropsFormPanel.getForm().isValid()) {
                         let values = stigPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-                        // change "collections" to "collectionIds"
                         let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${values.benchmarkId}/assets`,
+                            url: `${STIGMAN.Env.apiBase}/collections/${btn.collectionId}/stigs/${values.benchmarkId}/assets`,
                             method: 'PUT',
                             params: {
                                 elevate: curUser.privileges.canAdmin
@@ -800,8 +798,8 @@ async function showCollectionStigProps( benchmarkId, collectionId, parentGrid ) 
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values.assets
                         })
-                        const apiStigAsset = JSON.parse(result.response.responseText)
-                        SM.Dispatcher.fireEvent('stig-assets-changed', apiStigAsset)
+                        const apiStigAssets = JSON.parse(result.response.responseText)
+                        SM.Dispatcher.fireEvent('stigassetschanged', btn.collectionId, values.benchmarkId, apiStigAssets)
 
                         appwindow.close()
                     }
