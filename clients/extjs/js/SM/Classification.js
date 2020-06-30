@@ -27,7 +27,7 @@ class Classification {
                 this.classificationText = 'TOP SECRET (TS)'
                 break
             case 'SCI':
-                this.classificationCls = 'topsecretsci'
+                this.classificationCls = 'sci'
                 this.classificationText = 'TOP SECRET / SCI (TS/SCI)'
                 break
             case 'NONE':

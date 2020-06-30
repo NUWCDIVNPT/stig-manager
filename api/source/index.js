@@ -127,9 +127,10 @@ async function startServer(app) {
     await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
 
     // Set/change classification if indicated
+    console.log(`Checking classification...`)
     if (config.setClassification) {
       console.log(`Setting classification to ${config.setClassification}`)
-      OperationSvc.setConfigurationItem('classification', config.setClassification)
+      await OperationSvc.setConfigurationItem('classification', config.setClassification)
     }
 
     // Start the server
