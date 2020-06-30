@@ -2780,6 +2780,8 @@ components:
           type: string
         title:
           type: string
+        ruleCount:
+          type: integer
     StigAsset:
       type: object
       properties:

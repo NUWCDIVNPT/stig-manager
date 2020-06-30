@@ -48,7 +48,7 @@ CREATE TABLE `asset` (
   `collectionId` int NOT NULL,
   `ip` varchar(45) DEFAULT NULL,
   `nonnetwork` bit(1) NOT NULL DEFAULT b'0',
-  `metadata` json DEFAULT NULL,
+  `metadata` json NOT NULL,
   PRIMARY KEY (`assetId`),
   UNIQUE KEY `INDEX_NAMECOLLECTION` (`name`, `collectionId`),
   KEY `INDEX_NONNETWORK` (`nonnetwork`),
@@ -190,6 +190,11 @@ CREATE TABLE `current_rev` (
   `statusDate` varchar(45) DEFAULT NULL,
   `description` varchar(4000) DEFAULT NULL,
   `active` tinyint(4) DEFAULT NULL,
+  `groupCount` int(11) DEFAULT 0 NOT NULL,
+  `ruleCount` int(11) DEFAULT 0 NOT NULL,
+  `checkCount` int(11) DEFAULT 0 NOT NULL,
+  `fixCount` int(11) DEFAULT 0 NOT NULL,
+  `ovalCount` int(11) DEFAULT 0 NOT NULL,
   PRIMARY KEY (`revId`),
   UNIQUE KEY `index2` (`benchmarkId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -471,6 +476,11 @@ CREATE TABLE `revision` (
   `statusDate` varchar(45) DEFAULT NULL,
   `description` varchar(4000) DEFAULT NULL,
   `active` tinyint(4) DEFAULT '1',
+  `groupCount` int(11) DEFAULT 0 NOT NULL,
+  `ruleCount` int(11) DEFAULT 0 NOT NULL,
+  `checkCount` int(11) DEFAULT 0 NOT NULL,
+  `fixCount` int(11) DEFAULT 0 NOT NULL,
+  `ovalCount` int(11) DEFAULT 0 NOT NULL,
   PRIMARY KEY (`revId`),
   UNIQUE KEY `uidx_revision_benchmarkId_version_release` (`benchmarkId`,`version`,`release`),
   CONSTRAINT `FK_REVISION_1` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -658,7 +668,7 @@ CREATE TABLE `user_data` (
   `globalAccess` bit(1) NOT NULL DEFAULT b'0',
   `canCreateCollection` bit(1) NOT NULL DEFAULT b'0',
   `canAdmin` bit(1) NOT NULL DEFAULT b'0',
-  `metadata` json DEFAULT NULL,
+  `metadata` json NOT NULL,
   PRIMARY KEY (`userId`),
   UNIQUE KEY `INDEX_username` (`username`),
   KEY `INDEX_display` (`display`),
@@ -712,7 +722,12 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `status`,
  1 AS `statusDate`,
  1 AS `description`,
- 1 AS `active`*/;
+ 1 AS `active`,
+ 1 AS `groupCount`,
+ 1 AS `ruleCount`,
+ 1 AS `checkCount`,
+ 1 AS `fixCount`,
+ 1 AS `ovalCount`*/;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -727,7 +742,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`description` AS `description`,`rr`.`active` AS `active` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`description` AS `description`,`r`.`active` AS `active`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY (`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
+/*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount`,`rr`.`ovalCount` AS `ovalCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,`r`.`ovalCount` AS `ovalCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY (`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;

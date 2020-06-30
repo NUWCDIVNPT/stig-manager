@@ -13,6 +13,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {name: 'title', type: 'string'},
             {name: 'lastRevisionStr', type: 'string'},
             {name: 'lastRevisionDate', type: 'string'},
+            {name: 'ruleCount', type: 'integer'}
         ])
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
@@ -74,8 +75,15 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "Date",
 				width: 50,
 				dataIndex: 'lastRevisionDate',
+                align: "center",
 				sortable: true
-			}
+			},{
+                header: 'Rules',
+                width: 50,
+                dataIndex: 'ruleCount',
+                align: "center",
+                sortable: true
+            }
         ]
         let config = {
             layout: 'fit',

@@ -1557,12 +1557,6 @@ function uploadStigs(n) {
 			allowBlank: false
 		},
 		items: [
-			{
-				xtype: 'checkbox',
-				id: 'import-replace',
-				name: 'replace',
-				label: "Overwrite existing data"
-			},
 			{ 
 				xtype:'fieldset',
 				title: 'Instructions',

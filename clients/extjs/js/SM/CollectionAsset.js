@@ -101,10 +101,16 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             {name: 'ip', type: 'string'},
             {name: 'nonnetwork', type: 'boolean'},
             {
+                name: 'ruleCount',
+                type: 'integer',
+                mapping: 'adminStats.ruleCount'
+            },
+            {
                 name: 'stigCount',
                 type: 'integer',
                 mapping: 'adminStats.stigCount'
-            },{
+            },
+            {
                 name: 'stigUnassignedCount',
                 type: 'integer',
                 convert: (v, r) => r.adminStats.stigCount - r.adminStats.stigAssignedCount
@@ -189,6 +195,12 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				align: "center",
 				tooltip:"STIGs Missing User Assignments",
 				sortable: true
+			},{ 	
+				header: "Rule count",
+				width: 70,
+				dataIndex: 'ruleCount',
+				align: "center",
+				sortable: true
 			}
         ]
         let config = {
@@ -244,6 +256,9 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                                 Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
                                     if (btn == 'yes') {
                                         let assetRecord = me.getSelectionModel().getSelected()
+                                        // Edge case to handle when the selected record was changed (e.g., stats updated) 
+                                        // while still selected, then is deleted
+                                        assetRecord = me.store.getById(assetRecord.id)
                                         let result = await Ext.Ajax.requestPromise({
                                             url: `${STIGMAN.Env.apiBase}/assets/${assetRecord.data.assetId}`,
                                             method: 'DELETE'
@@ -328,6 +343,9 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 },{
                     name: 'lastRevisionDate',
                     type: 'string'
+                },{
+                    name: 'ruleCount',
+                    type: 'integer'
                 }
             ],
             autoLoad: this.autoLoad,
@@ -428,6 +446,9 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         const fields = [
             {	name:'benchmarkId',
                 type: 'string'
+            },
+            {	name:'ruleCount',
+                type: 'integer'
             }
         ]
         this.newRecordConstructor = Ext.data.Record.create(fields)
@@ -467,6 +488,14 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'benchmarkId',
                 sortable: true,
                 editor: stigSelectionField
+            },
+            { 	
+                header: "Rules", 
+                width: 125,
+                dataIndex: 'ruleCount',
+                align: 'center',
+                sortable: true,
+                editor: new Ext.form.DisplayField({submitValue: false})
             }
         ]
         this.editor =  new Ext.ux.grid.RowEditor({
@@ -484,6 +513,12 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.store.resumeEvents();
                         this.grid.getView().refresh();
                     }
+                },
+                validateedit: function (editor, changes, record, index) {
+                    // Get the stigSelection combo
+                    let combo = editor.items.items[0]
+                    // Lookup ruleCount for the selectedIndex
+                    changes.ruleCount = combo.store.getAt(combo.selectedIndex).data.ruleCount
                 },
                 afteredit: function (editor, changes, record, index) {
                     // "Save" the record by reconfiguring the store's data collection
@@ -531,7 +566,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            bbar: new SM.RowEditorToolbar({
+            tbar: new SM.RowEditorToolbar({
                 itemString: 'STIG',
                 editor: this.editor,
                 gridId: this.id,
@@ -548,6 +583,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             setValue: function(v) {
                 const data = v.map( (sr) => ({
                     benchmarkId: sr.benchmarkId,
+                    ruleCount: sr.ruleCount
                 }))
                 stigAssignedStore.loadData(data)
             },
@@ -661,6 +697,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
         SM.AssetProperties.superclass.initComponent.call(this)
 
         this.getForm().getFieldValues = function(dirtyOnly, getDisabled){
+            // Override to support submitValue boolean
             var o = {},
                 n,
                 key,
@@ -707,6 +744,8 @@ async function showAssetProps( assetId, initialCollectionId ) {
                 try {
                     if (assetPropsFormPanel.getForm().isValid()) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+                        // //TODO: getFieldValues should not return 'undefined' 
+                        // delete values.undefined
                         let method = assetId ? 'PUT' : 'POST'
                         let url = assetId ? `${STIGMAN.Env.apiBase}/assets/${assetId}` : `${STIGMAN.Env.apiBase}/assets`
                         let result = await Ext.Ajax.requestPromise({

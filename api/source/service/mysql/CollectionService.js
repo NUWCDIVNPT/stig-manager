@@ -58,7 +58,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
                   'benchmarkId', cr.benchmarkId, 
                   'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
                   'lastRevisionDate', cr.benchmarkDateSql,
-                  'title', st.title)
+                  'title', st.title,
+                  'ruleCount', cr.ruleCount)
               else null end 
             order by cr.benchmarkId),
             ''),

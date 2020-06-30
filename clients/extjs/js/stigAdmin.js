@@ -12,6 +12,9 @@ function addStigAdmin() {
 			name: 'lastRevisionDate',
 			type: 'date',
 			dateFormat: 'Y-m-d'
+		},{
+			name: 'ruleCount',
+			type: 'integer'
 		}
 	]);
 
@@ -40,26 +43,6 @@ function addStigAdmin() {
 		}
 	});
 
-	let taStore = new Ext.data.JsonStore({
-		proxy: new Ext.data.HttpProxy({
-			url: `${STIGMAN.Env.apiBase}/stigs`,
-			method: 'GET'
-		}),
-		root: '',
-		fields: stigFields,
-		idProperty: 'benchmarkId',
-		sortInfo: {
-			field: 'benchmarkId',
-			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-		},
-		listeners: {
-			load: function (store,records) {
-			},
-			remove: function (store,record,index) {
-			}
-		}
-	})
-
 	var stigGrid = new Ext.grid.GridPanel({
 		id: 'stigGrid',
 		store: stigStore,
@@ -79,15 +62,22 @@ function addStigAdmin() {
 			},{ 	
 				header: "Current revision",
 				width: 150,
+                align: "center",
 				dataIndex: 'lastRevisionStr',
 				sortable: true
-			}
-			,{ 	
+			},{ 	
 				header: "Revision date",
 				width: 150,
+                align: "center",
 				dataIndex: 'lastRevisionDate',
 				xtype: 'datecolumn',
 				format: 'Y-m-d',
+				sortable: true
+			},{ 	
+				header: "Rule count",
+				width: 150,
+                align: "center",
+				dataIndex: 'ruleCount',
 				sortable: true
 			}
 		],
@@ -118,17 +108,6 @@ function addStigAdmin() {
 			// }
 		},
 		tbar: [
-			// {
-			// 	iconCls: 'sm-asset-icon',
-			// 	text: 'Assign assets',
-			// 	disabled: false,
-			// 	handler: function() {
-			// 		var r = stigGrid.getSelectionModel().getSelected();
-			// 		Ext.getBody().mask('Getting assignments for ' + r.get('benchmarkId') + '...');
-			// 		showStigAssignments(r.get('benchmarkId'));
-			// }
-			// },
-			// '-',
 			{
 				iconCls: 'sm-stig-icon',
 				text: 'Import STIGs',
@@ -136,58 +115,7 @@ function addStigAdmin() {
 				handler: function() {
 					uploadStigs();
 				}
-			},
-			// {
-			// 	iconCls: 'sm-stig-icon',
-			// 	xtype: 'combo',
-			// 	store: taStore,
-			// 	mode: 'local',
-			// 	displayField: 'benchmarkId',
-			// 	valueField: 'benchmarkId',
-			// 	forceSelection: true,
-			// 	allowBlank: false,
-			// 	typeAhead: true,
-			// 	minChars: 2,
-			// 	hideTrigger: true,
-			// 	lastQuery: '',
-			// 	doQuery : function(q, forceAll){
-			// 		q = Ext.isEmpty(q) ? '' : q;
-			// 		var qe = {
-			// 			query: q,
-			// 			forceAll: forceAll,
-			// 			combo: this,
-			// 			cancel:false
-			// 		};
-			// 		if(this.fireEvent('beforequery', qe)===false || qe.cancel){
-			// 			return false;
-			// 		}
-			// 		q = qe.query;
-			// 		forceAll = qe.forceAll;
-			// 		if(forceAll === true || (q.length >= this.minChars)){
-			// 			if(this.lastQuery !== q){
-			// 				this.lastQuery = q;
-			// 				if(this.mode == 'local'){
-			// 					this.selectedIndex = -1;
-			// 					if(forceAll){
-			// 						this.store.clearFilter();
-			// 					}else{
-			// 						this.store.filter(this.displayField, q, true, false);
-			// 					}
-			// 					this.onLoad();
-			// 				}else{
-			// 					this.store.baseParams[this.queryParam] = q;
-			// 					this.store.load({
-			// 						params: this.getParams(q)
-			// 					});
-			// 					this.expand();
-			// 				}
-			// 			}else{
-			// 				this.selectedIndex = -1;
-			// 				this.onLoad();
-			// 			}
-			// 		}
-			// 	}
-			// }
+			}
 		],
 		bbar: new Ext.Toolbar({
 			items: [

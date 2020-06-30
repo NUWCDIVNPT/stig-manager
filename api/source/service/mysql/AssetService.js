@@ -31,6 +31,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       'left join collection p on a.collectionId = p.collectionId',
       'left join collection_grant pg on p.collectionId = pg.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
+      'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
@@ -38,7 +39,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (inProjection.includes('adminStats')) {
       columns.push(`json_object(
         'stigCount', COUNT(distinct sa.saId),
-        'stigAssignedCount', COUNT(distinct usa.saId)
+        'stigAssignedCount', COUNT(distinct usa.saId),
+        'ruleCount', (SELECT SUM(ruleCount) FROM current_rev where benchmarkId in (select distinct benchmarkId from stig_asset_map where assetId = a.assetId))
         ) as "adminStats"`)
     }
     if (inProjection.includes('stigGrants')) {
@@ -85,7 +87,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     }
     if (inProjection.includes('stigs')) {
       //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
-      joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
+      // joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
       joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
       columns.push(`cast(
         concat('[', 
@@ -96,7 +98,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
                   'benchmarkId', cr.benchmarkId, 
                   'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
                   'lastRevisionDate', cr.benchmarkDateSql,
-                  'title', st.title)
+                  'title', st.title,
+                  'ruleCount', cr.ruleCount)
               else null end 
         order by cr.benchmarkId),
             ''),
@@ -484,7 +487,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   try {
     const context = userObject.privileges.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
     const columns = [
-      'CAST(a.assetId as char) as assetId',
+      'DISTINCT CAST(a.assetId as char) as assetId',
       'a.name'
     ]
     let joins = [

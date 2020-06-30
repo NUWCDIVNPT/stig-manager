@@ -13,7 +13,8 @@ exports.queryStigs = async function ( inPredicates ) {
       'b.benchmarkId',
       'b.title',
       `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
-      `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`
+      `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`,
+      `cr.ruleCount`
     ]
     let joins = [
       'stig b',
@@ -356,7 +357,11 @@ exports.insertManualBenchmark = async function (b) {
           benchmarkDateSql, 
           status, 
           statusDate, 
-          description
+          description,
+          groupCount,
+          ruleCount,
+          checkCount,
+          fixCount
         ) VALUES (
           :revId, 
           :benchmarkId, 
@@ -366,7 +371,11 @@ exports.insertManualBenchmark = async function (b) {
           STR_TO_DATE(:benchmarkDateSql, '%Y-%m-%d'),
           :status, 
           :statusDate, 
-          :description
+          :description,
+          :groupCount,
+          :ruleCount,
+          :checkCount,
+          :fixCount
         )`,
       },
       group: {
@@ -593,6 +602,11 @@ exports.insertManualBenchmark = async function (b) {
       
     }) // end groups.forEach
 
+    dml.revision.binds.groupCount = dml.group.binds.length
+    dml.revision.binds.ruleCount = dml.rule.binds.length
+    dml.revision.binds.checkCount = dml.check.binds.length
+    dml.revision.binds.fixCount = dml.fix.binds.length
+
     return dml
   }
 
@@ -650,7 +664,11 @@ exports.insertManualBenchmark = async function (b) {
       status,
       statusDate,
       description,
-      active)
+      active,
+      groupCount,
+      ruleCount,
+      checkCount,
+      fixCount)
       SELECT 
         revId,
         benchmarkId,
@@ -661,7 +679,11 @@ exports.insertManualBenchmark = async function (b) {
         status,
         statusDate,
         description,
-        active
+        active,
+        groupCount,
+        ruleCount,
+        checkCount,
+        fixCount
       FROM
         v_current_rev
       WHERE

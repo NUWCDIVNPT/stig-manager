@@ -85,9 +85,9 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
     let elevate = req.swagger.params['elevate'].value
     let appdata
     if ( elevate ) {
-      if (req.file && (req.file.mimetype === 'application/json' || req.file.mimetype === 'application/zip')) {
+      if (req.file && (req.file.mimetype === 'application/json' || req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') ) {
         let data = await fs.readFile(req.file.path)
-        if (req.file.mimetype === 'application/zip') {
+        if (req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') {
           let zipIn = new JSZip()
           let contents = await zipIn.loadAsync(data)
           let fns = Object.keys(contents.files)
