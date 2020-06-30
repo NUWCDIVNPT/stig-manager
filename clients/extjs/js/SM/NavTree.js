@@ -254,13 +254,12 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     initComponent: function() {
       let me = this
       let config = {
-          id: 'app-nav-tree',
           autoScroll: true,
           split: true,
           collapsible: true,
           title: '<span onclick="window.keycloak.logout()">' + curUser.display + ' - Logout</span>',
           bodyStyle: 'padding:5px;',
-          width: me.width || 280,
+          width: me.width || 300,
           minSize: 220,
           root: {
             nodeType: 'async',
@@ -615,7 +614,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
       
         if (n.attributes.report == 'review') {
           idAppend = '-' + n.attributes.assetId + '-' + n.attributes.benchmarkId.replace(".", "_");
-          tab = Ext.getCmp('reviews-center-tab').getItem('reviewTab' + idAppend);
+          tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
           if (tab) {
             tab.show();
           } else {

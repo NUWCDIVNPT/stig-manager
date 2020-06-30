@@ -1265,7 +1265,7 @@ function addPoamWorkspace(conf) {
 		poamRarFormPanel
 	];
 	
-	var thisTab = Ext.getCmp('reviews-center-tab').add({
+	var thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'poamWorkspaceTab' + conf.idAppend,
 		iconCls: 'sm-stig-icon',
 		title: title,

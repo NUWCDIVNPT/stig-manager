@@ -385,7 +385,7 @@ function addFindingsSummary(collectionId, collectionName) {
 		}
 	});
 
-	var thisTab = Ext.getCmp('reviews-center-tab').add({
+	var thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'findingsTab-' + collectionId,
 		collectionId: collectionId,
 		collectionName: collectionName,
@@ -409,12 +409,12 @@ function addFindingsSummary(collectionId, collectionName) {
 
 }; //end addCompletionReport();
 
-function renderSeverity(value, metaData, record, rowIndex, colIndex, store) {
-	if (value == 'high') {
-		return 'Cat 1';
-	} else if (value == 'medium') {
-		return 'Cat 2';
-	} else if (value == 'low') {
-		return 'Cat 3';
-	} 
-}
+// function renderSeverity(value, metaData, record, rowIndex, colIndex, store) {
+// 	if (value == 'high') {
+// 		return 'Cat 1';
+// 	} else if (value == 'medium') {
+// 		return 'Cat 2';
+// 	} else if (value == 'low') {
+// 		return 'Cat 3';
+// 	} 
+// }

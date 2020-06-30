@@ -144,7 +144,7 @@ function addStigAdmin() {
 		loadMask: true
 	});
 
-	var thisTab = Ext.getCmp('reviews-center-tab').add({
+	var thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'stig-admin-tab',
 		iconCls: 'sm-stig-icon',
 		title: 'STIG checklists',

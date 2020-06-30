@@ -44,6 +44,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 			url: `${STIGMAN.Env.apiBase}/assets`,
 			title: 'Assets',
 			region: 'north',
+			border: false,
 			split: true,
 			height: '50%'
 		})
@@ -65,7 +66,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 					region: 'west',
 					width: 500,
 					split: true,
-					border: true,
+					border: false,
 					layout: 'border',
 					items: [
 						collectionPanel,
@@ -75,6 +76,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 				{
 					region: 'center',
 					layout: 'border',
+					border: false,
 					items: [
 						assetGrid,
 						stigGrid
@@ -89,7 +91,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 		managerTab.updateTitle = function () {
 			this.setTitle(`${this.collectionName} : Configuration`)
 		}
-		let thisTab = Ext.getCmp('reviews-center-tab').add(managerTab)
+		let thisTab = Ext.getCmp('main-tab-panel').add(managerTab)
 		managerTab.updateTitle.call(managerTab)
 
 		let result = await Ext.Ajax.requestPromise({

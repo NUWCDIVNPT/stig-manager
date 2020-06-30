@@ -78,78 +78,111 @@ async function start () {
 }
 
 async function loadApp () {
-	Ext.isReady = true // a bit of a hack, for Firefox
-	Ext.BLANK_IMAGE_URL=Ext.isIE6||Ext.isIE7||Ext.isAir? "/ext/resources/images/default/s.gif" : "data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
-	Ext.getBody().on("contextmenu", myContextMenu);  
-	Ext.QuickTips.init();
-	Ext.apply(Ext.QuickTips.getQuickTip(), {
-		maxWidth: 200,
-		minWidth: 10,
-		showDelay: 50,      // Show 50ms after entering target
-		trackMouse: true
-	});
-
-	Ext.get( 'indicator' ).dom.innerHTML = "Getting options...";
-	let result = await Ext.Ajax.requestPromise({
-		url: `${STIGMAN.Env.apiBase}/op/configuration`,
-		method: 'GET'
-	})
-	appConfig = JSON.parse(result.response.responseText);
-
+	try {
+		Ext.isReady = true // a bit of a hack, for Firefox
+		Ext.BLANK_IMAGE_URL=Ext.isIE6||Ext.isIE7||Ext.isAir? "/ext/resources/images/default/s.gif" : "data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
+		Ext.getBody().on("contextmenu", myContextMenu);  
+		Ext.QuickTips.init();
+		Ext.apply(Ext.QuickTips.getQuickTip(), {
+			maxWidth: 200,
+			minWidth: 10,
+			showDelay: 500,      // Show ms after entering target
+			trackMouse: false
+		});
 	
-	
-	
-	var reviewItems = getReviewItems();
-
-	let viewportConfig = {
-		id: 'app-viewport',
-		layout: 'border',
-		items: [],
-	}
-
-	let classification = new Classification(appConfig.classification)
-	if (classification.showBanner) {
-		let contentPanel = new Ext.Panel({
-			region: 'center',
-			layout: 'border',
-			border: false,
-			items: reviewItems,
-			listeners: {
-				render: function () {
-					addReviewHome();
-				}
-			}
+		Ext.get( 'indicator' ).dom.innerHTML = "Getting configuration...";
+		let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/op/configuration`,
+			method: 'GET'
 		})
-		let bannerTpl = new Ext.XTemplate(
-			`<div class=sm-banner-{classificationCls}>`,
-			`<div class='sm-banner-body-text'>{classificationText}</div>`
-		) 
-		let classificationBanner = new Ext.Panel({
-			region: 'north',
-			height: 20,
-			border: false,
-			tpl: bannerTpl,
-			data: {
-				classificationCls: classification.classificationCls,
-				classificationText: classification.classificationText,
+		appConfig = JSON.parse(result.response.responseText);
+		
+		const mainNavTree = new SM.AppNavTree({
+			id: 'app-nav-tree',
+			region: 'west'
+		})
+		const mainTabPanel = new SM.MainTabPanel({
+			id: 'main-tab-panel',
+			region: 'center'
+		})
+		
+		const homeTab = new SM.HomeTab({
+			layout: 'table',
+			layoutConfig: {
+				tableAttrs: {
+					style: {
+						width: '100%',
+						padding: '20px',
+						"table-layout": 'fixed'
+
+					}
+				},
+				columns: 3
 			},
-			border: false
+			items: [
+				{
+					html: "<div class='cs-home-header-reviews'>STIG Manager - OSS</div>",
+					colspan: 3,
+					border: false
+				},
+				{
+					xtype: 'sm-home-widget-welcome'
+				},
+				{
+					xtype: 'sm-home-widget-doc'
+				},
+				{
+					xtype: 'sm-home-widget-stig'
+				}
+			]
 		})
+		mainTabPanel.add(homeTab)
 
-		viewportConfig.items.push( classificationBanner, contentPanel)
-	}
-	else {
-		viewportConfig.items.push( reviewItems)
-		viewportConfig.listeners = {
-			render: function () {
-				addReviewHome();
-			}
+		let viewportConfig = {
+			id: 'app-viewport',
+			layout: 'border',
+			items: [],
 		}
+	
+		let classification = new Classification(appConfig.classification)
+		if (classification.showBanner) {
+			let contentPanel = new Ext.Panel({
+				region: 'center',
+				layout: 'border',
+				border: false,
+				items: [mainNavTree, mainTabPanel]
+			})
+			let bannerTpl = new Ext.XTemplate(
+				`<div class=sm-banner-{classificationCls}>`,
+				`<div class='sm-banner-body-text'>{classificationText}</div>`
+			) 
+			let classificationBanner = new Ext.Panel({
+				region: 'north',
+				height: 20,
+				border: false,
+				tpl: bannerTpl,
+				data: {
+					classificationCls: classification.classificationCls,
+					classificationText: classification.classificationText,
+				},
+				border: false
+			})
+	
+			viewportConfig.items.push( classificationBanner, contentPanel)
+		}
+		else {
+			viewportConfig.items.push( mainNavTree, mainTabPanel )
+		}
+		
+		new Ext.Viewport(viewportConfig)
+	
+		Ext.get('loading').remove();
+		Ext.get('loading-mask').fadeOut({duration: 1, remove:true});
 	}
-	var viewport = new Ext.Viewport(viewportConfig)
+	catch (e) {
+		Ext.get( 'indicator' ).dom.innerHTML = e.message
+	}
 
-	Ext.get('loading').remove();
-	Ext.get('loading-mask').fadeOut({duration: 1, remove:true});
 } //end loadApp()
 
 function showAbout() {

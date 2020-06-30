@@ -1651,7 +1651,7 @@ function addScanManagement(node) {
 	 THE TAB: Construct the tab, display it, and initialize the grids
 	 *************************************************/
 	var workspaceTitle = collectionName + ": Scan management";
-	var workspaceTab = Ext.getCmp('reviews-center-tab').add({
+	var workspaceTab = Ext.getCmp('main-tab-panel').add({
 		id: 'buildScan' + idAppend,
 		iconCls: 'sm-nessus-16-icon',
 		title: workspaceTitle,

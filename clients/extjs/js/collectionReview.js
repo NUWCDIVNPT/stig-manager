@@ -1925,7 +1925,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		];
 		
-		var thisTab = Ext.getCmp('reviews-center-tab').add({
+		var thisTab = Ext.getCmp('main-tab-panel').add({
 			id: 'collectionReviewTab' + idAppend,
 			iconCls: 'sm-stig-icon',
 			title: leaf.collectionName + " : " + leaf.benchmarkId,

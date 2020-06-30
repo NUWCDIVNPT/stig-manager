@@ -206,7 +206,7 @@ function addUserAdmin() {
 
 		
 
-	var thisTab = Ext.getCmp('reviews-center-tab').add({
+	var thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'user-admin-tab',
 		iconCls: 'sm-users-icon',
 		title: 'Users',

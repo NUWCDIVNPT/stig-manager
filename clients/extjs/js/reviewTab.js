@@ -4,51 +4,9 @@ function getReviewItems() {
   let mainNavTree = new SM.AppNavTree({
     region: 'west'
   })
-  let mainTabPanel = new Ext.TabPanel({
-    region: 'center',
-    plugins: new Ext.ux.TabCloseOnMiddleClick(),
-    id: 'reviews-center-tab',
-    title: 'STIGManager',
-    enableTabScroll: true,
-    activeTab: 0,
-    listeners: {
-      beforetabchange: function (tabPanel, newTab, currentTab) {
-        // For IE: Keep the panels in the same scroll position after tab changes
-        if (Ext.isIE) {
-          if (Ext.isDefined(currentTab)) {
-            if (currentTab.sm_TabType == 'asset_review') {
-              var vCur = currentTab.sm_GroupGridView;
-              vCur.scrollTop = vCur.scroller.dom.scrollTop;
-              vCur.scrollHeight = vCur.scroller.dom.scrollHeight;
-            }
-          }
-          if (Ext.isDefined(newTab)) {
-            if (newTab.sm_TabType == 'asset_review') {
-              var vNew = newTab.sm_GroupGridView;
-              if (Ext.isDefined(vNew.scroller)) {
-                setTimeout(function () {
-                  vNew.scroller.dom.scrollTop = vNew.scrollTop + (vNew.scrollTop == 0 ? 0 : vNew.scroller.dom.scrollHeight - vNew.scrollHeight);
-                }, 100);
-              }
-            }
-          }
-        }
-      }
-    },
-    
-    items: []
+  let mainTabPanel = new SM.MainTabPanel({
+    region: 'center'
   })
-  mainTabPanel.onCollectionChanged = change => {
-    if (change.name) {
-      for (const tab of mainTabPanel.items.items) {
-        if (tab.collectionId === change.collectionId) {
-          tab.collectionName = change.name
-          tab.updateTitle.call(tab)
-        }
-      }
-    }
-  }
-  SM.Dispatcher.addListener('collectionchanged', mainTabPanel.onCollectionChanged)
 
   return [
     mainNavTree,
@@ -510,7 +468,7 @@ function addReviewHome() {
     // `</tpl>`
   )
 
-  var thisTab = Ext.getCmp('reviews-center-tab').add({
+  var thisTab = Ext.getCmp('main-tab-panel').add({
     id: 'reviewHome' + idAppend,
     sm_TabType: 'review_home',
     iconCls: 'sm-stig-icon',
@@ -565,7 +523,7 @@ function addReviewHome() {
 
 //   if (n.attributes.report == 'review') {
 //     idAppend = '-' + n.attributes.assetId + '-' + n.attributes.benchmarkId.replace(".", "_");
-//     tab = Ext.getCmp('reviews-center-tab').getItem('reviewTab' + idAppend);
+//     tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
 //     if (tab) {
 //       tab.show();
 //     } else {
@@ -620,7 +578,7 @@ function addReviewHome() {
 function openCollectionReview(n) {
   if (n.attributes.report === 'stig' && (curUser.accessLevel === 3 || curUser.privileges.canAdmin)) {
     var idAppend = '-collection-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
-    var tab = Ext.getCmp('reviews-center-tab').getItem('collectionReviewTab' + idAppend);
+    var tab = Ext.getCmp('main-tab-panel').getItem('collectionReviewTab' + idAppend);
     if (tab) {
       tab.show();
     } else {
@@ -638,7 +596,7 @@ function openPoamWorkspace(n) {
     conf.context = 'stig';
     conf.idAppend = '-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
   }
-  var tab = Ext.getCmp('reviews-center-tab').getItem('poamWorkspaceTab' + conf.idAppend);
+  var tab = Ext.getCmp('main-tab-panel').getItem('poamWorkspaceTab' + conf.idAppend);
   if (tab) {
     tab.show();
   } else {

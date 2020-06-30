@@ -28,6 +28,7 @@ function loadScripts() {
         'ext/ext-all-debug-w-comments.js',
         "ext/ux/GroupSummary.js",
         'js/SM/Classification.js',
+        'js/SM/MainPanel.js',
         'js/SM/EventDispatcher.js',
         "js/Env.js",
         "js/FileUploadField.js",

@@ -1948,7 +1948,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
                 case 'no':
                   Ext.getCmp('result-combo' + idAppend).changed = false;
                   Ext.getCmp('action-combo' + idAppend).changed = false;
-                  Ext.getCmp('reviews-center-tab').remove('reviewTab' + idAppend);
+                  Ext.getCmp('main-tab-panel').remove('reviewTab' + idAppend);
                   break;
                 case 'cancel':
                   break;
@@ -1967,7 +1967,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
     this.setTitle(`${this.collectionName} : ${this.assetName} : ${this.stigName}`)
   }
 
-  var thisTab = Ext.getCmp('reviews-center-tab').add(reviewTab);
+  var thisTab = Ext.getCmp('main-tab-panel').add(reviewTab);
   reviewTab.updateTitle.call(reviewTab)
   thisTab.show();
 
@@ -2067,7 +2067,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
 
       //Continue the action that triggered this save (if any):					
       if (saveParams.source == "closeTab") {
-        Ext.getCmp('reviews-center-tab').remove('reviewTab' + idAppend)
+        Ext.getCmp('main-tab-panel').remove('reviewTab' + idAppend)
 
       }
       else if (saveParams.source == "selectGroup") {

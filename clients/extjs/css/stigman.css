@@ -1,3 +1,25 @@
+.sm-home-widget-body {
+	background-color: #dedede;
+	border-radius: 25px;
+	border: 'none';
+	margin: 10px;
+	height: 400px;
+}
+
+.sm-home-widget-header {
+	background-color: #d3d3d3;
+}
+
+.sm-home-widget-title {
+	padding-top:10px;
+	padding-left:20px;
+	padding-right:20px;
+	padding-bottom:10px;
+	font: bold 18px Open Sans, helvetica, sans-serif;
+	color:#3366cc;
+}
+
+
 .sm-banner-unclassified {
 	/* background-color: #0a9c00; */
 	background-color: #007a33;
