@@ -9,7 +9,7 @@ var licenseStr = "This program is free software: you can redistribute it and/or 
 \n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\
 \n\nThe GNU General Public License is available at  <http://www.gnu.org/licenses/>.";
 
-var curUser;
+var curUser, appConfig;
 Ext.Ajax.timeout = 30000000
 
 function GetXmlHttpObject() {
@@ -58,33 +58,28 @@ function manageToken (conn, options) {
 }
 
 
-function start () {
-	Ext.get( 'indicator' ).dom.innerHTML = "Getting user profile...";
-	var varsXmlHttp=GetXmlHttpObject();
-	varsXmlHttp.onreadystatechange = function() {
-		if (varsXmlHttp.readyState == 4) {
-			if (varsXmlHttp.status == 200) {
-				curUser = Ext.util.JSON.decode(varsXmlHttp.responseText);
-				if (curUser.username !== undefined) {
-					loadApp();
-				} else {
-					Ext.get( 'indicator' ).dom.innerHTML = curUser.error;
-				}
-			} else {
-				Ext.get( 'indicator' ).dom.innerHTML = "XHR request returned status:<br>" + varsXmlHttp.responseText ;
-			}
+async function start () {
+	try {
+		Ext.get( 'indicator' ).dom.innerHTML = "Getting user profile...";
+		let result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/user`,
+			method: 'GET'
+		})
+		curUser = JSON.parse(result.response.responseText);
+		if (curUser.username !== undefined) {
+			loadApp();
+		} else {
+			Ext.get( 'indicator' ).dom.innerHTML =`No account for ${window.keycloak.token}`;
 		}
-	};
-	var userUrl=`${STIGMAN.Env.apiBase}/user`
-	varsXmlHttp.open("GET", userUrl)
-	varsXmlHttp.setRequestHeader("Authorization", `Bearer ${window.keycloak.token}`)
-	varsXmlHttp.send();
-};
+	}
+	catch (e) {
+		Ext.get( 'indicator' ).dom.innerHTML = e.message
+	}
+}
 
-function loadApp () {
+async function loadApp () {
 	Ext.isReady = true // a bit of a hack, for Firefox
 	Ext.BLANK_IMAGE_URL=Ext.isIE6||Ext.isIE7||Ext.isAir? "/ext/resources/images/default/s.gif" : "data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
-	//Ext.getBody().on("contextmenu", Ext.emptyFn, null, {preventDefault: true});  
 	Ext.getBody().on("contextmenu", myContextMenu);  
 	Ext.QuickTips.init();
 	Ext.apply(Ext.QuickTips.getQuickTip(), {
@@ -93,18 +88,65 @@ function loadApp () {
 		showDelay: 50,      // Show 50ms after entering target
 		trackMouse: true
 	});
+
+	Ext.get( 'indicator' ).dom.innerHTML = "Getting options...";
+	let result = await Ext.Ajax.requestPromise({
+		url: `${STIGMAN.Env.apiBase}/op/configuration`,
+		method: 'GET'
+	})
+	appConfig = JSON.parse(result.response.responseText);
+
+	
+	
 	
 	var reviewItems = getReviewItems();
-	var viewport = new Ext.Viewport({
-		layout: 'border',
+
+	let viewportConfig = {
 		id: 'app-viewport',
-		items: reviewItems,
-		listeners: {
+		layout: 'border',
+		items: [],
+	}
+
+	let classification = new Classification(appConfig.classification)
+	if (classification.showBanner) {
+		let contentPanel = new Ext.Panel({
+			region: 'center',
+			layout: 'border',
+			border: false,
+			items: reviewItems,
+			listeners: {
+				render: function () {
+					addReviewHome();
+				}
+			}
+		})
+		let bannerTpl = new Ext.XTemplate(
+			`<div class=sm-banner-{classificationCls}>`,
+			`<div class='sm-banner-body-text'>{classificationText}</div>`
+		) 
+		let classificationBanner = new Ext.Panel({
+			region: 'north',
+			height: 20,
+			border: false,
+			tpl: bannerTpl,
+			data: {
+				classificationCls: classification.classificationCls,
+				classificationText: classification.classificationText,
+			},
+			border: false
+		})
+
+		viewportConfig.items.push( classificationBanner, contentPanel)
+	}
+	else {
+		viewportConfig.items.push( reviewItems)
+		viewportConfig.listeners = {
 			render: function () {
 				addReviewHome();
 			}
 		}
-	})
+	}
+	var viewport = new Ext.Viewport(viewportConfig)
 
 	Ext.get('loading').remove();
 	Ext.get('loading-mask').fadeOut({duration: 1, remove:true});

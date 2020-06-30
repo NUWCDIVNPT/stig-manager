@@ -9,17 +9,21 @@ const Review = require(`./Review`)
 const JSZip = require("jszip");
 
 
-module.exports.getVersion = async function getVersion (req, res, next) {
+module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
-    let dbVersion = await Operation.getVersion()
-    let response = {
-      apiVersion: config.apiVersion,
-      dataService: {
-        type: config.database.type,
-        version: dbVersion
-      }
-    }
+    let dbConfigs = await Operation.getConfiguration()
+    let apiVersion = {apiVersion: config.apiVersion}
+    let response = { ...apiVersion, ...dbConfigs }
     writer.writeJson(res, response)
+  }
+  catch(err) {
+    writer.writeJson(res, err)
+  }
+}
+
+module.exports.setConfigurationItem = async function setConfigurationItem (req, res, next) {
+  try {
+    //TODO: Implement
   }
   catch(err) {
     writer.writeJson(res, err)

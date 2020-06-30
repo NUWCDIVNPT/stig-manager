@@ -14,13 +14,13 @@ const fs = require('fs')
 const multer  = require('multer')
 const upload = multer({ dest: path.join(__dirname, './uploads/') })
 const writer = require('./utils/writer.js')
+const OperationSvc = require(`./service/${config.database.type}/OperationService`)
 
 console.log(JSON.stringify(config, null, 2))
-
-
 const app = express();
-app.use(upload.single('importFile'))
 
+// Express config
+app.use(upload.single('importFile'))
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
 app.use(morgan('combined', {stream: process.stdout}))
@@ -125,6 +125,12 @@ async function startServer(app) {
     // Initialize database connection pool
     let db = require(`./service/${config.database.type}/utils`)
     await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
+
+    // Set/change classification if indicated
+    if (config.setClassification) {
+      console.log(`Setting classification to ${config.setClassification}`)
+      OperationSvc.setConfigurationItem('classification', config.setClassification)
+    }
 
     // Start the server
     http.createServer(app).listen(config.http.port, function () {

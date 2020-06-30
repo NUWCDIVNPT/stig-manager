@@ -12,13 +12,31 @@ const Collection = require(`./CollectionService`);
  *
  * returns ApiVersion
  **/
-exports.getVersion = async function(userObject) {
+exports.getConfiguration = async function() {
   try {
-    return (dbUtils.version)
+    let sql = `SELECT * from config`
+    let [rows] = await dbUtils.pool.query(sql)
+    let config = {}
+    for (const row of rows) {
+      config[row.key] = row.value
+    }
+    return (config)
   }
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
+}
+
+exports.setConfigurationItem = async function (key, value) {
+  try {
+    let sql = 'INSERT INTO config (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)'
+    await dbUtils.pool.query(sql, [key, value])
+    return (true)
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+
 }
 
 exports.replaceAppData = async function (importOpts, appData, userObject, res ) {

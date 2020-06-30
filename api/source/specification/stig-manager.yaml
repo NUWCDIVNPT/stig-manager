@@ -1754,19 +1754,19 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-  /op/version:
+  /op/configuration:
     get:
       tags:
         - Operation
-      summary: Return version information
-      operationId: getVersion
+      summary: Return API version and configuration information
+      operationId: getConfiguration
       responses:
         '200':
-          description: Version response
+          description: Configuration response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiVersion'
+                $ref: '#/components/schemas/ApiConfiguration'
   /op/appdata:
     get:
       tags:
@@ -1836,7 +1836,7 @@ components:
       type: integer
       minimum: 1
       maximum: 3
-    ApiVersion:
+    ApiConfiguration:
       type: object
       properties:
         branch:
@@ -2780,8 +2780,6 @@ components:
           type: string
         title:
           type: string
-        ruleCount:
-          type: integer
     StigAsset:
       type: object
       properties:

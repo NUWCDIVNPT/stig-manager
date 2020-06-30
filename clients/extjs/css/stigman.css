@@ -1,3 +1,40 @@
+.sm-banner-unclassified {
+	/* background-color: #0a9c00; */
+	background-color: #007a33;
+	color: #ffffff;
+	height: 20px;
+}
+
+.sm-banner-confidential {
+	background-color:#0033a0;
+	color: #ffffff;
+	height: 20px;
+}
+
+.sm-banner-secret {
+	background-color: #c8102e;
+	color: #ffffff;
+	height: 20px;
+}
+
+.sm-banner-topsecret {
+	background-color: #ff671f;
+	color: #ffffff;
+	height: 20px;
+}
+.sm-banner-topsecretsci {
+	background-color: #f7ea48;
+	color: #000000;
+	height: 20px;
+}
+
+.sm-banner-body-text {
+	text-align: center;
+	font: bold 12px Open Sans, helvetica, sans-serif;
+	padding-top: 1px;
+}
+
+
 /* Adjust position of the grid checkbox */
 /* Required by SM.SelectingGridToolbar */
 .x-grid3-row-selected-checkonly .x-grid3-row-checker {
