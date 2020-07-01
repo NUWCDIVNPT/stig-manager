@@ -17,12 +17,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		*/
 
-		// Classic compatability. Remove after modernization
-		if (leaf.stigRevStr) {
-			let match = leaf.stigRevStr.match(/V(\d+)R(\d+)/)
-			leaf.revId = `${leaf.benchmarkId}-${match[1]}-${match[2]}`
-		}
-		var idAppend = '-collection-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
+		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
@@ -286,7 +281,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 									unlockObject.assetId = -1;
 									unlockObject.assetName = '';
 									unlockObject.collectionId =leaf.collectionId;
-									unlockObject.collectionName=leaf.collectionName;
+									// unlockObject.collectionName=leaf.collectionName;
 									unlockObject.gridTorefresh = groupGrid;
 									batchReviewUnlock(unlockObject);
 									//===============================================
@@ -382,7 +377,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			region: 'north',
 			id: 'groupGrid' + idAppend,
 			sm_benchmarkId: leaf.benchmarkId,
-			sm_revisionStr: leaf.stigRevStr,
+			sm_revisionStr: 'latest',
 			filterState: 'All',
 			title: 'Checklist',
 			split:true,
@@ -671,7 +666,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				group: 'revision-submenu-group' + idAppend,
 				handler: handleRevisionMenu
 			}
-			if (item.revisionStr == activeRevisionStr) {
+			if (item.revisionStr == activeRevisionStr || (activeRevisionStr === 'latest' && i === 0)) {
 				item.checked = true;
 				returnObject.activeRevisionLabel = item.text;
 			} else {
@@ -1229,10 +1224,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				// Reviews grid
 				let reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
 				let reviewsReq = await Ext.Ajax.requestPromise({
-					url: `${STIGMAN.Env.apiBase}/reviews`,
+					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 					method: 'GET',
 					params: {
-						collectionId: collectionId,
 						ruleId: ruleId,
 					}
 				})
@@ -1926,12 +1920,12 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		];
 		
 		var thisTab = Ext.getCmp('main-tab-panel').add({
-			id: 'collectionReviewTab' + idAppend,
+			id: 'collection-review-tab' + idAppend,
 			iconCls: 'sm-stig-icon',
 			title: leaf.collectionName + " : " + leaf.benchmarkId,
 			collectionId: leaf.collectionId,
-			revId: leaf.revId,
-			revisionStr: leaf.stigRevStr,
+			// revId: leaf.revId,
+			// revisionStr: leaf.stigRevStr,
 			benchmarkId: leaf.benchmarkId,
 			benchmarkId: leaf.benchmarkId,
 			closable:true,
@@ -1954,7 +1948,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				assetId: selectedAsset
 			}		
 		});
-		loadRevisionMenu(leaf.benchmarkId, leaf.stigRevStr, idAppend)
+		loadRevisionMenu(leaf.benchmarkId, 'latest', idAppend)
 	}
 	catch (e) {
 		alert (e.message)

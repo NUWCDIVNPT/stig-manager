@@ -562,7 +562,8 @@ CREATE TABLE `rule_oval_map` (
   `ovalRef` varchar(255) NOT NULL,
   `benchmarkId` varchar(255) NOT NULL,
   `releaseInfo` varchar(255) NOT NULL,
-  PRIMARY KEY (`roId`)
+  PRIMARY KEY (`roId`),
+  KEY `index2` (`ruleId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

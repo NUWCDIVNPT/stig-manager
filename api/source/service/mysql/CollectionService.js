@@ -420,7 +420,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       'left join `group` g on rg.groupId=g.groupId',
       'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
       'left join rule rules on rgr.ruleId=rules.ruleId',
-      'left join (select distinct ruleId from rule_oval_map) scap on rgr.ruleId=scap.ruleId',
+      'left join rule_oval_map scap on rgr.ruleId=scap.ruleId',
       'left join review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
     ]
 
@@ -447,7 +447,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
 
     // Access control
     if (!userObject.privileges.globalAccess) {
-      const collectionGrant = req.userObject.collectionGrants.find( g => g.collectionId === collectionId )
+      const collectionGrant = userObject.collectionGrants.find( g => g.collectionId === collectionId )
       if (collectionGrant && collectionGrant.accessLevel === 1) {
         predicates.statements.push(`a.assetId in (
           select
@@ -493,11 +493,20 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
           ,g.title as groupTitle
           ,r.resultId
           ,r.statusId
-          ,CASE WHEN scap.ruleId is null THEN 0 ELSE 1 END as "autoCheckAvailable"
+          ,CASE WHEN COUNT(scap.ruleId) = 0 THEN 0 ELSE 1 END as "autoCheckAvailable"
         from
           ${joins.join('\n')}
         where
           ${predicates.statements.join(' and ')}
+        group by
+          a.assetId
+          ,rgr.ruleId
+          ,rules.title
+          ,rules.severity
+          ,rg.groupId
+          ,g.title
+          ,r.resultId
+          ,r.statusId          
         ) r
       group by
         r.ruleId

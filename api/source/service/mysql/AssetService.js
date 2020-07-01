@@ -385,6 +385,8 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
 }
 
 exports.queryChecklist = async function (inProjection, inPredicates, elevate, userObject) {
+
+  //TODO: remove select distinct ruleId from rule_oval_map -- bad execution plan
   let connection
   try {
     let context

@@ -650,6 +650,15 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             addReview(n.attributes);
           }
         }
+        if (n.attributes.report == 'collection-review') {
+          idAppend = '-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
+          tab = Ext.getCmp('main-tab-panel').getItem('collection-review-tab' + idAppend);
+          if (tab) {
+            tab.show();
+          } else {
+            addCollectionReview(n.attributes);
+          }
+        }
         if (n.attributes.action == 'import') {
           uploadArchive(n);
         }
