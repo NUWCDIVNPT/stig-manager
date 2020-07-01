@@ -2,6 +2,8 @@ async function addCollectionManager( collectionId, collectionName ) {
 	try {
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,
+			cls: 'sm-grid-round-panel',
+			margins: {top:10, right:5, bottom:5, left:10},
 			region: 'north',
 			padding: '10px 10px 10px 10px',
 			border: false,
@@ -17,6 +19,8 @@ async function addCollectionManager( collectionId, collectionName ) {
 				projection: 'grants'
 			},
 			title: 'Grants',
+			cls: 'sm-grid-round-panel',
+			margins: {top:5, right:5, bottom:10, left:10},
 			border: false,
 			region: 'center',
 			listeners: {
@@ -42,6 +46,8 @@ async function addCollectionManager( collectionId, collectionName ) {
 		let assetGrid = new SM.CollectionAssetGrid({
 			collectionId: collectionId,
 			url: `${STIGMAN.Env.apiBase}/assets`,
+			cls: 'sm-grid-round-panel',
+			margins: {top:10, right:10, bottom:5, left:5},
 			title: 'Assets',
 			region: 'north',
 			border: false,
@@ -51,6 +57,9 @@ async function addCollectionManager( collectionId, collectionName ) {
 		let stigGrid = new SM.CollectionStigsGrid({
 			collectionId: collectionId,
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
+			cls: 'sm-grid-round-panel',
+			margins: {top:5, right:10, bottom:10, left:5},
+			border: false,
 			title: 'STIGs',
 			region: 'center'
 		})
@@ -61,6 +70,9 @@ async function addCollectionManager( collectionId, collectionName ) {
 			iconCls: 'sm-collection-icon',
 			closable: true,
 			layout: 'border',
+			layoutConfig: {
+				targetCls: 'sm-border-layout-ct'
+			},
 			items: [
 				{
 					region: 'west',
@@ -68,6 +80,9 @@ async function addCollectionManager( collectionId, collectionName ) {
 					split: true,
 					border: false,
 					layout: 'border',
+					layoutConfig: {
+						targetCls: 'sm-border-layout-ct'
+					},
 					items: [
 						collectionPanel,
 						grantGrid 
@@ -77,6 +92,9 @@ async function addCollectionManager( collectionId, collectionName ) {
 					region: 'center',
 					layout: 'border',
 					border: false,
+					layoutConfig: {
+						targetCls: 'sm-border-layout-ct'
+					},
 					items: [
 						assetGrid,
 						stigGrid

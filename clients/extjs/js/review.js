@@ -450,6 +450,9 @@ async function addReview(leaf, selectedRule, selectedResource) {
   // The group grid
   /******************************************************/
   var groupGrid = new Ext.grid.GridPanel({
+    cls: 'sm-grid-round-panel',
+    margins: {top:6, right:3, bottom:6, left:6},
+    border: false,
     region: 'west',
     id: 'groupGrid' + idAppend,
     sm_benchmarkId: leaf.benchmarkId,
@@ -546,9 +549,10 @@ async function addReview(leaf, selectedRule, selectedResource) {
         var autoCheckAvailable = record.get('autoCheckAvailable');
         if (autoCheckAvailable === true) {
           return 'sm-scap-grid-item';
-        } else {
-          return 'sm-manual-grid-item';
-        }
+        } 
+        // else {
+        //   return 'sm-manual-grid-item';
+        // }
       }
     }),
     columns: [
@@ -1379,7 +1383,10 @@ async function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
 
   var resourcesPanel = new Ext.Panel({
-    region: 'center',
+    cls: 'sm-grid-round-panel',
+    margins: {top:6, right:6, bottom:3, left:3},
+    border: false,
+  region: 'center',
     title: 'Review Resources',
     layout: 'fit',
     items: [{
@@ -1428,19 +1435,22 @@ async function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
 
   var reviewForm = new Ext.form.FormPanel({
-    region: 'south',
+    cls: 'sm-grid-round-panel',
+    margins: {top:3, right:6, bottom:6, left:3},
+    border: false,
+  region: 'south',
     //disabled: true,
     split: true,
     //height: 420,
     height: '65%',
     minHeight: 320,
     id: 'reviewForm' + idAppend,
-    baseCls: 'x-plain',
-    border: true,
-    headerCfg: {
-      cls: 'x-panel-header',
-      border: false
-    },
+    // baseCls: 'x-plain',
+    // border: true,
+    // headerCfg: {
+    //   cls: 'x-panel-header',
+    //   border: false
+    // },
     title: 'Review on ' + leaf.assetName,
     padding: 10,
     labelWidth: 50,
@@ -1882,6 +1892,9 @@ async function addReview(leaf, selectedRule, selectedResource) {
   var reviewItems = [
     groupGrid,
     {
+      cls: 'sm-grid-round-panel',
+      margins: {top:6, right:3, bottom:6, left:3},
+      border: false,
       region: 'center',
       //disabled: true,
       xtype: 'panel',

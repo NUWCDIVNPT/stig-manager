@@ -709,6 +709,8 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
         let config = {
             // baseCls: 'x-plain',
             // border: false,
+            title: 'Collection properties',
+            layout: 'form',
             labelWidth: 100,
             // monitorValid: true,
             getFieldValues: function (dirtyOnly) {
@@ -733,15 +735,15 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 return o
             },
             items: [
-                {
-                    xtype: 'fieldset',
-                    title: '<b>Collection properties</b>',
-                    items: [
+                // {
+                //     xtype: 'fieldset',
+                //     title: '<b>Collection properties</b>',
+                //     items: [
                         nameField,
                         workflowCombo,
                         metadataGrid
-                    ]
-                }
+                //     ]
+                // }
             ],
             // buttons: [{
             //     text: this.btnText || 'Save',
