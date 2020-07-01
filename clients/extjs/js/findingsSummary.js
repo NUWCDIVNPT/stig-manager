@@ -175,6 +175,7 @@ function addFindingsSummary(collectionId, collectionName) {
 					xtype: 'sm-stig-selection-field',
 					id: 'combo-stig' + idAppend,
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}?projection=stigs`,
+					autoLoad: true,
 					root: 'stigs',
 					width: 300,
 					triggerAction: 'all',

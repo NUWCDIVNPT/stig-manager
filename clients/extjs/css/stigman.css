@@ -115,9 +115,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	background-position: -22px 3px;
 }
   
-  .sm-tree-node-create {
+.sm-tree-node-create {
 	font-style: italic
 }
+.sm-tree-node-collection-review {
+	font-style: italic
+}
+
 
 .x-grid3-row.x-stigman-cross-department {
 	opacity: 0.40

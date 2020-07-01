@@ -1,6 +1,14 @@
 Ext.ns('SM')
 
-SM.NodeSorter = (a, b) => a.text < b.text ? -1 : 1
+SM.NodeSorter = (a, b) => {
+  if (a.sortToTop) {
+    return -1
+  }
+  if (b.sortToTop) {
+    return 1
+  }
+  return a.text < b.text ? -1 : 1
+}
 
 SM.CollectionNodeConfig = function (collection) {
   const onAssetChanged = async (node, apiAsset) => {
@@ -242,13 +250,29 @@ SM.StigAssetNodeConfig = function (stig, asset) {
     iconCls: 'sm-asset-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
-    stigRevStr: stig.lastRevisionStr, // HACK: relies on exclusion of other assigned stigs from /assets
+    stigRevStr: stig.lastRevisionStr,
     assetId: asset.assetId,
     collectionId: asset.collection.collectionId,
     benchmarkId: stig.benchmarkId,
     qtip: asset.name
   }
 }
+
+SM.StigBatchNodeConfig = function (benchmarkId, collectionId) {
+  return {
+    id: `${collectionId}-batch-${benchmarkId}-leaf`,
+    sortToTop: true,
+    text: 'Collection review',
+    cls: 'sm-tree-node-collection-review',
+    leaf: true,
+    report: 'collection-review',
+    iconCls: 'sm-collection-icon',
+    collectionId: collectionId,
+    benchmarkId: benchmarkId,
+    qtip: 'Review multiple assets'
+  }
+}
+
 
 SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     initComponent: function() {
@@ -516,8 +540,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               url: `${STIGMAN.Env.apiBase}/collections`,
               method: 'GET'
             })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.map(collection => SM.CollectionNodeConfig(collection))
+            let apiCollections = JSON.parse(result.response.responseText)
+            let content = apiCollections.map(collection => SM.CollectionNodeConfig(collection))
             if (curUser.privileges.canCreateCollection) {
               content.unshift({
                 id: `collection-create-leaf`,
@@ -543,8 +567,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 projection: 'assets'
               }
             })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.assets.map(asset => SM.AssetNodeConfig(collectionId, asset))
+            let apiCollection = JSON.parse(result.response.responseText)
+            let content = apiCollection.assets.map(asset => SM.AssetNodeConfig(collectionId, asset))
             cb(content, { status: true })
             return
           }
@@ -560,8 +584,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 projection: 'stigs'
               }
             })
-            let asset = JSON.parse(result.response.responseText)
-            let content = asset.stigs.map(stig => SM.AssetStigNodeConfig(asset, stig))
+            let apiAsset = JSON.parse(result.response.responseText)
+            let content = apiAsset.stigs.map(stig => SM.AssetStigNodeConfig(asset, stig))
             cb(content, { status: true })
             return
           }
@@ -577,8 +601,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 projection: 'stigs'
               }
             })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.stigs.map( stig => SM.StigNodeConfig( collectionId, stig ) )
+            let apiCollection = JSON.parse(result.response.responseText)
+            let content = apiCollection.stigs.map( stig => SM.StigNodeConfig( collectionId, stig ) )
             cb( content, { status: true } )
             return
           }
@@ -587,17 +611,22 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           if (match) {
             let collectionId = match[1]
             let benchmarkId = match[2]
-            let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/assets`,
-              method: 'GET',
-              params: {
-                collectionId: collectionId,
-                benchmarkId: benchmarkId,
-                projection: 'stigs'
-              }
+              // TODO: Should use endpoint /collections/{collectionId}/stigs/{benchmarkId}/assets
+              let result = await Ext.Ajax.requestPromise({
+              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
+              method: 'GET'
             })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.map(asset => SM.StigAssetNodeConfig(asset.stigs[0], asset))
+            let apiAssets = JSON.parse(result.response.responseText)
+            let content = []
+            if (apiAssets.length > 0) {
+            // Allow for batch review node
+            collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
+              if (curUser.privileges.globalAccess || (collectionGrant && collectionGrant.accessLevel >= 2)) {
+                content.push( SM.StigBatchNodeConfig( benchmarkId, collectionId ) )
+              }
+              let stigAssetNodes = apiAssets.map(asset => SM.StigAssetNodeConfig({benchmarkId: benchmarkId}, asset))
+              content = content.concat(stigAssetNodes)
+            }      
             cb(content, { status: true })
             return
           }

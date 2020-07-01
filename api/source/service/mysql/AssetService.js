@@ -488,7 +488,10 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     const context = userObject.privileges.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
     const columns = [
       'DISTINCT CAST(a.assetId as char) as assetId',
-      'a.name'
+      'a.name',
+      `json_object(
+        'collectionId', c.collectionId,
+        'name', c.name) as collection`
     ]
     let joins = [
       'collection c',

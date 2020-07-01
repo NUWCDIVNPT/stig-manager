@@ -294,7 +294,7 @@ module.exports.getStigAssetsByBenchmarkId = async function getStigAssetsByBenchm
     let projection = req.swagger.params['projection'].value
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
         let response = await Asset.getStigAssetsByBenchmarkId( collectionId, benchmarkId, projection, elevate, req.userObject )
         writer.writeJson(res, response)
     }
