@@ -219,7 +219,7 @@ SM.AssetStigNodeConfig = function (asset, stig) {
     iconCls: 'sm-stig-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
-    stigRevStr: stig.lastRevisionStr,
+    // stigRevStr: stig.lastRevisionStr,
     assetId: asset.assetId,
     collectionId: asset.collection.collectionId,
     workflow: asset.collection.workflow,
@@ -234,7 +234,7 @@ SM.StigNodeConfig = function (collectionId, stig) {
     text: stig.benchmarkId,
     report: 'stig',
     iconCls: 'sm-stig-icon',
-    stigRevStr: stig.lastRevisionStr,
+    // stigRevStr: stig.lastRevisionStr,
     id: `${collectionId}-${stig.benchmarkId}-stigs-stig-node`,
     benchmarkId: stig.benchmarkId,
     qtip: stig.title
@@ -250,7 +250,7 @@ SM.StigAssetNodeConfig = function (stig, asset) {
     iconCls: 'sm-asset-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
-    stigRevStr: stig.lastRevisionStr,
+    // stigRevStr: stig.lastRevisionStr,
     assetId: asset.assetId,
     collectionId: asset.collection.collectionId,
     benchmarkId: stig.benchmarkId,
@@ -585,7 +585,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             })
             let apiAsset = JSON.parse(result.response.responseText)
-            let content = apiAsset.stigs.map(stig => SM.AssetStigNodeConfig(asset, stig))
+            let content = apiAsset.stigs.map(stig => SM.AssetStigNodeConfig(apiAsset, stig))
             cb(content, { status: true })
             return
           }

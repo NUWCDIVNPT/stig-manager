@@ -456,7 +456,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
     region: 'west',
     id: 'groupGrid' + idAppend,
     sm_benchmarkId: leaf.benchmarkId,
-    sm_revisionStr: leaf.stigRevStr,
+    sm_revisionStr: 'latest',
     width: '35%',
     minWidth: 340,
     hideMode: 'offsets',
@@ -532,7 +532,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         },
         rowselect: {
           fn: function (sm, index, record) {
-            handleGroupSelectionForAsset(record, parseInt(leaf.collectionId), leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
+            handleGroupSelectionForAsset(record, leaf.collectionId, leaf.assetId, idAppend, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined in stigmanUtil.js
           }
         }
       }
@@ -731,7 +731,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         group: 'revision-submenu-group' + idAppend,
         handler: handleRevisionMenu
       }
-      if (item.revisionStr == activeRevisionStr) {
+      if (item.revisionStr == activeRevisionStr || (activeRevisionStr === 'latest' && i === 0)) {
         item.checked = true;
         returnObject.activeRevisionLabel = item.text;
       } else {
@@ -1985,7 +1985,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
   thisTab.show();
 
   groupGrid.getStore().load();
-  loadRevisionMenu(leaf.benchmarkId, leaf.stigRevStr, idAppend)
+  loadRevisionMenu(leaf.benchmarkId, 'latest', idAppend)
 
   async function saveReview(saveParams) {
     // saveParams = {
