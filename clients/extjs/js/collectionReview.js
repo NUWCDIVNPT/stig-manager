@@ -21,18 +21,18 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
-		// 'Global' pkgAssetsTpl object for reviewsGrid
+		// 'Global' pkgAssets array of objects for reviewsGrid
 		/******************************************************/
 		let result = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/assets/`,
+			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
+			method: 'GET',
 			params: {
-				collectionId: leaf.collectionId,
-				benchmarkId: leaf.benchmarkId
-			},
-			method: 'GET'
-		})
-		let pkgAssetsApi = JSON.parse(result.response.responseText)
-		let pkgAssets = pkgAssetsApi.map( pkgAsset => ({
+				projection: 'assets'
+			}
+		  })
+		let apiCollection = JSON.parse(result.response.responseText)
+	
+		let pkgAssets = apiCollection.assets.map( pkgAsset => ({
 			assetId: pkgAsset.assetId,
 			assetName: pkgAsset.name,
 			result: null,
@@ -265,7 +265,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						//===================================================
 						Ext.Msg.show({
 							title: 'Confirm review reset',
-							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in Collection "' + leaf.collectionName + '"?',
+							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in Collection "' + apiCollection.name + '"?',
 							buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
 							icon: Ext.MessageBox.QUESTION,
 							closable: false,
@@ -281,7 +281,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 									unlockObject.assetId = -1;
 									unlockObject.assetName = '';
 									unlockObject.collectionId =leaf.collectionId;
-									// unlockObject.collectionName=leaf.collectionName;
+									// unlockObject.collectionName=apiCollection.name;
 									unlockObject.gridTorefresh = groupGrid;
 									batchReviewUnlock(unlockObject);
 									//===============================================
@@ -374,6 +374,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		// The group grid
 		/******************************************************/
 		var groupGrid = new Ext.grid.GridPanel({
+			cls: 'sm-grid-round-panel',
+			margins: {top:6, right:3, bottom:3, left:6},
+			border: false,
 			region: 'north',
 			id: 'groupGrid' + idAppend,
 			sm_benchmarkId: leaf.benchmarkId,
@@ -1074,13 +1077,11 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		});
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
+			cls: 'sm-grid-round-panel',
+			margins: {top:6, right:6, bottom:3, left:3},
+			border: false,
 			region: 'center',
-			//enableDragDrop: true,
-			//ddGroup: 'gridDDGroup',
-			//plugins: editor,
 			layout: 'fit',
-			//height: 350,
-			border: true,
 			id: 'reviewsGrid' + idAppend,
 			title: 'Reviews',
 			store: reviewsStore,
@@ -1865,6 +1866,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					{
 						region: 'center',
 						xtype: 'panel',
+						cls: 'sm-grid-round-panel',
+						margins: {top:3, right:3, bottom:6, left:6},
+						border: false,
 						split:true,
 						collapsible: false,
 						padding: 20,
@@ -1887,6 +1891,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					{
 						region: 'south',
 						xtype: 'tabpanel',
+						cls: 'sm-grid-round-panel',
+						margins: {top:3, right:6, bottom:6, left:3},
+						border: false,
 						id: 'resources-tab-panel' + idAppend,
 						height: '33%',
 						split:true,
@@ -1922,7 +1929,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		var thisTab = Ext.getCmp('main-tab-panel').add({
 			id: 'collection-review-tab' + idAppend,
 			iconCls: 'sm-stig-icon',
-			title: leaf.collectionName + " : " + leaf.benchmarkId,
+			title: apiCollection.name + " : " + leaf.benchmarkId,
 			collectionId: leaf.collectionId,
 			// revId: leaf.revId,
 			// revisionStr: leaf.stigRevStr,
