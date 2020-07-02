@@ -434,6 +434,9 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
     if (body.autoResult != undefined) {
       values.autoResult = body.autoResult ? 1 : 0
     }
+    if (body.rejectText != undefined) {
+      values.rejectText = body.rejectText
+    }
 
     let binds = {
       assetId: assetId,

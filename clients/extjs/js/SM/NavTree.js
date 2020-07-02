@@ -140,19 +140,19 @@ SM.CollectionNodeConfig = function (collection) {
       leaf: true
     },
     {
-      id: `${collection.collectionId}-assets-node`,
-      node: 'assets',
-      text: 'Assets',
-      iconCls: 'sm-asset-icon'
-    },
-    {
       id: `${collection.collectionId}-stigs-node`,
       node: 'stigs',
       text: 'STIGs',
       iconCls: 'sm-stig-icon',
       onAssetChanged: onAssetChanged,
       onAssetDeleted: onAssetDeleted
-    }
+    },
+    {
+      id: `${collection.collectionId}-assets-node`,
+      node: 'assets',
+      text: 'Assets',
+      iconCls: 'sm-asset-icon'
+    },
   )
   let node = {
     id: `${collection.collectionId}-collection-node`,

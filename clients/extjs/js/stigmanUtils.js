@@ -1185,7 +1185,7 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
 			break;
 		case 'accepted':
-			statusIcons += '<img src="img/greencheckt.gif" width=12 height=12 ext:qtip="Accepted">';
+			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted">';
 			break;
 		default:
 			statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
