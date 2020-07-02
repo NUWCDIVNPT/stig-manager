@@ -17,7 +17,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		*/
 
-		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
+		var idAppend = '-collection-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
@@ -1640,7 +1640,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			id: 'rejectGrid' + idAppend,
 			title: 'Standard feedback',
 			flex: 50, // for hbox layout
-			margins: {top:0, right:0, bottom:0, left:10},
+			margins: {top:0, right:10, bottom:0, left:0},
 			hideHeaders: true,
 			hideLabel: true,
 			isFormField: true,
@@ -1726,7 +1726,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				layoutConfig: {
 					align: 'stretch'
 				},
-				items: [rejectOtherPanel,rejectGrid]
+				items: [rejectGrid, rejectOtherPanel]
 			}],
 			buttons: [{
 				text: 'Return review with this feedback',
@@ -1734,37 +1734,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				iconCls: 'sm-rejected-icon',
 				reviewsGrid: reviewsGrid,
 				handler: handleRejections
-				
-				
-				// function(){
-				// 	Ext.getBody().mask("Updating....");
-				// 	var reviewRecords = reviewsGrid.getSelectionModel().getSelections();
-				// 	var checkIds = [];
-				// 	for (var i = 0, len = reviewRecords.length ; i < len ; i++) {
-				// 		checkIds.push(reviewRecords[i].id);
-				// 	}
-				// 	// submitting only updates the reject content, not the status
-				// 	rejectFormPanel.getForm().submit({
-				// 		submitEmptyText: false,
-				// 		params : {
-				// 			checkIds: Ext.util.JSON.encode(checkIds),
-				// 			rejectIds: encodeSm(rejectSm,'rejectId')
-				// 		},
-				// 		success: function (f,a) {
-				// 			reviewsStore.suspendEvents(false);
-				// 			for (var i = 0, len = reviewRecords.length ; i < len ; i++) {
-				// 				reviewRecords[i].beginEdit();
-				// 				reviewRecords[i].set('status','rejected'); // this will update the status to 'reject' when the store is saved
-				// 				reviewRecords[i].endEdit();
-				// 			}
-				// 			reviewsStore.resumeEvents();
-				// 			reviewsStore.save();
-				// 			Ext.getBody().unmask();
-				// 		},
-				// 		failure: function (f,a) {
-				// 		}
-				// 	});
-				// }
 			}]
 		});
 		
