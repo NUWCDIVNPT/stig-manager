@@ -1508,10 +1508,22 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					}
 				})
 				let apiReview = JSON.parse(result.response.responseText)
-				//TODO: Set the history and metadata grids
-				const rejectFp = Ext.getCmp('rejectFormPanel' + idAppend);
-				rejectFp.getForm().setValues(apiReview);
-				setRejectButtonState();
+				//TODO: Set the history
+				// Reject text
+				const rejectFp = Ext.getCmp('rejectFormPanel' + idAppend)
+				rejectFp.getForm().setValues(apiReview)
+				setRejectButtonState()
+
+				// Metadata
+				let metadata = []
+				for (const [key, value] of Object.entries(apiReview)) {
+					metadata.push({
+						property: key,
+						value: value
+					})
+				}
+				Ext.getCmp('metadataGrid' + idAppend).getStore().loadData(metadata)				  
+
 	
 			}
 			catch (e) {
@@ -1560,8 +1572,10 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		]);
 		
-		var metadataStore = new Ext.data.ArrayStore({
-			fields: metadataFields
+		var metadataStore = new Ext.data.JsonStore({
+			fields: metadataFields,
+			root: '',
+			idProperty: 'property'
 		});
 		
 		var metadataGrid = new Ext.grid.GridPanel({
@@ -1585,7 +1599,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				id:'metadataGrid-value' + idAppend,
 				header: "Value", 
 				width: 150,
-				fixed: true,
 				dataIndex: 'value',
 				sortable: true
 			}]
@@ -2007,7 +2020,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						xtype: 'tabpanel',
 						cls: 'sm-grid-round-panel',
 						margins: {top:3, right:6, bottom:6, left:3},
-						border: false,
+						border: true,
 						id: 'resources-tab-panel' + idAppend,
 						height: '33%',
 						split:true,
