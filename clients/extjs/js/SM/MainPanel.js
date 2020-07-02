@@ -15,7 +15,6 @@ SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
     }
     const config = {
       plugins: new Ext.ux.TabCloseOnMiddleClick(),
-      // id: 'main-tab-panel',
       title: 'STIGManager',
       enableTabScroll: true,
       activeTab: 0,

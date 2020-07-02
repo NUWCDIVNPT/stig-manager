@@ -99,14 +99,21 @@ async function loadApp () {
 		
 		const mainNavTree = new SM.AppNavTree({
 			id: 'app-nav-tree',
+			cls: 'sm-grid-round-panel',
+			margins: {top:5, right:5, bottom:10, left:10},
+			border: false,
 			region: 'west'
 		})
 		const mainTabPanel = new SM.MainTabPanel({
 			id: 'main-tab-panel',
-			region: 'center'
+			region: 'center',
+			margins: {top:5, right:10, bottom:10, left:5},
+			border: false
 		})
 		
 		const homeTab = new SM.HomeTab({
+			border: true,
+			bodyCssClass: 'sm-main-tab-panels-common',
 			layout: 'table',
 			layoutConfig: {
 				tableAttrs: {
@@ -121,7 +128,7 @@ async function loadApp () {
 			},
 			items: [
 				{
-					html: "<div class='cs-home-header-reviews'>STIG Manager - OSS</div>",
+					html: "<div class='sm-home-title'>STIG Manager<span id='sm-home-title-sprite'>OSS</span></div>",
 					colspan: 3,
 					border: false
 				},

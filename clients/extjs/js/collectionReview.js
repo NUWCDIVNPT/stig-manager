@@ -2058,12 +2058,10 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			iconCls: 'sm-stig-icon',
 			title: apiCollection.name + " : " + leaf.benchmarkId,
 			collectionId: leaf.collectionId,
-			// revId: leaf.revId,
-			// revisionStr: leaf.stigRevStr,
-			benchmarkId: leaf.benchmarkId,
 			benchmarkId: leaf.benchmarkId,
 			closable:true,
 			layout: 'border',
+			border: true,
 			items: tabItems,
 			listeners: {
 			}			

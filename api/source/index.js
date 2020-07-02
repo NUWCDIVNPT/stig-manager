@@ -15,6 +15,7 @@ const multer  = require('multer')
 const upload = multer({ dest: path.join(__dirname, './uploads/') })
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
+const compression = require('compression')
 
 console.log(JSON.stringify(config, null, 2))
 const app = express();
@@ -24,6 +25,9 @@ app.use(upload.single('importFile'))
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
 app.use(morgan('combined', {stream: process.stdout}))
+// compress all responses
+app.use(compression())
+
 
 // swaggerRouter configuration
 let options = {

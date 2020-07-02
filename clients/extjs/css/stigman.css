@@ -1,3 +1,38 @@
+.x-tab-panel-header, .x-tab-panel-footer {
+    background-color: transparent;
+}
+.sm-home-title {
+	background-image: url(../img/security_firewall_on_48.png);
+    background-position: 0 8px;
+    background-repeat: no-repeat;
+    font: bold 36px Open Sans,helvetica, sans-serif;
+    color: #0f0e13;
+    padding-bottom: 20px;
+    padding-left: 56px;
+    padding-top: 8px;
+}
+
+#sm-home-title-sprite {
+	color: #fcfcfc;
+	font: bold 9px Open Sans,helvetica, sans-serif;
+	position:  absolute;
+	top: 28px;
+	background-color: #3366cc;
+	padding: 2px 4px 2px 4px;
+	border-radius:  3px;
+	margin-left: 10px;
+}
+
+.sm-main-tab-panels-common {
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+ul.x-tab-strip-top {
+    background-color: transparent;
+    background-image: none;
+    border-bottom-color: #d0d0d0;
+}
 body.x-body-masked .x-window-plain .x-window-mc {
     background-color: #f9f9f9;
 }
@@ -34,7 +69,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	background-color: #fcfcfc;
 }
 .x-border-layout-ct {
-	background-color: #fcfcfc;
+	background-color: #f9f9f9;
 }
 
 
@@ -45,7 +80,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
 
 .sm-grid-round-panel .x-panel-header {
-	background-color: #cacaca;
+	background-color: #ccc;
 	background-image: none;
 	padding: 5px 3px 4px 8px;
 } 
@@ -273,7 +308,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-right:20px;
 	padding-bottom:10px;
 	font: bold 14px Open Sans, Open Sans, helvetica, sans-serif;
-	background-color:#DDD;
+	background-color: #eee;
+	border-radius: 6px;
 	color:#3366cc;
 }
 .cs-home-body-text {
@@ -281,7 +317,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	background-color:#DDD;
+	/* background-color:#DDD; */
 	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
 	color:#000000;
 	word-wrap: break-word;

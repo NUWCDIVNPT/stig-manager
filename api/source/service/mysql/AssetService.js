@@ -405,7 +405,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'g.groupId',
       'g.title as "groupTitle"',
       'r.severity',
-      `cast(scap.ruleId is not null as json) as "autoCheckAvailable"`,
+      `cast(COUNT(scap.ruleId) > 0 as json) as "autoCheckAvailable"`,
       `result.api as "result"`,
       `cast(review.autoResult is true as json) as "autoResult"`,
       `status.api as "status"`,
@@ -435,7 +435,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'left join review on r.ruleId = review.ruleId and review.assetId = :assetId',
       'left join result on review.resultId=result.resultId',
       'left join status on review.statusId=status.statusId',
-      'left join (SELECT distinct ruleId FROM	rule_oval_map) scap on r.ruleId=scap.ruleId'
+      'left join rule_oval_map scap on r.ruleId=scap.ruleId'
     ]
     // PREDICATES
     let predicates = {
@@ -464,6 +464,21 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
+    sql += `\ngroup by
+      r.ruleId,
+      r.title,
+      g.groupId,
+      g.title,
+      r.severity,
+      result.api ,
+      review.autoResult ,
+      status.api,
+      review.ruleId,
+      review.resultId,
+      review.actionId,
+      review.resultComment,
+      review.actionComment
+    `
     sql += `\norder by substring(g.groupId from 3) + 0`
   
     connection = await dbUtils.pool.getConnection()
