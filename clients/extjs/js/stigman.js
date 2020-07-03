@@ -99,7 +99,7 @@ async function loadApp () {
 		
 		const mainNavTree = new SM.AppNavTree({
 			id: 'app-nav-tree',
-			cls: 'sm-grid-round-panel',
+			cls: 'sm-round-panel',
 			margins: {top:10, right:5, bottom:10, left:10},
 			border: false,
 			region: 'west'
@@ -153,7 +153,7 @@ async function loadApp () {
 			items: [
 				{
 					region: 'center',
-					cls: 'sm-grid-round-panel',
+					cls: 'sm-round-panel',
 					border: false,
 					margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 					layout: 'fit',

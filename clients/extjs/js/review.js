@@ -450,7 +450,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
   // The group grid
   /******************************************************/
   var groupGrid = new Ext.grid.GridPanel({
-    cls: 'sm-grid-round-panel',
+    cls: 'sm-round-panel',
     margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
     border: false,
     region: 'west',
@@ -1383,8 +1383,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
 
   var resourcesPanel = new Ext.Panel({
-    cls: 'sm-grid-round-panel',
-    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
+    cls: 'sm-round-panel',
+    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
     border: false,
     region: 'center',
     title: 'Review Resources',
@@ -1435,7 +1435,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
 
   var reviewForm = new Ext.form.FormPanel({
-    cls: 'sm-grid-round-panel',
+    cls: 'sm-round-panel',
     bodyCssClass: 'sm-review-form',
     border: false,
     margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
@@ -1892,7 +1892,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
   var reviewItems = [
     groupGrid,
     {
-      cls: 'sm-grid-round-panel',
+      cls: 'sm-round-panel',
       margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
       border: false,
       region: 'center',

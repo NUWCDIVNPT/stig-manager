@@ -54,12 +54,12 @@ function addUserAdmin() {
 	});
 
 	var userGrid = new Ext.grid.EditorGridPanel({
-		// region: 'west',
-		// split: true,
-		//title: 'User Management',
+		cls: 'sm-round-panel',
+		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+    	region: 'center',
 		id: 'userGrid',
 		store: userStore,
-		border: false,
+		border: true,
 		stripeRows:true,
 		sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
 		columns: [
@@ -211,7 +211,8 @@ function addUserAdmin() {
 		iconCls: 'sm-users-icon',
 		title: 'Users',
 		closable:true,
-		layout: 'fit',
+		layout: 'border',
+		border: false,
 		items: [userGrid]
 	});
 	if (!curUser.privileges.canAdmin) { // only show the modify button for non-admins

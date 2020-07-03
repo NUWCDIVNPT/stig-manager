@@ -8,6 +8,8 @@ function addFindingsSummary(collectionId, collectionName) {
 
 	var findingsGrid = new Ext.grid.GridPanel({
 		id: 'findingsGrid-' + collectionId,
+		cls: 'sm-round-panel',
+		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 		title: 'Findings with Counts',
 		region: 'center',
 		height: 50,
@@ -255,6 +257,8 @@ function addFindingsSummary(collectionId, collectionName) {
 
 	var hostGrid = new Ext.grid.GridPanel({
 		id: 'hostsByFindingGrid-' + collectionId,
+		cls: 'sm-round-panel',
+		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 		parent: findingsGrid,
 		height: 300,
 		title: 'Finding details',

@@ -120,14 +120,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
 
 
-.sm-grid-round-panel {
+.sm-round-panel {
 	border-width: 1px;
 	border-radius: 6px;
 	background-color: #f5f5f5;
 	overflow: hidden;
 }
 
-.sm-grid-round-panel .x-panel-header {
+.sm-round-panel .x-panel-header {
 	background-color: #ccc;
 	background-image: none;
 	padding: 5px 3px 4px 8px;

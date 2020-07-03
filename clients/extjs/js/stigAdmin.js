@@ -45,6 +45,9 @@ function addStigAdmin() {
 
 	var stigGrid = new Ext.grid.GridPanel({
 		id: 'stigGrid',
+		cls: 'sm-round-panel',
+		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+		region: 'center',
 		store: stigStore,
 		stripeRows:true,
 		sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
@@ -149,7 +152,7 @@ function addStigAdmin() {
 		iconCls: 'sm-stig-icon',
 		title: 'STIG checklists',
 		closable:true,
-		layout: 'fit',
+		layout: 'border',
 		items: [stigGrid]
 		});
 

@@ -374,7 +374,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		// The group grid
 		/******************************************************/
 		var groupGrid = new Ext.grid.GridPanel({
-			cls: 'sm-grid-round-panel',
+			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			border: false,
 			region: 'north',
@@ -1084,7 +1084,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		});
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
-			cls: 'sm-grid-round-panel',
+			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
 			border: false,
 			region: 'center',
@@ -1822,7 +1822,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					{
 						region: 'center',
 						xtype: 'panel',
-						cls: 'sm-grid-round-panel',
+						cls: 'sm-round-panel',
 						margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 						border: false,
 						split:true,
@@ -1847,7 +1847,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					{
 						region: 'south',
 						xtype: 'tabpanel',
-						cls: 'sm-grid-round-panel',
+						cls: 'sm-round-panel',
 						style: {
 							'background-color': '#eeeeee'
 						},
