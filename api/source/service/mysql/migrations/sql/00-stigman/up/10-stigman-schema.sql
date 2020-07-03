@@ -437,20 +437,21 @@ DROP TABLE IF EXISTS `review_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `review_history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `assetId` int(11) DEFAULT NULL,
-  `ruleId` varchar(45) DEFAULT NULL,
-  `activityType` varchar(45) DEFAULT NULL,
-  `columnname` varchar(45) DEFAULT NULL,
-  `oldValue` longtext ,
-  `newValue` longtext ,
+  `historyId` int(11) NOT NULL AUTO_INCREMENT,
+  `reviewId` int(11) NOT NULL,
+  `resultId` int(11) NOT NULL,
+  `resultComment` longtext,
+  `actionId` int(11) DEFAULT NULL,
+  `actionComment` longtext,
+  `autoResult` bit(1) DEFAULT NULL,
+  `ts` datetime NOT NULL,
   `userId` int(11) DEFAULT NULL,
-  `ts` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `INDEX_ACTIVITYTYPE` (`activityType`),
-  KEY `INDEX_ASSETID` (`assetId`),
-  KEY `INDEX_COLUMNNAME` (`columnname`),
-  KEY `INDEX_RULEID` (`ruleId`)
+  `rejectText` longtext,
+  `rejectUserId` int(11) DEFAULT NULL,
+  `statusId` int(11) NOT NULL,
+  PRIMARY KEY (`historyId`),
+  KEY `index_reviewId` (`reviewId`),
+  CONSTRAINT `fk_review_history_1` FOREIGN KEY (`reviewId`) REFERENCES `review` (`reviewId`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

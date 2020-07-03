@@ -291,6 +291,39 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
 exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body, userObject) {
   let connection
   try {
+    let sqlHistory = `
+    INSERT INTO review_history (
+      reviewId,
+      resultId,
+      resultComment,
+      autoResult,
+      actionId,
+      actionComment,
+      ts,
+      userId,
+      rejectText,
+      rejectUserId,
+      statusId
+    ) SELECT 
+        reviewId,
+        resultId,
+        resultComment,
+        autoResult,
+        actionId,
+        actionComment,
+        ts,
+        userId,
+        rejectText,
+        rejectUserId,
+        statusId
+      FROM
+        review 
+      WHERE
+        assetId = :assetId
+        and ruleId = :ruleId
+        and reviewId IS NOT NULL     
+    `    
+
     let values = {
       userId: userObject.userId,
       resultId: dbUtils.REVIEW_RESULT_API[body.result],
@@ -316,8 +349,14 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
     
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION')
+
+    // History
+    await connection.query(sqlHistory, binds)
+
+    await connection.query(sqlUpdate, binds)
     let [result] = await connection.query(sqlUpdate, binds)
-    let status = 'created'
+    let status = 'updated'
     if (result.affectedRows == 0) {
       binds = {
         assetId: assetId,
@@ -331,8 +370,10 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
         (:assetId, :ruleId, :resultId, :resultComment, :actionId, :actionComment, :statusId, :userId, :autoResult)
       `
       ;[result] = await connection.query(sqlInsert, binds)
-      status = 'updated'
+      status = 'creared'
     }
+    await connection.commit()
+
     let rows = await _this.getReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
@@ -343,6 +384,9 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
     })
   }
   catch(err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
   finally {
@@ -377,9 +421,42 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       actionComment = VALUES(actionComment),
       statusId = VALUES(statusId),
       userId = VALUES(userId)`
-    let binds = []
-    reviews.forEach(review => {
-      let values = [
+    let sqlHistory = `
+    INSERT INTO review_history (
+      reviewId,
+      resultId,
+      resultComment,
+      autoResult,
+      actionId,
+      actionComment,
+      ts,
+      userId,
+      rejectText,
+      rejectUserId,
+      statusId
+    ) SELECT 
+        reviewId,
+        resultId,
+        resultComment,
+        autoResult,
+        actionId,
+        actionComment,
+        ts,
+        userId,
+        rejectText,
+        rejectUserId,
+        statusId
+      FROM
+        review 
+      WHERE
+        assetId = ?
+        and ruleId IN ?
+        and reviewId IS NOT NULL     
+    `
+    let mergeBinds = []
+    let historyRules = []
+    for (const review of reviews) {
+      mergeBinds.push([
         assetId,
         review.ruleId,
         dbUtils.REVIEW_RESULT_API[review.result],
@@ -389,19 +466,22 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
         review.actionComment || null,
         review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0,
         userObject.userId
-      ]
-      binds.push(values)
-    })
+      ])
+      historyRules.push(review.ruleId) 
+    }
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
-    let [result] = await connection.query(sqlMerge, [binds])
-
+    await connection.query('START TRANSACTION')
+    await connection.query(sqlHistory, [ assetId, [historyRules] ])
+    let [result] = await connection.query(sqlMerge, [mergeBinds])
     let errors = []
     await connection.commit()
     return (errors)
   }
   catch(err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
   finally {
@@ -454,6 +534,38 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
       ruleId: ruleId,
       values: values
     }
+    let sqlHistory = `
+    INSERT INTO review_history (
+      reviewId,
+      resultId,
+      resultComment,
+      autoResult,
+      actionId,
+      actionComment,
+      ts,
+      userId,
+      rejectText,
+      rejectUserId,
+      statusId
+    ) SELECT 
+        reviewId,
+        resultId,
+        resultComment,
+        autoResult,
+        actionId,
+        actionComment,
+        ts,
+        userId,
+        rejectText,
+        rejectUserId,
+        statusId
+      FROM
+        review 
+      WHERE
+        assetId = :assetId
+        and ruleId = :ruleId
+        and reviewId IS NOT NULL`    
+
     let sqlUpdate = `
       UPDATE
         review
@@ -464,11 +576,17 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION')
+
+    // History
+    await connection.query(sqlHistory, binds)
+
     let [result] = await connection.query(sqlUpdate, binds)
 
     if (result.affectedRows == 0) {
       throw ({message: "Review must exist to be patched."})
     }
+    await connection.commit()
     let rows = await _this.getReviews(projection, {
       assetId: assetId,
       ruleId: ruleId
@@ -476,6 +594,9 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
     return (rows[0])
   }
   catch(err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     if (err.code == 400) {
       throw(err)
     }
