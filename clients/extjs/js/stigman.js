@@ -100,7 +100,7 @@ async function loadApp () {
 		const mainNavTree = new SM.AppNavTree({
 			id: 'app-nav-tree',
 			cls: 'sm-grid-round-panel',
-			margins: {top:5, right:5, bottom:10, left:10},
+			margins: {top:10, right:5, bottom:10, left:10},
 			border: false,
 			region: 'west'
 		})
@@ -112,8 +112,8 @@ async function loadApp () {
 		})
 		
 		const homeTab = new SM.HomeTab({
-			border: true,
-			bodyCssClass: 'sm-main-tab-panels-common',
+			border: false,
+			region: 'center',
 			layout: 'table',
 			layoutConfig: {
 				tableAttrs: {
@@ -143,7 +143,25 @@ async function loadApp () {
 				}
 			]
 		})
-		mainTabPanel.add(homeTab)
+
+		// mainTabPanel.add(homeTab)
+		mainTabPanel.add({
+			layout: 'border',
+			border: false,
+			title: 'Home',
+			iconCls: 'sm-stig-icon',
+			items: [
+				{
+					region: 'center',
+					cls: 'sm-grid-round-panel',
+					border: false,
+					margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+					layout: 'fit',
+					// html: 'Hi there'
+					items: homeTab
+				}
+			]
+		})
 
 		let viewportConfig = {
 			id: 'app-viewport',

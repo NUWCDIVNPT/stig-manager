@@ -188,6 +188,17 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       predicates.statements.push('asset.collectionId = :collectionId')
       predicates.binds.collectionId = inPredicates.collectionId
     }
+    if (inPredicates.groupId) {
+      predicates.statements.push(`r.ruleId IN (
+        SELECT
+          ruleId
+        FROM
+          current_group_rule
+        WHERE
+          groupId = :groupId
+        )` )
+        predicates.binds.groupId = inPredicates.groupId
+    }
     if (inPredicates.benchmarkId) {
       if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
         // Calculate the revId

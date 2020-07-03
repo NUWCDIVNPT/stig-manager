@@ -768,6 +768,7 @@ paths:
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - $ref: '#/components/parameters/RuleIdQuery'
+        - $ref: '#/components/parameters/GroupIdQuery'
         - $ref: '#/components/parameters/UserIdQuery'
         - $ref: '#/components/parameters/AssetIdQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'

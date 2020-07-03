@@ -3,7 +3,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,
 			cls: 'sm-grid-round-panel',
-			margins: {top:10, right:5, bottom:5, left:0},
+			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			region: 'north',
 			padding: '10px 10px 10px 10px',
 			border: false,
@@ -20,7 +20,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 			},
 			title: 'Grants',
 			cls: 'sm-grid-round-panel',
-			margins: {top:5, right:5, bottom:0, left:0},
+			margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			border: false,
 			region: 'center',
 			listeners: {
@@ -47,7 +47,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 			collectionId: collectionId,
 			url: `${STIGMAN.Env.apiBase}/assets`,
 			cls: 'sm-grid-round-panel',
-			margins: {top:10, right:0, bottom:5, left:5},
+			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
 			title: 'Assets',
 			region: 'north',
 			border: false,
@@ -58,7 +58,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 			collectionId: collectionId,
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
 			cls: 'sm-grid-round-panel',
-			margins: {top:5, right:0, bottom:0, left:5},
+			margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
 			border: false,
 			title: 'STIGs',
 			region: 'center'

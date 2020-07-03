@@ -1,5 +1,12 @@
 Ext.ns('SM')
 
+SM.Margin = {
+  adjacent: 3,
+  top: 6,
+  bottom: 0,
+  edge: 0
+}
+
 SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
   initComponent: function () {
     const me = this
@@ -54,9 +61,8 @@ SM.HomeTab = Ext.extend(Ext.Panel, {
   initComponent: function() {
     const me = this
     const config = {
-      title: 'Home',
+      // title: 'Home',
       autoScroll: true,
-      iconCls: 'sm-stig-icon'
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     SM.HomeTab.superclass.initComponent.call(this)

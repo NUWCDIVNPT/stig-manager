@@ -375,7 +375,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		/******************************************************/
 		var groupGrid = new Ext.grid.GridPanel({
 			cls: 'sm-grid-round-panel',
-			margins: {top:6, right:3, bottom:3, left:6},
+			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			border: false,
 			region: 'north',
 			id: 'groupGrid' + idAppend,
@@ -1085,7 +1085,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-grid-round-panel',
-			margins: {top:6, right:6, bottom:3, left:3},
+			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
 			border: false,
 			region: 'center',
 			layout: 'fit',
@@ -1804,177 +1804,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		}
 
 	/******************************************************/
-	// End Resources Panel/Feedback
-	/******************************************************/
-	// /******************************************************/
-	// // START Resources Panel/Attachments
-	// /******************************************************/
-	// 	var attachFields = Ext.data.Record.create([
-	// 		{
-	// 			name: 'raId',
-	// 			type: 'int'
-	// 		},{
-	// 			name: 'artId',
-	// 			type: 'int'
-	// 		},{	
-	// 			name:'filename',
-	// 			type: 'string'
-	// 		},{
-	// 			name:'userName',
-	// 			type: 'string'
-	// 		},{
-	// 			name:'description',
-	// 			type: 'string'
-	// 		},{
-	// 			name: 'ts',
-	// 			type: 'date',
-	// 			dateFormat: 'Y-m-d H:i:s'
-	// 		}
-	// 	]);
-
-	// 	var attachStore = new Ext.data.JsonStore({
-	// 		root: 'rows',
-	// 		sortInfo: {
-	// 			field: 'filename',
-	// 			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-	// 		},
-	// 		storeId: 'attachStore' + idAppend,
-	// 		fields: attachFields,
-	// 		idProperty: 'raId'
-	// 	});
-
-	// 	var attachGrid = new Ext.grid.GridPanel({
-	// 		//region: 'center',
-	// 		disableSelection: true,
-	// 		layout: 'fit',
-	// 		cls: 'custom-artifacts',
-	// 		hideHeaders: true,
-	// 		border: false,
-	// 		id: 'attachGrid' + idAppend,
-	// 		store: attachStore,
-	// 		stripeRows:true,
-	// 		// sm: new Ext.grid.RowSelectionModel ({
-	// 			// singleSelect: true
-	// 		// }),
-	// 		view: new Ext.grid.GridView({
-	// 			forceFit:true,
-	// 			emptyText: 'No attachments to display.',
-	// 			deferEmptyText:false
-	// 		}),
-	// 		// tbar: new Ext.Toolbar({
-	// 			// items: [
-	// 				// {
-	// 					// xtype: 'tbbutton',
-	// 					// text: 'Attach artifact...',
-	// 					// id: 'attachGrid-add-button' + idAppend,
-	// 					// icon: 'img/attach-16.png',
-	// 					// handler: function(btn){
-	// 						// attachArtifact();
-	// 					// }							
-	// 				// }
-	// 			// ]
-	// 		// }),
-	// 		columns: [
-	// 			{ 	
-	// 				id:'attach-filename' + idAppend,
-	// 				header: "Artifact",
-	// 				width: 100,
-	// 				dataIndex: 'filename',
-	// 				sortable: true,
-	// 				align: 'left',
-	// 				renderer: function(value, metadata, record) {
-	// 					//var returnStr = '<img src="' + getFileIcon(value) + '" width=12px height=12px>&nbsp;';
-	// 					var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">';
-	// 					returnStr += '<b>' + value + '</b>';
-	// 					returnStr += '<br><br><b>Attached by:</b> ' + record.data.userName;
-	// 					returnStr += '<br><b>Description:</b> ' + record.data.description;
-	// 					returnStr += '<br><br>';
-	// 					return returnStr;
-	// 				}
-	// 			}
-	// 			,{ 
-	// 				width: 25,
-	// 				header: 'download', // not shown, used in cellclick handler
-	// 				fixed: true,
-	// 				dataIndex: 'none',
-	// 				renderer: function(value, metadata, record) {
-	// 					metadata.css = 'artifact-download';
-	// 					metadata.attr = 'ext:qtip="Download artifact"';
-	// 					return '';
-	// 				}
-	// 			}
-	// 			,{ 
-	// 				width: 25,
-	// 				header: 'delete',
-	// 				fixed: true,
-	// 				dataIndex: 'none',
-	// 				renderer: function(value, metadata, record) {
-	// 					metadata.css = 'artifact-delete';
-	// 					metadata.attr = 'ext:qtip="Unattach the artifact from this review"';
-	// 					return '';
-	// 				}
-	// 			}
-	// 		],
-	// 		loadMask: true,
-	// 		autoExpandColumn: 'attach-filename' + idAppend,
-	// 		emptyText: 'No attachments to display',
-	// 		listeners: {
-	// 			cellclick: function (grid,rowIndex,columnIndex,e) {
-	// 				//if (grid.getSelectionModel().isSelected(rowIndex)) {
-	// 					var r = grid.getStore().getAt(rowIndex);
-	// 					var header = grid.getColumnModel().getColumnHeader(columnIndex);
-	// 					switch (header) {
-	// 						case 'download':
-	// 							window.location='pl/getArtifact.pl?artId=' + r.data.artId;
-	// 							break;
-	// 						case 'delete':
-	// 							removeMap(r);
-	// 							break;
-	// 					}
-	// 				//}
-	// 			}
-	// 		}
-	// 	});
-		
-
-	// 	function removeMap(r) {
-	// 		var confirmStr='Do you want to unattach the artifact "' + r.data.filename + '"?';
-	// 		Ext.Msg.confirm("Confirm",confirmStr,function (btn,text) {
-	// 			if (btn == 'yes') {
-	// 				Ext.Ajax.request({
-	// 					url: 'pl/removeArtifactMap.pl',
-	// 					params: { 
-	// 						raId: r.data.raId
-	// 					},
-	// 					success: function(response, request) {                               
-	// 						var responseObj = Ext.util.JSON.decode(response.responseText);
-	// 						if (responseObj.success) {
-	// 							attachStore.remove(r);
-	// 							// if (attachStore.getCount() > 0) {
-	// 								// reviewForm.groupGridRecord.set('hasAttach',1);
-	// 							// } else {
-	// 								// reviewForm.groupGridRecord.set('hasAttach',0);
-	// 							// }
-	// 						}
-	// 					},
-	// 					failure: function(results, request) {
-	// 						// if (p.maskEl != undefined) {
-	// 							// p.maskEl.unmask();
-	// 						// }
-	// 						// alert('Error: review could not be updated.');
-	// 					}
-	// 				});
-	// 			}
-	// 		});
-			
-	// 	};
-
-	// /******************************************************/
-	// // End Resources Panel/Attachments
-	// /******************************************************/
-
-
-	/******************************************************/
 	// END Resources Panel
 	/******************************************************/
 
@@ -1994,7 +1823,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						region: 'center',
 						xtype: 'panel',
 						cls: 'sm-grid-round-panel',
-						margins: {top:3, right:3, bottom:6, left:6},
+						margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 						border: false,
 						split:true,
 						collapsible: false,
@@ -2019,7 +1848,10 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						region: 'south',
 						xtype: 'tabpanel',
 						cls: 'sm-grid-round-panel',
-						margins: {top:3, right:6, bottom:6, left:3},
+						style: {
+							'background-color': '#eeeeee'
+						},
+						margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
 						border: true,
 						id: 'resources-tab-panel' + idAppend,
 						height: '33%',
@@ -2061,7 +1893,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			benchmarkId: leaf.benchmarkId,
 			closable:true,
 			layout: 'border',
-			border: true,
+			border: false,
 			items: tabItems,
 			listeners: {
 			}			
