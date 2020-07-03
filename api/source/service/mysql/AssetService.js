@@ -1012,8 +1012,10 @@ exports.setStigAssetsByBenchmarkId = async function(collectionId, benchmarkId, a
     DELETE FROM 
       stig_asset_map
     WHERE 
-      benchmarkId = ?
-      and assetId NOT IN ?`
+      benchmarkId = ?`
+    if (assetIds.length > 0) {
+      sqlDeleteBenchmarks += ' and assetId NOT IN ?'
+    }  
     // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
     await connection.query( sqlDeleteBenchmarks, [ benchmarkId, [assetIds] ] )
     
