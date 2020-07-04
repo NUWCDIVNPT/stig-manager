@@ -2,10 +2,11 @@ name: Greet Everyone
 # This workflow is triggered on pushes to the repository.
 on:
   push:
-    - maseter
-    -phase-1-dev
-  tags:
-    - workflowTest
+    branches:
+      - maseter
+      - phase-1-dev
+    tags:
+      - workflowTest
 
 jobs:
   build:
