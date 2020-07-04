@@ -3,7 +3,7 @@ name: Greet Everyone!
 on:
   push:
     branches:
-      - maseter
+      - master
       - phase-1-dev
     tags:
       - workflowTest
