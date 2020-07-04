@@ -171,33 +171,74 @@ function addFindingsSummary(collectionId, collectionName) {
 			items: [
 				{
 					xtype: 'tbtext',
+					text: 'Aggregate by'
+				},
+				{
+					xtype: 'combo',
+					id: 'combo-aggregator' + idAppend,
+					cls: 'sm-enhanced-disable-textarea',
+					width: 150,
+					forceSelection: true,
+					editable: false,
+					mode: 'local',
+					triggerAction: 'all',
+					displayField:'display',
+					valueField: 'aggregator',
+					store: new Ext.data.SimpleStore({
+						fields: ['display', 'aggregator'],
+						data : [['Group', 'groupId'],['Rule', 'ruleId'],['CCI', 'cci']]
+					}),
+					listeners: {
+						select: (combo, record, index) => {
+							findingsGrid.getSelectionModel().clearSelections(true)
+							hostGrid.getStore().removeAll()
+							let params = {
+								aggregator: record.data.aggregator
+							}
+							let benchmarkId = Ext.getCmp('combo-stig' + idAppend).getValue()
+							if (benchmarkId !== Ext.getCmp('combo-stig' + idAppend).includeAllItem) {
+								params.benchmarkId = benchmarkId
+							}
+							findingsGrid.getStore().load({
+								params: params
+							})
+						}
+					} 
+				},
+				{
+					xtype: 'tbtext',
 					text: 'STIG:  '
-				}
-				, {
+				},
+				{
 					xtype: 'sm-stig-selection-field',
 					id: 'combo-stig' + idAppend,
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}?projection=stigs`,
 					autoLoad: true,
+					includeAllItem: '--- All Collection STIGs ---',
 					root: 'stigs',
 					width: 300,
 					triggerAction: 'all',
 					allowBlank: true,
 					editable: false,
 					forceSelection: true,
+					value: '--- All Collection STIGs ---',
 					listeners: {
 						select: function (f, r, i) {
-							findingsGrid.getSelectionModel().clearSelections(true);
-							hostGrid.getStore().removeAll();
+							findingsGrid.getSelectionModel().clearSelections(true)
+							hostGrid.getStore().removeAll()
+							let params = {
+								aggregator: 'groupId'
+							}
+							if (r.data.benchmarkId !== f.includeAllItem) {
+								params.benchmarkId = r.data.benchmarkId
+							}
 							findingsGrid.getStore().load({
-								params: {
-									aggregator: 'groupId',
-									benchmarkId: r.data.benchmarkId
-								}
-							});
+								params: params
+							})
 						}
 					}
-				}
-				, {
+				},
+				{
 					xtype: 'tbseparator'
 				}
 			]
@@ -212,41 +253,31 @@ function addFindingsSummary(collectionId, collectionName) {
 					handler: function (btn) {
 						findingsGrid.getStore().reload();
 					}
-				}, {
+				},
+				{
 					xtype: 'tbseparator'
-				}
-				// ,{
-				// xtype: 'tbbutton',
-				// iconCls: 'icon-excel',
-				// tooltip: 'Download an enhanced Audits report spreadsheet',
-				// //text: 'Enhanced',
-				// width: 20,
-				// handler: function(btn){
-				// var ourStore = findingsGrid.getStore();
-				// var lo = ourStore.lastOptions;
-				// window.location=ourStore.url + '?xls=1&collectionId=' + lo.params.collectionId;
-				// }
-				// }
-				, {
-					xtype: 'tbbutton',
-					iconCls: 'icon-save',
-					width: 20,
-					tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-					handler: function (btn) {
-						var ourStore = findingsGrid.getStore();
-						var lo = ourStore.lastOptions;
-						window.location = ourStore.url + '?csv=1&collectionId=' + lo.params.collectionId;
-					}
-				}, {
+				},
+				{
+					xtype: 'exportbutton',
+					hasMenu: false,
+					gridBasename: 'Findings',
+					storeBasename: 'Findings (store)',
+					iconCls: 'sm-export-icon',
+					text: 'Export'
+				},
+				{
 					xtype: 'tbfill'
-				}, {
+				},
+				{
 					xtype: 'tbseparator'
-				}, {
+				},
+				{
 					xtype: 'tbtext',
 					id: 'findingsGrid-' + collectionId + '-totalText',
 					text: '0 records',
 					width: 80
-				}]
+				}
+			]
 		})
 	});
 
@@ -344,20 +375,16 @@ function addFindingsSummary(collectionId, collectionName) {
 					}
 				}, {
 					xtype: 'tbseparator'
-				}, {
-					xtype: 'tbbutton',
-					id: 'hostsByFindingGrid-' + collectionId + '-csvBtn',
-					iconCls: 'icon-save',
-					tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-					disabled: true,
-					width: 20,
-					handler: function (btn) {
-						var ourStore = hostGrid.getStore();
-						var lo = ourStore.lastOptions;
-						// window.location=ourStore.url + '?csv=1&db=' + lo.params.db + '&type=' + lo.params.type + '&ip=' + lo.params.ip;
-						window.location = ourStore.url + '?csv=1&collectionId=' + lo.params.collectionId + '&ruleId=' + lo.params.ruleId;
-					}
-				}, {
+				},
+				{
+					xtype: 'exportbutton',
+					hasMenu: false,
+					gridBasename: 'Assets (grid)',
+					storeBasename: 'Assets (store)',
+					iconCls: 'sm-export-icon',
+					text: 'Export'
+				},
+					{
 					xtype: 'tbfill'
 				}, {
 					xtype: 'tbseparator'
@@ -413,13 +440,3 @@ function addFindingsSummary(collectionId, collectionName) {
 	})
 
 }; //end addCompletionReport();
-
-// function renderSeverity(value, metaData, record, rowIndex, colIndex, store) {
-// 	if (value == 'high') {
-// 		return 'Cat 1';
-// 	} else if (value == 'medium') {
-// 		return 'Cat 2';
-// 	} else if (value == 'low') {
-// 		return 'Cat 3';
-// 	} 
-// }
