@@ -24,13 +24,20 @@ const app = express();
 app.use(upload.single('importFile'))
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
-app.use(morgan('combined', {stream: process.stdout}))
+morgan.token('token-user', (req, res) => {
+  if (req.access_token) {
+    return req.access_token[config.oauth.userid_claim]
+  }
+})
+
+app.use(morgan(':remote-addr - :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
 // compress all responses
 app.use(compression())
 
 
 // swaggerRouter configuration
 let options = {
+  loglevel: 'error',
   controllers: path.join(__dirname, './controllers'),
   checkControllers: false,
   useStubs: process.env.NODE_ENV === 'development', // Conditionally turn on stubs (mock mode)
@@ -90,10 +97,21 @@ oasTools.initialize(oasDoc, app, function () {
   startServer(app)
  })
 
-function setupClient(app, directory) {
-  app.use('/client', express.static(path.join(__dirname, directory)))
+ async function initializeStigs() {
+   const fetchStigs = require('./utils/fetchStigs')
+   let result = await fetchStigs()
+   let one = 1
+ }
 
-  const envsub = require('envsub');
+function setupClient(app, directory) {
+  process.env.STIGMAN_CLIENT_API_BASE = process.env.STIGMAN_CLIENT_API_BASE || '/api'
+  process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH = process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH || 'http://localhost:8080/auth'
+  process.env.STIGMAN_CLIENT_KEYCLOAK_REALM = process.env.STIGMAN_CLIENT_KEYCLOAK_REALM || 'stigman'
+  process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID = process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID || 'stig-manager'
+  
+  app.use('/', express.static(path.join(__dirname, directory)))
+
+  const envsub = require('envsub')
   let templateFile = path.join(__dirname, directory, '/js/Env.js.template')
   let outputFile = path.join(__dirname, directory, '/js/Env.js')
   let options = {
@@ -130,6 +148,9 @@ async function startServer(app) {
     let db = require(`./service/${config.database.type}/utils`)
     await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
 
+    // console.log(`Importing STIGs...`)
+    // await initializeStigs()
+
     // Set/change classification if indicated
     console.log(`Checking classification...`)
     if (config.setClassification) {
@@ -139,8 +160,14 @@ async function startServer(app) {
 
     // Start the server
     http.createServer(app).listen(config.http.port, function () {
-      console.log('Your server is listening on port %d (http://localhost:%d)', config.http.port, config.http.port)
-      console.log('Swagger-ui is available on http://localhost:%d/docs', config.http.port)
+      console.log('Server is listening on port %d', config.http.port)
+      console.log('API is available at /api')
+      if (config.swaggerUi.enabled === 'true') {
+        console.log('API documentation is available at /api-docs')
+      }
+      if (config.client.enabled === 'true') {
+        console.log('Client is available at /')
+      }
     })
   } catch(err) {
     console.error(err.message);

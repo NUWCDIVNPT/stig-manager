@@ -108,8 +108,6 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
       }
       let options = []
       let response = await Operation.replaceAppData(options, appdata, req.userObject, res )
-      // writer.writeJson(res, response)
-      fs.unlink(req.file.path)
     }
     else {
       writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
