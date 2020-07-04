@@ -20,5 +20,5 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: muerte99/stigman
-          dockerfile: ../../../Dockerfile  
+          dockerfile: '../../../Dockerfile'
           tag_with_ref: true
