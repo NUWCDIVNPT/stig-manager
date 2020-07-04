@@ -328,7 +328,7 @@ function addCompletionStatus(collectionId,collectionName) {
 			// }
 			,{
 				xtype: 'tbbutton',
-				iconCls: 'icon-save',
+				iconCls: 'sm-export-icon',
 				width: 20,
 				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 				handler: function(btn){

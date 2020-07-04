@@ -209,7 +209,7 @@ function addCollectionAdmin() {
 				{
 					xtype: 'tbbutton',
 					id: 'collectionGrid-csvBtn',
-					iconCls: 'icon-save',
+					iconCls: 'sm-export-icon',
 					tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 					width: 20,
 					handler: function (btn) {
@@ -430,7 +430,7 @@ function addCollectionAdmin() {
 				}, {
 					xtype: 'tbbutton',
 					id: `assetGrid-collection-csvBtn`,
-					iconCls: 'icon-save',
+					iconCls: 'sm-export-icon',
 					tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 					width: 20,
 					handler: function (btn) {

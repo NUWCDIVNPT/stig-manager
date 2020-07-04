@@ -190,7 +190,7 @@ function addArtifactAdmin() {
 			{
 				xtype: 'tbbutton',
 				id: 'stigGrid-csvBtn',
-				iconCls: 'icon-save',
+				iconCls: 'sm-export-icon',
 				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
 				width: 20,
 				handler: function(btn){

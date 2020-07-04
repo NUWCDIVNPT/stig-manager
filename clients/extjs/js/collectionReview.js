@@ -222,6 +222,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				}
 				,{ 
 					text: 'Export Results',
+					disabled: true,
 					iconCls: 'sm-export-icon',
 					hideOnClick: false,
 					menu: {

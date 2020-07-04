@@ -307,7 +307,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         hasMenu: false,
                         gridBasename: 'Assets (grid)',
                         storeBasename: 'Assets (store)',
-                        iconCls: 'icon-save',
+                        iconCls: 'sm-export-icon',
                         text: 'Export'
                     },{
                         xtype: 'tbfill'
@@ -330,6 +330,7 @@ Ext.reg('sm-collection-asset-grid', SM.CollectionAssetGrid)
 
 SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
+        let me = this
         let stigStore = new Ext.data.JsonStore({
             fields: [
                 {	name:'benchmarkId',
@@ -355,7 +356,20 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 field: 'benchmarkId',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
-            idProperty: 'benchmarkId'
+            idProperty: 'benchmarkId',
+            listeners: {
+                load: (store, records, options) => {
+                    if (me.includeAllItem) {
+                        store.suspendEvents()
+                        let allRecord = {
+                            benchmarkId: me.includeAllItem
+                        }
+                        store.loadData( me.root ? { [me.root]: allRecord } : { allRecord }, true)
+                        store.sort('benchmarkId', 'ASC')
+                        store.resumeEvents()
+                    }
+                }
+            }
         })
         let config = {
             store: stigStore,
@@ -364,7 +378,6 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             valueField: 'benchmarkId',
             mode: 'local',
             forceSelection: true,
-			allowBlank: false,
 			typeAhead: true,
 			minChars: 0,
             triggerAction: this.triggerAction || 'query',
@@ -429,10 +442,10 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                     }
 				}
             },
-            validator: (value) => {
-                let index = this.store.indexOfId(value)
-                return (index !== -1)
-            }     
+            // validator: (value) => {
+            //     let index = this.store.indexOfId(value)
+            //     return (index !== -1)
+            // }     
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.StigSelectionField.superclass.initComponent.call(this)

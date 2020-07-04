@@ -183,7 +183,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         hasMenu: false,
                         gridBasename: 'STIGs (grid)',
                         storeBasename: 'STIGs (store)',
-                        iconCls: 'icon-save',
+                        iconCls: 'sm-export-icon',
                         text: 'Export'
                     },{
                         xtype: 'tbfill'
@@ -490,7 +490,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                         hasMenu: false,
                         gridBasename: 'Assets (grid)',
                         storeBasename: 'Assets (store)',
-                        iconCls: 'icon-save',
+                        iconCls: 'sm-export-icon',
                         text: 'Export'
                     },{
                         xtype: 'tbfill'

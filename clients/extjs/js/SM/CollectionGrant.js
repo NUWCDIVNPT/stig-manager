@@ -193,7 +193,7 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         hasMenu: false,
                         gridBasename: 'Vendors (grid)',
                         storeBasename: 'Vendors (store)',
-                        iconCls: 'icon-save',
+                        iconCls: 'sm-export-icon',
                         text: 'Export'
                     },{
                         xtype: 'tbfill'
