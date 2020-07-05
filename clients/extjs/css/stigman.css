@@ -1,3 +1,52 @@
+.x-fieldset {
+    border-radius: 3px;
+}
+.ext-el-mask {
+    background-color: #333333;
+}
+.sm-round-panel .x-window-header {
+	color: #111;
+    font-weight: bold;
+    font-size: 11px;
+    font-family: Open Sans,Open Sans,verdana,sans-serif;
+   	background-color: #ccc;
+    background-image: none;
+    padding: 6px 8px 5px 8px;
+}
+.x-window-plain .x-window-mc {
+    border: 0px solid;
+}
+.x-window-plain .x-window-body {
+    border: 0px solid;
+    background: transparent!important;
+}
+.x-window-tl {
+	background-image: none;
+}
+.x-window-tc {
+	background-image: none;
+}
+.x-window-tr {
+	background-image: none;
+}
+.x-window-ml {
+	background-image: none;
+}
+.x-window-mc {
+	background-image: none;
+}
+.x-window-mr {
+	background-image: none;
+}
+.x-window-bl {
+	background-image: none;
+}
+.x-window-bc {
+	background-image: none;
+}
+.x-window-br {
+	background-image: none;
+}
 .sm-review-form {
 	background-color: transparent;
 }
@@ -123,7 +172,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-round-panel {
 	border-width: 1px;
 	border-radius: 6px;
-	background-color: #f5f5f5;
+	background-color: #fff;
 	overflow: hidden;
 }
 

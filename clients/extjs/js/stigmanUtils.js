@@ -1545,6 +1545,7 @@ function uploadArchive(n) {
 
 function uploadStigs(n) {
 	var fp = new Ext.FormPanel({
+		padding: 10,
 		standardSubmit: false,
 		fileUpload: true,
 		baseCls: 'x-plain',
@@ -1695,6 +1696,11 @@ function uploadStigs(n) {
 	});
 
 	var appwindow = new Ext.Window({
+		cls: 'sm-round-panel',
+		frame: false,
+		closable: true,
+		resizable: false,
+		shadow: false,
 		title: 'Import ZIP archive of results in CKL or XCCDF format',
 		modal: true,
 		width: 500,

@@ -752,6 +752,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
 async function showAssetProps( assetId, initialCollectionId ) {
     try {
         let assetPropsFormPanel = new SM.AssetProperties({
+            padding: '10px 15px 10px 15px',
             initialCollectionId: initialCollectionId,
             btnHandler: async function(){
                 try {
@@ -787,6 +788,11 @@ async function showAssetProps( assetId, initialCollectionId ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
+            cls: 'sm-round-panel',
+            frame: false,
+            closable: true,
+            resizable: false,
+            shadow: false,
             id: 'assetPropsWindow',
             title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
             modal: true,
@@ -799,6 +805,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
             buttonAlign:'right',
             items: assetPropsFormPanel
         });
+
         
         appwindow.render(document.body)
         // await assetPropsFormPanel.initPanel()
