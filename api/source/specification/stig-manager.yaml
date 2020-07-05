@@ -473,7 +473,7 @@ paths:
     put:
       tags:
         - Asset
-      summary: Set all the STIG assignments of an Asset
+      summary: UNIMPLEMENTED Set all the STIG assignments of an Asset
       operationId: setAssetStigs
       requestBody:
         required: true
@@ -530,7 +530,7 @@ paths:
     put:
       tags:
         - Asset
-      summary: Assign a STIG to an Asset
+      summary: UNIMPLEMENTED Assign a STIG to an Asset
       operationId: setAssetStig
       responses:
         '200':
@@ -600,7 +600,7 @@ paths:
     put:
       tags:
         - Asset
-      summary: Set all the grants to a STIG-Asset combination
+      summary: UNIMPLEMENTED Set all the grants to a STIG-Asset combination
       operationId: setAssetStigGrants
       responses:
         '200':
@@ -624,7 +624,7 @@ paths:
     delete:
       tags:
         - Asset
-      summary: Delete all the grants to a STIG-Asset combination
+      summary: UNIMPLEMENTED Delete all the grants to a STIG-Asset combination
       operationId: deleteAssetStigGrants
       responses:
         '200':
@@ -2781,6 +2781,8 @@ components:
           type: string
         title:
           type: string
+        ruleCount:
+          type: integer
     StigAsset:
       type: object
       properties:
