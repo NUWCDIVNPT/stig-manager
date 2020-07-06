@@ -147,11 +147,6 @@ function addAppDataAdmin() {
     });
   
     var appwindow = new Ext.Window({
-      cls: 'sm-round-panel',
-      frame: false,
-      closable: true,
-      resizable: false,
-      shadow: false,
       title: 'Initialize Application Data',
       modal: true,
       width: 500,

@@ -1,4 +1,12 @@
 
+// Flat style Windows by default
+Ext.override(Ext.Window, {
+    cls: 'sm-round-panel',
+    frame: false,
+    resizable: false,
+    shadow: false
+})
+
 // Form.getFieldValues
 // Add boolean parameter to return disabled fields
 // Source: carl.a.smigielski@saic.com

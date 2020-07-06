@@ -2,85 +2,6 @@
 
 Ext.ns('SM')
 
-SM.CollectionAssetTree = Ext.extend(Ext.tree.TreePanel, {
-    loadTree: async function (nodeId, cb) {
-        let match
-        match = nodeId.match(/(\d+)-project-asset-tree-root/)
-        if (match) {
-            let collectionId = parseInt(match[1])
-            let result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
-                method: 'GET',
-                params: {
-                  projection: 'assets'
-                }
-              })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.assets.map(asset => ({
-                id: `${collectionId}-${asset.assetId}-project-asset-tree-asset-node`,
-                text: asset.name,
-                report: 'asset',
-                collectionId: collectionId,
-                assetId: asset.assetId,
-                iconCls: 'sm-asset-icon',
-                qtip: asset.name
-            })
-            )
-            cb(content, { status: true })
-            return
-        }
-        match = nodeId.match(/(\d+)-(\d+)-project-asset-tree-asset-node/)
-        if (match) {
-            let collectionId = parseInt(match[1])
-            let assetId = parseInt(match[2])
-            let result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
-                method: 'GET',
-                params: {
-                  projection: 'stigs'
-                }
-            })
-            let r = JSON.parse(result.response.responseText)
-            let content = r.stigs.map(stig => ({
-                id: `${collectionId}-${assetId}-${stig.benchmarkId}-leaf`,
-                text: stig.benchmarkId,
-                leaf: true,
-                report: 'review',
-                iconCls: 'sm-stig-icon',
-                stigName: stig.benchmarkId,
-                assetName: r.name,
-                stigRevStr: stig.lastRevisionStr,
-                assetId: r.assetId,
-                collectionId: collectionId,
-                benchmarkId: stig.benchmarkId,
-                qtip: stig.title
-                })
-            )
-            cb(content, { status: true })
-            return
-        }
-    },
-    initComponent: function() {
-        let me = this
-        let config = {
-            root: {
-                nodeType: 'async',
-                text: 'Assets',
-                id: `${me.projectId}-project-asset-tree-root`,
-                iconCls: 'sm-asset-icon',
-                expanded: true
-            },
-            rootVisible: true,
-            loader: new Ext.tree.TreeLoader({
-                directFn: me.loadTree
-            })        
-        }
-
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ProjectAssetTree.superclass.initComponent.call(this)
-    }
-})
-
 /* 
 @cfg collectionId 
 @cfg url
@@ -806,11 +727,6 @@ async function showAssetProps( assetId, initialCollectionId ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
-            cls: 'sm-round-panel',
-            frame: false,
-            closable: true,
-            resizable: false,
-            shadow: false,
             id: 'assetPropsWindow',
             title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
             modal: true,

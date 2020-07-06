@@ -1,3 +1,6 @@
+.sm-round-panel .ext-mb-content {
+	font-family: Open Sans, verdana, sans-serif;
+}
 .sm-bare-button .x-btn-tl, .sm-bare-button .x-btn-tr, .sm-bare-button .x-btn-tc, .sm-bare-button .x-btn-ml, .sm-bare-button .x-btn-mr, .sm-bare-button .x-btn-mc, .sm-bare-button .x-btn-bl, .sm-bare-button .x-btn-br, .sm-bare-button .x-btn-bc {
     background-image: none;
 }

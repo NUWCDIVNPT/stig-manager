@@ -841,11 +841,6 @@ async function showUserProperties(id, grid){
 	//USER PROPERTY COMPONENTS
 	//===================================================
 	let appwindow = new Ext.Window({
-		cls: 'sm-round-panel',
-		frame: false,
-		closable: true,
-		resizable: false,
-		shadow: false,
 		id: 'userPropsWindow',
 		title: 'User Properties (ID: ' + id + ')',
 		modal: true,

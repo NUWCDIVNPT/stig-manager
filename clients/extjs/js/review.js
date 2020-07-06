@@ -1353,11 +1353,6 @@ async function addReview(leaf, selectedRule, selectedResource) {
     });
 
     var window = new Ext.Window({
-      cls: 'sm-round-panel',
-      frame: false,
-      closable: true,
-      resizable: false,
-      shadow: false,
       title: 'Attach artifact',
       modal: true,
       width: 600,
@@ -2235,11 +2230,6 @@ async function addReview(leaf, selectedRule, selectedResource) {
     });
 
     var appwindow = new Ext.Window({
-      cls: 'sm-round-panel',
-      frame: false,
-      closable: true,
-      resizable: false,
-      shadow: false,
       title: 'Import STIG results from CKL or XCCDF',
       modal: true,
       width: 500,
@@ -2409,11 +2399,6 @@ async function addReview(leaf, selectedRule, selectedResource) {
     });
 
     var window = new Ext.Window({
-      cls: 'sm-round-panel',
-      frame: false,
-      closable: true,
-      resizable: false,
-      shadow: false,
       title: 'Submit multiple reveiws.',
       modal: true,
       width: 350,

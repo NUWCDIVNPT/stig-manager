@@ -1208,11 +1208,6 @@ function addPoamWorkspace(conf) {
 		});
 		
 		var ftWindow = new Ext.Window({
-            cls: 'sm-round-panel',
-            frame: false,
-            closable: true,
-            resizable: false,
-            shadow: false,
 			title: "Finding Texts",
 			modal: true,
 			width: 500,

@@ -797,11 +797,6 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
-            cls: 'sm-round-panel',
-            frame: false,
-            closable: true,
-            resizable: false,
-            shadow: false,
             title: 'STIG Assignments, Collection ID ' + collectionId,
             modal: true,
             hidden: true,
