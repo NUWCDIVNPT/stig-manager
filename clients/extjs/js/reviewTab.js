@@ -620,9 +620,10 @@ async function createCollection( collectionObj, ownerId ) {
       jsonData: collectionObj
     })
     let collection = JSON.parse(result.response.responseText)
+    // Refresh the curUser global
+    await SM.GetUserObject()
 
     SM.Dispatcher.fireEvent('collectioncreated', collection)
-
     addCollectionManager( collection.collectionId, collection.name )
   }
   catch (e) {

@@ -12,7 +12,3 @@ SM.Dispatcher.addEvents(
     'assetchanged',
     'stigassetschanged'
 )
-
-SM.Dispatcher.addListener('collectioncreated', SM.GetUserObject)
-SM.Dispatcher.addListener('collectiondeleted', SM.GetUserObject)
-SM.Dispatcher.addListener('collectionchanged', SM.GetUserObject)

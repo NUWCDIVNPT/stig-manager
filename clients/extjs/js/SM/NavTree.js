@@ -117,7 +117,7 @@ SM.CollectionNodeConfig = function (collection) {
   }
 
   let children = []
-  collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
+  const collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
   if (collectionGrant && collectionGrant.accessLevel >= 3) {
     children.push({
       id: `${collection.collectionId}-pkgconfig-node`,
@@ -302,7 +302,10 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             }
           }
       }
+
       this.onCollectionCreated = function (apiCollection) {
+        const collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === apiCollection.collectionId )
+        if (collectionGrant) {
           let collectionRoot = me.getNodeById('collections-root')
           collectionRoot.appendChild( SM.CollectionNodeConfig( apiCollection ) )
           function sortFn (a, b) {
@@ -321,8 +324,11 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return 0
           }
           collectionRoot.sort(sortFn)
+        }
       }
+
       this.sortNodes = (a, b) => a.text < b.text ? -1 : 1
+
       this.onAssetChanged = (apiAsset) => {
         let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`)
         if (assetsNode && assetsNode.isExpanded() ) {
@@ -669,11 +675,20 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           let collectionRootNode = n.parentNode
           let fp = new SM.CollectionForm({
             btnText: 'Create',
-            btnHandler: () => {
-              let values = fp.getForm().getFieldValues()
-              createCollection(values, curUser.userId)
+            btnHandler: async () => {
+              try {
+                let values = fp.getForm().getFieldValues()
+                await createCollection(values, curUser.userId)
+              }
+              catch (e) {
+                alert (e.message)
+              }
+              finally {
+                appwindow.close()
+              }
             }
           })
+
           fp.getForm().setValues({
             grants: [{
               user: {
@@ -683,6 +698,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               accessLevel: 4
             }],
           })
+
           let appwindow = new Ext.Window({
             cls: 'sm-round-panel',
             frame: false,
@@ -700,6 +716,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             buttonAlign:'right',
             items: fp
           })
+
           appwindow.show(document.body)
         }
       
