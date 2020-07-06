@@ -28,6 +28,11 @@ function getUnlockPrompt(unlockLevel, unlockObject, grid){
 	//Create and Display the Prompt Box
 	//===========================================================================
 	var promptWindow = new Ext.Window({
+		cls: 'sm-round-panel',
+		frame: false,
+		closable: true,
+		resizable: false,
+		shadow: false,
 		id: "unlockPromptWindow",
 		modal: 	true,
 		closable: false,
@@ -180,6 +185,11 @@ function initProgress (title,text,storeId,iframe) {
 	//	pb.reset();
 
 	var pbWindow = new Ext.Window({
+		cls: 'sm-round-panel',
+		frame: false,
+		closable: true,
+		resizable: false,
+		shadow: false,
 		title: title,
 		modal: true,
 		closable: true, // 'false' for production
@@ -1525,6 +1535,11 @@ function uploadArchive(n) {
 	});
 
 	var appwindow = new Ext.Window({
+		cls: 'sm-round-panel',
+		frame: false,
+		closable: true,
+		resizable: false,
+		shadow: false,
 		title: 'Import ZIP archive of results in CKL or XCCDF format',
 		modal: true,
 		width: 500,

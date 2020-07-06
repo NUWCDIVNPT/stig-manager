@@ -722,6 +722,11 @@ function addCollectionAdmin() {
 		// Form window
 		/******************************************************/
 		var appwindow = new Ext.Window({
+            cls: 'sm-round-panel',
+            frame: false,
+            closable: true,
+            resizable: false,
+            shadow: false,
 			id: 'collectionPropsWindow',
 			title: collectionId ? 'Collection Properties, ID ' + collectionId : 'Create new Collection',
 			modal: true,
@@ -1115,6 +1120,11 @@ function addCollectionAdmin() {
 			// Form window
 			/******************************************************/
 			var appwindow = new Ext.Window({
+				cls: 'sm-round-panel',
+				frame: false,
+				closable: true,
+				resizable: false,
+				shadow: false,
 				id: 'assetPropsWindow',
 				title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
 				modal: true,
@@ -1325,6 +1335,11 @@ function addCollectionAdmin() {
 					});
 					var stigUserWindow = new Ext.Window({
 						//title: 'Reviewers: ' + record.data['title'],
+						cls: 'sm-round-panel',
+						frame: false,
+						closable: true,
+						resizable: false,
+						shadow: false,
 						title: benchmarkId,
 						modal: true,
 						width: 280,

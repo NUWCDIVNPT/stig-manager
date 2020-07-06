@@ -391,6 +391,11 @@ function addStigAdmin() {
 		// Form window
 		/******************************************************/
 		var appwindow = new Ext.Window({
+            cls: 'sm-round-panel',
+            frame: false,
+            closable: true,
+            resizable: false,
+            shadow: false,
 			id: 'stigAssignmentWindow',
 			title: benchmarkId,
 			modal: true,

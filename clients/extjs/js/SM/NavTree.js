@@ -684,6 +684,11 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             }],
           })
           let appwindow = new Ext.Window({
+            cls: 'sm-round-panel',
+            frame: false,
+            closable: true,
+            resizable: false,
+            shadow: false,
             id: 'window-project-info',
             title: 'Create STIG Manager Project',
             modal: true,

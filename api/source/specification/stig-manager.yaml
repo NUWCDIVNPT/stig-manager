@@ -2425,7 +2425,7 @@ components:
     CollectionCreateOrReplace:
       required:
         - name
-        - description
+        # - description
         - workflow
         - metadata
         - grants

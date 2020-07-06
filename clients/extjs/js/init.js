@@ -27,6 +27,7 @@ function loadScripts() {
         'ext/adapter/ext/ext-base-debug.js',
         'ext/ext-all-debug-w-comments.js',
         "ext/ux/GroupSummary.js",
+        'js/SM/Global.js',
         'js/SM/Classification.js',
         'js/SM/MainPanel.js',
         'js/SM/EventDispatcher.js',
