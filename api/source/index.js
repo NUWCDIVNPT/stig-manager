@@ -20,6 +20,14 @@ const smFetch = require('./utils/fetchStigs')
 const { promisify } = require('util')
 
 console.log(`Starting STIG Manager ${config.apiVersion}`)
+let state = {}
+try {
+  state = JSON.parse(fs.readFileSync(path.join(__dirname, './state.json')))
+  console.log(`Read state file`)
+}
+catch (e) {
+  console.log('Could not read state file')
+}
 // console.log(JSON.stringify(config, null, 2))
 const app = express();
 
@@ -149,23 +157,32 @@ async function setupClient(app, directory) {
   }
 }
 
+async function updateState(obj) {
+  try {
+    state = {...state, ...obj}
+    fs.writeFileSync(path.join(__dirname,'./state.json'), JSON.stringify(state, null, 2))
+  }
+  catch (e) {
+    console.log(e.message)
+  }
+}
+
 async function startServer(app) {
   try {
     // Initialize database connection pool
     let db = require(`./service/${config.database.type}/utils`)
     await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
 
-    if (config.init.importStigs === 'true' && process.env.STIGMAN_API_IMPORTED_STIGS !== 'true') {
+    if (config.init.importStigs === 'true' && !state.importedStigs) {
       console.log(`Importing STIGs...`)
       // await smFetch.readCompilation()
       await smFetch.fetchCompilation()
-      process.env.STIGMAN_API_IMPORTED_STIGS = 'true'
+      updateState({ importedStigs: true })
     }
-    if (config.init.importScap === 'true' && process.env.STIGMAN_API_IMPORTED_SCAP !== 'true') {
+    if (config.init.importScap === 'true' && !state.importedScap) {
       console.log(`Importing SCAP...`)
       await smFetch.fetchScap()
-      process.env.STIGMAN_API_IMPORTED_SCAP = 'true'
-
+      updateState({ importedScap: true })
     }
 
     // Set/change classification if indicated
