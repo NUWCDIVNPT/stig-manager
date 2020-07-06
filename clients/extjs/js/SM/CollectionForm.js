@@ -115,6 +115,14 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             width: 80
         })
         let writer = new Ext.data.DataWriter()
+        let bbar = new SM.RowEditorToolbar({
+            itemString: 'key',
+            editor: this.editor,
+            gridId: this.id,
+            deleteProperty: 'key',
+            newRecord: this.newRecordConstructor
+        })
+        bbar.delButton.disable()
         let config = {
             //title: this.title || 'Parent',
             isFormField: true,
@@ -153,20 +161,9 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             sm: new Ext.grid.RowSelectionModel ({
                 singleSelect: true,
                 listeners: {
-                    // rowselect: function(sm,index,record) {
-                    //     // If the editor is active the new record will be a phantom
-                    //     if (record.phantom !== true) {
-                    //         let loadObj = {
-                    //             params: {}
-                    //         }
-                    //         //loadObj.params[sm.grid.child.store.idProperty] = record.data[sm.grid.child.store.idProperty]
-                    //         loadObj.params[sm.grid.store.idProperty] = record.data[sm.grid.store.idProperty]
-                    //         // clear selections from control grid
-                    //         sm.grid.child.child.apiResponse([{}])
-                    //         sm.grid.child.store.removeAll(true)
-                    //         sm.grid.child.store.load(loadObj)
-                    //     }
-                    // }
+                    selectionchange: function (sm) {
+                        bbar.delButton.setDisabled(!sm.hasSelection())
+                    }
                 }
             }),
             cm: new Ext.grid.ColumnModel ({
@@ -208,13 +205,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 ]   
             }),
-            bbar: new SM.RowEditorToolbar({
-                itemString: 'key',
-                editor: this.editor,
-                gridId: this.id,
-                deleteProperty: 'key',
-                newRecord: this.newRecordConstructor
-            }),
+            bbar: bbar,
             getValue: function() {
                 let value = {}
                 this.store.data.items.forEach((i) => {
@@ -650,6 +641,12 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }            
         })
+        let delButton = new Ext.Button({
+            iconCls: 'icon-del',
+            // cls: 'sm-bare-button',
+            width: 25,
+            border: false
+        })
         let workflowCombo = new SM.WorkflowComboBox({
             fieldLabel: 'Workflow',
             name: 'workflow',
@@ -705,7 +702,18 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }
 
-        }) 
+        })
+        let firstItem = nameField
+        if (this.allowDelete) {
+            nameField.flex = 1
+            firstItem = {
+                xtype: 'compositefield',
+                items: [
+                    nameField,
+                    delButton
+                ]
+            }
+        }
         let config = {
             // baseCls: 'x-plain',
             // border: false,
@@ -735,15 +743,9 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 return o
             },
             items: [
-                // {
-                //     xtype: 'fieldset',
-                //     title: '<b>Collection properties</b>',
-                //     items: [
-                        nameField,
-                        workflowCombo,
-                        metadataGrid
-                //     ]
-                // }
+                firstItem,
+                workflowCombo,
+                metadataGrid
             ],
             // buttons: [{
             //     text: this.btnText || 'Save',

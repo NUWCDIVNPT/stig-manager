@@ -1,3 +1,6 @@
+.sm-bare-button .x-btn-tl, .sm-bare-button .x-btn-tr, .sm-bare-button .x-btn-tc, .sm-bare-button .x-btn-ml, .sm-bare-button .x-btn-mr, .sm-bare-button .x-btn-mc, .sm-bare-button .x-btn-bl, .sm-bare-button .x-btn-br, .sm-bare-button .x-btn-bc {
+    background-image: none;
+}
 .x-fieldset {
     border-radius: 3px;
 }
@@ -97,24 +100,34 @@
 }
 .sm-home-title {
 	background-image: url(../img/security_firewall_on_48.png);
-    background-position: 0 8px;
-    background-repeat: no-repeat;
-    font: bold 36px Open Sans,helvetica, sans-serif;
-    color: #0f0e13;
-    padding-bottom: 20px;
-    padding-left: 56px;
-    padding-top: 8px;
+	background-position: 0 8px;
+	background-repeat: no-repeat;
+	font: bold 36px Open Sans,helvetica, sans-serif;
+	color: #333;
+	padding-bottom: 30px;
+	padding-left: 56px;
+	padding-top: 8px;
 }
 
-#sm-home-title-sprite {
+#sm-home-oss-sprite {
 	color: #fcfcfc;
-	font: bold 9px Open Sans,helvetica, sans-serif;
-	position:  absolute;
-	top: 28px;
-	background-color: #3366cc;
-	padding: 2px 4px 2px 4px;
+	font: bold 12px Open Sans,helvetica, sans-serif;
+	position: relative;
+	top: -16px;
+	background-color: #6f93db;
+	padding: 1px 4px 2px 4px;
 	border-radius:  3px;
-	margin-left: 10px;
+	margin-left: 20px;
+}
+#sm-home-version-sprite {
+	color: #fcfcfc;
+	font: bold 12px Open Sans,helvetica, sans-serif;
+	position:  relative;
+	top: -16px;
+	background-color: #79b49e;
+	padding: 1px 4px 2px 4px;
+	border-radius:  3px;
+	margin-left: 5px;
 }
 
 .sm-main-tab-panels-common {

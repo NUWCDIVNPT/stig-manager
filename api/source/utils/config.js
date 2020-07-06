@@ -1,5 +1,5 @@
 let config = {
-    apiVersion: '1.0',
+    apiVersion: '3.0.0-beta.1',
     setClassification: process.env.STIGMAN_CLASSIFICATION,
     client: {
         enabled: process.env.STIGMAN_CLIENT_ENABLED || "true",
@@ -19,7 +19,9 @@ let config = {
         password: process.env.STIGMAN_DB_PASSWORD || "stigman"
     },
     init: {
-        superuser: process.env.STIGMAN_SUPERUSER || 'admin'
+        superuser: process.env.STIGMAN_SUPERUSER || 'admin',
+        importStigs: process.env.STIGMAN_API_IMPORT_STIGS || 'false',
+        importScap: process.env.STIGMAN_API_IMPORT_SCAP || 'false'
     },
     swaggerUi: {
         enabled: process.env.STIGMAN_SWAGGER_ENABLED || "true", 

@@ -508,7 +508,8 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
       'a.name',
       `json_object(
         'collectionId', c.collectionId,
-        'name', c.name) as collection`
+        'name', c.name,
+        'workflow', c.workflow) as collection`
     ]
     let joins = [
       'collection c',
@@ -888,13 +889,7 @@ exports.deleteAssetStigs = async function (assetId, elevate, userObject ) {
 
 exports.deleteAssetStigGrant = async function (assetId, benchmarkId, userId, elevate, userObject ) {
   try {
-    let rows = await _this.queryAssetStigs( {
-      assetId: assetId,
-      benchmarkId: benchmarkId
-    }, elevate, userObject)
-    let sqlDelete = `DELETE FROM stig_asset_map where assetId = ? and benchmarkId = ?`
-    await dbUtils.pool.query(sqlDelete, [assetId, benchmarkId])
-    return (rows[0])
+    // TODO
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )

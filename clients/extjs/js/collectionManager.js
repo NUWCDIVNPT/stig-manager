@@ -1,5 +1,6 @@
 async function addCollectionManager( collectionId, collectionName ) {
 	try {
+		let collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,
 			cls: 'sm-round-panel',
@@ -9,6 +10,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 			border: false,
 			split: true,
 			layout: 'fit',
+			allowDelete: collectionGrant.accessLevel === 4,
 			height: 300
 		})
 		let grantGrid = new SM.UserGrantsGrid({

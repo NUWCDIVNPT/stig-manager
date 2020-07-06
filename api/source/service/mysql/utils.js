@@ -63,7 +63,7 @@ module.exports.initializeDatabase = async function () {
 
     // Preflight the pool
     let result = await retry(_this.testConnection, {})
-    console.log(result)
+    // console.log(result)
 
     // Perform migrations
     const umzug = new Umzug({

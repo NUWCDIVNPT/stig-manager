@@ -251,6 +251,64 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/grants/{userId}/access':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/UserIdPath'
+    get:
+      tags:
+        - Collection
+      summary: UNIMPLEMENTED Return an accessLevel = 1 User's access to the specified Collection
+      operationId: geStigAssetsByCollectionUser
+      responses:
+        '200':
+          description: CollectionGrant response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StigAssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+      summary: UNIMPLEMENTED Set all of an accessLevel = 1 User's access to the specified Collection
+      operationId: setStigAssetsByCollectionUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/StigAsset'
+      responses:
+        '200':
+          description: CollectionProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+
   '/collections/{collectionId}/stigs':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -569,7 +627,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/assets/{assetId}/stigs/{benchmarkId}/grants':
+  '/assets/{assetId}/stigs/{benchmarkId}/users':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
@@ -577,7 +635,7 @@ paths:
     get:
       tags:
         - Asset
-      summary: Return all the grants to a STIG-Asset combination
+      summary: Return accessLevel = 1 Users granted access to this STIG-Asset combination
       operationId: getAssetStigGrants
       responses:
         '200':
@@ -600,7 +658,7 @@ paths:
     put:
       tags:
         - Asset
-      summary: UNIMPLEMENTED Set all the grants to a STIG-Asset combination
+      summary: UNIMPLEMENTED Set all the accessLevel = 1 Users granted access to this STIG-Asset combination
       operationId: setAssetStigGrants
       responses:
         '200':
@@ -624,7 +682,7 @@ paths:
     delete:
       tags:
         - Asset
-      summary: UNIMPLEMENTED Delete all the grants to a STIG-Asset combination
+      summary: UNIMPLEMENTED Revoke all accessLevel = 1 User access to this STIG-Asset combination
       operationId: deleteAssetStigGrants
       responses:
         '200':
@@ -645,7 +703,7 @@ paths:
         - oauth:
             - 'stig-manager:collection'
 
-  '/assets/{assetId}/stigs/{benchmarkId}/grants/{userId}':
+  '/assets/{assetId}/stigs/{benchmarkId}/users/{userId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
@@ -654,7 +712,7 @@ paths:
     put:
       tags:
         - Asset
-      summary: Set a grant to a STIG-Asset combination
+      summary: UNIMPLEMENTED Grant an accessLevel = 1 User access to a STIG-Asset combination
       operationId: setAssetStigGrant
       responses:
         '200':
@@ -677,7 +735,7 @@ paths:
     delete:
       tags:
         - Asset
-      summary: Delete a grant to a STIG-Asset combination
+      summary: UNIMPLEMENTED Revoke an accessLevel = 1 User's access to a STIG-Asset combination
       operationId: deleteAssetStigGrant
       responses:
         '200':
@@ -1325,7 +1383,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StigAssetProjected'
+                  $ref: '#/components/schemas/AssetBasic'
         default:
           description: unexpected error
           content:
@@ -1359,7 +1417,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StigAssetProjected'
+                  $ref: '#/components/schemas/AssetBasic'
         default:
           description: unexpected error
           content:
@@ -1871,6 +1929,8 @@ components:
           type: string
         name:
           type: string
+        # collection:
+        #     $ref: '#/components/schemas/CollectionBasic'
     AssetCreateOrReplace:
       required:
         - name
@@ -2383,12 +2443,7 @@ components:
         grants:
           type: array
           items:
-            type: object
-            properties:
-              userId:
-                type: string
-              accessLevel:
-                type: integer
+            $ref: '#/components/schemas/UserGrant'
     CollectionGrant:
       type: object
       required:
@@ -2785,32 +2840,21 @@ components:
           type: integer
     StigAsset:
       type: object
-      properties:
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-    StigAssetBasic:
-      type: object
+      required:
+        - benchmarkId
+        - assetId
       properties:
         benchmarkId:
           type: string
         assetId:
           type: string
-    StigAssetExtended:
+    StigAssetProjected:
       type: object
       properties:
         benchmarkId:
           type: string
         asset:
           $ref: '#/components/schemas/AssetBasic'
-    StigAssetProjected:
-      allOf:
-        - $ref: '#/components/schemas/AssetBasic'
-        - type: object
-          properties:
-            userGrants:
-              type: array
-              items:
-                $ref: '#/components/schemas/UserBasic'
     User:
       type: object
       properties:

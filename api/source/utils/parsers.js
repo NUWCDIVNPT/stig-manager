@@ -449,7 +449,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
     })
     let [releaseInfo, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
     let hrend = process.hrtime(hrstart)
-    console.info(bIn.id + ' execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
+    // console.info(bIn.id + ' execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
 
     return {
       benchmarkId: bIn.id,

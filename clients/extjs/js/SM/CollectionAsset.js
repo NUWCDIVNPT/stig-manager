@@ -526,6 +526,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.store.resumeEvents();
                         this.grid.getView().refresh();
                     }
+                    editor.removeAll(false)
+                    editor.initialized = false
                 },
                 validateedit: function (editor, changes, record, index) {
                     // Get the stigSelection combo
@@ -548,9 +550,20 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                             mc.keys[x] = record.id
                         }
                     }
+                    editor.removeAll(false)
+                    editor.initialized = false
                 }
             }
         })
+
+        let tbar = new SM.RowEditorToolbar({
+            itemString: 'STIG',
+            editor: this.editor,
+            gridId: this.id,
+            deleteProperty: 'benchmarkId',
+            newRecord: this.newRecordConstructor
+        })
+        tbar.delButton.disable()
 
         let config = {
             isFormField: true,
@@ -568,6 +581,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 singleSelect: true,
                 listeners: {
                     selectionchange: function (sm) {
+                        tbar.delButton.setDisabled(!sm.hasSelection())
                     }
                 }
             }),
@@ -579,13 +593,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            tbar: new SM.RowEditorToolbar({
-                itemString: 'STIG',
-                editor: this.editor,
-                gridId: this.id,
-                deleteProperty: 'benchmarkId',
-                newRecord: this.newRecordConstructor
-            }),
+            tbar: tbar,
             getValue: function() {
                 let stigs = []
                 stigAssignedStore.data.items.forEach((i) => {
@@ -699,6 +707,11 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                 }
 
             ],
+            // listeners: {
+            //     beforeadd: (fp, c, i) => {
+            //         let one = c
+            //     }
+            // },
             buttons: [{
                 text: this.btnText || 'Save',
                 formBind: true,
@@ -708,6 +721,10 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.AssetProperties.superclass.initComponent.call(this)
+
+        this.getForm().addListener('beforeadd', (fp, c, i) => {
+            let one = c
+        })
 
         this.getForm().getFieldValues = function(dirtyOnly, getDisabled){
             // Override to support submitValue boolean
@@ -752,6 +769,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
 async function showAssetProps( assetId, initialCollectionId ) {
     try {
         let assetPropsFormPanel = new SM.AssetProperties({
+            id: 'dev-test',
             padding: '10px 15px 10px 15px',
             initialCollectionId: initialCollectionId,
             btnHandler: async function(){

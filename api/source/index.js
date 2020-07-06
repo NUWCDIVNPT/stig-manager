@@ -16,8 +16,11 @@ const upload = multer({ dest: path.join(__dirname, './uploads/') })
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
 const compression = require('compression')
+const smFetch = require('./utils/fetchStigs')
+const { promisify } = require('util')
 
-console.log(JSON.stringify(config, null, 2))
+console.log(`Starting STIG Manager ${config.apiVersion}`)
+// console.log(JSON.stringify(config, null, 2))
 const app = express();
 
 // Express config
@@ -73,73 +76,77 @@ oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${con
 // Initialize the Swagger middleware
 oasTools.configure(options)
 oasTools.initialize(oasDoc, app, function () {
-  if (config.client.enabled === 'true') {
-    setupClient(app, config.client.directory)
-  }
-  if (config.swaggerUi.enabled === 'true') {
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
-      oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
-    }))
-    app.get('/swagger.json', function(req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(oasDoc);
-    })
-  }
-  app.use((err, req, res, next) => {
-    if (err) {
-      console.log('Invalid Request data')
-      writer.writeJson(res, writer.respondWithCode ( 400, {message: err.message} ))
-    } else {
-      next()
-    }
-  })
-  
-  startServer(app)
- })
+  run()
+})
 
- async function initializeStigs() {
-   const fetchStigs = require('./utils/fetchStigs')
-   let result = await fetchStigs()
-   let one = 1
+async function run() {
+  try {
+    if (config.client.enabled === 'true') {
+      await setupClient(app, config.client.directory)
+    }
+    if (config.swaggerUi.enabled === 'true') {
+      app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
+        oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
+      }))
+      app.get('/swagger.json', function(req, res) {
+          res.setHeader('Content-Type', 'application/json');
+          res.send(oasDoc);
+      })
+    }
+    app.use((err, req, res, next) => {
+      if (err) {
+        console.log('Invalid Request data')
+        writer.writeJson(res, writer.respondWithCode ( 400, {message: err.message} ))
+      } else {
+        next()
+      }
+    })
+    startServer(app)
+  }
+  catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
  }
 
-function setupClient(app, directory) {
-  process.env.STIGMAN_CLIENT_API_BASE = process.env.STIGMAN_CLIENT_API_BASE || '/api'
-  process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH = process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH || 'http://localhost:8080/auth'
-  process.env.STIGMAN_CLIENT_KEYCLOAK_REALM = process.env.STIGMAN_CLIENT_KEYCLOAK_REALM || 'stigman'
-  process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID = process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID || 'stig-manager'
+
+async function setupClient(app, directory) {
+  try {
+    console.log(`Setting up STIG Manager client...`)
+    const envsub = require('envsub')
+    process.env.STIGMAN_CLIENT_API_BASE = process.env.STIGMAN_CLIENT_API_BASE || '/api'
+    process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH = process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH || 'http://localhost:8080/auth'
+    process.env.STIGMAN_CLIENT_KEYCLOAK_REALM = process.env.STIGMAN_CLIENT_KEYCLOAK_REALM || 'stigman'
+    process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID = process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID || 'stig-manager'
+    
+    app.use('/', express.static(path.join(__dirname, directory)))
+    let templateFile = path.join(__dirname, directory, '/js/Env.js.template')
+    let outputFile = path.join(__dirname, directory, '/js/Env.js')
+    let options = {
+      all: false, // see --all flag
+      diff: false, // see --diff flag
+      protect: false, // see --protect flag
+      syntax: 'default', // see --syntax flag
+      system: true // see --system flag
+    }
+    let envobj
+    envobj = await envsub({templateFile, outputFile, options})
+    // console.log(envobj.templateFile)
+    // console.log(envobj.templateContents)
+    // console.log(envobj.outputFile)
+    // console.log(envobj.outputContents)
   
-  app.use('/', express.static(path.join(__dirname, directory)))
-
-  const envsub = require('envsub')
-  let templateFile = path.join(__dirname, directory, '/js/Env.js.template')
-  let outputFile = path.join(__dirname, directory, '/js/Env.js')
-  let options = {
-    all: false, // see --all flag
-    diff: false, // see --diff flag
-    protect: false, // see --protect flag
-    syntax: 'default', // see --syntax flag
-    system: true // see --system flag
+    templateFile = path.join(__dirname, directory, '/js/keycloak.json.template')
+    outputFile = path.join(__dirname, directory, '/js/keycloak.json')
+    envobj = await envsub({templateFile, outputFile, options})
+    // console.log(envobj.templateFile)
+    // console.log(envobj.templateContents)
+    // console.log(envobj.outputFile)
+    // console.log(envobj.outputContents)
   }
-  envsub({templateFile, outputFile, options}).then((envobj) => {
-    console.log(envobj.templateFile)
-    console.log(envobj.templateContents)
-    console.log(envobj.outputFile)
-    console.log(envobj.outputContents)
-  }).catch((err) => {
+  catch (err) {
     console.error(err.message)
-  })
-
-  templateFile = path.join(__dirname, directory, '/js/keycloak.json.template')
-  outputFile = path.join(__dirname, directory, '/js/keycloak.json')
-  envsub({templateFile, outputFile, options}).then((envobj) => {
-    console.log(envobj.templateFile)
-    console.log(envobj.templateContents)
-    console.log(envobj.outputFile)
-    console.log(envobj.outputContents)
-  }).catch((err) => {
-    console.error(err.message)
-  })
+  }
 }
 
 async function startServer(app) {
@@ -148,8 +155,18 @@ async function startServer(app) {
     let db = require(`./service/${config.database.type}/utils`)
     await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
 
-    // console.log(`Importing STIGs...`)
-    // await initializeStigs()
+    if (config.init.importStigs === 'true' && process.env.STIGMAN_API_IMPORTED_STIGS !== 'true') {
+      console.log(`Importing STIGs...`)
+      // await smFetch.readCompilation()
+      await smFetch.fetchCompilation()
+      process.env.STIGMAN_API_IMPORTED_STIGS = 'true'
+    }
+    if (config.init.importScap === 'true' && process.env.STIGMAN_API_IMPORTED_SCAP !== 'true') {
+      console.log(`Importing SCAP...`)
+      await smFetch.fetchScap()
+      process.env.STIGMAN_API_IMPORTED_SCAP = 'true'
+
+    }
 
     // Set/change classification if indicated
     console.log(`Checking classification...`)

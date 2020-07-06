@@ -128,7 +128,7 @@ async function loadApp () {
 			},
 			items: [
 				{
-					html: "<div class='sm-home-title'>STIG Manager<span id='sm-home-title-sprite'>OSS</span></div>",
+					html: `<div class='sm-home-title'>STIG Manager<span id='sm-home-oss-sprite'>OSS</span><span id='sm-home-version-sprite'>${STIGMAN.Env.version}</span></div>`,
 					colspan: 3,
 					border: false
 				},
