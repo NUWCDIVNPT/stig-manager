@@ -46,12 +46,13 @@ CREATE TABLE `asset` (
   `assetId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `collectionId` int NOT NULL,
-  `ip` varchar(45) DEFAULT NULL,
-  `nonnetwork` bit(1) NOT NULL DEFAULT b'0',
+  `ip` varchar(45) DEFAULT NULL, 
+  `description` varchar(255) DEFAULT NULL,
+  `noncomputing` bit(1) NOT NULL DEFAULT b'0',
   `metadata` json NOT NULL,
   PRIMARY KEY (`assetId`),
   UNIQUE KEY `INDEX_NAMECOLLECTION` (`name`, `collectionId`),
-  KEY `INDEX_NONNETWORK` (`nonnetwork`),
+  KEY `INDEX_COMPUTING` (`noncomputing`),
   KEY `INDEX_COLLECTIONID` (`collectionId`),
   CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -1915,10 +1915,13 @@ components:
           nullable: false
         collection:
           $ref: '#/components/schemas/CollectionBasic'
+        description:
+          type: string
+          nullable: true
         ip:
           type: string
           nullable: true
-        nonnetwork:
+        noncomputing:
           type: boolean
         metadata:
           type: object
@@ -1935,8 +1938,9 @@ components:
       required:
         - name
         - collectionId
+        - description
         - ip
-        - nonnetwork
+        - noncomputing
         - metadata
         - stigs
       additionalProperties: false
@@ -1947,10 +1951,13 @@ components:
         collectionId:
           description: The collectionId mapped to this Asset
           type: string
+        description:
+          type: string
+          nullable: true
         ip:
           type: string
           nullable: true
-        nonnetwork:
+        noncomputing:
           type: boolean
         metadata:
           type: object
@@ -2010,10 +2017,13 @@ components:
         collectionId:
           type: string
           nullable: false
+        description:
+          type: string
+          nullable: true
         ip:
           type: string
           nullable: true
-        nonnetwork:
+        noncomputing:
           type: boolean
         metadata:
           type: object

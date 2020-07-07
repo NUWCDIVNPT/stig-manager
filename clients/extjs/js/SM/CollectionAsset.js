@@ -9,9 +9,13 @@ Ext.ns('SM')
 SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
     onAssetChanged: function (apiAsset) {
         this.store.loadData(apiAsset, true) // append with replace
+        const sortState = this.store.getSortState()
+        this.store.sort(sortState.field, sortState.direction)
     },
     onAssetCreated: function (apiAsset) {
         this.store.loadData(apiAsset, true) // append with replace
+        const sortState = this.store.getSortState()
+        this.store.sort(sortState.field, sortState.direction)
     },
     initComponent: function() {
         let me = this
@@ -19,8 +23,9 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         let fieldsConstructor = Ext.data.Record.create([
             {name: 'assetId', type: 'string'},
             {name: 'name', type: 'string'},
+            {name: 'description', type: 'string'},
             {name: 'ip', type: 'string'},
-            {name: 'nonnetwork', type: 'boolean'},
+            {name: 'noncomputing', type: 'boolean'},
             {
                 name: 'ruleCount',
                 type: 'integer',
@@ -84,8 +89,13 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         let columns = [
             { 	
 				header: "Asset",
-				width: 150,
+				width: 100,
                 dataIndex: 'name',
+				sortable: true
+			},{ 	
+				header: "Description",
+				width: 150,
+                dataIndex: 'description',
 				sortable: true
 			},{ 	
 				header: "IP",
@@ -93,11 +103,11 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'ip',
 				sortable: true
 			},{ 	
-				header: "Not Networked",
-				width: 50,
-                dataIndex: 'nonnetwork',
+				header: "Non-computing",
+				width: 75,
+                dataIndex: 'noncomputing',
 				align: "center",
-				tooltip:"Is the asset connected to a network",
+				tooltip:"Is this a computing asset?",
 				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
 				  return value ? 'X' : '';
 				},
@@ -565,37 +575,64 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                     title: '<b>Asset information</b>',
                     items: [
                         {
-                            xtype: 'textfield',
-                            fieldLabel: 'Name',
-                            width: 150,
-                            emptyText: 'Enter asset name...',
-                            allowBlank: false,
-                            name: 'name'
-                        },
-                        {
-                            xtype: 'textfield',
-                            fieldLabel: 'IP address',
-                            id: `asset-props-${idAppend}`,
-                            width: 150,
-                            emptyText: 'Enter asset IP address...',
-                            allowBlank: true,
-                            vtype: 'IPAddress',
-                            name: 'ip'
-                        },
-                        {
-                            xtype: 'checkbox',
-                            name: 'nonnetwork',
-                            value: 'off',
-                            //disabled: !(curUser.privileges.canAdmin),
-                            boxLabel: 'Not networked',
-                            handler: function (cb,checked){
-                                var tf_ip = Ext.getCmp(`asset-props-${idAppend}`)
-                                tf_ip.setDisabled(checked)
-                                tf_ip.allowBlank = false
-                                if (checked){
-                                    tf_ip.setValue('')
+                            layout: 'column',
+                            baseCls: 'x-plain',
+                            border: false,
+                            items: [
+                                {
+                                    columnWidth: .4,
+                                    layout: 'form',
+                                    border: false,
+                                    items: [
+                                        {
+                                            xtype: 'textfield',
+                                            fieldLabel: 'Name',
+                                            width: 150,
+                                            emptyText: 'Enter asset name...',
+                                            allowBlank: false,
+                                            name: 'name'
+                                        }
+                                    ]
+                                },
+                                {
+                                    columnWidth: .4,
+                                    layout: 'form',
+                                    border: false,
+                                    items: [
+                                        {
+                                            xtype: 'textfield',
+                                            fieldLabel: 'IP address',
+                                            width: 130,
+                                            emptyText: 'Enter asset IP address...',
+                                            allowBlank: true,
+                                            vtype: 'IPAddress',
+                                            name: 'ip'
+                                        }
+                                    ]
+                                },
+                                {
+                                    columnWidth: .2,
+                                    layout: 'form',
+                                    border: false,
+                                    hideLabels: true,
+                                    items: [
+                                        {
+                                            xtype: 'checkbox',
+                                            name: 'noncomputing',
+                                            checked: false,
+                                            boxLabel: 'Non-computing'
+                                        }
+                                    ]
                                 }
-                            }
+                            ]
+                        },
+                        {
+                            xtype: 'textfield',
+                            fieldLabel: 'Description',
+                            anchor: '100%',
+                            emptyText: 'Enter asset description...',
+                            allowBlank: true,
+                            name: 'description'
                         },
                         {
                             xtype: 'sm-metadata-grid',
@@ -614,25 +651,14 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                 {
                     xtype: 'fieldset',
                     title: '<b>STIG Assignments</b>',
-                    anchor: "100% -270",
+                    anchor: "100% -240",
                     layout: 'fit',
                     items: [
                         this.stigGrid
-                        // {
-                        //     xtype: 'sm-asset-stig-grid',
-                        //     name: 'stigGrants',
-                        //     fieldLabel: 'STIGs',
-                        //     // anchor: '100%'
-                        // }
                     ]
                 }
 
             ],
-            // listeners: {
-            //     beforeadd: (fp, c, i) => {
-            //         let one = c
-            //     }
-            // },
             buttons: [{
                 text: this.btnText || 'Save',
                 formBind: true,
@@ -718,7 +744,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
                     }
                 }
                 catch (e) {
-                    alert(e.stack)
+                    alert(e.message)
                 }
             }
         })

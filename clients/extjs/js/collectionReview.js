@@ -21,20 +21,22 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
-		// 'Global' pkgAssets array of objects for reviewsGrid
+		// 'Global' colAssets array of objects for reviewsGrid
 		/******************************************************/
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
 			method: 'GET',
-			params: {
-				projection: 'assets'
-			}
 		  })
 		let apiCollection = JSON.parse(result.response.responseText)
+		result = await Ext.Ajax.requestPromise({
+			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
+			method: 'GET',
+		  })
+		let apiAssets = JSON.parse(result.response.responseText)
 	
-		let pkgAssets = apiCollection.assets.map( pkgAsset => ({
-			assetId: pkgAsset.assetId,
-			assetName: pkgAsset.name,
+		let colAssets = apiAssets.map( colAsset => ({
+			assetId: colAsset.assetId,
+			assetName: colAsset.name,
 			result: null,
 			resultComment: null,
 			action: null,
@@ -266,7 +268,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						//===================================================
 						Ext.Msg.show({
 							title: 'Confirm review reset',
-							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in Collection "' + apiCollection.name + '"?',
+							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in this Collection?',
 							buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
 							icon: Ext.MessageBox.QUESTION,
 							closable: false,
@@ -1057,7 +1059,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			isCellEditable: function(col, row) {
 				var record = reviewsStore.getAt(row);
 
-				if (record.data.reviewId == 0) { // review is not created yet
+				if (!record.data.result  && this.getDataIndex(col) !== 'result') { // review is not created yet
 					return false;
 				}
 
@@ -1190,15 +1192,36 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				},
 				afteredit: async function (e) {
 					try {
-						let jsonData = {}
-						jsonData[e.field] = e.value
-						let result = await Ext.Ajax.requestPromise({
-							url: `${STIGMAN.Env.apiBase}/collections/${apiCollection.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
-							method: 'PATCH',
-							jsonData: jsonData
-						})
+						let jsonData = {}, result
+						if (e.record.data.status) {
+							// review exists, set status to saved
+							jsonData[e.field] = e.value
+							jsonData.status = 'saved'
+							result = await Ext.Ajax.requestPromise({
+								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
+								method: 'PATCH',
+								jsonData: jsonData
+							})
+						}
+						else {
+							// new review
+							jsonData = {
+								result: e.record.data.result,
+								resultComment: null,
+								action: null,
+								actionComment: null,
+								autoResult: false,
+								status: 'saved'
+							}
+							result = await Ext.Ajax.requestPromise({
+								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
+								method: 'PUT',
+								jsonData: jsonData
+							})
+						}
 						let apiReview = JSON.parse(result.response.responseText)
-						e.record.commit()
+						e.grid.getStore().loadData(apiReview, true)
+						// e.record.commit()
 		
 						e.grid.updateGroupStore(e.grid)
 						setReviewsGridButtonStates();
@@ -1253,18 +1276,18 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					}
 				]
 			}),
-			bbar: new Ext.Toolbar({
-				items: [
-				{
-					xtype: 'tbbutton',
-					iconCls: 'icon-refresh',
-					tooltip: 'Reload this grid',
-					width: 20,
-					handler: function(btn){
-						reviewsGrid.getStore().reload();
-					}
-				}]
-			}),
+			// bbar: new Ext.Toolbar({
+			// 	items: [
+			// 	{
+			// 		xtype: 'tbbutton',
+			// 		iconCls: 'icon-refresh',
+			// 		tooltip: 'Reload this grid',
+			// 		width: 20,
+			// 		handler: function(btn){
+			// 			reviewsGrid.getStore().reload();
+			// 		}
+			// 	}]
+			// }),
 			loadMask: true,
 			emptyText: 'No data to display'
 		});
@@ -1307,11 +1330,17 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				for (const fetchedReview of fetchedReviews) {
 					fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
 				}
-				let pkgReviews = pkgAssets.map(pkgAsset => {
-					return {...pkgAsset, ...fetchedReviewsLookup[pkgAsset.assetId]}
+				let colReviews = colAssets.map(colAsset => {
+					// Won't have a review.ruleId if there is no review for the asset yet
+					if (!fetchedReviewsLookup[colAsset.assetId]) {
+						return { ...colAsset, ...{ruleId: record.data.ruleId} }
+					}
+					else {
+						return {...colAsset, ...fetchedReviewsLookup[colAsset.assetId]}
+					}
 				})
 			
-				reviewsGrid.getStore().loadData(pkgReviews)
+				reviewsGrid.getStore().loadData(colReviews)
 				reviewsGrid.setTitle(`Reviews of ${record.data.ruleId}`)
 				reviewsGrid.currentChecklistRecord = record
 			}
@@ -1352,11 +1381,11 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			// for (const fetchedReview of fetchedReviews) {
 			// 	fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
 			// }
-			// let pkgReviews = pkgAssets.map(pkgAsset => {
-			// 	return {...pkgAsset, ...fetchedReviewsLookup[pkgAsset.assetId]}
+			// let colReviews = colAssets.map(colAsset => {
+			// 	return {...colAsset, ...fetchedReviewsLookup[colAsset.assetId]}
 			// })
 		
-			// reviewsGrid.getStore().loadData(pkgReviews)
+			// reviewsGrid.getStore().loadData(colReviews)
 		}
 
 		function setReviewsGridButtonStates() {
@@ -1418,7 +1447,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				for (const record of selections) {
 					requests.push(
 						Ext.Ajax.requestPromise({
-							url: `${STIGMAN.Env.apiBase}/collections/${apiCollection.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 							method: 'PATCH',
 							jsonData: {
 								status: status
@@ -1502,7 +1531,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
 				activeTab.getEl().mask('Loading...')
 				let result = await Ext.Ajax.requestPromise({
-					url: `${STIGMAN.Env.apiBase}/collections/${apiCollection.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 					method: 'GET',
 					params: {
 						projection: 'history'
@@ -1760,7 +1789,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				for (const record of selections) {
 					requests.push(
 						Ext.Ajax.requestPromise({
-							url: `${STIGMAN.Env.apiBase}/collections/${apiCollection.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 							method: 'PATCH',
 							jsonData: {
 								status: status,

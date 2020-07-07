@@ -346,6 +346,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`, true)
         if ( assetsNode && assetsNode.isExpanded() ) {
           assetsNode.appendChild(SM.AssetNodeConfig(apiAsset.collection.collectionId, apiAsset))
+          assetsNode.sort(SM.NodeSorter)
         }
         let stigsNode = me.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
         if (stigsNode && stigsNode.isExpanded()) {

@@ -90,8 +90,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           assetId,
           collectionId,
           name,
+          description,
           ip,
-          nonnetwork,
+          noncomputing,
           metadata
         ) VALUES ?`,
         insertBinds: []
@@ -203,8 +204,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         parseInt(assetFields.assetId) || null,
         parseInt(assetFields.collectionId) || null,
         assetFields.name,
+        assetFields.description,
         assetFields.ip,
-        assetFields.nonnetwork ? 1: 0,
+        assetFields.noncomputing ? 1: 0,
         JSON.stringify(assetFields.metadata)
       ])
       let assetId = assetFields.assetId

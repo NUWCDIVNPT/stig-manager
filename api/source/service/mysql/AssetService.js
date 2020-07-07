@@ -22,8 +22,9 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         'name', p.name,
         'workflow', p.workflow
       ) as "collection"`,
+      'a.description',
       'a.ip',
-      'a.nonnetwork',
+      'a.noncomputing',
       'a.metadata'
     ]
     let joins = [
@@ -138,7 +139,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.collectionId, a.ip, a.nonnetwork, p.collectionId, p.name'
+    sql += ' group by a.assetId, a.name, a.collectionId, a.description, a.ip, a.noncomputing, p.collectionId, p.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -291,8 +292,8 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let { stigs, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
-    if (assetFields.hasOwnProperty('nonnetwork')) {
-      assetFields.nonnetwork = assetFields.nonnetwork ? 1 : 0
+    if (assetFields.hasOwnProperty('noncomputing')) {
+      assetFields.noncomputing = assetFields.noncomputing ? 1 : 0
     }
     if (assetFields.hasOwnProperty('metadata')) {
       assetFields.metadata = JSON.stringify(assetFields.metadata)
@@ -310,9 +311,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, collectionId, nonnetwork, metadata)
+          (name, ip, description, collectionId, noncomputing, metadata)
         VALUES
-          (:name, :ip, :collectionId, :nonnetwork, :metadata)`
+          (:name, :ip, :description, :collectionId, :noncomputing, :metadata)`
       let [rows] = await connection.query(sqlInsert, binds)
       assetId = rows.insertId
     }
