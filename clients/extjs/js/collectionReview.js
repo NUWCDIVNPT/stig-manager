@@ -1221,10 +1221,12 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						}
 						let apiReview = JSON.parse(result.response.responseText)
 						e.grid.getStore().loadData(apiReview, true)
+						// hack to reselect the record for setReviewsGridButtonStates()
+						e.grid.getSelectionModel().selectRow(e.grid.getStore().indexOfId(apiReview.assetId))
 						// e.record.commit()
 		
 						e.grid.updateGroupStore(e.grid)
-						setReviewsGridButtonStates();
+						// setReviewsGridButtonStates();
 	
 					}
 					catch(e) {
@@ -1416,7 +1418,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 							selections[i].data.action,
 							selections[i].data.actionComment
 							)) {
-							//submitBtnDisabled = false;
+								approveBtnDisabled = true;
+								submitBtnDisabled = false;
 						} else {
 							submitBtnDisabled = true;
 							rejectFormDisabled = true;
