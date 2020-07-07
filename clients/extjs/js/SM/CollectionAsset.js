@@ -96,21 +96,27 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "Description",
 				width: 150,
                 dataIndex: 'description',
-				sortable: true
+                sortable: true,
+                renderer: v => {
+                    return v ? v : '<span class="sm-empty-cell">Description missing</span>'
+                }
 			},{ 	
 				header: "IP",
 				width: 100,
                 dataIndex: 'ip',
-				sortable: true
-			},{ 	
+				sortable: true,
+                renderer: v => {
+                    return v ? v : '<span class="sm-empty-cell">No IP address provided</span>'
+                }
+			},{ 
+                xtype: 'booleancolumn',
+                trueText: '&#x2714;',
+				falseText: '',
 				header: "Non-computing",
 				width: 75,
                 dataIndex: 'noncomputing',
 				align: "center",
 				tooltip:"Is this a computing asset?",
-				renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-				  return value ? 'X' : '';
-				},
 				sortable: true
 			},{ 	
 				header: "STIGs",

@@ -19,20 +19,29 @@ function addUserAdmin() {
 			type: 'string'
 		},{
 			name: 'globalAccess',
-			type: 'boolean'
+			type: 'boolean',
+			mapping: 'privileges.globalAccess'
 		},{
 			name: 'canCreateCollection',
-			type: 'boolean'
+			type: 'boolean',
+			mapping: 'privileges.canCreateCollection'
 		},{
 			name: 'canAdmin',
-			type: 'boolean'
+			type: 'boolean',
+			mapping: 'privileges.canAdmin'
 		},{
 			name: 'metadata'
 		}
 	]);
-
 	var userStore = new Ext.data.JsonStore({
-		url: `${STIGMAN.Env.apiBase}/users${curUser.privileges.canAdmin ? '?elevate=true' : ''}`,
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/users`,
+			method: 'GET'
+		}),
+		baseParams: {
+			elevate: curUser.privileges.canAdmin,
+			projection: 'privileges'
+		},
 		root: '',
 		fields: userFields,
 		isLoaded: false, // custom property
@@ -64,9 +73,8 @@ function addUserAdmin() {
 		sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
 		columns: [
 			{
-				id:'cn',
 				header: "Account Name", 
-				width: 250,
+				width: 150,
 				dataIndex: 'username',
 				sortable: true
 			},
@@ -77,26 +85,35 @@ function addUserAdmin() {
 				sortable: true
 			},
 			{ 	
-				header: "Access Level",
+				xtype: 'booleancolumn',
+				header: "Create Collection",
 				width: 150,
-				dataIndex: 'accessLevel',
-				sortable: true
+				align: 'center',
+				dataIndex: 'canCreateCollection',
+				sortable: true,
+				trueText: '&#x2714;',
+				falseText: ''
 			},
 			{ 	
-				header: "Department",
+				xtype: 'booleancolumn',
+				header: "Global Access",
 				width: 150,
-				dataIndex: 'dept.name',
-				sortable: true
+				align: 'center',
+				dataIndex: 'globalAccess',
+				sortable: true,
+				trueText: '&#x2714;',
+				falseText: ''
 			},
 			{ 	
-				header: "Admin?",
+				xtype: 'booleancolumn',
+				header: "Administrator",
 				width: 150,
+				align: 'center',
 				dataIndex: 'canAdmin',
 				sortable: true,
-				renderer: function (val) {
-					return val ? "Yes" : "No"
-				}
-			}
+				trueText: '&#x2714;',
+				falseText: ''
+			},
 		],
 		view: new Ext.grid.GridView({
 			forceFit:false,

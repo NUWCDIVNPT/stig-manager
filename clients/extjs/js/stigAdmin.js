@@ -464,5 +464,4 @@ function addStigAdmin() {
 	// Show the tab
 	thisTab.show();
 	stigGrid.getStore().load();
-	taStore.load();
 } // end addStigAdmin()
