@@ -54,6 +54,16 @@ INSERT INTO `result` VALUES (1,'notchecked','Not_Reviewed','NR','Not checked'),
 UNLOCK TABLES;
 
 --
+-- Dumping data for table `severity_cat_map`
+--
+
+LOCK TABLES `severity_cat_map` WRITE;
+/*!40000 ALTER TABLE `severity_cat_map` DISABLE KEYS */;
+INSERT INTO `severity_cat_map` VALUES (1,'high',1,'I'),(2,'medium',2,'II'),(3,'low',3,'III'),(4,'mixed',4,'IV');
+/*!40000 ALTER TABLE `severity_cat_map` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping data for table `status`
 --
 

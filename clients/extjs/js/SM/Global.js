@@ -18,7 +18,7 @@ SM.GetUserObject = async function () {
         return curUser
     }
     catch (e) {
-        alert('Failed to get user profile')
+        alert(e.message)
     }
 }
 

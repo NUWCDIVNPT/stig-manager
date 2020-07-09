@@ -325,6 +325,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 
         let i, j, bindchunk, chunk = 5000;
         for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
+          console.log(`table: ${table} chunk: ${i}\n`)
           res.write(`table: ${table} chunk: ${i}\n`)
           bindchunk = dml[table].insertBinds.slice(i,i+chunk);
           ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
@@ -362,7 +363,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     if (typeof connection !== 'undefined') {
       await connection.query('ROLLBACK')
     }
-    throw err
+    res.write(err.message)
+    res.end()
   }
   finally {
     if (typeof connection !== 'undefined') {

@@ -230,6 +230,66 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'definition', cci.definition,
         'apAcronym', cci.apAcronym) order by rulecci.cci), ']') as json) as "ccis"`)
     }
+    if (inProjection.includes('poamRarSummary')) {
+      joins.push('left join severity_cat_map sc on g.severity = sc.severity')
+      joins.push('left join poam_rar_entry pre on (c.collectionId = pre.collectionId and g.groupId = pre.groupId)')
+      groupBy.push(`
+        pre.status,
+        pre.iaControl,
+        pre.compDate,
+        pre.milestone,
+        pre.residualRisk,
+        sc.cat,
+        pre.mitDesc,
+        pre.likelihood,
+        pre.remDesc,
+        pre.rarComment
+      `)
+      const poamComplete = `
+        CASE WHEN pre.status is not null
+          AND pre.iaControl is not null
+          AND pre.compDate is not null
+          AND pre.milestone is not null
+        THEN
+          CASE WHEN pre.status = 'Ongoing'
+          THEN -- The status is 'Ongoing'
+            CASE WHEN pre.residualRisk is not null
+            THEN -- Residual Risk value exists
+              CASE WHEN pre.residualRisk > sc.cat
+              THEN -- Finding has been mitigated 
+                CASE WHEN pre.mitDesc is not null
+                THEN 1 -- Have mitigation desc, the POAM entry is complete
+                ELSE 0 END -- No mitigation desc, the POAM entry is not complete
+              ELSE 1 END -- Finding non-mitigated, the POAM entry is complete
+            ELSE 0 END -- No residual risk, the POAM entry is not complete
+          ELSE 1 END -- Status other than "Ongoing", the POAM entry is complete
+        ELSE 0 -- The POAM entry is not complete
+        END`
+      const rarComplete = `
+        CASE WHEN pre.status = 'Ongoing'
+        THEN
+          -- The status is 'Ongoing'
+          CASE WHEN pre.iaControl is not null
+            AND pre.likelihood is not null
+            AND pre.mitDesc is not null
+            AND pre.residualRisk is not null
+            AND pre.remDesc is not null
+          THEN 1 -- The RAR entry is complete
+          ELSE 0 END -- The RAR entry is not complete
+        ELSE
+          -- The status other than 'Ongoing'
+          CASE WHEN pre.status is not null
+            AND pre.iaControl is not null
+            AND pre.rarComment is not null
+          THEN 1 -- The RAR entry is complete
+          ELSE 0 END -- The RAR entry is not complete
+        END`
+      columns.push(`json_object(
+        "poamComplete", cast(${poamComplete} is true as json),
+        "rarComplete", cast(${rarComplete} is true as json),
+        "status", pre.status) as poamRarSummary`)
+
+    }
 
     // PREDICATES
     let predicates = {
@@ -237,6 +297,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       binds: []
     }
     
+    // collectionId predicate is mandatory per API spec
     if ( inPredicates.collectionId ) {
       predicates.statements.push('c.collectionId = ?')
       predicates.binds.push( inPredicates.collectionId )

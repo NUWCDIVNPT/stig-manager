@@ -254,8 +254,7 @@ DROP TABLE IF EXISTS `poam_rar_entry`;
 CREATE TABLE `poam_rar_entry` (
   `preId` int(11) NOT NULL AUTO_INCREMENT,
   `collectionId` int(11) NOT NULL,
-  `findingType` varchar(50) DEFAULT NULL,
-  `sourceId` varchar(45) NOT NULL,
+  `groupId` varchar(45) NOT NULL,
   `iacontrol` varchar(45) DEFAULT NULL,
   `status` varchar(45) DEFAULT NULL,
   `poc` varchar(255) DEFAULT NULL,
@@ -270,8 +269,7 @@ CREATE TABLE `poam_rar_entry` (
   `remdesc` longtext,
   `rarComment` longtext,
   PRIMARY KEY (`preId`),
-  UNIQUE KEY `COLLECTIONID_RULEID` (`collectionId`,`sourceId`),
-  KEY `FINDINGTYPE` (`findingType`)
+  UNIQUE KEY `unique_collectionId_groupId` (`collectionId`,`groupId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -579,7 +577,7 @@ DROP TABLE IF EXISTS `severity_cat_map`;
 CREATE TABLE `severity_cat_map` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `severity` varchar(45) NOT NULL,
-  `cat` varchar(45) NOT NULL,
+  `cat` int(11) NOT NULL,
   `roman` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_scm_severity` (`severity`)

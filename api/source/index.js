@@ -43,7 +43,7 @@ morgan.token('token-user', (req, res) => {
 
 app.use(morgan(':remote-addr - :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
 // compress all responses
-app.use(compression())
+// app.use(compression())
 
 
 // swaggerRouter configuration

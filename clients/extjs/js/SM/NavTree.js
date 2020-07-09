@@ -1,4 +1,5 @@
 Ext.ns('SM')
+let doWoWindow
 
 SM.NodeSorter = (a, b) => {
   if (a.sortToTop) {
@@ -121,11 +122,22 @@ SM.CollectionNodeConfig = function (collection) {
   if (collectionGrant && collectionGrant.accessLevel >= 3) {
     children.push({
       id: `${collection.collectionId}-pkgconfig-node`,
-      text: 'Configuration',
+      text: 'Manage',
       collectionId: collection.collectionId,
       collectionName: collection.name,
       action: 'collection-management',
       iconCls: 'sm-setting-icon',
+      leaf: true
+    })
+  }
+  if (collectionGrant && collectionGrant.accessLevel >= 2) {
+    children.push({
+      id: `${collection.collectionId}-findings-poam-node`,
+      text: 'POAM',
+      collectionId: collection.collectionId,
+      collectionName: collection.name,
+      action: 'collection-poam',
+      iconCls: 'sm-report-icon',
       leaf: true
     })
   }
@@ -717,9 +729,12 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
       
         if (n.attributes.action == 'collection-management') {
-            addCollectionManager(n.attributes.collectionId, n.attributes.collectionName)
+          addCollectionManager(n.attributes.collectionId, n.attributes.collectionName)
         }
-      
+        if (n.attributes.action == 'collection-poam') {
+          addPoamWorkspace(n.attributes.collectionId, n.attributes.collectionName)
+        }
+
         switch (n.id) {
           case 'user-admin':
             addUserAdmin();
@@ -730,6 +745,20 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           case 'appdata-admin':
             addAppDataAdmin();
             break;
+          case 'wo-admin':
+            doWo();
+            break;
+        }
+
+        function doWo() {
+          let w = 400
+          let h = 400
+          let left = (window.innerWidth/2)-(w/2)
+          let top = (window.innerHeight/2)-(h/2)
+          doWoWindow = window.open(window.keycloak.createLoginUrl({
+            scope: 'stig-manager'
+          }),'doWo', `top=${top},left=${left},width=${w},height=${h},resizeable,scrollbars,status`)
+          let one = doWoWindow
         }
       
     }

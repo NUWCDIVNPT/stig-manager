@@ -5,5 +5,5 @@ STIGMAN.Env = {
     commitBranch: "" || "unknown",
     commitSha: "" || "unknown",
     commitTag: "" || "unknown",
-    version: "3.0.0-beta.1"
+    version: "1.0.0-beta.1"
 }
