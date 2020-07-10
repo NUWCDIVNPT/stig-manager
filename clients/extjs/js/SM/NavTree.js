@@ -118,6 +118,15 @@ SM.CollectionNodeConfig = function (collection) {
   }
 
   let children = []
+  let reports = [ {
+    id: `${collection.collectionId}-findings-node`,
+    text: 'Findings',
+    collectionId: collection.collectionId,
+    collectionName: collection.name,
+    iconCls: 'sm-report-icon',
+    action: 'findings',
+    leaf: true
+  }]
   const collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
   if (collectionGrant && collectionGrant.accessLevel >= 3) {
     children.push({
@@ -131,7 +140,7 @@ SM.CollectionNodeConfig = function (collection) {
     })
   }
   if (collectionGrant && collectionGrant.accessLevel >= 2) {
-    children.push({
+    reports.push({
       id: `${collection.collectionId}-findings-poam-node`,
       text: 'POAM',
       collectionId: collection.collectionId,
@@ -141,16 +150,8 @@ SM.CollectionNodeConfig = function (collection) {
       leaf: true
     })
   }
+
   children.push(
-    {
-      id: `${collection.collectionId}-findings-node`,
-      text: 'Findings',
-      collectionId: collection.collectionId,
-      collectionName: collection.name,
-      iconCls: 'sm-report-icon',
-      action: 'findings',
-      leaf: true
-    },
     {
       id: `${collection.collectionId}-stigs-node`,
       node: 'stigs',
@@ -165,6 +166,14 @@ SM.CollectionNodeConfig = function (collection) {
       text: 'Assets',
       iconCls: 'sm-asset-icon'
     },
+    {
+      id: `${collection.collectionId}-findings-node`,
+      text: 'Reports',
+      collectionId: collection.collectionId,
+      collectionName: collection.name,
+      iconCls: 'sm-report-icon',
+      children: reports
+    }
   )
   let node = {
     id: `${collection.collectionId}-collection-node`,

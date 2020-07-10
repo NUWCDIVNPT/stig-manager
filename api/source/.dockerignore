@@ -2,3 +2,4 @@ node_modules
 docker_build.sh
 package-lock.json
 README.md
+state.json
