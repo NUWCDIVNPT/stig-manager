@@ -2879,6 +2879,12 @@ components:
           type: string
         metadata:
           type: object
+        created:
+          type: string
+          readOnly: true
+        lastAccess:
+          type: string
+          readOnly: true
     UserBasic:
       type: object
       properties:
@@ -2966,6 +2972,18 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/CollectionGrantProjected'
+        - type: object
+          properties:
+            statistics:
+              $ref: '#/components/schemas/UserStatistics'
+    UserStatistics:
+      type: object
+      properties:
+        created:
+          type: string
+        lastAccess:
+          type: string
+
     UserUpdate:
       type: object
       properties:
@@ -3320,8 +3338,9 @@ components:
         items:
           type: string
           enum:
-            - privileges
             - collectionGrants
+            - privileges
+            - statistics
   securitySchemes:
     oauth:
       type: oauth2

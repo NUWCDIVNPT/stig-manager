@@ -29,11 +29,16 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
             writer.writeJson(req.res,{message: 'Not in scope'},403)
         }
         else {
-            const response = await User.getUsers(decoded.preferred_username, ['privileges', 'collectionGrants'])
+            const response = await User.getUsers(decoded.preferred_username, ['privileges', 'collectionGrants', 'statistics'])
             if (response.length) {
                 req.userObject = response[0]
                 req.access_token = decoded
                 req.bearer = token
+                let now = Date.now() / 1000 | 0 //https://stackoverflow.com/questions/7487977/using-bitwise-or-0-to-floor-a-number
+                if (now - req.userObject.statistics.lastAccess >= config.settings.lastAccessResolution) {
+                    // Do not await
+                    User.setLastAccess(req.userObject.userId, now)
+                }
                 if ('elevate' in req.query && (req.query.elevate === 'true' && !req.userObject.privileges.canAdmin)) {
                     writer.writeJson(req.res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) ) 
                     return

@@ -1,6 +1,9 @@
 let config = {
-    apiVersion: '3.0.0-beta.1',
-    setClassification: process.env.STIGMAN_CLASSIFICATION,
+    apiVersion: '1.0.0-beta.1',
+    settings: {
+        setClassification: process.env.STIGMAN_CLASSIFICATION,
+        lastAccessResolution: 60
+    },
     client: {
         enabled: process.env.STIGMAN_CLIENT_ENABLED || "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client"

@@ -187,9 +187,9 @@ async function startServer(app) {
 
     // Set/change classification if indicated
     console.log(`Checking classification...`)
-    if (config.setClassification) {
-      console.log(`Setting classification to ${config.setClassification}`)
-      await OperationSvc.setConfigurationItem('classification', config.setClassification)
+    if (config.settings.setClassification) {
+      console.log(`Setting classification to ${config.settings.setClassification}`)
+      await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
     }
 
     // Start the server

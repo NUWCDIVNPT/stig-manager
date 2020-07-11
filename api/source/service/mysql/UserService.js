@@ -58,6 +58,17 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       ) else json_array() end as collectionGrants`)
     }
 
+    if (inProjection && inProjection.includes('statistics')) {
+      columns.push(`json_object(
+          'created', ud.created,
+          'lastAccess', lastAccess
+        ) as statistics`)
+      groupBy.push(
+        'ud.created',
+        'ud.lastAccess'
+      )
+    }
+
     // PREDICATES
     let predicates = {
       statements: [],
@@ -289,6 +300,17 @@ exports.updateUser = async function( userId, body, projection, elevate, userObje
   } 
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
+exports.setLastAccess = async function (userId, timestamp) {
+  try {
+    let sqlUpdate = `UPDATE user_data SET lastAccess = ? where userId = ?`
+    await dbUtils.pool.execute(sqlUpdate, [timestamp, userId])
+    return true
+  }
+  catch (err) {
+    console.log('Error setting lastAccess')
   }
 }
 
