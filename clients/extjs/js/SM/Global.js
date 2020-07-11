@@ -22,3 +22,4 @@ SM.GetUserObject = async function () {
     }
 }
 
+SM.styledEmptyRenderer = v => v ? v : '<span class="sm-empty-cell" />'

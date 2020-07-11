@@ -97,17 +97,13 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 150,
                 dataIndex: 'description',
                 sortable: true,
-                renderer: v => {
-                    return v ? v : '<span class="sm-empty-cell">Description missing</span>'
-                }
+                renderer: SM.styledEmptyRenderer
 			},{ 	
 				header: "IP",
 				width: 100,
                 dataIndex: 'ip',
 				sortable: true,
-                renderer: v => {
-                    return v ? v : '<span class="sm-empty-cell">No IP address provided</span>'
-                }
+                renderer: SM.styledEmptyRenderer
 			},{ 
                 xtype: 'booleancolumn',
                 trueText: '&#x2714;',
