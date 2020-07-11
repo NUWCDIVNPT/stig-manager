@@ -459,6 +459,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.store.resumeEvents();
                         this.grid.getView().refresh();
                     }
+                    // Editor must remove the form fields it created; otherwise the
+                    // form validation continues to include those fields
                     editor.removeAll(false)
                     editor.initialized = false
                 },

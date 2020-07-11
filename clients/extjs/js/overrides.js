@@ -1,5 +1,21 @@
+// Column xtype for UNIX timestamps
+// Source: carl.a.smigielski@saic.com
+Ext.grid.Column.types.timestampcolumn = Ext.extend(Ext.grid.Column, {
+    /**
+     * @cfg {String} format
+     * A formatting string as used by {@link Date#format} to format a Date for this Column
+     * (defaults to <tt>'m/d/Y'</tt>).
+     */
+    format : 'Y-m-d H:i:s',
+    constructor: function(cfg){
+        Ext.grid.Column.types.timestampcolumn.superclass.constructor.call(this, cfg);
+        this.renderer = (v) => v ? Ext.util.Format.date(new Date(v * 1000), this.format) : "None"
+    }
+});
+
 
 // Flat style Windows by default
+// Source: carl.a.smigielski@saic.com
 Ext.override(Ext.Window, {
     cls: 'sm-round-panel',
     frame: false,

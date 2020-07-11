@@ -42,6 +42,7 @@ function loadScripts() {
         "js/SM/CollectionForm.js",
         "js/SM/CollectionAsset.js",
         "js/SM/CollectionStig.js",
+        "js/SM/CollectionGrant.js",
         "js/collectionManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",

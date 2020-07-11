@@ -33,9 +33,9 @@ Ext.reg('sm-workflow-combo', SM.WorkflowComboBox);
 
 SM.AccessLevelStrings = [
     'Undefined',
-    'Assignments',
-    'All resources',
-    'Configuration',
+    'Restricted',
+    'Full',
+    'Manage',
     'Owner'
 ]
 

@@ -34,7 +34,9 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
                 req.userObject = response[0]
                 req.access_token = decoded
                 req.bearer = token
-                let now = Date.now() / 1000 | 0 //https://stackoverflow.com/questions/7487977/using-bitwise-or-0-to-floor-a-number
+                let now = new Date().toUTCString()
+                now = new Date(now).getTime()
+                now = now / 1000 | 0 //https://stackoverflow.com/questions/7487977/using-bitwise-or-0-to-floor-a-number
                 if (now - req.userObject.statistics.lastAccess >= config.settings.lastAccessResolution) {
                     // Do not await
                     User.setLastAccess(req.userObject.userId, now)

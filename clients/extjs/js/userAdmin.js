@@ -31,7 +31,15 @@ function addUserAdmin() {
 			mapping: 'privileges.canAdmin'
 		},{
 			name: 'metadata'
-		}
+		},{
+			name: 'created',
+			type: 'date',
+			mapping: 'statistics.created'
+		},{
+			name: 'lastAccess',
+			type: 'integer',
+			mapping: 'statistics.lastAccess'
+		},
 	]);
 	var userStore = new Ext.data.JsonStore({
 		proxy: new Ext.data.HttpProxy({
@@ -40,7 +48,7 @@ function addUserAdmin() {
 		}),
 		baseParams: {
 			elevate: curUser.privileges.canAdmin,
-			projection: 'privileges'
+			projection: ['privileges', 'statistics']
 		},
 		root: '',
 		fields: userFields,
@@ -114,6 +122,21 @@ function addUserAdmin() {
 				trueText: '&#x2714;',
 				falseText: ''
 			},
+			{ 	
+				header: "Added",
+				xtype: 'datecolumn',
+				format: 'Y-m-d H:i T',
+				width: 150,
+				dataIndex: 'created',
+				sortable: true
+			},
+			{ 	
+				header: "Last Access",
+				width: 150,
+				dataIndex: 'lastAccess',
+				sortable: true,
+				renderer: v => v ? Ext.util.Format.date(new Date(v * 1000), 'Y-m-d H:i T') : SM.styledEmptyRenderer()
+			}
 		],
 		view: new Ext.grid.GridView({
 			forceFit:false,
@@ -136,7 +159,7 @@ function addUserAdmin() {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
 					Ext.getBody().mask('Getting properties of ' + r.get('display') + '...');
-					showUserProperties(r.get('userId'), userGrid);
+					showUserProps(r.get('userId'));
 				}
 			}
 		},
@@ -146,7 +169,7 @@ function addUserAdmin() {
 			disabled: !(curUser.privileges.canAdmin),
 			handler: function() {
 				Ext.getBody().mask('Loading form...');
-				showUserProperties(0, userGrid);            
+				showUserProps(0);            
 			}
 		},'-', {
 			ref: '../removeBtn',
@@ -180,7 +203,7 @@ function addUserAdmin() {
 			handler: function() {
 				var r = userGrid.getSelectionModel().getSelected();
 				Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-				showUserProperties(r.get('userId'), userGrid);
+				showUserProps(r.get('userId'));
 			}
 		}],
 		bbar: new Ext.Toolbar({

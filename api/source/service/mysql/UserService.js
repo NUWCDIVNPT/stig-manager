@@ -113,16 +113,22 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
   let connection 
   try {
     // CREATE: userId will be null
-    // REPLACE/UPDATE: assetId is not null
+    // REPLACE/UPDATE: userId is not null
 
     // Extract or initialize non-scalar properties to separate variables
     let { collectionGrants, ...userFields } = body
 
     // Handle userFields.privileges object
-    userFields.globalAccess = userFields.privileges.globalAccess ? 1 : 0
-    userFields.canCreateCollection = userFields.privileges.canCreateCollection ? 1 : 0
-    userFields.canAdmin = userFields.privileges.canAdmin ? 1 : 0
-    delete userFields.privileges
+    if (userFields.hasOwnProperty('privileges')) {
+      userFields.globalAccess = userFields.privileges.globalAccess ? 1 : 0
+      userFields.canCreateCollection = userFields.privileges.canCreateCollection ? 1 : 0
+      userFields.canAdmin = userFields.privileges.canAdmin ? 1 : 0
+      delete userFields.privileges
+    }
+    // Stringify metadata
+    if (userFields.hasOwnProperty('metadata')) {
+      userFields.metadata = JSON.stringify(userFields.metadata)
+    }
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
@@ -166,18 +172,18 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     if (collectionGrants) {
       if ( writeAction !== dbUtils.WRITE_ACTION.CREATE ) {
         // DELETE from collection_grant
-        let sqlDeletePkgGrant = 'DELETE FROM collection_grant where userId = ?'
-        await connection.query(sqlDeletePkgGrant, [userId])
+        let sqlDeleteCollGrant = 'DELETE FROM collection_grant where userId = ?'
+        await connection.query(sqlDeleteCollGrant, [userId])
       }
-      if (grants.length > 0) {
-        let sqlInsertPkgGrant = `
+      if (collectionGrants.length > 0) {
+        let sqlInsertCollGrant = `
           INSERT INTO 
             collection_grant (userId, collectionId, accessLevel)
           VALUES
             ?`      
         binds = collectionGrants.map( grant => [userId, grant.collectionId, grant.accessLevel])
         // INSERT into collection_grant
-        await connection.execute(sqlInsertPkgGrant, binds)
+        await connection.query(sqlInsertCollGrant, [ binds] )
       }
     }
     // Commit the changes

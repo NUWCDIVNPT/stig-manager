@@ -723,7 +723,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
 
           let appwindow = new Ext.Window({
             id: 'window-project-info',
-            title: 'Create STIG Manager Project',
+            title: 'Create Collection',
             modal: true,
             width: 560,
             height:550,
