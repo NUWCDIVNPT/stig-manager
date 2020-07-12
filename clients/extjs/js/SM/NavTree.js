@@ -318,6 +318,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           loadMask: 'Loading...',
           listeners: {
             click: me.treeClick,
+            render: this.treeRender,
             beforeexpandnode: function (n) {
               n.loaded = false; // always reload from the server
             }
@@ -770,5 +771,20 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           let one = doWoWindow
         }
       
-    }
+    },
+    treeRender: function (tree) {
+      new Ext.ToolTip({
+          target: tree.header,
+          showDelay: 2000,
+          dismissDelay: 0,
+          autoWidth: true,
+          title: 'OAuth2 token payload',
+          listeners: {
+              show: function (tip) {
+                  tip.update("<pre>" + JSON.stringify(window.keycloak.tokenParsed,null,2) + "</pre>")
+              }
+          }
+      }) 
+  }
+
 })

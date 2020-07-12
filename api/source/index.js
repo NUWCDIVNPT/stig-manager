@@ -17,9 +17,11 @@ const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
 const compression = require('compression')
 const smFetch = require('./utils/fetchStigs')
-const { promisify } = require('util')
 
-console.log(`Starting STIG Manager ${config.apiVersion}`)
+console.log(`Starting STIG Manager ${config.version}`)
+
+// State file
+// TODO: store in DB instead of file?
 let state = {}
 try {
   state = JSON.parse(fs.readFileSync(path.join(__dirname, './state.json')))
@@ -28,10 +30,10 @@ try {
 catch (e) {
   console.log('Could not read state file')
 }
-// console.log(JSON.stringify(config, null, 2))
-const app = express();
+
 
 // Express config
+const app = express();
 app.use(upload.single('importFile'))
 app.use(express.json()) //Handle JSON request body
 app.use(cors())
@@ -41,7 +43,9 @@ morgan.token('token-user', (req, res) => {
   }
 })
 
+// Log format
 app.use(morgan(':remote-addr - :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
+
 // compress all responses
 // app.use(compression())
 
@@ -62,7 +66,6 @@ let options = {
 //let spec = fs.readFileSync(path.join(__dirname,'api/openapi.yaml'), 'utf8')
 let spec = fs.readFileSync(path.join(__dirname,'./specification/stig-manager.yaml'), 'utf8')
 let oasDoc = jsyaml.safeLoad(spec)
-
 // oas-tools uses x-name property of requestBody to set name of the body parameter
 // oas-tools uses x-swagger-router-controller property to determine the controller
 // Set x-swagger-router-controller based on the first tag of each path/method

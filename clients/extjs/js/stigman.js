@@ -98,6 +98,19 @@ async function loadApp () {
 			margins: {top:5, right:10, bottom:10, left:5},
 			border: false
 		})
+
+		const appTitleQTipAttrs = `ext:qtitle="Commit info" ext:qwidth=200 ext:qtip="branch: ${STIGMAN.Env.commit.branch}&lt;br/&gt;sha: ${STIGMAN.Env.commit.sha}&lt;br/&gt;describe: ${STIGMAN.Env.commit.describe}"`
+		// Register a quick tip for the version element
+		Ext.QuickTips.register({
+			target: 'sm-home-version-sprite',
+			title: 'Commit info',
+			text: `branch: ${STIGMAN.Env.commit.branch}&lt;br/&gt;sha: ${STIGMAN.Env.commit.sha}&lt;br/&gt;describe: ${STIGMAN.Env.commit.describe}`,
+			width: 200,
+			dismissDelay: 0 // Show while cursor is over element
+		})
+
+		const appTitleHtml = `<div class='sm-home-title'>
+		STIG Manager<span id='sm-home-oss-sprite'>OSS</span><span id='sm-home-version-sprite'>${STIGMAN.Env.version}</span></div>`
 		
 		const homeTab = new SM.HomeTab({
 			border: false,
@@ -116,7 +129,7 @@ async function loadApp () {
 			},
 			items: [
 				{
-					html: `<div class='sm-home-title'>STIG Manager<span id='sm-home-oss-sprite'>OSS</span><span id='sm-home-version-sprite'>${STIGMAN.Env.version}</span></div>`,
+					html: appTitleHtml,
 					colspan: 3,
 					border: false
 				},
@@ -191,6 +204,15 @@ async function loadApp () {
 	
 		Ext.get('loading').remove();
 		Ext.get('loading-mask').fadeOut({duration: 1, remove:true});
+		// Register a quick tip for the version element
+		Ext.QuickTips.register({
+			target: 'sm-home-version-sprite',
+			title: 'Commit info',
+			text: `branch: ${STIGMAN.Env.commit.branch}<br/>sha: ${STIGMAN.Env.commit.sha}<br/>describe: ${STIGMAN.Env.commit.describe}`,
+			width: 200,
+			dismissDelay: 60000 // Show while cursor is over element
+		})
+		
 	}
 	catch (e) {
 		Ext.get( 'indicator' ).dom.innerHTML = e.message

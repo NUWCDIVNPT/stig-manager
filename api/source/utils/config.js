@@ -1,5 +1,11 @@
 let config = {
-    apiVersion: '1.0.0-beta.1',
+    version: '1.0.0-beta',
+    commit: {
+        branch: process.env.COMMIT_BRANCH || 'na',
+        sha: process.env.COMMIT_SHA || 'na',
+        tag: process.env.COMMIT_TAG || 'na',
+        describe: process.env.COMMIT_DESCRIBE || 'na'
+    },
     settings: {
         setClassification: process.env.STIGMAN_CLASSIFICATION,
         lastAccessResolution: 60
@@ -37,6 +43,10 @@ let config = {
         userid_claim: process.env.STIGMAN_JWT_USER_CLAIM || "preferred_username",
         groups_claim: process.env.STIGMAN_JWT_GROUPS_CLAIM || "groups"
     }
+}
+
+if (!config.commit.branch) {
+    
 }
 
 module.exports = config

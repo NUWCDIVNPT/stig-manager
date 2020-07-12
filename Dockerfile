@@ -1,11 +1,13 @@
 FROM node:12.9.1-buster-slim
 LABEL maintainer="carl.a.smigielski@saic.com"
-ARG COMMIT_BRANCH="master"
-ARG COMMIT_SHA=""
-ARG COMMIT_TAG=""
-LABEL branch=${COMMIT_BRANCH}
-LABEL commit=${COMMIT_SHA}
-LABEL tag=${COMMIT_TAG}
+ARG COMMIT_BRANCH="unspecified"
+ARG COMMIT_SHA="unspecified"
+ARG COMMIT_TAG="unspecified"
+ARG COMMIT_DESCRIBE="unspecified"
+LABEL commit-branch=${COMMIT_BRANCH}
+LABEL commit-sha=${COMMIT_SHA}
+LABEL commit-tag=${COMMIT_TAG}
+LABEL commit-describe=${COMMIT_DESCRIBE}
 
 # WORKDIR /tmp
 # RUN apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade && apt-get install -y alien libaio1
@@ -28,7 +30,8 @@ COPY --chown=node:node ./clients/extjs ./client
 # Set environment
 ENV COMMIT_SHA=${COMMIT_SHA} \
 COMMIT_BRANCH=${COMMIT_BRANCH} \
-COMMIT_TAG=${COMMIT_TAG}
+COMMIT_TAG=${COMMIT_TAG} \
+COMMIT_DESCRIBE=${COMMIT_DESCRIBE}
 
 EXPOSE 54000
 CMD [ "node", "index.js" ]

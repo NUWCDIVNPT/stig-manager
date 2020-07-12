@@ -12,8 +12,9 @@ const JSZip = require("jszip");
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
     let dbConfigs = await Operation.getConfiguration()
-    let apiVersion = {apiVersion: config.apiVersion}
-    let response = { ...apiVersion, ...dbConfigs }
+    let version = {version: config.version}
+    let commit = {commit: config.commit}
+    let response = { ...version, ...commit, ...dbConfigs }
     writer.writeJson(res, response)
   }
   catch(err) {

@@ -1,12 +1,16 @@
 #!/bin/bash
 
-docker build \
-  --build-arg=COMMIT_BRANCH=$(git symbolic-ref --short HEAD) \
-  --build-arg=COMMIT_SHA=$(git rev-parse --short=10 HEAD) \
-  --build-arg=COMMIT_TAG=$(git describe --tags) \
-  --no-cache=true \
-  --tag stig-manager/api:$(git rev-parse --short=10 HEAD) .
+BRANCH=$(git symbolic-ref --short HEAD)
+SHA=$(git rev-parse --short=10 HEAD)
+DESCRIBE=$(git describe --tags)
+TAG=$(git describe --tags --abbrev=0)
 
-docker tag stig-manager/api:$(git rev-parse --short=10 HEAD) stig-manager/api:latest
-docker tag stig-manager/api:$(git rev-parse --short=10 HEAD) carlsmig/stig-manager:$(git rev-parse --short=10 HEAD)
-docker tag stig-manager/api:$(git rev-parse --short=10 HEAD) carlsmig/stig-manager:latest
+docker build \
+  --build-arg=COMMIT_BRANCH=$BRANCH \
+  --build-arg=COMMIT_SHA=$SHA \
+  --build-arg=COMMIT_DESCRIBE=$DESCRIBE \
+  --build-arg=COMMIT_TAG=$TAG \
+  --no-cache=true \
+  --tag stig-manager:$TAG .
+
+docker tag stig-manager:$TAG stig-manager:latest

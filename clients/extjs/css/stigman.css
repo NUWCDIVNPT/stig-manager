@@ -151,6 +151,7 @@
 	padding: 1px 4px 2px 4px;
 	border-radius:  3px;
 	margin-left: 20px;
+	user-select: none;
 }
 #sm-home-version-sprite {
 	color: #fcfcfc;
@@ -161,6 +162,7 @@
 	padding: 1px 4px 2px 4px;
 	border-radius:  3px;
 	margin-left: 5px;
+	user-select: none;
 }
 
 .sm-main-tab-panels-common {
