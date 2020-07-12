@@ -61,8 +61,13 @@ module.exports.initializeDatabase = async function () {
     process.on('SIGTERM', closePoolAndExit)
     process.on('SIGINT', closePoolAndExit)
 
-    // Preflight the pool
-    let result = await retry(_this.testConnection, {})
+    // Preflight the pool every 5 seconds
+    let result = await retry(_this.testConnection, {
+      retries: 24,
+      factor: 1,
+      minTimeout: 5 * 1000,
+      maxTimeout: 5 * 1000
+    })
     // console.log(result)
 
     // Perform migrations
