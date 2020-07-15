@@ -827,6 +827,7 @@ paths:
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - $ref: '#/components/parameters/RuleIdQuery'
         - $ref: '#/components/parameters/GroupIdQuery'
+        - $ref: '#/components/parameters/CciQuery'
         - $ref: '#/components/parameters/UserIdQuery'
         - $ref: '#/components/parameters/AssetIdQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
@@ -3048,6 +3049,12 @@ components:
       in: path
       description: A path parameter that indentifies a CCI
       required: true
+      schema:
+        type: string
+    CciQuery:
+      name: cci
+      in: query
+      description: A query parameter that indentifies a CCI
       schema:
         type: string
     ChecklistProjectionQuery:

@@ -123,12 +123,14 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
-        assetId: req.swagger.params['assetId'].value,
         result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
         ruleId: req.swagger.params['ruleId'].value,
         groupId: req.swagger.params['groupId'].value,
+        cci: req.swagger.params['cci'].value,
+        userId: req.swagger.params['userId'].value,
+        assetId: req.swagger.params['assetId'].value,
         benchmarkId: req.swagger.params['benchmarkId'].value,
         revisionStr: req.swagger.params['revisionStr'].value,
       }, req.userObject)

@@ -16,6 +16,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'CAST(r.assetId as char) as assetId',
       'asset.name as "assetName"',
       'r.ruleId',
+      'rule.severity',
       'result.api as "result"',
       'r.resultComment',
       'r.autoResult',
@@ -47,6 +48,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'r.assetId',
       'asset.name',
       'r.ruleId',
+      'rule.severity',
       'r.resultId',
       'result.api',
       'r.resultComment',
@@ -63,6 +65,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     ]
     const joins = [
       'review r',
+      'left join rule on r.ruleId = rule.ruleId',
+      // 'left join rule_cci_map rc on r.ruleId = rc.ruleId',
       'left join result on r.resultId = result.resultId',
       'left join status on r.statusId = status.statusId',
       'left join action on r.actionId = action.actionId',
@@ -160,33 +164,25 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     }
 
       // COMMON
-    if (inPredicates.userId) {
-      predicates.statements.push('r.userId = :userId')
-      predicates.binds.userId = inPredicates.userId
-    }
-    if (inPredicates.assetId) {
-      predicates.statements.push('r.assetId = :assetId')
-      predicates.binds.assetId = inPredicates.assetId
-    }
-    if (inPredicates.ruleId) {
-      predicates.statements.push('r.ruleId = :ruleId')
-      predicates.binds.ruleId = inPredicates.ruleId
+    if (inPredicates.collectionId) {
+      predicates.statements.push('asset.collectionId = :collectionId')
+      predicates.binds.collectionId = inPredicates.collectionId
     }
     if (inPredicates.result) {
       predicates.statements.push('result.api = :result')
       predicates.binds.result = inPredicates.result
     }
-    if (inPredicates.status) {
-      predicates.statements.push('status.api = :status')
-      predicates.binds.status = inPredicates.status
-    }
     if (inPredicates.action) {
       predicates.statements.push('action.api = :action')
       predicates.binds.action = inPredicates.action
     }
-    if (inPredicates.collectionId) {
-      predicates.statements.push('asset.collectionId = :collectionId')
-      predicates.binds.collectionId = inPredicates.collectionId
+    if (inPredicates.status) {
+      predicates.statements.push('status.api = :status')
+      predicates.binds.status = inPredicates.status
+    }
+    if (inPredicates.ruleId) {
+      predicates.statements.push('r.ruleId = :ruleId')
+      predicates.binds.ruleId = inPredicates.ruleId
     }
     if (inPredicates.groupId) {
       predicates.statements.push(`r.ruleId IN (
@@ -198,6 +194,25 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
           groupId = :groupId
         )` )
         predicates.binds.groupId = inPredicates.groupId
+    }
+    if (inPredicates.cci) {
+      predicates.statements.push(`r.ruleId IN (
+        SELECT
+          ruleId
+        FROM
+          rule_cci_map
+        WHERE
+          cci = :cci
+        )` )
+        predicates.binds.cci = inPredicates.cci
+    }
+    if (inPredicates.userId) {
+      predicates.statements.push('r.userId = :userId')
+      predicates.binds.userId = inPredicates.userId
+    }
+    if (inPredicates.assetId) {
+      predicates.statements.push('r.assetId = :assetId')
+      predicates.binds.assetId = inPredicates.assetId
     }
     if (inPredicates.benchmarkId) {
       if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {

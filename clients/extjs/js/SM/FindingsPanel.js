@@ -58,6 +58,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			],
 			listeners: {
 				load: function (store, records) {
+					setColumnStates(me.aggValue)
 					totalTextCmp.setText(records.length + ' records');
 				}
 			}
@@ -76,17 +77,8 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
                     return 'U';
             }
         }
-        const columns = [
+        const colModel = new Ext.grid.ColumnModel([
 			{ 
-				header: "CAT", 
-				hidden: false,
-				align: 'center', 
-				width: 60, 
-				dataIndex: 'severity', 
-				sortable: true, 
-				renderer: renderSeverity
-			 },
-			 { 
 				header: "Group", 
 				hidden: false,
 				width: 80, 
@@ -99,6 +91,15 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 80, 
 				dataIndex: 'ruleId', 
 				sortable: true, 
+			},
+			{ 
+				header: "CAT", 
+				hidden: false,
+				align: 'center', 
+				width: 60, 
+				dataIndex: 'severity', 
+				sortable: true, 
+				renderer: renderSeverity
 			},
 			{ 
 				header: "CCI", 
@@ -148,7 +149,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				}, 
 				sortable: true, 
 			}
-        ]
+        ])
         const view = new Ext.grid.GridView({
 			forceFit: true,
 			emptyText: 'No records found.',
@@ -171,12 +172,17 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			}
         })
         const tbar = new Ext.Toolbar({
-			// hidden: (curUser.accessLevel !== 3),
 			items: [
+                {
+                    xtype: 'button',
+                    text: '',
+                    disabled: true
+                },
 				{
 					xtype: 'tbtext',
-					text: 'Aggregate by'
-				},
+                    text: 'Aggregator:'                    
+                },
+                ' ',' ',' ',
 				{
                     xtype: 'sm-aggregator-combo',
                     value: this.aggValue,
@@ -187,10 +193,12 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
                         }
                     }
 				},
+                ' ',' ',' ',
 				{
 					xtype: 'tbtext',
 					text: 'STIG:  '
 				},
+                ' ',' ',' ',
 				{
 					xtype: 'sm-stig-selection-field',
 					url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}?projection=stigs`,
@@ -206,7 +214,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					listeners: {
 						select: function (f, r, i) {
                             me.stigValue = f.getValue()
-							me.fireEvent('stigchanged')
+							me.fireEvent('stigchanged', me.stigValue)
 						}
 					}
 				}
@@ -242,25 +250,81 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				},
 				totalTextCmp
 			]
-        })
+		})
+		const setColumnStates = (aggregator) => {
+			const colIndex = {}
+			for (const [i, v] of colModel.config.entries()) {
+				colIndex[v.dataIndex] = i
+			}
+			// colModel.suspendEvents(false)
+			switch (aggregator) {
+				case 'ruleId':
+					colModel.setHidden(colIndex.severity, false)
+					colModel.setHidden(colIndex.groupId, true)
+					colModel.setHidden(colIndex.ruleId, false)
+					colModel.setHidden(colIndex.cci, true)
+					colModel.setHidden(colIndex.apAcronym, true)
+					colModel.setHidden(colIndex.title, false)
+					colModel.setHidden(colIndex.definition, true)
+					break
+				case 'groupId':
+					colModel.setHidden(colIndex.severity, false)
+					colModel.setHidden(colIndex.groupId, false)
+					colModel.setHidden(colIndex.ruleId, true)
+					colModel.setHidden(colIndex.cci, true)
+					colModel.setHidden(colIndex.apAcronym, true)
+					colModel.setHidden(colIndex.title, false)
+					colModel.setHidden(colIndex.definition, true)
+					break
+				case 'cci':
+					colModel.setHidden(colIndex.severity, true)
+					colModel.setHidden(colIndex.groupId, true)
+					colModel.setHidden(colIndex.ruleId, true)
+					colModel.setHidden(colIndex.cci, false)
+					colModel.setHidden(colIndex.apAcronym, false)
+					colModel.setHidden(colIndex.title, true)
+					colModel.setHidden(colIndex.definition, false)
+					break
+			}
+			// colModel.resumeEvents()
+			// view.layout(true)
+		}
         const onAggregatorChanged = (aggregator) => {
+			let one = colModel
+            const params = {
+                aggregator: aggregator
+            }
+            if (me.stigValue != me.stigAllValue) {
+                params.benchmarkId = me.stigValue
+            }
             store.load({
-                params: {
-                    aggregator: aggregator
-                }
+                params: params
+			})
+
+        }
+        const onStigChanged = (benchmarkId) => {
+            const params = {
+                aggregator: me.aggValue
+            }
+            if (benchmarkId != me.stigAllValue) {
+                params.benchmarkId = benchmarkId
+            }
+            store.load({
+                params: params
             })
         }
+        
         const config = {
             loadMask: true,
             store: store,
-            columns: columns,
+            colModel: colModel,
             view: view,
             sm: sm,
             tbar: tbar,
             bbar: bbar,
             listeners: {
                 aggregatorchanged: onAggregatorChanged,
-                // stigchanged: me.onStigChanged
+                stigchanged: onStigChanged
             },
 
         }
@@ -287,7 +351,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
 			sortInfo: {
 				field: 'assetName',
-				direction: 'DESC'
+				direction: 'ASC'
 			},
 			root: '',
 			fields: [
@@ -295,6 +359,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				{ name: 'assetName', type: 'string' },
 				{ name: 'stigs' },
 				{ name: 'ruleId', type: 'string' },
+				{ name: 'severity', type: 'string' },
 				{ name: 'result', type: 'string' },
 				{ name: 'resultComment', type: 'string' },
 				{ name: 'action', type: 'string' },
@@ -324,6 +389,12 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "Rule", 
 				width: 80, 
 				dataIndex: 'ruleId', 
+				sortable: true, 
+			},
+			{ 
+				header: "Severity", 
+				width: 80, 
+				dataIndex: 'severity', 
 				sortable: true, 
 			},
 			{ 
@@ -361,7 +432,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 270, 
 				dataIndex: 'stigs', 
 				renderer: v => {
-					return columnWrap(v.join('\n'))
+					const benchmarkIds = v.map( v => v.benchmarkId )
+					return columnWrap(benchmarkIds.join('\n'))
 				}, 
 				sortable: true, 
 			}
@@ -423,7 +495,7 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         const parent = new SM.FindingsParentGrid({
             cls: 'sm-round-panel',
-            margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
+            margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
             border: false,                 
             region: 'center',
             panel: this,
@@ -431,10 +503,10 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
         })
         const child = new SM.FindingsChildGrid({
             cls: 'sm-round-panel',
-            margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+            margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
             border: false,                 
-            region: 'south',
-            height: 400,
+            region: 'east',
+            width: '50%',
             split: true,
             panel: this,
             title: 'Individual Findings'
