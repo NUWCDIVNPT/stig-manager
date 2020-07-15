@@ -1,3 +1,27 @@
+.x-grid3-cell-first {
+	font-weight: bold;
+}
+.sm-content-sprite {
+	color: #fcfcfc;
+	font: bold 14px Open Sans,helvetica, sans-serif;
+	position: relative;
+	top: -3px;
+	background-color: #6f93db;
+	padding: 1px 4px 2px 4px;
+	border-radius: 3px;
+	margin-left: 12px;
+	user-select: none;
+}
+
+.sm-content-sprite.sm-severity-high {
+	 background-color: #db7b6f;
+}
+.sm-content-sprite.sm-severity-medium {
+	 background-color: #b86fdb;
+}
+.sm-content-sprite.sm-severity-low {
+	 background-color: #40825e;
+}
 .sm-home-widget-image-text-wrap {
 	float: left;
 	margin-right: 10px;

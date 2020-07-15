@@ -811,12 +811,18 @@ async function addReview(leaf, selectedRule, selectedResource) {
   /******************************************************/
 
   let contentTpl = new Ext.XTemplate(
-    '<div class=cs-home-header-top>{ruleId}</div>',
-    '<div class=cs-home-header-sub>{title} (Category {severity})</div>',
+    '<div class=cs-home-header-top>{ruleId}',
+      '<span class="sm-content-sprite sm-severity-{severity}">',
+        `<tpl if="severity == 'high'">CAT 1</tpl>`,
+        `<tpl if="severity == 'medium'">CAT 2</tpl>`,
+        `<tpl if="severity == 'low'">CAT 3</tpl>`, 
+      '</span>',
+    '</div>',
+    '<div class=cs-home-header-sub>{title}</div>',
     '<div class=cs-home-body-title>Manual Check',
     '<div class=cs-home-body-text>',
     '<tpl for="checks">',
-    '<pre>{[values.content.trim()]}</pre>',
+      '<pre>{[values.content.trim()]}</pre>',
     '</tpl>',
     '</div>',
     '</div>',
@@ -833,7 +839,9 @@ async function addReview(leaf, selectedRule, selectedResource) {
     '<pre>{[values.vulnDiscussion.trim()]}</pre>',
     '</div>',
     '<div class=cs-home-body-text><b>Documentable: </b>{documentable}</div>',
-    '<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
+    `<tpl if="typeof(responsibility) != 'undefined'">`,
+      '<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
+    '</tpl>',
     '<div class=cs-home-body-text><b>Controls: </b><br>',
     '<table class=cs-home-body-table border="1">',
     '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
@@ -842,7 +850,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
     '</tpl>',
     '</table>',
     '</div>',
-    '</div>')
+    '</div>'
+  )
 
   /******************************************************/
   // START Resources panel
