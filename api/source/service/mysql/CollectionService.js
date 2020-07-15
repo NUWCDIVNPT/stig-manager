@@ -170,7 +170,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
           'g.title',
           'g.severity'
         ]
-        orderBy = 'substring(rg.groupId from 3) + 0'
+        orderBy = 'substring(g.groupId from 3) + 0'
         break
       case 'cci':
         columns = [
@@ -193,12 +193,10 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       'left join asset a on c.collectionId = a.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
-      'inner join current_rev cr on sa.benchmarkId = cr.benchmarkId',
-      'inner join rev_group_map rg on cr.revId = rg.revId',
-      'inner join `group` g on rg.groupId = g.groupId',
-      'inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId',
-      'inner join rule ru on rgr.ruleId = ru.ruleId',
-      'inner join review rv on (ru.ruleId = rv.ruleId and a.assetId = rv.assetId and rv.resultId = 4)',
+      'inner join current_group_rule cgr on sa.benchmarkId = cgr.benchmarkId',
+      'inner join review rv on (cgr.ruleId = rv.ruleId and a.assetId = rv.assetId and rv.resultId = 4)',
+      'inner join `group` g on cgr.groupId = g.groupId',
+      'inner join rule ru on rv.ruleId = ru.ruleId',
       'left join rule_cci_map rulecci on ru.ruleId = rulecci.ruleId',
       'left join cci on rulecci.cci = cci.cci'
     ]
@@ -222,7 +220,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'name', a.name) order by a.name), ']') as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
-      columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+      columns.push(`cast( concat( '[', group_concat(distinct concat('"',cgr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
     }
     if (inProjection.includes('ccis')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
@@ -311,7 +309,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       predicates.binds.push( 3 )
     }
     if ( inPredicates.benchmarkId ) {
-      predicates.statements.push('cr.benchmarkId = ?')
+      predicates.statements.push('cgr.benchmarkId = ?')
       predicates.binds.push( inPredicates.benchmarkId )
     }
     if (context == dbUtils.CONTEXT_USER) {

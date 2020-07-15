@@ -43,6 +43,7 @@ function loadScripts() {
         "js/SM/CollectionAsset.js",
         "js/SM/CollectionStig.js",
         "js/SM/CollectionGrant.js",
+        "js/SM/FindingsPanel.js",
         "js/collectionManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",
