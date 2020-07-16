@@ -37,7 +37,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
       type: 'string'
     }, {
       name: 'severity',
-      type: 'string'
+      type: 'string',
+      sortType: sortSeverity
     }, {
       name: 'result',
       type: 'string'
@@ -557,15 +558,6 @@ async function addReview(leaf, selectedRule, selectedResource) {
     }),
     columns: [
       {
-        id: 'result' + idAppend,
-        header: '&#160;', // per docs
-        menuDisabled: true,
-        width: 25,
-        dataIndex: 'result',
-        sortable: true,
-        renderer: renderResult
-      },
-      {
         id: 'groupId' + idAppend,
         header: "Group",
         width: 95,
@@ -604,16 +596,28 @@ async function addReview(leaf, selectedRule, selectedResource) {
       {
         id: 'severity' + idAppend,
         header: "CAT",
-        width: 32,
+        fixed: true,
+        width: 50,
         align: 'center',
         dataIndex: 'severity',
         sortable: true,
         renderer: renderSeverity
       },
       {
+        id: 'result' + idAppend,
+        header: '&#160;', // per docs
+        menuDisabled: true,
+        width: 32,
+        fixed: true,
+        dataIndex: 'result',
+        sortable: true,
+        renderer: renderResult
+      },
+      {
         id: 'status' + idAppend,
         header: "Status",
-        width: 50,
+        fixed: true,
+        width: 44,
         align: 'center',
         dataIndex: 'status',
         sortable: true,

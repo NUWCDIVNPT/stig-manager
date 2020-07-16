@@ -899,6 +899,19 @@ function sortRuleId (ruleId) {
 	}
 }
 
+function sortSeverity (severity) {
+	switch (severity) {
+		case 'mixed':
+			return 0
+		case 'low':
+			return 1
+		case 'medium':
+			return 2
+		case 'high':
+			return 3
+	}
+}
+
 function sortIpAddress (v){
 	var parts = String(v).split('.');
 	for(var i = 0, len = parts.length; i < len; i++){
@@ -1162,17 +1175,31 @@ function checked(val) {
 	}
 }
 
+// function renderResult(val, metaData, record, rowIndex, colIndex, store) {
+// 	if (val == 'pass') {
+// 		return '<div style="color:green;font-weight:bolder;text-align:center;">NF</div>';
+// 	} else if (val == 'fail'){
+// 		return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
+// 	} else if (val == 'notapplicable'){
+// 		return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
+// 	} else {
+// 		return '';
+// 	}
+// }
+
 function renderResult(val, metaData, record, rowIndex, colIndex, store) {
-	if (val == 'pass') {
-		return '<div style="color:green;font-weight:bolder;text-align:center;">NF</div>';
-	} else if (val == 'fail'){
-		return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
-	} else if (val == 'notapplicable'){
-		return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
-	} else {
-		return '';
+	switch (val) {
+		case 'pass':
+			return '<div class="sm-grid-result-sprite sm-result-pass">NF</div>'
+		case 'fail':
+			return '<div class="sm-grid-result-sprite sm-result-fail">O</div>'
+		case 'notapplicable':
+			return '<div class="sm-grid-result-sprite sm-result-na">NA</div>'
+		default:
+			return ''
 	}
 }
+
 
 
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
@@ -1217,20 +1244,36 @@ function renderStatus(val) {
 	}
 }
 
-function renderSeverity(val) {
+// function renderSeverity(val) {
+// 	switch (val) {
+// 		case 'high':
+// 			return '1';
+// 		case 'medium':
+// 			return '2';
+// 		case 'low':
+// 			return '3';
+// 		case 'mixed':
+// 			return 'M';
+// 		default:
+// 			return 'U';
+// 	}
+// }
+
+const renderSeverity = (val) => {
 	switch (val) {
 		case 'high':
-			return '1';
+			return '<span class="sm-grid-sprite sm-severity-high">CAT 1</span>'
 		case 'medium':
-			return '2';
+			return '<span class="sm-grid-sprite sm-severity-medium">CAT 2</span>'
 		case 'low':
-			return '3';
+			return '<span class="sm-grid-sprite sm-severity-low">CAT 3</span>'
 		case 'mixed':
-			return 'M';
+			return '<span class="sm-grid-sprite sm-severity-low">Mixed</span>'
 		default:
-			return 'U';
+			return '<span class="sm-grid-sprite sm-severity-low">U</span>'
 	}
 }
+
 
 function columnWrap(val){
 	if (undefined != val) {

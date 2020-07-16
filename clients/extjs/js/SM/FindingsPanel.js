@@ -46,7 +46,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
 			root: '',
 			fields: [
-				{ name: 'severity', type: 'string' },
+				{ name: 'severity', type: 'string', sortType: sortSeverity },
 				{ name: 'assetCount', type: 'int' },
 				{ name: 'stigs' },
 				{ name: 'groupId', type: 'string', sortType: sortGroupId },
@@ -63,21 +63,30 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				}
 			}
         })
-        const renderSeverity = val => {
+        const renderSeverity = (val) => {
             switch (val) {
                 case 'high':
-                    return '1';
+                    return '<span class="sm-grid-sprite sm-severity-high">CAT 1</span>'
                 case 'medium':
-                    return '2';
+                    return '<span class="sm-grid-sprite sm-severity-medium">CAT 2</span>'
                 case 'low':
-                    return '3';
+                    return '<span class="sm-grid-sprite sm-severity-low">CAT 3</span>'
                 case 'mixed':
-                    return 'M';
+                    return '<span class="sm-grid-sprite sm-severity-low">Mixed</span>'
                 default:
-                    return 'U';
+                    return '<span class="sm-grid-sprite sm-severity-low">U</span>'
             }
         }
         const colModel = new Ext.grid.ColumnModel([
+			{ 
+				header: "CAT", 
+				hidden: false,
+				align: 'center', 
+				width: 60, 
+				dataIndex: 'severity', 
+				sortable: true, 
+				renderer: renderSeverity
+			},
 			{ 
 				header: "Group", 
 				hidden: false,
@@ -91,15 +100,6 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 80, 
 				dataIndex: 'ruleId', 
 				sortable: true, 
-			},
-			{ 
-				header: "CAT", 
-				hidden: false,
-				align: 'center', 
-				width: 60, 
-				dataIndex: 'severity', 
-				sortable: true, 
-				renderer: renderSeverity
 			},
 			{ 
 				header: "CCI", 
@@ -153,15 +153,15 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
         const view = new Ext.grid.GridView({
 			forceFit: true,
 			emptyText: 'No records found.',
-			getRowClass: function (record, rowIndex, rp, ds) { // rp = rowParams
-				if (record.data.severity == 'high') {
-					return 'sm-grid3-row-red';
-				} else if (record.data.severity == 'medium') {
-					return 'sm-grid3-row-orange';
-				} else {
-					return 'sm-grid3-row-green';
-				}
-			}
+			// getRowClass: function (record, rowIndex, rp, ds) { // rp = rowParams
+			// 	if (record.data.severity == 'high') {
+			// 		return 'sm-grid3-row-red';
+			// 	} else if (record.data.severity == 'medium') {
+			// 		return 'sm-grid3-row-orange';
+			// 	} else {
+			// 		return 'sm-grid3-row-green';
+			// 	}
+			// }
         })
         const sm = new Ext.grid.RowSelectionModel({
 			singleSelect: true,
@@ -315,7 +315,8 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
         }
         
         const config = {
-            loadMask: true,
+			loadMask: true,
+			stripeRows: true,
             store: store,
             colModel: colModel,
             view: view,
