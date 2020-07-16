@@ -8,7 +8,8 @@ let config = {
     },
     settings: {
         setClassification: process.env.STIGMAN_CLASSIFICATION,
-        lastAccessResolution: 60
+        lastAccessResolution: 60,
+        autoEnrollUser: process.env.STIGMAN_API_AUTO_ENROLL || "false"
     },
     client: {
         enabled: process.env.STIGMAN_CLIENT_ENABLED || "true",

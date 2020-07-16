@@ -597,7 +597,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         id: 'severity' + idAppend,
         header: "CAT",
         fixed: true,
-        width: 50,
+        width: 48,
         align: 'center',
         dataIndex: 'severity',
         sortable: true,
