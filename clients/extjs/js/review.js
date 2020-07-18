@@ -558,6 +558,16 @@ async function addReview(leaf, selectedRule, selectedResource) {
     }),
     columns: [
       {
+        id: 'severity' + idAppend,
+        header: "CAT",
+        fixed: true,
+        width: 48,
+        align: 'center',
+        dataIndex: 'severity',
+        sortable: true,
+        renderer: renderSeverity
+      },
+      {
         id: 'groupId' + idAppend,
         header: "Group",
         width: 95,
@@ -592,16 +602,6 @@ async function addReview(leaf, selectedRule, selectedResource) {
         dataIndex: 'ruleTitle',
         renderer: columnWrap,
         sortable: true
-      },
-      {
-        id: 'severity' + idAppend,
-        header: "CAT",
-        fixed: true,
-        width: 48,
-        align: 'center',
-        dataIndex: 'severity',
-        sortable: true,
-        renderer: renderSeverity
       },
       {
         id: 'result' + idAppend,

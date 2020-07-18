@@ -436,6 +436,16 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}),
 			columns: [
 				{ 	
+					id:'cat' + idAppend,
+					header: "CAT", 
+					width: 48,
+					align: 'center',
+					dataIndex: 'severity',
+					fixed: true,
+					sortable: true,
+					renderer: renderSeverity
+				},
+				{ 	
 					id:'groupId' + idAppend,
 					header: "Group",
 					width: 95,
@@ -443,8 +453,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					sortable: true,
 					hideable: false,
 					align: 'left'
-				}
-				,{ 	
+				},
+				{ 	
 					id:'ruleId' + idAppend,
 					header: "Rule Id",
 					width: 95,
@@ -453,8 +463,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					sortable: true,
 					hideable: false,
 					align: 'left'
-				}
-				,{ 
+				},
+				{ 
 					id:'groupTitle' + idAppend,
 					header: "Group Title",
 					width: 80,
@@ -463,8 +473,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					renderer: columnWrap,
 					hideable: false,
 					sortable: true
-				}
-				,{ 
+				},
+				{ 
 					id:'ruleTitle' + idAppend,
 					header: "Rule Title",
 					width: 80,
@@ -473,18 +483,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					renderer: columnWrap,
 					hideable: false,
 					sortable: true
-				}
-				,{ 	
-					id:'cat' + idAppend,
-					header: "CAT", 
-					width: 32,
-					align: 'center',
-					dataIndex: 'severity',
-					fixed: true,
-					sortable: true,
-					renderer: renderSeverity
-				}
-				,{ 	
+				},
+				{ 	
 					id:'oCnt' + idAppend,
 					header: '<div style="color:red;font-weight:bolder;">O</div>', 
 					width: 32,
@@ -493,8 +493,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					renderer:renderOpen,
 					fixed: true,
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'nfCnt' + idAppend,
 					header: '<div style="color:green;font-weight:bolder;">NF</div>', 
 					width: 32,
@@ -503,8 +503,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					dataIndex: 'nfCnt',
 					fixed: true,
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'naCnt' + idAppend,
 					header: '<div style="color:grey;font-weight:bolder;">NA</div>', 
 					width: 32,
@@ -513,8 +513,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					dataIndex: 'naCnt',
 					fixed: true,
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'nrCnt' + idAppend,
 					header: "NR", 
 					width: 32,
@@ -523,8 +523,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					dataIndex: 'nrCnt',
 					fixed: true,
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'readyCnt' + idAppend,
 					header: "<img src=img/ready-16.png width=12 height=12>", 
 					width: 32,
@@ -534,8 +534,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					fixed: true,
 					renderer:renderStatusCounts,
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'rejectCnt' + idAppend,
 					header: "<img src=img/rejected-16.png width=12 height=12>", 
 					width: 32,
@@ -545,8 +545,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					fixed: true,
 					renderer:renderStatusCounts,
 					sortable: true
-				}
-				,{ 	
+				},
+				{ 	
 					id:'approveCnt' + idAppend,
 					header: "<img src=img/lock-16.png width=12 height=12>", 
 					width: 32,

@@ -49,20 +49,19 @@
 
 
 .sm-severity-high {
-	color: #d74400;
-	background-color: hsla(0, 10%, 96%, 1);
+	color: #222;
+	background-color: hsla(0, 83%, 89%, 1);
 	padding: 0px 2px 0px 2px;
 }
 .sm-severity-medium {
-	color: #3366cc;
-	background-color: hsla(0, 10%, 96%, 1);
+	color: #222;
+	background-color: hsla(220, 90%, 88%, 1);
 	padding: 0px 2px 0px 2px;
 }
 .sm-severity-low {
-	 color: #008000;
-	background-color: hsla(0, 10%, 96%, 1);
+	 color: #222;
+	 background-color: hsla(120, 39%, 92%, 1);
 	 padding: 0px 2px 0px 2px;
-
 }
 .sm-home-widget-image-text-wrap {
 	float: left;
@@ -174,14 +173,14 @@
 }
 /* START tab styles*/
 .x-tab-strip-top .x-tab-strip-over .x-tab-right, .x-tab-strip-top .x-tab-strip-over .x-tab-left, .x-tab-strip-top .x-tab-strip-over .x-tab-strip-inner {
-	background-color:#ddd
+	background-color:#dddddd
 }
 .x-tab-strip-top .x-tab-strip-active .x-tab-right, .x-tab-strip-top .x-tab-strip-active .x-tab-left, .x-tab-strip-top .x-tab-strip-active .x-tab-strip-inner {
-	background-color:#e8e8e8
+	background-color:#cccccc
 }
 .x-tab-strip-top .x-tab-right, .x-tab-strip-top .x-tab-left, .x-tab-strip-top .x-tab-strip-inner{
 	background-image: none;
-	background-color: #ccc;
+	background-color: #e5e5e5;
 	border-top-left-radius:  6px;
 	border-top-right-radius: 6px;
 	/* border-bottom-left-radius: 6px; */
