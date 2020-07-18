@@ -6,8 +6,11 @@ function addFindingsSummary(collectionId, collectionName) {
 	var idAppend = '-findings-summary-' + collectionId;
 	var benchmarkId = '';
 
+	const aggregator = 'ruleId'
+
 	const findingsPanel = new SM.FindingsPanel({
-		collectionId: collectionId
+		collectionId: collectionId,
+		aggregator: aggregator
 	})
 
 	var thisTab = Ext.getCmp('main-tab-panel').add({
@@ -28,7 +31,7 @@ function addFindingsSummary(collectionId, collectionName) {
 
 	findingsPanel.parent.getStore().load({
 		params: {
-			aggregator: 'groupId'
+			aggregator: aggregator
 		}
 	})
 

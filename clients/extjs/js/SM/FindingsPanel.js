@@ -4,7 +4,7 @@ SM.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         let me = this
         let config = {
-            width: 150,
+            width: 70,
             forceSelection: true,
             editable: false,
             mode: 'local',
@@ -13,7 +13,7 @@ SM.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
             valueField: 'aggregator',
             store: new Ext.data.SimpleStore({
                 fields: ['display', 'aggregator'],
-                data : [['GroupID', 'groupId'],['RuleID', 'ruleId'],['CCI', 'cci']]
+                data : [['Rule', 'ruleId'],['Group', 'groupId'],['CCI', 'cci']]
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -173,11 +173,6 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const tbar = new Ext.Toolbar({
 			items: [
-                {
-                    xtype: 'button',
-                    text: '',
-                    disabled: true
-                },
 				{
 					xtype: 'tbtext',
                     text: 'Aggregator:'                    
@@ -205,7 +200,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					autoLoad: true,
 					includeAllItem: this.stigAllValue,
 					root: 'stigs',
-					width: 300,
+					width: 250,
 					triggerAction: 'all',
 					allowBlank: true,
 					editable: false,
@@ -378,11 +373,23 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				}
 			}
         })
+		const expander = new Ext.ux.grid.RowExpander({
+			tpl: new Ext.XTemplate(
+			  '<b>Reviewer:</b> {username}</p>',
+			  '<p><b>Result Comment:</b> {resultComment}</p>',
+			  '<tpl if="action">',
+			  '<p><b>Action:</b> {action}</p>',
+			  '</tpl>',
+			  '<tpl if="actionComment">',
+			  '<p><b>Action Comment:</b> {actionComment}</p>',
+			  '</tpl>'
+			)
+		  })
         const columns = [
+			expander,
 			{ 
 				header: "Asset", 
-				align: 'center', 
-				width: 60, 
+				width: 80, 
 				dataIndex: 'assetName', 
 				sortable: true
 			 },
@@ -394,14 +401,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
 			{ 
 				header: "Severity", 
-				width: 80, 
+				width: 40, 
 				dataIndex: 'severity', 
-				sortable: true, 
-			},
-			{ 
-				header: "Result Comment", 
-				width: 80, 
-				dataIndex: 'resultComment', 
 				sortable: true, 
 			},
             { 
@@ -411,14 +412,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true, 
 			},
 			{ 
-				header: "Action Comment", 
-				width: 80, 
-				dataIndex: 'actionComment', 
-				sortable: true, 
-			},
-			{ 
 				header: "Status", 
-				width: 80, 
+				width: 50, 
 				dataIndex: 'status', 
 				sortable: true, 
 			},
@@ -430,7 +425,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
 			{ 
 				header: "STIGs", 
-				width: 270, 
+				width: 170, 
 				dataIndex: 'stigs', 
 				renderer: v => {
 					const benchmarkIds = v.map( v => v.benchmarkId )
@@ -441,7 +436,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
         ]
         const view = new Ext.grid.GridView({
 			forceFit: true,
-			emptyText: 'No records found.'
+			emptyText: 'Select a finding to the left.'
 
         })
         const sm = new Ext.grid.RowSelectionModel({
@@ -478,9 +473,12 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				totalTextCmp
 			]
 		})
+		
         const config = {
             loadMask: true,
-            store: store,
+			stripeRows: true,
+			plugins: expander,
+			store: store,
             columns: columns,
             view: view,
             sm: sm,
@@ -494,12 +492,14 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 // config: {collectionId}
 SM.FindingsPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
+		const me = this
         const parent = new SM.FindingsParentGrid({
             cls: 'sm-round-panel',
             margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
             border: false,                 
             region: 'center',
-            panel: this,
+			panel: this,
+			aggValue: me.aggregator || 'groupId',
             title: 'Aggregated Findings'
         })
         const child = new SM.FindingsChildGrid({
