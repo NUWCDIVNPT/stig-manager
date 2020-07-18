@@ -2656,17 +2656,25 @@ components:
       properties:
         ts:
           type: string
-        activityType:
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultComment:
           type: string
-        columnName:
+          nullable: true
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
           type: string
-        oldValue:
-          type: string
-        newValue:
-          type: string
+          nullable: true
+        autoResult:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
         userId:
           type: string
         username:
+          type: string
+        rejectText:
           type: string
     ReviewProjected:
       allOf:

@@ -121,29 +121,33 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
           rule.ruleId = r.ruleId LIMIT 1) as "rule"`)
     }
     if (inProjection.includes('history')) {
+      // OVER clauses and subquery needed to order the json_arrayagg
       columns.push(`
       (select
         coalesce(
-          (select hh.h from 
-            (select
-              json_arrayagg(
+          (select  innerh.h from (select json_arrayagg(
                 json_object(
                   'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%d %H:%i:%s'),
-                  'activityType' , rh.activityType,
-                  'columnName' , rh.columnName,
-                  'oldValue' , rh.oldValue,
-                  'newValue' , rh.newValue,
-                  'userId' , rh.userId,
-                  'username' , ud.username
+                  'result', result.api,
+                  'resultComment', rh.resultComment,
+                  'action', action.api,
+                  'actionComment', rh.actionComment,
+                  'autoResult', cast(rh.autoResult is true as json),
+                  'userId', rh.userId,
+                  'username', ud.username,
+                  'rejectText', rh.rejectText,
+                  'status', status.api
                 )
               ) OVER (order by rh.ts desc) as h,
               ROW_NUMBER() OVER (order by rh.ts) as rn
             FROM
               review_history rh
+              left join result on rh.resultId = result.resultId 
+              left join status on rh.statusId = status.statusId 
+              left join action on rh.actionId = action.actionId 
               left join user_data ud on ud.userId=rh.userId
             where
-              rh.ruleId = :ruleId and
-              rh.assetId = :assetId LIMIT 1) as hh),
+              rh.reviewId = r.reviewId LIMIT 1) as innerh),
           json_array()
         )
       ) as "history"`)
