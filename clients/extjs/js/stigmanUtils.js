@@ -1185,14 +1185,17 @@ function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
 	switch (record.data.status) {
+		case 'saved':
+			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
+			break;
 		case 'submitted':
-			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted">';
+			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
 			break;
 		case 'rejected':
-			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
+			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected" style="padding-top: 1px;">';
 			break;
 		case 'accepted':
-			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted">';
+			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted" style="padding-top: 1px;">';
 			break;
 		default:
 			statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
@@ -1200,7 +1203,7 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	}
 	statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
 	if (record.data.hasAttach) {
-		statusIcons += '<img src="img/attach-16.png" width=12 height=12 ext:qtip="Has attachments">';
+		statusIcons += '<img src="img/attach-16.png" width=12 height=12 ext:qtip="Has attachments" style="padding-top: 1px;">';
 	} else {
 		statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 	}

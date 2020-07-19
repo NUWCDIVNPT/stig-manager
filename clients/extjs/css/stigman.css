@@ -803,22 +803,17 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
 	
 .sm-scap-grid-item {
-	background-color: #e3f3e3;
+	background-color: hsl(120, 40%, 92%);
 }
 /* .sm-scap-grid-item {
 	background-color: #FBEB9D;
 } */
 .sm-scap-grid-item.x-grid3-row-over {
-	background-color: #efefef;
+	background-color: hsla(120, 30%, 89%, 1);
 }
 
 .sm-scap-grid-item.x-grid3-row-selected  {
-    background-color:#CDC080 !important;
-/*	border: 1px dotted;
-	border-color: #A3BAE9;*/
-}
-.sm-scap-grid-item.x-grid3-row-over  {
-    background-color:#F5EDC6;
+    background-color:hsla(120, 20%, 84%, 1) !important;
 /*	border: 1px dotted;
 	border-color: #A3BAE9;*/
 }
