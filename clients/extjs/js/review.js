@@ -1424,12 +1424,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         id: 'feedback-tab' + idAppend,
         //padding: 2,
         autoScroll: true
-      }, {
-        title: 'Attachments',
-        layout: 'fit',
-        id: 'attach-tab' + idAppend,
-        items: attachGrid
-      }, {
+      },{
         title: 'History',
         layout: 'fit',
         id: 'history-tab' + idAppend,
@@ -2032,6 +2027,9 @@ async function addReview(leaf, selectedRule, selectedResource) {
           result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PATCH',
+            params: {
+              projection: 'history'
+            },
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: {
               status: saveParams.type == 'submit' ? 'submitted' : 'saved'
@@ -2045,6 +2043,9 @@ async function addReview(leaf, selectedRule, selectedResource) {
             url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
+            params: {
+              projection: 'history'
+            },
             jsonData: jsonData
           })
           reviewFromApi = JSON.parse(result.response.responseText)
@@ -2055,6 +2056,9 @@ async function addReview(leaf, selectedRule, selectedResource) {
             url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
+            params: {
+              projection: 'history'
+            },
             jsonData: jsonData
           })
           reviewFromApi = JSON.parse(result.response.responseText)
@@ -2065,11 +2069,15 @@ async function addReview(leaf, selectedRule, selectedResource) {
             url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${fp.groupGridRecord.data.ruleId}`,
             method: 'PUT',
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
+            params: {
+              projection: 'history'
+            },
             jsonData: jsonData
           })
           reviewFromApi = JSON.parse(result.response.responseText)
           break
       }
+      // Update group grid
       resultCombo = Ext.getCmp('result-combo' + idAppend)
       resultComment = Ext.getCmp('result-comment' + idAppend)
       actionCombo = Ext.getCmp('action-combo' + idAppend)
@@ -2080,11 +2088,14 @@ async function addReview(leaf, selectedRule, selectedResource) {
       fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
       fp.groupGridRecord.data.status = reviewFromApi.status
       fp.groupGridRecord.commit()
+      filterGroupStore()
 
+      // Update reviewForm
       let extDate = new Date(reviewFromApi.ts)
       Ext.getCmp('editor' + idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
 
-      filterGroupStore()
+      // Update history
+      historyData.store.loadData(reviewFromApi.history)
 
       //Reset lastSavedData to current values, so we do not trigger the save again:
       resultCombo.lastSavedData = resultCombo.value;

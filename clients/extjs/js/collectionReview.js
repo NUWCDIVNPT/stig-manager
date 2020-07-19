@@ -1542,6 +1542,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				})
 				let apiReview = JSON.parse(result.response.responseText)
 				//TODO: Set the history
+				Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
+
 				// Reject text
 				const rejectFp = Ext.getCmp('rejectFormPanel' + idAppend)
 				rejectFp.getForm().setValues(apiReview)

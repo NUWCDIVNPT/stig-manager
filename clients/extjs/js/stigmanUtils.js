@@ -720,34 +720,41 @@ function Sm_StigAssetView (conf) {
 
 function Sm_HistoryData (idAppend) {
 	this.fields = Ext.data.Record.create([
-		{	name:'historyId',
-			type: 'integer'
-		}
-		,{
-			name: 'ts',
-			type: 'date',
-			dateFormat: 'Y-m-d H:i:s'
-		}
-		,{
-			name:'activityType',
+		{
+			name:'result',
 			type: 'string'
-		}
-		,{
-			name:'columnName',
+		},
+		{
+			name:'resultComment',
 			type:'string'
-		}
-		,{
-			name:'oldValue',
+		},
+		{
+			name:'action',
 			type:'string'
-		}
-		,{
-			name:'newValue',
+		},{
+			name:'actionComment',
 			type:'string'
-		}
-		,{
+		},
+		{
+			name:'autoResult',
+			type:'boolean'
+		},
+		{
+			name:'userId',
+			type:'string'
+		},{
 			name:'username',
 			type:'string'
-		}		
+		},
+		{
+			name:'ts',
+			type:'date',
+			dateFormat: 'Y-m-d H:i:s'
+		},
+		{
+			name:'status',
+			type:'string'
+		}	
 	]);
 
 	this.store = new Ext.data.JsonStore({
@@ -756,9 +763,11 @@ function Sm_HistoryData (idAppend) {
 		fields: this.fields,
 		sortInfo: {
 			field: 'ts',
-			direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
+			direction: 'DESC' // or 'DESC' (case sensitive for local sorting)
 		},
-		idProperty: 'historyId'
+		idProperty: (v) => {
+			return v.ts + v.status
+		}
 	});
 	
 	this.grid = new Ext.grid.GridPanel({
@@ -774,7 +783,6 @@ function Sm_HistoryData (idAppend) {
 		}),
 		columns: [
 			{ 	
-				id:'history-ts' + idAppend,
 				header: "Timestamp",
 				width: 120,
 				fixed: true,
@@ -784,94 +792,66 @@ function Sm_HistoryData (idAppend) {
 				align: 'left',
 				xtype: 'datecolumn',
 				format:	'Y-m-d H:i:s'
-			}
-			,{ 	
-				id:'history-activity' + idAppend,
-				header: "Activity",
-				width: 60,
-				dataIndex: 'none',
-				sortable: false,
-				align: 'left',
-				renderer: function(value, metadata, record) {
-					var returnStr = record.data.username;
-					switch (record.data.activityType) {
-						case 'insert':
-							returnStr += ' created the review.<br>';
+			},
+			{ 	
+				header: "Status", 
+				width: 50,
+				fixed: true,
+				dataIndex: 'status',
+				sortable: true,
+				renderer: renderStatuses
+			},
+			{ 
+				id:'result' + idAppend,
+				header: "Result",
+				width: 50,
+				fixed: true,
+				dataIndex: 'result',
+				renderer: function (val) {
+					switch (val) {
+						case 'fail':
+							return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
 							break;
-						case 'update':
-							returnStr += ' modified the review.<br>';
+						case 'pass':
+							return '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
 							break;
-					}
-					switch (record.data.columnName) {
-						case 'result':
-							returnStr += '<b>Result</b> set to <i>';
-							switch (record.data.newValue) {
-								case 'NA':
-									returnStr += 'Not Applicable';
-									break;
-								case 'NF':
-									returnStr += 'Not a Finding';
-									break;
-								case 'O':
-									returnStr += 'Open';
-									break;
-								default:
-									returnStr += 'Unknown';
-									break;
-							}
-							returnStr += '</i>';
-							break;
-						case 'resultComment':
-							returnStr += '<b>Result comment</b> set to:<br><i>' + record.data.newValue.replace(/\n/g, "<br//>") + '</i>';
-							break;
-						case 'action':
-							returnStr += '<b>Action</b> set to <i>';
-								switch (record.data.newValue) {
-								case 'remediate':
-									returnStr += 'Remediate';
-									break;
-								case 'mitigate':
-									returnStr += 'Mitigate';
-									break;
-								case 'exception':
-									returnStr += 'Exception';
-									break;
-								default:
-									returnStr += 'NULL';
-									break;
-							}
-							returnStr += '</i>';
-							break;
-						case 'actionComment':
-							returnStr += '<b>Action comment</b> set to:<br><i>' + record.data.newValue.replace(/\n/g, "<br//>") + '</i>';
-							break;
-						case 'status':
-							returnStr += '<b>Status</b> set to <i>';
-								switch (record.data.newValue) {
-								case 'saved':
-									returnStr += 'In progress';
-									break;
-								case 'submitted':
-									returnStr += 'Submitted';
-									break;
-								case 'rejected':
-									returnStr += 'Returned';
-									break;
-								case 'accepted':
-									returnStr += 'Approved';
-									break;
-								default:
-									returnStr += 'NULL';
-									break;
-							}
-							returnStr += '</i>';
+						case 'notapplicable':
+							return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
 							break;
 					}
-					return '<div style="white-space:normal !important;">'+ returnStr +'</div>';
-				}
+				},
+				sortable: true
+			},
+			{ 	
+				header: "Result comment", 
+				width: 100,
+				dataIndex: 'resultComment',
+				renderer: columnWrap,
+				sortable: true
+			},
+			{ 	
+				header: "Action", 
+				width: 80,
+				fixed: true,
+				dataIndex: 'action',
+				renderer: function (val) {
+					let actions = {
+						remediate: 'Remediate',
+						mitigate: 'Mitigate',
+						exception: 'Exception'
+					}
+					return actions[val];
+				},
+				sortable: true
+			},
+			{ 	
+				header: "Action comment", 
+				width: 100,
+				dataIndex: 'actionComment',
+				renderer: columnWrap,
+				sortable: true
 			}
-		],
-		autoExpandColumn: 'history-activity' + idAppend
+		]
 	});
 }
 
