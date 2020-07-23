@@ -42,9 +42,14 @@ morgan.token('token-user', (req, res) => {
     return req.access_token[config.oauth.userid_claim]
   }
 })
+morgan.token('forwarded-for', (req, res) => {
+  if (req.headers['x-forwarded-for']) {
+    return req.headers['x-forwarded-for']
+  }
+})
 
 // Log format
-app.use(morgan(':remote-addr - :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
+app.use(morgan(':remote-addr :forwarded-for - :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
 
 // compress all responses
 // app.use(compression())
