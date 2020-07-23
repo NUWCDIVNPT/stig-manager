@@ -157,7 +157,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   }
 }
 
-exports.queryAssetStigs = async function (inPredicates = {}, elevate = false, userObject) {
+exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, userObject) {
   let connection
   try {
     const context = userObject.privileges.globalAccess || elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
@@ -219,7 +219,7 @@ exports.queryAssetStigs = async function (inPredicates = {}, elevate = false, us
 }
 
 
-exports.queryAssetStigGrants = async function (inPredicates = {}, elevate = false, userObject) {
+exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = false, userObject) {
   let connection
   try {
     const context = userObject.privileges.globalAccess || elevate ? 'CONTEXT_ALL' : 'CONTEXT_USER'
@@ -861,9 +861,9 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   }
 }
 
-exports.deleteAssetStig = async function (assetId, benchmarkId, elevate, userObject ) {
+exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, userObject ) {
   try {
-    let rows = await _this.queryAssetStigs( {
+    let rows = await _this.queryStigsByAsset( {
       assetId: assetId,
       benchmarkId: benchmarkId
     }, elevate, userObject)
@@ -876,9 +876,9 @@ exports.deleteAssetStig = async function (assetId, benchmarkId, elevate, userObj
   }
 }
 
-exports.deleteAssetStigs = async function (assetId, elevate, userObject ) {
+exports.removeStigsFromAsset = async function (assetId, elevate, userObject ) {
   try {
-    let rows = await _this.queryAssetStigs( {assetId: assetId}, elevate, userObject)
+    let rows = await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
     let sqlDelete = `DELETE FROM stig_asset_map where assetId = ?`
     await dbUtils.pool.query(sqlDelete, [assetId])
     return (rows)
@@ -937,9 +937,9 @@ exports.getAssets = async function(collectionId, benchmarkId, projection, elevat
   }
 }
 
-exports.getAssetStigs = async function (assetId, elevate, userObject ) {
+exports.getStigsByAsset = async function (assetId, elevate, userObject ) {
   try {
-    let rows = await _this.queryAssetStigs({
+    let rows = await _this.queryStigsByAsset({
       assetId: assetId
     }, elevate, userObject)
     return (rows)
@@ -950,9 +950,9 @@ exports.getAssetStigs = async function (assetId, elevate, userObject ) {
 
 }
 
-exports.getAssetStigGrants = async function (assetId, benchmarkId, elevate, userObject ) {
+exports.getUsersByAssetStig = async function (assetId, benchmarkId, elevate, userObject ) {
   try {
-    let rows = await _this.queryAssetStigGrants({
+    let rows = await _this.queryUsersByAssetStig({
       assetId: assetId,
       benchmarkId: benchmarkId
     }, elevate, userObject)
@@ -983,7 +983,7 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
   }
 }
 
-exports.getStigAssetsByBenchmarkId = async function( collectionId, benchmarkId, projection, elevate, userObject) {
+exports.getAssetsByStig = async function( collectionId, benchmarkId, projection, elevate, userObject) {
   try {
     let rows = await _this.queryStigAssets(projection, {
       collectionId: collectionId,
@@ -998,7 +998,7 @@ exports.getStigAssetsByBenchmarkId = async function( collectionId, benchmarkId, 
 }
 
 
-exports.setStigAssetsByBenchmarkId = async function(collectionId, benchmarkId, assetIds, projection, elevate, userObject) {
+exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds, projection, elevate, userObject) {
   let connection
   try {
     connection = await dbUtils.pool.getConnection()

@@ -511,7 +511,7 @@ paths:
       tags:
         - Asset
       summary: Return an Asset's STIG assignments
-      operationId: getAssetStigs
+      operationId: getStigsByAsset
       responses:
         '200':
           description: STIGs response
@@ -532,7 +532,7 @@ paths:
       tags:
         - Asset
       summary: UNIMPLEMENTED Set all the STIG assignments of an Asset
-      operationId: setAssetStigs
+      operationId: attachStigsToAsset
       requestBody:
         required: true
         content:
@@ -562,7 +562,7 @@ paths:
       tags:
         - Asset
       summary: Delete all STIG assignments to an Asset
-      operationId: deleteAssetStigs
+      operationId: removeStigsFromAsset
       responses:
         '200':
           description: AssetStigs response
@@ -589,7 +589,7 @@ paths:
       tags:
         - Asset
       summary: UNIMPLEMENTED Assign a STIG to an Asset
-      operationId: setAssetStig
+      operationId: attachStigToAsset
       responses:
         '200':
           description: AssetProjected response
@@ -610,7 +610,7 @@ paths:
       tags:
         - Asset
       summary: Delete a STIG assignment to an Asset
-      operationId: deleteAssetStig
+      operationId: removeStigFromAsset
       responses:
         '200':
           description: AssetProjected response
@@ -1375,7 +1375,7 @@ paths:
         - Collection
       summary: Get the Assets in a Collection attached to a STIG
       description: ''
-      operationId: getStigAssetsByBenchmarkId
+      operationId: getAssetsByStig
       responses:
         '200':
           description: Revision response
@@ -1400,7 +1400,7 @@ paths:
         - Collection
       summary: Set the Assets mapped to a STIG
       description: ''
-      operationId: setStigAssetsByBenchmarkId
+      operationId: attachAssetsToStig
       requestBody:
         required: true
         description: A list of assetIds from the specified Collection

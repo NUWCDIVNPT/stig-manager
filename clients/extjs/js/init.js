@@ -44,6 +44,7 @@ function loadScripts() {
         "js/SM/CollectionStig.js",
         "js/SM/CollectionGrant.js",
         "js/SM/FindingsPanel.js",
+        "js/SM/Assignments.js",
         "js/collectionManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",

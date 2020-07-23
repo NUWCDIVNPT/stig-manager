@@ -14,31 +14,6 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
 
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      // // Does collectionId exist?
-      // const collectionObj = await Collection.getCollection(body.collectionId, ['grants'], elevate, req.userObject)
-      // if (!collectionObj) {
-      //   throw ( writer.respondWithCode ( 400, {message: `Invalid property value "collectionId": ${body.collectionId}`} ) )
-      // }
-      // // Check stigGrants to ensure only users with collectionGrants are requested
-      // if (body.stigGrants) {
-      //   let userIdsFromRequest = []
-      //   for (const sr of body.stigGrants) {
-      //     for (const userId of sr.userIds) {
-      //       userIdsFromRequest.push(userId)
-      //     }
-      //   }
-      //   if (userIdsFromRequest.length > 0) {
-      //     // Filter out users with incompatible grants (accessLevels != 1)
-      //     const collectionUsers = collectionObj.grants.filter(g => g.accessLevel === 1)
-      //     const collectionUserIds = collectionUsers.map(g => g.user.userId)
-      //     // Check every requested userId
-      //     const allowed = userIdsFromRequest.every(i => collectionUserIds.includes(i))
-      //     if (! allowed) {
-      //       // Can only map Users with an existing grant
-      //       throw ( writer.respondWithCode ( 400, {message: `One or more users have incompatible or missing grants in collectionId ${body.collectionId}.`} ) )
-      //     }
-      //   }
-      // }
       let asset = await Asset.createAsset( body, projection, elevate, req.userObject)    
       writer.writeJson(res, asset, 201)
     }
@@ -79,7 +54,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
   }
 }
 
-module.exports.deleteAssetStig = async function deleteAssetStig (req, res, next) {
+module.exports.removeStigFromAsset = async function removeStigFromAsset (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
@@ -94,7 +69,7 @@ module.exports.deleteAssetStig = async function deleteAssetStig (req, res, next)
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.deleteAssetStig(assetId, benchmarkId, elevate, req.userObject )
+      let response = await Asset.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject )
       writer.writeJson(res, response)
       }
     else {
@@ -106,13 +81,13 @@ module.exports.deleteAssetStig = async function deleteAssetStig (req, res, next)
   }
 }
 
-module.exports.deleteAssetStigs = async function deleteAssetStigs (req, res, next) {
+module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let elevate = req.swagger.params['elevate'].value
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+    let assetToAffect = await Asset.getAsset(assetId, undefined, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw ( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
@@ -120,7 +95,7 @@ module.exports.deleteAssetStigs = async function deleteAssetStigs (req, res, nex
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.deleteAssetStigs(assetId, elevate, req.userObject )
+      let response = await Asset.removeStigsFromAsset(assetId, elevate, req.userObject )
       writer.writeJson(res, response)
       }
     else {
@@ -132,7 +107,7 @@ module.exports.deleteAssetStigs = async function deleteAssetStigs (req, res, nex
   }
 }
 
-module.exports.deleteAssetStigGrant = async function deleteAssetStigGrant (req, res, next) {
+module.exports.removeUserFromAssetStig = async function removeUserFromAssetStig (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
@@ -148,7 +123,7 @@ module.exports.deleteAssetStigGrant = async function deleteAssetStigGrant (req, 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.deleteAssetStigGrant(assetId, benchmarkId, userId, elevate, req.userObject )
+      let response = await Asset.removeUserFromAssetStig(assetId, benchmarkId, userId, elevate, req.userObject )
       writer.writeJson(res, response)
       }
     else {
@@ -160,7 +135,7 @@ module.exports.deleteAssetStigGrant = async function deleteAssetStigGrant (req, 
   }
 }
 
-module.exports.deleteAssetStigGrants = async function deleteAssetStigGrants (req, res, next) {
+module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetStig (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
@@ -175,7 +150,7 @@ module.exports.deleteAssetStigGrants = async function deleteAssetStigGrants (req
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.deleteAssetStigGrants(assetId, benchmarkId, elevate, req.userObject )
+      let response = await Asset.removeUsersFromAssetStig(assetId, benchmarkId, elevate, req.userObject )
       writer.writeJson(res, response)
       }
     else {
@@ -237,11 +212,11 @@ module.exports.getAssets = async function getAssets (req, res, next) {
   }
 }
 
-module.exports.getAssetStigs = async function getAssetStigs (req, res, next) {
+module.exports.getStigsByAsset = async function getStigsByAsset (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let elevate = req.swagger.params['elevate'].value
-    let response = await Asset.getAssetStigs(assetId, elevate, req.userObject )
+    let response = await Asset.getStigsByAsset(assetId, elevate, req.userObject )
     writer.writeJson(res, response)
   }
   catch (err) {
@@ -249,12 +224,12 @@ module.exports.getAssetStigs = async function getAssetStigs (req, res, next) {
   }
 }
 
-module.exports.getAssetStigGrants = async function getAssetStigGrants (req, res, next) {
+module.exports.getUsersByAssetStig = async function getUsersByAssetStig (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let elevate = req.swagger.params['elevate'].value
-    let response = await Asset.getAssetStigGrants(assetId, benchmarkId, elevate, req.userObject )
+    let response = await Asset.getUsersByAssetStig(assetId, benchmarkId, elevate, req.userObject )
     writer.writeJson(res, response)
   }
   catch (err) {
@@ -286,7 +261,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
   }
 }
 
-module.exports.getStigAssetsByBenchmarkId = async function getStigAssetsByBenchmarkId (req, res, next) {
+module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     let collectionId = req.swagger.params['collectionId'].value
@@ -295,7 +270,7 @@ module.exports.getStigAssetsByBenchmarkId = async function getStigAssetsByBenchm
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
-        let response = await Asset.getStigAssetsByBenchmarkId( collectionId, benchmarkId, projection, elevate, req.userObject )
+        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, projection, elevate, req.userObject )
         writer.writeJson(res, response)
     }
     else {
@@ -328,7 +303,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
   }
 }
 
-module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchmarkId (req, res, next) {
+module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     let collectionId = req.swagger.params['collectionId'].value
@@ -341,8 +316,8 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
       let collection = await Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
       let collectionAssets = collection.assets.map( a => a.assetId)
       if (assetIds.every( a => collectionAssets.includes(a))) {
-        await Asset.setStigAssetsByBenchmarkId( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
-        let response = await Asset.getStigAssetsByBenchmarkId( collectionId, benchmarkId, projection, elevate, req.userObject )
+        await Asset.attachAssetsToStig( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
+        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, projection, elevate, req.userObject )
         writer.writeJson(res, response)
       }
       else {
@@ -358,7 +333,7 @@ module.exports.setStigAssetsByBenchmarkId = async function setStigAssetsByBenchm
   }
 }
 
-module.exports.setAssetStig = async function setAssetStig (req, res, next) {
+module.exports.attachStigToAsset = async function attachStigToAsset (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
@@ -373,7 +348,7 @@ module.exports.setAssetStig = async function setAssetStig (req, res, next) {
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.setAssetStig(assetId, benchmarkId, elevate, req.userObject )
+      let response = await Asset.attachStigToAsset(assetId, benchmarkId, elevate, req.userObject )
       writer.writeJson(res, response)
       }
     else {
@@ -385,7 +360,7 @@ module.exports.setAssetStig = async function setAssetStig (req, res, next) {
   }
 }
 
-module.exports.setAssetStigs = async function setAssetStigs (req, res, next) {
+module.exports.attachStigsToAsset = async function attachStigsToAsset (req, res, next) {
   try {
     let assetId = req.swagger.params['assetId'].value
     let elevate = req.swagger.params['elevate'].value
@@ -400,7 +375,7 @@ module.exports.setAssetStigs = async function setAssetStigs (req, res, next) {
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.setAssetStigs(assetId, body, elevate, req.userObject )
+      let response = await Asset.attachStigsToAsset(assetId, body, elevate, req.userObject )
       writer.writeJson(res, response)
       }
     else {

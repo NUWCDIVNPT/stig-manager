@@ -338,6 +338,100 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   // }
 }
 
+exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
+  try {
+    let columns = [
+      'sa.benchmarkId',
+      `json_object(
+        'assetId', a.assetId,
+        'name', a.name
+      ) as asset`
+    ]
+    let joins = [
+      'collection c',
+      'left join asset a on c.collectionId = a.collectionId',
+      'left join stig_asset_map sa on a.assetId = sa.assetId',
+    ]
+    // PREDICATES
+    let predicates = {
+      statements: [],
+      binds: []
+    }
+    if ( inPredicates.collectionId ) {
+      predicates.statements.push('c.collectionId = ?')
+      predicates.binds.push( inPredicates.collectionId )
+    } else {
+      throw ('Missing required predicate: collectionId')
+    }
+    if ( inPredicates.userId ) {
+      joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
+      predicates.statements.push('usa.userId = ?')
+      predicates.binds.push( inPredicates.userId )
+    }
+
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += ' FROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += ' order by sa.benchmarkId, a.name'
+    
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+    return (rows)
+
+  }
+  catch (err) {
+    throw err
+  }
+}
+
+exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId, userId, stigAssets, projection, userObject) {
+  let connection // available to try, catch, and finally blocks
+  try {
+    // Connect to MySQL
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION');
+    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+      const sqlDelete = `DELETE FROM 
+        user_stig_asset_map
+      WHERE
+        userId = ?
+        and saId IN (
+          SELECT saId from stig_asset_map left join asset using (assetId) where asset.collectionId = ?
+        )`
+      await connection.execute(sqlDelete, [userId, collectionId])
+    }
+    if (stigAssets.length > 0) {
+      // Get saIds
+      const bindsInsertSaIds = [ userId ]
+      const predicatesInsertSaIds = []
+      for (const stigAsset of stigAssets) {
+        bindsInsertSaIds.push(stigAsset.benchmarkId, stigAsset.assetId)
+        predicatesInsertSaIds.push('(benchmarkId = ? AND assetId = ?)')
+      }
+      let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
+      sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
+      let [result] = await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
+    }
+    await connection.commit()
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
+
 exports.addOrUpdateCollection = async function(writeAction, collectionId, body, projection, userObject) {
   // CREATE: collectionId will be null
   // REPLACE/UPDATE: collectionId is not null
@@ -647,6 +741,19 @@ exports.getFindingsByCollection = async function( collectionId, aggregator, benc
 
 }
 
+exports.geStigAssetsByCollectionUser = async function (collectionId, userId, elevate, userObject) {
+  try {
+    let rows = await _this.queryStigAssets([], { 
+      collectionId: collectionId,
+      userId: userId
+    }, elevate, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+
+}
 
 exports.getStigsByCollection = async function( collectionId, elevate, userObject ) {
   try {
@@ -676,6 +783,15 @@ exports.replaceCollection = async function( collectionId, body, projection, user
   }
 }
 
+exports.setStigAssetsByCollectionUser = async function (collectionId, userId, stigAssets, userObject) {
+  try {
+    let row = await _this.updateOrReplaceUserStigAssets(dbUtils.WRITE_ACTION.REPLACE, collectionId, userId, stigAssets, userObject)
+    return (row)
+  } 
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
 
 /**
  * Merge updates to a Collection

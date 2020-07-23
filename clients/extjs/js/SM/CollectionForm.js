@@ -450,6 +450,25 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
 
             }
         })
+        const tbar = new SM.RowEditorToolbar({
+            itemString: 'Grant',
+            editor: this.editor,
+            gridId: this.id,
+            deleteProperty: 'userId',
+            newRecord: this.newRecordConstructor
+        })
+        tbar.addSeparator()
+        const accessBtn = tbar.addButton({
+            iconCls: 'sm-asset-icon',
+            disabled: true,
+            text: 'Restricted User access list ...',
+            handler: function() {
+                var r = me.getSelectionModel().getSelected();
+                Ext.getBody().mask('Getting access list for ' + r.get('username') + '...');
+                showUserAccess(me.collectionId, r.get('userId'));
+            }
+        })
+        
         const config = {
             //title: this.title || 'Parent',
             isFormField: true,
@@ -465,7 +484,8 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
                 listeners: {
-                    selectionchange: function (sm) {
+                    rowselect: function (sm, index, record) {
+                        accessBtn.setDisabled(record.data.accessLevel != 1)
                     }
                 }
             }),
@@ -476,14 +496,12 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 markDirty: false
             }),
             listeners: {
+                rowdblclick: function ( grid, rowIndex, e) {
+                    let r = grid.getStore().getAt(rowIndex)
+                    showUserAccess(me.collectionId, r.data.userId)
+                }
             },
-            tbar: new SM.RowEditorToolbar({
-                itemString: 'Grant',
-                editor: this.editor,
-                gridId: this.id,
-                deleteProperty: 'userId',
-                newRecord: this.newRecordConstructor
-            }),
+            tbar: tbar,
 
             getValue: function() {
                 let grants = []
