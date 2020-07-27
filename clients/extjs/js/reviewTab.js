@@ -605,26 +605,32 @@ function openPoamWorkspace(n) {
   }
 }
 
-async function createCollection( collectionObj, ownerId ) {
+async function addOrUpdateCollection( collectionId, collectionObj, options ) {
   try {
-    collectionObj.grants = [
-      {
-        userId: ownerId || curUser.userId,
-        accessLevel: 4
-      }
-    ]
+    let url, method
+    if (collectionId) {
+      url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${options.elevate}`
+      method = 'PUT'
+    }
+    else {
+      url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate}`,
+      method = 'POST'
+    }
     let result = await Ext.Ajax.requestPromise({
-      url: `${STIGMAN.Env.apiBase}/collections?elevate=${curUser.privileges.canAdmin}`,
+      url: url,
+      method: method,
       headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      method: 'POST',
       jsonData: collectionObj
     })
-    let collection = JSON.parse(result.response.responseText)
+    let apiCollection = JSON.parse(result.response.responseText)
     // Refresh the curUser global
     await SM.GetUserObject()
-
-    SM.Dispatcher.fireEvent('collectioncreated', collection)
-    addCollectionManager( collection.collectionId, collection.name )
+    
+    let event = collectionId ? 'collectionchanged' : 'collectioncreated'
+    SM.Dispatcher.fireEvent( event, apiCollection )
+    if (options.showManager) {
+      addCollectionManager( apiCollection.collectionId, apiCollection.name )
+    }
   }
   catch (e) {
     alert (e.message)

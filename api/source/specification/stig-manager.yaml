@@ -14,6 +14,7 @@ paths:
   /collections:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/CollectionsProjectionQuery'
     get:
       tags:
         - Collection
@@ -32,7 +33,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Collection'
+                  $ref: '#/components/schemas/CollectionsProjected'
         default:
           description: unexpected error
           content:
@@ -2424,6 +2425,8 @@ components:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
           type: object
+        created:
+          type: string
     CollectionBasic:
       type: object
       properties:
@@ -2466,51 +2469,6 @@ components:
           type: string
         accessLevel:
           type: integer
-    CollectionGrantLevel1:
-      type: object
-      required:
-        - collectionId
-        - accessLevel
-        - stigReviews
-      properties:
-        collectionId:
-          type: string
-        accessLevel:
-          type: integer
-          minimum: 1
-          maximum: 1
-        stigAssets:
-          type: array
-          items:
-            type: object
-            properties:
-              benchmarkId:
-                type: string
-              assetId:
-                type: string
-    CollectionGrantLevel1Projected:
-      type: object
-      properties:
-        collectionId:
-          type: string
-        accessLevel:
-          type: integer
-          minimum: 1
-          maximum: 1
-        stigAssets:
-          type: array
-          items:
-            type: object
-            properties:
-              benchmarkId:
-                type: string
-              asset:
-                type: object
-                properties:
-                  assetId:
-                    type: string
-                  name:
-                    type: string
     CollectionGrantProjected:
       type: object
       additionalProperties: false
@@ -2541,6 +2499,17 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/UserGrantProjected'
+    CollectionsProjected:
+      allOf:
+        - $ref: '#/components/schemas/Collection'
+        - type: object
+          properties:
+            owners:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserBasic'
+            statistics:
+              type: object
     CollectionUpdate:
       additionalProperties: false
       type: object
@@ -3187,6 +3156,20 @@ components:
             - assets
             - stigs
             - grants
+    CollectionsProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - owners
+            - statistics
     CollectionWorkflowQuery:
       name: workflow
       in: query
@@ -3362,7 +3345,7 @@ components:
       flows:
         implicit:
           authorizationUrl: >-
-            http://192.168.1.155:8080/auth/realms/stigman/protocol/openid-connect/auth
+            http://localhost:8080/auth/realms/stigman/protocol/openid-connect/auth
           scopes:
             stig-manager: Top-accessLevel scope
             'stig-manager:stig': Full access to the STIG collection

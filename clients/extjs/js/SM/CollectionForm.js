@@ -429,6 +429,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.store.resumeEvents();
                         this.grid.getView().refresh();
                     }
+                    // Editor must remove the form fields it created; otherwise the
+                    // form validation continues to include those fields
+                    editor.removeAll(false)
+                    editor.initialized = false
                 },
                 afteredit: function (editor, changes, record, index) {
                     // "Save" the record by reconfiguring the store's data collection
@@ -457,23 +461,25 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             deleteProperty: 'userId',
             newRecord: this.newRecordConstructor
         })
-        tbar.addSeparator()
-        const accessBtn = tbar.addButton({
-            iconCls: 'sm-asset-icon',
-            disabled: true,
-            text: 'Restricted User access list ...',
-            handler: function() {
-                var r = me.getSelectionModel().getSelected();
-                Ext.getBody().mask('Getting access list for ' + r.get('username') + '...');
-                showUserAccess(me.collectionId, r.get('userId'));
-            }
-        })
+        if (this.showAccessBtn) {
+            tbar.addSeparator()
+            this.accessBtn = tbar.addButton({
+                iconCls: 'sm-asset-icon',
+                disabled: true,
+                text: 'Restricted User access list ...',
+                handler: function() {
+                    var r = me.getSelectionModel().getSelected();
+                    Ext.getBody().mask('Getting access list for ' + r.get('username') + '...');
+                    showUserAccess(me.collectionId, r.get('userId'));
+                }
+            })    
+        }
         
         const config = {
             //title: this.title || 'Parent',
             isFormField: true,
             name: 'grants',
-            allowBlank: true,
+            allowBlank: false,
             layout: 'fit',
             height: 150,
             plugins: [this.editor],
@@ -485,7 +491,9 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 singleSelect: true,
                 listeners: {
                     rowselect: function (sm, index, record) {
-                        accessBtn.setDisabled(record.data.accessLevel != 1)
+                        if (me.showAccessBtn) {
+                            me.accessBtn.setDisabled(record.data.accessLevel != 1)
+                        }
                     }
                 }
             }),
@@ -496,10 +504,6 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 markDirty: false
             }),
             listeners: {
-                rowdblclick: function ( grid, rowIndex, e) {
-                    let r = grid.getStore().getAt(rowIndex)
-                    showUserAccess(me.collectionId, r.data.userId)
-                }
             },
             tbar: tbar,
 
@@ -521,11 +525,24 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 }))
                 grantStore.loadData(data)
             },
-            markInvalid: function() {},
-            clearInvalid: function() {},
-            isValid: () => true,
+            validator: function (v) {
+                let one = 1
+            },
+            markInvalid: function() {
+                let one = 1
+            },
+            clearInvalid: function() {
+                let one = 1
+            },
+            isValid: function () {
+                const value = me.getValue()
+                const owners = value.filter( g => g.accessLevel === 4)
+                return owners.length > 0
+            },
             getName: () => this.name,
-            validate: () => true
+            validate: function () {
+                let one = 1
+            }
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -538,6 +555,7 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function() {
         let config = {
             baseCls: 'x-plain',
+            bodyStyle:'padding:10px 10px 10px 10px;',
             border: false,
             labelWidth: 100,
             monitorValid: true,

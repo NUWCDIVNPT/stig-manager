@@ -44,16 +44,16 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     }
 
     if (inProjection && inProjection.includes('collectionGrants')) {
-      joins.push('left join collection_grant pg on ud.userId = pg.userId')
-      joins.push('left join collection p on pg.collectionId = p.collectionId')
-      columns.push(`case when count(pg.pgId) > 0 then 
+      joins.push('left join collection_grant cg on ud.userId = cg.userId')
+      joins.push('left join collection c on cg.collectionId = c.collectionId')
+      columns.push(`case when count(cg.cgId) > 0 then 
       json_arrayagg(
         json_object(
           'collection', json_object(
-            'collectionId', CAST(pg.collectionId as char),
-            'name', p.name
+            'collectionId', CAST(cg.collectionId as char),
+            'name', c.name
           ),
-          'accessLevel', pg.accessLevel
+          'accessLevel', cg.accessLevel
         )
       ) else json_array() end as collectionGrants`)
     }
@@ -316,7 +316,7 @@ exports.setLastAccess = async function (userId, timestamp) {
     return true
   }
   catch (err) {
-    console.log('Error setting lastAccess')
+    console.log(`ERROR: [setLastAccess] ${err.stack}`)
   }
 }
 

@@ -18,9 +18,9 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       'CAST(a.assetId as char) as assetId',
       'a.name',
       `json_object (
-        'collectionId', CAST(p.collectionId as char),
-        'name', p.name,
-        'workflow', p.workflow
+        'collectionId', CAST(c.collectionId as char),
+        'name', c.name,
+        'workflow', c.workflow
       ) as "collection"`,
       'a.description',
       'a.ip',
@@ -29,8 +29,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     ]
     let joins = [
       'asset a',
-      'left join collection p on a.collectionId = p.collectionId',
-      'left join collection_grant pg on p.collectionId = pg.collectionId',
+      'left join collection c on a.collectionId = c.collectionId',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
@@ -126,8 +126,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.binds.benchmarkId = inPredicates.benchmarkId
     }
     if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('pg.userId = :userId')
-      predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
+      predicates.statements.push('cg.userId = :userId')
+      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
       predicates.binds.userId = userObject.userId
     }
 
@@ -139,7 +139,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.collectionId, a.description, a.ip, a.noncomputing, p.collectionId, p.name'
+    sql += ' group by a.assetId, a.name, a.collectionId, a.description, a.ip, a.noncomputing, c.collectionId, c.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -169,8 +169,8 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
     ]
     let joins = [
       'asset a',
-      'left join collection p on a.collectionId = p.collectionId',
-      'left join collection_grant pg on p.collectionId = pg.collectionId',
+      'left join collection c on a.collectionId = c.collectionId',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
       'inner join current_rev cr on sa.benchmarkId=cr.benchmarkId',
@@ -190,8 +190,8 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
       predicates.binds.push( inPredicates.benchmarkId )
     }
     if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('pg.userId = ?')
-      predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
+      predicates.statements.push('cg.userId = ?')
+      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
       predicates.binds.push( userObject.userId )
     }
     // CONSTRUCT MAIN QUERY
@@ -229,8 +229,8 @@ exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = fal
     ]
     let joins = [
       'asset a',
-      'inner join collection p on a.collectionId = p.collectionId',
-      'inner join collection_grant pg on p.collectionId = pg.collectionId',
+      'inner join collection c on a.collectionId = c.collectionId',
+      'inner join collection_grant cg on c.collectionId = cg.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'inner join user_stig_asset_map usa on sa.saId = usa.saId',
       'inner join user_data ud on usa.userId = ud.userId',
@@ -253,8 +253,8 @@ exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = fal
       predicates.binds.push( inPredicates.userId )
     }
     if (context === 'CONTEXT_USER') {
-      predicates.statements.push('pg.userId = ?')
-      predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
+      predicates.statements.push('cg.userId = ?')
+      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
       predicates.binds.push( userObject.userId )
     }
     // CONSTRUCT MAIN QUERY

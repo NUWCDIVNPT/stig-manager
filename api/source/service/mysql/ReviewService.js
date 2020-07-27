@@ -72,8 +72,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'left join action on r.actionId = action.actionId',
       'left join user_data ud on r.userId = ud.userId',
       'left join asset on r.assetId = asset.assetId',
-      'left join collection p on asset.collectionId = p.collectionId',
-      'left join collection_grant pg on p.collectionId = pg.collectionId',
+      'left join collection c on asset.collectionId = c.collectionId',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join stig_asset_map sa on asset.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
@@ -85,13 +85,13 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
           'assetId', CAST(a.assetId as char),
           'name', a.name,
           'collection', json_object(
-            'collectionId', CAST(p.collectionId as char),
-            'name', p.name,
-            'workflow', p.workflow
+            'collectionId', CAST(c.collectionId as char),
+            'name', c.name,
+            'workflow', c.workflow
           )
         )
         from asset a 
-        left join collection p on a.collectionId = p.collectionId
+        left join collection c on a.collectionId = c.collectionId
         where a.assetId = r.assetId) as "asset"`)
     }
     if (inProjection.includes('stigs')) {
@@ -162,8 +162,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     // Role/Assignment based access control 
     // CONTEXT_USER
     if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('pg.userId = :userId')
-      predicates.statements.push('CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END')
+      predicates.statements.push('cg.userId = :userId')
+      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
       predicates.binds.userId = userObject.userId
     }
 

@@ -17,15 +17,15 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     }
 
     let columns = [
-      'CAST(p.collectionId as char) as collectionId',
-      'p.name',
-      'p.workflow',
-      'p.metadata'
+      'CAST(c.collectionId as char) as collectionId',
+      'c.name',
+      'c.workflow',
+      'c.metadata'
     ]
     let joins = [
-      'collection p',
-      'left join collection_grant pg on p.collectionId = pg.collectionId',
-      'left join asset a on p.collectionId = a.collectionId',
+      'collection c',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
+      'left join asset a on c.collectionId = a.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId'
     ]
 
@@ -78,10 +78,48 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
               'accessLevel', accessLevel
             )
           )
-          from collection_grant left join user_data using (userId) where collectionId = p.collectionId)
+          from collection_grant left join user_data using (userId) where collectionId = c.collectionId)
         ,  json_array()
         )
       ) as "grants"`)
+    }
+    if (inProjection.includes('owners')) {
+      columns.push(`(select
+        coalesce(
+          (select json_arrayagg(
+            json_object(
+              'userId', CAST(user_data.userId as char),
+              'username', user_data.username
+            )
+          )
+          from collection_grant left join user_data using (userId)
+          where collectionId = c.collectionId and accessLevel = 4)
+        ,  json_array()
+        )
+      ) as "owners"`)
+    }
+    if (inProjection.includes('statistics')) {
+      if (context == dbUtils.CONTEXT_USER) {
+        joins.push('left join collection_grant cgstat on c.collectionId = cgstat.collectionId')
+        columns.push(`(select
+          json_object(
+            'created', c.created,
+            'grantCount', CASE WHEN cg.accessLevel = 1 THEN 1 ELSE COUNT( distinct cgstat.cgId ) END,
+            'assetCount', COUNT( distinct a.assetId ),
+            'checklistCount', COUNT( distinct sa.saId )
+          )
+        ) as "statistics"`)
+      }
+      else {
+        columns.push(`(select
+          json_object(
+            'created', c.created,
+            'grantCount', COUNT( distinct cg.cgId ),
+            'assetCount', COUNT( distinct a.assetId ),
+            'checklistCount', COUNT( distinct sa.saId )
+          )
+        ) as "statistics"`)
+      }
     }
 
     // PREDICATES
@@ -90,27 +128,27 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       binds: []
     }
     if ( inPredicates.collectionId ) {
-      predicates.statements.push('p.collectionId = ?')
+      predicates.statements.push('c.collectionId = ?')
       predicates.binds.push( inPredicates.collectionId )
     }
     if ( inPredicates.name ) {
-      predicates.statements.push('p.name LIKE ?')
+      predicates.statements.push('c.name LIKE ?')
       predicates.binds.push( `%${inPredicates.name}%` )
     }
     if ( inPredicates.workflow ) {
-      predicates.statements.push('p.workflow = ?')
+      predicates.statements.push('c.workflow = ?')
       predicates.binds.push( inPredicates.workflow )
     }
     if ( inPredicates.metadata ) {
       for (const pair of inPredicates.metadata) {
         const [key, value] = pair.split(':')
-        predicates.statements.push('JSON_CONTAINS(p.metadata, ?, ?)')
+        predicates.statements.push('JSON_CONTAINS(c.metadata, ?, ?)')
         predicates.binds.push( `"${value}"`,  `$.${key}`)
       }
     }
     if (context == dbUtils.CONTEXT_USER) {
       joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
-      predicates.statements.push('(pg.userId = ? AND CASE WHEN pg.accessLevel = 1 THEN usa.userId = pg.userId ELSE TRUE END)')
+      predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
       predicates.binds.push( userObject.userId, userObject.userId )
     }
 
@@ -122,8 +160,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by p.collectionId, p.name, p.workflow, p.metadata'
-    sql += ' order by p.name'
+    sql += ' group by c.collectionId, c.name, c.workflow, c.metadata'
+    sql += ' order by c.name'
     
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)
@@ -390,6 +428,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
 
 exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId, userId, stigAssets, projection, userObject) {
   let connection // available to try, catch, and finally blocks
+  let hrstart, hrend
   try {
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
@@ -403,7 +442,11 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
         and saId IN (
           SELECT saId from stig_asset_map left join asset using (assetId) where asset.collectionId = ?
         )`
-      await connection.execute(sqlDelete, [userId, collectionId])
+        hrstart = process.hrtime()        
+        await connection.execute(sqlDelete, [userId, collectionId])
+        hrend = process.hrtime(hrstart)
+        console.log(`delete: ${hrend[0]}s  ${hrend[1] / 1000000}ms`)
+
     }
     if (stigAssets.length > 0) {
       // Get saIds
@@ -415,9 +458,15 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
       }
       let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
       sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
+      hrstart = process.hrtime()        
       let [result] = await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
+      hrend = process.hrtime(hrstart)
+      console.log(`insert: ${hrend[0]}s  ${hrend[1] / 1000000}ms`)
     }
+    hrstart = process.hrtime()        
     await connection.commit()
+    hrend = process.hrtime(hrstart)
+    console.log(`commit: ${hrend[0]}s  ${hrend[1] / 1000000}ms`)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {

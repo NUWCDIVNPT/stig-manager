@@ -15,6 +15,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 		})
 		let grantGrid = new SM.UserGrantsGrid({
 			collectionId: collectionId,
+			showAccessBtn: true,
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			baseParams: {
 				elevate: curUser.privileges.canAdmin,

@@ -180,16 +180,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     }
     
     // Tables: collection, collection_grant_map
-    for (const p of collections) {
+    for (const c of collections) {
       dml.collection.insertBinds.push([
-        parseInt(p.collectionId) || null,
-        p.name,
-        p.workflow,
-        JSON.stringify(p.metadata)
+        parseInt(c.collectionId) || null,
+        c.name,
+        c.workflow,
+        JSON.stringify(c.metadata)
       ])
-      for (const grant of p.grants) {
+      for (const grant of c.grants) {
         dml.collectionGrant.insertBinds.push([
-          parseInt(p.collectionId) || null,
+          parseInt(c.collectionId) || null,
           parseInt(grant.userId) || null,
           grant.accessLevel
         ])

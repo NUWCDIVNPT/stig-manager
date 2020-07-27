@@ -49,6 +49,7 @@ function loadScripts() {
         "js/stigmanUtils.js",
         "js/userProperties.js",
         "js/userAdmin.js",
+        "js/collectionAdmin.js",
         "js/assetAdmin.js",
         "js/collectionManager.js",
         "js/stigAdmin.js",

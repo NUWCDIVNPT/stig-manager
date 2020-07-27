@@ -91,7 +91,7 @@ module.exports.getCollection = async function getCollection (req, res, next) {
 
 module.exports.getCollections = async function getCollections (req, res, next) {
   try {
-    const projection = []
+    const projection = req.swagger.params['projection'].value
     const elevate = req.swagger.params['elevate'].value
     const name = req.swagger.params['name'].value
     const workflow = req.swagger.params['workflow'].value
@@ -197,8 +197,21 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || ( collectionGrant && collectionGrant.accessLevel >= 3 ) ) {
+      let totalstart = process.hrtime() 
+      let hrstart, hrend
+      hrstart = process.hrtime() 
+      
       const setResponse = await Collection.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, req.userObject )
+      
+      hrend = process.hrtime(hrstart)
+      console.log(`${hrend[0]}s  ${hrend[1] / 1000000}ms`)
+      
+      hrstart = process.hrtime() 
+      
       const getResponse = await Collection.geStigAssetsByCollectionUser(collectionId, userId, elevate, req.userObject )
+      
+      hrend = process.hrtime(hrstart)
+      console.log(`${hrend[0]}s  ${hrend[1] / 1000000}ms`)
       writer.writeJson(res, getResponse)
     }
     else {

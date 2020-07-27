@@ -1,16 +1,8 @@
-// ======================================================================================
-// NAME: 		userAdmin.js
-// CREATED: 	January 6, 2017 @ 14:12 
-// UPDATED: 	January 11, 2017 @ 14:07 
-// AUTHOR(S):	BRANDON MASSEY
-// PURPOSE: 	Responsible for building the User Management Listing interface
-// =======================================================================================
-
 function addUserAdmin() {
 
-	var userFields = Ext.data.Record.create([
+	const userFields = Ext.data.Record.create([
 		{	name:'userId',
-			type: 'integer'
+			type: 'string'
 		},{
 			name:'username',
 			type: 'string'
@@ -40,8 +32,8 @@ function addUserAdmin() {
 			type: 'integer',
 			mapping: 'statistics.lastAccess'
 		},
-	]);
-	var userStore = new Ext.data.JsonStore({
+	])
+	const userStore = new Ext.data.JsonStore({
 		proxy: new Ext.data.HttpProxy({
 			url: `${STIGMAN.Env.apiBase}/users`,
 			method: 'GET'
@@ -68,9 +60,9 @@ function addUserAdmin() {
 				Ext.getCmp('userGrid-totalText').setText(store.getCount() + ' records');
 			}
 		}
-	});
+	})
 
-	var userGrid = new Ext.grid.EditorGridPanel({
+	const userGrid = new Ext.grid.GridPanel({
 		cls: 'sm-round-panel',
 		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
     	region: 'center',
@@ -81,7 +73,7 @@ function addUserAdmin() {
 		sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
 		columns: [
 			{
-				header: "Account Name", 
+				header: "Username", 
 				width: 150,
 				dataIndex: 'username',
 				sortable: true
@@ -136,6 +128,12 @@ function addUserAdmin() {
 				dataIndex: 'lastAccess',
 				sortable: true,
 				renderer: v => v ? Ext.util.Format.date(new Date(v * 1000), 'Y-m-d H:i T') : SM.styledEmptyRenderer()
+			},
+			{
+				header: "userId", 
+				width: 150,
+				dataIndex: 'userId',
+				sortable: true
 			}
 		],
 		view: new Ext.grid.GridView({
@@ -242,11 +240,11 @@ function addUserAdmin() {
 		}),
 		width: '50%',
 		loadMask: true
-	});
+	})
 
 		
 
-	var thisTab = Ext.getCmp('main-tab-panel').add({
+	const thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'user-admin-tab',
 		iconCls: 'sm-users-icon',
 		title: 'Users',
@@ -254,18 +252,9 @@ function addUserAdmin() {
 		layout: 'border',
 		border: false,
 		items: [userGrid]
-	});
-	if (!curUser.privileges.canAdmin) { // only show the modify button for non-admins
-		var tb = userGrid.getTopToolbar();
-		var items = tb.find();
-		for (var x=0;x<items.length;x++) {
-			if (items[x].text != 'View/Edit User Properties') {
-				items[x].hide();
-			}
-		}
-	}
-	thisTab.show();
+	})
+	thisTab.show()
 	
-	userGrid.getStore().load();
-} // end: function addUserAdmin()
+	userGrid.getStore().load()
+}
 

@@ -116,12 +116,12 @@ module.exports.getUserObject = async function (username) {
       cast(ud.globalAccess is true as json) as globalAccess,
       cast(ud.canCreateCollection is true as json) as canCreateCollection,
       cast(ud.canAdmin is true as json) as canAdmin,
-      CASE WHEN COUNT(pg.collectionId) > 0
+      CASE WHEN COUNT(cg.collectionId) > 0
         THEN 
           json_arrayagg(
             json_object(
-              'collectionId', CAST(pg.collectionId as char),
-              'accessLevel', pg.accessLevel
+              'collectionId', CAST(cg.collectionId as char),
+              'accessLevel', cg.accessLevel
             )
           )
         ELSE
@@ -129,7 +129,7 @@ module.exports.getUserObject = async function (username) {
       END as collectionGrants
     from 
       user_data ud
-      left join collection_grant pg on ud.userId = pg.userId
+      left join collection_grant cg on ud.userId = cg.userId
     where
       UPPER(username)=UPPER(?)
     group by
@@ -181,13 +181,13 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
       from
         stig_asset_map sa
         left join asset a on sa.assetId = a.assetId
-        left join collection_grant pg on a.collectionId = pg.collectionId
+        left join collection_grant cg on a.collectionId = cg.collectionId
         left join user_stig_asset_map usa on sa.saId = usa.saId
       where
-        pg.userId = ?
+        cg.userId = ?
         and sa.benchmarkId = ?
         and sa.assetId = ?
-        and (pg.accessLevel >= 2 or (pg.accessLevel = 1 and usa.userId = pg.userId))`
+        and (cg.accessLevel >= 2 or (cg.accessLevel = 1 and usa.userId = cg.userId))`
 
       let [rows] = await _this.pool.query(sql, [userObject.userId, benchmarkId, assetId])
       return rows.length > 0   
@@ -222,31 +222,31 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
       const sql = `SELECT
         CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
       FROM
-        collection_grant pg
-        inner join asset a on pg.collectionId = a.collectionId
+        collection_grant cg
+        inner join asset a on cg.collectionId = a.collectionId
         inner join stig_asset_map sa on a.assetId = sa.assetId
         inner join revision rev on sa.benchmarkId = rev.benchmarkId
         inner join rev_group_map rg on rev.revId = rg.revId
         inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
       WHERE
-        pg.userId = ?
-        and pg.accessLevel != 1
+        cg.userId = ?
+        and cg.accessLevel != 1
       GROUP BY
         sa.assetId, rgr.ruleId
       UNION
       SELECT
         CONCAT(sa.assetId, '-', rgr.ruleId) as permitted
       FROM
-        collection_grant pg
-        inner join asset a on pg.collectionId = a.collectionId
+        collection_grant cg
+        inner join asset a on cg.collectionId = a.collectionId
         inner join stig_asset_map sa on a.assetId = sa.assetId
-        inner join user_stig_asset_map usa on (sa.saId = usa.saId and pg.userId = usa.userId)
+        inner join user_stig_asset_map usa on (sa.saId = usa.saId and cg.userId = usa.userId)
         inner join revision rev on sa.benchmarkId = rev.benchmarkId
         inner join rev_group_map rg on rev.revId = rg.revId
         inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId
       WHERE
-        pg.userId = ?
-        and pg.accessLevel = 1
+        cg.userId = ?
+        and cg.accessLevel = 1
       GROUP BY
         sa.assetId, rgr.ruleId`
       let [rows] = await _this.pool.query(sql, [userObject.userId, userObject.userId])

@@ -49,7 +49,7 @@ morgan.token('forwarded-for', (req, res) => {
 })
 
 // Log format
-app.use(morgan(':remote-addr :forwarded-for - :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
+app.use(morgan(':remote-addr :forwarded-for :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
 
 // compress all responses
 // app.use(compression())

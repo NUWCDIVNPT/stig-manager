@@ -8,7 +8,7 @@ SM.NodeSorter = (a, b) => {
   if (b.sortToTop) {
     return 1
   }
-  return a.text < b.text ? -1 : 1
+  return a.text.toUpperCase() < b.text.toUpperCase() ? -1 : 1
 }
 
 SM.CollectionNodeConfig = function (collection) {
@@ -337,10 +337,10 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             if (b.attributes.id === 'collection-create-leaf') {
               return 1
             }
-            if (a.text < b.text) {
+            if (a.text.toUpperCase() < b.text.toUpperCase()) {
               return -1
             }
-            if (a.text > b.text) {
+            if (a.text.toUpperCase() > b.text.toUpperCase()) {
               return 1
             }
             return 0
@@ -531,6 +531,12 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                   expanded: true,
                   children: [
                     {
+                      id: 'collection-admin',
+                      text: 'Collections',
+                      leaf: true,
+                      iconCls: 'sm-collection-icon'
+                    },
+                    {
                       id: 'user-admin',
                       text: 'Users',
                       leaf: true,
@@ -701,7 +707,10 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             btnHandler: async () => {
               try {
                 let values = fp.getForm().getFieldValues()
-                await createCollection(values, curUser.userId)
+                await addOrUpdateCollection(0, values, {
+                  elevate: false,
+                  showManager: true
+                })
               }
               catch (e) {
                 alert (e.message)
@@ -746,6 +755,9 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
 
         switch (n.id) {
+          case 'collection-admin':
+            addCollectionAdmin();
+            break;
           case 'user-admin':
             addUserAdmin();
             break;

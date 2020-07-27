@@ -142,11 +142,11 @@ DROP TABLE IF EXISTS `collection_grant`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collection_grant` (
-  `pgId` int NOT NULL AUTO_INCREMENT,
+  `cgId` int NOT NULL AUTO_INCREMENT,
   `collectionId` int NOT NULL,
   `userId` int NOT NULL,
   `accessLevel` int NOT NULL,
-  PRIMARY KEY (`pgId`),
+  PRIMARY KEY (`cgId`),
   UNIQUE KEY `INDEX_USER` (`userId`,`collectionId`),
   KEY `INDEX_COLLECTION` (`collectionId`,`accessLevel`),
   CONSTRAINT `fk_collection_grant_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
