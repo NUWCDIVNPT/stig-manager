@@ -401,6 +401,29 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               }
             })
           }
+          function sortFn (a, b) {
+            if (a.attributes.id === 'collection-create-leaf') {
+              return -1
+            }
+            if (b.attributes.id === 'collection-create-leaf') {
+              return 1
+            }
+            if (a.text.toUpperCase() < b.text.toUpperCase()) {
+              return -1
+            }
+            if (a.text.toUpperCase() > b.text.toUpperCase()) {
+              return 1
+            }
+            return 0
+          }
+          collectionRoot.sort(sortFn)
+        }
+      }
+      this.onCollectionDeleted = function (collectionId) {
+        let collectionRoot = me.getNodeById('collections-root')
+        let collectionNode = collectionRoot.findChild('id', `${collectionId}-collection-node`, true)
+        if (collectionNode) {
+          collectionNode.remove()
         }
       }
       this.onStigAssetsChanged = async (collectionId, benchmarkId, apiStigAssets) => {
@@ -510,6 +533,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
       // Attach handlers for app events
       SM.Dispatcher.addListener('collectioncreated', this.onCollectionCreated)
       SM.Dispatcher.addListener('collectionchanged', this.onCollectionChanged)
+      SM.Dispatcher.addListener('collectiondeleted', this.onCollectionDeleted)
       SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, me)
       SM.Dispatcher.addListener('assetcreated', this.onAssetCreated, me)
       SM.Dispatcher.addListener('assetdeleted', this.onAssetDeleted, me)

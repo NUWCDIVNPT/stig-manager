@@ -620,6 +620,9 @@ async function addOrUpdateCollection( collectionId, collectionObj, options ) {
       url: url,
       method: method,
       headers: { 'Content-Type': 'application/json;charset=utf-8' },
+      params: {
+        projection: ['owners', 'statistics']
+      },
       jsonData: collectionObj
     })
     let apiCollection = JSON.parse(result.response.responseText)

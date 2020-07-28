@@ -180,15 +180,19 @@ function addCollectionAdmin() {
         Ext.Msg.confirm("Confirm", confirmStr, async function (btn, text) {
           try {
             if (btn == 'yes') {
+              Ext.getBody().mask('Deleting collection')
               let result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${record.data.collectionId}`,
+                url: `${STIGMAN.Env.apiBase}/collections/${record.data.collectionId}?elevate=true`,
                 method: 'DELETE'
               })
-              store.remove(record);
+              SM.Dispatcher.fireEvent( 'collectiondeleted', record.data.collectionId )
             }
           }
           catch (e) {
-            alert(e)
+            alert(e.message)
+          }
+          finally {
+            Ext.getBody().unmask()
           }
         });
       }
@@ -238,7 +242,23 @@ function addCollectionAdmin() {
     loadMask: true
   })
 
-
+  function onCollectionChanged (apiCollection) {
+    store.loadData(apiCollection, true)
+    const sortState = store.getSortState()
+    store.sort(sortState.field, sortState.dir)
+  }
+  function onCollectionCreated (apiCollection) {
+    store.loadData(apiCollection, true)
+    const sortState = store.getSortState()
+    store.sort(sortState.field, sortState.dir)
+  }
+  function onCollectionDeleted (collectionId) {
+    store.removeAt(store.indexOfId(collectionId))
+  }
+  
+  SM.Dispatcher.addListener('collectionchanged', onCollectionChanged)
+  SM.Dispatcher.addListener('collectioncreated', onCollectionCreated)
+  SM.Dispatcher.addListener('collectiondeleted', onCollectionDeleted)
 
   const thisTab = Ext.getCmp('main-tab-panel').add({
     id: 'collection-admin-tab',

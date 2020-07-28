@@ -3154,8 +3154,10 @@ components:
           type: string
           enum:
             - assets
-            - stigs
             - grants
+            - owners
+            - statistics
+            - stigs
     CollectionsProjectionQuery:
       name: projection
       in: query

@@ -20,6 +20,14 @@ SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
         }
       }
     }
+    this.onCollectionDeleted = collectionId => {
+        for (const tab of me.items.items) {
+          if (tab.collectionId === collectionId) {
+            console.log(tab.id)
+            me.remove(tab)
+          }
+        }
+    }
     const config = {
       plugins: new Ext.ux.TabCloseOnMiddleClick(),
       title: 'STIGManager',
@@ -54,6 +62,7 @@ SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     SM.MainTabPanel.superclass.initComponent.call(this)
     SM.Dispatcher.addListener('collectionchanged', this.onCollectionChanged)
+    SM.Dispatcher.addListener('collectiondeleted', this.onCollectionDeleted)
   }
 })
 
