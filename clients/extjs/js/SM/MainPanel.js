@@ -21,12 +21,10 @@ SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
       }
     }
     this.onCollectionDeleted = collectionId => {
-        for (const tab of me.items.items) {
-          if (tab.collectionId === collectionId) {
-            console.log(tab.id)
-            me.remove(tab)
-          }
-        }
+      const tabsToRemove = me.items.items.filter( tab => tab.collectionId === collectionId )
+      for (const tab of tabsToRemove) {
+          me.remove(tab)
+      }
     }
     const config = {
       plugins: new Ext.ux.TabCloseOnMiddleClick(),
