@@ -133,7 +133,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
                   'action', action.api,
                   'actionComment', rh.actionComment,
                   'autoResult', cast(rh.autoResult is true as json),
-                  'userId', rh.userId,
+                  'userId', CAST(rh.userId as char),
                   'username', ud.username,
                   'rejectText', rh.rejectText,
                   'status', status.api

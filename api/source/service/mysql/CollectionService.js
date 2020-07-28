@@ -254,7 +254,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     }
     if (inProjection.includes('assets')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
-        'assetId', a.assetId,
+        'assetId', CAST(a.assetId as char),
         'name', a.name) order by a.name), ']') as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
@@ -381,7 +381,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     let columns = [
       'sa.benchmarkId',
       `json_object(
-        'assetId', a.assetId,
+        'assetId', CAST(a.assetId as char),
         'name', a.name
       ) as asset`
     ]

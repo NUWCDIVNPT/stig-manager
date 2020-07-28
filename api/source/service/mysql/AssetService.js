@@ -224,7 +224,7 @@ exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = fal
   try {
     const context = userObject.privileges.globalAccess || elevate ? 'CONTEXT_ALL' : 'CONTEXT_USER'
     const columns = [
-      'ud.userId',
+      'CAST(ud.userId as char) as userId',
       'ud.username'
     ]
     let joins = [
@@ -508,7 +508,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
       'DISTINCT CAST(a.assetId as char) as assetId',
       'a.name',
       `json_object(
-        'collectionId', c.collectionId,
+        'collectionId', CAST(c.collectionId as char),
         'name', c.name,
         'workflow', c.workflow) as collection`
     ]
