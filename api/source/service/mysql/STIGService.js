@@ -653,8 +653,8 @@ exports.insertManualBenchmark = async function (b) {
     }
 
     // Update current_rev
-    
-    let sqlUpdateCurrentRev = `INSERT IGNORE INTO current_rev (
+    let sqlDeleteCurrentRev = 'DELETE from current_rev where benchmarkId = ?'
+    let sqlUpdateCurrentRev = `INSERT INTO current_rev (
       revId,
       benchmarkId,
       \`version\`, 
@@ -689,6 +689,7 @@ exports.insertManualBenchmark = async function (b) {
       WHERE
         v_current_rev.benchmarkId = ?`
     hrstart = process.hrtime()
+    ;[result] = await connection.query(sqlDeleteCurrentRev, [ dml.stig.binds.benchmarkId ])
     ;[result] = await connection.query(sqlUpdateCurrentRev, [ dml.stig.binds.benchmarkId ])
     hrend = process.hrtime(hrstart)
     stats['currentRev'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
