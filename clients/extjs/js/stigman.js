@@ -140,7 +140,7 @@ async function loadApp () {
 					xtype: 'sm-home-widget-doc'
 				},
 				{
-					xtype: 'sm-home-widget-stig'
+					xtype: 'sm-home-widget-resources'
 				}
 			]
 		})

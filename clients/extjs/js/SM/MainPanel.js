@@ -105,8 +105,16 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
       const tpl = new Ext.XTemplate(
           `<div class=sm-home-widget-header>`,
           `<div class='sm-home-widget-title'>Documentation</div>`,
-          `</div>`,
-          `<div class='sm-reviews-home-body-text'>Lorum ipsum sit dolor.</div>`,
+          `</div>`,        
+          `<div class='sm-home-widget-subtitle'>Introduction</div>`,
+          `<div class='sm-home-widget-text'>What is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager#stig-manager">STIG Manager OSS</a>?</div>`,
+          `<div class='sm-home-widget-subtitle'>Wiki</div>`,
+          `<div class='sm-home-widget-text'>Visit our <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/wiki">wiki</a>, a work in progress!</div>`,
+          `<div class='sm-home-widget-subtitle'>User Guide</div>`,
+          `<div class='sm-home-widget-text'>Check out our User Guide <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/tree/phase-1-dev/docs">on GitHub</a></div>`,
+          `<div class='sm-home-widget-subtitle'>Issues and Contributions</div>`,
+          `<div class='sm-home-widget-text'>Want to help out? <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/blob/phase-1-dev/CONTRIBUTING.md">Check out our Contribution Guide</a></div>`,
+          
         )
       const config = {
         tpl: tpl,
@@ -119,6 +127,37 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
   }
 })
 Ext.reg('sm-home-widget-doc', SM.DocWidget)
+
+SM.ResourcesWidget = Ext.extend(Ext.Panel, {
+  initComponent: function() {
+      const me = this
+      const id = Ext.id()
+      const tpl = new Ext.XTemplate(
+          `<div class=sm-home-widget-header>`,
+          `<div class='sm-home-widget-title'>Resources</div>`,
+          `</div>`,
+          `<div class='sm-home-widget-subtitle'>GitHub</div>`,
+          `<div class='sm-home-widget-text'><a target="_blank" href="https://github.com/NUWCDIVNPT">NUWCDIVNPT is on GitHub!</a></div>`,
+          `<div class='sm-home-widget-text'><a target="_blank" href="https://github.com/Code-dot-mil/code.mil">Code.mil</a></div>`,
+          `<div class='sm-home-widget-subtitle'>DISA STIGs</div>`,
+          `<div class='sm-home-widget-text'>Get the latest STIGs at <a target="_blank" href="https://public.cyber.mil/stigs/downloads/">cyber.mil</a>.</div>`,
+          `<div class='sm-home-widget-subtitle'>RMF Reference</div>`,
+          `<div class='sm-home-widget-text'>STIG Manager assists with STEP 4 of the <a target="_blank" href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-37r2.pdf">Risk Management Framework Process</a>.</div>`,
+          `<div class='sm-home-widget-subtitle'>DevSecOps</div>`,
+          `<div class='sm-home-widget-text'>STIG Manager is being developed as part of the <a target="_blank" href="https://software.af.mil/dsop/documents/">DoD Enterprise DevSecOps</a> and <a target="_blank" href="https://code.mil">Code.mil Open Source </a> initiatives.</div>`,
+
+        )
+      const config = {
+        tpl: tpl,
+        bodyCssClass: 'sm-home-widget-body',
+        border: false,
+        data: [1]
+      }
+      Ext.apply(this, Ext.apply(this.initialConfig, config))
+      SM.ResourcesWidget.superclass.initComponent.call(this)
+  }
+})
+Ext.reg('sm-home-widget-resources', SM.ResourcesWidget)
 
 SM.StigWidget = Ext.extend(Ext.Panel, {
   initComponent: function() {

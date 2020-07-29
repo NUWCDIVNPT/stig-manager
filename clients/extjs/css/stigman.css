@@ -1,3 +1,12 @@
+
+a:link {
+	color: #3366cc;
+  }
+
+a:visited {
+	color: #3366cc;
+  }
+
 .sm-grid-result-sprite {
 	font: bold 11px/13px Open Sans,helvetica, sans-serif;
 	position: relative;
@@ -317,6 +326,19 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	color:#3366cc;
 }
 
+.sm-home-widget-subtitle {
+	padding-top:5px;
+	padding-left:20px;
+	padding-right:20px;
+	padding-bottom:5px;
+	font: bold 14px Open Sans, helvetica, sans-serif;
+	color:#3366cc;
+}
+
+.sm-home-widget-collectionName {
+	font: bold 13px Open Sans, helvetica, sans-serif;
+	color:#3366cc;
+}
 
 .sm-banner-unclassified {
 	/* background-color: #0a9c00; */
