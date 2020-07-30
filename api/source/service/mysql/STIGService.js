@@ -668,7 +668,8 @@ exports.insertManualBenchmark = async function (b) {
       groupCount,
       ruleCount,
       checkCount,
-      fixCount)
+      fixCount,
+      ovalCount)
       SELECT 
         revId,
         benchmarkId,
@@ -683,7 +684,8 @@ exports.insertManualBenchmark = async function (b) {
         groupCount,
         ruleCount,
         checkCount,
-        fixCount
+        fixCount,
+        ovalCount
       FROM
         v_current_rev
       WHERE
@@ -742,11 +744,17 @@ exports.insertScapBenchmark = async function (b) {
         deleteBind: '',
         sqlInsert: `INSERT INTO rule_oval_map (ruleId, ovalRef, benchmarkId, releaseinfo) VALUES ?`,
         insertBinds: []
+      },
+      current_rev: {
+        sqlUpdate: 'UPDATE current_rev SET ovalCount = (SELECT COUNT(roId) FROM rule_oval_map where benchmarkId = ?) where benchmarkId = ?',
+        updateBinds: []
       }
     }
 
     let {revision, ...benchmarkFields} = b
+    benchmarkFields.benchmarkId = benchmarkFields.benchmarkId.replace('xccdf_mil.disa.stig_benchmark_', '')
     dml.ruleOvalMap.deleteBind = benchmarkFields.benchmarkId
+    dml['current_rev'].updateBinds.push(benchmarkFields.benchmarkId, benchmarkFields.benchmarkId)
     let {groups, ...revisionFields} = revision
     groups.forEach( group => {
       group.rules.forEach( rule => {
@@ -754,7 +762,7 @@ exports.insertScapBenchmark = async function (b) {
             dml.ruleOvalMap.insertBinds.push([
               rule.ruleId.replace('xccdf_mil.disa.stig_rule_', ''),
               check.content.name,
-              benchmarkFields.benchmarkId.replace('xccdf_mil.disa.stig_benchmark_', ''),
+              benchmarkFields.benchmarkId,
               revisionFields.releaseInfo
             ])
           })
@@ -787,6 +795,13 @@ exports.insertScapBenchmark = async function (b) {
       hrend = process.hrtime(hrstart)
       stats[table] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     }
+
+    // Update ovalCount in current_rev
+    hrstart = process.hrtime()
+    ;[result] = await connection.query(dml['current_rev'].sqlUpdate, dml['current_rev'].updateBinds )
+    hrend = process.hrtime(hrstart)
+    stats['current_rev'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
 
     hrend = process.hrtime(totalstart)
     stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
