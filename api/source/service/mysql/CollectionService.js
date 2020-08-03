@@ -376,6 +376,89 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   // }
 }
 
+exports.queryStatus = async function (inPredicates = {}, userObject) {
+  try {
+    let context
+    if (userObject.privileges.globalAccess) {
+      context = dbUtils.CONTEXT_ALL
+    } else {
+      context = dbUtils.CONTEXT_USER
+    }
+
+    let columns = [
+      `distinct cast(a.assetId as char) as assetId`,
+      'a.name as assetName',
+      'sas.benchmarkId',
+      `json_object(
+        'total', cr.ruleCount,
+        'auto', cr.ovalCount
+      ) as rules`,
+      'sas.minTs',
+      'sas.maxTs',
+      `json_object(
+        'low', sas.lowCount,
+          'medium', sas.mediumCount,
+          'high', sas.highCount
+      ) as findings`,
+     `json_object(
+        'saved', json_object(
+          'total', sas.savedManual + sas.savedAuto,
+              'auto', sas.savedAuto),
+        'submitted', json_object(
+           'total', sas.submittedManual + sas.submittedAuto,
+              'auto', sas.submittedAuto),
+        'rejected', json_object(
+           'total', sas.rejectedManual + sas.rejectedAuto,
+              'auto', sas.rejectedAuto),
+        'accepted', json_object(
+           'total', sas.acceptedManual + sas.acceptedAuto,
+              'auto', sas.acceptedAuto)
+      ) as status`           
+    ]
+    let joins = [
+      'collection c',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
+      'left join asset a on c.collectionId = a.collectionId',
+      'inner join stig_asset_map sa on a.assetId = sa.assetId',
+      'left join stats_asset_stig sas on (sa.assetId = sas.assetId and sa.benchmarkId = sas.benchmarkId)',
+      'left join current_rev cr on sas.benchmarkId = cr.benchmarkId',
+    ]
+
+    // PROJECTIONS
+
+    // PREDICATES
+    let predicates = {
+      statements: [],
+      binds: []
+    }
+    
+    // collectionId predicate is mandatory per API spec
+    if ( inPredicates.collectionId ) {
+      predicates.statements.push('c.collectionId = ?')
+      predicates.binds.push( inPredicates.collectionId )
+    }
+    if (context == dbUtils.CONTEXT_USER) {
+      predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
+      predicates.binds.push( userObject.userId, userObject.userId )
+    }
+    // CONSTRUCT MAIN QUERY
+    let sql = 'SELECT '
+    sql+= columns.join(",\n")
+    sql += '\nFROM '
+    sql+= joins.join(" \n")
+    if (predicates.statements.length > 0) {
+      sql += "\nWHERE " + predicates.statements.join(" and ")
+    }
+    sql += '\norder by a.name, sas.benchmarkId'
+    
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+    return (rows)
+  }
+  catch (err) {
+    throw err
+  }
+}
+
 exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
   try {
     let columns = [
@@ -788,6 +871,16 @@ exports.getFindingsByCollection = async function( collectionId, aggregator, benc
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 
+}
+
+exports.getStatusByCollection = async function( collectionId, userObject ) {
+  try {
+    let rows = await _this.queryStatus({ collectionId: collectionId }, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
 }
 
 exports.geStigAssetsByCollectionUser = async function (collectionId, userId, elevate, userObject) {

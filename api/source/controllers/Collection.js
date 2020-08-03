@@ -130,6 +130,23 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
   }
 }
 
+module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
+  try {
+    const collectionId = req.swagger.params['collectionId'].value
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+      const response = await Collection.getStatusByCollection( collectionId, req.userObject )
+      writer.writeJson(res, response)
+    }
+    else {
+      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }
+}
+
 module.exports.geStigAssetsByCollectionUser = async function geStigAssetsByCollectionUser (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value

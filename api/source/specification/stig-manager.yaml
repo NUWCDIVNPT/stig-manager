@@ -309,6 +309,33 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/status':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the status statistics for the specified Collection
+      operationId: getStatusByCollection
+      responses:
+        '200':
+          description: CollectionStatus response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionStatus'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+
 
   '/collections/{collectionId}/stigs':
     parameters:
@@ -2510,6 +2537,49 @@ components:
                 $ref: '#/components/schemas/UserBasic'
             statistics:
               type: object
+    CollectionStatus:
+      type: object
+      properties:
+        assetId:
+          type: string
+        assetName:
+          type: string
+        benchmarkId:
+          type: string
+        minTs:
+          type: string
+        maxTs:
+          type: string
+        rules:
+          $ref: '#/components/schemas/CollectionStatusCount'
+        findings:
+          type: object
+          properties:
+            low:
+              type: integer
+            medium:
+              type: integer
+            high:
+              type: integer
+        status:
+          type: object
+          properties:
+            saved:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            submitted:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            rejected:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            accepted:
+              $ref: '#/components/schemas/CollectionStatusCount'
+        
+    CollectionStatusCount:
+      type: object
+      properties:
+        total:
+          type: integer
+        auto:
+          type: integer
     CollectionUpdate:
       additionalProperties: false
       type: object
