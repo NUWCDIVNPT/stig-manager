@@ -710,11 +710,19 @@ exports.insertManualBenchmark = async function (b) {
         cr.benchmarkId = ?
       order by
         rg.groupId,rgr.ruleId,cr.benchmarkId`
-      hrstart = process.hrtime()
-      ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
-      ;[result] = await connection.query(sqlInsertCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
-      hrend = process.hrtime(hrstart)
-      stats['currentGroupRule'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    hrstart = process.hrtime()
+    ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
+    ;[result] = await connection.query(sqlInsertCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
+    hrend = process.hrtime(hrstart)
+    stats['currentGroupRule'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+    // Stats
+    hrstart = process.hrtime() 
+    await dbUtils.updateStatsAssetStig( connection, {
+      benchmarkId: dml.stig.binds.benchmarkId
+    } )
+    hrend = process.hrtime(hrstart)
+    stats.stats = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       
     hrend = process.hrtime(totalstart)
     stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`

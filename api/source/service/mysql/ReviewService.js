@@ -391,6 +391,10 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
       ;[result] = await connection.query(sqlInsert, binds)
       status = 'creared'
     }
+    await dbUtils.updateStatsAssetStig( connection, {
+      assetId: assetId,
+      rules: [ruleId]
+    })
     await connection.commit()
 
     let rows = await _this.getReviews(projection, {
@@ -494,6 +498,10 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
     await connection.query(sqlHistory, [ assetId, [historyRules] ])
     let [result] = await connection.query(sqlMerge, [mergeBinds])
     let errors = []
+    await dbUtils.updateStatsAssetStig(connection, {
+      assetId: assetId,
+      rules: historyRules
+    })
     await connection.commit()
     return (errors)
   }
@@ -605,6 +613,11 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
     if (result.affectedRows == 0) {
       throw ({message: "Review must exist to be patched."})
     }
+    await dbUtils.updateStatsAssetStig(connection, {
+      assetId: assetId,
+      rules: [ruleId]
+    })
+
     await connection.commit()
     let rows = await _this.getReviews(projection, {
       assetId: assetId,

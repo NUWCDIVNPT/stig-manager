@@ -334,6 +334,12 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       }
     }
+
+    // Stats
+    hrstart = process.hrtime() 
+    await dbUtils.updateStatsAssetStig( connection, {} )
+    hrend = process.hrtime(hrstart)
+    stats.stats = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     
     // Commit
     hrstart = process.hrtime() 

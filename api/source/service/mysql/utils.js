@@ -270,6 +270,102 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
   }
 
 }
+module.exports.updateStatsAssetStig = async function(connection, options) {
+  try {
+    if (!connection) { throw ('Connection required')}
+    // Handle optional predicates, 
+    let predicates = []
+    let binds = []
+    let whereClause = ''
+
+    if (options.rules && options.rules.length > 0) {
+      predicates.push(`sa.benchmarkId IN (SELECT DISTINCT benchmarkId from current_group_rule where ruleId IN ?)`)
+      binds.push( [options.rules] )
+    }
+
+    if (options.collectionId) {
+      predicates.push('a.collectionId = ?')
+      binds.push(options.collectionId)
+    }
+    if (options.assetId) {
+      predicates.push('a.assetId = ?')
+      binds.push(options.assetId)
+    }
+    if (options.benchmarkId) {
+      predicates.push('sa.benchmarkId = ?')
+      binds.push(options.benchmarkId)
+    }
+    if (predicates.length > 0) {
+      whereClause = `where ${predicates.join(' and ')}`
+    }
+
+    const sqlUpdate = `
+    insert into stats_asset_stig (
+      assetId,
+      benchmarkId,
+      minTs,
+      maxTs,
+      savedManual,
+      savedAuto,
+      submittedManual,
+      submittedAuto,
+      rejectedManual,
+      rejectedAuto,
+      acceptedManual,
+      acceptedAuto,
+      highCount,
+      mediumCount,
+      lowCount)
+    select * from (
+      select
+        sa.assetId,
+        sa.benchmarkId,
+        min(reviews.ts) as minTs,
+        max(reviews.ts) as maxTs,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedManual,
+        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedAuto,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedManual,
+        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedAuto,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedManual,
+        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedAuto,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedManual,
+        sum(CASE WHEN reviews.autoResult = 1  and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedAuto,
+        sum(CASE WHEN reviews.resultId=4 and r.severity='high' THEN 1 ELSE 0 END) as highCount,
+        sum(CASE WHEN reviews.resultId=4 and r.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
+        sum(CASE WHEN reviews.resultId=4 and r.severity='low' THEN 1 ELSE 0 END) as lowCount
+      from
+        asset a
+        left join stig_asset_map sa using (assetId)
+        left join current_group_rule cgr using (benchmarkId)
+        left join rule r using (ruleId)
+        left join stigman.review reviews on (r.ruleId=reviews.ruleId and reviews.assetId=sa.assetId)
+      ${whereClause}
+      group by
+        sa.assetId,
+        sa.benchmarkId
+    ) as stats
+    on duplicate key update
+        minTs = stats.minTs,
+        maxTs = stats.maxTs,
+        savedManual = stats.savedManual,
+        savedAuto = stats.savedAuto,
+        submittedManual = stats.submittedManual,
+        submittedAuto = stats.submittedAuto,
+        rejectedManual = stats.rejectedManual,
+        rejectedAuto = stats.rejectedAuto,
+        acceptedManual = stats.acceptedManual,
+        acceptedAuto = stats.acceptedAuto,
+        highCount = stats.highCount,
+        mediumCount = stats.mediumCount,
+        lowCount = stats.lowCount
+    `
+    const [result] = await connection.query(sqlUpdate, binds)
+    return result  
+  }
+  catch (err) {
+    throw err
+  }
+}
 
 
 module.exports.CONTEXT_ALL = 'all'
