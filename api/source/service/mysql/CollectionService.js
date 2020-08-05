@@ -420,6 +420,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
       'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join asset a on c.collectionId = a.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
+      'left join user_stig_asset_map usa on sa.saId = usa.saId',
       'left join stats_asset_stig sas on (sa.assetId = sas.assetId and sa.benchmarkId = sas.benchmarkId)',
       'left join current_rev cr on sas.benchmarkId = cr.benchmarkId',
     ]

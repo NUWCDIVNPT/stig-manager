@@ -144,7 +144,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         insertBinds: []
       },
       review: {
-        sqlDelete: `DELETE FROM review`,
+        sqlDelete: `TRUNCATE review`,
         sqlInsert: `INSERT IGNORE INTO review (
           assetId,
           ruleId,
@@ -275,7 +275,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 
     // Connect to MySQL and start transaction
     connection = await dbUtils.pool.getConnection()
-    await connection.query('START TRANSACTION')
+    await connection.query('SET FOREIGN_KEY_CHECKS=0')
 
     // // Preload
     // hrstart = process.hrtime() 
@@ -297,14 +297,15 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'asset',
       'userData',
     ]
+    res.write('deletes\n')
     for (const table of tableOrder) {
+      res.write(`${table}\n`)
       hrstart = process.hrtime() 
       ;[result] = await connection.query(dml[table].sqlDelete)
       hrend = process.hrtime(hrstart)
       stats[table] = {}
       stats[table].delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     }
-    res.write('deletes\n')
 
     // Inserts
 
@@ -319,6 +320,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'review',
       'reviewHistory'
     ]
+    await connection.query('SET FOREIGN_KEY_CHECKS=1')
     for (const table of tableOrder) {
       if (dml[table].insertBinds.length > 0) {
         hrstart = process.hrtime()

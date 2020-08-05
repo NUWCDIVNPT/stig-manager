@@ -139,17 +139,17 @@ SM.CollectionNodeConfig = function (collection) {
       leaf: true
     })
   }
-  if (collectionGrant && collectionGrant.accessLevel >= 2) {
+  // if (collectionGrant && collectionGrant.accessLevel >= 2) {
     reports.push({
-      id: `${collection.collectionId}-findings-poam-node`,
-      text: 'POAM',
+      id: `${collection.collectionId}-findings-status-node`,
+      text: 'Status',
       collectionId: collection.collectionId,
       collectionName: collection.name,
-      action: 'collection-poam',
+      action: 'collection-status',
       iconCls: 'sm-report-icon',
       leaf: true
     })
-  }
+  // }
 
   children.push(
     {
@@ -774,8 +774,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         if (n.attributes.action == 'collection-management') {
           addCollectionManager(n.attributes.collectionId, n.attributes.collectionName)
         }
-        if (n.attributes.action == 'collection-poam') {
-          addPoamWorkspace(n.attributes.collectionId, n.attributes.collectionName)
+        if (n.attributes.action == 'collection-status') {
+          addCompletionStatus(n.attributes.collectionId, n.attributes.collectionName)
         }
 
         switch (n.id) {

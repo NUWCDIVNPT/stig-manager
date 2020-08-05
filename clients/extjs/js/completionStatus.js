@@ -14,83 +14,82 @@ function addCompletionStatus(collectionId,collectionName) {
 
 	var summary = new Ext.ux.grid.GroupSummary();
 
+	const statusStore = new Ext.data.GroupingStore ({
+		proxy: new Ext.data.HttpProxy({
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/status`,
+			method: 'GET',
+		}),
+		sortInfo: {
+			field: 'assetName'
+		},
+		groupField: 'assetName',
+		reader: new Ext.data.JsonReader({
+			root: '',
+			fields: [
+				{name:'assetId',type:'int'},
+				{name:'benchmarkId',type:'string'},
+	
+				{name:'rulesAuto', type:'int', mapping: 'rules.auto'},
+				{name:'rulesTotal', type:'int', mapping: 'rules.total'},
+				
+
+				{name:'savedTotal',type:'int', mapping: 'status.saved.total'},
+	
+				{name:'submittedTotal',type:'int', mapping: 'status.submitted.total'},
+	
+				{name:'rejectedTotal',type:'int', mapping: 'status.rejected.total'},
+	
+				{name:'acceptedTotal',type:'int', mapping: 'status.accepted.total'},
+	
+				{name:'highCount',type:'int', mapping: 'findings.high'},
+				{name:'mediumCount',type:'int', mapping: 'findings.medium'},
+				{name:'lowCount',type:'int', mapping: 'findings.low'},
+				'assetName',
+				{name:'notCheckedTotal',type:'int', convert: function (v, r) { 
+					return r.rules.total - (r.status.saved.total + r.status.submitted.total + r.status.rejected.total + r.status.accepted.total) 
+				} },
+
+			],
+			idProperty: (v) => {
+				return v.assetId + v.benchmarkId
+			}	
+		}),
+		listeners: {
+			load: function (store,records) {
+				Ext.getCmp('completionGrid-' + collectionId + '-totalText').setText(records.length + ' records');
+			}
+		}
+	})
+
 	var completionGrid = new Ext.grid.GridPanel({
 		id: 'completionGrid-' + collectionId,
+		cls: 'sm-round-panel',
+		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
         plugins: summary,
 		//title: 'Checklist Status (' + collectionName + ')',
 		region:'center',
 		layout:'fit',
-		store: new Ext.data.GroupingStore ({
-			url: 'pl/getCompletionStatus.pl',
-			sortInfo: {
-				field: 'assetName'
-			},
-			groupField: 'assetName',
-			reader: new Ext.data.JsonReader({
-				root: 'rows',
-				totalProperty: 'records',
-				fields: [
-					{name:'id',type:'int'},
-					{name:'assetId',type:'int'},
-					{name:'benchmarkId',type:'string'},
-					{name:'revId',type:'string'},
-
-					{name:'checksManual',type:'int'},
-					{name:'checksScap',type:'int'},
-					{name:'checksTotal',type:'int'},
-					
-					{name:'unreviewedManual',type:'int'},
-					{name:'unreviewedScap',type:'int'},
-					{name:'unreviewedTotal',type:'int'},
-
-					{name:'inProgressManual',type:'int'},
-					{name:'inProgressScap',type:'int'},
-					{name:'inProgressTotal',type:'int'},
-
-					{name:'submittedManual',type:'int'},
-					{name:'submittedScap',type:'int'},
-					{name:'submittedTotal',type:'int'},
-
-					{name:'rejectedManual',type:'int'},
-					{name:'rejectedScap',type:'int'},
-					{name:'rejectedTotal',type:'int'},
-
-					{name:'approvedManual',type:'int'},
-					{name:'approvedScap',type:'int'},
-					{name:'approvedTotal',type:'int'},
-
-					{name:'cat1Count',type:'int'},
-					{name:'cat2Count',type:'int'},
-					{name:'cat3Count',type:'int'},
-					'assetName','stigTitle'
-				]
-			}),
-			listeners: {
-				load: function (store,records) {
-					Ext.getCmp('completionGrid-' + collectionId + '-totalText').setText(records.length + ' records');
-				}
-			}
-		}),
+		store: statusStore,
 		columns: [
 			{header: "Asset",width:35,dataIndex:'assetName',sortable:true,
 				summaryRenderer: function(v, params, data){
-                    return "Checklist totals";
+                    return "Totals";
                 },
 			},
 			{header: "Checklist",width:35,dataIndex:'benchmarkId',sortable:true,id:'completionGrid-'+ collectionId + 'becnhmarkId',
 				summaryRenderer: function(v, params, data){
-                    return "Asset totals";
+                    return "Totals";
                 },
 			},
-			{header: "Checks",width:10,dataIndex:'checksTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "Not Reviewed",width:10,dataIndex:'unreviewedTotal',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},
-			{header: "In Progress",width:10,dataIndex:'inProgressTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "Checks",width:10,dataIndex:'rulesTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "Not Checked",width:10,dataIndex:'notCheckedTotal',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},
+			{header: "Saved",width:10,dataIndex:'savedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/ready-16.png width=12 height=12> Submitted",width:10,dataIndex:'submittedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/rejected-16.png width=12 height=12> Returned",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "<img src=img/lock-16.png width=12 height=12> Approved",width:10,dataIndex:'approvedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "Cat 1",width:10,dataIndex:'cat1Count',sortable:true,align:'right',renderer:renderCat1,summaryType: 'sum'},			
-			{header: "Cat 2",width:10,dataIndex:'cat2Count',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},			
-			{header: "Cat 3",width:10,dataIndex:'cat3Count',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}
+			{header: "<img src=img/lock-16.png width=12 height=12> Accepted",width:10,dataIndex:'acceptedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "Cat 1",width:10,dataIndex:'highCount',sortable:true,align:'right',renderer:renderCat1,summaryType: 'sum'},			
+			{header: "Cat 2",width:10,dataIndex:'mediumCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},			
+			{header: "Cat 3",width:10,dataIndex:'lowCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}
 			
 		],
 		//autoExpandColumn:'completionGrid-'+ collectionId + 'becnhmarkId',
@@ -171,7 +170,7 @@ function addCompletionStatus(collectionId,collectionName) {
 						}
 					},{
 						xtype: 'tbbutton',
-						icon: 'img/mycomputer1-16.png',
+						icon: 'img/accuracy-16.png',
 						tooltip: 'Group by asset',
 						toggleGroup: 'completionGrid-groupBy' + collectionId,
 						enableToggle:true,
@@ -349,7 +348,7 @@ function addCompletionStatus(collectionId,collectionName) {
 		})
 	});
 	
-	var thisTab = Ext.getCmp('reports-center-tab').add({
+	var thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'completionTab-' + collectionId,
 		iconCls: 'sm-report-icon',
 		title: 'Completion Status (' + collectionName + ')',
@@ -359,7 +358,7 @@ function addCompletionStatus(collectionId,collectionName) {
 	});
 	thisTab.show();
 	
-	completionGrid.getStore().load({params:{collectionId: collectionId}});
+	completionGrid.getStore().load();
 
 }; //end addCompletionReport();
 
