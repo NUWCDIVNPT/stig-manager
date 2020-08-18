@@ -13,7 +13,7 @@ uploads/
 .env
 
 # ZIP archives #
-*.zip
+# *.zip
 
 # Database #
 stigman-data/
