@@ -165,6 +165,7 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
       'distinct cr.benchmarkId', 
       `concat('V', cr.version, 'R', cr.release) as lastRevisionStr`, 
       'cr.benchmarkDateSql as lastRevisionDate',
+      'cr.ruleCount as ruleCount',
       'st.title'
     ]
     let joins = [
