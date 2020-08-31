@@ -1,3 +1,9 @@
+// ext-base.js adds a 'remove' method to Array.prototype
+// By default, that property is enumerated by for ... in
+// This breaks fast-xml-parser 3.14.3 (among others?) so we make the property not enumerable
+// Source: carl.a.smigielski@saic.com
+Object.defineProperty(Array.prototype, 'remove', { enumerable: false })
+
 // Column xtype for UNIX timestamps
 // Source: carl.a.smigielski@saic.com
 Ext.grid.Column.types.timestampcolumn = Ext.extend(Ext.grid.Column, {

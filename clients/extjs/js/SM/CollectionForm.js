@@ -681,7 +681,25 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             iconCls: 'icon-del',
             // cls: 'sm-bare-button',
             width: 25,
-            border: false
+            border: false,
+            handler: async function () {
+                try {
+                    var confirmStr="Deleting this Collection will <b>permanently remove</b> all data associated with the Collection. This includes all Assets and their associated assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the Collection?";
+                    Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+                        if (btn == 'yes') {
+                            let result = await Ext.Ajax.requestPromise({
+                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                                method: 'DELETE'
+                            })
+                            let apiCollection = JSON.parse(result.response.responseText)
+                            SM.Dispatcher.fireEvent('collectiondeleted', apiCollection.collectionId)
+                        }
+                    })
+                }
+                catch (e) {
+                    alert(e.mes)
+                }
+            }
         })
         let workflowCombo = new SM.WorkflowComboBox({
             fieldLabel: 'Workflow',
@@ -751,12 +769,9 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             }
         }
         let config = {
-            // baseCls: 'x-plain',
-            // border: false,
             title: 'Collection properties',
             layout: 'form',
             labelWidth: 100,
-            // monitorValid: true,
             getFieldValues: function (dirtyOnly) {
                 // Override Ext.form.FormPanel implementation to check submitValue
                 let o = {}, n, key, val;
@@ -782,12 +797,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 firstItem,
                 workflowCombo,
                 metadataGrid
-            ],
-            // buttons: [{
-            //     text: this.btnText || 'Save',
-            //     formBind: true,
-            //     handler: this.btnHandler || function () {}
-            // }]
+            ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.CollectionPanel.superclass.initComponent.call(this);

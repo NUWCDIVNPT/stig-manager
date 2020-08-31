@@ -264,7 +264,7 @@ SM.StigNodeConfig = function (collectionId, stig) {
 
 SM.StigAssetNodeConfig = function (stig, asset) {
   return {
-    id: `${asset.collection.collectionId}-${stig.benchmarkId}-${asset.assetId}-leaf`,
+    id: `${asset.collectionId}-${stig.benchmarkId}-${asset.assetId}-leaf`,
     text: asset.name,
     leaf: true,
     report: 'review',
@@ -273,7 +273,7 @@ SM.StigAssetNodeConfig = function (stig, asset) {
     assetName: asset.name,
     // stigRevStr: stig.lastRevisionStr,
     assetId: asset.assetId,
-    collectionId: asset.collection.collectionId,
+    collectionId: asset.collectionId,
     benchmarkId: stig.benchmarkId,
     qtip: asset.name
   }

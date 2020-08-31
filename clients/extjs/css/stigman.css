@@ -1,11 +1,18 @@
 
-a:link {
-	color: #3366cc;
-  }
+.sm-drop {
+	border: 2px dashed #bbb;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	padding: 25px;
+	text-align: center;
+	font: 20pt bold;
+	color: #bbb;
+}
 
-a:visited {
-	color: #3366cc;
-  }
+body {
+    font:normal 11px Open Sans,Open Sans,verdana,helvetica;
+}
 
 .sm-grid-result-sprite {
 	font: bold 11px/13px Open Sans,helvetica, sans-serif;
@@ -16,20 +23,22 @@ a:visited {
 	border-radius: 3px;
 	margin-left: 0px;
 	user-select: none;
+	max-width: 20px;
+	margin:  0 auto;
 }
 
 .sm-result-pass {
 	color: green;
-	padding: 0px 0px 0px 2px;
+    text-align: center;
 }
 
 .sm-result-fail {
 	color: #d74400;
-	padding: 0px 0px 0px 5px;
+	text-align: center;
 }
 .sm-result-na {
 	color: grey;
-	padding: 0px 0px 0px 1px;
+	text-align: center;
 }
 
 .sm-grid-sprite {
@@ -320,6 +329,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-home-widget-title {
 	padding-top:10px;
 	padding-left:20px;
+	padding-right:20px;
+	padding-bottom:10px;
+	font: bold 18px Open Sans, helvetica, sans-serif;
+	color:#3366cc;
+}
+
+.sm-dialog-panel-title {
+	padding-top:10px;
 	padding-right:20px;
 	padding-bottom:10px;
 	font: bold 18px Open Sans, helvetica, sans-serif;

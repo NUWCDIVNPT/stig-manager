@@ -130,8 +130,17 @@ Ext.ux.form.FileUploadField = Ext.extend(Ext.form.TextField,  {
             tag: 'input',
             type: 'file',
             accept: this.accept || '*',
-            size: 1
-        });
+            // size: 100
+        })
+        if (this.multiple) {
+            this.fileInput.dom.setAttribute('multiple', '')
+        }
+        if (this.webkitdirectory) {
+            this.fileInput.dom.setAttribute('webkitdirectory', '')
+        }
+        if (this.style) {
+            this.fileInput.dom.setAttribute('style', this.style)
+        }
     },
     
     reset : function(){
