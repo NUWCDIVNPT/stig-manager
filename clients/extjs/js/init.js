@@ -45,6 +45,8 @@ function loadScripts() {
         "js/SM/CollectionGrant.js",
         "js/SM/FindingsPanel.js",
         "js/SM/Assignments.js",
+        "js/SM/Parsers.js",
+        "js/SM/ReviewImport.js",
         "js/collectionManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",
@@ -66,6 +68,7 @@ function loadScripts() {
         "js/scanManagement.js",
         "js/ExportButton.js",
         "js/jszip.min.js",
+        "js/fast-xml-parser.min.js",
         "js/stigman.js"
     ].forEach(function(src) {
         var script = document.createElement('script');

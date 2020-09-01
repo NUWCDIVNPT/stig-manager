@@ -508,10 +508,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     const columns = [
       'DISTINCT CAST(a.assetId as char) as assetId',
       'a.name',
-      `json_object(
-        'collectionId', CAST(c.collectionId as char),
-        'name', c.name,
-        'workflow', c.workflow) as collection`
+      'CAST(a.collectionId as char) as collectionId'
     ]
     let joins = [
       'collection c',
@@ -520,16 +517,35 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
     ]
+    // PROJECTIONS
+    if (inProjection.includes('restrictedUserAccess')) {
+      joins.push('left join user_data ud on usa.userId = ud.userId')
+      columns.push(`cast(
+        concat('[', 
+          coalesce (
+            group_concat(distinct 
+              case when ud.userId is not null then 
+                json_object(
+                  'userId', ud.userId, 
+                  'username', ud.username)
+              else null end 
+            order by ud.username),
+            ''),
+        ']')
+      as json) as "restrictedUserAccess"`)
+    }
     // PREDICATES
     let predicates = {
       statements: [],
       binds: []
     }
     if (inPredicates.collectionId) {
+      // Mandatory by OpenAPI spec
       predicates.statements.push('c.collectionId = ?')
       predicates.binds.push( inPredicates.collectionId )
     }
     if (inPredicates.benchmarkId) {
+      // Mandatory by OpenAPI spec
       predicates.statements.push('sa.benchmarkId = ?')
       predicates.binds.push( inPredicates.benchmarkId )
     }
@@ -546,6 +562,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
+    sql += ' group by a.assetId, a.name, a.collectionId'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -650,7 +667,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       review.actionComment,
       MAX(c.content) as "checkContent",
       MAX(fix.text) as "fixText",
-      group_concat(rgrcc.cci ORDER BY rgrcc.cci) as "ccis"
+      group_concat(rcc.cci ORDER BY rcc.cci) as "ccis"
     FROM
       revision rev 
       left join rev_group_map rg on rev.revId = rg.revId 

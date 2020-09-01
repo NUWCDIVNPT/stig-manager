@@ -84,14 +84,9 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         json_object(
           'assetId', CAST(a.assetId as char),
           'name', a.name,
-          'collection', json_object(
-            'collectionId', CAST(c.collectionId as char),
-            'name', c.name,
-            'workflow', c.workflow
-          )
+          'collectionId', CAST(a.collectionId as char)
         )
-        from asset a 
-        left join collection c on a.collectionId = c.collectionId
+        from asset a
         where a.assetId = r.assetId) as "asset"`)
     }
     if (inProjection.includes('stigs')) {

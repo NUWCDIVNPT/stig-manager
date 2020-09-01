@@ -158,12 +158,14 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 forceFit:true
             }),
             listeners: {
-                rowdblclick: {
-                    fn: function(grid,rowIndex,e) {
-                        var r = grid.getStore().getAt(rowIndex);
-                        Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-                        showAssetProps(r.get('assetId'), me.collectionId);
-                    }
+                rowdblclick: function(grid,rowIndex,e) {
+                    var r = grid.getStore().getAt(rowIndex);
+                    Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+                    showAssetProps(r.get('assetId'), me.collectionId);
+                },
+                beforedestroy: function(grid) {
+                    SM.Dispatcher.removeListener('assetchanged', me.onAssetChanged, me)
+                    SM.Dispatcher.removeListener('assetcreated', me.onAssetCreated, me)
                 }
             },
             tbar: new Ext.Toolbar({
@@ -174,6 +176,15 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         handler: function() {
                             Ext.getBody().mask('Loading form...');
                             showAssetProps( null, me.collectionId);            
+                        }
+                    }
+                    ,'-'
+                    ,{
+                        iconCls: 'sm-import-icon',
+                        text: 'Import CKL or SCAP...',
+                        handler: function() {
+                            let el = Ext.getCmp(`${me.collectionId}-collection-manager-tab`)
+                            showImportResultFiles( me.collectionId, el.getEl().dom );            
                         }
                     }
                     ,'-'
@@ -806,3 +817,4 @@ async function showAssetProps( assetId, initialCollectionId ) {
         Ext.getBody().unmask()
     }	
 } //end showAssetProps
+

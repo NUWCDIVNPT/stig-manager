@@ -76,6 +76,13 @@ async function addCollectionManager( collectionId, collectionName ) {
 			layoutConfig: {
 				targetCls: 'sm-border-layout-ct'
 			},
+			listeners: {
+				beforedestroy: () => {
+					SM.Dispatcher.removeListener('assetchanged', assetsChanged)
+					SM.Dispatcher.removeListener('assetcreated', assetsChanged)
+					SM.Dispatcher.removeListener('assetdeleted', assetsChanged)
+				}
+			},
 			items: [
 				{
 					region: 'west',

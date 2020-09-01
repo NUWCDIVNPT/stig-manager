@@ -563,7 +563,8 @@ CREATE TABLE `rule_oval_map` (
   `benchmarkId` varchar(255) NOT NULL,
   `releaseInfo` varchar(255) NOT NULL,
   PRIMARY KEY (`roId`),
-  KEY `index2` (`ruleId`)
+  KEY `index2` (`ruleId`),
+  KEY `index3` (`benchmarkId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -661,8 +662,8 @@ CREATE TABLE `stig_asset_map` (
   PRIMARY KEY (`saId`),
   UNIQUE KEY `IDX_BAID` (`benchmarkId`,`assetId`),
   KEY `IDX_ASSETID` (`assetId`),
-  CONSTRAINT `FK_STIG_ASSET_MAP_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE
-  -- ,CONSTRAINT `FK_STIG_ASSET_MAP_2` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `FK_STIG_ASSET_MAP_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_STIG_ASSET_MAP_2` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

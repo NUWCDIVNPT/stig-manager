@@ -254,13 +254,12 @@ paths:
             - 'stig-manager:collection:read'
   '/collections/{collectionId}/grants/{userId}/access':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/UserIdPath'
     get:
       tags:
         - Collection
-      summary: UNIMPLEMENTED Return an accessLevel = 1 User's access to the specified Collection
+      summary: Return an accessLevel = 1 User's access to the specified Collection
       operationId: geStigAssetsByCollectionUser
       responses:
         '200':
@@ -283,7 +282,7 @@ paths:
     put:
       tags:
         - Collection
-      summary: UNIMPLEMENTED Set all of an accessLevel = 1 User's access to the specified Collection
+      summary: Set all of an accessLevel = 1 User's access to the specified Collection
       operationId: setStigAssetsByCollectionUser
       requestBody:
         required: true
@@ -299,7 +298,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CollectionProjected'
+                type: array
+                items:
+                  $ref: '#/components/schemas/StigAssetProjected'
         default:
           description: unexpected error
           content:
@@ -1412,7 +1413,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssetBasic'
+                  allOf:
+                    - $ref: '#/components/schemas/AssetBasic'
+                    - type: object
+                      properties:
+                        restrictedUserAccess:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/UserBasic'
         default:
           description: unexpected error
           content:
@@ -3371,7 +3379,7 @@ components:
         items:
           type: string
           enum:
-            - userGrants
+            - restrictedUserAccess
     UserAccessLevelQuery:
       name: accessLevel
       in: query
