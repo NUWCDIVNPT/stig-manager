@@ -1,3 +1,5 @@
+.gitignore
+
 # NodeJS #
 .nyc_output/
 coverage/
@@ -21,3 +23,4 @@ utl32k.sql
 
 delivery.sh
 state.json
+docker/stigman-init/stigs/*

@@ -28,7 +28,9 @@
   "testRuleId": "SV-106179r1_rule",
   "testGroupId": "V-97041",
   "testCci": "1",
-  "testCollectionInvalid": "83"
+  "testCollectionInvalid": "83",
+  "scrapLvl1": "86",
+  "scrapAdmin": "87"
 
 },
 {
@@ -60,7 +62,8 @@
   "userMatchString": "lvl1",
   "reviewMatchString": "lvl1",
   "testRuleId": "SV-106179r1_rule",
-  "testCollectionInvalid": "83"
+  "testCollectionInvalid": "83",
+  "scrapLvl1": "86"
 
 },
 {
@@ -90,7 +93,8 @@
   "testUserId": "85",
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
-  "testRuleId": "SV-106179r1_rule"
+  "testRuleId": "SV-106179r1_rule",
+  "scrapLvl1": "86"
 
 },
 
@@ -122,7 +126,8 @@
   "testUserId": "85",
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
-  "testRuleId": "SV-106179r1_rule"
+  "testRuleId": "SV-106179r1_rule",
+  "scrapLvl1": "86"
 
 
 },
@@ -154,7 +159,8 @@
   "testUserId": "85",
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
-  "testRuleId": "SV-106179r1_rule"
+  "testRuleId": "SV-106179r1_rule",
+  "scrapLvl1": "86"
 
 
 },
@@ -187,7 +193,8 @@
   "testUserId": "85",
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
-  "testRuleId": "SV-106179r1_rule"
+  "testRuleId": "SV-106179r1_rule",
+  "scrapLvl1": "86"
 
  },
 {
@@ -218,7 +225,8 @@
   "testUserId": "85",
   "userMatchString": "creator",
   "reviewMatchString": "creator",
-  "testRuleId": "SV-106179r1_rule"
+  "testRuleId": "SV-106179r1_rule",
+  "scrapLvl1": "86"
 
 
 },
@@ -249,7 +257,8 @@
   "assets.queryBenchmark" : "VPN_SRG",
   "assets.queryRev" : "V1R1",
   "assets.benchmarkQuery.response" : "[29,42,62]",
-  "assets.checklistLength" : 81
+  "assets.checklistLength" : 81,
+  "scrapLvl1": "86"
 
   
 }
