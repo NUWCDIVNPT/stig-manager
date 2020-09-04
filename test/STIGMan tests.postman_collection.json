@@ -16266,7 +16266,7 @@
 															}
 														},
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?elevate={{elevated}}&projection=userGrants",
+															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?elevate={{elevated}}&projection=restrictedUserAccess",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -16285,19 +16285,8 @@
 																},
 																{
 																	"key": "projection",
-																	"value": "userGrants",
+																	"value": "restrictedUserAccess",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "<string>",
-																	"description": "Additional properties to include in the response.\n",
-																	"disabled": true
-																},
-																{
-																	"key": null,
-																	"value": "{{scrapAsset}}",
-																	"disabled": true
 																}
 															],
 															"variable": [
@@ -16504,7 +16493,7 @@
 													}
 												},
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -16518,7 +16507,8 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "{{elevated}}"
+															"value": "{{elevated}}",
+															"disabled": true
 														}
 													],
 													"variable": [
@@ -16833,7 +16823,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"name\": \"Collection Z Put\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": true\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}",
+											"raw": "{\n  \"name\": \"Collection Z Put\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": true\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}",
 											"options": {
 												"raw": {}
 											}
@@ -17313,265 +17303,6 @@
 											"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
 										}
 									]
-								},
-								{
-									"name": "collections/{collectionId} - put",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"id": "ba48f402-192a-4022-98b1-70dd257d0ec1",
-												"exec": [
-													"let user = pm.environment.get(\"user\");\r",
-													"console.log(\"user: \" + user);\r",
-													"\r",
-													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-													"    user = \"elevated\";\r",
-													"    console.log(\"setting user to 'elevated'\");\r",
-													"}\r",
-													"\r",
-													"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" ) { //placeholder for \"users\" that should fail\r",
-													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"    return;\r",
-													"}\r",
-													"else {\r",
-													"    pm.test(\"Status code is 200\", function () {\r",
-													"        pm.response.to.have.status(200);\r",
-													"    });\r",
-													"}\r",
-													"if (pm.response.code !== 200) {\r",
-													"    return;\r",
-													"}\r",
-													"\r",
-													"\r",
-													"let jsonData = pm.response.json();\r",
-													"\r",
-													"\r",
-													"pm.test(\"Response JSON is an object\", function () {\r",
-													"    pm.expect(jsonData).to.be.an('object');\r",
-													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
-													"\r",
-													"});\r",
-													"\r",
-													"// let user = pm.environment.get(\"user\");\r",
-													"// console.log(\"user: \" + user);\r",
-													"// if (user == \"wf10\") {\r",
-													"//     pm.test(\"Status should be is 403 for user wf10\", function () {\r",
-													"//         pm.response.to.have.status(403);\r",
-													"//     });\r",
-													"//     return;\r",
-													"// }\r",
-													"\r",
-													"// if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-													"//     user = \"elevated\";\r",
-													"//     console.log(\"user is elevated\");\r",
-													"\r",
-													"// }\r",
-													"\r",
-													"// if (user == 'elevated' || user == 'lvl3' || user == 'lvl4') {\r",
-													"//     pm.test(\"User is elevated. Status code is 200\", function () {\r",
-													"//         pm.response.to.have.status(200);\r",
-													"//     });\r",
-													"// }\r",
-													"// else {\r",
-													"//     pm.test(\"User is not Staff or elevated. Expected status code is 403\", function () {\r",
-													"//         pm.response.to.have.status(403);\r",
-													"//     });\r",
-													"//     return;\r",
-													"// }\r",
-													"\r",
-													"// if (pm.response.code == 500) {\r",
-													"//     console.log(\"Server returned 500\")\r",
-													"//     return;\r",
-													"// }\r",
-													"\r",
-													"// var jsonData = pm.response.json();\r",
-													"\r",
-													"// //console.log(jsonData);\r",
-													"// // pm.test(\"Your test name (fail)\", function () {\r",
-													"// //     pm.expect(jsonData.value).to.eql(100);\r",
-													"// // });\r",
-													"\r",
-													"\r",
-													"// pm.test(\"Response JSON is an object\", function () {\r",
-													"//     pm.expect(jsonData).to.be.an('object');\r",
-													"// });\r",
-													"\r",
-													"// let putCollection = jsonData.collectionId;\r",
-													"// // console.log(\"created collection: \" + createdCollection)\r",
-													"// // pm.environment.set(\"createdCollection\", createdCollection);\r",
-													"\r",
-													"// pm.test(`PUT Collection: ${putCollection}`, function () {\r",
-													"//     pm.expect(putCollection).to.be.an('string');\r",
-													"// });\r",
-													"\r",
-													""
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"method": "PUT",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\r\n  \"name\": \"Collection Z put\",\r\n  \"workflow\": \"continuous\",\r\n  \"metadata\": {\r\n  \"pocName\": \"poc2Put\",\r\n  \"pocEmail\": \"pocEmailPut@email.com\",\r\n  \"pocPhone\": \"12342\",\r\n  \"reqRar\": true\r\n  },\r\n    \"grants\": [\r\n        {\r\n          \"userId\": \"1\",\r\n          \"accessLevel\": 4\r\n        },\r\n        {\r\n                \"userId\": \"21\",\r\n            \"accessLevel\": 2\r\n        },\r\n        {\r\n                \"userId\": \"44\",\r\n            \"accessLevel\": 3\r\n        },\r\n        {\r\n                \"userId\": \"45\",\r\n            \"accessLevel\": 4\r\n        }\r\n    ]\r\n}\r\n",
-											"options": {
-												"raw": {}
-											}
-										},
-										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId?projection=assets&projection=stigs&elevate={{elevated}}&projection=grants&projection=owners&projection=statistics",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"collections",
-												":collectionId"
-											],
-											"query": [
-												{
-													"key": "projection",
-													"value": "assets",
-													"description": "Additional properties to include in the response.\n"
-												},
-												{
-													"key": "projection",
-													"value": "stigs",
-													"description": "Additional properties to include in the response.\n"
-												},
-												{
-													"key": "elevate",
-													"value": "{{elevated}}"
-												},
-												{
-													"key": "projection",
-													"value": "grants"
-												},
-												{
-													"key": "projection",
-													"value": "owners"
-												},
-												{
-													"key": "projection",
-													"value": "statistics"
-												}
-											],
-											"variable": [
-												{
-													"key": "collectionId",
-													"value": "{{scrapCollection}}",
-													"type": "string",
-													"description": "(Required) A path parameter that indentifies a Collection"
-												}
-											]
-										}
-									},
-									"response": [
-										{
-											"name": "unexpected error",
-											"originalRequest": {
-												"method": "PATCH",
-												"header": [],
-												"body": {
-													"mode": "raw",
-													"raw": "{\n    \"collectionId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId?projection=<string>&projection=<string>",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId"
-													],
-													"query": [
-														{
-															"key": "projection",
-															"value": "<string>"
-														},
-														{
-															"key": "projection",
-															"value": "<string>"
-														}
-													],
-													"variable": [
-														{
-															"key": "collectionId"
-														}
-													]
-												}
-											},
-											"status": "Internal Server Error",
-											"code": 500,
-											"_postman_previewlanguage": "json",
-											"header": [
-												{
-													"key": "Content-Type",
-													"value": "application/json"
-												}
-											],
-											"cookie": [],
-											"body": "{\n \"code\": \"<integer>\",\n \"message\": \"<string>\"\n}"
-										},
-										{
-											"name": "CollectionProjected response",
-											"originalRequest": {
-												"method": "PATCH",
-												"header": [],
-												"body": {
-													"mode": "raw",
-													"raw": "{\n    \"collectionId\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"emassId\": \"<string>\",\n    \"pocName\": \"<string>\",\n    \"pocEmail\": \"<string>\",\n    \"pocPhone\": \"<string>\",\n    \"reqRar\": \"<boolean>\",\n    \"macCl\": \"<string>\",\n    \"assetIds\": [\n        \"<integer>\",\n        \"<integer>\"\n    ]\n}"
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId?projection=<string>&projection=<string>",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId"
-													],
-													"query": [
-														{
-															"key": "projection",
-															"value": "<string>"
-														},
-														{
-															"key": "projection",
-															"value": "<string>"
-														}
-													],
-													"variable": [
-														{
-															"key": "collectionId"
-														}
-													]
-												}
-											},
-											"status": "OK",
-											"code": 200,
-											"_postman_previewlanguage": "json",
-											"header": [
-												{
-													"key": "Content-Type",
-													"value": "application/json"
-												}
-											],
-											"cookie": [],
-											"body": "{\n \"collectionId\": \"<integer>\",\n \"name\": \"<string>\",\n \"emassId\": \"<string>\",\n \"pocName\": \"<string>\",\n \"pocEmail\": \"<string>\",\n \"pocPhone\": \"<string>\",\n \"reqRar\": \"<boolean>\",\n \"macCl\": \"<string>\",\n \"assets\": [\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  },\n  {\n   \"assetId\": \"<integer>\",\n   \"name\": \"<string>\",\n   \"dept\": \"<string>\"\n  }\n ],\n \"stigs\": [\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  },\n  {\n   \"benchmarkId\": \"<string>\",\n   \"title\": \"<string>\",\n   \"lastRevisionStr\": \"<string>\",\n   \"lastRevisionDate\": \"<string>\"\n  }\n ]\n}"
-										}
-									]
 								}
 							],
 							"protocolProfileBehavior": {},
@@ -17811,6 +17542,51 @@
 											"item": [
 												{
 													"name": "Delete a STIG assignment to an Asset",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "d96a64c1-cd8d-4874-81ee-92579710e14c",
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
 													"request": {
 														"method": "DELETE",
 														"header": [],
@@ -17945,6 +17721,51 @@
 										},
 										{
 											"name": "Delete all STIG assignments to an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"id": "fa4e5193-979d-45ad-b467-d1228347b8bc",
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"    pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
 											"request": {
 												"method": "DELETE",
 												"header": [],
@@ -18119,13 +17940,13 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"test asset PATCH {{user}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}",
+											"raw": "{\n    \"name\": \"test asset PATCH {{user}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}",
 											"options": {
 												"raw": {}
 											}
 										},
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -18137,8 +17958,7 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
-													"disabled": true
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 												},
 												{
 													"key": "projection",
@@ -18327,7 +18147,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"test asset PUT {{user}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}",
+											"raw": "{\n    \"name\": \"test asset PUT {{user}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}",
 											"options": {
 												"raw": {}
 											}
@@ -18479,14 +18299,56 @@
 								},
 								{
 									"name": "Delete an Asset",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "9085b1e3-1b37-40f3-9146-b1e2a9563edf",
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" ) { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+													"\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
 									"request": {
-										"auth": {
-											"type": "oauth2"
-										},
 										"method": "DELETE",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -18497,25 +18359,28 @@
 											"query": [
 												{
 													"key": "elevate",
-													"value": "<boolean>",
+													"value": "{{elevated}}",
 													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 												},
 												{
 													"key": "projection",
-													"value": "<string>",
+													"value": "adminStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
 													"key": "projection",
-													"value": "<string>",
+													"value": "stigs",
 													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigGrants"
 												}
 											],
 											"variable": [
 												{
-													"id": "3bab31c1-a9bf-4d9c-81ae-68e9a1b759eb",
 													"key": "assetId",
-													"value": "<string>",
+													"value": "{{deleteAsset}}",
 													"type": "string",
 													"description": "(Required) A path parameter that indentifies an Asset"
 												}
@@ -18686,7 +18551,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets?projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -18696,9 +18561,8 @@
 									"query": [
 										{
 											"key": "elevate",
-											"value": "{{elevated",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
-											"disabled": true
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 										},
 										{
 											"key": "projection",
@@ -19292,14 +19156,56 @@
 												},
 												{
 													"name": "Delete a Review",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "8e771bb8-1ce4-4dff-9767-aa85ee434217",
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"globular\" || user == \"collectionCreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
 													"request": {
-														"auth": {
-															"type": "oauth2"
-														},
 														"method": "DELETE",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate=<boolean>&projection=<string>&projection=<string>",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=ruleInfo&projection=history&projection=stigs&projection=collections",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -19313,39 +19219,44 @@
 															"query": [
 																{
 																	"key": "elevate",
-																	"value": "<boolean>",
+																	"value": "{{elevated}}",
 																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 																},
 																{
 																	"key": "projection",
-																	"value": "<string>",
+																	"value": "ruleInfo",
 																	"description": "Additional properties to include in the response.\n"
 																},
 																{
 																	"key": "projection",
-																	"value": "<string>",
+																	"value": "history",
 																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs"
+																},
+																{
+																	"key": "projection",
+																	"value": "collections"
 																}
 															],
 															"variable": [
 																{
-																	"id": "2f3b3d3f-ce00-4fea-967c-6c268a047bc2",
 																	"key": "collectionId",
-																	"value": "<string>",
+																	"value": "{{testCollection}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"id": "16b430ec-9a99-426a-8e4e-b881ad210559",
 																	"key": "assetId",
-																	"value": "<string>",
+																	"value": "{{testAsset}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"id": "0d44466b-b335-4a2e-8a9f-29471f1bab9e",
 																	"key": "ruleId",
-																	"value": "<string>",
+																	"value": "{{testRuleId}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a Rule"
 																}
@@ -19472,212 +19383,6 @@
 											"_postman_isSubFolder": true
 										},
 										{
-											"name": "Import one or more Reviews from a JSON body",
-											"request": {
-												"method": "POST",
-												"header": [
-													{
-														"key": "Content-Type",
-														"value": "multipart/form-data"
-													}
-												],
-												"body": {
-													"mode": "formdata",
-													"formdata": [
-														{
-															"key": "importFile",
-															"value": "<binary>",
-															"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-															"type": "text"
-														},
-														{
-															"key": "strictAssetCheck",
-															"value": "false",
-															"description": "Whether file contents will be checked for asset name match",
-															"type": "text"
-														},
-														{
-															"key": "benchmarkId",
-															"value": "<string>",
-															"description": "If provided, file contents will be checked for match",
-															"type": "text"
-														}
-													],
-													"options": {
-														"formdata": {}
-													}
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews",
-														":assetId"
-													],
-													"variable": [
-														{
-															"description": "(Required) A path parameter that indentifies a Collection",
-															"key": "collectionId",
-															"type": "string",
-															"value": "{{testCollection}}"
-														},
-														{
-															"description": "(Required) A path parameter that indentifies an Asset",
-															"key": "assetId",
-															"type": "string",
-															"value": "{{testAsset}}"
-														}
-													]
-												}
-											},
-											"response": [
-												{
-													"name": "unexpected error",
-													"originalRequest": {
-														"method": "POST",
-														"header": [],
-														"body": {
-															"mode": "formdata",
-															"formdata": [
-																{
-																	"key": "importFile",
-																	"value": "<binary>",
-																	"description": {
-																		"content": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-																		"type": "text/plain"
-																	},
-																	"type": "text"
-																},
-																{
-																	"key": "strictAssetCheck",
-																	"value": "false",
-																	"description": {
-																		"content": "Whether file contents will be checked for asset name match",
-																		"type": "text/plain"
-																	},
-																	"type": "text"
-																},
-																{
-																	"key": "benchmarkId",
-																	"value": "<string>",
-																	"description": {
-																		"content": "If provided, file contents will be checked for match",
-																		"type": "text/plain"
-																	},
-																	"type": "text"
-																}
-															]
-														},
-														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"collections",
-																":collectionId",
-																"reviews",
-																":assetId"
-															],
-															"variable": [
-																{
-																	"key": "collectionId"
-																},
-																{
-																	"key": "assetId"
-																}
-															]
-														}
-													},
-													"status": "Internal Server Error",
-													"code": 500,
-													"_postman_previewlanguage": "json",
-													"header": [
-														{
-															"key": "Content-Type",
-															"value": "application/json"
-														}
-													],
-													"cookie": [],
-													"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-												},
-												{
-													"name": "ReviewProjected response",
-													"originalRequest": {
-														"method": "POST",
-														"header": [],
-														"body": {
-															"mode": "formdata",
-															"formdata": [
-																{
-																	"key": "importFile",
-																	"value": "<binary>",
-																	"description": {
-																		"content": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-																		"type": "text/plain"
-																	},
-																	"type": "text"
-																},
-																{
-																	"key": "strictAssetCheck",
-																	"value": "false",
-																	"description": {
-																		"content": "Whether file contents will be checked for asset name match",
-																		"type": "text/plain"
-																	},
-																	"type": "text"
-																},
-																{
-																	"key": "benchmarkId",
-																	"value": "<string>",
-																	"description": {
-																		"content": "If provided, file contents will be checked for match",
-																		"type": "text/plain"
-																	},
-																	"type": "text"
-																}
-															]
-														},
-														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"collections",
-																":collectionId",
-																"reviews",
-																":assetId"
-															],
-															"variable": [
-																{
-																	"key": "collectionId"
-																},
-																{
-																	"key": "assetId"
-																}
-															]
-														}
-													},
-													"status": "OK",
-													"code": 200,
-													"_postman_previewlanguage": "json",
-													"header": [
-														{
-															"key": "Content-Type",
-															"value": "application/json"
-														}
-													],
-													"cookie": [],
-													"body": "{\n \"assetId\": \"occaecat nisi Excepteur\",\n \"assetName\": \"ex do\",\n \"ruleId\": \"sit culpa et\",\n \"result\": \"<string>\",\n \"resultComment\": \"aute occaecat dolor deserunt\",\n \"autoResult\": false,\n \"action\": \"<string>\",\n \"actionComment\": \"nulla in dolore\",\n \"status\": \"<string>\",\n \"userId\": \"reprehenderit commodo pariatur in\",\n \"username\": \"ipsum ut occaecat min\",\n \"ts\": \"deserunt ex laboris\",\n \"rejectText\": \"non ex voluptate aute\",\n \"rejectUserId\": \"do quis\",\n \"asset\": {\n  \"assetId\": \"amet in\",\n  \"name\": \"elit in id anim\"\n },\n \"stigs\": [\n  \"aute dolor Excepteur sunt\",\n  \"ad velit nostrud enim\"\n ],\n \"rule\": {\n  \"ruleId\": \"consectetur Ut nulla proident anim\",\n  \"version\": \"nisi in ipsum\",\n  \"title\": \"Ut reprehenderit enim dolore\",\n  \"severity\": \"sed adipisicing\"\n }\n}"
-												}
-											]
-										},
-										{
 											"name": "Import one or more Reviews from a STIGViewer CKL file",
 											"request": {
 												"method": "POST",
@@ -19692,9 +19397,9 @@
 													"formdata": [
 														{
 															"key": "importFile",
-															"value": "<binary>",
 															"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-															"type": "text"
+															"type": "file",
+															"src": "/E:/gits/github/stig-manager/test/test-ckl_VPN_SRG-latest-42.ckl"
 														},
 														{
 															"key": "strictAssetCheck",
@@ -19704,7 +19409,7 @@
 														},
 														{
 															"key": "benchmarkId",
-															"value": "<string>",
+															"value": "{{testBenchmark}}",
 															"description": "If provided, file contents will be checked for match",
 															"type": "text"
 														}
@@ -20088,6 +19793,184 @@
 													"body": "{\n \"assetId\": \"occaecat nisi Excepteur\",\n \"assetName\": \"ex do\",\n \"ruleId\": \"sit culpa et\",\n \"result\": \"<string>\",\n \"resultComment\": \"aute occaecat dolor deserunt\",\n \"autoResult\": false,\n \"action\": \"<string>\",\n \"actionComment\": \"nulla in dolore\",\n \"status\": \"<string>\",\n \"userId\": \"reprehenderit commodo pariatur in\",\n \"username\": \"ipsum ut occaecat min\",\n \"ts\": \"deserunt ex laboris\",\n \"rejectText\": \"non ex voluptate aute\",\n \"rejectUserId\": \"do quis\",\n \"asset\": {\n  \"assetId\": \"amet in\",\n  \"name\": \"elit in id anim\"\n },\n \"stigs\": [\n  \"aute dolor Excepteur sunt\",\n  \"ad velit nostrud enim\"\n ],\n \"rule\": {\n  \"ruleId\": \"consectetur Ut nulla proident anim\",\n  \"version\": \"nisi in ipsum\",\n  \"title\": \"Ut reprehenderit enim dolore\",\n  \"severity\": \"sed adipisicing\"\n }\n}"
 												}
 											]
+										},
+										{
+											"name": "Import one or more Reviews from a JSON body",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"id": "c8c19260-1a98-42a5-a031-5d54a39db5a3",
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "[\n    {\n    \"ruleId\": \"{{testRuleId}}\",\n    \"result\": \"pass\",\n    \"resultComment\": \"test\\nvisible to lvl1\",\n    \"action\": \"mitigate\",\n    \"actionComment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n    }\n]",
+													"options": {
+														"raw": {}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"reviews",
+														":assetId"
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														},
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}"
+														}
+													]
+												}
+											},
+											"response": [
+												{
+													"name": "AssetProjected response",
+													"originalRequest": {
+														"method": "POST",
+														"header": [],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"name\": \"<string>\",\n    \"collectionId\": \"<string>\",\n    \"description\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"noncomputing\": \"<boolean>\",\n    \"metadata\": \"<object>\",\n    \"stigs\": [\n        \"<string>\",\n        \"<string>\"\n    ]\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/assets?elevate=<boolean>&projection=<string>&projection=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"assets"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "<boolean>"
+																},
+																{
+																	"key": "projection",
+																	"value": "<string>"
+																},
+																{
+																	"key": "projection",
+																	"value": "<string>"
+																}
+															]
+														}
+													},
+													"status": "Created",
+													"code": 201,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n \"assetId\": \"eu et\",\n \"name\": \"quis exercitation do cupidatat\",\n \"collection\": {\n  \"collectionId\": \"est et\",\n  \"name\": \"aliquip reprehenderit\",\n  \"workflow\": \"continuous\"\n },\n \"description\": \"in nulla do exercitation\",\n \"ip\": \"labore ullamco\",\n \"noncomputing\": true,\n \"metadata\": \"id occaecat Lorem deserunt ad\",\n \"adminStats\": {\n  \"stigCount\": -4608915,\n  \"stigAssignedCount\": -68692699\n },\n \"stigs\": [\n  {\n   \"benchmarkId\": \"est reprehenderit pariatur nostrud anim\",\n   \"lastRevisionStr\": \"qui anim dolore veniam\",\n   \"lastRevisionDate\": \"eu dolor fugiat\",\n   \"title\": \"aute aliquip nulla\",\n   \"ruleCount\": 23322456\n  },\n  {\n   \"benchmarkId\": \"dolore occaecat cupidatat ipsum\",\n   \"lastRevisionStr\": \"Duis aliqua sint\",\n   \"lastRevisionDate\": \"incididunt id in ex cupidatat\",\n   \"title\": \"sed Ut consectetur dolor\",\n   \"ruleCount\": 6875346\n  }\n ],\n \"stigGrants\": [\n  {\n   \"benchmarkId\": \"eiusmod sunt adipisicing in\",\n   \"users\": [\n    {\n     \"userId\": \"sint culpa aute in\",\n     \"username\": \"mollit consequat Ut deserunt\"\n    },\n    {\n     \"userId\": \"reprehenderit\",\n     \"username\": \"in quis\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"minim con\",\n   \"users\": [\n    {\n     \"userId\": \"non Excepteur ex\",\n     \"username\": \"eiusmod do anim\"\n    },\n    {\n     \"userId\": \"pariatur veniam culpa ut\",\n     \"username\": \"commodo enim\"\n    }\n   ]\n  }\n ]\n}"
+												},
+												{
+													"name": "unexpected error",
+													"originalRequest": {
+														"method": "POST",
+														"header": [],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"name\": \"<string>\",\n    \"collectionId\": \"<string>\",\n    \"description\": \"<string>\",\n    \"ip\": \"<string>\",\n    \"noncomputing\": \"<boolean>\",\n    \"metadata\": \"<object>\",\n    \"stigs\": [\n        \"<string>\",\n        \"<string>\"\n    ]\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/assets?elevate=<boolean>&projection=<string>&projection=<string>",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"assets"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "<boolean>"
+																},
+																{
+																	"key": "projection",
+																	"value": "<string>"
+																},
+																{
+																	"key": "projection",
+																	"value": "<string>"
+																}
+															]
+														}
+													},
+													"status": "Internal Server Error",
+													"code": 500,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
+												}
+											]
 										}
 									],
 									"protocolProfileBehavior": {},
@@ -20109,10 +19992,103 @@
 							"item": [
 								{
 									"name": "Merge provided properties with a User",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "e7bc5748-a152-4367-8a94-3792943818b2",
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});\r",
+													"\r",
+													"let userKeys = [\r",
+													"    \"userId\",\r",
+													"    \"username\",\r",
+													"    \"display\",\r",
+													"    \"email\",\r",
+													"    \"metadata\",\r",
+													"    \"privileges\",\r",
+													"    \"collectionGrants\",\r",
+													"    \"statistics\"\r",
+													"]\r",
+													"let collectionGrantKeys = [\r",
+													"    \"collection\",\r",
+													"    \"accessLevel\",\r",
+													"    // \"userId\",\r",
+													"    // \"username\"\r",
+													"]\r",
+													"let collectionKeys = [\r",
+													"    \"name\",\r",
+													"    \"collectionId\",\r",
+													"    // \"userId\",\r",
+													"    // \"username\"\r",
+													"]\r",
+													"let statisticsKeys = [\r",
+													"    \"created\",\r",
+													"    \"lastAccess\"\r",
+													"]\r",
+													"let privilegesKeys = [\r",
+													"    \"canAdmin\",\r",
+													"    \"globalAccess\",\r",
+													"    \"canCreateCollection\"\r",
+													"]\r",
+													"\r",
+													"\r",
+													"pm.test(\"Check if object contains all required keys\", function () {\r",
+													"    pm.expect(jsonData).to.have.all.keys(userKeys);\r",
+													"});\r",
+													"\r",
+													"for (let grant of jsonData.collectionGrants){\r",
+													"    pm.expect(grant).to.have.all.keys(collectionGrantKeys);\r",
+													"    pm.expect(grant.collection).to.have.all.keys(collectionKeys);\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Check if object contains all required privileges keys\", function () {\r",
+													"    pm.expect(jsonData.privileges).to.have.all.keys(privilegesKeys);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Check if object contains all required statistics keys\", function () {\r",
+													"    pm.expect(jsonData.statistics).to.have.all.keys(statisticsKeys);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Check if object contains info for expected user\", function () {\r",
+													"    pm.expect(jsonData.username).to.eql(user);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
 									"request": {
-										"auth": {
-											"type": "oauth2"
-										},
 										"method": "PATCH",
 										"header": [
 											{
@@ -20122,13 +20098,13 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"username\": \"<string>\",\n    \"display\": \"<string>\",\n    \"email\": \"<string>\",\n    \"metadata\": \"<object>\",\n    \"privileges\": {\n        \"globalAccess\": false,\n        \"canCreateCollection\": false,\n        \"canAdmin\": true\n    },\n    \"collectionGrants\": [\n        {\n            \"collectionId\": \"<string>\",\n            \"accessLevel\": \"<integer>\"\n        },\n        {\n            \"collectionId\": \"<string>\",\n            \"accessLevel\": \"<integer>\"\n        }\n    ]\n}",
+											"raw": "{\n    \"username\": \"bizarroLvl1\",\n    \"display\": \"scrap lvl1\",\n    \"email\": \"scrap\",\n    \"metadata\": {},\n    \"privileges\": {\n        \"globalAccess\": false,\n        \"canCreateCollection\": false,\n        \"canAdmin\": false\n    },\n    \"collectionGrants\": [\n        {\n            \"collectionId\": \"{{scrapCollection}}\",\n            \"accessLevel\": 1\n        }\n    ]\n}\n",
 											"options": {
 												"raw": {}
 											}
 										},
 										"url": {
-											"raw": "{{baseUrl}}/users/:userId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"raw": "{{baseUrl}}/users/:userId?elevate={{elevated}}&projection=collectionGrants&projection=privileges&projection=statistics",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -20139,25 +20115,28 @@
 											"query": [
 												{
 													"key": "elevate",
-													"value": "<boolean>",
+													"value": "{{elevated}}",
 													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 												},
 												{
 													"key": "projection",
-													"value": "<string>",
+													"value": "collectionGrants",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
 													"key": "projection",
-													"value": "<string>",
+													"value": "privileges",
 													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
 												}
 											],
 											"variable": [
 												{
-													"id": "d5c20467-95cf-4fdd-9cad-b26fc84cb9d2",
 													"key": "userId",
-													"value": "<string>",
+													"value": "{{scrapLvl1}}",
 													"type": "string",
 													"description": "(Required) A path parameter that indentifies a User"
 												}
@@ -20271,10 +20250,103 @@
 								},
 								{
 									"name": "Set all properties of a User",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "0a74a532-f10e-4644-a718-51120936f290",
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});\r",
+													"\r",
+													"let userKeys = [\r",
+													"    \"userId\",\r",
+													"    \"username\",\r",
+													"    \"display\",\r",
+													"    \"email\",\r",
+													"    \"metadata\",\r",
+													"    \"privileges\",\r",
+													"    \"collectionGrants\",\r",
+													"    \"statistics\"\r",
+													"]\r",
+													"let collectionGrantKeys = [\r",
+													"    \"collection\",\r",
+													"    \"accessLevel\",\r",
+													"    // \"userId\",\r",
+													"    // \"username\"\r",
+													"]\r",
+													"let collectionKeys = [\r",
+													"    \"name\",\r",
+													"    \"collectionId\",\r",
+													"    // \"userId\",\r",
+													"    // \"username\"\r",
+													"]\r",
+													"let statisticsKeys = [\r",
+													"    \"created\",\r",
+													"    \"lastAccess\"\r",
+													"]\r",
+													"let privilegesKeys = [\r",
+													"    \"canAdmin\",\r",
+													"    \"globalAccess\",\r",
+													"    \"canCreateCollection\"\r",
+													"]\r",
+													"\r",
+													"\r",
+													"pm.test(\"Check if object contains all required keys\", function () {\r",
+													"    pm.expect(jsonData).to.have.all.keys(userKeys);\r",
+													"});\r",
+													"\r",
+													"for (let grant of jsonData.collectionGrants){\r",
+													"    pm.expect(grant).to.have.all.keys(collectionGrantKeys);\r",
+													"    pm.expect(grant.collection).to.have.all.keys(collectionKeys);\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Check if object contains all required privileges keys\", function () {\r",
+													"    pm.expect(jsonData.privileges).to.have.all.keys(privilegesKeys);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Check if object contains all required statistics keys\", function () {\r",
+													"    pm.expect(jsonData.statistics).to.have.all.keys(statisticsKeys);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Check if object contains info for expected user\", function () {\r",
+													"    pm.expect(jsonData.username).to.eql(user);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
 									"request": {
-										"auth": {
-											"type": "oauth2"
-										},
 										"method": "PUT",
 										"header": [
 											{
@@ -20284,13 +20356,13 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"username\": \"<string>\",\n    \"display\": \"<string>\",\n    \"email\": \"<string>\",\n    \"privileges\": {\n        \"globalAccess\": true,\n        \"canCreateCollection\": false,\n        \"canAdmin\": false\n    },\n    \"collectionGrants\": [\n        {\n            \"collectionId\": \"<string>\",\n            \"accessLevel\": \"<integer>\"\n        },\n        {\n            \"collectionId\": \"<string>\",\n            \"accessLevel\": \"<integer>\"\n        }\n    ],\n    \"metadata\": \"<object>\"\n}",
+											"raw": "{\n    \"username\": \"bizarroLvl1\",\n    \"display\": \"scrap lvl1\",\n    \"email\": \"scrap\",\n    \"metadata\": {},\n    \"privileges\": {\n        \"globalAccess\": false,\n        \"canCreateCollection\": false,\n        \"canAdmin\": false\n    },\n    \"collectionGrants\": [\n        {\n            \"collectionId\": \"{{scrapCollection}}\",\n            \"accessLevel\": 1\n        }\n    ]\n}\n",
 											"options": {
 												"raw": {}
 											}
 										},
 										"url": {
-											"raw": "{{baseUrl}}/users/:userId?elevate=<boolean>&projection=<string>&projection=<string>",
+											"raw": "{{baseUrl}}/users/:userId?elevate={{elevated}}&projection=collectionGrants&projection=privileges&projection=statistics",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -20301,25 +20373,28 @@
 											"query": [
 												{
 													"key": "elevate",
-													"value": "<boolean>",
+													"value": "{{elevated}}",
 													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 												},
 												{
 													"key": "projection",
-													"value": "<string>",
+													"value": "collectionGrants",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
 													"key": "projection",
-													"value": "<string>",
+													"value": "privileges",
 													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
 												}
 											],
 											"variable": [
 												{
-													"id": "05ec0cef-249a-4c7f-8850-a4fd2d388f01",
 													"key": "userId",
-													"value": "<string>",
+													"value": "{{scrapLvl1}}",
 													"type": "string",
 													"description": "(Required) A path parameter that indentifies a User"
 												}
@@ -20580,9 +20655,6 @@
 						{
 							"name": "Create a User",
 							"request": {
-								"auth": {
-									"type": "oauth2"
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -20592,13 +20664,13 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"<string>\",\n    \"display\": \"<string>\",\n    \"email\": \"<string>\",\n    \"privileges\": {\n        \"globalAccess\": false,\n        \"canCreateCollection\": false,\n        \"canAdmin\": true\n    },\n    \"collectionGrants\": [\n        {\n            \"collectionId\": \"<string>\",\n            \"accessLevel\": \"<integer>\"\n        },\n        {\n            \"collectionId\": \"<string>\",\n            \"accessLevel\": \"<integer>\"\n        }\n    ],\n    \"metadata\": \"<object>\"\n}",
+									"raw": "{\n    \"username\": \"bizarroLvl1234\",\n    \"display\": \"scrap lvl2\",\n    \"email\": \"scrap\",\n    \"metadata\": {},\n    \"privileges\": {\n        \"globalAccess\": false,\n        \"canCreateCollection\": false,\n        \"canAdmin\": false\n    },\n    \"collectionGrants\": [\n        {\n            \"collectionId\": \"{{scrapCollection}}\",\n            \"accessLevel\": 1\n        }\n    ]\n}\n",
 									"options": {
 										"raw": {}
 									}
 								},
 								"url": {
-									"raw": "{{baseUrl}}/users?elevate=<boolean>&username=<string>&projection=<string>&projection=<string>",
+									"raw": "{{baseUrl}}/users?elevate={{elevated}}&projection=collectionGrants&projection=privileges&projection=statistics",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -20608,23 +20680,28 @@
 									"query": [
 										{
 											"key": "elevate",
-											"value": "<boolean>",
+											"value": "{{elevated}}",
 											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 										},
 										{
 											"key": "username",
-											"value": "<string>",
-											"description": "A query parameter that filters on a username"
+											"value": "wat",
+											"description": "A query parameter that filters on a username",
+											"disabled": true
 										},
 										{
 											"key": "projection",
-											"value": "<string>",
+											"value": "collectionGrants",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
 											"key": "projection",
-											"value": "<string>",
+											"value": "privileges",
 											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "statistics"
 										}
 									]
 								}
@@ -20922,14 +20999,52 @@
 													"item": [
 														{
 															"name": "Return the list of groups for the specified revision of a STIG.",
+															"event": [
+																{
+																	"listen": "test",
+																	"script": {
+																		"id": "451bd7ee-3c1f-4d06-a550-4a8596ff3848",
+																		"exec": [
+																			"let user = pm.environment.get(\"user\");\r",
+																			"console.log(\"user: \" + user);\r",
+																			"\r",
+																			"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																			"    user = \"elevated\";\r",
+																			"    console.log(\"setting user to 'elevated'\");\r",
+																			"}\r",
+																			"\r",
+																			"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																			"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																			"        pm.response.to.have.status(403);\r",
+																			"    });\r",
+																			"    return;\r",
+																			"}\r",
+																			"else {\r",
+																			"    pm.test(\"Status code is 200\", function () {\r",
+																			"        pm.response.to.have.status(200);\r",
+																			"    });\r",
+																			"}\r",
+																			"if (pm.response.code !== 200) {\r",
+																			"    return;\r",
+																			"}\r",
+																			"\r",
+																			"\r",
+																			"let jsonData = pm.response.json();\r",
+																			"\r",
+																			"\r",
+																			"pm.test(\"Response JSON is an array\", function () {\r",
+																			"    pm.expect(jsonData).to.be.an('array');\r",
+																			"});"
+																		],
+																		"type": "text/javascript"
+																	}
+																}
+															],
 															"request": {
-																"auth": {
-																	"type": "oauth2"
-																},
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/groups?projection=<string>&projection=<string>",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/groups?projection=rules",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -20943,27 +21058,26 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "<string>",
+																			"value": "rules",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
 																			"value": "<string>",
-																			"description": "Additional properties to include in the response.\n"
+																			"description": "Additional properties to include in the response.\n",
+																			"disabled": true
 																		}
 																	],
 																	"variable": [
 																		{
-																			"id": "21fbc602-29f5-41fb-b082-bc9c21489d55",
 																			"key": "benchmarkId",
-																			"value": "<string>",
+																			"value": "{{testBenchmark}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG"
 																		},
 																		{
-																			"id": "60b4f2b1-5418-480d-bd4f-1e60ab47d195",
 																			"key": "revisionStr",
-																			"value": "<string>",
+																			"value": "{{testRev}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																		}
@@ -21073,14 +21187,52 @@
 														},
 														{
 															"name": "Return the rules, checks and fixes for a Group from a specified revision of a STIG.",
+															"event": [
+																{
+																	"listen": "test",
+																	"script": {
+																		"id": "b2265795-fa52-47e7-8b9a-c869cade32c2",
+																		"exec": [
+																			"let user = pm.environment.get(\"user\");\r",
+																			"console.log(\"user: \" + user);\r",
+																			"\r",
+																			"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																			"    user = \"elevated\";\r",
+																			"    console.log(\"setting user to 'elevated'\");\r",
+																			"}\r",
+																			"\r",
+																			"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																			"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																			"        pm.response.to.have.status(403);\r",
+																			"    });\r",
+																			"    return;\r",
+																			"}\r",
+																			"else {\r",
+																			"    pm.test(\"Status code is 200\", function () {\r",
+																			"        pm.response.to.have.status(200);\r",
+																			"    });\r",
+																			"}\r",
+																			"if (pm.response.code !== 200) {\r",
+																			"    return;\r",
+																			"}\r",
+																			"\r",
+																			"\r",
+																			"let jsonData = pm.response.json();\r",
+																			"\r",
+																			"\r",
+																			"pm.test(\"Response JSON is an object\", function () {\r",
+																			"    pm.expect(jsonData).to.be.an('object');\r",
+																			"});"
+																		],
+																		"type": "text/javascript"
+																	}
+																}
+															],
 															"request": {
-																"auth": {
-																	"type": "oauth2"
-																},
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/groups/:groupId?projection=<string>&projection=<string>",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/groups/:groupId?projection=rules",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -21095,34 +21247,32 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "<string>",
+																			"value": "rules",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
 																			"value": "<string>",
-																			"description": "Additional properties to include in the response.\n"
+																			"description": "Additional properties to include in the response.\n",
+																			"disabled": true
 																		}
 																	],
 																	"variable": [
 																		{
-																			"id": "3402ddc2-951c-429d-a014-37e3b735b4db",
 																			"key": "benchmarkId",
-																			"value": "<string>",
+																			"value": "{{testBenchmark}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG"
 																		},
 																		{
-																			"id": "e95057d5-a3b7-4a9d-9361-b133d56bf7e3",
 																			"key": "revisionStr",
-																			"value": "<string>",
+																			"value": "{{testRev}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																		},
 																		{
-																			"id": "7e2e9efa-a946-4ccd-ade5-aba0e910ceee",
 																			"key": "groupId",
-																			"value": "<string>",
+																			"value": "{{testGroupId}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a Group"
 																		}
@@ -21248,14 +21398,52 @@
 													"item": [
 														{
 															"name": "Return rule data for the specified revision of a STIG.",
+															"event": [
+																{
+																	"listen": "test",
+																	"script": {
+																		"id": "fe3f5044-b866-48d2-ae33-0d5329184bd5",
+																		"exec": [
+																			"let user = pm.environment.get(\"user\");\r",
+																			"console.log(\"user: \" + user);\r",
+																			"\r",
+																			"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																			"    user = \"elevated\";\r",
+																			"    console.log(\"setting user to 'elevated'\");\r",
+																			"}\r",
+																			"\r",
+																			"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																			"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																			"        pm.response.to.have.status(403);\r",
+																			"    });\r",
+																			"    return;\r",
+																			"}\r",
+																			"else {\r",
+																			"    pm.test(\"Status code is 200\", function () {\r",
+																			"        pm.response.to.have.status(200);\r",
+																			"    });\r",
+																			"}\r",
+																			"if (pm.response.code !== 200) {\r",
+																			"    return;\r",
+																			"}\r",
+																			"\r",
+																			"\r",
+																			"let jsonData = pm.response.json();\r",
+																			"\r",
+																			"\r",
+																			"pm.test(\"Response JSON is an array\", function () {\r",
+																			"    pm.expect(jsonData).to.be.an('array');\r",
+																			"});"
+																		],
+																		"type": "text/javascript"
+																	}
+																}
+															],
 															"request": {
-																"auth": {
-																	"type": "oauth2"
-																},
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=<string>&projection=<string>",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=details&projection=cci&projection=checks&projection=fixes",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -21269,27 +21457,228 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "<string>",
+																			"value": "details",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
-																			"value": "<string>",
+																			"value": "cci",
 																			"description": "Additional properties to include in the response.\n"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "checks"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "fixes"
 																		}
 																	],
 																	"variable": [
 																		{
-																			"id": "fb99b209-a0a6-4afe-b502-7448ca6f6442",
 																			"key": "benchmarkId",
-																			"value": "<string>",
+																			"value": "{{testBenchmark}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG"
 																		},
 																		{
-																			"id": "955ebf59-8009-4bcf-a648-a54c310a3d6d",
 																			"key": "revisionStr",
-																			"value": "<string>",
+																			"value": "{{testRev}}",
+																			"type": "string",
+																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+																		}
+																	]
+																}
+															},
+															"response": [
+																{
+																	"name": "Rule response",
+																	"originalRequest": {
+																		"method": "GET",
+																		"header": [],
+																		"url": {
+																			"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=<string>&projection=<string>",
+																			"host": [
+																				"{{baseUrl}}"
+																			],
+																			"path": [
+																				"stigs",
+																				":benchmarkId",
+																				"revisions",
+																				":revisionStr",
+																				"rules"
+																			],
+																			"query": [
+																				{
+																					"key": "projection",
+																					"value": "<string>"
+																				},
+																				{
+																					"key": "projection",
+																					"value": "<string>"
+																				}
+																			],
+																			"variable": [
+																				{
+																					"key": "benchmarkId"
+																				},
+																				{
+																					"key": "revisionStr"
+																				}
+																			]
+																		}
+																	},
+																	"status": "OK",
+																	"code": 200,
+																	"_postman_previewlanguage": "json",
+																	"header": [
+																		{
+																			"key": "Content-Type",
+																			"value": "application/json"
+																		}
+																	],
+																	"cookie": [],
+																	"body": "[\n {\n  \"ruleId\": \"est adipisicing veniam\",\n  \"groupId\": \"fugiat Duis aliquip\",\n  \"groupTitle\": \"qui voluptate Lorem\",\n  \"version\": \"elit mollit cupidatat commodo\",\n  \"title\": \"cillum sit\",\n  \"severity\": \"Lorem dolore voluptate\",\n  \"weight\": \"magna dolor\",\n  \"vulnDiscussion\": \"Excepteu\",\n  \"falsePositives\": \"aliqua et sint\",\n  \"falseNegatives\": \"non\",\n  \"documentable\": \"dolore est sed anim ut\",\n  \"mitigations\": \"esse minim ipsum\",\n  \"securityOverrideGuidance\": \"cupidatat consectetur sunt aliqua eiusmod\",\n  \"potentialImpacts\": \"dolor in amet sed consequat\",\n  \"thirdPartyTools\": \"voluptate exercitation fugiat aute non\",\n  \"mitigationControl\": \"ma\",\n  \"responsibility\": \"ullamco eiusmod amet\"\n },\n {\n  \"ruleId\": \"ut qui ex\",\n  \"groupId\": \"elit nostrud ad\",\n  \"groupTitle\": \"eiusmod aliqua voluptate sed\",\n  \"version\": \"nostrud ut adipisicing\",\n  \"title\": \"enim anim\",\n  \"severity\": \"cillum\",\n  \"weight\": \"amet dolor minim\",\n  \"vulnDiscussion\": \"sunt cupidatat Lorem eiusmod Ut\",\n  \"falsePositives\": \"consectetur tempor nulla\",\n  \"falseNegatives\": \"incididunt\",\n  \"documentable\": \"Excepteur in pariatur\",\n  \"mitigations\": \"Duis culpa dolor\",\n  \"securityOverrideGuidance\": \"dolor deserunt\",\n  \"potentialImpacts\": \"consectetur dolor qui\",\n  \"thirdPartyTools\": \"nulla ullamco qui nostrud culpa\",\n  \"mitigationControl\": \"sunt et\",\n  \"responsibility\": \"in eu occaecat\"\n }\n]"
+																},
+																{
+																	"name": "unexpected error",
+																	"originalRequest": {
+																		"method": "GET",
+																		"header": [],
+																		"url": {
+																			"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=<string>&projection=<string>",
+																			"host": [
+																				"{{baseUrl}}"
+																			],
+																			"path": [
+																				"stigs",
+																				":benchmarkId",
+																				"revisions",
+																				":revisionStr",
+																				"rules"
+																			],
+																			"query": [
+																				{
+																					"key": "projection",
+																					"value": "<string>"
+																				},
+																				{
+																					"key": "projection",
+																					"value": "<string>"
+																				}
+																			],
+																			"variable": [
+																				{
+																					"key": "benchmarkId"
+																				},
+																				{
+																					"key": "revisionStr"
+																				}
+																			]
+																		}
+																	},
+																	"status": "Internal Server Error",
+																	"code": 500,
+																	"_postman_previewlanguage": "json",
+																	"header": [
+																		{
+																			"key": "Content-Type",
+																			"value": "application/json"
+																		}
+																	],
+																	"cookie": [],
+																	"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
+																}
+															]
+														},
+														{
+															"name": "Return rule data for the LATEST revision of a STIG",
+															"event": [
+																{
+																	"listen": "test",
+																	"script": {
+																		"id": "8220dd79-7b86-428c-9929-26a0963eddc4",
+																		"exec": [
+																			"let user = pm.environment.get(\"user\");\r",
+																			"console.log(\"user: \" + user);\r",
+																			"\r",
+																			"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																			"    user = \"elevated\";\r",
+																			"    console.log(\"setting user to 'elevated'\");\r",
+																			"}\r",
+																			"\r",
+																			"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																			"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																			"        pm.response.to.have.status(403);\r",
+																			"    });\r",
+																			"    return;\r",
+																			"}\r",
+																			"else {\r",
+																			"    pm.test(\"Status code is 200\", function () {\r",
+																			"        pm.response.to.have.status(200);\r",
+																			"    });\r",
+																			"}\r",
+																			"if (pm.response.code !== 200) {\r",
+																			"    return;\r",
+																			"}\r",
+																			"\r",
+																			"\r",
+																			"let jsonData = pm.response.json();\r",
+																			"\r",
+																			"\r",
+																			"pm.test(\"Response JSON is an array\", function () {\r",
+																			"    pm.expect(jsonData).to.be.an('array');\r",
+																			"});"
+																		],
+																		"type": "text/javascript"
+																	}
+																}
+															],
+															"request": {
+																"method": "GET",
+																"header": [],
+																"url": {
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=details&projection=cci&projection=checks&projection=fixes",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"stigs",
+																		":benchmarkId",
+																		"revisions",
+																		":revisionStr",
+																		"rules"
+																	],
+																	"query": [
+																		{
+																			"key": "projection",
+																			"value": "details",
+																			"description": "Additional properties to include in the response.\n"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "cci",
+																			"description": "Additional properties to include in the response.\n"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "checks"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "fixes"
+																		}
+																	],
+																	"variable": [
+																		{
+																			"key": "benchmarkId",
+																			"value": "{{testBenchmark}}",
+																			"type": "string",
+																			"description": "(Required) A path parameter that indentifies a STIG"
+																		},
+																		{
+																			"key": "revisionStr",
+																			"value": "latest",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																		}
@@ -21399,14 +21788,52 @@
 														},
 														{
 															"name": "Return rule data for the specified Rule in a revision of a STIG.",
+															"event": [
+																{
+																	"listen": "test",
+																	"script": {
+																		"id": "5f2162e7-82c7-4b1e-8850-6229303db25e",
+																		"exec": [
+																			"let user = pm.environment.get(\"user\");\r",
+																			"console.log(\"user: \" + user);\r",
+																			"\r",
+																			"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																			"    user = \"elevated\";\r",
+																			"    console.log(\"setting user to 'elevated'\");\r",
+																			"}\r",
+																			"\r",
+																			"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																			"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																			"        pm.response.to.have.status(403);\r",
+																			"    });\r",
+																			"    return;\r",
+																			"}\r",
+																			"else {\r",
+																			"    pm.test(\"Status code is 200\", function () {\r",
+																			"        pm.response.to.have.status(200);\r",
+																			"    });\r",
+																			"}\r",
+																			"if (pm.response.code !== 200) {\r",
+																			"    return;\r",
+																			"}\r",
+																			"\r",
+																			"\r",
+																			"let jsonData = pm.response.json();\r",
+																			"\r",
+																			"\r",
+																			"pm.test(\"Response JSON is an object\", function () {\r",
+																			"    pm.expect(jsonData).to.be.an('object');\r",
+																			"});"
+																		],
+																		"type": "text/javascript"
+																	}
+																}
+															],
 															"request": {
-																"auth": {
-																	"type": "oauth2"
-																},
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=<string>&projection=<string>",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=details&projection=cci&projection=checks&projection=fixes",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -21421,34 +21848,39 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "<string>",
+																			"value": "details",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
-																			"value": "<string>",
+																			"value": "cci",
 																			"description": "Additional properties to include in the response.\n"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "checks"
+																		},
+																		{
+																			"key": "projection",
+																			"value": "fixes"
 																		}
 																	],
 																	"variable": [
 																		{
-																			"id": "271ebc8e-377f-4010-a0c2-986c511f6bfc",
 																			"key": "benchmarkId",
-																			"value": "<string>",
+																			"value": "{{testBenchmark}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG"
 																		},
 																		{
-																			"id": "9e07f688-8be9-4915-a310-3e8ed81f4f59",
 																			"key": "revisionStr",
-																			"value": "<string>",
+																			"value": "{{testRev}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																		},
 																		{
-																			"id": "da34d96c-4e47-4cf5-a0a2-92393bd0bdd0",
 																			"key": "ruleId",
-																			"value": "<string>",
+																			"value": "{{testRuleId}}",
 																			"type": "string",
 																			"description": "(Required) A path parameter that indentifies a Rule"
 																		}
@@ -21570,10 +22002,48 @@
 												},
 												{
 													"name": "Return metadata for the specified revision of a STIG",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "0edf1b2b-2e5d-484a-a723-ec25ed9a3680",
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"});"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
 													"request": {
-														"auth": {
-															"type": "oauth2"
-														},
 														"method": "GET",
 														"header": [],
 														"url": {
@@ -21589,16 +22059,14 @@
 															],
 															"variable": [
 																{
-																	"id": "2db28748-2415-4705-b7bd-62ae7ef4119e",
 																	"key": "benchmarkId",
-																	"value": "<string>",
+																	"value": "{{testBenchmark}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a STIG"
 																},
 																{
-																	"id": "5b6b3bb0-9989-4b22-bf9e-4c5950093f1a",
 																	"key": "revisionStr",
-																	"value": "<string>",
+																	"value": "{{testRev}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																}
@@ -21686,10 +22154,48 @@
 												},
 												{
 													"name": "Return a list of CCIs from a STIG revision",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"id": "f1a3583f-a29d-4253-8f28-43db592436b3",
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
+																	"});"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
 													"request": {
-														"auth": {
-															"type": "oauth2"
-														},
 														"method": "GET",
 														"header": [],
 														"url": {
@@ -21706,16 +22212,14 @@
 															],
 															"variable": [
 																{
-																	"id": "b4d8d8ff-1b5b-4b4d-8fcc-b3f98d37faeb",
 																	"key": "benchmarkId",
-																	"value": "<string>",
+																	"value": "{{testBenchmark}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a STIG"
 																},
 																{
-																	"id": "07189d8d-d319-43d2-be5b-cfa414488edd",
 																	"key": "revisionStr",
-																	"value": "<string>",
+																	"value": "{{testRev}}",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																}
@@ -21809,10 +22313,48 @@
 										},
 										{
 											"name": "Return a list of revisions for the specified STIG",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"id": "76a4eeac-d9e4-4447-909b-aac19bb79f1a",
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"});"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
 											"request": {
-												"auth": {
-													"type": "oauth2"
-												},
 												"method": "GET",
 												"header": [],
 												"url": {
@@ -21827,9 +22369,8 @@
 													],
 													"variable": [
 														{
-															"id": "aae7ae0a-659d-4349-9849-114dd00d514f",
 															"key": "benchmarkId",
-															"value": "<string>",
+															"value": "{{testBenchmark}}",
 															"type": "string",
 															"description": "(Required) A path parameter that indentifies a STIG"
 														}
@@ -21913,10 +22454,48 @@
 								},
 								{
 									"name": "Return properties of the specified STIG",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "25ee9ea9-dfd0-471a-bf86-2fffc7b6cecb",
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
 									"request": {
-										"auth": {
-											"type": "oauth2"
-										},
 										"method": "GET",
 										"header": [],
 										"url": {
@@ -21930,9 +22509,8 @@
 											],
 											"variable": [
 												{
-													"id": "ed41f569-49d7-4187-a38a-b0a6fafede08",
 													"key": "benchmarkId",
-													"value": "<string>",
+													"value": "{{testBenchmark}}",
 													"type": "string",
 													"description": "(Required) A path parameter that indentifies a STIG"
 												}
@@ -22014,14 +22592,52 @@
 						},
 						{
 							"name": "Return a list of available STIGs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "1b3098ca-466f-4bb8-a09e-9e7a45a66e5a",
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array');\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
 							"request": {
-								"auth": {
-									"type": "oauth2"
-								},
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs?title=<string>",
+									"raw": "{{baseUrl}}/stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -22032,6 +22648,139 @@
 										{
 											"key": "title",
 											"value": "<string>",
+											"description": "A string found anywhere in a STIG title",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "unexpected error",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/stigs?title=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"stigs"
+											],
+											"query": [
+												{
+													"key": "title",
+													"value": "<string>"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
+								},
+								{
+									"name": "STIG response",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/stigs?title=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"stigs"
+											],
+											"query": [
+												{
+													"key": "title",
+													"value": "<string>"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "[\n {\n  \"benchmarkId\": \"magna dolor\",\n  \"lastRevisionStr\": \"consequat ex\",\n  \"lastRevisionDate\": \"proident dolor\",\n  \"title\": \"nulla qui ut\",\n  \"ruleCount\": 24492673\n },\n {\n  \"benchmarkId\": \"ad qui\",\n  \"lastRevisionStr\": \"anim ad laboris\",\n  \"lastRevisionDate\": \"exercitation sint\",\n  \"title\": \"pariatur quis sunt enim dolore\",\n  \"ruleCount\": 23301812\n }\n]"
+								}
+							]
+						},
+						{
+							"name": "Return a list of available STIGs NAME FILTER",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "fdde0956-8a5c-47de-859f-6ec052102ea8",
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array');\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs?title=vpn",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									],
+									"query": [
+										{
+											"key": "title",
+											"value": "vpn",
 											"description": "A string found anywhere in a STIG title"
 										}
 									]
@@ -22108,14 +22857,52 @@
 						},
 						{
 							"name": "Return the defintion and associated checks and fixes for the specified Rule",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "99514746-926a-4843-9339-914b33166d67",
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
 							"request": {
-								"auth": {
-									"type": "oauth2"
-								},
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs/rules/:ruleId?projection=<string>&projection=<string>",
+									"raw": "{{baseUrl}}/stigs/rules/:ruleId?projection=details&projection=cci&projection=checks&projection=fixes",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -22127,20 +22914,27 @@
 									"query": [
 										{
 											"key": "projection",
-											"value": "<string>",
+											"value": "details",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
 											"key": "projection",
-											"value": "<string>",
+											"value": "cci",
 											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "checks"
+										},
+										{
+											"key": "projection",
+											"value": "fixes"
 										}
 									],
 									"variable": [
 										{
-											"id": "a7495a36-8853-4520-8b48-d418d254bed1",
 											"key": "ruleId",
-											"value": "<string>",
+											"value": "{{testRuleId}}",
 											"type": "string",
 											"description": "(Required) A path parameter that indentifies a Rule"
 										}
@@ -22240,10 +23034,50 @@
 						},
 						{
 							"name": "Return data for the specified CCI",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "5941fd6c-00ef-4acb-a71a-4e8f874cf332",
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
 							"request": {
-								"auth": {
-									"type": "oauth2"
-								},
 								"method": "GET",
 								"header": [],
 								"url": {
@@ -22258,9 +23092,8 @@
 									],
 									"variable": [
 										{
-											"id": "5c2d08a0-32e6-4a19-a7d6-c990a8938ed9",
 											"key": "cci",
-											"value": "<string>",
+											"value": "{{testCci}}",
 											"type": "string",
 											"description": "(Required) A path parameter that indentifies a CCI"
 										}
@@ -22682,451 +23515,13 @@
 												},
 												{
 													"name": "rules",
-													"item": [
-														{
-															"name": "Return rule data for the specified revision of a STIG.",
-															"request": {
-																"auth": {
-																	"type": "oauth2"
-																},
-																"method": "GET",
-																"header": [],
-																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=<string>&projection=<string>",
-																	"host": [
-																		"{{baseUrl}}"
-																	],
-																	"path": [
-																		"stigs",
-																		":benchmarkId",
-																		"revisions",
-																		":revisionStr",
-																		"rules"
-																	],
-																	"query": [
-																		{
-																			"key": "projection",
-																			"value": "<string>",
-																			"description": "Additional properties to include in the response.\n"
-																		},
-																		{
-																			"key": "projection",
-																			"value": "<string>",
-																			"description": "Additional properties to include in the response.\n"
-																		}
-																	],
-																	"variable": [
-																		{
-																			"id": "fb99b209-a0a6-4afe-b502-7448ca6f6442",
-																			"key": "benchmarkId",
-																			"value": "<string>",
-																			"type": "string",
-																			"description": "(Required) A path parameter that indentifies a STIG"
-																		},
-																		{
-																			"id": "955ebf59-8009-4bcf-a648-a54c310a3d6d",
-																			"key": "revisionStr",
-																			"value": "<string>",
-																			"type": "string",
-																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
-																		}
-																	]
-																}
-															},
-															"response": [
-																{
-																	"name": "Rule response",
-																	"originalRequest": {
-																		"method": "GET",
-																		"header": [],
-																		"url": {
-																			"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=<string>&projection=<string>",
-																			"host": [
-																				"{{baseUrl}}"
-																			],
-																			"path": [
-																				"stigs",
-																				":benchmarkId",
-																				"revisions",
-																				":revisionStr",
-																				"rules"
-																			],
-																			"query": [
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				},
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				}
-																			],
-																			"variable": [
-																				{
-																					"key": "benchmarkId"
-																				},
-																				{
-																					"key": "revisionStr"
-																				}
-																			]
-																		}
-																	},
-																	"status": "OK",
-																	"code": 200,
-																	"_postman_previewlanguage": "json",
-																	"header": [
-																		{
-																			"key": "Content-Type",
-																			"value": "application/json"
-																		}
-																	],
-																	"cookie": [],
-																	"body": "[\n {\n  \"ruleId\": \"est adipisicing veniam\",\n  \"groupId\": \"fugiat Duis aliquip\",\n  \"groupTitle\": \"qui voluptate Lorem\",\n  \"version\": \"elit mollit cupidatat commodo\",\n  \"title\": \"cillum sit\",\n  \"severity\": \"Lorem dolore voluptate\",\n  \"weight\": \"magna dolor\",\n  \"vulnDiscussion\": \"Excepteu\",\n  \"falsePositives\": \"aliqua et sint\",\n  \"falseNegatives\": \"non\",\n  \"documentable\": \"dolore est sed anim ut\",\n  \"mitigations\": \"esse minim ipsum\",\n  \"securityOverrideGuidance\": \"cupidatat consectetur sunt aliqua eiusmod\",\n  \"potentialImpacts\": \"dolor in amet sed consequat\",\n  \"thirdPartyTools\": \"voluptate exercitation fugiat aute non\",\n  \"mitigationControl\": \"ma\",\n  \"responsibility\": \"ullamco eiusmod amet\"\n },\n {\n  \"ruleId\": \"ut qui ex\",\n  \"groupId\": \"elit nostrud ad\",\n  \"groupTitle\": \"eiusmod aliqua voluptate sed\",\n  \"version\": \"nostrud ut adipisicing\",\n  \"title\": \"enim anim\",\n  \"severity\": \"cillum\",\n  \"weight\": \"amet dolor minim\",\n  \"vulnDiscussion\": \"sunt cupidatat Lorem eiusmod Ut\",\n  \"falsePositives\": \"consectetur tempor nulla\",\n  \"falseNegatives\": \"incididunt\",\n  \"documentable\": \"Excepteur in pariatur\",\n  \"mitigations\": \"Duis culpa dolor\",\n  \"securityOverrideGuidance\": \"dolor deserunt\",\n  \"potentialImpacts\": \"consectetur dolor qui\",\n  \"thirdPartyTools\": \"nulla ullamco qui nostrud culpa\",\n  \"mitigationControl\": \"sunt et\",\n  \"responsibility\": \"in eu occaecat\"\n }\n]"
-																},
-																{
-																	"name": "unexpected error",
-																	"originalRequest": {
-																		"method": "GET",
-																		"header": [],
-																		"url": {
-																			"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=<string>&projection=<string>",
-																			"host": [
-																				"{{baseUrl}}"
-																			],
-																			"path": [
-																				"stigs",
-																				":benchmarkId",
-																				"revisions",
-																				":revisionStr",
-																				"rules"
-																			],
-																			"query": [
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				},
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				}
-																			],
-																			"variable": [
-																				{
-																					"key": "benchmarkId"
-																				},
-																				{
-																					"key": "revisionStr"
-																				}
-																			]
-																		}
-																	},
-																	"status": "Internal Server Error",
-																	"code": 500,
-																	"_postman_previewlanguage": "json",
-																	"header": [
-																		{
-																			"key": "Content-Type",
-																			"value": "application/json"
-																		}
-																	],
-																	"cookie": [],
-																	"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-																}
-															]
-														},
-														{
-															"name": "Return rule data for the specified Rule in a revision of a STIG.",
-															"request": {
-																"auth": {
-																	"type": "oauth2"
-																},
-																"method": "GET",
-																"header": [],
-																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=<string>&projection=<string>",
-																	"host": [
-																		"{{baseUrl}}"
-																	],
-																	"path": [
-																		"stigs",
-																		":benchmarkId",
-																		"revisions",
-																		":revisionStr",
-																		"rules",
-																		":ruleId"
-																	],
-																	"query": [
-																		{
-																			"key": "projection",
-																			"value": "<string>",
-																			"description": "Additional properties to include in the response.\n"
-																		},
-																		{
-																			"key": "projection",
-																			"value": "<string>",
-																			"description": "Additional properties to include in the response.\n"
-																		}
-																	],
-																	"variable": [
-																		{
-																			"id": "271ebc8e-377f-4010-a0c2-986c511f6bfc",
-																			"key": "benchmarkId",
-																			"value": "<string>",
-																			"type": "string",
-																			"description": "(Required) A path parameter that indentifies a STIG"
-																		},
-																		{
-																			"id": "9e07f688-8be9-4915-a310-3e8ed81f4f59",
-																			"key": "revisionStr",
-																			"value": "<string>",
-																			"type": "string",
-																			"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
-																		},
-																		{
-																			"id": "da34d96c-4e47-4cf5-a0a2-92393bd0bdd0",
-																			"key": "ruleId",
-																			"value": "<string>",
-																			"type": "string",
-																			"description": "(Required) A path parameter that indentifies a Rule"
-																		}
-																	]
-																}
-															},
-															"response": [
-																{
-																	"name": "Rule response",
-																	"originalRequest": {
-																		"method": "GET",
-																		"header": [],
-																		"url": {
-																			"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=<string>&projection=<string>",
-																			"host": [
-																				"{{baseUrl}}"
-																			],
-																			"path": [
-																				"stigs",
-																				":benchmarkId",
-																				"revisions",
-																				":revisionStr",
-																				"rules",
-																				":ruleId"
-																			],
-																			"query": [
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				},
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				}
-																			],
-																			"variable": [
-																				{
-																					"key": "benchmarkId"
-																				},
-																				{
-																					"key": "revisionStr"
-																				},
-																				{
-																					"key": "ruleId"
-																				}
-																			]
-																		}
-																	},
-																	"status": "OK",
-																	"code": 200,
-																	"_postman_previewlanguage": "json",
-																	"header": [
-																		{
-																			"key": "Content-Type",
-																			"value": "application/json"
-																		}
-																	],
-																	"cookie": [],
-																	"body": "[\n {\n  \"ruleId\": \"ad ea Lorem in\",\n  \"groupId\": \"exercitation Lorem ullamco\",\n  \"groupTitle\": \"veniam sint deserunt\",\n  \"version\": \"officia dolore sunt aliquip occaecat\",\n  \"title\": \"pariatur in\",\n  \"severity\": \"reprehenderit id exercitation Lorem\",\n  \"weight\": \"commodo esse Duis\",\n  \"vulnDiscussion\": \"quis tempor Excepteur nulla\",\n  \"falsePositives\": \"enim\",\n  \"falseNegatives\": \"aliqua cillum proident nisi do\",\n  \"documentable\": \"ullamco magna in dolore\",\n  \"mitigations\": \"in exercitation tempor\",\n  \"securityOverrideGuidance\": \"magna et\",\n  \"potentialImpacts\": \"proident\",\n  \"thirdPartyTools\": \"Ut laborum elit\",\n  \"mitigationControl\": \"elit\",\n  \"responsibility\": \"esse Excepteur irure sed pariatur\",\n  \"cci\": [\n   {\n    \"cci\": \"nisi eu\",\n    \"apAcronym\": \"velit qui\",\n    \"control\": \"dolor nostrud ipsum qui elit\"\n   },\n   {\n    \"cci\": \"in aliquip sunt\",\n    \"apAcronym\": \"eu anim\",\n    \"control\": \"reprehenderit deserunt Duis dolor\"\n   }\n  ],\n  \"checks\": [\n   {\n    \"checkId\": \"Ut cillum\",\n    \"content\": \"veniam\"\n   },\n   {\n    \"checkId\": \"aliqua ex incididunt ullamco mollit\",\n    \"content\": \"sint\"\n   }\n  ],\n  \"fixes\": [\n   {\n    \"fixId\": \"laboris tempor in in\",\n    \"text\": \"sit eu\"\n   },\n   {\n    \"fixId\": \"cupidatat velit ipsum\",\n    \"text\": \"exercitation\"\n   }\n  ]\n },\n {\n  \"ruleId\": \"in Lorem est\",\n  \"groupId\": \"nostrud velit irure dolore\",\n  \"groupTitle\": \"nisi tempor ad consequat\",\n  \"version\": \"ullamco ipsum\",\n  \"title\": \"dolore ea\",\n  \"severity\": \"mollit irure\",\n  \"weight\": \"eu et\",\n  \"vulnDiscussion\": \"in\",\n  \"falsePositives\": \"nulla mollit do\",\n  \"falseNegatives\": \"cillum Ut\",\n  \"documentable\": \"ad nulla culpa\",\n  \"mitigations\": \"Excepteur Duis ex Lorem\",\n  \"securityOverrideGuidance\": \"dolore consequat exercitation\",\n  \"potentialImpacts\": \"Lorem minim aliqua incididunt enim\",\n  \"thirdPartyTools\": \"aliquip culpa dolor pariatur\",\n  \"mitigationControl\": \"consequat do voluptate\",\n  \"responsibility\": \"aliqua\",\n  \"cci\": [\n   {\n    \"cci\": \"in\",\n    \"apAcronym\": \"dolore amet occaecat\",\n    \"control\": \"commodo et adipisicing do mol\"\n   },\n   {\n    \"cci\": \"amet sit\",\n    \"apAcronym\": \"consequat\",\n    \"control\": \"dolore dolor\"\n   }\n  ],\n  \"checks\": [\n   {\n    \"checkId\": \"nulla nostrud veniam incididunt\",\n    \"content\": \"consectetur cupidatat\"\n   },\n   {\n    \"checkId\": \"Lorem\",\n    \"content\": \"nostrud eu laboris exercitation\"\n   }\n  ],\n  \"fixes\": [\n   {\n    \"fixId\": \"deserunt elit Lorem sed\",\n    \"text\": \"proident commodo ut\"\n   },\n   {\n    \"fixId\": \"reprehenderit eiusmo\",\n    \"text\": \"non consequat\"\n   }\n  ]\n }\n]"
-																},
-																{
-																	"name": "unexpected error",
-																	"originalRequest": {
-																		"method": "GET",
-																		"header": [],
-																		"url": {
-																			"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=<string>&projection=<string>",
-																			"host": [
-																				"{{baseUrl}}"
-																			],
-																			"path": [
-																				"stigs",
-																				":benchmarkId",
-																				"revisions",
-																				":revisionStr",
-																				"rules",
-																				":ruleId"
-																			],
-																			"query": [
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				},
-																				{
-																					"key": "projection",
-																					"value": "<string>"
-																				}
-																			],
-																			"variable": [
-																				{
-																					"key": "benchmarkId"
-																				},
-																				{
-																					"key": "revisionStr"
-																				},
-																				{
-																					"key": "ruleId"
-																				}
-																			]
-																		}
-																	},
-																	"status": "Internal Server Error",
-																	"code": 500,
-																	"_postman_previewlanguage": "json",
-																	"header": [
-																		{
-																			"key": "Content-Type",
-																			"value": "application/json"
-																		}
-																	],
-																	"cookie": [],
-																	"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-																}
-															]
-														}
-													],
+													"item": [],
 													"protocolProfileBehavior": {},
 													"_postman_isSubFolder": true
 												},
 												{
-													"name": "Return metadata for the specified revision of a STIG",
-													"request": {
-														"auth": {
-															"type": "oauth2"
-														},
-														"method": "GET",
-														"header": [],
-														"url": {
-															"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"stigs",
-																":benchmarkId",
-																"revisions",
-																":revisionStr"
-															],
-															"variable": [
-																{
-																	"id": "2db28748-2415-4705-b7bd-62ae7ef4119e",
-																	"key": "benchmarkId",
-																	"value": "<string>",
-																	"type": "string",
-																	"description": "(Required) A path parameter that indentifies a STIG"
-																},
-																{
-																	"id": "5b6b3bb0-9989-4b22-bf9e-4c5950093f1a",
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"type": "string",
-																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
-																}
-															]
-														}
-													},
-													"response": [
-														{
-															"name": "unexpected error",
-															"originalRequest": {
-																"method": "GET",
-																"header": [],
-																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr",
-																	"host": [
-																		"{{baseUrl}}"
-																	],
-																	"path": [
-																		"stigs",
-																		":benchmarkId",
-																		"revisions",
-																		":revisionStr"
-																	],
-																	"variable": [
-																		{
-																			"key": "benchmarkId"
-																		},
-																		{
-																			"key": "revisionStr"
-																		}
-																	]
-																}
-															},
-															"status": "Internal Server Error",
-															"code": 500,
-															"_postman_previewlanguage": "json",
-															"header": [
-																{
-																	"key": "Content-Type",
-																	"value": "application/json"
-																}
-															],
-															"cookie": [],
-															"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-														},
-														{
-															"name": "Revision response",
-															"originalRequest": {
-																"method": "GET",
-																"header": [],
-																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr",
-																	"host": [
-																		"{{baseUrl}}"
-																	],
-																	"path": [
-																		"stigs",
-																		":benchmarkId",
-																		"revisions",
-																		":revisionStr"
-																	],
-																	"variable": [
-																		{
-																			"key": "benchmarkId"
-																		},
-																		{
-																			"key": "revisionStr"
-																		}
-																	]
-																}
-															},
-															"status": "OK",
-															"code": 200,
-															"_postman_previewlanguage": "json",
-															"header": [
-																{
-																	"key": "Content-Type",
-																	"value": "application/json"
-																}
-															],
-															"cookie": [],
-															"body": "{\n \"benchmarkId\": \"nisi id q\",\n \"revisionStr\": \"consectetur dolore\",\n \"version\": \"velit cupidatat anim qui\",\n \"release\": \"in dolor aliqua fugiat\",\n \"benchmarkDate\": \"ad in\",\n \"status\": \"pariatur cillum\",\n \"statusDate\": \"in sunt\",\n \"description\": \"Excepteur\"\n}"
-														}
-													]
-												},
-												{
 													"name": "Deletes the specified revision of a STIG",
 													"request": {
-														"auth": {
-															"type": "oauth2"
-														},
 														"method": "DELETE",
 														"header": [],
 														"url": {
@@ -23142,16 +23537,14 @@
 															],
 															"variable": [
 																{
-																	"id": "a9d632d6-7a46-4601-8dfd-9bf4c985c3cb",
 																	"key": "benchmarkId",
-																	"value": "<string>",
+																	"value": "zOS_TDMF_for_RACF_STIG",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a STIG"
 																},
 																{
-																	"id": "b517d91d-c057-46b4-a209-642ea4c6ea25",
 																	"key": "revisionStr",
-																	"value": "<string>",
+																	"value": "V6R4",
 																	"type": "string",
 																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																}
@@ -23236,337 +23629,18 @@
 															"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
 														}
 													]
-												},
-												{
-													"name": "Return a list of CCIs from a STIG revision",
-													"request": {
-														"auth": {
-															"type": "oauth2"
-														},
-														"method": "GET",
-														"header": [],
-														"url": {
-															"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/ccis",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"stigs",
-																":benchmarkId",
-																"revisions",
-																":revisionStr",
-																"ccis"
-															],
-															"variable": [
-																{
-																	"id": "b4d8d8ff-1b5b-4b4d-8fcc-b3f98d37faeb",
-																	"key": "benchmarkId",
-																	"value": "<string>",
-																	"type": "string",
-																	"description": "(Required) A path parameter that indentifies a STIG"
-																},
-																{
-																	"id": "07189d8d-d319-43d2-be5b-cfa414488edd",
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"type": "string",
-																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
-																}
-															]
-														}
-													},
-													"response": [
-														{
-															"name": "CCI response",
-															"originalRequest": {
-																"method": "GET",
-																"header": [],
-																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/ccis",
-																	"host": [
-																		"{{baseUrl}}"
-																	],
-																	"path": [
-																		"stigs",
-																		":benchmarkId",
-																		"revisions",
-																		":revisionStr",
-																		"ccis"
-																	],
-																	"variable": [
-																		{
-																			"key": "benchmarkId"
-																		},
-																		{
-																			"key": "revisionStr"
-																		}
-																	]
-																}
-															},
-															"status": "OK",
-															"code": 200,
-															"_postman_previewlanguage": "json",
-															"header": [
-																{
-																	"key": "Content-Type",
-																	"value": "application/json"
-																}
-															],
-															"cookie": [],
-															"body": "[\n {\n  \"cci\": \"magna in\",\n  \"type\": \"exercitation aliqua Lorem\",\n  \"references\": [\n   {\n    \"creator\": \"Excepteur aute\",\n    \"title\": \"sint minim\",\n    \"version\": \"dolor ad\",\n    \"location\": \"sed pariat\",\n    \"indexDisa\": \"sunt Duis reprehenderit\",\n    \"textRefNist\": \"anim non ipsum\",\n    \"parentControl\": \"Duis \"\n   },\n   {\n    \"creator\": \"tempor veniam\",\n    \"title\": \"mollit culpa nisi ipsum\",\n    \"version\": \"adipisicing in Duis sed\",\n    \"location\": \"Lorem laborum eu Duis minim\",\n    \"indexDisa\": \"ut in sunt\",\n    \"textRefNist\": \"tempor esse labore\",\n    \"parentControl\": \"nisi cillum laborum ipsum dolor\"\n   }\n  ]\n },\n {\n  \"cci\": \"sint magna laborum adipisicing minim\",\n  \"type\": \"nostrud adipisicing tempor\",\n  \"references\": [\n   {\n    \"creator\": \"reprehenderit labore m\",\n    \"title\": \"irure in deserunt pariatur\",\n    \"version\": \"mollit ut\",\n    \"location\": \"anim pariatur qui velit\",\n    \"indexDisa\": \"incididunt esse ullamco quis\",\n    \"textRefNist\": \"aliqua commodo aute\",\n    \"parentControl\": \"velit veniam ad magna enim\"\n   },\n   {\n    \"creator\": \"proident qui laboris amet\",\n    \"title\": \"et fugiat aute\",\n    \"version\": \"sed\",\n    \"location\": \"deserunt\",\n    \"indexDisa\": \"culpa mollit\",\n    \"textRefNist\": \"dolore id in\",\n    \"parentControl\": \"in Duis\"\n   }\n  ]\n }\n]"
-														},
-														{
-															"name": "unexpected error",
-															"originalRequest": {
-																"method": "GET",
-																"header": [],
-																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/ccis",
-																	"host": [
-																		"{{baseUrl}}"
-																	],
-																	"path": [
-																		"stigs",
-																		":benchmarkId",
-																		"revisions",
-																		":revisionStr",
-																		"ccis"
-																	],
-																	"variable": [
-																		{
-																			"key": "benchmarkId"
-																		},
-																		{
-																			"key": "revisionStr"
-																		}
-																	]
-																}
-															},
-															"status": "Internal Server Error",
-															"code": 500,
-															"_postman_previewlanguage": "json",
-															"header": [
-																{
-																	"key": "Content-Type",
-																	"value": "application/json"
-																}
-															],
-															"cookie": [],
-															"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-														}
-													]
 												}
 											],
 											"protocolProfileBehavior": {},
 											"_postman_isSubFolder": true
-										},
-										{
-											"name": "Return a list of revisions for the specified STIG",
-											"request": {
-												"auth": {
-													"type": "oauth2"
-												},
-												"method": "GET",
-												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"stigs",
-														":benchmarkId",
-														"revisions"
-													],
-													"variable": [
-														{
-															"id": "aae7ae0a-659d-4349-9849-114dd00d514f",
-															"key": "benchmarkId",
-															"value": "<string>",
-															"type": "string",
-															"description": "(Required) A path parameter that indentifies a STIG"
-														}
-													]
-												}
-											},
-											"response": [
-												{
-													"name": "unexpected error",
-													"originalRequest": {
-														"method": "GET",
-														"header": [],
-														"url": {
-															"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"stigs",
-																":benchmarkId",
-																"revisions"
-															],
-															"variable": [
-																{
-																	"key": "benchmarkId"
-																}
-															]
-														}
-													},
-													"status": "Internal Server Error",
-													"code": 500,
-													"_postman_previewlanguage": "json",
-													"header": [
-														{
-															"key": "Content-Type",
-															"value": "application/json"
-														}
-													],
-													"cookie": [],
-													"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-												},
-												{
-													"name": "Revision response",
-													"originalRequest": {
-														"method": "GET",
-														"header": [],
-														"url": {
-															"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"stigs",
-																":benchmarkId",
-																"revisions"
-															],
-															"variable": [
-																{
-																	"key": "benchmarkId"
-																}
-															]
-														}
-													},
-													"status": "OK",
-													"code": 200,
-													"_postman_previewlanguage": "json",
-													"header": [
-														{
-															"key": "Content-Type",
-															"value": "application/json"
-														}
-													],
-													"cookie": [],
-													"body": "[\n {\n  \"benchmarkId\": \"et ea aliquip voluptate\",\n  \"revisionStr\": \"non commodo voluptate\",\n  \"version\": \"minim elit aute\",\n  \"release\": \"exercitation dolor\",\n  \"benchmarkDate\": \"consectetur ea\",\n  \"status\": \"in ea\",\n  \"statusDate\": \"Ut f\",\n  \"description\": \"ea et laboris\"\n },\n {\n  \"benchmarkId\": \"aute magna\",\n  \"revisionStr\": \"do incididunt\",\n  \"version\": \"in ex cupidatat voluptate occaecat\",\n  \"release\": \"dolor veniam ex proident sit\",\n  \"benchmarkDate\": \"aliqua irure\",\n  \"status\": \"ipsum consequat Excepteur\",\n  \"statusDate\": \"nisi esse officia fugiat tempor\",\n  \"description\": \"irure aliquip do officia\"\n }\n]"
-												}
-											]
 										}
 									],
 									"protocolProfileBehavior": {},
 									"_postman_isSubFolder": true
 								},
 								{
-									"name": "Return properties of the specified STIG",
-									"request": {
-										"auth": {
-											"type": "oauth2"
-										},
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/stigs/:benchmarkId",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"stigs",
-												":benchmarkId"
-											],
-											"variable": [
-												{
-													"id": "ed41f569-49d7-4187-a38a-b0a6fafede08",
-													"key": "benchmarkId",
-													"value": "<string>",
-													"type": "string",
-													"description": "(Required) A path parameter that indentifies a STIG"
-												}
-											]
-										}
-									},
-									"response": [
-										{
-											"name": "STIG response",
-											"originalRequest": {
-												"method": "GET",
-												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"stigs",
-														":benchmarkId"
-													],
-													"variable": [
-														{
-															"key": "benchmarkId"
-														}
-													]
-												}
-											},
-											"status": "OK",
-											"code": 200,
-											"_postman_previewlanguage": "json",
-											"header": [
-												{
-													"key": "Content-Type",
-													"value": "application/json"
-												}
-											],
-											"cookie": [],
-											"body": "{\n \"benchmarkId\": \"occaecat eiusmod ullamco nostrud lab\",\n \"lastRevisionStr\": \"deserunt dolor sit\",\n \"lastRevisionDate\": \"dolor in mollit amet\",\n \"title\": \"cillum labore esse\",\n \"ruleCount\": -91310498\n}"
-										},
-										{
-											"name": "unexpected error",
-											"originalRequest": {
-												"method": "GET",
-												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"stigs",
-														":benchmarkId"
-													],
-													"variable": [
-														{
-															"key": "benchmarkId"
-														}
-													]
-												}
-											},
-											"status": "Internal Server Error",
-											"code": 500,
-											"_postman_previewlanguage": "json",
-											"header": [
-												{
-													"key": "Content-Type",
-													"value": "application/json"
-												}
-											],
-											"cookie": [],
-											"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-										}
-									]
-								},
-								{
 									"name": "Deletes a STIG (*** and all revisions ***)",
 									"request": {
-										"auth": {
-											"type": "oauth2"
-										},
 										"method": "DELETE",
 										"header": [],
 										"url": {
@@ -23580,9 +23654,8 @@
 											],
 											"variable": [
 												{
-													"id": "4af8df8c-d35f-407c-9f70-ca1b1dd1da4d",
 													"key": "benchmarkId",
-													"value": "<string>",
+													"value": "zOS_Websphere_Application_Server_for_RACF_STIG",
 													"type": "string",
 													"description": "(Required) A path parameter that indentifies a STIG"
 												}
@@ -23665,9 +23738,6 @@
 						{
 							"name": "Import a new STIG",
 							"request": {
-								"auth": {
-									"type": "oauth2"
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -23821,456 +23891,475 @@
 					"name": "Invalid Requests GET",
 					"item": [
 						{
-							"name": "Return an Asset (no grant)",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"id": "83313cf7-d11f-476f-9b04-a0d28329b2dd",
-										"exec": [
-											"//normal test start block:\r",
-											"let user = pm.environment.get(\"user\");\r",
-											"console.log(\"user: \" + user);\r",
-											"\r",
-											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-											"    user = \"elevated\";\r",
-											"    console.log(\"setting user to 'elevated'\");\r",
-											"}\r",
-											"\r",
-											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
-											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
-											"        pm.response.to.have.status(403);\r",
-											"    });\r",
-											"    return;\r",
-											"}\r",
-											"else {\r",
-											"    pm.test(\"Status code is 200\", function () {\r",
-											"        pm.response.to.have.status(200);\r",
-											"    });\r",
-											"}\r",
-											"if (pm.response.code !== 200) {\r",
-											"    return;\r",
-											"}\r",
-											"\r",
-											"\r",
-											"let jsonData = pm.response.json();\r",
-											"\r",
-											"pm.test(\"Response JSON is an object\", function () {\r",
-											"    pm.expect(jsonData).to.be.an('object');\r",
-											"});\r",
-											"\r",
-											"\r",
-											"\r",
-											"let assetKeys = [\r",
-											"    \"assetId\",\r",
-											"    \"name\",\r",
-											"    \"collection\",\r",
-											"    \"description\",\r",
-											"    \"ip\",\r",
-											"    \"noncomputing\",\r",
-											"    \"metadata\"\r",
-											"]\r",
-											"\r",
-											"let collectionKeys = [\r",
-											"    \"collectionId\",\r",
-											"    \"name\",\r",
-											"    \"workflow\"\r",
-											"]\r",
-											"\r",
-											"let grantKeys = [\r",
-											"    \"users\",\r",
-											"    \"benchmarkId\",\r",
-											"    // \"userId\",\r",
-											"    // \"username\"\r",
-											"]\r",
-											"\r",
-											"let userBasicKeys = [\r",
-											"    // \"user\",\r",
-											"    // \"accessLevel\",\r",
-											"    \"userId\",\r",
-											"    \"username\"\r",
-											"]\r",
-											"\r",
-											"let stigKeys = [\r",
-											"    \"title\",\r",
-											"    \"ruleCount\",\r",
-											"    \"benchmarkId\",\r",
-											"    \"lastRevisionDate\",\r",
-											"    \"lastRevisionStr\"\r",
-											"]\r",
-											"\r",
-											"let adminStatsKeys = [\r",
-											"    \"ruleCount\",\r",
-											"    \"stigCount\",\r",
-											"    \"stigAssignedCount\"\r",
-											"]\r",
-											"\r",
-											"\r",
-											"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"    assetKeys.push(\"adminStats\")\r",
-											"}\r",
-											"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
-											"    assetKeys.push(\"stigGrants\")\r",
-											"}\r",
-											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
-											"    assetKeys.push(\"stigs\")\r",
-											"}\r",
-											"\r",
-											"\r",
-											"pm.test(\"Check if object contains all provided keys\", function () {\r",
-											"    pm.expect(jsonData).to.have.all.keys(assetKeys);\r",
-											"});\r",
-											"\r",
-											"\r",
-											"pm.test(\"Response has requested properties and values\", function () {\r",
-											"    // for (let item of jsonData){\r",
-											"    // let collectionMatchString = pm.environment.get(\"collectionMatchString\");\r",
-											"    // var regex = new RegExp(collectionMatchString);\r",
-											"    // pm.test(\"Check that proper Collections are returned\", function () {\r",
-											"    //     pm.expect(jsonData.name).to.match(regex);\r",
-											"    // });\r",
-											"\r",
-											"    // pm.expect(jsonData.collection).to.have.all.keys(collectionKeys);\r",
-											"\r",
-											"\r",
-											"    if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
-											"        for (let grant of jsonData.stigGrants){\r",
-											"            pm.expect(grant).to.have.all.keys(grantKeys);\r",
-											"            for (let user of grant.users){\r",
-											"                pm.expect(user).to.have.all.keys(userBasicKeys);\r",
-											"\r",
-											"            }\r",
-											"        }\r",
-											"    }\r",
-											"\r",
-											"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
-											"        for (let stig of jsonData.stigs){\r",
-											"            pm.expect(stig).to.have.all.keys(stigKeys);\r",
-											"        }\r",
-											"    }\r",
-											"    \r",
-											"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
-											"    }\r",
-											"\r",
-											"    // };\r",
-											"\r",
-											"});\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"assets",
-										":assetId"
-									],
-									"query": [
-										{
-											"key": "elevate",
-											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
-										},
-										{
-											"key": "projection",
-											"value": "adminStats",
-											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
-											"value": "stigs",
-											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
-											"value": "stigGrants"
-										}
-									],
-									"variable": [
-										{
-											"description": "(Required) A path parameter that indentifies an Asset",
-											"key": "assetId",
-											"type": "string",
-											"value": "{{testAsset}}"
-										}
-									]
-								}
-							},
-							"response": [
-								{
-									"name": "AssetProjected response",
-									"originalRequest": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"assets",
-												":assetId"
-											],
-											"query": [
-												{
-													"key": "elevate",
-													"value": "<boolean>"
-												},
-												{
-													"key": "projection",
-													"value": "<string>"
-												},
-												{
-													"key": "projection",
-													"value": "<string>"
-												}
-											],
-											"variable": [
-												{
-													"key": "assetId"
-												}
-											]
-										}
-									},
-									"status": "OK",
-									"code": 200,
-									"_postman_previewlanguage": "json",
-									"header": [
-										{
-											"key": "Content-Type",
-											"value": "application/json"
-										}
-									],
-									"cookie": [],
-									"body": "{\n \"assetId\": \"eu et\",\n \"name\": \"quis exercitation do cupidatat\",\n \"collection\": {\n  \"collectionId\": \"est et\",\n  \"name\": \"aliquip reprehenderit\",\n  \"workflow\": \"continuous\"\n },\n \"description\": \"in nulla do exercitation\",\n \"ip\": \"labore ullamco\",\n \"noncomputing\": true,\n \"metadata\": \"id occaecat Lorem deserunt ad\",\n \"adminStats\": {\n  \"stigCount\": -4608915,\n  \"stigAssignedCount\": -68692699\n },\n \"stigs\": [\n  {\n   \"benchmarkId\": \"est reprehenderit pariatur nostrud anim\",\n   \"lastRevisionStr\": \"qui anim dolore veniam\",\n   \"lastRevisionDate\": \"eu dolor fugiat\",\n   \"title\": \"aute aliquip nulla\",\n   \"ruleCount\": 23322456\n  },\n  {\n   \"benchmarkId\": \"dolore occaecat cupidatat ipsum\",\n   \"lastRevisionStr\": \"Duis aliqua sint\",\n   \"lastRevisionDate\": \"incididunt id in ex cupidatat\",\n   \"title\": \"sed Ut consectetur dolor\",\n   \"ruleCount\": 6875346\n  }\n ],\n \"stigGrants\": [\n  {\n   \"benchmarkId\": \"eiusmod sunt adipisicing in\",\n   \"users\": [\n    {\n     \"userId\": \"sint culpa aute in\",\n     \"username\": \"mollit consequat Ut deserunt\"\n    },\n    {\n     \"userId\": \"reprehenderit\",\n     \"username\": \"in quis\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"minim con\",\n   \"users\": [\n    {\n     \"userId\": \"non Excepteur ex\",\n     \"username\": \"eiusmod do anim\"\n    },\n    {\n     \"userId\": \"pariatur veniam culpa ut\",\n     \"username\": \"commodo enim\"\n    }\n   ]\n  }\n ]\n}"
-								},
-								{
-									"name": "unexpected error",
-									"originalRequest": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"assets",
-												":assetId"
-											],
-											"query": [
-												{
-													"key": "elevate",
-													"value": "<boolean>"
-												},
-												{
-													"key": "projection",
-													"value": "<string>"
-												},
-												{
-													"key": "projection",
-													"value": "<string>"
-												}
-											],
-											"variable": [
-												{
-													"key": "assetId"
-												}
-											]
-										}
-									},
-									"status": "Internal Server Error",
-									"code": 500,
-									"_postman_previewlanguage": "json",
-									"header": [
-										{
-											"key": "Content-Type",
-											"value": "application/json"
-										}
-									],
-									"cookie": [],
-									"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-								}
-							]
+							"name": "Collections",
+							"item": [],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
 						},
 						{
-							"name": "Return the Review for an INVALID Asset (wrong collection)",
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=ruleInfo&projection=history&projection=stigs&projection=collections",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"collections",
-										":collectionId",
-										"reviews",
-										":assetId",
-										":ruleId"
-									],
-									"query": [
+							"name": "Assets",
+							"item": [
+								{
+									"name": "Return an Asset (no grant)",
+									"event": [
 										{
-											"key": "projection",
-											"value": "ruleInfo",
-											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
-											"value": "history",
-											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
-											"value": "stigs"
-										},
-										{
-											"key": "projection",
-											"value": "collections"
+											"listen": "test",
+											"script": {
+												"id": "83313cf7-d11f-476f-9b04-a0d28329b2dd",
+												"exec": [
+													"//normal test start block:\r",
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"let assetKeys = [\r",
+													"    \"assetId\",\r",
+													"    \"name\",\r",
+													"    \"collection\",\r",
+													"    \"description\",\r",
+													"    \"ip\",\r",
+													"    \"noncomputing\",\r",
+													"    \"metadata\"\r",
+													"]\r",
+													"\r",
+													"let collectionKeys = [\r",
+													"    \"collectionId\",\r",
+													"    \"name\",\r",
+													"    \"workflow\"\r",
+													"]\r",
+													"\r",
+													"let grantKeys = [\r",
+													"    \"users\",\r",
+													"    \"benchmarkId\",\r",
+													"    // \"userId\",\r",
+													"    // \"username\"\r",
+													"]\r",
+													"\r",
+													"let userBasicKeys = [\r",
+													"    // \"user\",\r",
+													"    // \"accessLevel\",\r",
+													"    \"userId\",\r",
+													"    \"username\"\r",
+													"]\r",
+													"\r",
+													"let stigKeys = [\r",
+													"    \"title\",\r",
+													"    \"ruleCount\",\r",
+													"    \"benchmarkId\",\r",
+													"    \"lastRevisionDate\",\r",
+													"    \"lastRevisionStr\"\r",
+													"]\r",
+													"\r",
+													"let adminStatsKeys = [\r",
+													"    \"ruleCount\",\r",
+													"    \"stigCount\",\r",
+													"    \"stigAssignedCount\"\r",
+													"]\r",
+													"\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
+													"    assetKeys.push(\"adminStats\")\r",
+													"}\r",
+													"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
+													"    assetKeys.push(\"stigGrants\")\r",
+													"}\r",
+													"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+													"    assetKeys.push(\"stigs\")\r",
+													"}\r",
+													"\r",
+													"\r",
+													"pm.test(\"Check if object contains all provided keys\", function () {\r",
+													"    pm.expect(jsonData).to.have.all.keys(assetKeys);\r",
+													"});\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response has requested properties and values\", function () {\r",
+													"    // for (let item of jsonData){\r",
+													"    // let collectionMatchString = pm.environment.get(\"collectionMatchString\");\r",
+													"    // var regex = new RegExp(collectionMatchString);\r",
+													"    // pm.test(\"Check that proper Collections are returned\", function () {\r",
+													"    //     pm.expect(jsonData.name).to.match(regex);\r",
+													"    // });\r",
+													"\r",
+													"    // pm.expect(jsonData.collection).to.have.all.keys(collectionKeys);\r",
+													"\r",
+													"\r",
+													"    if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
+													"        for (let grant of jsonData.stigGrants){\r",
+													"            pm.expect(grant).to.have.all.keys(grantKeys);\r",
+													"            for (let user of grant.users){\r",
+													"                pm.expect(user).to.have.all.keys(userBasicKeys);\r",
+													"\r",
+													"            }\r",
+													"        }\r",
+													"    }\r",
+													"\r",
+													"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+													"        for (let stig of jsonData.stigs){\r",
+													"            pm.expect(stig).to.have.all.keys(stigKeys);\r",
+													"        }\r",
+													"    }\r",
+													"    \r",
+													"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
+													"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+													"    }\r",
+													"\r",
+													"    // };\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
 										}
 									],
-									"variable": [
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												},
+												{
+													"key": "projection",
+													"value": "adminStats",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigs",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigGrants"
+												}
+											],
+											"variable": [
+												{
+													"description": "(Required) A path parameter that indentifies an Asset",
+													"key": "assetId",
+													"type": "string",
+													"value": "{{testAsset}}"
+												}
+											]
+										}
+									},
+									"response": [
 										{
-											"description": "(Required) A path parameter that indentifies a Collection",
-											"key": "collectionId",
-											"type": "string",
-											"value": "{{testCollection}}"
+											"name": "AssetProjected response",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "<boolean>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"assetId\": \"eu et\",\n \"name\": \"quis exercitation do cupidatat\",\n \"collection\": {\n  \"collectionId\": \"est et\",\n  \"name\": \"aliquip reprehenderit\",\n  \"workflow\": \"continuous\"\n },\n \"description\": \"in nulla do exercitation\",\n \"ip\": \"labore ullamco\",\n \"noncomputing\": true,\n \"metadata\": \"id occaecat Lorem deserunt ad\",\n \"adminStats\": {\n  \"stigCount\": -4608915,\n  \"stigAssignedCount\": -68692699\n },\n \"stigs\": [\n  {\n   \"benchmarkId\": \"est reprehenderit pariatur nostrud anim\",\n   \"lastRevisionStr\": \"qui anim dolore veniam\",\n   \"lastRevisionDate\": \"eu dolor fugiat\",\n   \"title\": \"aute aliquip nulla\",\n   \"ruleCount\": 23322456\n  },\n  {\n   \"benchmarkId\": \"dolore occaecat cupidatat ipsum\",\n   \"lastRevisionStr\": \"Duis aliqua sint\",\n   \"lastRevisionDate\": \"incididunt id in ex cupidatat\",\n   \"title\": \"sed Ut consectetur dolor\",\n   \"ruleCount\": 6875346\n  }\n ],\n \"stigGrants\": [\n  {\n   \"benchmarkId\": \"eiusmod sunt adipisicing in\",\n   \"users\": [\n    {\n     \"userId\": \"sint culpa aute in\",\n     \"username\": \"mollit consequat Ut deserunt\"\n    },\n    {\n     \"userId\": \"reprehenderit\",\n     \"username\": \"in quis\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"minim con\",\n   \"users\": [\n    {\n     \"userId\": \"non Excepteur ex\",\n     \"username\": \"eiusmod do anim\"\n    },\n    {\n     \"userId\": \"pariatur veniam culpa ut\",\n     \"username\": \"commodo enim\"\n    }\n   ]\n  }\n ]\n}"
 										},
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
-											"key": "assetId",
-											"type": "string",
-											"value": "34"
+											"name": "unexpected error",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "<boolean>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId"
+														}
+													]
+												}
+											},
+											"status": "Internal Server Error",
+											"code": 500,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
+										}
+									]
+								},
+								{
+									"name": "Return the Review for an INVALID Asset (wrong collection)",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=ruleInfo&projection=history&projection=stigs&projection=collections",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"reviews",
+												":assetId",
+												":ruleId"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "ruleInfo",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "history",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "collections"
+												}
+											],
+											"variable": [
+												{
+													"description": "(Required) A path parameter that indentifies a Collection",
+													"key": "collectionId",
+													"type": "string",
+													"value": "{{testCollection}}"
+												},
+												{
+													"description": "(Required) A path parameter that indentifies an Asset",
+													"key": "assetId",
+													"type": "string",
+													"value": "34"
+												},
+												{
+													"description": "(Required) A path parameter that indentifies a Rule",
+													"key": "ruleId",
+													"type": "string",
+													"value": "{{reviews.testRule}}"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "ReviewProjected response",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"reviews",
+														":assetId",
+														":ruleId"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId"
+														},
+														{
+															"key": "assetId"
+														},
+														{
+															"key": "ruleId"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"assetId\": \"dolore in\",\n \"assetName\": \"mollit cillum nulla anim consectetur\",\n \"ruleId\": \"ipsum\",\n \"result\": \"<string>\",\n \"resultComment\": \"elit ullamco sint adipisicing\",\n \"autoResult\": false,\n \"action\": \"<string>\",\n \"actionComment\": \"nostrud fugiat pariatur eiusm\",\n \"status\": \"<string>\",\n \"userId\": \"adipisicing et deserunt enim\",\n \"username\": \"occaecat\",\n \"ts\": \"eu sed dolore do enim\",\n \"rejectText\": \"fugiat ad culpa\",\n \"rejectUserId\": \"sed dolore exercitation in\",\n \"history\": [\n  {\n   \"ts\": \"sit minim eiusmod\",\n   \"result\": \"<string>\",\n   \"resultComment\": \"voluptate in dolor\",\n   \"action\": \"<string>\",\n   \"actionComment\": \"esse Excepteur dolore\",\n   \"autoResult\": true,\n   \"status\": \"<string>\",\n   \"userId\": \"incididunt do veniam\",\n   \"username\": \"ex est\",\n   \"rejectText\": \"dolor sint\"\n  },\n  {\n   \"ts\": \"magna est\",\n   \"result\": \"<string>\",\n   \"resultComment\": \"ad ut\",\n   \"action\": \"<string>\",\n   \"actionComment\": \"in Ut qui velit\",\n   \"autoResult\": true,\n   \"status\": \"<string>\",\n   \"userId\": \"nulla tempor\",\n   \"username\": \"labore adipisicing sunt ea\",\n   \"rejectText\": \"eiusmod\"\n  }\n ],\n \"asset\": {\n  \"assetId\": \"culpa reprehenderit incididunt\",\n  \"name\": \"incididunt qui do\"\n },\n \"stigs\": [\n  \"irure\",\n  \"dolore proident\"\n ],\n \"rule\": {\n  \"ruleId\": \"cupidatat\",\n  \"version\": \"ipsum\",\n  \"title\": \"laboris incididunt\",\n  \"severity\": \"ea id\"\n }\n}"
 										},
 										{
-											"description": "(Required) A path parameter that indentifies a Rule",
-											"key": "ruleId",
-											"type": "string",
-											"value": "{{reviews.testRule}}"
+											"name": "unexpected error",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"reviews",
+														":assetId",
+														":ruleId"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId"
+														},
+														{
+															"key": "assetId"
+														},
+														{
+															"key": "ruleId"
+														}
+													]
+												}
+											},
+											"status": "Internal Server Error",
+											"code": 500,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
 										}
 									]
 								}
-							},
-							"response": [
-								{
-									"name": "ReviewProjected response",
-									"originalRequest": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=<string>&projection=<string>",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"collections",
-												":collectionId",
-												"reviews",
-												":assetId",
-												":ruleId"
-											],
-											"query": [
-												{
-													"key": "projection",
-													"value": "<string>"
-												},
-												{
-													"key": "projection",
-													"value": "<string>"
-												}
-											],
-											"variable": [
-												{
-													"key": "collectionId"
-												},
-												{
-													"key": "assetId"
-												},
-												{
-													"key": "ruleId"
-												}
-											]
-										}
-									},
-									"status": "OK",
-									"code": 200,
-									"_postman_previewlanguage": "json",
-									"header": [
-										{
-											"key": "Content-Type",
-											"value": "application/json"
-										}
-									],
-									"cookie": [],
-									"body": "{\n \"assetId\": \"dolore in\",\n \"assetName\": \"mollit cillum nulla anim consectetur\",\n \"ruleId\": \"ipsum\",\n \"result\": \"<string>\",\n \"resultComment\": \"elit ullamco sint adipisicing\",\n \"autoResult\": false,\n \"action\": \"<string>\",\n \"actionComment\": \"nostrud fugiat pariatur eiusm\",\n \"status\": \"<string>\",\n \"userId\": \"adipisicing et deserunt enim\",\n \"username\": \"occaecat\",\n \"ts\": \"eu sed dolore do enim\",\n \"rejectText\": \"fugiat ad culpa\",\n \"rejectUserId\": \"sed dolore exercitation in\",\n \"history\": [\n  {\n   \"ts\": \"sit minim eiusmod\",\n   \"result\": \"<string>\",\n   \"resultComment\": \"voluptate in dolor\",\n   \"action\": \"<string>\",\n   \"actionComment\": \"esse Excepteur dolore\",\n   \"autoResult\": true,\n   \"status\": \"<string>\",\n   \"userId\": \"incididunt do veniam\",\n   \"username\": \"ex est\",\n   \"rejectText\": \"dolor sint\"\n  },\n  {\n   \"ts\": \"magna est\",\n   \"result\": \"<string>\",\n   \"resultComment\": \"ad ut\",\n   \"action\": \"<string>\",\n   \"actionComment\": \"in Ut qui velit\",\n   \"autoResult\": true,\n   \"status\": \"<string>\",\n   \"userId\": \"nulla tempor\",\n   \"username\": \"labore adipisicing sunt ea\",\n   \"rejectText\": \"eiusmod\"\n  }\n ],\n \"asset\": {\n  \"assetId\": \"culpa reprehenderit incididunt\",\n  \"name\": \"incididunt qui do\"\n },\n \"stigs\": [\n  \"irure\",\n  \"dolore proident\"\n ],\n \"rule\": {\n  \"ruleId\": \"cupidatat\",\n  \"version\": \"ipsum\",\n  \"title\": \"laboris incididunt\",\n  \"severity\": \"ea id\"\n }\n}"
-								},
-								{
-									"name": "unexpected error",
-									"originalRequest": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=<string>&projection=<string>",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"collections",
-												":collectionId",
-												"reviews",
-												":assetId",
-												":ruleId"
-											],
-											"query": [
-												{
-													"key": "projection",
-													"value": "<string>"
-												},
-												{
-													"key": "projection",
-													"value": "<string>"
-												}
-											],
-											"variable": [
-												{
-													"key": "collectionId"
-												},
-												{
-													"key": "assetId"
-												},
-												{
-													"key": "ruleId"
-												}
-											]
-										}
-									},
-									"status": "Internal Server Error",
-									"code": 500,
-									"_postman_previewlanguage": "json",
-									"header": [
-										{
-											"key": "Content-Type",
-											"value": "application/json"
-										}
-									],
-									"cookie": [],
-									"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
-								}
-							]
+							],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Reviews",
+							"item": [],
+							"protocolProfileBehavior": {},
+							"_postman_isSubFolder": true
 						}
 					],
 					"event": [
@@ -24369,7 +24458,7 @@
 											}
 										},
 										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access?elevate={{elevated}}",
+											"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -24383,13 +24472,111 @@
 											"query": [
 												{
 													"key": "elevate",
-													"value": "{{elevated}}"
+													"value": "{{elevated}}",
+													"disabled": true
 												}
 											],
 											"variable": [
 												{
 													"key": "collectionId",
 													"value": "{{scrapCollection}}"
+												},
+												{
+													"key": "userId",
+													"value": "{{scrapAdmin}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "set stig-asset grants for a lvl1 user in this collection. INVALID CollectionId",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "28a8acca-18da-455d-bb8e-d9a99e3e809f",
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Status should be is 403 for all users. Attempting to give invalid users a stig-asset assignment.\", function () {\r",
+													"    pm.response.to.have.status(403);\r",
+													"});\r",
+													"return;\r",
+													"\r",
+													"// if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" ) { //placeholder for \"users\" that should fail\r",
+													"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 200\", function () {\r",
+													"//         pm.response.to.have.status(200);\r",
+													"//     });\r",
+													"// }\r",
+													"// if (pm.response.code !== 200) {\r",
+													"//     return;\r",
+													"// }\r",
+													"\r",
+													"\r",
+													"// let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"// pm.test(\"Response JSON is an array with expected length\", function () {\r",
+													"//     pm.expect(jsonData).to.be.an('array');\r",
+													"//     pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+													"//     pm.expect(jsonData).to.have.lengthOf(1);\r",
+													"\r",
+													"// });\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "[\r\n    {\r\n        \"benchmarkId\": \"{{scrapBenchmark}}\",\r\n        \"assetId\": \"{{scrapAsset}}\"\r\n    }\r\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"grants",
+												":userId",
+												"access"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"disabled": true
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "666"
 												},
 												{
 													"key": "userId",
@@ -25127,8 +25314,241 @@
 							"_postman_isSubFolder": true
 						},
 						{
-							"name": "reviews",
-							"item": [],
+							"name": "Reviews",
+							"item": [
+								{
+									"name": "Set all properties of a Review (expect fail) TBD",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "c0f530e1-97d8-43c2-9c61-31f5c6916d2a",
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if ( user == \"globular\" || user == \"collectionCreator\" ) { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+													"\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"result\": \"pass\",\n    \"resultComment\": \"test\\nvisible to lvl1\",\n    \"action\": \"mitigate\",\n    \"actionComment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}",
+											"options": {
+												"raw": {}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=ruleInfo&projection=history&projection=stigs&projection=collections",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"reviews",
+												":assetId",
+												":ruleId"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "ruleInfo",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "history",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "collections"
+												}
+											],
+											"variable": [
+												{
+													"description": "(Required) A path parameter that indentifies a Collection",
+													"key": "collectionId",
+													"type": "string",
+													"value": "{{testCollection}}"
+												},
+												{
+													"description": "(Required) A path parameter that indentifies an Asset",
+													"key": "assetId",
+													"type": "string",
+													"value": "{{testAsset}}"
+												},
+												{
+													"description": "(Required) A path parameter that indentifies a Rule",
+													"key": "ruleId",
+													"type": "string",
+													"value": "{{testRuleId}}"
+												}
+											]
+										},
+										"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+									},
+									"response": [
+										{
+											"name": "ReviewProjected response",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"result\": \"<string>\",\n    \"resultComment\": \"<string>\",\n    \"action\": \"<string>\",\n    \"actionComment\": \"<string>\",\n    \"autoResult\": \"<boolean>\",\n    \"status\": \"<string>\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"reviews",
+														":assetId",
+														":ruleId"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId"
+														},
+														{
+															"key": "assetId"
+														},
+														{
+															"key": "ruleId"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"assetId\": \"reprehenderit sed\",\n \"assetName\": \"Lorem in Except\",\n \"ruleId\": \"aute\",\n \"result\": \"<string>\",\n \"resultComment\": \"occaecat ut sed qui\",\n \"autoResult\": true,\n \"action\": \"<string>\",\n \"actionComment\": \"elit commodo proident\",\n \"status\": \"<string>\",\n \"userId\": \"offi\",\n \"username\": \"tempor Ut\",\n \"ts\": \"id tempor\",\n \"rejectText\": \"id incididunt do\",\n \"rejectUserId\": \"\",\n \"history\": [\n  {\n   \"ts\": \"Lorem\",\n   \"result\": \"<string>\",\n   \"resultComment\": \"culpa sit\",\n   \"action\": \"<string>\",\n   \"actionComment\": \"ad tempor proident aliquip\",\n   \"autoResult\": true,\n   \"status\": \"<string>\",\n   \"userId\": \"in ullamco do\",\n   \"username\": \"cupidatat Lorem eu\",\n   \"rejectText\": \"esse non\"\n  },\n  {\n   \"ts\": \"eu nostrud exercit\",\n   \"result\": \"<string>\",\n   \"resultComment\": \"labore nulla\",\n   \"action\": \"<string>\",\n   \"actionComment\": \"Ut nisi sit sint\",\n   \"autoResult\": false,\n   \"status\": \"<string>\",\n   \"userId\": \"nulla non\",\n   \"username\": \"proident fugiat nulla\",\n   \"rejectText\": \"reprehenderit anim\"\n  }\n ],\n \"asset\": {\n  \"assetId\": \"reprehenderit nisi officia\",\n  \"name\": \"est Excepteur nostrud\"\n },\n \"stigs\": [\n  \"culpa commodo sed ullamco\",\n  \"dolore\"\n ],\n \"rule\": {\n  \"ruleId\": \"anim\",\n  \"version\": \"sunt amet reprehenderit\",\n  \"title\": \"eu do culpa\",\n  \"severity\": \"ad ex velit aute laboris\"\n }\n}"
+										},
+										{
+											"name": "unexpected error",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"result\": \"<string>\",\n    \"resultComment\": \"<string>\",\n    \"action\": \"<string>\",\n    \"actionComment\": \"<string>\",\n    \"autoResult\": \"<boolean>\",\n    \"status\": \"<string>\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"reviews",
+														":assetId",
+														":ruleId"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId"
+														},
+														{
+															"key": "assetId"
+														},
+														{
+															"key": "ruleId"
+														}
+													]
+												}
+											},
+											"status": "Internal Server Error",
+											"code": 500,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
+										}
+									]
+								}
+							],
 							"protocolProfileBehavior": {},
 							"_postman_isSubFolder": true
 						}
@@ -25265,7 +25685,7 @@
 	],
 	"variable": [
 		{
-			"id": "0c734035-0058-4d97-9215-76c8a71a89a5",
+			"id": "35c9c19d-b7be-4dac-b30d-5b5f8d50ef90",
 			"key": "baseUrl",
 			"value": "http://localhost:64001/api"
 		}
