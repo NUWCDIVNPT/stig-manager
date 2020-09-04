@@ -30,7 +30,8 @@
   "testCci": "1",
   "testCollectionInvalid": "83",
   "scrapLvl1": "86",
-  "scrapAdmin": "87"
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
 },
 {
@@ -63,7 +64,9 @@
   "reviewMatchString": "lvl1",
   "testRuleId": "SV-106179r1_rule",
   "testCollectionInvalid": "83",
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
 },
 {
@@ -94,7 +97,9 @@
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
   "testRuleId": "SV-106179r1_rule",
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
 },
 
@@ -127,7 +132,9 @@
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
   "testRuleId": "SV-106179r1_rule",
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
 
 },
@@ -160,7 +167,9 @@
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
   "testRuleId": "SV-106179r1_rule",
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
 
 },
@@ -194,7 +203,9 @@
   "userMatchString": "lvl1",
   "reviewMatchString": "test",
   "testRuleId": "SV-106179r1_rule",
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
  },
 {
@@ -226,7 +237,9 @@
   "userMatchString": "creator",
   "reviewMatchString": "creator",
   "testRuleId": "SV-106179r1_rule",
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
 
 },
@@ -258,7 +271,9 @@
   "assets.queryRev" : "V1R1",
   "assets.benchmarkQuery.response" : "[29,42,62]",
   "assets.checklistLength" : 81,
-  "scrapLvl1": "86"
+  "scrapLvl1": "86",
+  "scrapAdmin": "87",
+  "scrapBenchmark": "RHEL_7_STIG"
 
   
 }
