@@ -1,8 +1,9 @@
 'use strict';
 
-var writer = require('../utils/writer.js')
+var writer = require('../utils/writer')
 var config = require('../utils/config')
 var Collection = require(`../service/${config.database.type}/CollectionService`)
+var Serialize = require(`../utils/serializers`)
 
 module.exports.createCollection = async function createCollection (req, res, next) {
   try {
@@ -121,6 +122,50 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
       const response = await Collection.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
       writer.writeJson(res, response)
       }
+    else {
+      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+    }
+  }
+  catch (err) {
+    writer.writeJson(res, err)
+  }
+}
+
+module.exports.getPoamByCollection = async function getFindingsByCollection (req, res, next) {
+  try {
+    const collectionId = req.swagger.params['collectionId'].value
+    const aggregator = req.swagger.params['aggregator'].value
+    const benchmarkId = req.swagger.params['benchmarkId'].value
+    const assetId = req.swagger.params['assetId'].value
+    const acceptedOnly = req.swagger.params['acceptedOnly'].value
+    const defaults = {
+      date: req.swagger.params['date'].value,
+      office: req.swagger.params['office'].value,
+      status: req.swagger.params['status'].value
+    }
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+      const response = await Collection.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
+        [
+          'rulesWithDiscussion',
+          'groups',
+          'assets',
+          'stigsInfo',
+          'ccis'
+        ], req.userObject )
+      
+      const po = Serialize.poamObjectFromFindings(response, defaults)
+      const xlsx = await Serialize.xlsxFromPoamObject(po)
+      let collectionName
+      if (!collectionGrant && req.userObject.privileges.globalAccess) {
+        const response = await Collection.getCollection(collectionId, [], false, req.userObject )
+        collectionName = response.name
+      }
+      else {
+        collectionName = collectionGrant.collection.name
+      }
+      writer.writeXlsx( res, xlsx, `POAM-${collectionName}.xlsx`)
+    }
     else {
       throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
     }

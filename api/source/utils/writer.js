@@ -99,6 +99,16 @@ exports.writeXml = function(response, payload, filename) {
   response.write(payload)
   response.end()
 }
+exports.writeXlsx = function(response, payload, filename) {
+  response.writeHead(200, {
+    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'Content-Disposition': `inline; filename="${filename}"`,
+    'Access-Control-Expose-Headers': 'Content-Disposition'
+  })
+  response.write(payload)
+  response.end()
+}
+
 exports.writeNoContent = function (response) {
   response.writeHead(204)
   response.end()

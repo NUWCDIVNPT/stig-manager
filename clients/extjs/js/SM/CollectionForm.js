@@ -14,7 +14,7 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
         let me = this
         let data = [
             ['continuous','Continuous'],
-            ['emass', 'RMF Collection']
+            ['emass', 'RMF Package']
         ]
         this.store = new Ext.data.SimpleStore({
             fields: ['value','display']
