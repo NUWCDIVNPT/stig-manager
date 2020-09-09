@@ -1014,12 +1014,12 @@ async function showImportResultFiles( collectionId, el ) {
                         }
                         else {
                             assets[r.assetName] = {
-                                assetId: undefined,
+                                assetId: null,
                                 name: r.assetName,
                                 description: '',
-                                ip: undefined,
-                                noncomputing: undefined,
-                                metadata: undefined,
+                                ip: null,
+                                noncomputing: null,
+                                metadata: null,
                                 stigs: [],
                                 reviews: []
                             }
