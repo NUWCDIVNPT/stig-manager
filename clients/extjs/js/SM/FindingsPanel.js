@@ -13,7 +13,7 @@ SM.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
             valueField: 'aggregator',
             store: new Ext.data.SimpleStore({
                 fields: ['display', 'aggregator'],
-                data : [['Rule', 'ruleId'],['Group', 'groupId'],['CCI', 'cci']]
+                data : [['Group', 'groupId'],['Rule', 'ruleId'],['CCI', 'cci']]
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -215,6 +215,11 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				}
 			]
 		})
+		const generatePoamBtn = new SM.GeneratePoamButton({
+			parentGrid: me,
+			iconCls: 'icon-excel',
+			text: 'Generate POA&M...'
+		})
         const bbar = new Ext.Toolbar({
 			items: [
 				{
@@ -240,12 +245,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				{
 					xtype: 'tbseparator'
 				},
-				{
-					xtype: 'sm-generate-poam-button',
-					parentGrid: me,
-					iconCls: 'icon-excel',
-					text: 'Generate POA&M...'
-				},
+				generatePoamBtn,
 				{
 					xtype: 'tbfill'
 				},
@@ -303,7 +303,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
             store.load({
                 params: params
 			})
-
+			generatePoamBtn.setDisabled(aggregator === 'cci')
         }
         const onStigChanged = (benchmarkId) => {
             const params = {

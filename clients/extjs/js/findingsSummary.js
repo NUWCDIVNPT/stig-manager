@@ -6,7 +6,7 @@ function addFindingsSummary(collectionId, collectionName) {
 	var idAppend = '-findings-summary-' + collectionId;
 	var benchmarkId = '';
 
-	const aggregator = 'ruleId'
+	const aggregator = 'groupId'
 
 	const findingsPanel = new SM.FindingsPanel({
 		collectionId: collectionId,
