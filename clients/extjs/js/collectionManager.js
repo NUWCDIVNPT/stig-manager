@@ -121,6 +121,7 @@ async function addCollectionManager( collectionId, collectionName ) {
 		}
 		let thisTab = Ext.getCmp('main-tab-panel').add(managerTab)
 		managerTab.updateTitle.call(managerTab)
+		thisTab.show();
 
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
@@ -132,7 +133,6 @@ async function addCollectionManager( collectionId, collectionName ) {
 		})
 		let apiCollection = JSON.parse(result.response.responseText)
 	
-		thisTab.show();
 		collectionPanel.getForm().setValues(apiCollection)
 		grantGrid.getStore().loadData(apiCollection.grants.map( g => ({
 			userId: g.user.userId,
