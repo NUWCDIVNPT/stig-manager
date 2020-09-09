@@ -19,6 +19,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     let columns = [
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
+      'c.description',
       'c.workflow',
       'c.metadata'
     ]
@@ -160,7 +161,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by c.collectionId, c.name, c.workflow, c.metadata'
+    sql += ' group by c.collectionId, c.name, c.description, c.workflow, c.metadata'
     sql += ' order by c.name'
     
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -544,9 +545,9 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
       let sqlInsert =
       `INSERT INTO
           collection
-          (name, workflow, metadata)
+          (name, description, workflow, metadata)
         VALUES
-          (:name, :workflow, :metadata)`
+          (:name, :description, :workflow, :metadata)`
       let [rows] = await connection.execute(sqlInsert, binds)
       collectionId = rows.insertId
     }
