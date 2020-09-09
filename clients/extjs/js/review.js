@@ -159,7 +159,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
                 cm.setHidden(groupIdIndex, false);
                 groupGrid.autoExpandColumn = 'groupTitle' + idAppend;
               }
-            }, {
+            },
+            {
               id: 'groupFileMenu-title-ruleItem' + idAppend,
               text: 'Rule ID and title',
               checked: true,
@@ -185,99 +186,76 @@ async function addReview(leaf, selectedRule, selectedResource) {
             }
           ]
         }
-      }, '-'
-      , {
-        text: 'Export Results',
+      },
+      '-',
+      {
+        text: 'Export CKL',
         iconCls: 'sm-export-icon',
-        hideOnClick: false,
-        menu: {
-          items: [
-            {
-              text: 'XLS',
-              iconCls: 'sm-export-icon',
-              handler: function (item, eventObject) {
-                var lo = groupStore.lastOptions;
-                window.location = 'pl/getCurrentExcel.pl' + '?revId=' + lo.params.revId + '&assetId=' + lo.params.assetId;
-              }
-            },
-            // {
-            // id: 'groupFileMenu-export-xccdfItem' + idAppend,
-            // text: 'XCCDF',
-            // iconCls: 'sm-export-icon',
-            // handler: function(item,eventObject){
-            // var lo = groupStore.lastOptions;
-            // window.location='pl/getCurrentXccdf.pl' + '?revId=' + lo.params.revId + '&assetId=' + lo.params.assetId;
-            // }
-            // },
-            {
-              text: 'CKL',
-              iconCls: 'sm-export-icon',
-              tooltip: 'Download this checklist in DISA STIG Viewer format',
-              handler: async function (item, eventObject) {
-                try {
-                  document.body.style.cursor = 'wait'
-                  let ckl = await item.getCkl(leaf)
-                  item.downloadBlob(ckl.blob, ckl.filename)
-                  document.body.style.cursor = 'default'
-                }
-                catch (e) {
-                  alert(e.message)
-                }
-              },
-              getCkl: function (leaf) {
-                return new Promise((resolve, reject) => {
-                  var xhr = new XMLHttpRequest()
-                  var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
-                  xhr.open('GET', url)
-                  xhr.responseType = 'blob'
-                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
-                  xhr.onload = function () {
-                    if (this.status >= 200 && this.status < 300) {
-                      var contentDispo = this.getResponseHeader('Content-Disposition')
-                      //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
-                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
-                      resolve({
-                        blob: xhr.response,
-                        filename: fileName
-                      })
-                    } else {
-                      reject({
-                        status: this.status,
-                        message: xhr.statusText
-                      })
-                    }
-                  }
-                  xhr.onerror = function () {
-                    reject({
-                      status: this.status,
-                      message: xhr.responseText
-                    })
-                  }
-                  xhr.send()
+        tooltip: 'Download this checklist in DISA STIG Viewer format',
+        handler: async function (item, eventObject) {
+          try {
+            document.body.style.cursor = 'wait'
+            let ckl = await item.getCkl(leaf)
+            item.downloadBlob(ckl.blob, ckl.filename)
+            document.body.style.cursor = 'default'
+          }
+          catch (e) {
+            alert(e.message)
+          }
+        },
+        getCkl: function (leaf) {
+          return new Promise((resolve, reject) => {
+            var xhr = new XMLHttpRequest()
+            var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
+            xhr.open('GET', url)
+            xhr.responseType = 'blob'
+            xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
+            xhr.onload = function () {
+              if (this.status >= 200 && this.status < 300) {
+                var contentDispo = this.getResponseHeader('Content-Disposition')
+                //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+                var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                resolve({
+                  blob: xhr.response,
+                  filename: fileName
                 })
-              },
-              downloadBlob: function (blob, filename) {
-                let a = document.createElement('a')
-                a.style.display = "none"
-                let url = window.URL.createObjectURL(blob)
-                a.href = url
-                a.download = filename
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url)
+              } else {
+                reject({
+                  status: this.status,
+                  message: xhr.statusText
+                })
               }
             }
-          ]
+            xhr.onerror = function () {
+              reject({
+                status: this.status,
+                message: xhr.responseText
+              })
+            }
+            xhr.send()
+          })
+        },
+        downloadBlob: function (blob, filename) {
+          let a = document.createElement('a')
+          a.style.display = "none"
+          let url = window.URL.createObjectURL(blob)
+          a.href = url
+          a.download = filename
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url)
         }
-      }, {
+      },
+      {
         text: 'Import Results...',
         iconCls: 'sm-import-icon',
         handler: function () {
           uploadResults();
           //initProgress();
         }
-      }, '-',
+      },
+      '-',
       {
         text: 'Submit All...',
         iconCls: 'sm-ready-icon',
@@ -316,7 +294,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
           //====================================================
           unlockStigReviewsForAsset();
         }
-      }, '-'
+      },
+      '-'
     ],
     listeners: {
       added: function (menu, ownerCt, index) {

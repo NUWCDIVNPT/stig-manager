@@ -5,6 +5,8 @@ const config = require('../utils/config')
 const Asset = require(`../service/${config.database.type}/AssetService`);
 const Collection = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
+const J2X = require("fast-xml-parser").j2xParser
+const he = require('he');
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -248,8 +250,26 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
       if (format === 'json') {
         writer.writeJson(res, response)
       }
-      else {
-        writer.writeXml(res, response, `${benchmarkId}-${revisionStr}-${assetId}.ckl`)
+      else if (format === 'ckl') {
+        let defaultOptions = {
+          attributeNamePrefix : "@_",
+          attrNodeName: "@", //default is false
+          textNodeName : "#text",
+          ignoreAttributes : true,
+          cdataTagName: "__cdata", //default is false
+          cdataPositionChar: "\\c",
+          format: true,
+          indentBy: "  ",
+          supressEmptyNode: false,
+          tagValueProcessor: a => {
+            return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
+          },
+          attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
+        }
+        const j2x = new J2X(defaultOptions)
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
+        xml += j2x.parse(response)
+        writer.writeXml(res, xml, `${benchmarkId}-${revisionStr}-${response.CHECKLIST.ASSET.HOST_NAME}.ckl`)
       }
     }
     else {

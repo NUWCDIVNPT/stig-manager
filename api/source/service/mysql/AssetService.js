@@ -1,8 +1,6 @@
 'use strict';
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
-const J2X = require("fast-xml-parser").j2xParser
-const he = require('he');
 
 let _this = this
 
@@ -641,7 +639,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
         r.revId = ?`  
     }
 
-    let sqlGetAsset = "select name, ip from asset where assetId = ?"
+    let sqlGetAsset = "select name, ip, noncomputing, metadata from asset where assetId = ?"
     let sqlGetChecklist =`SELECT 
       g.groupId,
       r.severity,
@@ -724,6 +722,8 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
     let [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
     cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].name
     cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
+    cklJs.CHECKLIST.ASSET.ASSET_TYPE = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
+    cklJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.role ?  resultGetAsset[0].metadata.role : 'None'
 
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
     // Calculate revId
@@ -812,26 +812,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
       }
     })
 
-    let defaultOptions = {
-      attributeNamePrefix : "@_",
-      attrNodeName: "@", //default is false
-      textNodeName : "#text",
-      ignoreAttributes : true,
-      cdataTagName: "__cdata", //default is false
-      cdataPositionChar: "\\c",
-      format: true,
-      indentBy: "  ",
-      supressEmptyNode: false,
-      tagValueProcessor: a => {
-        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-      },// default is a=>a
-      attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})// default is a=>a
-  };
-  
-    const j2x = new J2X(defaultOptions)
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<!--STIG Manager :: 3.0-->\n'
-    xml += j2x.parse(cklJs)
-    return (xml)
+    return (cklJs)
 
   }
   catch (e) {
