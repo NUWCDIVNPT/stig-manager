@@ -228,7 +228,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
                             Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-                            showAssetProps(r.get('assetId'));
+                            showAssetProps(r.get('assetId'), me.collectionId);
                         }
                     }                    
                 ]

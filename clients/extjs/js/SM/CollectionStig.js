@@ -160,7 +160,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'Change assigned Assets...',
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
-                            showCollectionStigProps(r.get('benchmarkId'), me.collectionId);
+                            showCollectionStigProps(r.get('benchmarkId'), me);
                         }
                     }                    
                 ]
@@ -699,6 +699,8 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
             stigField = new Ext.form.TextField({
                 fieldLabel: 'BenchmarkId',
                 allowBlank: true,
+                // width: 350,
+                anchor: '100%',
                 readOnly: true,
                 name: 'benchmarkId',
                 value: this.benchmarkId
@@ -710,7 +712,8 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
                 submitValue: false,
                 fieldLabel: 'BenchmarkId',
                 hideTrigger: false,
-                width: 350,
+                anchor: '100%',
+                // width: 350,
                 autoLoad: true,
                 allowBlank: false,
                 filteringStore: this.stigFilteringStore
