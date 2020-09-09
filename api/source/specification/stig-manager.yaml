@@ -746,7 +746,7 @@ paths:
       tags:
         - Collection
       summary: Return an accessLevel = 1 User's access to the specified Collection
-      operationId: geStigAssetsByCollectionUser
+      operationId: getStigAssetsByCollectionUser
       responses:
         '200':
           description: CollectionGrant response

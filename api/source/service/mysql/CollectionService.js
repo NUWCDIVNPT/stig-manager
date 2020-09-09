@@ -416,7 +416,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
   }
 }
 
-exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
+exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, userObject) {
   try {
     let columns = [
       'sa.benchmarkId',
@@ -840,12 +840,12 @@ exports.getStatusByCollection = async function( collectionId, userObject ) {
   }
 }
 
-exports.geStigAssetsByCollectionUser = async function (collectionId, userId, elevate, userObject) {
+exports.getStigAssetsByCollectionUser = async function (collectionId, userId, elevate, userObject) {
   try {
     let rows = await _this.queryStigAssets([], { 
       collectionId: collectionId,
       userId: userId
-    }, elevate, userObject)
+    }, userObject)
     return (rows)
   }
   catch (err) {

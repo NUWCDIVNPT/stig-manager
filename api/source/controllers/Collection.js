@@ -192,15 +192,14 @@ module.exports.getStatusByCollection = async function getStatusByCollection (req
   }
 }
 
-module.exports.geStigAssetsByCollectionUser = async function geStigAssetsByCollectionUser (req, res, next) {
+module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCollectionUser (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value
     const userId = req.swagger.params['userId'].value
-    const elevate = req.swagger.params['elevate'].value
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || ( collectionGrant && collectionGrant.accessLevel >= 3 ) ) {
-      const response = await Collection.geStigAssetsByCollectionUser(collectionId, userId, elevate, req.userObject )
+    if ( collectionGrant && collectionGrant.accessLevel >= 3 ) {
+      const response = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
       writer.writeJson(res, response)
     }
     else {
@@ -255,10 +254,9 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
     const collectionId = req.swagger.params['collectionId'].value
     const userId = req.swagger.params['userId'].value
     const stigAssets = req.swagger.params['body'].value
-    const elevate = req.swagger.params['elevate'].value
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || ( collectionGrant && collectionGrant.accessLevel >= 3 ) ) {
+    if ( collectionGrant && collectionGrant.accessLevel >= 3 ) {
       let totalstart = process.hrtime() 
       let hrstart, hrend
       hrstart = process.hrtime() 
@@ -270,7 +268,7 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
       
       hrstart = process.hrtime() 
       
-      const getResponse = await Collection.geStigAssetsByCollectionUser(collectionId, userId, elevate, req.userObject )
+      const getResponse = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
       
       hrend = process.hrtime(hrstart)
       console.log(`${hrend[0]}s  ${hrend[1] / 1000000}ms`)
