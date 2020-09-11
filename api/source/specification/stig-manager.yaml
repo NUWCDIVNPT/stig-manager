@@ -1917,9 +1917,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserProjected'
+                $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
           content:

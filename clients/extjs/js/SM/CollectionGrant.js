@@ -515,7 +515,7 @@ async function showUserProps( userId ) {
                             method: method,
                             params: {
                                 elevate: curUser.privileges.canAdmin,
-                                projection: ['privileges', 'collectionGrants']
+                                projection: ['privileges', 'collectionGrants', 'statistics']
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values

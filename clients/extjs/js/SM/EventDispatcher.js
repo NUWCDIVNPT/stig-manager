@@ -10,5 +10,8 @@ SM.Dispatcher.addEvents(
     'assetcreated',
     'assetdeleted',
     'assetchanged',
+    'usercreated',
+    'userdeleted',
+    'userchanged',
     'stigassetschanged'
 )

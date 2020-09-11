@@ -161,49 +161,57 @@ function addUserAdmin() {
 				}
 			}
 		},
-		tbar: [{
-			iconCls: 'icon-add',
-			text: 'New User',
-			disabled: !(curUser.privileges.canAdmin),
-			handler: function() {
-				Ext.getBody().mask('Loading form...');
-				showUserProps(0);            
-			}
-		},'-', {
-			ref: '../removeBtn',
-			iconCls: 'icon-del',
-			text: 'Delete User',
-			disabled: !(curUser.privileges.canAdmin),
-			handler: function() {
-				//var confirmStr="Delete this user?";
-				
-				let user = userGrid.getSelectionModel().getSelected();
-				let confirmStr="Delete user, " + user.data.display + "?";
-				
-				Ext.Msg.confirm("Confirm",confirmStr,async function (btn,text) {
-					try {
-						if (btn == 'yes') {
-							let result = await Ext.Ajax.requestPromise({
-								url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}`,
-								method: 'DELETE'
-							})
-							userStore.remove(user);
+		tbar: [
+			{
+				iconCls: 'icon-add',
+				text: 'New User',
+				disabled: !(curUser.privileges.canAdmin),
+				handler: function() {
+					Ext.getBody().mask('Loading form...');
+					showUserProps(0);            
+				}
+			},
+			'-',
+			{
+				ref: '../removeBtn',
+				iconCls: 'icon-del',
+				text: 'Delete User',
+				disabled: !(curUser.privileges.canAdmin),
+				handler: function() {
+					//var confirmStr="Delete this user?";
+					
+					let user = userGrid.getSelectionModel().getSelected();
+					let confirmStr="Delete user, " + user.data.username + "?";
+					
+					Ext.Msg.confirm("Confirm",confirmStr,async function (btn,text) {
+						try {
+							if (btn == 'yes') {
+								let result = await Ext.Ajax.requestPromise({
+									url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
+									method: 'DELETE'
+								})
+								let apiUser = JSON.parse(result.response.responseText)
+								userStore.remove(user)
+								SM.Dispatcher.fireEvent('userdeleted', apiUser)
+							}
 						}
-					}
-					catch (e) {
-						alert(e)
-					}
-				});
+						catch (e) {
+							alert(e.message)
+						}
+					});
+				}
+			},
+			'-',
+			{
+				iconCls: 'icon-edit',
+				text: 'View/Edit User Properties',
+				handler: function() {
+					var r = userGrid.getSelectionModel().getSelected();
+					Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+					showUserProps(r.get('userId'));
+				}
 			}
-		},'-',{
-			iconCls: 'icon-edit',
-			text: 'View/Edit User Properties',
-			handler: function() {
-				var r = userGrid.getSelectionModel().getSelected();
-				Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
-				showUserProps(r.get('userId'));
-			}
-		}],
+		],
 		bbar: new Ext.Toolbar({
 			items: [
 			{
@@ -216,18 +224,20 @@ function addUserAdmin() {
 				}
 			},{
 				xtype: 'tbseparator'
-			},{
-				xtype: 'tbbutton',
-				id: 'userGrid-csvBtn',
-				iconCls: 'sm-export-icon',
-				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-				width: 20,
-				handler: function(btn){
-					var ourStore = userGrid.getStore();
-					var lo = ourStore.lastOptions;
-					window.location=ourStore.url + '?csv=1&xaction=read';
-				}
-			},{
+			},
+			// {
+			// 	xtype: 'tbbutton',
+			// 	id: 'userGrid-csvBtn',
+			// 	iconCls: 'sm-export-icon',
+			// 	tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
+			// 	width: 20,
+			// 	handler: function(btn){
+			// 		var ourStore = userGrid.getStore();
+			// 		var lo = ourStore.lastOptions;
+			// 		window.location=ourStore.url + '?csv=1&xaction=read';
+			// 	}
+			// },
+			{
 				xtype: 'tbfill'
 			},{
 				xtype: 'tbseparator'
@@ -242,7 +252,16 @@ function addUserAdmin() {
 		loadMask: true
 	})
 
-		
+	const onUserChanged = function (apiUser) {
+		userStore.loadData(apiUser, true)
+	}
+	SM.Dispatcher.addListener('userchanged', onUserChanged)
+
+	const onUserCreated = function (apiUser) {
+		userStore.loadData(apiUser, true)
+	}
+	SM.Dispatcher.addListener('usercreated', onUserCreated)
+
 
 	const thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'user-admin-tab',
