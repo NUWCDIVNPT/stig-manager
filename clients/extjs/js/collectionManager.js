@@ -78,9 +78,10 @@ async function addCollectionManager( collectionId, collectionName ) {
 			},
 			listeners: {
 				beforedestroy: () => {
-					SM.Dispatcher.removeListener('assetchanged', assetsChanged)
-					SM.Dispatcher.removeListener('assetcreated', assetsChanged)
-					SM.Dispatcher.removeListener('assetdeleted', assetsChanged)
+					SM.Dispatcher.removeListener('assetchanged', onAssetEvent)
+					SM.Dispatcher.removeListener('assetcreated', onAssetEvent)
+					SM.Dispatcher.removeListener('assetdeleted', onAssetEvent)
+					SM.Dispatcher.removeListener('stigassetschanged', onStigAssetsChanged)
 				}
 			},
 			items: [
@@ -113,8 +114,11 @@ async function addCollectionManager( collectionId, collectionName ) {
 				}
 			]
 		})
-		let assetsChanged = (apiAsset) => {
+		let onAssetEvent = (apiAsset) => {
 			stigGrid.getStore().reload()
+		}
+		let onStigAssetsChanged = () => {
+			assetGrid.getStore().reload()
 		}
 		managerTab.updateTitle = function () {
 			this.setTitle(`${this.collectionName} : Configuration`)
@@ -141,9 +145,10 @@ async function addCollectionManager( collectionId, collectionName ) {
 		})))
 		assetGrid.getStore().load()
 		stigGrid.getStore().load()
-		SM.Dispatcher.addListener('assetchanged', assetsChanged)
-		SM.Dispatcher.addListener('assetcreated', assetsChanged)
-		SM.Dispatcher.addListener('assetdeleted', assetsChanged)
+		SM.Dispatcher.addListener('assetchanged', onAssetEvent)
+		SM.Dispatcher.addListener('assetcreated', onAssetEvent)
+		SM.Dispatcher.addListener('assetdeleted', onAssetEvent)
+		SM.Dispatcher.addListener('stigassetschanged', onStigAssetsChanged)
 	}
 	catch( e) {
 		throw (e)

@@ -3,8 +3,6 @@
 Ext.ns('SM')
 
 SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
-    onCollectionStigsChanged: function () {
-    },
     initComponent: function() {
         let me = this
         const id = Ext.id()
@@ -196,8 +194,6 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.CollectionStigsGrid.superclass.initComponent.call(this)
-
-        SM.Dispatcher.addListener('collectionstigschanged', this.onCollectionStigsChanged, this)
     }   
 })
 Ext.reg('sm-collection-stigs-grid', SM.CollectionStigsGrid)
