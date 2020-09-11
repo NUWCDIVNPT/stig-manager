@@ -478,7 +478,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
               Ext.Msg.show({
                 title: 'Save Changes?',
                 msg: unsavedChangesPrompt,
-                buttons: Ext.Msg.YESNOCANCEL,
+                // buttons: Ext.Msg.YESNOCANCEL,
+                buttons: {yes: 'Save', no: 'Discard', cancel: 'Cancel'},
                 fn: function (buttonId, text, opt) {
                   switch (buttonId) {
                     case 'yes':
@@ -1615,13 +1616,13 @@ async function addReview(leaf, selectedRule, selectedResource) {
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
               //Add some flare to invite drop.
-              reviewForm.body.stopFx();
-              reviewForm.body.highlight("ffff9c", {
-                attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
-                endColor: "DFE8F6",
-                easing: 'easeIn',
-                duration: 1
-              });
+              // reviewForm.body.stopFx();
+              // reviewForm.body.highlight("eeeeee", {
+              //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
+              //   endColor: "FFFFFF",
+              //   easing: 'easeIn',
+              //   duration: 1
+              // });
             } else {
               return (reviewFormPanelDropTarget.dropNotAllowed);
             }
@@ -1654,7 +1655,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
               //if (!sComment.disabled && selectedRecord.data.autoResult == 0) {
               sComment.setValue(selectedRecord.data.resultComment);
               //}
-              if (sCombo.getValue() == 4) {
+              if (sCombo.getValue() === 'fail') {
                 aCombo.enable();
                 aComment.enable();
               } else {
@@ -1662,11 +1663,19 @@ async function addReview(leaf, selectedRule, selectedResource) {
                 aComment.disable();
               }
               if (!aCombo.disabled) {
-                aCombo.setValue(selectedRecord.data.actionId);
+                aCombo.setValue(selectedRecord.data.action);
               }
               if (!aComment.disabled) {
                 aComment.setValue(selectedRecord.data.actionComment);
               }
+              reviewForm.body.stopFx();
+              reviewForm.body.highlight("eeeeee", {
+                attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
+                endColor: "FFFFFF",
+                easing: 'easeIn',
+                duration: 1
+              })
+
             }
             return (true);
 
