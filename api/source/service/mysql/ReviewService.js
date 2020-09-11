@@ -23,11 +23,11 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'action.api as "action"',
       'r.actionComment',
       'status.api as "status"',
-      'r.userId',
+      'CAST(r.userId as char) as userId',
       'ud.username',
       'r.ts',
       'r.rejectText',
-      'r.rejectUserId',
+      'CAST(r.rejectUserId as char) as rejectUserId',
       `CASE
         WHEN r.ruleId is null
         THEN 0
