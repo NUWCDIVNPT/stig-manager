@@ -545,9 +545,9 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
       let sqlInsert =
       `INSERT INTO
           collection
-          (name, description, workflow, metadata)
+          (name,  workflow, metadata)
         VALUES
-          (:name, :description, :workflow, :metadata)`
+          (:name, :workflow, :metadata)`
       let [rows] = await connection.execute(sqlInsert, binds)
       collectionId = rows.insertId
     }
