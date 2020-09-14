@@ -2003,12 +2003,18 @@ components:
         name:
           type: string
           nullable: false
+        fqdn:
+          type: string
+          nullable: true
         collection:
           $ref: '#/components/schemas/CollectionBasic'
         description:
           type: string
           nullable: true
         ip:
+          type: string
+          nullable: true
+        mac:
           type: string
           nullable: true
         noncomputing:
@@ -2036,6 +2042,9 @@ components:
         name:
           type: string
           nullable: false
+        fqdn:
+          type: string
+          nullable: true
         collectionId:
           description: The collectionId mapped to this Asset
           type: string
@@ -2043,6 +2052,9 @@ components:
           type: string
           nullable: true
         ip:
+          type: string
+          nullable: true
+        mac:
           type: string
           nullable: true
         noncomputing:
@@ -2087,13 +2099,19 @@ components:
         name:
           type: string
           nullable: false
-        collectionId:
+        fqdn:
           type: string
-          nullable: false
+          nullable: true
+        collectionId:
+          description: The collectionId mapped to this Asset
+          type: string
         description:
           type: string
           nullable: true
         ip:
+          type: string
+          nullable: true
+        mac:
           type: string
           nullable: true
         noncomputing:

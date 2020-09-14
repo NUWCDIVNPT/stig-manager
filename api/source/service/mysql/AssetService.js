@@ -15,6 +15,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     const columns = [
       'CAST(a.assetId as char) as assetId',
       'a.name',
+      'a.fqdn',
       `json_object (
         'collectionId', CAST(c.collectionId as char),
         'name', c.name,
@@ -22,6 +23,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       ) as "collection"`,
       'a.description',
       'a.ip',
+      'a.mac',
       'a.noncomputing',
       'a.metadata'
     ]
@@ -137,7 +139,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by a.assetId, a.name, a.collectionId, a.description, a.ip, a.noncomputing, c.collectionId, c.name'
+    sql += ' group by a.assetId, a.name, a.fqdn, a.collectionId, a.description, a.ip, a.mac, a.noncomputing, c.collectionId, c.name'
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
@@ -310,9 +312,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
     let sqlInsert =
       `INSERT INTO
           asset
-          (name, ip, description, collectionId, noncomputing, metadata)
+          (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
         VALUES
-          (:name, :ip, :description, :collectionId, :noncomputing, :metadata)`
+          (:name, :fqdn, :ip, :mac, :description, :collectionId, :noncomputing, :metadata)`
       let [rows] = await connection.query(sqlInsert, binds)
       assetId = rows.insertId
     }
@@ -639,7 +641,7 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
         r.revId = ?`  
     }
 
-    let sqlGetAsset = "select name, ip, noncomputing, metadata from asset where assetId = ?"
+    let sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
     let sqlGetChecklist =`SELECT 
       g.groupId,
       r.severity,
@@ -721,7 +723,9 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
     // ASSET
     let [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
     cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].name
+    cklJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
     cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
+    cklJs.CHECKLIST.ASSET.HOST_MAC = resultGetAsset[0].mac
     cklJs.CHECKLIST.ASSET.ASSET_TYPE = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
     cklJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.role ?  resultGetAsset[0].metadata.role : 'None'
 

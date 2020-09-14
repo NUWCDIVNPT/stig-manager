@@ -1,0 +1,4 @@
+ALTER TABLE `asset` 
+ADD COLUMN `mac` VARCHAR(17) NULL AFTER `ip`;
+ALTER TABLE `asset` 
+ADD COLUMN `fqdn` VARCHAR(255) NULL AFTER `name`;

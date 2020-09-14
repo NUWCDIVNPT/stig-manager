@@ -23,8 +23,10 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         let fieldsConstructor = Ext.data.Record.create([
             {name: 'assetId', type: 'string'},
             {name: 'name', type: 'string'},
+            {name: 'fqdn', type: 'string'},
             {name: 'description', type: 'string'},
             {name: 'ip', type: 'string'},
+            {name: 'mac', type: 'string'},
             {name: 'noncomputing', type: 'boolean'},
             {
                 name: 'ruleCount',
@@ -597,12 +599,13 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                 {
                                     columnWidth: .4,
                                     layout: 'form',
+                                    padding: '0px 10px 0px 0px',
                                     border: false,
                                     items: [
                                         {
                                             xtype: 'textfield',
                                             fieldLabel: 'Name',
-                                            width: 150,
+                                            anchor: '100%',
                                             emptyText: 'Enter asset name...',
                                             allowBlank: false,
                                             name: 'name'
@@ -610,15 +613,55 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                     ]
                                 },
                                 {
-                                    columnWidth: .4,
+                                    columnWidth: .6,
                                     layout: 'form',
                                     border: false,
                                     items: [
                                         {
                                             xtype: 'textfield',
-                                            fieldLabel: 'IP address',
-                                            width: 130,
-                                            emptyText: 'Enter asset IP address...',
+                                            fieldLabel: 'Description',
+                                            anchor: '100%',
+                                            emptyText: 'Enter asset description...',
+                                            allowBlank: true,
+                                            name: 'description'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            layout: 'column',
+                            baseCls: 'x-plain',
+                            border: false,
+                            items: [
+                                {
+                                    columnWidth: .5,
+                                    layout: 'form',
+                                    padding: '0px 10px 0px 0px',
+                                    border: false,
+                                    items: [
+                                        {
+                                            xtype: 'textfield',
+                                            anchor: '100%',
+                                            fieldLabel: 'FQDN',
+                                            emptyText: 'Enter FQDN',
+                                            allowBlank: true,
+                                            name: 'fqdn'
+                                        }
+                                    ]
+                                },
+                                {
+                                    columnWidth: .25,
+                                    layout: 'form',
+                                    border: false,
+                                    padding: '0px 10px 0px 0px',
+                                    labelWidth: 20,
+                                    items: [
+                                        {
+                                            xtype: 'textfield',
+                                            fieldLabel: 'IP',
+                                            anchor: '100%',
+                                            emptyText: 'Enter IP',
                                             allowBlank: true,
                                             vtype: 'IPAddress',
                                             name: 'ip'
@@ -626,28 +669,30 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                     ]
                                 },
                                 {
-                                    columnWidth: .2,
+                                    columnWidth: .25,
                                     layout: 'form',
                                     border: false,
-                                    hideLabels: true,
+                                    // padding: '0px 10px 0px 0px',
+                                    labelWidth: 30,
                                     items: [
                                         {
-                                            xtype: 'checkbox',
-                                            name: 'noncomputing',
-                                            checked: false,
-                                            boxLabel: 'Non-computing'
+                                            xtype: 'textfield',
+                                            fieldLabel: 'MAC',
+                                            anchor: '100%',
+                                            emptyText: 'Enter MAC',
+                                            allowBlank: true,
+                                            name: 'mac'
                                         }
                                     ]
-                                }
+                                },
                             ]
                         },
                         {
-                            xtype: 'textfield',
-                            fieldLabel: 'Description',
-                            anchor: '100%',
-                            emptyText: 'Enter asset description...',
-                            allowBlank: true,
-                            name: 'description'
+                            xtype: 'checkbox',
+                            name: 'noncomputing',
+                            hideLabel: false,
+                            checked: false,
+                            boxLabel: 'Non-computing'
                         },
                         {
                             xtype: 'sm-metadata-grid',
@@ -666,7 +711,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                 {
                     xtype: 'fieldset',
                     title: '<b>STIG Assignments</b>',
-                    anchor: "100% -240",
+                    anchor: "100% -260",
                     layout: 'fit',
                     items: [
                         this.stigGrid
@@ -773,7 +818,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
             modal: true,
             hidden: true,
             width: 660,
-            height:660,
+            height:666,
             layout: 'fit',
             plain:true,
             bodyStyle:'padding:5px;',
