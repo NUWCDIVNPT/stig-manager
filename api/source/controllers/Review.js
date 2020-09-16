@@ -44,7 +44,9 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
         permitted: reviewsRequested,
         rejected: []
       }
-      reviewsByStatus.errors = await Review.putReviewsByAsset(assetId, reviewsByStatus.permitted, req.userObject)
+      if (reviewsByStatus.permitted.length > 0) {
+        reviewsByStatus.errors = await Review.putReviewsByAsset(assetId, reviewsByStatus.permitted, req.userObject)
+      }
       writer.writeJson(res, reviewsByStatus)
     }
     else {
