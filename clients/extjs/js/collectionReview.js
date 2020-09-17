@@ -17,7 +17,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		*/
 
-		var idAppend = '-collection-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
+		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
 		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
@@ -109,7 +109,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				method: 'GET'
 			}),
 			root: '',
-			id: 'groupStore' + idAppend,
 			fields: groupFields,
 			idProperty: 'ruleId',
 			sortInfo: {
@@ -118,7 +117,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			},
 			listeners: {
 				load: function (store,records,options) {
-					var ourGrid = Ext.getCmp('groupGrid' + idAppend);
+					var ourGrid = groupGrid;
 					
 					// Preselection
 					if (options.preselect !== undefined) {
@@ -381,7 +380,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			border: false,
 			region: 'north',
-			id: 'groupGrid' + idAppend,
 			sm_benchmarkId: leaf.benchmarkId,
 			sm_revisionStr: 'latest',
 			filterState: 'All',
@@ -626,7 +624,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		});
 		
 		var handleRevisionMenu = function (item, eventObject) {
-			let store = Ext.getCmp('groupGrid' + idAppend).getStore()
+			let store = groupGrid.getStore()
 			store.proxy.setUrl(`${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
 			store.load();
 			loadRevisionMenu(leaf.benchmarkId, item.revisionStr, idAppend)
