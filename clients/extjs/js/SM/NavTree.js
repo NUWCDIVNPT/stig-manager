@@ -167,7 +167,7 @@ SM.CollectionNodeConfig = function (collection) {
       iconCls: 'sm-asset-icon'
     },
     {
-      id: `${collection.collectionId}-findings-node`,
+      id: `${collection.collectionId}-reports-node`,
       text: 'Reports',
       collectionId: collection.collectionId,
       collectionName: collection.name,

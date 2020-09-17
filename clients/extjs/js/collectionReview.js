@@ -5,20 +5,7 @@ $Id: collectionReview.js 885 2018-02-20 16:26:08Z bmassey $
 
 async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 	try {
-		// 'selectedRule' is optional
-		/* Example of 'leaf': 
-			leaf = {
-				id: "1-Acitve_Directory_Domain-stigs-stig-node"
-				report: "stig"
-				revId: "IE8-1-10"
-				benchmarkId: "IE8"
-				collectionId: "1"
-				stigName: "APACHE_SERVER_2.2_WINDOWS"
-			}
-		*/
-
 		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
-		var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
 		/******************************************************/
 		// 'Global' colAssets array of objects for reviewsGrid
@@ -1905,7 +1892,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		
 		var thisTab = Ext.getCmp('main-tab-panel').add({
 			id: 'collection-review-tab' + idAppend,
-			iconCls: 'sm-stig-icon',
+			iconCls: 'sm-collection-tab-icon',
 			title: apiCollection.name + " : " + leaf.benchmarkId,
 			collectionId: leaf.collectionId,
 			benchmarkId: leaf.benchmarkId,

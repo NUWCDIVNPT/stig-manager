@@ -183,12 +183,14 @@ body {
 .x-tab-strip .x-tab-strip-over span.x-tab-strip-text {
 	opacity: 1
 }
-.x-tab-strip span.x-tab-strip-text {
-	opacity: .75
+.x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
+	opacity: .75;
+	background-position: 0 4px;
 }
 .x-tab-strip .x-tab-strip-active span.x-tab-strip-text {
 	opacity: 1;
 	color: #111;
+	background-position: 0 4px;
 }
 /* START tab styles*/
 .x-tab-strip-top .x-tab-strip-over .x-tab-right, .x-tab-strip-top .x-tab-strip-over .x-tab-left, .x-tab-strip-top .x-tab-strip-over .x-tab-strip-inner {
@@ -216,33 +218,35 @@ body {
     background-color: transparent;
 }
 .sm-home-title {
-	background-image: url(../img/security_firewall_on_48.png);
-	background-position: 0 8px;
+	/* background-image: url(../img/security_firewall_on_48.png); */
+	background-image: url(../img/shield-green-check.svg);
+	background-size: 72px 72px;
+	background-position: 0 0px;
 	background-repeat: no-repeat;
 	font: bold 36px Open Sans,helvetica, sans-serif;
 	color: #333;
 	padding-bottom: 30px;
-	padding-left: 56px;
-	padding-top: 8px;
+	padding-left: 74px;
+	padding-top: 12px;
 }
 
 #sm-home-oss-sprite {
 	color: #fcfcfc;
-	font: bold 12px Open Sans,helvetica, sans-serif;
+	font: bold 10px Open Sans,helvetica, sans-serif;
 	position: relative;
-	top: -16px;
+	top: -14px;
 	background-color: #6f93db;
 	padding: 1px 4px 2px 4px;
 	border-radius:  3px;
-	margin-left: 20px;
+	margin-left: 11px;
 	user-select: none;
 }
 #sm-home-version-sprite {
 	color: #fcfcfc;
-	font: bold 12px Open Sans,helvetica, sans-serif;
+	font: bold 10px Open Sans,helvetica, sans-serif;
 	position:  relative;
-	top: -16px;
-	background-color: #79b49e;
+	top: -14px;
+	background-color: #569981;
 	padding: 1px 4px 2px 4px;
 	border-radius:  3px;
 	margin-left: 5px;
@@ -302,7 +306,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 
 
 .sm-round-panel {
-	border-width: 1px;
 	border-radius: 6px;
 	background-color: #fff;
 	overflow: hidden;
@@ -708,10 +711,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
  background-image: url(../img/control_panel.png) !important;
 }
 .sm-checklist-icon {
- background-image: url(../img/security_firewall_on.png) !important;
-}
-.sm-setting-icon {
- background-image: url(../img/Settings-icon-16.png) !important;
+  background-image: url(../img/shield-green-check.svg) !important;
+ }
+.sm-checklist-tab-icon {
+  background-image: url(../img/shield-green-check.svg) !important;
+ }
+ .sm-setting-icon {
+ background-image: url(../img/gear.svg) !important;
 }
 .sm-export-icon {
  background-image: url(../img/down-icon-16.png) !important;
@@ -720,25 +726,40 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
  background-image: url(../img/up-icon-16.png) !important;
 }
 .sm-asset-icon {
- background-image: url(../img/accuracy-16.png) !important;
+ background-image: url(../img/target.svg) !important;
+ background-repeat: no-repeat;
+ background-size: 16px 16px;
 }
 .sm-template-icon {
  background-image: url(../img/template.png) !important;
 }
 .sm-collection-icon {
- background-image: url(../img/collection.png) !important;
+ background-image: url(../img/collection.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
+.sm-collection-tab-icon {
+  background-image: url(../img/collection.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}   
 .sm-department-icon {
  background-image: url(../img/department-16.png) !important;
 }
 .sm-users-icon {
-	background-image: url(../img/User-Group-icon.png) !important;
+  background-image: url(../img/user.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 } 
 .sm-stig-icon {
- background-image: url(../img/security_firewall_on.png) !important;
+  background-image: url(../img/shield-green-check.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
-.sm-report-icon {
- background-image: url(../img/windows_table.png) !important;
+ .sm-report-icon {
+ background-image: url(../img/grid.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
 .sm-chat-icon {
  background-image: url(../img/chat-16.png) !important;
@@ -792,7 +813,9 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
  background-image: url(../img/save-16.png) !important;
 }
 .sm-database-save-icon {
- background-image: url(../img/database_save.png) !important;
+ background-image: url(../img/database.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
 .sm-database-icon {
  background-image: url(../img/database.png) !important;
