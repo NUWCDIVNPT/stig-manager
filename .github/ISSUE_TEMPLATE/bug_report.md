@@ -8,7 +8,19 @@ assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+
+I found a bug in the:
+- [ ] API
+- [ ] UI
+- [ ] Elsewhere (Please specify)
+
+
+Please include a clear and concise description of what the bug is.
+If it is in the API, please specify endpoint.
+Including your actual request may be helpful as well.
+
+- [ ] I have checked to see if there is already an existing issue that describes this bug.
+
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -23,16 +35,10 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Environment or Configuration:**
+ - Container or Orchestration info
+ - Browser
+ - Other info
 
 **Additional context**
 Add any other context about the problem here.
