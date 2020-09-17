@@ -1538,26 +1538,26 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						projection: 'history'
 					}
 				})
-				let apiReview = JSON.parse(result.response.responseText)
-				//TODO: Set the history
-				Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
-
-				// Reject text
-				const rejectFp = Ext.getCmp('rejectFormPanel' + idAppend)
-				rejectFp.getForm().setValues(apiReview)
-				setRejectButtonState()
-
-				// Metadata
-				let metadata = []
-				for (const [key, value] of Object.entries(apiReview)) {
-					metadata.push({
-						property: key,
-						value: value
-					})
-				}
-				Ext.getCmp('metadataGrid' + idAppend).getStore().loadData(metadata)				  
-
+				if (result.response.status === 200) {
+					let apiReview = JSON.parse(result.response.responseText)
+					//TODO: Set the history
+					Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
 	
+					// Reject text
+					const rejectFp = Ext.getCmp('rejectFormPanel' + idAppend)
+					rejectFp.getForm().setValues(apiReview)
+					setRejectButtonState()
+	
+					// Metadata
+					let metadata = []
+					for (const [key, value] of Object.entries(apiReview)) {
+						metadata.push({
+							property: key,
+							value: value
+						})
+					}
+					Ext.getCmp('metadataGrid' + idAppend).getStore().loadData(metadata)	
+				}
 			}
 			catch (e) {
 				alert (e.message)
@@ -1565,21 +1565,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			finally {
 				activeTab.getEl().unmask()
 			}
-
-			// // load metadata
-			// Ext.getCmp('metadataGrid' + idAppend).getStore().loadData(responseObj.metadata);
-			// // load feedback
-			// var rejectFp = Ext.getCmp('rejectFormPanel' + idAppend);
-			// rejectFp.reviewRecords = [record];
-			// rejectFp.getForm().setValues(responseObj.feedback);
-			// setRejectButtonState();
-			// // load attachments
-			// //var attachGrid = Ext.getCmp('attachGrid' + idAppend);
-			// // attachGrid.getStore().loadData(responseObj.attachments);
-			// // attachGrid.gridRecord = record;
-
-			// // load history
-			// Ext.getCmp('historyGrid' + idAppend).getStore().loadData(responseObj.history);
 		}
 		
 	/******************************************************/
