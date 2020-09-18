@@ -643,6 +643,16 @@ async function addReview(leaf, selectedRule, selectedResource) {
               return false;
             }
           }
+        },
+        '->',
+        {
+            xtype: 'tbitem',
+            html: '<div class="sm-toolbar-legend-box sm-scap-grid-item"></div>'
+        },
+        {
+            xtype: 'tbtext',
+            text: ' SCAP available',
+            style: 'margin-right: 15px;'
         }
       ]
     }),
@@ -826,14 +836,19 @@ async function addReview(leaf, selectedRule, selectedResource) {
     `<tpl if="typeof(responsibility) != 'undefined'">`,
       '<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
     '</tpl>',
-    '<div class=cs-home-body-text><b>Controls: </b><br>',
-    '<table class=cs-home-body-table border="1">',
-    '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
-    '<tpl for="ccis">',
-    '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
+    '<tpl if="values.ccis.length === 0">',
+      '<div class=cs-home-body-text><b>Controls: </b>No mapped controls</div>',
     '</tpl>',
-    '</table>',
-    '</div>',
+    '<tpl if="values.ccis.length !== 0">',
+      '<div class=cs-home-body-text><b>Controls: </b><br>',
+      '<table class=cs-home-body-table border="1">',
+      '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
+      '<tpl for="ccis">',
+      '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
+      '</tpl>',
+      '</table>',
+      '</div>',
+    '</tpl>',
     '</div>'
   )
 

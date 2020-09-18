@@ -216,14 +216,26 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   }
 
   if ( inProjection && inProjection.includes('cci') ) {
-    columns.push(`(select json_arrayagg(json_object(
-      'cci', rc.cci,
-      'apAcronym', cci.apAcronym,
-      'control',  cr.indexDisa)) 
-      from rule_cci_map rc 
-      left join cci cci on rc.cci = cci.cci
-      left join cci_reference_map cr on cci.cci = cr.cci
-      where rc.ruleId = r.ruleId) as "ccis"`)
+    columns.push(`(select 
+      coalesce
+      (
+        (select json_arrayagg (
+          json_object(
+            'cci', rc.cci,
+            'apAcronym', cci.apAcronym,
+            'control',  cr.indexDisa
+          )
+        ) 
+        from
+          rule_cci_map rc 
+          left join cci cci on rc.cci = cci.cci
+          left join cci_reference_map cr on cci.cci = cr.cci
+        where 
+          rc.ruleId = r.ruleId
+        ), 
+        json_array()
+      )
+    ) as "ccis"`)
   }
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
