@@ -270,10 +270,9 @@ body {
     background-color: transparent;
 }
 .sm-home-title {
-	/* background-image: url(../img/security_firewall_on_48.png); */
 	background-image: url(../img/shield-green-check.svg);
-	background-size: 72px 72px;
-	background-position: 0 0px;
+	background-size: 48px 48px;
+	background-position: 18px 12px;
 	background-repeat: no-repeat;
 	font: bold 36px Open Sans,helvetica, sans-serif;
 	color: #333;

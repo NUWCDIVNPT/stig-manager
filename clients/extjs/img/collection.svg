@@ -16,7 +16,7 @@
    viewBox="0 0 5.3333333 5.3333333"
    id="svg6"
    sodipodi:docname="collection.svg"
-   inkscape:version="1.0.1 (1.0.1+r73)">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <metadata
      id="metadata12">
     <rdf:RDF>
@@ -41,13 +41,13 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1015"
+     inkscape:window-height="1027"
      id="namedview8"
      showgrid="false"
-     inkscape:zoom="11.253333"
-     inkscape:cx="37.717417"
-     inkscape:cy="10.48148"
-     inkscape:window-x="0"
+     inkscape:zoom="45.013332"
+     inkscape:cx="13.819255"
+     inkscape:cy="8.1783898"
+     inkscape:window-x="3840"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg6"
@@ -65,7 +65,7 @@
      id="rect951"
      width="2"
      height="2"
-     x="3"
+     x="2.6666667"
      y="0.33333334"
      ry="0" />
   <rect
@@ -74,14 +74,14 @@
      width="2"
      height="2"
      x="0.33333334"
-     y="3"
+     y="2.6666667"
      ry="0" />
   <rect
      style="fill:#808080;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
      id="rect955"
      width="2"
      height="2"
-     x="3"
-     y="3"
+     x="2.6666667"
+     y="2.6666667"
      ry="0" />
 </svg>
