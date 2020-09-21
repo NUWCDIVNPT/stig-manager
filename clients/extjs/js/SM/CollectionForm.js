@@ -13,8 +13,8 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
         }
         let me = this
         let data = [
-            ['continuous','Continuous'],
-            ['emass', 'RMF Package']
+            ['emass', 'RMF Package'],
+            ['continuous','Continuous']
         ]
         this.store = new Ext.data.SimpleStore({
             fields: ['value','display']
@@ -596,7 +596,8 @@ SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
                             fieldLabel: 'Workflow',
                             name: 'workflow',
                             margins: '0 10 0 0',
-                            width: 200
+                            width: 200,
+                            value: 'emass'
                         },{
                             xtype: 'sm-metadata-grid',
                             fieldLabel: 'Metadata',

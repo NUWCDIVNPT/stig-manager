@@ -116,10 +116,10 @@ function reviewsFromCkl (cklData) {
               action = "mitigate"
             } 
             else if (vuln.COMMENTS.startsWith("Exception:")) {
-              action = "exception "
+              action = "exception"
             } 
             else if (vuln.COMMENTS.startsWith("Remediate:")) {
-              action = "remediate "
+              action = "remediate"
             } 
           }
           if ( result !== 'notchecked') {

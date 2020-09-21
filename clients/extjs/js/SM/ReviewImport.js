@@ -148,7 +148,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 xtype: 'datecolumn',
                 format:	'Y-m-d H:i:s',
                 header: "Date",
-				width: 150,
+				width: 100,
                 dataIndex: 'date',
                 sortable: true
             }
@@ -629,9 +629,9 @@ async function showImportResultFiles( collectionId, el ) {
         const fpwindow = new Ext.Window({
             title: 'Import results from CKL or XCCDF files',
             modal: true,
-            resizable: true,
+            resizable: false,
             // renderTo: el,
-            autoScroll: true,
+            // autoScroll: true,
             width: width,
             height:height,
             layout: 'fit',

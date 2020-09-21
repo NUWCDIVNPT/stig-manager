@@ -378,7 +378,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         checked: false,
         group: 'checkType' + idAppend,
         handler: function (item, eventObject) {
-          groupGrid.filterType = 'Returned',
+          groupGrid.filterType = 'Rejected',
             Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Returned only');
           filterGroupStore();
         }
@@ -388,7 +388,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         checked: false,
         group: 'checkType' + idAppend,
         handler: function (item, eventObject) {
-          groupGrid.filterType = 'Approved',
+          groupGrid.filterType = 'Accepted',
             Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Approved only');
           filterGroupStore();
         }
@@ -751,7 +751,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
       case 'Incomplete':
         filterArray.push({
           fn: function (record) {
-            return record.get('reviewComplete')
+            return !record.get('reviewComplete')
           }
         });
         break;
@@ -865,7 +865,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
       name: 'assetName',
       type: 'string'
     }, {
-      name: 'dept',
+      name: 'status',
       type: 'string'
     }, {
       name: 'result',
@@ -929,11 +929,13 @@ async function addReview(leaf, selectedRule, selectedResource) {
 
   var expander = new Ext.ux.grid.RowExpander({
     tpl: new Ext.XTemplate(
-      '<p><b>Reviewer:</b> {username}</p>',
-      '<p><b>Result Comment:</b> {resultComment}</p>',
-      '<tpl if="actionComment">',
-      '<p><b>Action Comment:</b> {actionComment}</p>',
-      '</tpl>'
+		  '<p><b>Result Comment:</b> {resultComment}</p>',
+		  '<tpl if="action">',
+		  '<p><b>Action:</b> {action}</p>',
+		  '</tpl>',
+		  '<tpl if="actionComment">',
+		  '<p><b>Action Comment:</b> {actionComment}</p>',
+		  '</tpl>'
     )
   });
 
@@ -965,7 +967,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
       {
         id: 'target' + idAppend,
         header: "Asset",
-        width: 100,
+        width: 120,
         dataIndex: 'assetName',
         sortable: true,
         align: 'left',
@@ -974,49 +976,69 @@ async function addReview(leaf, selectedRule, selectedResource) {
           return value;
         }
       },
+			{ 	
+				header: "Status", 
+				width: 50,
+				fixed: true,
+				dataIndex: 'status',
+				sortable: true,
+				renderer: function (val, metaData, record, rowIndex, colIndex, store) {
+          return renderStatuses(val, metaData, record, rowIndex, colIndex, store)
+        }
+			},
       {
         id: 'state' + idAppend,
         header: "Result",
-        width: 80,
+				width: 50,
+				fixed: true,
         dataIndex: 'result',
         sortable: true,
-        renderer: function (value, metaData, record, rowIndex, colIndex, store) {
-          switch (value) {
-            case 'notchecked':
-              return "In Progress"
-              break
-            case 'notapplicable':
-              return "Not Applicable"
-              break
-            case 'pass':
-              return "Not a Finding"
-              break
-            case 'fail':
-              return "Open"
-              break
-          }
-        }
+        renderer: function (val) {
+					switch (val) {
+						case 'fail':
+							return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
+							break;
+						case 'pass':
+							return '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
+							break;
+						case 'notapplicable':
+							return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
+							break;
+					}
+				}
       },
-      {
-        id: 'action' + idAppend,
-        header: "Action",
-        width: 80,
-        dataIndex: 'action',
-        sortable: true,
-        renderer: function (value, metaData, record, rowIndex, colIndex, store) {
-          switch (value) {
-            case 'remediate':
-              return "Remediate"
-              break
-            case 'mitigate':
-              return "Mitigate"
-              break
-            case 'exception':
-              return "Exception"
-              break
-          }
-        }
-      }
+      // {
+      //   header: 'Comment',
+      //   width: 120,
+      //   dataIndex: 'resultComment',
+      //   renderer: columnWrap
+      // },
+			{ 	
+				header: "User", 
+				width: 50,
+				dataIndex: 'username',
+				sortable: true
+			},
+      // {
+      //   id: 'action' + idAppend,
+      //   header: "Action",
+      //   width: 80,
+      //   dataIndex: 'action',
+      //   sortable: true,
+      //   renderer: function (value, metaData, record, rowIndex, colIndex, store) {
+      //     switch (value) {
+      //       case 'remediate':
+      //         return "Remediate"
+      //         break
+      //       case 'mitigate':
+      //         return "Mitigate"
+      //         break
+      //       case 'exception':
+      //         return "Exception"
+      //         break
+      //     }
+      //   }
+      // }
     ],
     // width: 300,
     loadMask: true,
@@ -1499,7 +1521,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         displayField: 'resultStr',
         listeners: {
           'select': function (combo, record, index) {
-            if (record.data.result == '0') { // Open
+            if (record.data.result == 'fail') { // Open
               Ext.getCmp('action-combo' + idAppend).enable();
               Ext.getCmp('action-comment' + idAppend).enable();
             } else {
@@ -1627,7 +1649,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
           ddGroup: 'gridDDGroup',
           notifyEnter: function (ddSource, e, data) {
             var editableDest = true
-            // var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
               //Add some flare to invite drop.
@@ -1643,7 +1665,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
             }
           },
           notifyOver: function (ddSource, e, data) {
-            var editableDest = true;
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
               return (reviewFormPanelDropTarget.dropAllowed);
@@ -1652,8 +1674,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
             }
           },
           notifyDrop: function (ddSource, e, data) {
-            var editableDest = true
-            // var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            // var editableDest = true
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
               // Reference the record (single selection) for readability
@@ -2015,13 +2037,13 @@ async function addReview(leaf, selectedRule, selectedResource) {
       // })
       // masktask.delay(100)
 
-      let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+      let fvalues = fp.getForm().getFieldValues(false, false) // dirtyOnly=false, getDisabled=true
       let jsonData = {
         result: fvalues.result,
-        resultComment: fvalues.resultComment === "" ? null : fvalues.resultComment,
-        action: fvalues.action === "" ? null : fvalues.action,
-        actionComment: fvalues.actionComment === "" ? null : fvalues.actionComment,
-        autoResult: fvalues.autoResult === 'true' ? true : false
+        resultComment: fvalues.resultComment || null,
+        action: fvalues.action || null,
+        actionComment: fvalues.actionComment || null,
+        autoResult: fvalues.autoResult === 'true'
       }
       let result, reviewFromApi
       switch (saveParams.type) {

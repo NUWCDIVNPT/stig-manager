@@ -769,9 +769,23 @@ function Sm_HistoryData (idAppend) {
 			return v.ts + v.status
 		}
 	});
+
+	expander = new Ext.ux.grid.RowExpander({
+		tpl: new Ext.XTemplate(
+		  '<p><b>Result Comment:</b> {resultComment}</p>',
+		  '<tpl if="action">',
+		  '<p><b>Action:</b> {action}</p>',
+		  '</tpl>',
+		  '<tpl if="actionComment">',
+		  '<p><b>Action Comment:</b> {actionComment}</p>',
+		  '</tpl>'
+		)
+	  })
+
 	
 	this.grid = new Ext.grid.GridPanel({
 		layout: 'fit',
+		plugins: expander,
 		border: false,
 		id: 'historyGrid' + idAppend,
 		store: this.store,
@@ -782,10 +796,10 @@ function Sm_HistoryData (idAppend) {
 			deferEmptyText:false
 		}),
 		columns: [
+			expander,
 			{ 	
 				header: "Timestamp",
 				width: 120,
-				fixed: true,
 				resizeable: false,
 				dataIndex: 'ts',
 				sortable: true,
@@ -823,34 +837,41 @@ function Sm_HistoryData (idAppend) {
 				sortable: true
 			},
 			{ 	
-				header: "Result comment", 
-				width: 100,
-				dataIndex: 'resultComment',
-				renderer: columnWrap,
+				header: "User", 
+				width: 50,
+				dataIndex: 'username',
 				sortable: true
 			},
-			{ 	
-				header: "Action", 
-				width: 80,
-				fixed: true,
-				dataIndex: 'action',
-				renderer: function (val) {
-					let actions = {
-						remediate: 'Remediate',
-						mitigate: 'Mitigate',
-						exception: 'Exception'
-					}
-					return actions[val];
-				},
-				sortable: true
-			},
-			{ 	
-				header: "Action comment", 
-				width: 100,
-				dataIndex: 'actionComment',
-				renderer: columnWrap,
-				sortable: true
-			}
+
+			// { 	
+			// 	header: "Result comment", 
+			// 	width: 100,
+			// 	dataIndex: 'resultComment',
+			// 	renderer: columnWrap,
+			// 	sortable: true
+			// },
+			// { 	
+			// 	header: "Action", 
+			// 	width: 80,
+			// 	fixed: true,
+			// 	dataIndex: 'action',
+			// 	renderer: function (val) {
+			// 		let actions = {
+			// 			remediate: 'Remediate',
+			// 			mitigate: 'Mitigate',
+			// 			exception: 'Exception'
+			// 		}
+			// 		return actions[val];
+			// 	},
+			// 	sortable: true
+			// },
+			// { 	
+			// 	header: "Action comment", 
+			// 	width: 100,
+			// 	dataIndex: 'actionComment',
+			// 	renderer: columnWrap,
+			// 	sortable: true
+			// }
 		]
 	});
 }

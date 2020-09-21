@@ -61,7 +61,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'ud.username',
       'r.ts',
       'r.rejectText',
-      'r.rejectUserId'
+      'r.rejectUserId',
+      'r.reviewId'
     ]
     const joins = [
       'review r',

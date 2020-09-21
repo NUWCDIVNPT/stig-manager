@@ -407,24 +407,26 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				dataIndex: 'ruleId', 
 				sortable: true, 
 			},
-			{ 
-				header: "Severity", 
-				width: 40, 
-				dataIndex: 'severity', 
-				sortable: true, 
-			},
+			// { 
+			// 	header: "Severity", 
+			// 	width: 40, 
+			// 	dataIndex: 'severity', 
+			// 	sortable: true,
+			// 	hidden: true
+			// },
             { 
 				header: "Action", 
-				width: 80, 
+				width: 60, 
 				dataIndex: 'action', 
 				sortable: true, 
 			},
-			{ 
-				header: "Status", 
-				width: 50, 
-				dataIndex: 'status', 
-				sortable: true, 
-			},
+			// { 
+			// 	header: "Status", 
+			// 	width: 50, 
+			// 	dataIndex: 'status', 
+			// 	sortable: true,
+			// 	hidden: true
+			// },
 			{ 
 				header: "Last changed", 
 				width: 80, 
@@ -433,7 +435,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
 			{ 
 				header: "STIGs", 
-				width: 170, 
+				width: 130, 
 				dataIndex: 'stigs', 
 				renderer: v => {
 					const benchmarkIds = v.map( v => v.benchmarkId )

@@ -973,7 +973,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 							mitigate: 'Mitigate',
 							exception: 'Exception'
 						}
-						return actions[val];
+						return SM.styledEmptyRenderer(actions[val])
 					},
 					editor: new Ext.form.ComboBox({
 						id: 'reviewsGrid-editor-actionCombo' + idAppend,
@@ -1012,7 +1012,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					header: "Action comment", 
 					width: 100,
 					dataIndex: 'actionComment',
-					renderer: columnWrap,
+					renderer: function (v) {
+						return columnWrap(SM.styledEmptyRenderer(v))
+					},
 					editor: new Ext.form.TextArea({
 						id: 'reviewsGrid-editor-actionComment' + idAppend,
 						grow: true,
@@ -1223,6 +1225,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			},
 			view: new Ext.grid.GridView({
 				forceFit:true,
+				holdPosition: true,
 				autoFill:true,
 				emptyText: 'No data to display.',
 				deferEmptyText:false,
