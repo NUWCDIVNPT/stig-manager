@@ -1648,8 +1648,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         var reviewFormPanelDropTarget = new Ext.dd.DropTarget(reviewFormPanelDropTargetEl, {
           ddGroup: 'gridDDGroup',
           notifyEnter: function (ddSource, e, data) {
-            var editableDest = true
-            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
               //Add some flare to invite drop.
@@ -1665,7 +1664,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
             }
           },
           notifyOver: function (ddSource, e, data) {
-            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
               return (reviewFormPanelDropTarget.dropAllowed);
@@ -1675,7 +1674,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
           },
           notifyDrop: function (ddSource, e, data) {
             // var editableDest = true
-            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected');
+            var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
               // Reference the record (single selection) for readability
