@@ -1,20 +1,46 @@
 async function authorizeViaKeycloak() {
-    var keycloak = Keycloak('js/keycloak.json');
+    let keycloak = Keycloak('js/keycloak.json');
+    keycloak.refreshExpWarnCallback = function (expTs) {
+       keycloak.onRefreshExpWarn && keycloak.onRefreshExpWarn(expTs)
+    }
     keycloak.onTokenExpired = function() {
         console.info('token expired at ' + keycloak.tokenParsed['exp'] + ' Date: ' + new Date(keycloak.tokenParsed['exp']*1000));
     }
+    keycloak.onAuthSuccess = function() {
+        let refreshExpDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
+        let refreshExpWarnDelay = (keycloak.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + keycloak.timeSkew) * 1000;
+         window.keycloak.refreshTokenParsed.exp - 60
+        if (keycloak.refreshExpWarnTid) {
+            clearTimeout(keycloak.refreshExpWarnTid)
+        }
+        keycloak.refreshExpWarnTid = setTimeout(keycloak.refreshExpWarnCallback, refreshExpWarnDelay, keycloak.refreshTokenParsed.exp)
+        console.info(`authSuccess: refresh expires ${refreshExpDate}`)
+    }
+    keycloak.onAuthRefreshSuccess = function() {
+        let refreshExpDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
+        let refreshExpWarnDelay = (keycloak.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + keycloak.timeSkew) * 1000
+         window.keycloak.refreshTokenParsed.exp - 60
+        if (keycloak.refreshExpWarnTid) {
+            clearTimeout(keycloak.refreshExpWarnTid)
+        }
+        keycloak.refreshExpWarnTid = setTimeout(keycloak.refreshExpWarnCallback, refreshExpWarnDelay, keycloak.refreshTokenParsed.exp)
+        console.info(`authRefreshSuccess: refresh expires ${refreshExpDate}`)
+    }
+   
 
     try {
+        window.keycloak = keycloak
         let response = await keycloak.init({ 
+            // flow: 'implicit',
             onLoad: 'login-required',
-            checkLoginIframe: false,
+            // onLoad: 'check-sso',
+            // checkLoginIframe: true,
             defaultLoginOptions: {
                 scope: "stig-manager"
                 // ,prompt: "login"
             },
-            promiseType: 'native'
+            enableLogging: true
         })
-        window.keycloak = keycloak
         loadScripts()
     }
     catch(errorData) {
@@ -28,6 +54,8 @@ function loadScripts() {
         'ext/ext-all-debug-w-comments.js',
         "ext/ux/GroupSummary.js",
         'js/SM/Global.js',
+        'js/SM/Ajax.js',
+        'js/SM/Warnings.js',
         'js/SM/Classification.js',
         'js/SM/MainPanel.js',
         'js/SM/EventDispatcher.js',

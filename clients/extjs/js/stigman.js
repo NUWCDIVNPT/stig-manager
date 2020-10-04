@@ -27,28 +27,6 @@ function myContextMenu (e,t,eOpts) {
 }
 
 Ext.Ajax.disableCaching = false
-Ext.override(Ext.data.Connection, {
-	requestOriginal: Ext.data.Connection.prototype.request,
-	request: function(o) {
-		let me = this
-		window.keycloak.updateToken(10).then(function (refreshed) {
-			console.info("updateToken() returned success, refreshed: " + refreshed)
-				
-		}).catch(function() {
-			console.info("updateToken() catch error! ")
-		})
-		return me.requestOriginal(o);
-	}
-});
-
-
-Ext.Ajax.on('beforerequest', this.manageToken, this);
-
-function manageToken (conn, options) {
-	options.headers = options.headers || {}
-	options.headers.Authorization = 'Bearer ' + window.keycloak.token
-}
-
 
 async function start () {
 	try {

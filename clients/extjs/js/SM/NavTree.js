@@ -817,7 +817,14 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           title: 'OAuth2 token payload',
           listeners: {
               show: function (tip) {
-                  tip.update("<pre>" + JSON.stringify(window.keycloak.tokenParsed,null,2) + "</pre>")
+                let tokenParsed = { ...window.keycloak.tokenParsed }
+                let expDate = new Date(tokenParsed.exp*1000)
+                let iatDate = new Date(tokenParsed.iat*1000)
+                let authTimeDate = new Date(tokenParsed.auth_time*1000)
+                tokenParsed.exp = `${tokenParsed.exp} (${expDate.format('Y-m-d H:i:s')})`
+                tokenParsed.iat = `${tokenParsed.iat} (${iatDate.format('Y-m-d H:i:s')})`
+                tokenParsed.auth_time = `${tokenParsed.auth_time} (${authTimeDate.format('Y-m-d H:i:s')})`
+                tip.update("<pre>" + JSON.stringify(tokenParsed,null,2) + "</pre>")
               }
           }
       }) 

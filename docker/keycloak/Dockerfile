@@ -1,4 +1,4 @@
-FROM jboss/keycloak:10.0.2
+FROM jboss/keycloak:11.0.2
 ENV DB_VENDOR H2
 ENV KEYCLOAK_USER admin
 ENV KEYCLOAK_PASSWORD Pa55w0rd
