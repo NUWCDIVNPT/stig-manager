@@ -245,12 +245,14 @@ function addCollectionAdmin() {
   function onCollectionChanged (apiCollection) {
     store.loadData(apiCollection, true)
     const sortState = store.getSortState()
-    store.sort(sortState.field, sortState.dir)
+    store.sort(sortState.field, sortState.direction)
+    collectionGrid.getSelectionModel().selectRow(store.findExact('collectionId',apiCollection.collectionId))
   }
   function onCollectionCreated (apiCollection) {
     store.loadData(apiCollection, true)
     const sortState = store.getSortState()
-    store.sort(sortState.field, sortState.dir)
+    store.sort(sortState.field, sortState.direction)
+    collectionGrid.getSelectionModel().selectRow(store.findExact('collectionId',apiCollection.collectionId))
   }
   function onCollectionDeleted (collectionId) {
     store.removeAt(store.indexOfId(collectionId))

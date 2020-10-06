@@ -254,11 +254,17 @@ function addUserAdmin() {
 
 	const onUserChanged = function (apiUser) {
 		userStore.loadData(apiUser, true)
+		const sortState = userStore.getSortState()
+		userStore.sort(sortState.field, sortState.direction)
+		userGrid.getSelectionModel().selectRow(userStore.findExact('userId',apiUser.userId))
 	}
 	SM.Dispatcher.addListener('userchanged', onUserChanged)
 
 	const onUserCreated = function (apiUser) {
 		userStore.loadData(apiUser, true)
+		const sortState = userStore.getSortState()
+		userStore.sort(sortState.field, sortState.direction)
+		userGrid.getSelectionModel().selectRow(userStore.findExact('userId',apiUser.userId))
 	}
 	SM.Dispatcher.addListener('usercreated', onUserCreated)
 

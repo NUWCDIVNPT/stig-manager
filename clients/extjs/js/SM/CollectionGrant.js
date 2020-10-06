@@ -4,6 +4,7 @@ Ext.ns('SM')
 
 SM.CollectionSelectionField = Ext.extend( Ext.form.ComboBox, {
     initComponent: function() {
+        let me = this
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
             url: this.url || `${STIGMAN.Env.apiBase}/collections`,
@@ -55,6 +56,13 @@ SM.CollectionSelectionField = Ext.extend( Ext.form.ComboBox, {
             hideTrigger: false,
             triggerAction: this.triggerAction || 'query',
             lastQuery: '',
+            validator: (v) => {
+                // Don't keep the form from validating when I'm not active
+                if (me.grid.editor.editing == false) {
+                    return true
+                }
+                if (v === "") { return "Blank values no allowed" }
+            },
 			doQuery : function(q, forceAll){
                 // Custom re-implementation of the original ExtJS method
                 // Initial lines were retained
@@ -190,13 +198,13 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const collectionSelectionField = new SM.CollectionSelectionField({
             submitValue: false,
-            allowBlank: false,
+            grid: this,
             filteringStore: grantStore,
             autoLoad: true
         })
         const accessLevelField = new SM.AccessLevelField({
             submitValue: false,
-            allowBlank: false
+            grid: this
         })
         const columns = [
             { 	
@@ -240,11 +248,7 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.store.resumeEvents();
                         this.grid.getView().refresh();
                     }
-                    // Editor must remove the form fields it created; otherwise the
-                    // form validation continues to include those fields
-                    editor.removeAll(false)
-                    editor.initialized = false
-               },
+                },
                 afteredit: function (editor, changes, record, index) {
                     // "Save" the record by reconfiguring the store's data collection
                     // Corrects the bug where new records don't deselect when clicking away
@@ -336,7 +340,6 @@ Ext.reg('sm-collection-grants-grid', SM.CollectionGrantsGrid);
 SM.UserProperties = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
         let me = this
-        let idAppend = Ext.id()
         this.colGrid = new SM.CollectionGrantsGrid({
             name: 'collectionGrants'
         })
