@@ -1,0 +1,12 @@
+<!-- docs/_sidebar.md -->
+* [Home](/)
+* [Quickstart Guide](Quickstart_Guide.md "A Quickstart Guide!")
+* [Release Notes](Release_Notes.md "Relese Notes!")
+* [User Guide](User_Guide.md "A User Guide")
+* [Terminology and Concepts](terminology.md "The Words")
+* [Use Case](Use_Case.md "A Use Case")
+* [Roadmap](roadmap.md "A Roadmap")
+* [FAQ](FAQ.md "An FAQ!")
+* [Technical Information](Technical_Info.md "STIGMan Technical Information")
+* [Environment Variables](Environment_Variables.md "STIGMan Environment Variables")
+* [Docker Docs](Docker.md "Run the STIG Manager container")

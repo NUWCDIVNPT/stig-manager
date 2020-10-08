@@ -1,4 +1,16 @@
-# STIG Manager Phase 1 Roadmap
+# STIG Manager Roadmap
+
+
+## Phase 1
+    Completed 2020-09-30
+
+## Phase 2
+
+
+
+
+
+
 
 ## Summary
 
