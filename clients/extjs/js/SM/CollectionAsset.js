@@ -388,10 +388,13 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                     }
 				}
             },
-            // validator: (value) => {
-            //     let index = this.store.indexOfId(value)
-            //     return (index !== -1)
-            // }     
+            validator: (v) => {
+                // Don't keep the form from validating when I'm not active
+                if (me.grid.editor.editing == false) {
+                    return true
+                }
+                if (v === "") { return "Blank values no allowed" }
+            }     
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.StigSelectionField.superclass.initComponent.call(this)
@@ -437,7 +440,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         const stigSelectionField = new SM.StigSelectionField({
             submitValue: false,
             autoLoad: true,
-            allowBlank: false,
+            grid: this,
             filteringStore: stigAssignedStore
         })
         const columns = [
@@ -454,7 +457,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'ruleCount',
                 align: 'center',
                 sortable: true,
-                editor: new Ext.form.DisplayField({submitValue: false})
+                // editor: new Ext.form.DisplayField({submitValue: false})
             }
         ]
         this.editor =  new Ext.ux.grid.RowEditor({
@@ -462,6 +465,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             stigSelectionField: stigSelectionField,
             clicksToEdit: 2,
+            onRowDblClick: function () {}, // do nothing
             errorSummary: false, // don't display errors during validation monitoring
             listeners: {
                 canceledit: function (editor,forced) {
@@ -474,8 +478,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                     // Editor must remove the form fields it created; otherwise the
                     // form validation continues to include those fields
-                    editor.removeAll(false)
-                    editor.initialized = false
+                    // editor.removeAll(false)
+                    // editor.initialized = false
                 },
                 validateedit: function (editor, changes, record, index) {
                     // Get the stigSelection combo
@@ -784,14 +788,13 @@ async function showAssetProps( assetId, initialCollectionId ) {
                     if (assetPropsFormPanel.getForm().isValid()) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
                         // //TODO: getFieldValues should not return 'undefined' 
-                        // delete values.undefined
+                        delete values.undefined
                         let method = assetId ? 'PUT' : 'POST'
                         let url = assetId ? `${STIGMAN.Env.apiBase}/assets/${assetId}` : `${STIGMAN.Env.apiBase}/assets`
                         let result = await Ext.Ajax.requestPromise({
                             url: url,
                             method: method,
                             params: {
-                                elevate: curUser.privileges.canAdmin,
                                 projection: ['stigs', 'adminStats']
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
@@ -834,7 +837,6 @@ async function showAssetProps( assetId, initialCollectionId ) {
             let result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                 params: {
-                    elevate: curUser.privileges.canAdmin,
                     projection: ['stigs']
                 },
                 method: 'GET'

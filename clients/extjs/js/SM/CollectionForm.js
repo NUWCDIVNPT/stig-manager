@@ -41,14 +41,21 @@ SM.AccessLevelStrings = [
 
 SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
     initComponent: function() {
+        let me = this
         let config = {
             displayField: 'display',
             valueField: 'value',
             triggerAction: 'all',
             mode: 'local',
-            editable: false      
+            editable: false,
+            validator: (v) => {
+                // Don't keep the form from validating when I'm not active
+                if (me.grid.editor.editing == false) {
+                    return true
+                }
+                if (v === "") { return "Blank values no allowed" }
+            }    
         }
-        let me = this
         let data = [
             [1, SM.AccessLevelStrings[1]],
             [2, SM.AccessLevelStrings[2]],
@@ -233,6 +240,7 @@ Ext.reg('sm-metadata-grid', SM.MetadataGrid)
 
 SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
     initComponent: function() {
+        let me = this
         const userStore = new Ext.data.JsonStore({
             fields: [
                 {	name:'userId',
@@ -258,12 +266,18 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
             valueField: 'userId',
             mode: 'local',
             forceSelection: true,
-			allowBlank: true,
 			typeAhead: true,
 			minChars: 0,
             hideTrigger: false,
             triggerAction: 'all',
             lastQuery: '',
+            validator: (v) => {
+                // Don't keep the form from validating when I'm not active
+                if (me.grid.editor.editing == false) {
+                    return true
+                }
+                if (v === "") { return "Blank values no allowed" }
+            },    
 			doQuery : function(q, forceAll){
 				q = Ext.isEmpty(q) ? '' : q;
 				var qe = {
@@ -380,12 +394,12 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const userSelectionField = new SM.UserSelectionField({
             submitValue: false,
-            allowBlank: false,
+            grid: this,
             filteringStore: grantStore
         })
         const accessLevelField = new SM.AccessLevelField({
             submitValue: false,
-            allowBlank: false
+            grid: this
         })
         const columns = [
             { 	
@@ -429,10 +443,6 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.store.resumeEvents();
                         this.grid.getView().refresh();
                     }
-                    // Editor must remove the form fields it created; otherwise the
-                    // form validation continues to include those fields
-                    editor.removeAll(false)
-                    editor.initialized = false
                 },
                 afteredit: function (editor, changes, record, index) {
                     // "Save" the record by reconfiguring the store's data collection
