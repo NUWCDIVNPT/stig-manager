@@ -8,5 +8,14 @@ STIGMAN.Env = {
         sha: "" || "na",
         tag: "" || "na",
         describe: "" || "na"
+    },
+    oauth: {
+        claims: {
+            username: "" || "preferred_username",
+            servicename: "" || "clientId",
+            name: "" || "name",
+            roles: "" || "realm_access?.roles",
+            email: "" || "email"
+        }
     }
 }

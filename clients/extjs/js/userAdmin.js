@@ -1,37 +1,41 @@
 function addUserAdmin() {
+	const tab = Ext.getCmp('main-tab-panel').getItem('user-admin-tab')
+	if (tab) {
+		tab.show()
+		return
+	}
 
 	const userFields = Ext.data.Record.create([
 		{	name:'userId',
 			type: 'string'
-		},{
+		},
+		{
 			name:'username',
 			type: 'string'
-		},{
-			name: 'display',
-			type: 'string'
-		},{
-			name: 'globalAccess',
-			type: 'boolean',
-			mapping: 'privileges.globalAccess'
-		},{
-			name: 'canCreateCollection',
-			type: 'boolean',
-			mapping: 'privileges.canCreateCollection'
-		},{
-			name: 'canAdmin',
-			type: 'boolean',
-			mapping: 'privileges.canAdmin'
-		},{
-			name: 'metadata'
-		},{
+		},
+		{
+			name: 'name',
+			type: 'string',
+			mapping: 'statistics.lastClaims?.name'
+		},
+		{
 			name: 'created',
 			type: 'date',
 			mapping: 'statistics.created'
-		},{
+		},
+		{
 			name: 'lastAccess',
 			type: 'integer',
 			mapping: 'statistics.lastAccess'
 		},
+		{
+			name: 'collectionGrantCount',
+			type: 'integer',
+			mapping: 'statistics.collectionGrantCount'
+		},
+		{
+			name: 'statistics'
+		}
 	])
 	const userStore = new Ext.data.JsonStore({
 		proxy: new Ext.data.HttpProxy({
@@ -40,7 +44,7 @@ function addUserAdmin() {
 		}),
 		baseParams: {
 			elevate: curUser.privileges.canAdmin,
-			projection: ['privileges', 'statistics']
+			projection: ['statistics']
 		},
 		root: '',
 		fields: userFields,
@@ -62,6 +66,8 @@ function addUserAdmin() {
 		}
 	})
 
+	const roleGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.roles + " || [];");
+
 	const userGrid = new Ext.grid.GridPanel({
 		cls: 'sm-round-panel',
 		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
@@ -79,40 +85,17 @@ function addUserAdmin() {
 				sortable: true
 			},
 			{ 	
-				header: "Display Name",
+				header: "Name",
 				width: 150,
-				dataIndex: 'display',
+				dataIndex: 'name',
 				sortable: true
 			},
 			{ 	
-				xtype: 'booleancolumn',
-				header: "Create Collection",
-				width: 150,
+				header: "Grants",
+				width: 50,
 				align: 'center',
-				dataIndex: 'canCreateCollection',
+				dataIndex: 'collectionGrantCount',
 				sortable: true,
-				trueText: '&#x2714;',
-				falseText: ''
-			},
-			{ 	
-				xtype: 'booleancolumn',
-				header: "Global Access",
-				width: 150,
-				align: 'center',
-				dataIndex: 'globalAccess',
-				sortable: true,
-				trueText: '&#x2714;',
-				falseText: ''
-			},
-			{ 	
-				xtype: 'booleancolumn',
-				header: "Administrator",
-				width: 150,
-				align: 'center',
-				dataIndex: 'canAdmin',
-				sortable: true,
-				trueText: '&#x2714;',
-				falseText: ''
 			},
 			{ 	
 				header: "Added",
@@ -129,15 +112,39 @@ function addUserAdmin() {
 				sortable: true,
 				renderer: v => v ? Ext.util.Format.date(new Date(v * 1000), 'Y-m-d H:i T') : SM.styledEmptyRenderer()
 			},
+			{ 	
+				header: "Create Collection",
+				width: 100,
+				align: 'center',
+				renderer: function (value, metaData, record) {
+					return roleGetter(record.data.statistics.lastClaims).includes('create_collection') ? '&#x2714;' : ''
+				}
+			},
+			{ 	
+				header: "Global Access",
+				width: 100,
+				align: 'center',
+				renderer: function (value, metaData, record) {
+					return roleGetter(record.data.statistics.lastClaims).includes('global_access') ? '&#x2714;' : ''
+				}
+			},
+			{ 	
+				header: "Administrator",
+				width: 100,
+				align: 'center',
+				renderer: function (value, metaData, record) {
+					return roleGetter(record.data.statistics.lastClaims).includes('admin') ? '&#x2714;' : ''
+				}
+			},
 			{
 				header: "userId", 
-				width: 150,
+				width: 100,
 				dataIndex: 'userId',
 				sortable: true
 			}
 		],
 		view: new Ext.grid.GridView({
-			forceFit:false,
+			forceFit:true,
 			// These listeners keep the grid in the same scroll position after the store is reloaded
 			listeners: {
 				beforerefresh: function(v) {
@@ -156,7 +163,7 @@ function addUserAdmin() {
 			rowdblclick: {
 				fn: function(grid,rowIndex,e) {
 					var r = grid.getStore().getAt(rowIndex);
-					Ext.getBody().mask('Getting properties of ' + r.get('display') + '...');
+					Ext.getBody().mask('Getting grants for ' + r.get('name') + '...');
 					showUserProps(r.get('userId'));
 				}
 			}
@@ -164,7 +171,7 @@ function addUserAdmin() {
 		tbar: [
 			{
 				iconCls: 'icon-add',
-				text: 'New User',
+				text: 'Pre-register User',
 				disabled: !(curUser.privileges.canAdmin),
 				handler: function() {
 					Ext.getBody().mask('Loading form...');
@@ -175,36 +182,59 @@ function addUserAdmin() {
 			{
 				ref: '../removeBtn',
 				iconCls: 'icon-del',
-				text: 'Delete User',
+				text: 'Unregister User',
 				disabled: !(curUser.privileges.canAdmin),
 				handler: function() {
-					//var confirmStr="Delete this user?";
-					
 					let user = userGrid.getSelectionModel().getSelected();
-					let confirmStr="Delete user, " + user.data.username + "?";
+					let confirmStr=`Unregister user ${user.data.username}?<br><br>This will remove all Collection Grants for the user and is not reversable.`;
 					
-					Ext.Msg.confirm("Confirm",confirmStr,async function (btn,text) {
-						try {
-							if (btn == 'yes') {
-								let result = await Ext.Ajax.requestPromise({
-									url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
-									method: 'DELETE'
-								})
-								let apiUser = JSON.parse(result.response.responseText)
-								userStore.remove(user)
-								SM.Dispatcher.fireEvent('userdeleted', apiUser)
+					Ext.Msg.show({
+						title: 'Confirm unregister action',
+						icon: Ext.Msg.WARNING,
+						msg: confirmStr,
+						buttons: {yes: 'Cancel', no: 'Unregister'},
+						fn: async function (btn,text) {
+							try {
+								if (btn == 'no') {
+									let result = await Ext.Ajax.requestPromise({
+										url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
+										method: 'DELETE'
+									})
+									let apiUser = JSON.parse(result.response.responseText)
+									userStore.remove(user)
+									SM.Dispatcher.fireEvent('userdeleted', apiUser)
+								}
+							}
+							catch (e) {
+								alert(e.message)
 							}
 						}
-						catch (e) {
-							alert(e.message)
-						}
-					});
+					})
+
+
+
+					// Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+					// 	try {
+					// 		if (btn == 'yes') {
+					// 			let result = await Ext.Ajax.requestPromise({
+					// 				url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
+					// 				method: 'DELETE'
+					// 			})
+					// 			let apiUser = JSON.parse(result.response.responseText)
+					// 			userStore.remove(user)
+					// 			SM.Dispatcher.fireEvent('userdeleted', apiUser)
+					// 		}
+					// 	}
+					// 	catch (e) {
+					// 		alert(e.message)
+					// 	}
+					// });
 				}
 			},
 			'-',
 			{
 				iconCls: 'icon-edit',
-				text: 'View/Edit User Properties',
+				text: 'Modify User',
 				handler: function() {
 					var r = userGrid.getSelectionModel().getSelected();
 					Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
@@ -272,11 +302,17 @@ function addUserAdmin() {
 	const thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'user-admin-tab',
 		iconCls: 'sm-users-icon',
-		title: 'Users',
+		title: 'User Grants',
 		closable:true,
 		layout: 'border',
 		border: false,
-		items: [userGrid]
+		items: [userGrid],
+		listeners: {
+			beforedestroy: function(grid) {
+				SM.Dispatcher.removeListener('userchanged', onUserChanged)
+				SM.Dispatcher.removeListener('usercreated', onUserCreated)
+			}
+		}
 	})
 	thisTab.show()
 	

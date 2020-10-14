@@ -90,62 +90,10 @@ module.exports.initializeDatabase = async function () {
     else {
       console.log(`MySQL schema is up to date.`)
     }
-
-    // Initialize superuser, if applicable
-    let [rows] = await _this.pool.query('SELECT COUNT(userId) as users FROM user_data')
-    if (rows[0].users === 0) {
-      await _this.pool.query(
-        'insert into user_data (username, display, email, globalAccess, canCreateCollection, canAdmin, metadata) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [config.init.superuser, 'Superuser', 'su@none.com', 1, 1, 1, '{}']
-      )
-      console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
-    }
   }
   catch (err) {
     throw (err)
   }  
-}
-
-module.exports.getUserObject = async function (username) {
-  let sql, binds
-  try {    
-    sql = `SELECT
-      CAST(ud.userId as char) as userId,
-      ud.username,
-      ud.display,
-      cast(ud.globalAccess is true as json) as globalAccess,
-      cast(ud.canCreateCollection is true as json) as canCreateCollection,
-      cast(ud.canAdmin is true as json) as canAdmin,
-      CASE WHEN COUNT(cg.collectionId) > 0
-        THEN 
-          json_arrayagg(
-            json_object(
-              'collectionId', CAST(cg.collectionId as char),
-              'accessLevel', cg.accessLevel
-            )
-          )
-        ELSE
-          json_array()
-      END as collectionGrants
-    from 
-      user_data ud
-      left join collection_grant cg on ud.userId = cg.userId
-    where
-      UPPER(username)=UPPER(?)
-    group by
-    ud.userId,
-      ud.username,
-      ud.display,
-      ud.globalAccess,
-      ud.canAdmin`
-  
-    binds = [username]
-    const [rows] = await _this.pool.execute(sql, binds)
-    return (rows[0])
-  }
-  catch (err) {
-    throw err
-  }
 }
 
 module.exports.parseRevisionStr = function (revisionStr) {

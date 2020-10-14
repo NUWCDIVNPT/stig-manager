@@ -4,6 +4,12 @@ $Id: completionStatus.js 807 2017-07-27 13:04:19Z csmig $
 
 function addCompletionStatus(collectionId,collectionName) {
 
+	const tab = Ext.getCmp('main-tab-panel').getItem('completionTab-' + collectionId)
+	if (tab) {
+		tab.show()
+		return
+	}
+
 	var groupRow = [
 		{header: ' ', colspan: 2, align: 'center'},
 		{header: 'Total', colspan: 2, align: 'center'},

@@ -1,4 +1,18 @@
-FROM node:12.9.1-buster-slim
+# STIG Manager OSS
+# 
+# COPY commands assume the following lines in .dockerignore
+# **/node_modules
+# **/state.json
+# **/README.md
+# **/.git
+# **/data
+# **/docs
+# **/test
+# **/uploads
+# **/docker
+
+
+FROM node:14.13.1-stretch-slim
 LABEL maintainer="carl.a.smigielski@saic.com"
 ARG COMMIT_BRANCH="unspecified"
 ARG COMMIT_SHA="unspecified"
@@ -9,17 +23,10 @@ LABEL commit-sha=${COMMIT_SHA}
 LABEL commit-tag=${COMMIT_TAG}
 LABEL commit-describe=${COMMIT_DESCRIBE}
 
-# WORKDIR /tmp
-# RUN apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade && apt-get install -y alien libaio1
-# RUN wget http://yum.oracle.com/repo/OracleLinux/OL7/oracle/instantclient/x86_64/getPackage/oracle-instantclient19.3-basiclite-19.3.0.0.0-1.x86_64.rpm
-# RUN alien -i --scripts oracle-instantclient*.rpm
-# RUN rm -f oracle-instantclient19.3*.rpm && apt-get -y autoremove && apt-get -y clean
-
 WORKDIR /home/node
 USER node
 
 # Install app dependencies
-#COPY ./api/source/package*.json .
 COPY --chown=node:node ./api/source .
 RUN npm install
 # RUN npm audit fix

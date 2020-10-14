@@ -13,38 +13,23 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   try {
     let columns = [
       'CAST(ud.userId as char) as userId',
-      'ud.username',
-      'ud.display',
-      'ud.email',
-      'ud.metadata'
+      'ud.username'
     ]
     let joins = [
-      'user_data ud'
+      'user_data ud',
+      'left join collection_grant cg on ud.userId = cg.userId'
     ]
     let groupBy = [
       'ud.userId',
-      'ud.username',
-      'ud.display',
-      'ud.email',
-      'ud.metadata'
+      'ud.username'
     ]
 
     // PROJECTIONS
     if (inProjection && inProjection.includes('privileges')) {
-      columns.push(`json_object(
-          'globalAccess', cast(ud.globalAccess is true as json),
-          'canCreateCollection', cast(ud.canCreateCollection is true as json),
-          'canAdmin', cast(ud.canAdmin is true as json)
-        ) as privileges`)
-      groupBy.push(
-        'ud.globalAccess',
-        'ud.canCreateCollection',
-        'ud.canAdmin'
-      )
     }
 
     if (inProjection && inProjection.includes('collectionGrants')) {
-      joins.push('left join collection_grant cg on ud.userId = cg.userId')
+      // joins.push('left join collection_grant cg on ud.userId = cg.userId')
       joins.push('left join collection c on cg.collectionId = c.collectionId')
       columns.push(`case when count(cg.cgId) > 0 then 
       json_arrayagg(
@@ -61,11 +46,13 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     if (inProjection && inProjection.includes('statistics')) {
       columns.push(`json_object(
           'created', ud.created,
-          'lastAccess', lastAccess
+          'collectionGrantCount', count(cg.cgId),
+          'lastAccess', ud.lastAccess,
+          'lastClaims', ud.lastClaims
         ) as statistics`)
       groupBy.push(
-        'ud.created',
-        'ud.lastAccess'
+        'ud.lastAccess',
+        'ud.lastClaims'
       )
     }
 
@@ -142,9 +129,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
       let sqlInsert =
         `INSERT INTO
             user_data
-            ( username, display, email, globalAccess, canCreateCollection, canAdmin, metadata)
+            ( username )
           VALUES
-            (:username, :display, :email, :globalAccess, :canCreateCollection, :canAdmin, :metadata)`
+            (:username )`
       let [result] = await connection.query(sqlInsert, binds)
       userId = result.insertId
     }
@@ -266,6 +253,18 @@ exports.getUserByUserId = async function(userId, projection, elevate, userObject
   }
 }
 
+exports.getUserByUsername = async function(username, projection, elevate, userObject) {
+  try {
+    let rows = await _this.queryUsers( projection, {
+      username: username
+    }, elevate, userObject)
+    return (rows[0])
+  }
+  catch(err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
 
 /**
  * Return a list of Users accessible to the requester
@@ -317,6 +316,33 @@ exports.setLastAccess = async function (userId, timestamp) {
   }
   catch (err) {
     console.log(`ERROR: [setLastAccess] ${err.stack}`)
+  }
+}
+
+exports.setUserData = async function (username, fields) {
+  try {
+    let insertColumns = ['username']
+    let updateColumns = []
+    let binds = [username]
+    if (fields.lastAccess) {
+      insertColumns.push('lastAccess')
+      updateColumns.push('lastAccess = VALUES(lastAccess)')
+      binds.push(fields.lastAccess)
+    }
+    if (fields.lastClaims) {
+      insertColumns.push('lastClaims')
+      updateColumns.push('lastClaims = VALUES(lastClaims)')
+      binds.push(JSON.stringify(fields.lastClaims))
+    }
+    let sqlUpsert = `INSERT INTO user_data (
+      ${insertColumns.join(',\n')}
+    ) VALUES ? ON DUPLICATE KEY UPDATE 
+      ${updateColumns.join(',\n')}`
+    let [result] = await dbUtils.pool.query(sqlUpsert, [[binds]])
+    return result.insertId
+  }
+  catch (err) {
+    console.log(`ERROR: [refreshUserData] ${err.stack}`)
   }
 }
 

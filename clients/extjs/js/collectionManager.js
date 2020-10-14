@@ -1,5 +1,11 @@
 async function addCollectionManager( collectionId, collectionName ) {
 	try {
+		const tab = Ext.getCmp('main-tab-panel').getItem(`${collectionId}-collection-manager-tab`)
+		if (tab) {
+			tab.show()
+			return
+		}
+	
 		let collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,

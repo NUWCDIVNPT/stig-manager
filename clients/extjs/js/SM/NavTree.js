@@ -562,7 +562,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                     },
                     {
                       id: 'user-admin',
-                      text: 'Users',
+                      text: 'User Grants',
                       leaf: true,
                       iconCls: 'sm-users-icon'
                     },

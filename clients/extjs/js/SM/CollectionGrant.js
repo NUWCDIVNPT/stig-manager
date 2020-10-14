@@ -343,6 +343,113 @@ SM.UserProperties = Ext.extend(Ext.form.FormPanel, {
         this.colGrid = new SM.CollectionGrantsGrid({
             name: 'collectionGrants'
         })
+        const registeredUserItems =  [
+            {
+                layout: 'column',
+                baseCls: 'x-plain',
+                border: false,
+                items: [
+                    {
+                        columnWidth: .5,
+                        layout: 'form',
+                        border: false,
+                        items: [
+                            {
+                                xtype: 'textfield',
+                                fieldLabel: 'Username',
+                                readOnly: true,
+                                anchor: '-20',
+                                name: 'username'
+                            }
+                        ]
+                    },
+                    {
+                        columnWidth: .5,
+                        layout: 'form',
+                        border: false,
+                        items: [
+                            {
+                                xtype: 'textfield',
+                                fieldLabel: 'Name',
+                                readOnly: true,
+                                anchor: '100%',
+                                name: 'name'
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                xtype: 'textfield',
+                fieldLabel: 'Email',
+                anchor: '100%',
+                readOnly: true,
+                name: 'email'
+            },
+            {
+                // xtype: 'compositefield',
+                fieldLabel: 'Privileges',
+                allowBlank: true,
+                anchor: '100%',
+                layout: 'hbox',
+                border: false,
+                items: [
+                    {
+                        xtype: 'checkbox',
+                        name: 'canCreateCollection',
+                        boxLabel: 'Create collection',
+                        flex: 1,
+                        readOnly: true
+                    },
+                    {
+                        xtype: 'checkbox',
+                        name: 'globalAccess',
+                        checked: false,
+                        boxLabel: 'Global access',
+                        flex: 1,
+                        readOnly: true
+                    },
+                    {
+                        xtype: 'checkbox',
+                        name: 'canAdmin',
+                        checked: false,
+                        boxLabel: 'Administrator',
+                        flex: 1,
+                        readOnly: true
+                    }        
+                ]
+            },
+            {
+                xtype: 'displayfield',
+                allowBlank: true,
+                style: 'border: 1px solid #C1C1C1',
+                fieldLabel: 'Last Claims',
+                autoScroll: true,
+                border: true,
+                name: 'lastClaims',
+                height: 150,
+                anchor: '100%',
+                setValue: function (v) {
+                    if (Object.keys(v).length === 0 && v.constructor === Object) {
+                        return
+                    }
+                    const tree = JsonView.createTree(v)
+                    const el = this.getEl().dom
+                    JsonView.render(tree, el)
+                    JsonView.expandChildren(tree)
+                }
+            }
+        ]
+        const preregisteredUserItems =  [
+            {
+                xtype: 'textfield',
+                fieldLabel: 'Username',
+                allowBlank: false,
+                anchor: '100%',
+                name: 'username'
+            }
+        ]
+       
         let config = {
             baseCls: 'x-plain',
             // height: 400,
@@ -354,93 +461,12 @@ SM.UserProperties = Ext.extend(Ext.form.FormPanel, {
                 {
                     xtype: 'fieldset',
                     title: '<b>User information</b>',
-                    items: [
-                        {
-                            layout: 'column',
-                            baseCls: 'x-plain',
-                            border: false,
-                            items: [
-                                {
-                                    columnWidth: .5,
-                                    layout: 'form',
-                                    border: false,
-                                    items: [
-                                        {
-                                            xtype: 'textfield',
-                                            fieldLabel: 'Username',
-                                            anchor: '-20',
-                                            allowBlank: false,
-                                            name: 'username'
-                                        }
-                                    ]
-                                },
-                                {
-                                    columnWidth: .5,
-                                    layout: 'form',
-                                    border: false,
-                                    items: [
-                                        {
-                                            xtype: 'textfield',
-                                            fieldLabel: 'Display',
-                                            anchor: '100%',
-                                            allowBlank: true,
-                                            name: 'display'
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            xtype: 'textfield',
-                            fieldLabel: 'Email',
-                            anchor: '100%',
-                            allowBlank: true,
-                            name: 'email'
-                        },
-                        {
-                            // xtype: 'compositefield',
-                            fieldLabel: 'Privileges',
-                            allowBlank: true,
-                            anchor: '100%',
-                            layout: 'hbox',
-                            border: false,
-                            items: [
-                                {
-                                    xtype: 'checkbox',
-                                    name: 'canCreateCollection',
-                                    checked: false,
-                                    boxLabel: 'Create collection',
-                                    flex: 1
-                                },
-                                {
-                                    xtype: 'checkbox',
-                                    name: 'globalAccess',
-                                    checked: false,
-                                    boxLabel: 'Global access',
-                                    flex: 1
-                                },
-                                {
-                                    xtype: 'checkbox',
-                                    name: 'canAdmin',
-                                    checked: false,
-                                    boxLabel: 'Administrator',
-                                    flex: 1
-                                }        
-                            ]
-                        },
-                        {
-                            xtype: 'sm-metadata-grid',
-                            submitValue: true,
-                            fieldLabel: 'Metadata',
-                            name: 'metadata',
-                            anchor: '100%'
-                        }
-                    ]
+                    items: this.registeredUser ? registeredUserItems : preregisteredUserItems
                 },
                 {
                     xtype: 'fieldset',
                     title: '<b>Collection Grants</b>',
-                    anchor: "100% -270",
+                    height: 270,
                     layout: 'fit',
                     items: [
                         this.colGrid
@@ -496,32 +522,28 @@ SM.UserProperties = Ext.extend(Ext.form.FormPanel, {
 async function showUserProps( userId ) {
     try {
         let userPropsFormPanel = new SM.UserProperties({
+            registeredUser: userId,
             padding: '10px 15px 10px 15px',
             btnHandler: async function(){
                 try {
                     if (userPropsFormPanel.getForm().isValid()) {
                         let values = userPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-                        // Structure object for API
-                        values.privileges = {
-                            canAdmin: values.canAdmin,
-                            globalAccess: values.globalAccess,
-                            canCreateCollection: values.canCreateCollection
-                        }
-                        delete values.canAdmin
-                        delete values.globalAccess
-                        delete values.canCreateCollection
+                        let jsonData = {collectionGrants: values.collectionGrants}
 
-                        let method = userId ? 'PUT' : 'POST'
+                        let method = userId ? 'PATCH' : 'POST'
                         let url = userId ? `${STIGMAN.Env.apiBase}/users/${userId}` : `${STIGMAN.Env.apiBase}/users`
+                        if (!userId) {
+                            jsonData.username = values.username
+                        }
                         let result = await Ext.Ajax.requestPromise({
                             url: url,
                             method: method,
                             params: {
                                 elevate: curUser.privileges.canAdmin,
-                                projection: ['privileges', 'collectionGrants', 'statistics']
+                                projection: ['collectionGrants', 'statistics']
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                            jsonData: values
+                            jsonData: jsonData
                         })
                         const apiUser = JSON.parse(result.response.responseText)
                         const event = userId ? 'userchanged' : 'usercreated'
@@ -539,11 +561,11 @@ async function showUserProps( userId ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
-            title: userId ? 'User Properties, ID ' + userId : 'Associate new User',
+            title: userId ? 'User Grants, ID ' + userId : 'Pre-register User Grants',
             modal: true,
             hidden: true,
             width: 660,
-            height:660,
+            height: userId ? 650 : 440,
             layout: 'fit',
             plain:true,
             bodyStyle:'padding:5px;',
@@ -554,19 +576,37 @@ async function showUserProps( userId ) {
         
         appwindow.render(document.body)
 
+        const roleGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.roles + " || [];");
+
         if (userId) {
             let result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/users/${userId}`,
                 params: {
                     elevate: curUser.privileges.canAdmin,
-                    projection: ['privileges', 'collectionGrants']
+                    projection: ['statistics', 'collectionGrants']
                 },
                 method: 'GET'
             })
             let apiUser = JSON.parse(result.response.responseText)
-            let apiUserObj = {...apiUser, ...apiUser.privileges}
-            delete apiUserObj.privileges
-            userPropsFormPanel.getForm().setValues(apiUserObj)
+            ;['iat', 'exp', 'auth_time'].forEach( claim => {
+                if (apiUser.statistics.lastClaims[claim]) {
+                    apiUser.statistics.lastClaims[claim] = new Date(apiUser.statistics.lastClaims[claim] * 1000)
+                }
+            })
+            if (apiUser.statistics.lastClaims.scope) {
+                apiUser.statistics.lastClaims.scope = apiUser.statistics.lastClaims.scope.split(' ')
+            }
+            let formValues = {
+                username: apiUser.username,
+                name: apiUser.statistics.lastClaims?.[STIGMAN.Env.oauth.claims.name],
+                email: apiUser.statistics.lastClaims?.[STIGMAN.Env.oauth.claims.email],
+                canCreateCollection: roleGetter(apiUser.statistics.lastClaims).includes('create_collection'),
+                globalAccess: roleGetter(apiUser.statistics.lastClaims).includes('global_access'),
+                canAdmin: roleGetter(apiUser.statistics.lastClaims).includes('admin'),
+                lastClaims: apiUser.statistics.lastClaims,
+                collectionGrants: apiUser.collectionGrants || []
+            }
+            userPropsFormPanel.getForm().setValues(formValues)
         }
                 
         Ext.getBody().unmask();

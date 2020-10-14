@@ -65,12 +65,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         user_data (
           userId,
           username, 
-          display,
-          email,
-          globalAccess,
-          canCreateCollection,
-          canAdmin,
-          metadata
+          lastAccess,
+          lastClaims
         ) VALUES ?`,
         insertBinds: []
       },
@@ -170,12 +166,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       dml.userData.insertBinds.push([
         parseInt(u.userId) || null,
         u.username, 
-        u.display,
-        u.email,
-        u.privileges.globalAccess ? 1 : 0,
-        u.privileges.canCreateCollection ? 1 : 0,
-        u.privileges.canAdmin ? 1 : 0,
-        JSON.stringify(u.metadata)
+        u.statistics.lastAccess,
+        JSON.stringify(u.statistics.lastClaims)
       ])
     }
     

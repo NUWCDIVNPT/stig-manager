@@ -1,6 +1,11 @@
 function addAppDataAdmin() {
+  const tab = Ext.getCmp('main-tab-panel').getItem('appdata-admin-tab')
+	if (tab) {
+		tab.show()
+		return
+	}
 
-  let apiPanel = new Ext.Panel({
+  const apiPanel = new Ext.Panel({
     // baseCls: 'x-plain',
 		cls: 'sm-round-panel',
 		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
@@ -159,46 +164,32 @@ function addAppDataAdmin() {
   
     appwindow.show(document.body);
   }
-  
-  let getAppdata = function () {
-    return new Promise((resolve, reject) => {
-      try {
-        let xhr = new XMLHttpRequest()
-        let url = `${STIGMAN.Env.apiBase}/op/appdata?elevate=true`
-        xhr.open('GET', url)
-        xhr.responseType = 'blob'
-        xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
-        xhr.onload = function () {
-          if (this.status >= 200 && this.status < 300) {
-            let contentDispo = this.getResponseHeader('Content-Disposition')
-            //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
-            let fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
-            resolve({
-              blob: xhr.response,
-              filename: fileName
-            })
-          } else {
-            reject({
-              status: this.status,
-              blob: xhr.response
-            })
-          }
-        }
-        xhr.onerror = function () {
-          reject({
-            status: this.status,
-            message: xhr.statusText
+
+  const getAppdata = async function () {
+    try {
+      let url = `${STIGMAN.Env.apiBase}/op/appdata?elevate=true`
+      await window.keycloak.updateToken(10)
+      let response = await fetch(
+        url,
+        {
+          method: 'GET',
+          headers: new Headers({
+              'Authorization': `Bearer ${window.keycloak.token}`
           })
         }
-        xhr.send()
-      }
-      catch (e) {
-        reject(e)
-      }
-    })
+      )
+      const contentDispo = response.headers.get("content-disposition")
+      //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+      const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+      const blob = await response.blob()
+      return ({blob: blob, filename: filename})
+    }
+    catch (e) {
+      alert (e.message)
+    }
   }
 
-  let downloadBlob = function (blob, filename) {
+  const downloadBlob = function (blob, filename) {
     let a = document.createElement('a')
     a.style.display = "none"
     let url = window.URL.createObjectURL(blob)
@@ -211,7 +202,7 @@ function addAppDataAdmin() {
   }
 
 
-  let thisTab = Ext.getCmp('main-tab-panel').add({
+  const thisTab = Ext.getCmp('main-tab-panel').add({
     id: 'appdata-admin-tab',
     iconCls: 'sm-database-save-icon',
     title: 'Application Data',
