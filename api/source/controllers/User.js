@@ -167,3 +167,13 @@ module.exports.updateUser = async function updateUser (req, res, next) {
   }
 }
 
+module.exports.setUserData = async function refreshUser (username, fields) {
+  try {
+    await User.setUserData(username, fields)
+    return await User.getUserByUsername(username)
+  }
+  catch (e) {
+    writer.writeJson(res, err)
+
+  }
+}

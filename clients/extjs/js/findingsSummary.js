@@ -3,6 +3,12 @@ $Id: findingsSummary.js 807 2017-07-27 13:04:19Z csmig $
 */
 
 function addFindingsSummary(collectionId, collectionName) {
+	const tab = Ext.getCmp('main-tab-panel').getItem('findingsTab-' + collectionId)
+	if (tab) {
+		tab.show()
+		return
+	}
+
 	var idAppend = '-findings-summary-' + collectionId;
 	var benchmarkId = '';
 

@@ -1,5 +1,11 @@
 function addCollectionAdmin() {
 
+  const tab = Ext.getCmp('main-tab-panel').getItem('collection-admin-tab')
+	if (tab) {
+		tab.show()
+		return
+	}
+
   const fields = Ext.data.Record.create([
     {
       name: 'collectionId',

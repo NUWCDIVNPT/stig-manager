@@ -42,7 +42,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
             delete grant.user
           }
       }
-      let users = await User.exportUsers( ['privileges'], elevate, req.userObject)
+      let users = await User.exportUsers( ['statistics'], elevate, req.userObject)
       let assets = await Asset.exportAssets( ['stigGrants'], elevate, req.userObject)
       assets.forEach(asset => {
         asset.collectionId = asset.collection.collectionId

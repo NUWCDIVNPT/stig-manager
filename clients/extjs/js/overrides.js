@@ -1,3 +1,17 @@
+// Prevent changing readOnly checkboxes
+// Source: https://forum.sencha.com/forum/showthread.php?90531-Readonly-Checkbox-Override
+Ext.override(Ext.form.Checkbox, {
+    onClick: function (e,o) {
+     if (this.readOnly === true){
+          e.preventDefault();
+     } else {
+        if(this.el.dom.checked != this.checked){
+        this.setValue(this.el.dom.checked);
+        }
+     }
+    }
+});
+
 // ext-base.js adds a 'remove' method to Array.prototype
 // By default, that property is enumerated by for ... in
 // This breaks fast-xml-parser 3.14.3 (among others?) so we make the property not enumerable

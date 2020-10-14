@@ -41,8 +41,13 @@ let config = {
     },
     oauth: {
         authority: process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
-        userid_claim: process.env.STIGMAN_JWT_USER_CLAIM || "preferred_username",
-        groups_claim: process.env.STIGMAN_JWT_GROUPS_CLAIM || "groups"
+        claims: {
+            username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
+            servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
+            name: process.env.STIGMAN_JWT_NAME_CLAIM || "name",
+            roles: process.env.STIGMAN_JWT_ROLES_CLAIM || "realm_access?.roles",
+            email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
+        }
     }
 }
 

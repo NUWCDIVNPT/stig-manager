@@ -1225,7 +1225,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - stig-manager
+            - stig-manager:op:read
     post:
       tags:
         - Operation
@@ -1264,7 +1264,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - stig-manager
+            - stig-manager:op
   /op/configuration:
     get:
       tags:
@@ -2995,18 +2995,6 @@ components:
           readOnly: true
         username:
           type: string
-        display:
-          type: string
-        email:
-          type: string
-        metadata:
-          type: object
-        created:
-          type: string
-          readOnly: true
-        lastAccess:
-          type: string
-          readOnly: true
     UserBasic:
       type: object
       properties:
@@ -3018,22 +3006,11 @@ components:
     UserCreateOrReplace:
       required:
         - username
-        - display
-        - email
-        - privileges
         - collectionGrants
       type: object
       properties:
         username:
           type: string
-        display:
-          type: string
-        email:
-          type: string
-        metadata:
-          type: object
-        privileges:
-          $ref: '#/components/schemas/UserPrivileges'
         collectionGrants:
           type: array
           items:
@@ -3066,27 +3043,9 @@ components:
           type: integer
           minimum: 1
           maximum: 4
-    UserPrivileges:
-      type: object
-      additionalProperties: false
-      required:
-        - globalAccess
-        - canCreateCollection
-        - canAdmin
-      properties:
-        globalAccess:
-          type: boolean
-        canCreateCollection:
-          type: boolean
-        canAdmin:
-          type: boolean
     UserProjected:
       allOf:
         - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            privileges:
-              $ref: '#/components/schemas/UserPrivileges'
         - type: object
           properties:
             collectionGrants:
@@ -3102,21 +3061,17 @@ components:
       properties:
         created:
           type: string
+        collectionGrantCount:
+          type: integer
         lastAccess:
-          type: string
+          type: integer
+        lastClaims:
+          type: object
     UserUpdate:
       type: object
       properties:
         username:
           type: string
-        display:
-          type: string
-        email:
-          type: string
-        metadata:
-          type: object
-        privileges:
-          $ref: '#/components/schemas/UserPrivileges'
         collectionGrants:
           type: array
           items:
@@ -3492,7 +3447,6 @@ components:
           type: string
           enum:
             - collectionGrants
-            - privileges
             - statistics
   securitySchemes:
     oauth:
@@ -3503,9 +3457,11 @@ components:
             http://localhost:8080/auth/realms/stigman/protocol/openid-connect/auth
           scopes:
             stig-manager: Top-accessLevel scope
-            'stig-manager:stig': Full access to the STIG collection
-            'stig-manager:stig:read': Read access to the STIG collection
-            'stig-manager:collection': Full access to the Collection collection
-            'stig-manager:collection:read': Read-only access to the Collection collection
-            'stig-manager:user': Full access to the Users collection
-            'stig-manager:user:read': Read-only access to the Users collection
+            'stig-manager:op': Full access to the Operation endpoints
+            'stig-manager:op:read': Read access to the Operation endpoints
+            'stig-manager:stig': Full access to the STIG endpoints
+            'stig-manager:stig:read': Read access to the STIG endpoints
+            'stig-manager:collection': Full access to the Collection endpoints
+            'stig-manager:collection:read': Read-only access to the Collection endpoints
+            'stig-manager:user': Full access to the Users endpoints
+            'stig-manager:user:read': Read-only access to the Users endpoints

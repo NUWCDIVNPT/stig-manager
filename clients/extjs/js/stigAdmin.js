@@ -1,4 +1,10 @@
 function addStigAdmin() {
+	const tab = Ext.getCmp('main-tab-panel').getItem('stig-admin-tab')
+	if (tab) {
+		tab.show()
+		return
+	}
+
 	var stigFields = Ext.data.Record.create([
 		{	name:'benchmarkId',
 			type: 'string'
@@ -112,7 +118,7 @@ function addStigAdmin() {
 		},
 		tbar: [
 			{
-				iconCls: 'sm-stig-icon',
+				iconCls: 'sm-import-icon',
 				text: 'Import STIGs',
 				disabled: false,
 				handler: function() {

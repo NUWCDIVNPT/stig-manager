@@ -3,6 +3,7 @@ $Id: stigman.js 807 2017-07-27 13:04:19Z csmig $
 */
 
 Ext.Ajax.timeout = 30000000
+Ext.Msg.minWidth = 300
 
 function GetXmlHttpObject() {
 	if (window.XMLHttpRequest)

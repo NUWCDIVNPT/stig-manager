@@ -31,12 +31,10 @@ async function authorizeViaKeycloak() {
     try {
         window.keycloak = keycloak
         let response = await keycloak.init({ 
-            // flow: 'implicit',
             onLoad: 'login-required',
-            // onLoad: 'check-sso',
-            // checkLoginIframe: true,
+            pkceMethod: 'S256',
             defaultLoginOptions: {
-                scope: "stig-manager"
+                scope: "stig-manager:stig stig-manager:stig:read stig-manager:collection stig-manager:user stig-manager:user:read stig-manager:op"
                 // ,prompt: "login"
             },
             enableLogging: true
@@ -44,11 +42,27 @@ async function authorizeViaKeycloak() {
         loadScripts()
     }
     catch(errorData) {
-        alert(errorData);
+        alert(errorData.error_description);
     } 
 }
 
 function loadScripts() {
+    [
+        'ext/resources/css/ext-all.css',
+        'ext/resources/css/xtheme-gray.css',
+        'css/stigman.css',
+        'ext/ux/fileuploadfield/css/fileuploadfield.css',
+        'css/RowEditor.css',
+        'css/jsonview.bundle.css'
+    ].forEach(function(href) {
+        var link = document.createElement('link');
+        link.href = href;
+        link.type = "text/css";
+        link.rel = "stylesheet";
+        link.async= false;
+        document.head.appendChild(link);
+      });
+
     [
         'ext/adapter/ext/ext-base-debug.js',
         'ext/ext-all-debug-w-comments.js',
@@ -97,13 +111,14 @@ function loadScripts() {
         "js/ExportButton.js",
         "js/jszip.min.js",
         "js/fast-xml-parser.min.js",
+        "js/jsonview.bundle.js",
         "js/stigman.js"
     ].forEach(function(src) {
         var script = document.createElement('script');
         script.src = src;
         script.async = false;
         document.head.appendChild(script);
-      })
+      });
 }
 
 authorizeViaKeycloak()
