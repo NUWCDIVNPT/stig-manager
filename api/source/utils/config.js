@@ -8,11 +8,10 @@ let config = {
     },
     settings: {
         setClassification: process.env.STIGMAN_CLASSIFICATION,
-        lastAccessResolution: 60,
-        autoEnrollUser: process.env.STIGMAN_API_AUTO_ENROLL || "false"
+        lastAccessResolution: 60
     },
     client: {
-        enabled: process.env.STIGMAN_CLIENT_ENABLED || "true",
+        disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client"
     },
     http: {
@@ -26,15 +25,15 @@ let config = {
         service: process.env.STIGMAN_DB_SERVICE || "orclpdb1.localdomain",
         schema: process.env.STIGMAN_DB_SCHEMA || "stigman",
         username: process.env.STIGMAN_DB_USER || "stigman",
-        password: process.env.STIGMAN_DB_PASSWORD || "stigman"
+        password: process.env.STIGMAN_DB_PASSWORD || "stigman",
+        revert: process.env.STIGMAN_DB_REVERT === "true"
     },
     init: {
-        superuser: process.env.STIGMAN_SUPERUSER || 'admin',
-        importStigs: process.env.STIGMAN_API_IMPORT_STIGS || 'false',
-        importScap: process.env.STIGMAN_API_IMPORT_SCAP || 'false'
+        importStigs: process.env.STIGMAN_INIT_IMPORT_STIGS === "true",
+        importScap: process.env.STIGMAN_INIT_IMPORT_SCAP === "true"
     },
     swaggerUi: {
-        enabled: process.env.STIGMAN_SWAGGER_ENABLED || "true", 
+        enabled: process.env.STIGMAN_SWAGGER_ENABLED === "true", 
         authority: process.env.STIGMAN_SWAGGER_AUTHORITY || "http://localhost:8080/auth/realms/stigman", 
         server: process.env.STIGMAN_SWAGGER_SERVER || "http://localhost:54000/api",
         oauth2RedirectUrl: process.env.STIGMAN_SWAGGER_REDIRECT || "http://localhost:54000/api-docs/oauth2-redirect.html"
@@ -49,10 +48,6 @@ let config = {
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
         }
     }
-}
-
-if (!config.commit.branch) {
-    
 }
 
 module.exports = config

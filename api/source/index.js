@@ -20,18 +20,6 @@ const smFetch = require('./utils/fetchStigs')
 
 console.log(`Starting STIG Manager ${config.version}`)
 
-// State file
-// TODO: store in DB instead of file?
-let state = {}
-try {
-  state = JSON.parse(fs.readFileSync(path.join(__dirname, './state.json')))
-  console.log(`Read state file`)
-}
-catch (e) {
-  console.log('Could not read state file')
-}
-
-
 // Express config
 const app = express();
 app.use(upload.single('importFile'))
@@ -97,10 +85,13 @@ oasTools.initialize(oasDoc, app, function () {
 
 async function run() {
   try {
-    if (config.client.enabled === 'true') {
+    if (!config.client.disabled) {
       await setupClient(app, config.client.directory)
     }
-    if (config.swaggerUi.enabled === 'true') {
+    else {
+      console.log('[CLIENT] Client is disabled')
+    }
+    if (config.swaggerUi.enabled) {
       app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
         oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl
       }))
@@ -128,7 +119,7 @@ async function run() {
 
 async function setupClient(app, directory) {
   try {
-    console.log(`Setting up STIG Manager client...`)
+    console.log(`[CLIENT] Setting up STIG Manager client...`)
     const envsub = require('envsub')
     process.env.STIGMAN_CLIENT_API_BASE = process.env.STIGMAN_CLIENT_API_BASE || '/api'
     process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH = process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH || 'http://localhost:8080/auth'
@@ -147,31 +138,13 @@ async function setupClient(app, directory) {
     }
     let envobj
     envobj = await envsub({templateFile, outputFile, options})
-    // console.log(envobj.templateFile)
-    // console.log(envobj.templateContents)
-    // console.log(envobj.outputFile)
-    // console.log(envobj.outputContents)
   
     templateFile = path.join(__dirname, directory, '/js/keycloak.json.template')
     outputFile = path.join(__dirname, directory, '/js/keycloak.json')
     envobj = await envsub({templateFile, outputFile, options})
-    // console.log(envobj.templateFile)
-    // console.log(envobj.templateContents)
-    // console.log(envobj.outputFile)
-    // console.log(envobj.outputContents)
   }
   catch (err) {
     console.error(err.message)
-  }
-}
-
-async function updateState(obj) {
-  try {
-    state = {...state, ...obj}
-    fs.writeFileSync(path.join(__dirname,'./state.json'), JSON.stringify(state, null, 2))
-  }
-  catch (e) {
-    console.log(e.message)
   }
 }
 
@@ -179,36 +152,34 @@ async function startServer(app) {
   try {
     // Initialize database connection pool
     let db = require(`./service/${config.database.type}/utils`)
-    await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
+    const inits = await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
 
-    if (config.init.importStigs === 'true' && !state.importedStigs) {
-      console.log(`Importing STIGs...`)
+    if (config.init.importStigs && inits[1]) {
+      console.log(`[INIT] Importing STIGs...`)
       // await smFetch.readCompilation()
       await smFetch.fetchCompilation()
-      updateState({ importedStigs: true })
     }
-    if (config.init.importScap === 'true' && !state.importedScap) {
-      console.log(`Importing SCAP...`)
+    if (config.init.importScap && inits[1]) {
+      console.log(`[INIT] Importing SCAP...`)
       await smFetch.fetchScap()
-      updateState({ importedScap: true })
     }
 
     // Set/change classification if indicated
-    console.log(`Checking classification...`)
+    console.log(`[START] Checking classification...`)
     if (config.settings.setClassification) {
-      console.log(`Setting classification to ${config.settings.setClassification}`)
+      console.log(`[START] Setting classification to ${config.settings.setClassification}`)
       await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
     }
 
     // Start the server
     http.createServer(app).listen(config.http.port, function () {
-      console.log('Server is listening on port %d', config.http.port)
-      console.log('API is available at /api')
-      if (config.swaggerUi.enabled === 'true') {
-        console.log('API documentation is available at /api-docs')
+      console.log('[START] Server is listening on port %d', config.http.port)
+      console.log('[START] API is available at /api')
+      if (config.swaggerUi.enabled) {
+        console.log('[START] API documentation is available at /api-docs')
       }
-      if (config.client.enabled === 'true') {
-        console.log('Client is available at /')
+      if (!config.client.disabled) {
+        console.log('[START] Client is available at /')
       }
     })
   } catch(err) {

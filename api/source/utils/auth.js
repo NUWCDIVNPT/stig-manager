@@ -111,20 +111,31 @@ function initializeAuth() {
 
         function getJwks() {
             let wellKnown = config.oauth.authority + "/.well-known/openid-configuration"
-            console.info("Trying OpenID discovery at " + wellKnown)
+            console.info("[AUTH] Trying OIDC discovery at " + wellKnown)
             request(wellKnown, function(err, res, body) {
                 if (err) {
-                    console.info("Couldn't get jwks_uri. Try again in 5 seconds...")
+                    console.info(`[AUTH] Couldn't connect. Trying again in 5 seconds...`)
                     setTimeout(getJwks, 5000)
                     return
                 } else {
-                    let openidConfig = JSON.parse(body)
-                    jwksUri = openidConfig.jwks_uri
-                    client = jwksClient({
-                        jwksUri: jwksUri
-                    })
-                    console.info("Got jwks_uri")
-                    resolve()
+                    try {
+                        if ( res.statusCode !== 200 ) {
+                            throw( new Error('[AUTH] Response other than 200 status code') )
+                        }
+                        let openidConfig = JSON.parse(body)
+                        if (!openidConfig.jwks_uri) {
+                            throw( new Error('[AUTH] No jwks_uri property found') )
+                        }
+                        jwksUri = openidConfig.jwks_uri
+                        client = jwksClient({
+                            jwksUri: jwksUri
+                        })
+                        console.info("[AUTH] Received OIDC signing keys")
+                        resolve()
+                    }
+                    catch (e) {
+                        reject(e)
+                    }
                 }
             })
         }       
