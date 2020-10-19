@@ -7,13 +7,7 @@ module.exports = {
     up: async (pool) => {
         let migrationName = path.basename(__filename, '.js')
         console.log(`[DB] Running migration ${migrationName} UP`)
-        const importer = new Importer({
-            host: config.database.host,
-            port: config.database.port,
-            user: config.database.username,
-            password: config.database.password,                         
-            database: config.database.schema                         
-        })
+        const importer = new Importer(pool)
         let dir = path.join(__dirname, 'sql', migrationName, 'up')
         let files = await fs.promises.readdir(dir)
         for (file of files) {
@@ -24,13 +18,7 @@ module.exports = {
     down: async(pool)=> {
         let migrationName = path.basename(__filename, '.js')
         console.log(`[DB] Running migration ${migrationName} DOWN`)
-        const importer = new Importer({
-            host: config.database.host,
-            port: config.database.port,
-            user: config.database.username,
-            password: config.database.password,                         
-            database: config.database.schema                         
-        })
+        const importer = new Importer(pool)
         let dir = path.join(__dirname, 'sql', migrationName, 'down')
         let files = await fs.promises.readdir(dir)
         for (file of files) {

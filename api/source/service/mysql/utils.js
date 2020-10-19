@@ -3,6 +3,7 @@ const config = require('../../utils/config')
 const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
+const fs = require("fs")
 
 let _this = this
 
@@ -13,33 +14,55 @@ module.exports.testConnection = async function () {
     return JSON.stringify(result, null, 2)
   }
   catch (err) {
-    console.log(err.message)
+    // console.log(err.message)
     throw (err)
   }
+}
+
+function getPoolConfig() {
+  const poolConfig = {
+    connectionLimit : 10,
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.username,
+    database: config.database.schema,
+    typeCast: function (field, next) {
+      if (field.type == 'JSON') {
+        return (JSON.parse(field.string())); 
+      }
+      if ((field.type === "BIT") && (field.length === 1)) {
+        let bytes = field.buffer() || [0];
+        return( bytes[ 0 ] === 1 );
+      }
+      return next();
+    } 
+  }
+  if (config.database.password) {
+    poolConfig.password = config.database.password
+  }
+  if (config.database.tls.ca_file || config.database.tls.cert_file || config.database.tls.key_file) {
+    const sslConfig = {}
+    if (config.database.tls.ca_file) {
+      sslConfig.ca = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.ca_file))
+    }
+    if (config.database.tls.cert_file) {
+      sslConfig.cert = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.cert_file))
+    }
+    if (config.database.tls.key_file) {
+      sslConfig.key = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.key_file))
+    }
+    poolConfig.ssl = sslConfig
+  }
+  return poolConfig
 }
 
 module.exports.initializeDatabase = async function () {
   try {
     console.log('[DB] Initializing MySQL.')
+
     // Create the connection pool
-    _this.pool = mysql.createPool({
-      connectionLimit : 10,
-      host: config.database.host,
-      port: config.database.port,
-      user: config.database.username,
-      password: config.database.password,
-      database: config.database.schema,
-      typeCast: function (field, next) {
-        if (field.type == 'JSON') {
-          return (JSON.parse(field.string())); 
-        }
-        if ((field.type === "BIT") && (field.length === 1)) {
-          let bytes = field.buffer() || [0];
-          return( bytes[ 0 ] === 1 );
-        }
-        return next();
-      } 
-    })
+    const poolConfig = getPoolConfig()
+    _this.pool = mysql.createPool(poolConfig)
     // Set common session variables
     _this.pool.on('connection', function (connection) {
       connection.query('SET SESSION group_concat_max_len=10000000')
@@ -67,7 +90,10 @@ module.exports.initializeDatabase = async function () {
       retries: 24,
       factor: 1,
       minTimeout: 5 * 1000,
-      maxTimeout: 5 * 1000
+      maxTimeout: 5 * 1000,
+      onRetry: (error) => {
+        console.log(`[DB] ${error.message}`)
+      }
     })
     console.log('[DB] Preflight connection succeeded.')
 

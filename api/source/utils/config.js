@@ -25,7 +25,12 @@ let config = {
         service: process.env.STIGMAN_DB_SERVICE || "orclpdb1.localdomain",
         schema: process.env.STIGMAN_DB_SCHEMA || "stigman",
         username: process.env.STIGMAN_DB_USER || "stigman",
-        password: process.env.STIGMAN_DB_PASSWORD || "stigman",
+        password: process.env.STIGMAN_DB_PASSWORD,
+        tls: {
+            ca_file: process.env.STIGMAN_DB_TLS_CA_FILE,
+            cert_file: process.env.STIGMAN_DB_TLS_CERT_FILE,
+            key_file: process.env.STIGMAN_DB_TLS_KEY_FILE
+        },
         revert: process.env.STIGMAN_DB_REVERT === "true"
     },
     init: {

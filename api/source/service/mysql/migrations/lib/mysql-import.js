@@ -121,26 +121,17 @@ class Importer{
 	 * @param bool graceful - force close?
 	 * @returns {Promise}
 	 */
-	disconnect(graceful=true){
-		return new Promise((resolve, reject)=>{
-			if(!this._conn){
-				resolve();
-				return;
+	async disconnect(graceful=true){
+		try {
+			if (!this._conn) {
+				return
 			}
-			if(graceful){
-				this._conn.end(err=>{
-					if(err){
-						reject(err);
-						return;
-					}
-					this._conn = null;
-					resolve();
-				});
-			}else{
-				this._conn.destroy();
-				resolve();
-			}				
-		});
+			await this._conn.release()
+			this._conn = null
+		}
+		catch (e) {
+			throw (e)
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
@@ -187,22 +178,16 @@ class Importer{
 	 * Connect to the mysql server
 	 * @returns {Promise}
 	 */
-	_connect(){
-		return new Promise((resolve, reject)=>{
-			if(this._conn){
-				resolve(this._conn);
-				return;
+	async _connect(){
+		try {
+			if (this._conn) {
+				return (this._conn)
 			}
-			var connection = mysql.createConnection(this._connection_settings);
-			connection.connect(err=>{
-				if (err){
-					reject(err);	
-				}else{
-					this._conn = connection;
-					resolve();
-				}
-			});
-		});
+			this._conn = await this._pool.getConnection()
+		}
+		catch (e) {
+			throw (e)
+		}
 	}
 	
 	/**
