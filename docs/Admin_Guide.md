@@ -9,7 +9,7 @@ Collections are composed of:
   * User Grants providing access to some or all of the Assets/STIGs in that Collection
   * Reviews
 
-* **Collections can be structured as an RMF Package, but do not need to be.** It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
+* **Collections can be structured as an RMF Package, but do not need to be.** It is recommneded that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
 
 ## The Navigation Tree
 
