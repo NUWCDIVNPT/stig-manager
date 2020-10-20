@@ -3,6 +3,7 @@ const config = require('../../utils/config')
 const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
+const fs = require("fs")
 
 let _this = this
 
@@ -10,36 +11,58 @@ module.exports.version = '0.6'
 module.exports.testConnection = async function () {
   try {
     let [result] = await _this.pool.query('SHOW DATABASES')
-    console.log('MySQL preflight connection succeeded.')
     return JSON.stringify(result, null, 2)
   }
   catch (err) {
-    console.log(err.message)
+    // console.log(err.message)
     throw (err)
   }
 }
 
+function getPoolConfig() {
+  const poolConfig = {
+    connectionLimit : 10,
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.username,
+    database: config.database.schema,
+    typeCast: function (field, next) {
+      if (field.type == 'JSON') {
+        return (JSON.parse(field.string())); 
+      }
+      if ((field.type === "BIT") && (field.length === 1)) {
+        let bytes = field.buffer() || [0];
+        return( bytes[ 0 ] === 1 );
+      }
+      return next();
+    } 
+  }
+  if (config.database.password) {
+    poolConfig.password = config.database.password
+  }
+  if (config.database.tls.ca_file || config.database.tls.cert_file || config.database.tls.key_file) {
+    const sslConfig = {}
+    if (config.database.tls.ca_file) {
+      sslConfig.ca = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.ca_file))
+    }
+    if (config.database.tls.cert_file) {
+      sslConfig.cert = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.cert_file))
+    }
+    if (config.database.tls.key_file) {
+      sslConfig.key = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.key_file))
+    }
+    poolConfig.ssl = sslConfig
+  }
+  return poolConfig
+}
+
 module.exports.initializeDatabase = async function () {
   try {
+    console.log('[DB] Initializing MySQL.')
+
     // Create the connection pool
-    _this.pool = mysql.createPool({
-      connectionLimit : 10,
-      host: config.database.host,
-      port: config.database.port,
-      user: config.database.username,
-      password: config.database.password,
-      database: config.database.schema,
-      typeCast: function (field, next) {
-        if (field.type == 'JSON') {
-          return (JSON.parse(field.string())); 
-        }
-        if ((field.type === "BIT") && (field.length === 1)) {
-          let bytes = field.buffer() || [0];
-          return( bytes[ 0 ] === 1 );
-        }
-        return next();
-      } 
-    })
+    const poolConfig = getPoolConfig()
+    _this.pool = mysql.createPool(poolConfig)
     // Set common session variables
     _this.pool.on('connection', function (connection) {
       connection.query('SET SESSION group_concat_max_len=10000000')
@@ -51,7 +74,7 @@ module.exports.initializeDatabase = async function () {
       console.log('\nTerminating');
       try {
         await _this.pool.end()
-        console.log('Pool closed');
+        console.log('[DB] Pool closed');
         process.exit(0);
       } catch(err) {
         console.error(err.message);
@@ -62,12 +85,18 @@ module.exports.initializeDatabase = async function () {
     process.on('SIGINT', closePoolAndExit)
 
     // Preflight the pool every 5 seconds
+    console.log('[DB] Attempting preflight connection.')
     let result = await retry(_this.testConnection, {
       retries: 24,
       factor: 1,
       minTimeout: 5 * 1000,
-      maxTimeout: 5 * 1000
+      maxTimeout: 5 * 1000,
+      onRetry: (error) => {
+        console.log(`[DB] ${error.message}`)
+      }
     })
+    console.log('[DB] Preflight connection succeeded.')
+
     // console.log(result)
 
     // Perform migrations
@@ -81,15 +110,29 @@ module.exports.initializeDatabase = async function () {
         pool: _this.pool
       }
     })
+
+    if (config.database.revert) {
+      const migrations = await umzug.executed()
+      if (migrations.length) {
+        console.log(`[DB] MySQL schema will revert the last migration and terminate.`)
+        await umzug.down()
+      } else {
+        console.log('[DB] MySQL schema has no migrations to revert.')
+      }
+      console.log("Terminating")
+      process.exit(1)
+    }
     const migrations = await umzug.pending()
     if (migrations.length > 0) {
-      console.log(`MySQL schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}.`)
+      console.log(`[DB] MySQL schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}.`)
       await umzug.up()
-      console.log('All migrations performed successfully')
+      console.log('[DB] All migrations performed successfully')
     }
     else {
-      console.log(`MySQL schema is up to date.`)
+      console.log(`[DB] MySQL schema is up to date.`)
     }
+    return migrations.length > 0 && migrations[0].file === '0000.js'
+
   }
   catch (err) {
     throw (err)

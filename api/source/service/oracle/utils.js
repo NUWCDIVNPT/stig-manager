@@ -69,28 +69,6 @@ module.exports.initializeDatabase = function () {
       else {
         console.log(`Oracle schema is up to date.`)
       }
-      // Initialize superuser, if applicable
-      let connection
-      try {
-        connection = await oracledb.getConnection()
-        let result = await connection.execute('SELECT COUNT(userId) as users FROM user_data')
-        if (result.rows[0][0] === 0) {
-          await connection.execute(
-            'insert into user_data (username, display, deptId, accessLevel, canAdmin) VALUES (:1, :2, :3, :4, :5)',
-            [config.init.superuser, 'Superuser', 1, 3, 1],
-            {autoCommit: true}
-          )
-          console.log(`Mapped STIG Manager superuser => ${config.init.superuser}`)
-          }
-      }
-      catch (err) {
-        console.log(err)
-      }
-      finally {
-        if (typeof connection !== 'undefined') {
-          await connection.close()
-        }
-      }
       resolve(true)
     })
   })
