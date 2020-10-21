@@ -24,3 +24,9 @@ utl32k.sql
 delivery.sh
 docker/stigman-init/stigs/*
 **.pem
+api/source/tls/mysql/init-tls-user.sql
+api/source/tls/mysql/tls.cnf
+api/source/tls/mysql2/init-tls-user.sql
+api/source/tls/mysql2/tls.cnf
+clients/extjs/js/keycloak.json
+.gitignore
