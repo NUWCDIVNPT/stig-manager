@@ -21,7 +21,7 @@ module.exports.testConnection = async function () {
 
 function getPoolConfig() {
   const poolConfig = {
-    connectionLimit : 10,
+    connectionLimit : config.database.maxConnections,
     host: config.database.host,
     port: config.database.port,
     user: config.database.username,
@@ -263,6 +263,7 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
 }
 module.exports.updateStatsAssetStig = async function(connection, options) {
   try {
+    console.log(`Connection ${connection.connection.connectionId} STATS ENTER`)
     if (!connection) { throw ('Connection required')}
     // Handle optional predicates, 
     let predicates = []
@@ -290,7 +291,75 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
       whereClause = `where ${predicates.join(' and ')}`
     }
 
+    const sqlSelect = `
+      select
+        sa.assetId,
+        sa.benchmarkId,
+        min(reviews.ts) as minTs,
+        max(reviews.ts) as maxTs,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedManual,
+        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedAuto,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedManual,
+        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedAuto,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedManual,
+        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedAuto,
+        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedManual,
+        sum(CASE WHEN reviews.autoResult = 1  and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedAuto,
+        sum(CASE WHEN reviews.resultId=4 and r.severity='high' THEN 1 ELSE 0 END) as highCount,
+        sum(CASE WHEN reviews.resultId=4 and r.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
+        sum(CASE WHEN reviews.resultId=4 and r.severity='low' THEN 1 ELSE 0 END) as lowCount
+      from
+        asset a
+        left join stig_asset_map sa using (assetId)
+        left join current_group_rule cgr using (benchmarkId)
+        left join rule r using (ruleId)
+        left join stigman.review reviews on (r.ruleId=reviews.ruleId and reviews.assetId=sa.assetId)
+      ${whereClause}
+      group by
+        sa.assetId,
+        sa.benchmarkId`
+    
+    const sqlInsert = `
+      insert into stats_asset_stig (
+        minTs,
+        maxTs,
+        savedManual,
+        savedAuto,
+        submittedManual,
+        submittedAuto,
+        rejectedManual,
+        rejectedAuto,
+        acceptedManual,
+        acceptedAuto,
+        highCount,
+        mediumCount,
+        lowCount,
+        assetId,
+        benchmarkId
+      ) VALUES (:minTs,:maxTs,:savedManual,:savedAuto,:submittedManual,:submittedAuto,
+        :rejectedManual,:rejectedAuto,:acceptedManual,:acceptedAuto,:highCount,:mediumCount,:lowCount,:assetId,:benchmarkId)`
+
     const sqlUpdate = `
+      update stats_asset_stig set  
+        minTs = :minTs,
+        maxTs = :maxTs,
+        savedManual = :savedManual,
+        savedAuto = :savedAuto,
+        submittedManual = :submittedManual,
+        submittedAuto = :submittedAuto,
+        rejectedManual = :rejectedManual,
+        rejectedAuto = :rejectedAuto,
+        acceptedManual = :acceptedManual,
+        acceptedAuto = :acceptedAuto,
+        highCount = :highCount,
+        mediumCount = :mediumCount,
+        lowCount = :lowCount
+      where
+        assetId = :assetId
+        and benchmarkId = :benchmarkId
+
+    `
+    const sqlUpsert = `
     insert into stats_asset_stig (
       assetId,
       benchmarkId,
@@ -350,10 +419,18 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
         mediumCount = stats.mediumCount,
         lowCount = stats.lowCount
     `
-    const [result] = await connection.query(sqlUpdate, binds)
-    return result  
+    console.log(`Connection ${connection.connection.connectionId} STATS SELECT`)
+    const [stats] = await connection.query(sqlSelect, binds)
+    console.log(`Connection ${connection.connection.connectionId} STATS UPDATE`)
+    const [result] = await connection.query(sqlUpdate, stats[0])
+    if (result.affectedRows == 0) {
+      console.log(`Connection ${connection.connection.connectionId} STATS INSERT`)
+      await connection.query(sqlInsert, stats[0])
+    }
+    return true  
   }
   catch (err) {
+    console.log(`Connection ${connection.connection.connectionId} STATS ERROR ${err.message}`)
     throw err
   }
 }

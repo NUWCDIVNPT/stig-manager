@@ -26,6 +26,7 @@ let config = {
         schema: process.env.STIGMAN_DB_SCHEMA || "stigman",
         username: process.env.STIGMAN_DB_USER || "stigman",
         password: process.env.STIGMAN_DB_PASSWORD,
+        maxConnections: process.env.STIGMAN_DB_MAX_CONNECTIONS || 25,
         tls: {
             ca_file: process.env.STIGMAN_DB_TLS_CA_FILE,
             cert_file: process.env.STIGMAN_DB_TLS_CERT_FILE,
