@@ -1,12 +1,12 @@
 name: Publish Docker image
 on:
+  workflow_dispatch:
   push:
     branches:
       - phase-1-dev
     tags:
       - workflowTest
   release:
-  workflow_dispatch:
   
 
 
