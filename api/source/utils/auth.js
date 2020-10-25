@@ -65,7 +65,7 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
                 console.log('Will refresh lastClaims')
             }
             if (req.userObject.username && (refreshFields.lastAccess || refreshFields.lastClaims)) {
-                let userId = await User.setUserData(req.userObject.username, refreshFields)
+                let userId = await User.setUserData(req.userObject, refreshFields)
                 if (userId != req.userObject.userId) {
                     req.userObject.userId = userId.toString()
                 }

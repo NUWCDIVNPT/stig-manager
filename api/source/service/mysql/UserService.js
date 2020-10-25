@@ -319,11 +319,14 @@ exports.setLastAccess = async function (userId, timestamp) {
   }
 }
 
-exports.setUserData = async function (username, fields) {
+exports.setUserData = async function (userObject, fields) {
   try {
     let insertColumns = ['username']
-    let updateColumns = []
-    let binds = [username]
+    // Apparently the standard MySQL practice to ensure insertId is valid even on non-updating updates
+    // See: https://chrisguitarguy.com/2020/01/26/mysql-last-insert-id-on-duplicate-key-update/
+    let updateColumns = ['userId = LAST_INSERT_ID(userId)']
+    // let updateColumns = []
+    let binds = [userObject.username]
     if (fields.lastAccess) {
       insertColumns.push('lastAccess')
       updateColumns.push('lastAccess = VALUES(lastAccess)')

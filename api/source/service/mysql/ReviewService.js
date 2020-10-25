@@ -336,7 +336,8 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
       WHERE
         assetId = :assetId
         and ruleId = :ruleId
-        and reviewId IS NOT NULL     
+        and reviewId IS NOT NULL
+      FOR UPDATE
     `    
 
     let values = {
@@ -368,8 +369,6 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
 
     // History
     await connection.query(sqlHistory, binds)
-
-    await connection.query(sqlUpdate, binds)
     let [result] = await connection.query(sqlUpdate, binds)
     let status = 'updated'
     if (result.affectedRows == 0) {
@@ -385,7 +384,7 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
         (:assetId, :ruleId, :resultId, :resultComment, :actionId, :actionComment, :statusId, :userId, :autoResult)
       `
       ;[result] = await connection.query(sqlInsert, binds)
-      status = 'creared'
+      status = 'created'
     }
     await dbUtils.updateStatsAssetStig( connection, {
       assetId: assetId,
@@ -470,7 +469,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       WHERE
         assetId = ?
         and ruleId IN ?
-        and reviewId IS NOT NULL     
+        and reviewId IS NOT NULL
+      FOR UPDATE    
     `
     let mergeBinds = []
     let historyRules = []
