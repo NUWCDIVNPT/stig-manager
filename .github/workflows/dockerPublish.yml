@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - phase-1-dev
+      - workflow-test
     tags:
       - workflowTest
   release:
