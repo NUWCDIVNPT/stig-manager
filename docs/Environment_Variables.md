@@ -15,7 +15,7 @@ The environment variables consumed by the STIG Manager image are:
 |STIGMAN_CLIENT_KEYCLOAK_CLIENTID|Default: stig-manager<br>The Keycloak client-id of the web client| Client|
 |STIGMAN_CLIENT_KEYCLOAK_REALM|Default: stigman<br>The Keycloak realm with STIG Manager users |Client|
 |STIGMAN_DB_HOST|Default: localhost<br>The database hostname or IP from to the API server |API|
-|STIGMAN_DB_MAX_CONNECTIONS|Default: 100<br>The maximum size of the database connection pool |API|
+|STIGMAN_DB_MAX_CONNECTIONS|Default: 25<br>The maximum size of the database connection pool |API|
 |STIGMAN_DB_PASSWORD|No default<br>The password used to login to the database |API|
 |STIGMAN_DB_PORT|Default: 50001<br>The database TCP port relative to the API server |API|
 |STIGMAN_DB_SCHEMA|Default: stigman<br>The schema where the STIG Manager object are found |API|
