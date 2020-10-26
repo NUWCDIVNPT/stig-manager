@@ -147,6 +147,9 @@ body {
 	color:#000000;
 	word-wrap: break-word;
 }
+.sm-home-widget-text a {
+	color: #000000;
+}
 .sm-home-widget-header-1 {
 	padding-top:10px;
 	padding-left:20px;
