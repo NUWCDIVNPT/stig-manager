@@ -76,11 +76,11 @@ jobs:
           build-args: |
             COMMIT_BRANCH=${{ github.event.repository.default_branch }}
             COMMIT_SHA=${{ github.sha }}
-            COMMIT_TAG=latest
+            COMMIT_TAG=latest,${{ steps.prep.outputs.tags }}
             COMMIT_DESCRIBE=Image built on ${{ steps.prep.outputs.created }}
 #           cache-from: type=registry,ref=myorg/myrepository:latest
 #           cache-to: type=inline
-          tags: nuwcdivnpt/stig-manager-test:latest
+          tags: nuwcdivnpt/stig-manager-test:latest,${{ steps.prep.outputs.tags }}
           labels: |
             org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
             org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
