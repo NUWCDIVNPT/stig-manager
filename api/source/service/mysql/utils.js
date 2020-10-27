@@ -419,18 +419,16 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
         mediumCount = stats.mediumCount,
         lowCount = stats.lowCount
     `
-    console.log(`Connection ${connection.connection.connectionId} STATS SELECT`)
     const [stats] = await connection.query(sqlSelect, binds)
-    console.log(`Connection ${connection.connection.connectionId} STATS UPDATE`)
-    const [result] = await connection.query(sqlUpdate, stats[0])
-    if (result.affectedRows == 0) {
-      console.log(`Connection ${connection.connection.connectionId} STATS INSERT`)
-      await connection.query(sqlInsert, stats[0])
+    if (stats.length > 0) {
+      const [result] = await connection.query(sqlUpdate, stats[0])
+      if (result.affectedRows == 0) {
+        await connection.query(sqlInsert, stats[0])
+      }
     }
     return true  
   }
   catch (err) {
-    console.log(`Connection ${connection.connection.connectionId} STATS ERROR ${err.message}`)
     throw err
   }
 }
