@@ -13,7 +13,7 @@ Collections are composed of:
   
 STIG Manager can build and update Collections with your existing artifacts, such as the .ckls produced by STIG Viewer or the automated STIG assessments in XCCDF format produced by the SCC tool, as well as manually from the Collection Configuration tab.  Once a Collection is created in STIG Manager, Users can be granted access to the Reviews for each STIG on an Asset, or the whole Collection. Users can see automated tool evaluations, and Rules that still require evaluation. 
 
-[Collection Video](assets/videos/sc-3.mp4 ':include height=400px controls')
+[Collection Video](assets/videos/Collections.mp4 ':include height=400px controls')
 
 
 ### Asset
@@ -21,7 +21,7 @@ An Asset is any component to which a STIG may be attached. Assets are created an
 
 ### STIG
 
-Secure Technical Implentation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated SCAP results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
+Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated SCAP results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
 
 ### User
 Any User in STIG Manager can be granted access to a Collection by the Collection Owner or Manager.

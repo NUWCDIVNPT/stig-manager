@@ -1,6 +1,94 @@
-# STIG Manager Quickstart User Guide
+# STIG Manager Admin Guide
 
-This QuickStart User Guide will walk you through a typical use case for STIG Manager, from creating your own Collection, creating Assets in that Collection, to evaluating STIGs and creating a POAM from your findings. Depending on your role in your organization, not all of these steps may apply to you, but should be helpful in providing context for the use of this tool. If you are comfortable, feel free to skip around using the sidebar navigation to the left.
+This Admin Guide will walk you through typical responsibilities for a STIG Manager Administrator User.
+Beyond the permissions granted to normal Users, Administrators have the ability to:
+   * Update STIGs and SCAP Benchmarks in STIG Manager
+   * Administer Collections to which they have not been specifically granted access
+   * Administer User Grants
+   * Export and Import Application Data (Experimental feature for now.)
+
+Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, User, Collection Creator, Global Access). Creating users and assigning Roles can only be done from the Keycloak Realm Management interface, and you must have the proper permissions in Keycloak to do this.
+
+
+## Administrator Menu
+Administrators in STIG Manager have access to 4 additional Administration tabs that other users do not.
+### Collections Tab
+This tab presents a list of all Collections in STIG Manager, as well as some statistics about the Collection.  It also includes buttons to create, delete, and alter Collection properties and grants. 
+
+In most cases, Collection Owners should be administering their own Collections. However, in cases where the Owner is unavailable, or has accidentally removed all owners from a Collection, this interface allows an Admin to assign new Owner Grants to Collections by double-clicking the Collection or using the "Collection Properties" button. The Admin can also delete Collections if required.
+
+[<img src="assets/images/CollectionAdmin.png" alt="drawing" width="600"/>](assets/images/CollectionAdmin.png ':ignore :target=_self')
+
+
+### User Grants
+This tab presents a lit of all users known to STIG Manager, as well as some statistics about them. 
+It also includes buttons to pre-register User, unregister User, and modify User Grants. 
+#### Pre-registering Users
+The pre-register function does not grant access to STIG Manager. User *access* is solely managed via Keycloak. The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via Keycloak at some later date. In that case, the Username entered when preregistering must match the username received from Keycloak when they finally log in. 
+#### Unregistering Users
+Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in Keycloak.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role, they may still be able to create a collection. 
+#### Modifying Users
+The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is managed in Keycloak.
+
+[<img src="assets/images/UserAdmin.png" alt="drawing" width="600"/>](assets/images/UserAdmin.png ':ignore :target=_self')
+
+
+
+### STIG and SCAP Benchmarks
+This tab shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their rule count and revision date. This interface also allows you to import new STIGs. This can be done individually, or as a .zip file of multiple STIGs (such as the [quarterly STIG Library Compilations from DISA](cyber.mil/stigs/compilations/)).
+
+[<img src="assets/images/StigAdmin.png" alt="drawing" width="600"/>](assets/images/StigAdmin.png ':ignore :target=_self')
+
+STIG Manager uses one set of STIG and SCAP benchmarks. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. However, when viewing an individual Assets older revisions of STIGs, if present, can be selected.
+
+
+
+
+
+
+### Application Data
+
+
+
+[<img src="assets/images/AppDataAdmin.png" alt="drawing" width="600"/>](assets/images/AppDataAdmin.png ':ignore :target=_self')
+
+
+
+## Administrating User Roles
+Requires permissions in Keycloak, not STIG Manager.
+Admins in Keycloak are not necessarily admins in STIG Manager, though they can make themselves one.
+keycloak
+
+## Administrating User Grants
+
+
+## Importing new STIGs
+
+## Purging History (Not yet Implemented)
+
+## Application Data Export/Import (Experimental feature)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 STIG Manager's primary organizational structure is the Collection. 
 Collections are composed of:
@@ -9,7 +97,7 @@ Collections are composed of:
   * User Grants providing access to some or all of the Assets/STIGs in that Collection
   * Reviews
 
-**Collections can be structured as an RMF Package, but do not need to be.** It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
+* **Collections can be structured as an RMF Package, but do not need to be.** It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
 
 ## The Navigation Tree
 
@@ -73,12 +161,12 @@ By default, most users will have the Collection Creator role, allowing them to c
        * The **STIG Checklist panel** on the left lists every rule in the STIG, their evaluation status, and some other helpful info. Click a Rule to load that Rules information, and start a Review of it. The green highlighting indicates there is an automated check (SCAP) for that rule known to STIG Manager. It does NOT indicate that results for that rule have necessarily been imported. 
        * The **Rule Content panel** in the center contains the selected Rule's info such as the Rule Title, Manual Checks, Fix info, and associated CCIs.
        * The **Review Resources panel** in the top right contains other Reviews you have performed for the selected Rule against other assets, a history of this Review's status, and any Feedback you have received about this Review from the Collection Owner. Reviews from "Other Assets" can be dragged and dropped onto the current assets Review.
-       * The **Review panel** in the lower right is where you will actually log your Evaluation of the Rule.  It contains two sections, the Evaluation section and the Recommendation section. The Recommendation section is only active if the Evaluation Result is "Open."
+       * The **Review panel** in the lower right is where you will actually log your Evaluation of the Rule.  It contaions two sections, the Evaluation section and the Recommendation section. The Recommendation section is only active if the Evaluation Result is "Open."
 
  [<img src="assets/images/EvaluationPanel.png" alt="drawing" width="600"/>](assets/images/EvaluationPanel.png ':ignore :target=_self')
 
 
-  4. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Recommendation Action and Comment.  You will notice that you have the option to "Save without submitting" or "Save and Submit" the Evaluations. The "Submitted" status is part of the RMF Package Workflow that you can assign your Collection, and requires certain conditions to be met. The RMF Package Workflow adds additional steps that allow a Collection Owner to Accept or Reject an Evaluators reviews. Once a review is Accepted, it is locked from additional manual changes. 
+  4. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Reccomendation Action and Comment.  You will notice that you have the option to "Save without submitting" or "Save and Submit" the Evaluations. The "Submitted" status is part of the RMF Package Workflow that you can assign your Collection, and requires certain conditions to be met. The RMF Package Workflow adds additional steps that allow a Collection Owner to Accept or Reject an Evaluators reviews. Once a review is Accepted, it is locked from additional manual changes. 
      * As you perform reviews, the STIG Checklist panel will update the status columns of each Rule. The bar at the bottom of this panel indicates overall status of the checklist. The toolbar at the top provides options for filtering the current view of the checklist, and the "Checklist" menu provides various functions, including importing results (in .ckl or XCCDF formats) and exporting results in the .ckl format.
      * These evaluations are summarized and reported in the Reports node of the Nav Tree. Findings present just the Open rule evaluations, and can be exported as a spreadsheet or a pseudo-POAM format. Status presents an overall summary of evaluations, showing completion statuses and other info. 
 

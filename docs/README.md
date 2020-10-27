@@ -8,9 +8,11 @@ Our Project incorporates software developed since 2012 by the [U.S. Naval Unders
 
 ## STIG Manager supports STIG Assessments in Steps 3 and 4 of the RMF Process
 
-Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it's progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for directiona on what STIGs they should scan.
+Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it's progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.
 
 STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.  
+
+[Introduction Video](assets/videos/STIG_Manager_Introduction.mp4 ':include height=400px controls')
 
 
 ### Collections, Assets, STIGs, and Reviews
@@ -27,11 +29,15 @@ Migrating to STIG Manager is easy because it can use your existing artifacts to 
 
 Once the .ckls are imported, trash them! STIG Manager will create new .ckls for you on demand with the most current results.
 
-[Collection Video](assets/videos/sc-3.mp4 ':include height=400px controls')
+[Collection Video](assets/videos/Collections.mp4 ':include height=400px controls')
 
 
 ### Workspaces
 The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection. 
+
+[STIG Manager Workspaces Video](assets/videos/STIG_Manager_Workspace_Walkthrough.mp4 ':include height=400px controls')
+
+
 
 ### Workflow
 STIG Manager supports an "RMF Package Workflow" that allows designated Collection Owners to "Return" Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also "Accept" a Review, locking it from further revision by evaluators while they prepare their POA&M. 
