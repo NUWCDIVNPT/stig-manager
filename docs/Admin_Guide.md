@@ -7,6 +7,7 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
    * Administer User Grants
    * Export and Import Application Data (Experimental feature for now.)
 
+#### A note on administering Users
 Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, User, Collection Creator, Global Access). Creating users and assigning Roles can only be done from the Keycloak Realm Management interface, and you must have the proper permissions in Keycloak to do this.
 
 
@@ -23,6 +24,7 @@ In most cases, Collection Owners should be administering their own Collections. 
 ### User Grants
 This tab presents a lit of all users known to STIG Manager, as well as some statistics about them. 
 It also includes buttons to pre-register User, unregister User, and modify User Grants. 
+
 #### Pre-registering Users
 The pre-register function does not grant access to STIG Manager. User *access* is solely managed via Keycloak. The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via Keycloak at some later date. In that case, the Username entered when preregistering must match the username received from Keycloak when they finally log in. 
 #### Unregistering Users
@@ -39,34 +41,14 @@ This tab shows you a list of STIGs known to this instance of STIG Manager along 
 
 [<img src="assets/images/StigAdmin.png" alt="drawing" width="600"/>](assets/images/StigAdmin.png ':ignore :target=_self')
 
-STIG Manager uses one set of STIG and SCAP benchmarks. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. However, when viewing an individual Assets older revisions of STIGs, if present, can be selected.
-
-
+STIG Manager uses one set of STIG and SCAP benchmarks. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. However, when viewing an individual Asset older revisions of STIGs, if present, can be selected.
 
 
 
 
 ### Application Data
+This Tab has buttons that allow you to Import and Export all User and Collection data from STIG Manager. These options are considered experimental and should not be relied upon to move or preserve Production data or other data you cannot afford to lose. On import, the imported data completely replaces all STIG Manager data currently on the system. Compatibility with future versions of STIG Manager is not guaranteed. They are currently used only for Development purposes. All that said, we are considering developing a method for handling the importation of STIG Manager "Collection" objects and it's associated Assets, STIGs, Reviews, History, and Users.
 
-
-
-[<img src="assets/images/AppDataAdmin.png" alt="drawing" width="600"/>](assets/images/AppDataAdmin.png ':ignore :target=_self')
-
-
-
-## Administrating User Roles
-Requires permissions in Keycloak, not STIG Manager.
-Admins in Keycloak are not necessarily admins in STIG Manager, though they can make themselves one.
-keycloak
-
-## Administrating User Grants
-
-
-## Importing new STIGs
-
-## Purging History (Not yet Implemented)
-
-## Application Data Export/Import (Experimental feature)
 
 
 
