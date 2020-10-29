@@ -459,6 +459,9 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                             mc.keys[x] = record.id
                         }
                     }
+                    if (me.showAccessBtn) {
+                        me.accessBtn.setDisabled(record.data.accessLevel != 1)
+                    }
                     editor.grid.fireEvent('grantschanged', editor.grid)
                 }
 
