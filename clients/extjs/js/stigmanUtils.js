@@ -1746,7 +1746,7 @@ function uploadStigs(n) {
 	});
 
 	var appwindow = new Ext.Window({
-		title: 'Import ZIP archive of results in CKL or XCCDF format',
+		title: 'Import STIG ZIP archive or XCCDF file',
 		modal: true,
 		width: 500,
 		//height:140,
