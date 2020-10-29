@@ -27,7 +27,7 @@ Collections are composed of:
   
 Migrating to STIG Manager is easy because it can use your existing artifacts to build and update Collections. Assets, STIGs, and Reviews can be populated with the .ckls produced by STIG Viewer or the automated STIG assessments in XCCDF format produced by the SCC tool, as well as manually from the Collection Configuration tab.  Once a Collection is created in STIG Manager, Users can be granted access to see the current results for each STIG on an Asset, or the whole Collection. Users can see automated tool evaluations, and Rules that still require evaluation.
 
-Once the .ckls are imported, trash them! STIG Manager will create new .ckls for you on demand with the most current results.
+STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an asset, and will create new .ckls for you on demand with the most current results.
 
 [Collection Video](assets/videos/Collections.mp4 ':include height=400px controls')
 
@@ -66,7 +66,7 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
 [A quick walkthrough to familiarize Users with STIG Manager and help them get started evaluating STIGs.](Quickstart_Guide.md)
 
 ### Admins
-A quick walkthrough aimed at Administrators of STIG Manager.
+[A quick walkthrough aimed at Administrators of STIG Manager.](Admin_Guide.md)
 
 ### Operations
 STIG Manager is available on GitHub and as a [Docker image](Docker.md).
@@ -76,9 +76,7 @@ An explanation of the [Terms and concepts](terminology.md) used in STIG Manager.
 
 ### Contribution Guide
 
-Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
-- How you can get involved in the project and contribute
-- How to set up a development environment to work with the project's code 
+To get involved witht he project, please read our [CONTRIBUTING](https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md) document.
 
 
 ## STIG Manager is an active, Open Source project

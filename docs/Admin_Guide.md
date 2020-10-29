@@ -1,6 +1,6 @@
 # STIG Manager Admin Guide
 
-This Admin Guide will walk you through typical responsibilities for a STIG Manager Administrator User.
+This Admin Guide will walk you through typical responsibilities for a STIG Manager User with the Administrator role.
 Beyond the permissions granted to normal Users, Administrators have the ability to:
    * Update STIGs and SCAP Benchmarks in STIG Manager
    * Administer Collections to which they have not been specifically granted access
@@ -26,11 +26,11 @@ This tab presents a lit of all users known to STIG Manager, as well as some stat
 It also includes buttons to pre-register User, unregister User, and modify User Grants. 
 
 #### Pre-registering Users
-The pre-register function does not grant access to STIG Manager. User *access* is solely managed via Keycloak. The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via Keycloak at some later date. In that case, the Username entered when preregistering must match the username received from Keycloak when they finally log in. 
+The pre-register function does not grant access to STIG Manager. User *access* is solely managed via Keycloak. The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via Keycloak at some later date. In that case, the Username entered when preregistering must match the username received from Keycloak when they finally log in.  A pre-registered user will have _No value_ in the Last Access column of this screen until they actually access STIG Manager. 
 #### Unregistering Users
-Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in Keycloak.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role, they may still be able to create a collection. 
+Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in Keycloak.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role in Keycloak, they may still be able to create a collection or even Administer STIG Manager. 
 #### Modifying Users
-The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is managed in Keycloak.
+The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is derived from information in the access token, which is managed in Keycloak.
 
 [<img src="assets/images/UserAdmin.png" alt="drawing" width="600"/>](assets/images/UserAdmin.png ':ignore :target=_self')
 
