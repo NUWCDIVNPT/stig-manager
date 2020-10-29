@@ -10,7 +10,7 @@ Our goals for Phase 1 of the Project are:
 - Provide runtime selection of the data backend with initial support for MySQL
 - Establish a deployment/initialization process suitable for production use
 
-Once this milestone is reached, we will tag the code in the `master` branch as version 3.0.0. We will then begin Phase 2, whose roadmap will be documented as we get closer.
+Once this milestone is reached, we will tag the code in the `master` branch as version 1.0.0. We will then begin Phase 2, whose roadmap will be documented as we get closer.
 
 ## Details
 
