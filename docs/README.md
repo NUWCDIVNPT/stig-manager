@@ -76,7 +76,7 @@ An explanation of the [Terms and concepts](terminology.md) used in STIG Manager.
 
 ### Contribution Guide
 
-To get involved witht he project, please read our [CONTRIBUTING](https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md) document.
+To get involved with the project, please read our [CONTRIBUTING](https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md) document.
 
 
 ## STIG Manager is an active, Open Source project
@@ -94,7 +94,7 @@ STIG Manager is a modern, containerized application built to take full advantage
 
 ### Status
 
-This repository is receiving several commits a week as we work [Phase 1 of the Project](roadmap.md). During Phase 1, the `main` branch will contain buildable, development-quaity code. Daily commits are being made to the `phase-1-dev` branch and some of these commits may include unbuildable code.
+This repository is receiving several commits a week as we work [Phase 1 of the Project](roadmap.md). During Phase 1, the `main` branch will contain buildable, development-quality code. Daily commits are being made to the `phase-1-dev` branch and some of these commits may include unbuildable code.
 
 ## Roadmap
 
