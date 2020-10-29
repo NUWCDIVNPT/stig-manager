@@ -122,6 +122,7 @@ function addAppDataAdmin() {
               // appwindow.close();
               initProgress("Importing file", "Waiting for response...");
               updateStatusText ('Waiting for API response...')
+							await window.keycloak.updateToken(10)
               let response = await fetch(`${STIGMAN.Env.apiBase}/op/appdata?elevate=true`, {
                 method: 'POST',
                 headers: new Headers({

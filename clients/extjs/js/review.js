@@ -204,11 +204,12 @@ async function addReview(leaf, selectedRule, selectedResource) {
           }
         },
         getCkl: function (leaf) {
-          return new Promise((resolve, reject) => {
+          return new Promise( async (resolve, reject) => {
             var xhr = new XMLHttpRequest()
             var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
             xhr.open('GET', url)
             xhr.responseType = 'blob'
+            await window.keycloak.updateToken(10)
             xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
             xhr.onload = function () {
               if (this.status >= 200 && this.status < 300) {
@@ -2245,6 +2246,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
               appwindow.close();
               initProgress("Importing file", "Initializing...", 'groupStore' + idAppend);
 
+							await window.keycloak.updateToken(10)
               let response = await fetch(`${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}`, {
                 method: 'POST',
                 headers: new Headers({
