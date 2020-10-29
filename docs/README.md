@@ -8,9 +8,11 @@ Our Project incorporates software developed since 2012 by the [U.S. Naval Unders
 
 ## STIG Manager supports STIG Assessments in Steps 3 and 4 of the RMF Process
 
-Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it's progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for directiona on what STIGs they should scan.
+Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it's progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.
 
 STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.  
+
+[Introduction Video](assets/videos/STIG_Manager_Introduction.mp4 ':include height=400px controls')
 
 
 ### Collections, Assets, STIGs, and Reviews
@@ -25,13 +27,17 @@ Collections are composed of:
   
 Migrating to STIG Manager is easy because it can use your existing artifacts to build and update Collections. Assets, STIGs, and Reviews can be populated with the .ckls produced by STIG Viewer or the automated STIG assessments in XCCDF format produced by the SCC tool, as well as manually from the Collection Configuration tab.  Once a Collection is created in STIG Manager, Users can be granted access to see the current results for each STIG on an Asset, or the whole Collection. Users can see automated tool evaluations, and Rules that still require evaluation.
 
-Once the .ckls are imported, trash them! STIG Manager will create new .ckls for you on demand with the most current results.
+STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an asset, and will create new .ckls for you on demand with the most current results.
 
-[Collection Video](assets/videos/sc-3.mp4 ':include height=400px controls')
+[Collection Video](assets/videos/Collections.mp4 ':include height=400px controls')
 
 
 ### Workspaces
 The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection. 
+
+[STIG Manager Workspaces Video](assets/videos/STIG_Manager_Workspace_Walkthrough.mp4 ':include height=400px controls')
+
+
 
 ### Workflow
 STIG Manager supports an "RMF Package Workflow" that allows designated Collection Owners to "Return" Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also "Accept" a Review, locking it from further revision by evaluators while they prepare their POA&M. 
@@ -60,7 +66,7 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
 [A quick walkthrough to familiarize Users with STIG Manager and help them get started evaluating STIGs.](Quickstart_Guide.md)
 
 ### Admins
-A quick walkthrough aimed at Administrators of STIG Manager.
+[A quick walkthrough aimed at Administrators of STIG Manager.](Admin_Guide.md)
 
 ### Operations
 STIG Manager is available on GitHub and as a [Docker image](Docker.md).
@@ -70,9 +76,7 @@ An explanation of the [Terms and concepts](terminology.md) used in STIG Manager.
 
 ### Contribution Guide
 
-Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
-- How you can get involved in the project and contribute
-- How to set up a development environment to work with the project's code 
+To get involved with the project, please read our [CONTRIBUTING](https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md) document.
 
 
 ## STIG Manager is an active, Open Source project
@@ -90,7 +94,7 @@ STIG Manager is a modern, containerized application built to take full advantage
 
 ### Status
 
-This repository is receiving several commits a week as we work [Phase 1 of the Project](roadmap.md). During Phase 1, the `main` branch will contain buildable, development-quaity code. Daily commits are being made to the `phase-1-dev` branch and some of these commits may include unbuildable code.
+This repository is receiving several commits a week as we work [Phase 1 of the Project](roadmap.md). During Phase 1, the `main` branch will contain buildable, development-quality code. Daily commits are being made to the `phase-1-dev` branch and some of these commits may include unbuildable code.
 
 ## Roadmap
 

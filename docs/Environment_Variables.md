@@ -22,14 +22,14 @@ The environment variables consumed by the STIG Manager image are:
 |STIGMAN_DB_PORT|Default: 50001<br>The database TCP port relative to the API server |API|
 |STIGMAN_DB_SCHEMA|Default: stigman<br>The schema where the STIG Manager object are found |API|
 |STIGMAN_DB_TLS_CA_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database. | API|
-|STIGMAN_DB_TLS_CERT_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionaly requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_KEY_FILE. | API|
-|STIGMAN_DB_TLS_KEY_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionaly requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_CERT_FILE. | API|
+|STIGMAN_DB_TLS_CERT_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_KEY_FILE. | API|
+|STIGMAN_DB_TLS_KEY_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionally requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_CERT_FILE. | API|
 |STIGMAN_DB_TYPE|Default: mysql<br>The database type. Valid values are [mysql] | API|
-|STIGMAN_DB_USER|Default: stigman<br>The user account used to login to the datanase |API|
+|STIGMAN_DB_USER|Default: stigman<br>The user account used to login to the database |API|
 |STIGMAN_INIT_IMPORT_STIGS|Default: false<br>Whether to fetch and import the current DISA STIG Library compilation from public.cyber.mil on initial database migration |API|
 |STIGMAN_INIT_IMPORT_SCAP|Default: false<br>Whether to fetch and import current DISA SCAP content from public.cyber.mil on initial database migration  |API|
 |STIGMAN_JWT_EMAIL_CLAIM|Default: email<br>The access token claim whose value is the user's email address| API, Client|
-|STIGMAN_JWT_NAME_CLAIM|Default: name<br>The access token claim whose value is the user's fullname| API, Client|
+|STIGMAN_JWT_NAME_CLAIM|Default: name<br>The access token claim whose value is the user's full name| API, Client|
 |STIGMAN_JWT_ROLES_CLAIM|Default: realm_access?.roles<br>The access token claim whose value is the user's roles| API, Client|
 |STIGMAN_JWT_SERVICENAME_CLAIM|Default: clientId<br>The access token claim whose value is the user's username| API, Client|
 |STIGMAN_JWT_USERNAME_CLAIM|Default: preferred_username<br>The access token claim whose value is the user's username| API, Client|
