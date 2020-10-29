@@ -5,8 +5,10 @@ The environment variables consumed by the STIG Manager image are:
 | Variable | Description | Affects |
 | --- | --- | --- |
 |STIGMAN_API_ADDRESS|Default: 0.0.0.0<br>The IP address on which the the server will listen |API|
-|STIGMAN_API_PORT|Default: 54000<br>The TCP port on which the server will listen |API|
 |STIGMAN_API_AUTHORITY|Default: http://localhost:8080/auth/realms/stigman<br>The URL of the OIDC authority providing signed JWTs to the API server. The API will append `/.well-known/openid-configuration` to this URL| API|
+|STIGMAN_API_MAX_JSON_BODY|Default: 5242880<br>The maximum size in bytes of the request body when Content-Type is application/json| API|
+|STIGMAN_API_MAX_UPLOAD|Default: 1073741824<br>The maximum size in bytes of the file uploaded with Content-Type multipart/form-data| API|
+|STIGMAN_API_PORT|Default: 54000<br>The TCP port on which the server will listen |API|
 |STIGMAN_CLASSIFICATION|Default: U<br>Available values: NONE, U, FOUO, C, S, TS, SCI<br>Sets the classification banner, if any. | API, Client|
 |STIGMAN_CLIENT_API_BASE|Default: /api<br>The base URL for Client requests to the API relative to the sever root at / | Client|
 |STIGMAN_CLIENT_DIRECTORY|Default: ./clients<br>The location of the web client files, relative to the API source directory | API, Client|

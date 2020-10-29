@@ -12,7 +12,6 @@ const swaggerUi = require('swagger-ui-express')
 const jsyaml = require('js-yaml');
 const fs = require('fs')
 const multer  = require('multer')
-const upload = multer({ dest: path.join(__dirname, './uploads/') })
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
 const compression = require('compression')
@@ -22,8 +21,16 @@ console.log(`Starting STIG Manager ${config.version}`)
 
 // Express config
 const app = express();
+const upload = multer({ 
+  dest: path.join(__dirname, './uploads/'),
+  limits: {
+    fileSize: parseInt(config.http.maxUpload)
+  }
+ })
 app.use(upload.single('importFile'))
-app.use(express.json()) //Handle JSON request body
+app.use(express.json({
+  limit: parseInt(config.http.maxJsonBody)
+})) //Handle JSON request body
 app.use(cors())
 morgan.token('token-user', (req, res) => {
   if (req.access_token) {
