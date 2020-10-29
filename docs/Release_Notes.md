@@ -10,3 +10,11 @@ Numerous enhancements and bug fixes, including token handling and better concurr
 
 ### 1.0.0-beta.2
 Fixed GitHub Issue #27. STIG checklist imports were critically affected by a regression introduced with beta.1
+
+### 1.0.0-beta.3
+Fixes:
+- UI: Collection->Reports->Findings workspace failed to open
+- API: Issue #29 max json body and upload envvars
+- UI: Closing message box was confirming action
+- UI: Import STIG message box mistitled
+- UI: Call updateToken() before direct fetch/xhr

@@ -1,5 +1,5 @@
 let config = {
-    version: '1.0.0-beta.2',
+    version: '1.0.0-beta.3',
     commit: {
         branch: process.env.COMMIT_BRANCH || 'na',
         sha: process.env.COMMIT_SHA || 'na',
