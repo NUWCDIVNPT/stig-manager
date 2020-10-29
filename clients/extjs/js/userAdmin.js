@@ -192,10 +192,10 @@ function addUserAdmin() {
 						title: 'Confirm unregister action',
 						icon: Ext.Msg.WARNING,
 						msg: confirmStr,
-						buttons: {yes: 'Cancel', no: 'Unregister'},
+						buttons: {yes: 'Unregister', no: 'Cancel'},
 						fn: async function (btn,text) {
 							try {
-								if (btn == 'no') {
+								if (btn == 'yes') {
 									let result = await Ext.Ajax.requestPromise({
 										url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
 										method: 'DELETE'

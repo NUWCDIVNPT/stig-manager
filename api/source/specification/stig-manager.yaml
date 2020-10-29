@@ -7,7 +7,7 @@ info:
   contact:
     name: Carl Smigielski
     email: carl.a.smigielski@saic.com
-  version: 1.0.0-beta.2
+  version: 1.0.0-beta.3
 servers:
   - url: 'http://localhost:54000/api'
 paths:

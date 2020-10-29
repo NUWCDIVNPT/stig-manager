@@ -1,5 +1,5 @@
 let config = {
-    version: '1.0.0-beta.2',
+    version: '1.0.0-beta.3',
     commit: {
         branch: process.env.COMMIT_BRANCH || 'na',
         sha: process.env.COMMIT_SHA || 'na',
@@ -16,7 +16,9 @@ let config = {
     },
     http: {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
-        port: process.env.STIGMAN_API_PORT || 54000
+        port: process.env.STIGMAN_API_PORT || 54000,
+        maxJsonBody: process.env.STIGMAN_API_MAX_JSON_BODY || "5242880",
+        maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824"
     },
     database: {
         type: process.env.STIGMAN_DB_TYPE || "mysql",
