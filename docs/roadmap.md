@@ -2,23 +2,12 @@
 
 
 ## Phase 1
-    Completed 2020-09-30
-
-## Phase 2
-
-
-
-
-
-
-
-## Summary
 
 Our goals for Phase 1 of the Project are:
 
 - Define a new REST API as an OpenAPI 3.0 specification implemented in Node.js
 - Refactor the current UI so all API calls are made to the new API
-- Provide runtime selection of the data backend with initial support for Oracle and MySQL
+- Provide runtime selection of the data backend with initial support for MySQL
 - Establish a deployment/initialization process suitable for production use
 
 Once this milestone is reached, we will tag the code in the `master` branch as version 3.0.0. We will then begin Phase 2, whose roadmap will be documented as we get closer.
@@ -37,7 +26,7 @@ As features become available in the new API, the UI will be refactored to call t
 
 ### Runtime selection of the data backend
 
-The Project intends to support runtime selection of the data storage backend. During Phase 1 we will provide support for Oracle and MySQL. During Phase 2, contributors will add support for additional data storage technologies by creating product specific Service files.
+The Project intends to support runtime selection of the data storage backend. During Phase 1 we will provide support for MySQL. During Phase 2, contributors will add support for additional data storage technologies by creating product specific Service files.
 
 ### Establish a deployment/initialization process
 
