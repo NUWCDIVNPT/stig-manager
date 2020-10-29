@@ -390,7 +390,7 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             },
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
-                if (me.grid.editor.editing == false) {
+                if (me.grid && me.grid.editor && me.grid.editor.editing == false) {
                     return true
                 }
                 if (v === "") { return "Blank values no allowed" }
