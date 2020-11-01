@@ -78,19 +78,9 @@ Ext.override(Ext.form.BasicForm, {
 Ext.override(Ext.Ajax, {
     requestPromise : function (options) {
         return new Promise ( (resolve, reject) => {
+
             this.request({
-                url: options.url,
-                params: options.params,
-                method: options.method,
-                callback: options.callback,
-                scope: options.scope,
-                timeout: options.timeout,
-                form: options.form,
-                isUpload: options.isUpload,
-                headers: options.headers,
-                xmlData: options.xmlData,
-                jsonData: options.jsonData,
-                disableCaching: options.disableCaching,        
+                ...options,        
                 success: function (response, options) {
                     resolve ({
                         response: response,
