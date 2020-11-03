@@ -118,10 +118,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					} else {
 						ourGrid.getSelectionModel().selectFirstRow();
 					}
-					// Filter the store based on current filterState
-					if (ourGrid.filterState != 'All') {
-						store.filter('checkType',ourGrid.filterState);
-					}
+					// Filter the store
+					filterGroupStore()
 					
 					Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
 				},
@@ -161,7 +159,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 							{
 								id: 'groupFileMenu-title-groupItem' + idAppend,
 								text: 'Group ID and title',
-								checked: true,
+								checked: false,
 								group: 'titleType' + idAppend,
 								handler: function(item,eventObject){
 									var cm = groupGrid.getColumnModel();
@@ -184,7 +182,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 							},{
 								id: 'groupFileMenu-title-ruleItem' + idAppend,
 								text: 'Rule ID and title',
-								checked: false,
+								checked: true,
 								group: 'titleType' + idAppend,
 								handler: function(item,eventObject){
 									var cm = groupGrid.getColumnModel();
@@ -299,8 +297,8 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					checked: true,
 					group: 'checkType' + idAppend,
 					handler: function(item,eventObject){
-						groupStore.clearFilter();
 						groupGrid.filterState = 'All',
+						filterGroupStore();
 						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('All checks');
 					}
 				},'-',{ 
@@ -309,7 +307,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					group: 'checkType' + idAppend,
 					handler: function(item,eventObject){
 						groupGrid.filterState = 'Manual',
-						groupStore.filter('autoCheckAvailable',false);
+						filterGroupStore();
 						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Manual checks');
 					}
 				},{
@@ -318,7 +316,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					group: 'checkType' + idAppend,
 					handler: function(item,eventObject){
 						groupGrid.filterState = 'SCAP',
-						groupStore.filter('autoCheckAvailable',true);
+						filterGroupStore();
 						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('SCAP checks');
 					}
 				}
@@ -330,22 +328,16 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		// Group grid statistics string
 		/******************************************************/
 		var getStatsString = function (store) {
-			let assetCount = function () {
-				let record = store.getAt(0)
-				if (record) {
-					return record.data.naCnt + record.data.nfCnt + record.data.nrCnt + record.data.oCnt
-				}
-				return 0
-			}
+			let assetCount = apiAssets.length
 			var totalChecks = store.getCount();
 			var checksManual = 0;
 			var checksSCAP = 0;
 			store.data.each(function(item, index, totalItems ) {
-				switch (item.data.checkType) {
-					case 'Manual':
+				switch (item.data.autoCheckAvailable) {
+					case false:
 						checksManual++;
 						break;
-					case 'SCAP':
+					case true:
 						checksSCAP++;
 						break;
 				}
@@ -359,7 +351,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				assetWord = ' asset';
 			}
 			
-			return assetCount() + assetWord + ' assigned ' + totalChecks + totalWord + ' (' + checksManual + ' Manual, ' + checksSCAP + ' SCAP)';
+			return assetCount + assetWord + ' assigned ' + totalChecks + totalWord + ' (' + checksManual + ' Manual, ' + checksSCAP + ' SCAP)';
 		};
 
 		/******************************************************/
@@ -437,6 +429,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					width: 95,
 					dataIndex: 'groupId',
 					sortable: true,
+					hidden: true,
 					hideable: false,
 					align: 'left'
 				},
@@ -445,7 +438,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					header: "Rule Id",
 					width: 95,
 					dataIndex: 'ruleId',
-					hidden: true,
 					sortable: true,
 					hideable: false,
 					align: 'left'
@@ -457,6 +449,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					hidden: false,
 					dataIndex: 'groupTitle',
 					renderer: columnWrap,
+					hidden: true,
 					hideable: false,
 					sortable: true
 				},
@@ -464,7 +457,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					id:'ruleTitle' + idAppend,
 					header: "Rule Title",
 					width: 80,
-					hidden: true,
 					dataIndex: 'ruleTitle',
 					renderer: columnWrap,
 					hideable: false,
@@ -544,7 +536,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					sortable: true
 				}
 			],
-			autoExpandColumn:'groupTitle' + idAppend,
+			autoExpandColumn:'ruleTitle' + idAppend,
 			//width: '33%',
 			height: '50%',
 			loadMask: true,
@@ -683,21 +675,11 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		function filterGroupStore () {
 			var filterArray = [];
 			// Filter menu
-			switch (groupGrid.filterType) {
-				case 'Manual':
-				case 'SCAP':
-					filterArray.push({
-						property: 'checkType',
-						value: groupGrid.filterType
-					});
-					break;
-				case 'Incomplete':
-					filterArray.push({
-						fn: function(record) {
-							return record.get('done') == 0;
-						}
-					});
-					break;
+			if (groupGrid.filterState === 'SCAP' || groupGrid.filterState === 'Manual') {
+				filterArray.push({
+					property: 'autoCheckAvailable',
+					value: groupGrid.filterState === 'SCAP'
+				});
 			}
 			// Title textfield
 			var titleValue = Ext.getCmp('groupGrid-filterTitle' + idAppend).getValue();
@@ -1491,12 +1473,18 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 	/******************************************************/
 
 	let contentTpl = new Ext.XTemplate(
-		'<div class=cs-home-header-top>{ruleId}</div>',
-		'<div class=cs-home-header-sub>{title} (Category {severity})</div>',
+		'<div class=cs-home-header-top>{ruleId}',
+		  '<span class="sm-content-sprite sm-severity-{severity}">',
+			`<tpl if="severity == 'high'">CAT 1</tpl>`,
+			`<tpl if="severity == 'medium'">CAT 2</tpl>`,
+			`<tpl if="severity == 'low'">CAT 3</tpl>`, 
+		  '</span>',
+		'</div>',
+		'<div class=cs-home-header-sub>{title}</div>',
 		'<div class=cs-home-body-title>Manual Check',
 		'<div class=cs-home-body-text>',
 		'<tpl for="checks">',
-		'<pre>{[values.content.trim()]}</pre>',
+		  '<pre>{[values.content.trim()]}</pre>',
 		'</tpl>',
 		'</div>',
 		'</div>',
@@ -1513,16 +1501,24 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		'<pre>{[values.vulnDiscussion.trim()]}</pre>',
 		'</div>',
 		'<div class=cs-home-body-text><b>Documentable: </b>{documentable}</div>',
-		'<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
-		'<div class=cs-home-body-text><b>Controls: </b><br>',
-		'<table class=cs-home-body-table border="1">',
-		'<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
-		'<tpl for="ccis">',
-		'<tr><td>{cci}</td><td>{ap}</td><td>{control}</td></tr>',
+		`<tpl if="typeof(responsibility) != 'undefined'">`,
+		  '<div class=cs-home-body-text><b>Responsibility: </b>{responsibility}</div>',
 		'</tpl>',
-		'</table>',
-		'</div>',
-		'</div>')
+		'<tpl if="values.ccis.length === 0">',
+		  '<div class=cs-home-body-text><b>Controls: </b>No mapped controls</div>',
+		'</tpl>',
+		'<tpl if="values.ccis.length !== 0">',
+		  '<div class=cs-home-body-text><b>Controls: </b><br>',
+		  '<table class=cs-home-body-table border="1">',
+		  '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
+		  '<tpl for="ccis">',
+		  '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
+		  '</tpl>',
+		  '</table>',
+		  '</div>',
+		'</tpl>',
+		'</div>'
+	  )
 
 	/******************************************************/
 	// START Resources Panel
