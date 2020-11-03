@@ -66,6 +66,7 @@ let options = {
 //let spec = fs.readFileSync(path.join(__dirname,'api/openapi.yaml'), 'utf8')
 let spec = fs.readFileSync(path.join(__dirname,'./specification/stig-manager.yaml'), 'utf8')
 let oasDoc = jsyaml.safeLoad(spec)
+oasDoc.info.version = config.version
 // oas-tools uses x-name property of requestBody to set name of the body parameter
 // oas-tools uses x-swagger-router-controller property to determine the controller
 // Set x-swagger-router-controller based on the first tag of each path/method
@@ -128,27 +129,29 @@ async function setupClient(app, directory) {
   try {
     console.log(`[CLIENT] Setting up STIG Manager client...`)
     const envsub = require('envsub')
+    let options = {
+      all: false,
+      diff: false,
+      protect: false,
+      syntax: 'default',
+      system: true
+    }
     process.env.STIGMAN_CLIENT_API_BASE = process.env.STIGMAN_CLIENT_API_BASE || '/api'
     process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH = process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH || 'http://localhost:8080/auth'
     process.env.STIGMAN_CLIENT_KEYCLOAK_REALM = process.env.STIGMAN_CLIENT_KEYCLOAK_REALM || 'stigman'
     process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID = process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID || 'stig-manager'
+    process.env.STIGMAN_VERSION = config.version
     
-    app.use('/', express.static(path.join(__dirname, directory)))
     let templateFile = path.join(__dirname, directory, '/js/Env.js.template')
     let outputFile = path.join(__dirname, directory, '/js/Env.js')
-    let options = {
-      all: false, // see --all flag
-      diff: false, // see --diff flag
-      protect: false, // see --protect flag
-      syntax: 'default', // see --syntax flag
-      system: true // see --system flag
-    }
     let envobj
     envobj = await envsub({templateFile, outputFile, options})
   
     templateFile = path.join(__dirname, directory, '/js/keycloak.json.template')
     outputFile = path.join(__dirname, directory, '/js/keycloak.json')
     envobj = await envsub({templateFile, outputFile, options})
+
+    app.use('/', express.static(path.join(__dirname, directory)))
   }
   catch (err) {
     console.error(err.message)
