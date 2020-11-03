@@ -309,7 +309,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					group: 'checkType' + idAppend,
 					handler: function(item,eventObject){
 						groupGrid.filterState = 'Manual',
-						groupStore.filter('checkType','Manual');
+						groupStore.filter('autoCheckAvailable',false);
 						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Manual checks');
 					}
 				},{
@@ -318,7 +318,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					group: 'checkType' + idAppend,
 					handler: function(item,eventObject){
 						groupGrid.filterState = 'SCAP',
-						groupStore.filter('checkType','SCAP');
+						groupStore.filter('autoCheckAvailable',true);
 						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('SCAP checks');
 					}
 				}
@@ -332,7 +332,10 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 		var getStatsString = function (store) {
 			let assetCount = function () {
 				let record = store.getAt(0)
-				return record.data.naCnt + record.data.nfCnt + record.data.nrCnt + record.data.oCnt
+				if (record) {
+					return record.data.naCnt + record.data.nfCnt + record.data.nrCnt + record.data.oCnt
+				}
+				return 0
 			}
 			var totalChecks = store.getCount();
 			var checksManual = 0;
@@ -411,11 +414,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				},
 				deferEmptyText:false,
 				getRowClass: function (record,index) {
-					var checkType = record.get('checkType');
-					if (checkType == 'SCAP') {
+					var autoCheckAvailable = record.get('autoCheckAvailable');
+					if (autoCheckAvailable === true) {
 						return 'sm-scap-grid-item';
-					} else {
-						return 'sm-manual-grid-item';
 					}
 				}
 			}),
@@ -583,6 +584,16 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 								return false;
 							}
 						}
+					},
+					'->',
+					{
+						xtype: 'tbitem',
+						html: '<div class="sm-toolbar-legend-box sm-scap-grid-item"></div>'
+					},
+					{
+						xtype: 'tbtext',
+						text: ' SCAP available',
+						style: 'margin-right: 15px;'
 					}
 				]
 			}),
