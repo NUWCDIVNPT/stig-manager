@@ -1,5 +1,6 @@
+const package = require("../package.json")
 let config = {
-    version: '1.0.0-beta.3',
+    version: package.version,
     commit: {
         branch: process.env.COMMIT_BRANCH || 'na',
         sha: process.env.COMMIT_SHA || 'na',
