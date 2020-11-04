@@ -305,7 +305,7 @@ Ext.lib.Ajax = function() {
         },
 
         useDefaultHeader : true,
-        defaultPostHeader : 'application/x-www-form-urlencoded; charset=UTF-8',
+        defaultPostHeader : 'application/json',
         useDefaultXhrHeader : true,
         defaultXhrHeader : 'XMLHttpRequest',
         poll : {},
