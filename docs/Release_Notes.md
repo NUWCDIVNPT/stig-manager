@@ -2,6 +2,9 @@
 
 ## Releases
 
+### 1.0.0-beta.5
+- Migration of v_current_rev to support draft STIGs
+
 ### 1.0.0-beta.4
 - BUG: "All checks" drop down filter doesn't work (#32)
 - Additional collection review updates
