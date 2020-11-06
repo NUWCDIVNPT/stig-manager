@@ -263,7 +263,6 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
 }
 module.exports.updateStatsAssetStig = async function(connection, options) {
   try {
-    console.log(`Connection ${connection.connection.connectionId} STATS ENTER`)
     if (!connection) { throw ('Connection required')}
     // Handle optional predicates, 
     let predicates = []

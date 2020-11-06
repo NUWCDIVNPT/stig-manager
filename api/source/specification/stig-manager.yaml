@@ -2948,13 +2948,17 @@ components:
       properties:
         benchmarkId:
           type: string
+        title:
+          type: string
+        status:
+          type: string
         lastRevisionStr:
           type: string
         lastRevisionDate:
           type: string
-        title:
-          type: string
         ruleCount:
+          type: integer
+        autoCount:
           type: integer
     StigAsset:
       type: object
