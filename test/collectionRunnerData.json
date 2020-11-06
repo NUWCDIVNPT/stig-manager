@@ -1,4 +1,5 @@
-[{
+[
+{
   "Test Case Description":" admin, elevated/unelevated, etc.",
   "user": "stigmanadmin",
   "userId": "1",
@@ -102,7 +103,6 @@
   "scrapBenchmark": "RHEL_7_STIG"
 
 },
-
 {
   "Test Case Description":" lvl3, not elevated, etc.",
   "user": "lvl3",
@@ -173,7 +173,6 @@
 
 
 },
-
 {
   "Test Case Description":" globular, not elevated, etc.",
   "user": "globular",
@@ -243,7 +242,6 @@
 
 
 },
-
 {
   "Test Case Description":" admin, not elevated, etc.",
   "user": "stigmanadmin",
@@ -277,6 +275,4 @@
 
   
 }
-
-
 ]
