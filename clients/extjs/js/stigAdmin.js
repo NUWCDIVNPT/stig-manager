@@ -8,18 +8,30 @@ function addStigAdmin() {
 	var stigFields = Ext.data.Record.create([
 		{	name:'benchmarkId',
 			type: 'string'
-		},{
+		},
+		{
 			name: 'title',
 			type: 'string'
-		},{
+		},
+		{
+			name: 'status',
+			type: 'string'
+		},
+		{
 			name: 'lastRevisionStr',
 			type: 'string'
-		},{
+		},
+		{
 			name: 'lastRevisionDate',
 			type: 'date',
 			dateFormat: 'Y-m-d'
-		},{
+		},
+		{
 			name: 'ruleCount',
+			type: 'integer'
+		},
+		{
+			name: 'autoCount',
 			type: 'integer'
 		}
 	]);
@@ -69,6 +81,12 @@ function addStigAdmin() {
 				dataIndex: 'title',
 				sortable: true
 			},{ 	
+				header: "Status",
+				width: 150,
+                align: "center",
+				dataIndex: 'status',
+				sortable: true
+			},{ 	
 				header: "Current revision",
 				width: 150,
                 align: "center",
@@ -83,11 +101,18 @@ function addStigAdmin() {
 				format: 'Y-m-d',
 				sortable: true
 			},{ 	
-				header: "Rule count",
+				header: "Rules",
 				width: 150,
                 align: "center",
 				dataIndex: 'ruleCount',
 				sortable: true
+			},{ 	
+				header: "SCAP Rules",
+				width: 150,
+                align: "center",
+				dataIndex: 'autoCount',
+				sortable: true,
+				renderer: (v) => v ? v : '--'
 			}
 		],
 		autoExpandColumn: 'stigGrid-title-column',
