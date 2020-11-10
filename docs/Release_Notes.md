@@ -2,6 +2,9 @@
 
 ## Releases
 
+### 1.0.0-beta.6
+- ovalCount based on ruleId instead of benchmarkId
+
 ### 1.0.0-beta.5
 - Migration of v_current_rev to support draft STIGs
 
