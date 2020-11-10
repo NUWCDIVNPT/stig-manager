@@ -30,3 +30,4 @@ api/source/tls/mysql2/init-tls-user.sql
 api/source/tls/mysql2/tls.cnf
 clients/extjs/js/keycloak.json
 .gitignore
+newman/
