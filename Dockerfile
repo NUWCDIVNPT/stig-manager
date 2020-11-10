@@ -12,7 +12,7 @@
 # **/docker
 
 
-FROM node:14.13.1-stretch-slim
+FROM node:lts-alpine
 LABEL maintainer="carl.a.smigielski@saic.com"
 ARG COMMIT_BRANCH="unspecified"
 ARG COMMIT_SHA="unspecified"
