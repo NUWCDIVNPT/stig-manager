@@ -3946,7 +3946,7 @@
 									"_postman_isSubFolder": true
 								},
 								{
-									"name": "Return an Asset",
+									"name": "Return an Asset with stigGrants",
 									"event": [
 										{
 											"listen": "test",
@@ -3962,21 +3962,17 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"collectionCreator\" || user == \"bizarroLvl1\" ) {\r",
-													"    pm.test(\"Status should be is 403 for user collectionCreator, bizarroLvl1\", function () {\r",
+													"if (user === \"elevated\" || user === \"lvl3\" || user === \"lvl4\") {\r",
+													"        pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
 													"        pm.response.to.have.status(403);\r",
 													"    });\r",
 													"    return;\r",
 													"}\r",
-													"else {\r",
-													"    pm.test(\"Status code is 200\", function () {\r",
-													"        pm.response.to.have.status(200);\r",
-													"    });\r",
-													"}\r",
-													"if (pm.response.code !== 200) {\r",
-													"    return;\r",
-													"}\r",
-													"\r",
 													"\r",
 													"let jsonData = pm.response.json();\r",
 													"\r",
@@ -4057,17 +4053,15 @@
 													"\r",
 													"    if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 													"        let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
-													"        // START AZDO #105\r",
-													"        // for (let grant of jsonData.stigGrants){\r",
-													"        //     pm.expect(grant).to.have.all.keys(grantKeys);\r",
-													"        //     pm.expect(grant.benchmarkId).to.be.oneOf(validStigs);\r",
+													"        for (let grant of jsonData.stigGrants){\r",
+													"            pm.expect(grant).to.have.all.keys(grantKeys);\r",
+													"            pm.expect(grant.benchmarkId).to.be.oneOf(validStigs);\r",
 													"\r",
-													"        //     for (let user of grant.users){\r",
-													"        //         pm.expect(user).to.have.all.keys(userBasicKeys);\r",
+													"            for (let user of grant.users){\r",
+													"                pm.expect(user).to.have.all.keys(userBasicKeys);\r",
 													"\r",
-													"        //     }\r",
-													"        // }\r",
-													"        // END AZDO #105\r",
+													"            }\r",
+													"        }\r",
 													"    }\r",
 													"\r",
 													"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
@@ -4135,6 +4129,250 @@
 													"key": "assetId",
 													"value": "{{testAsset}}",
 													"description": "(Required) A path parameter that indentifies an Asset"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "unexpected error",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "<boolean>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId"
+														}
+													]
+												}
+											},
+											"status": "Internal Server Error",
+											"code": 500,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"code\": 97991014,\n \"message\": \"laboris proident\"\n}"
+										},
+										{
+											"name": "AssetProjected response",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId?elevate=<boolean>&projection=<string>&projection=<string>",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "<boolean>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														},
+														{
+															"key": "projection",
+															"value": "<string>"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n \"assetId\": \"eu et\",\n \"name\": \"quis exercitation do cupidatat\",\n \"collection\": {\n  \"collectionId\": \"est et\",\n  \"name\": \"aliquip reprehenderit\",\n  \"workflow\": \"continuous\"\n },\n \"description\": \"in nulla do exercitation\",\n \"ip\": \"labore ullamco\",\n \"noncomputing\": true,\n \"metadata\": \"id occaecat Lorem deserunt ad\",\n \"adminStats\": {\n  \"stigCount\": -4608915,\n  \"stigAssignedCount\": -68692699\n },\n \"stigs\": [\n  {\n   \"benchmarkId\": \"est reprehenderit pariatur nostrud anim\",\n   \"lastRevisionStr\": \"qui anim dolore veniam\",\n   \"lastRevisionDate\": \"eu dolor fugiat\",\n   \"title\": \"aute aliquip nulla\",\n   \"ruleCount\": 23322456\n  },\n  {\n   \"benchmarkId\": \"dolore occaecat cupidatat ipsum\",\n   \"lastRevisionStr\": \"Duis aliqua sint\",\n   \"lastRevisionDate\": \"incididunt id in ex cupidatat\",\n   \"title\": \"sed Ut consectetur dolor\",\n   \"ruleCount\": 6875346\n  }\n ],\n \"stigGrants\": [\n  {\n   \"benchmarkId\": \"eiusmod sunt adipisicing in\",\n   \"users\": [\n    {\n     \"userId\": \"sint culpa aute in\",\n     \"username\": \"mollit consequat Ut deserunt\"\n    },\n    {\n     \"userId\": \"reprehenderit\",\n     \"username\": \"in quis\"\n    }\n   ]\n  },\n  {\n   \"benchmarkId\": \"minim con\",\n   \"users\": [\n    {\n     \"userId\": \"non Excepteur ex\",\n     \"username\": \"eiusmod do anim\"\n    },\n    {\n     \"userId\": \"pariatur veniam culpa ut\",\n     \"username\": \"commodo enim\"\n    }\n   ]\n  }\n ]\n}"
+										}
+									]
+								},
+								{
+									"name": "Return an Asset without stigGrants",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "b2b72c3c-04a4-494e-ac24-bdbd8f231583",
+												"exec": [
+													"//normal test start block:\r",
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});\r",
+													"\r",
+													"let assetKeys = [\r",
+													"    \"assetId\",\r",
+													"    \"name\",\r",
+													"    \"collection\",\r",
+													"    \"description\",\r",
+													"    \"ip\",\r",
+													"    \"mac\",\r",
+													"    \"fqdn\",\r",
+													"    \"noncomputing\",\r",
+													"    \"metadata\"\r",
+													"]\r",
+													"\r",
+													"let collectionKeys = [\r",
+													"    \"collectionId\",\r",
+													"    \"name\",\r",
+													"    \"workflow\"\r",
+													"]\r",
+													"\r",
+													"let userBasicKeys = [\r",
+													"    \"userId\",\r",
+													"    \"username\"\r",
+													"]\r",
+													"\r",
+													"let stigKeys = [\r",
+													"    \"title\",\r",
+													"    \"ruleCount\",\r",
+													"    \"benchmarkId\",\r",
+													"    \"lastRevisionDate\",\r",
+													"    \"lastRevisionStr\"\r",
+													"]\r",
+													"\r",
+													"let adminStatsKeys = [\r",
+													"    \"ruleCount\",\r",
+													"    \"stigCount\",\r",
+													"    \"stigAssignedCount\"\r",
+													"]\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
+													"    assetKeys.push(\"adminStats\")\r",
+													"}\r",
+													"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+													"    assetKeys.push(\"stigs\")\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Check if object contains all provided keys\", function () {\r",
+													"    pm.expect(jsonData).to.have.all.keys(assetKeys);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response has requested properties and values\", function () {\r",
+													"    let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+													"    var regex = new RegExp(assetMatchString);\r",
+													"    pm.expect(jsonData.name).to.match(regex);\r",
+													"\r",
+													"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+													"        let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"\r",
+													"        for (let stig of jsonData.stigs){\r",
+													"            pm.expect(stig).to.have.all.keys(stigKeys);\r",
+													"            pm.expect(stig.benchmarkId).to.be.oneOf(validStigs);\r",
+													"\r",
+													"        }\r",
+													"    }\r",
+													"    \r",
+													"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
+													"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												},
+												{
+													"key": "projection",
+													"value": "adminStats",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigs",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigGrants",
+													"disabled": true
+												}
+											],
+											"variable": [
+												{
+													"description": "(Required) A path parameter that indentifies an Asset",
+													"key": "assetId",
+													"value": "{{testAsset}}"
 												}
 											]
 										}
@@ -4617,21 +4855,17 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"collectionCreator\" || user == \"bizarroLvl1\" || user == \"lvl1\" || user == \"lvl2\") {\r",
-											"    pm.test(\"Status should be is 403 for user collectionCreator, Lvl1, or bizarroLvl1\", function () {\r",
+											"if (user === \"elevated\" || user === \"lvl3\" || user === \"lvl4\") {\r",
+											"        pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
 											"        pm.response.to.have.status(403);\r",
 											"    });\r",
 											"    return;\r",
 											"}\r",
-											"else {\r",
-											"    pm.test(\"Status code is 200\", function () {\r",
-											"        pm.response.to.have.status(200);\r",
-											"    });\r",
-											"}\r",
-											"if (pm.response.code !== 200) {\r",
-											"    return;\r",
-											"}\r",
-											"\r",
 											"\r",
 											"let jsonData = pm.response.json();\r",
 											"\r",
