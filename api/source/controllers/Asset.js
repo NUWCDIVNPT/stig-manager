@@ -179,7 +179,21 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     let assetId = req.swagger.params['assetId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
+    
+    // All users are permitted to query for the asset
+    // If this user has no grants permitting access to the asset, the response will be falsy
     let response = await Asset.getAsset(assetId, projection, elevate, req.userObject )
+
+    // If there is a response, check if the request included the stigGrants projection
+    if (response && projection && projection.includes('stigGrants')) {
+      // Check if the stigGrants projection is forbidden
+      if (!elevate) {
+        const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === response.collection.collectionId )
+        if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
+          throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigGrants'.`} ) )
+        }
+      }
+    }
     writer.writeJson(res, response)
   }
   catch (err) {
@@ -195,11 +209,14 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let elevate = req.swagger.params['elevate'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
 
-    if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
-      // For now, lower accessLevels can't see other reviewers
-      if (collectionGrant && collectionGrant.accessLevel < 3 && !elevate) {
-        if (projection && projection.includes('stigGrants')) {
-          throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigGrants'.`} ) )
+    if ( collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
+      // Check if the request includes the stigGrants projection
+      if (projection && projection.includes('stigGrants')) {
+        // Check if the stigGrants projection is forbidden
+        if (!elevate) {
+          if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
+            throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to request projection 'stigGrants'.`} ) )
+          }
         }
       }
       let response = await Asset.getAssets(collectionId, benchmarkId, projection, elevate, req.userObject )
