@@ -2,6 +2,9 @@
 
 ## Releases
 
+### 1.0.0-beta.7
+- (fix) stigGrant projection #40
+
 ### 1.0.0-beta.6
 - ovalCount based on ruleId instead of benchmarkId
 
