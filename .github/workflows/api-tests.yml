@@ -53,48 +53,44 @@ jobs:
           -e STIGMAN_API_AUTHORITY=http://localhost:8080/auth/realms/stigman \
           stig-manager
       -
-        name: Wait for bootstrap
-        run: until $(curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration); do printf '.'; sleep 5; done
-      -
-        name: Initialize
-        id: init
-        run: |
-          TOKEN="Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NjkyMTM0MzIsImlhdCI6MTYwNDQxMzQzMiwiYXV0aF90aW1lIjoxNjA0NDEzNDMyLCJqdGkiOiJhMGE2MzI1My01NmE4LTRiNDItODBjYi0yMDJmMmM0Y2IwYjIiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiJhZmU2MTEzNC01NWVhLTRiODgtOGE3Ni0yYWE1YTRhM2QzMjYiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJzZXNzaW9uX3N0YXRlIjoiNTc2M2FmNzQtYWU5OS00NDA3LWE0MWQtMTY3MjRkZTUxZmJhIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGVfY29sbGVjdGlvbiIsImFkbWluIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy11c2VycyIsInF1ZXJ5LWdyb3VwcyIsInF1ZXJ5LXVzZXJzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6IiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoic3RpZ21hbmFkbWluIn0.GlBHGGl7D2MXQEHN3WR81UqE9XUAldiqEILWFU-nh2wzbBOja0HeaB5DgqUctJV3D6mlimb3aXblpx-6dqcYUoJZ1101alOzlpuY-EzP6WE9mbEAtP19xmzKOXZhEIbuYKCgKGSN_80uFkpTtQTn6XmSXohtHYEDS2qtG4Whhtk"
-
-          curl -f -X GET http://localhost:64001/api/user -H "accept: application/json" -H "$TOKEN" -s | jq .
-          echo
-
-          curl -f -X POST "http://localhost:64001/api/stigs" -H "accept: application/json" -H "$TOKEN" -F "replace=true" -F "importFile=@test/api/stigs/U_VPN_SRG_V1R1_Manual-xccdf.xml;type=text/xml" -s | jq .
-          echo
-
-          curl -f -X POST "http://localhost:64001/api/stigs" -H "accept: application/json" -H "$TOKEN" -F "replace=true" -F "importFile=@test/api/stigs/U_RHEL_7_STIG_V3R0-3_Manual-xccdf.xml;type=text/xml" -s | jq .
-          echo
-
-          curl -f -X POST "http://localhost:64001/api/stigs" -H "accept: application/json" -H "$TOKEN" -F "replace=true" -F "importFile=@test/api/stigs/U_MS_Windows_10_STIG_V1R23_Manual-xccdf.xml;type=text/xml" -s | jq .
-          echo
-
-          curl -f -X GET "http://localhost:64001/api/stigs" -H "accept: application/json" -H "$TOKEN" -s | jq .
-          echo
-
-          curl -f -X POST "http://localhost:64001/api/op/appdata?elevate=true" -H "accept: application/json" -H "$TOKEN" -H "Content-Type: multipart/form-data" -F "importFile=@test/api/appdata.json;type=application/json" -s
-          echo
-
-          curl -f -X GET "http://localhost:64001/api/collections?projection=owners&projection=statistics" -H "accept: application/json" -H "$TOKEN" -s | jq .
-          echo
-      -
         name: Install Newman reporter
         id: newman-install
         run: |
-          sudo npm install -g newman-reporter-htmlextra
+          sudo npm install -g newman-reporter-htmlextra          
       -
-        name: Run Newman GETs
+        name: Wait for bootstrap
+        run: until $(curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration); do printf '.'; sleep 5; done
+      
+      -
+        name: Run Newman Collection LoadTestData
         id: newman-get-run
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection GETS
+        id: newman-get-run
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection Posts, Puts, Patches, Deletes
+        id: newman-get-run
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection STIGS
+        id: newman-get-run
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport.html | grep -A18 '┌─────'
       - 
-        name: Upload artificat
+        name: Upload artifact
         id: artifact-upload
         uses: actions/upload-artifact@v2
         if: ${{ always() }}

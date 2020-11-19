@@ -662,9 +662,13 @@
                 {
                     "benchmarkId": "Windows_10_STIG",
                     "userIds": []
+                },
+                {
+                    "benchmarkId": "RHEL_7_STIG",
+                    "userIds": []
                 }
             ],
-            "collectionId": "84"
+            "collectionId": "1"
         },
         {
             "assetId": "242",
