@@ -54,7 +54,7 @@ jobs:
           stig-manager
       -
         name: Install Newman reporter
-        id: newman-install
+        id: newman-reporter-install
         run: |
           sudo npm install -g newman-reporter-htmlextra          
       -
@@ -63,28 +63,28 @@ jobs:
       
       -
         name: Run Newman Collection LoadTestData
-        id: newman-get-run
+        id: newman-run-loadTestData
         working-directory: ./test/api
         run: |
           set -o pipefail
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport.html | grep -A18 '┌─────'
       -
         name: Run Newman Collection GETS
-        id: newman-get-run
+        id: newman-run-gets
         working-directory: ./test/api
         run: |
           set -o pipefail
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
       -
         name: Run Newman Collection Posts, Puts, Patches, Deletes
-        id: newman-get-run
+        id: newman-run-pppd
         working-directory: ./test/api
         run: |
           set -o pipefail
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
       -
         name: Run Newman Collection STIGS
-        id: newman-get-run
+        id: newman-run-stigs
         working-directory: ./test/api
         run: |
           set -o pipefail
