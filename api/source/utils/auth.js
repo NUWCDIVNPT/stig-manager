@@ -21,10 +21,15 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
         let decoded = await verifyAndDecodeToken (token, getKey, options)
         let grantedScopes = decoded.scope.split(' ')
         let commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
-            if (gs == rs) return gs
+            if (gs === rs) return gs
             let gsTokens = gs.split(":").filter(i => i.length)
             let rsTokens = rs.split(":").filter(i => i.length)
-            return gsTokens.every((t, i) => rsTokens[i] === t)
+            if (gsTokens.length === 0) {
+                return false
+            }
+            else {
+                return gsTokens.every((t, i) => rsTokens[i] === t)
+            }
         })
         if (commonScopes.length == 0) {
             console.log("No common scopes")
