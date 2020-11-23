@@ -872,7 +872,7 @@
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "094cb94b-4cba-4ad2-9553-8b77d7d6e9d5",
-    "redirectUris" : [ "http://*", "http://*" ],
+    "redirectUris" : [ "http://*", "https://*" ],
     "webOrigins" : [ "*" ],
     "notBefore" : 0,
     "bearerOnly" : false,
