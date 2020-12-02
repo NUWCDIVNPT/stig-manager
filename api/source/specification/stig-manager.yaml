@@ -853,6 +853,7 @@ paths:
       operationId: getReviewsByCollection
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/ReviewRulesQuery'
         - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
@@ -862,17 +863,16 @@ paths:
         - $ref: '#/components/parameters/UserIdQuery'
         - $ref: '#/components/parameters/AssetIdQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
-        - $ref: '#/components/parameters/RevisionStrQuery'
-        - $ref: '#/components/parameters/ReviewProjectionQuery'
+        - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewProjected'
+                  $ref: '#/components/schemas/ReviewsProjected'
         default:
           description: unexpected error
           content:
@@ -891,21 +891,21 @@ paths:
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
         - $ref: '#/components/parameters/AssetIdPath'
-        - $ref: '#/components/parameters/ReviewProjectionQuery'
+        - $ref: '#/components/parameters/ReviewRulesQuery'
         - $ref: '#/components/parameters/ReviewResultQuery'
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
-        - $ref: '#/components/parameters/RevisionStrQuery'
+        - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewProjected'
+                  $ref: '#/components/schemas/ReviewsProjected'
         default:
           description: unexpected error
           content:
@@ -955,11 +955,11 @@ paths:
                   format: binary
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewsProjected'
         default:
           description: unexpected error
           content:
@@ -974,7 +974,7 @@ paths:
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/RuleIdPath'
-      - $ref: '#/components/parameters/ReviewIndividualProjectionQuery'
+      - $ref: '#/components/parameters/ReviewProjectionQuery'
     get:
       tags:
         - Review
@@ -982,11 +982,11 @@ paths:
       operationId: getReviewByAssetRule
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewWithHistoryProjected'
+                $ref: '#/components/schemas/ReviewProjected'
         default:
           description: unexpected error
           content:
@@ -1010,11 +1010,11 @@ paths:
               $ref: '#/components/schemas/ReviewAssetRulePatch'
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewWithHistoryProjected'
+                $ref: '#/components/schemas/ReviewProjected'
         default:
           description: unexpected error
           content:
@@ -1040,11 +1040,11 @@ paths:
               $ref: '#/components/schemas/ReviewAssetRulePut'
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewWithHistoryProjected'
+                $ref: '#/components/schemas/ReviewProjected'
         default:
           description: unexpected error
           content:
@@ -1063,11 +1063,11 @@ paths:
         - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
-          description: ReviewProjected response
+          description: ReviewsProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewWithHistoryProjected'
+                $ref: '#/components/schemas/ReviewProjected'
         default:
           description: unexpected error
           content:
@@ -2775,19 +2775,6 @@ components:
           type: string
         rejectText:
           type: string
-    ReviewProjected:
-      allOf:
-        - $ref: '#/components/schemas/Review'
-        - type: object
-          properties:
-            asset:
-              $ref: '#/components/schemas/AssetBasic'
-            stigs:
-              type: array
-              items:
-                type: string
-            rule:
-              $ref: '#/components/schemas/RuleAbbr'
     ReviewPut:
       type: object
       required:
@@ -2824,7 +2811,7 @@ components:
         - submitted
         - accepted
         - rejected
-    ReviewWithHistoryProjected:
+    ReviewProjected:
       allOf:
         - $ref: '#/components/schemas/Review'
         - type: object
@@ -2833,8 +2820,17 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/ReviewHistory'
-            asset:
-              $ref: '#/components/schemas/AssetBasic'
+            stigs:
+              type: array
+              items:
+                type: string
+            rule:
+              $ref: '#/components/schemas/RuleAbbr'
+    ReviewsProjected:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
             stigs:
               type: array
               items:
@@ -3299,22 +3295,6 @@ components:
       in: query
       schema:
         $ref: '#/components/schemas/ReviewAction'
-    ReviewIndividualProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - ruleInfo
-            - history
-            - stigs
-            - collections
     ReviewProjectionQuery:
       name: projection
       in: query
@@ -3329,12 +3309,38 @@ components:
           enum:
             - rule
             - stigs
-            - asset
+            - history
+    ReviewsProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - rule
+            - stigs
     ReviewResultQuery:
       name: result
       in: query
       schema:
         $ref: '#/components/schemas/ReviewResult'
+    ReviewRulesQuery:
+      name: rules
+      in: query
+      schema:
+        type: string
+        default: current-mapped
+        enum:
+          - all
+          - current
+          - current-mapped
+          - not-current
+          - not-current-mapped
     ReviewStatusQuery:
       name: status
       in: query

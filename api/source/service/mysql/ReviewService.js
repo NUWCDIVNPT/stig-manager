@@ -16,7 +16,6 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'CAST(r.assetId as char) as assetId',
       'asset.name as "assetName"',
       'r.ruleId',
-      'rule.severity',
       'result.api as "result"',
       'r.resultComment',
       'r.autoResult',
@@ -28,21 +27,21 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'r.ts',
       'r.rejectText',
       'CAST(r.rejectUserId as char) as rejectUserId',
-      `CASE
-        WHEN r.ruleId is null
-        THEN 0
-        ELSE
-          CASE WHEN r.resultId != 4
-          THEN
-            CASE WHEN r.resultComment != ' ' and r.resultComment is not null
-              THEN 1
-              ELSE 0 END
-          ELSE
-            CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
-              THEN 1
-              ELSE 0 END
-          END
-      END as "reviewComplete"`
+      // `CASE
+      //   WHEN r.ruleId is null
+      //   THEN 0
+      //   ELSE
+      //     CASE WHEN r.resultId != 4
+      //     THEN
+      //       CASE WHEN r.resultComment != ' ' and r.resultComment is not null
+      //         THEN 1
+      //         ELSE 0 END
+      //     ELSE
+      //       CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
+      //         THEN 1
+      //         ELSE 0 END
+      //     END
+      // END as "reviewComplete"`
     ]
     const groupBy = [
       'r.assetId',
@@ -66,6 +65,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     ]
     const joins = [
       'review r',
+      'left join current_group_rule cgr on r.ruleId = cgr.ruleId',
       'left join rule on r.ruleId = rule.ruleId',
       // 'left join rule_cci_map rc on r.ruleId = rc.ruleId',
       'left join result on r.resultId = result.resultId',
@@ -75,46 +75,21 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'left join asset on r.assetId = asset.assetId',
       'left join collection c on asset.collectionId = c.collectionId',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join stig_asset_map sa on asset.assetId = sa.assetId',
+      'left join stig_asset_map sa on (r.assetId = sa.assetId and cgr.benchmarkId = sa.benchmarkId)',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
     // PROJECTIONS
-    if (inProjection.includes('asset')) {
-      columns.push(`(select 
-        json_object(
-          'assetId', CAST(a.assetId as char),
-          'name', a.name,
-          'collectionId', CAST(a.collectionId as char)
-        )
-        from asset a
-        where a.assetId = r.assetId) as "asset"`)
-    }
     if (inProjection.includes('stigs')) {
-      columns.push(`(select json_arrayagg(json_object(
-        'benchmarkId' , rev.benchmarkId,
-        'revisionStr' ,  concat('V', rev.version, 'R', rev.release)))
-        from rev_group_rule_map rgr 
-        left join rev_group_map rg on rgr.rgId = rg.rgId
-        left join revision rev on rg.revId = rev.revId
-        where rgr.ruleId = r.ruleId) as "stigs"`)
+      columns.push(`json_arrayagg(sa.benchmarkId) as "stigs"`)
     }
     if (inProjection.includes('rule')) {
-      // Query hacks the possibility of a 1:n rule:group relationship
-      columns.push(`(select
-        json_object(
-          'ruleId' , rule.ruleId
-          ,'ruleTitle' , rule.title
-          ,'groupId' , g.groupId
-          ,'groupTitle' , g.title
-          ,'severity' , rule.severity)
-        from
-          rule
-          left join rev_group_rule_map rgr on rgr.ruleId=rule.ruleId
-          inner join rev_group_map rg on rgr.rgId=rg.rgId
-          inner join \`group\` g on rg.groupId=g.groupId
-        where
-          rule.ruleId = r.ruleId LIMIT 1) as "rule"`)
+      columns.push(`json_object(
+          'ruleId' , rule.ruleId,
+          'title' , rule.title,
+          'version' , rule.version,
+          'severity' , rule.severity) as "rule"`
+      )
     }
     if (inProjection.includes('history')) {
       // OVER clauses and subquery needed to order the json_arrayagg
@@ -156,11 +131,27 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     }
     
     // Role/Assignment based access control 
-    // CONTEXT_USER
     if (context == dbUtils.CONTEXT_USER) {
       predicates.statements.push('cg.userId = :userId')
-      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
+      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN (usa.userId = cg.userId AND sa.benchmarkId = cgr.benchmarkId) ELSE TRUE END')
       predicates.binds.userId = userObject.userId
+    }
+
+    switch (inPredicates.rules) {
+      case 'current-mapped':
+        predicates.statements.push(`cgr.ruleId IS NOT NULL`)
+        predicates.statements.push(`sa.saId IS NOT NULL`)
+        break
+      case 'current':
+        predicates.statements.push(`cgr.ruleId IS NOT NULL`)
+        break
+      case 'not-current-mapped':
+        predicates.statements.push(`cgr.ruleId IS NULL`)
+        predicates.statements.push(`sa.saId IS NULL`)
+        break
+      case 'not-current':
+        predicates.statements.push(`cgr.ruleId IS NULL`)
+        break
     }
 
       // COMMON
@@ -180,20 +171,17 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       predicates.statements.push('status.api = :status')
       predicates.binds.status = inPredicates.status
     }
+    if (inPredicates.rules) {
+      predicates.statements.push('status.api = :status')
+      predicates.binds.status = inPredicates.status
+    }
     if (inPredicates.ruleId) {
       predicates.statements.push('r.ruleId = :ruleId')
       predicates.binds.ruleId = inPredicates.ruleId
     }
     if (inPredicates.groupId) {
-      predicates.statements.push(`r.ruleId IN (
-        SELECT
-          ruleId
-        FROM
-          current_group_rule
-        WHERE
-          groupId = :groupId
-        )` )
-        predicates.binds.groupId = inPredicates.groupId
+      predicates.statements.push(`cgr.groupId = :groupId`)
+      predicates.binds.groupId = inPredicates.groupId
     }
     if (inPredicates.cci) {
       predicates.statements.push(`r.ruleId IN (
@@ -215,39 +203,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       predicates.binds.assetId = inPredicates.assetId
     }
     if (inPredicates.benchmarkId) {
-      if (inPredicates.revisionStr && inPredicates.revisionStr != 'latest') {
-        // Calculate the revId
-        let results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-        let revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
-        predicates.statements.push(`r.ruleId IN (
-          SELECT
-            r2.ruleId
-          FROM
-            revision rev
-            left join rev_group_map rg on rev.revId = rg.revId
-            left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
-            left join rule r2 on rgr.ruleId = r2.ruleId
-          WHERE
-            rev.benchmarkId = :benchmarkId
-            and rev.revId = :revId    
-          )` )
-          predicates.binds.benchmarkId = inPredicates.benchmarkId
-          predicates.binds.revId = revId
-      } 
-      else { 
-        predicates.statements.push(`r.ruleId IN (
-          SELECT
-            r2.ruleId
-          FROM
-            current_rev rev
-            left join rev_group_map rg on rev.revId = rg.revId
-            left join rev_group_rule_map rgr on rg.rgId = rgr.rgId
-            left join rule r2 on rgr.ruleId = r2.ruleId
-          WHERE
-            rev.benchmarkId = :benchmarkId      
-          )` )
+        predicates.statements.push(`cgr.benchmarkId = :benchmarkId`)
         predicates.binds.benchmarkId = inPredicates.benchmarkId
-      }
     }
 
     // CONSTRUCT MAIN QUERY
@@ -264,11 +221,6 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
     let [rows] = await connection.query(sql, predicates.binds)
-
-    for (let x = 0, l = rows.length; x < l; x++) {
-      let record = rows[x]
-      record.reviewComplete = record.reviewComplete == 1 ? true : false
-    }
 
     return (rows)
   }

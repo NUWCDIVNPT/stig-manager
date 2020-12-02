@@ -128,13 +128,13 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
         result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
+        rules: req.swagger.params['rules'].value || 'current-mapped',
         ruleId: req.swagger.params['ruleId'].value,
         groupId: req.swagger.params['groupId'].value,
         cci: req.swagger.params['cci'].value,
         userId: req.swagger.params['userId'].value,
         assetId: req.swagger.params['assetId'].value,
-        benchmarkId: req.swagger.params['benchmarkId'].value,
-        revisionStr: req.swagger.params['revisionStr'].value,
+        benchmarkId: req.swagger.params['benchmarkId'].value
       }, req.userObject)
       writer.writeJson(res, response)
     }
@@ -157,11 +157,11 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
+        rules: req.swagger.params['rules'].value || 'current-mapped',
         result: req.swagger.params['result'].value,
         action: req.swagger.params['action'].value,
         status: req.swagger.params['status'].value,
-        benchmarkId: req.swagger.params['benchmarkId'].value,
-        revisionStr: req.swagger.params['revisionStr'].value,
+        benchmarkId: req.swagger.params['benchmarkId'].value
       }, req.userObject )
       writer.writeJson(res, response)
     }
