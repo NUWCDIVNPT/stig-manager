@@ -7638,7 +7638,7 @@
 															}
 														},
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=ruleInfo&projection=history&projection=stigs&projection=collections",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -7652,7 +7652,7 @@
 															"query": [
 																{
 																	"key": "projection",
-																	"value": "ruleInfo",
+																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
 																},
 																{
@@ -7663,10 +7663,6 @@
 																{
 																	"key": "projection",
 																	"value": "stigs"
-																},
-																{
-																	"key": "projection",
-																	"value": "collections"
 																}
 															],
 															"variable": [
@@ -7753,7 +7749,7 @@
 															}
 														},
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=ruleInfo&projection=history&projection=stigs&projection=collections",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -7767,7 +7763,7 @@
 															"query": [
 																{
 																	"key": "projection",
-																	"value": "ruleInfo",
+																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
 																},
 																{
@@ -7778,10 +7774,6 @@
 																{
 																	"key": "projection",
 																	"value": "stigs"
-																},
-																{
-																	"key": "projection",
-																	"value": "collections"
 																}
 															],
 															"variable": [
@@ -7858,7 +7850,7 @@
 														"method": "DELETE",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=ruleInfo&projection=history&projection=stigs&projection=collections",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=rule&projection=history&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -7877,7 +7869,7 @@
 																},
 																{
 																	"key": "projection",
-																	"value": "ruleInfo",
+																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
 																},
 																{
@@ -7888,10 +7880,6 @@
 																{
 																	"key": "projection",
 																	"value": "stigs"
-																},
-																{
-																	"key": "projection",
-																	"value": "collections"
 																}
 															],
 															"variable": [
