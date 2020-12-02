@@ -1,6 +1,6 @@
 {
 	"info": {
-		"name": "STIGMan tests Copy",
+		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -14,7 +14,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"exec": [
 									"let user = pm.environment.get(\"user\");\r",
 									"console.log(\"user: \" + user);\r",
@@ -112,7 +111,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"exec": [
 									"let user = pm.environment.get(\"user\");\r",
 									"console.log(\"user: \" + user);\r",
@@ -208,7 +206,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"exec": [
 									"let user = pm.environment.get(\"user\");\r",
 									"console.log(\"user: \" + user);\r",
@@ -303,7 +300,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"exec": [
 									"let user = pm.environment.get(\"user\");\r",
 									"console.log(\"user: \" + user);\r",
@@ -414,7 +410,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
@@ -558,7 +553,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -666,7 +660,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -788,7 +781,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -876,7 +868,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -964,7 +955,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -1052,7 +1042,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -1139,7 +1128,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -1225,7 +1213,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												
 												"type": "text/javascript",
 												"exec": [
 													""
@@ -1235,7 +1222,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"type": "text/javascript",
 												"exec": [
 													"let user = pm.environment.get(\"user\");",
@@ -1398,7 +1384,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -1486,7 +1471,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -1589,7 +1573,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -1828,7 +1811,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													""
 												],
@@ -1892,7 +1874,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													""
 												],
@@ -1956,7 +1937,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													""
 												],
@@ -2019,7 +1999,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													""
 												],
@@ -2082,7 +2061,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													""
 												],
@@ -2144,7 +2122,6 @@
 								{
 									"listen": "prerequest",
 									"script": {
-										
 										"type": "text/javascript",
 										"exec": [
 											""
@@ -2154,7 +2131,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"type": "text/javascript",
 										"exec": [
 											"let user = pm.environment.get(\"user\");",
@@ -2363,7 +2339,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"\r",
 															"let user = pm.environment.get(\"user\");\r",
@@ -2474,7 +2449,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"//normal test start block:\r",
 													"let user = pm.environment.get(\"user\");\r",
@@ -2674,7 +2648,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"//normal test start block:\r",
 													"let user = pm.environment.get(\"user\");\r",
@@ -2875,7 +2848,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -2975,7 +2947,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -3056,7 +3027,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -3274,7 +3244,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -3509,9 +3478,7 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
-																	"//normal test start block:\r",
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
 																	"\r",
@@ -3535,22 +3502,16 @@
 																	"    return;\r",
 																	"}\r",
 																	"\r",
-																	"\r",
 																	"let jsonData = pm.response.json();\r",
 																	"\r",
 																	"pm.test(\"Response JSON is an object\", function () {\r",
 																	"    pm.expect(jsonData).to.be.an('object');\r",
 																	"});\r",
 																	"\r",
-																	"\r",
-																	"\r",
-																	"\r",
-																	"\r",
 																	"let reviewKeys = [\r",
 																	"\"assetId\",\r",
 																	"\"assetName\",\r",
 																	"\"ruleId\",\r",
-																	"\"severity\",\r",
 																	"\"result\",\r",
 																	"\"resultComment\",\r",
 																	"\"autoResult\",\r",
@@ -3561,8 +3522,7 @@
 																	"\"username\",\r",
 																	"\"ts\",\r",
 																	"\"rejectText\",\r",
-																	"\"rejectUserId\",\r",
-																	"\"reviewComplete\"\r",
+																	"\"rejectUserId\"\r",
 																	"]\r",
 																	"\r",
 																	"let historyKeys = [\r",
@@ -3578,23 +3538,14 @@
 																	"    \"rejectText\"\r",
 																	"]\r",
 																	"\r",
-																	"let stigKeys = [\r",
-																	"    \"benchmarkId\",\r",
-																	"    \"revisionStr\"\r",
-																	"]\r",
-																	"\r",
-																	"\r",
 																	"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
 																	"    reviewKeys.push(\"stigs\")\r",
 																	"}\r",
 																	"if (pm.request.url.getQueryString().match(/projection=history/)) {\r",
 																	"    reviewKeys.push(\"history\")\r",
 																	"}\r",
-																	"if (pm.request.url.getQueryString().match(/projection=ruleInfo/)) {\r",
-																	"    reviewKeys.push(\"ruleInfo\")\r",
-																	"}\r",
-																	"if (pm.request.url.getQueryString().match(/projection=collections/)) {\r",
-																	"    reviewKeys.push(\"collections\")\r",
+																	"if (pm.request.url.getQueryString().match(/projection=rule/)) {\r",
+																	"    reviewKeys.push(\"rule\")\r",
 																	"}\r",
 																	"\r",
 																	"pm.test(\"Check if object contains all provided keys\", function () {\r",
@@ -3611,52 +3562,6 @@
 																	"    var regex = new RegExp(reviewMatchString);\r",
 																	"    pm.expect(jsonData.resultComment).to.match(regex);\r",
 																	"});\r",
-																	"\r",
-																	"// START AZDO #107\r",
-																	"// pm.test(\"Response has requested properties and values\", function () {\r",
-																	"//     let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
-																	"//     var regex = new RegExp(assetMatchString);\r",
-																	"//     pm.expect(jsonData.name).to.match(regex);\r",
-																	"\r",
-																	"\r",
-																	"//     if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
-																	"//         let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
-																	"//         for (let grant of jsonData.stigGrants){\r",
-																	"//             pm.expect(grant).to.have.all.keys(grantKeys);\r",
-																	"//             pm.expect(grant.benchmarkId).to.be.oneOf(validStigs);\r",
-																	"\r",
-																	"//             for (let user of grant.users){\r",
-																	"//                 pm.expect(user).to.have.all.keys(userBasicKeys);\r",
-																	"\r",
-																	"//             }\r",
-																	"//         }\r",
-																	"//     }\r",
-																	"\r",
-																	"//     if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
-																	"//         let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
-																	"\r",
-																	"//         for (let stig of jsonData.stigs){\r",
-																	"//             pm.expect(stig).to.have.all.keys(stigKeys);\r",
-																	"//             pm.expect(stig.benchmarkId).to.be.oneOf(validStigs);\r",
-																	"\r",
-																	"//         }\r",
-																	"//     }\r",
-																	"    \r",
-																	"//     if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-																	"//             pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
-																	"//     }\r",
-																	"\r",
-																	"//     // };\r",
-																	"\r",
-																	"// });\r",
-																	"// END AZDO #107\r",
-																	"\r",
-																	"\r",
-																	"\r",
-																	"\r",
-																	"\r",
-																	"\r",
-																	"\r",
 																	""
 																],
 																"type": "text/javascript"
@@ -3667,7 +3572,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -3681,12 +3586,15 @@
 															"query": [
 																{
 																	"key": "projection",
-																	"value": "history",
-																	"description": "Additional properties to include in the response.\n"
+																	"value": "history"
 																},
 																{
 																	"key": "projection",
 																	"value": "stigs"
+																},
+																{
+																	"key": "projection",
+																	"value": "rule"
 																}
 															],
 															"variable": [
@@ -3723,7 +3631,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -3735,7 +3642,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -3768,12 +3675,6 @@
 																	"disabled": true
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -3782,10 +3683,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -3810,7 +3707,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -3822,7 +3718,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?result=fail&projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?result=fail&projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -3854,12 +3750,6 @@
 																	"disabled": true
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -3868,10 +3758,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -3896,7 +3782,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -3908,7 +3793,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?result=pass&projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?result=pass&projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -3940,12 +3825,6 @@
 																	"disabled": true
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -3954,10 +3833,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -3982,7 +3857,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -3994,7 +3868,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?action=remediate&projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?action=remediate&projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -4026,12 +3900,6 @@
 																	"disabled": true
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -4040,10 +3908,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -4068,7 +3932,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -4080,7 +3943,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?status=saved&projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?status=saved&projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -4112,12 +3975,6 @@
 																	"disabled": true
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -4126,10 +3983,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -4154,7 +4007,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -4166,7 +4018,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?status=submitted&projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?status=submitted&projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -4198,12 +4050,6 @@
 																	"disabled": true
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -4212,10 +4058,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -4240,7 +4082,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	""
 																],
@@ -4252,7 +4093,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?benchmarkId={{testBenchmark}}&projection=rule&projection=stigs&projection=asset",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?benchmarkId={{testBenchmark}}&projection=rule&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -4284,12 +4125,6 @@
 																	"description": "A query parameter that indentifies a STIG"
 																},
 																{
-																	"key": "revisionStr",
-																	"value": "<string>",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-																	"disabled": true
-																},
-																{
 																	"key": "projection",
 																	"value": "rule",
 																	"description": "Additional properties to include in the response.\n"
@@ -4298,95 +4133,6 @@
 																	"key": "projection",
 																	"value": "stigs",
 																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
-																}
-															],
-															"variable": [
-																{
-																	"key": "collectionId",
-																	"value": "{{testCollection}}",
-																	"description": "(Required) A path parameter that indentifies a Collection"
-																},
-																{
-																	"key": "assetId",
-																	"value": "{{testAsset}}",
-																	"description": "(Required) A path parameter that indentifies an Asset"
-																}
-															]
-														}
-													},
-													"response": []
-												},
-												{
-													"name": "Return a list of Reviews for an Asset REVISION",
-													"event": [
-														{
-															"listen": "test",
-															"script": {
-																
-																"exec": [
-																	""
-																],
-																"type": "text/javascript"
-															}
-														}
-													],
-													"request": {
-														"method": "GET",
-														"header": [],
-														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?benchmarkId={{testBenchmark}}&revisionStr={{testRev}}&projection=rule&projection=stigs&projection=asset",
-															"host": [
-																"{{baseUrl}}"
-															],
-															"path": [
-																"collections",
-																":collectionId",
-																"reviews",
-																":assetId"
-															],
-															"query": [
-																{
-																	"key": "result",
-																	"value": "pass",
-																	"disabled": true
-																},
-																{
-																	"key": "action",
-																	"value": "remediate",
-																	"disabled": true
-																},
-																{
-																	"key": "status",
-																	"value": "submitted",
-																	"disabled": true
-																},
-																{
-																	"key": "benchmarkId",
-																	"value": "{{testBenchmark}}",
-																	"description": "A query parameter that indentifies a STIG"
-																},
-																{
-																	"key": "revisionStr",
-																	"value": "{{testRev}}",
-																	"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId"
-																},
-																{
-																	"key": "projection",
-																	"value": "rule",
-																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "stigs",
-																	"description": "Additional properties to include in the response.\n"
-																},
-																{
-																	"key": "projection",
-																	"value": "asset"
 																}
 															],
 															"variable": [
@@ -4410,7 +4156,6 @@
 												{
 													"listen": "prerequest",
 													"script": {
-														
 														"type": "text/javascript",
 														"exec": [
 															""
@@ -4420,10 +4165,8 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"type": "text/javascript",
 														"exec": [
-															"//normal test start block:",
 															"let user = pm.environment.get(\"user\");",
 															"console.log(\"user: \" + user);",
 															"",
@@ -4447,22 +4190,16 @@
 															"    return;",
 															"}",
 															"",
-															"",
 															"let jsonData = pm.response.json();",
 															"",
 															"pm.test(\"Response JSON is an array\", function () {",
 															"    pm.expect(jsonData).to.be.an('array');",
 															"});",
 															"",
-															"",
-															"",
-															"",
-															"",
 															"let reviewKeys = [",
 															"\"assetId\",",
 															"\"assetName\",",
 															"\"ruleId\",",
-															"\"severity\",",
 															"\"result\",",
 															"\"resultComment\",",
 															"\"autoResult\",",
@@ -4473,8 +4210,7 @@
 															"\"username\",",
 															"\"ts\",",
 															"\"rejectText\",",
-															"\"rejectUserId\",",
-															"\"reviewComplete\"",
+															"\"rejectUserId\"",
 															"]",
 															"",
 															"let historyKeys = [",
@@ -4490,89 +4226,62 @@
 															"    \"rejectText\"",
 															"]",
 															"",
-															"let stigKeys = [",
-															"    \"benchmarkId\",",
-															"    \"revisionStr\"",
-															"]",
-															"",
-															"",
 															"if (pm.request.url.getQueryString().match(/projection=stigs/)) {",
 															"    reviewKeys.push(\"stigs\")",
 															"}",
 															"if (pm.request.url.getQueryString().match(/projection=rule/)) {",
 															"    reviewKeys.push(\"rule\")",
 															"}",
-															"if (pm.request.url.getQueryString().match(/projection=asset/)) {",
-															"    reviewKeys.push(\"asset\")",
-															"}",
 															"",
 															"let testAsset = pm.environment.get(\"testAsset\");",
 															"",
 															"pm.test(\"Check if each object contains expected keys/values\", function () {",
-															"",
 															"    for (let review of jsonData){",
 															"        pm.expect(review).to.have.all.keys(reviewKeys);",
 															"        pm.expect(review.assetId).to.equal(testAsset);",
 															"",
-															"        // START AZDO #107",
-															"        // let reviewMatchString = pm.environment.get(\"reviewMatchString\");",
-															"        // let regex = new RegExp(reviewMatchString);",
-															"        // pm.expect(review.resultComment).to.match(regex);",
-															"        // END AZDO #107",
+															"        let reviewMatchString = pm.environment.get(\"reviewMatchString\");",
+															"        let regex = new RegExp(reviewMatchString);",
+															"        pm.expect(review.resultComment).to.match(regex);",
 															"",
-															"        // let regexParamString = /result=([^&]+)&/;",
-															"        // let regexParam = new RegExp(regexParamString);",
-															"        // let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];",
-															"        // console.log(regexParam)",
-															"        // console.log(param)",
-															"",
-															"    if (pm.request.url.getQueryString().match(/result=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];",
-															"        pm.expect(review.result).to.equal(param);",
-															"        // console.log(param)",
-															"        // console.log(\"matched\")",
+															"        if (pm.request.url.getQueryString().match(/result=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];",
+															"            pm.expect(review.result).to.equal(param);",
+															"        }",
+															"        if (pm.request.url.getQueryString().match(/action=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/action=([^&]+)&/)[1];",
+															"            pm.expect(review.action).to.equal(param);",
+															"        }",
+															"        if (pm.request.url.getQueryString().match(/status=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/status=([^&]+)&/)[1];",
+															"            pm.expect(review.status).to.equal(param);",
+															"        }    ",
+															"        if (pm.request.url.getQueryString().match(/ruleId=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/ruleId=([^&]+)&/)[1];",
+															"            pm.expect(review.ruleId).to.equal(param);",
+															"        }    ",
+															"        if (pm.request.url.getQueryString().match(/groupId=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/groupId=([^&]+)&/)[1];",
+															"            pm.expect(review.groupId).to.equal(param);",
+															"        }    ",
+															"        if (pm.request.url.getQueryString().match(/cci=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/cci=([^&]+)&/)[1];",
+															"            pm.expect(review.cci).to.equal(param);",
+															"        }    ",
+															"        if (pm.request.url.getQueryString().match(/userId=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/userId=([^&]+)&/)[1];",
+															"            pm.expect(review.userId).to.equal(param);",
+															"        }    ",
+															"        if (pm.request.url.getQueryString().match(/assetId=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/assetId=([^&]+)&/)[1];",
+															"            pm.expect(review.assetId).to.equal(param);",
+															"        }        ",
+															"        if (pm.request.url.getQueryString().match(/benchmarkId=/)) {",
+															"            let param = pm.request.url.getQueryString().match(/benchmarkId=([^&]+)&/)[1];",
+															"            pm.expect(review.stigs[0]).to.equal(param);",
+															"        }    ",
 															"    }",
-															"    if (pm.request.url.getQueryString().match(/action=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/action=([^&]+)&/)[1];",
-															"        pm.expect(review.action).to.equal(param);",
-															"    }",
-															"    if (pm.request.url.getQueryString().match(/status=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/status=([^&]+)&/)[1];",
-															"        pm.expect(review.status).to.equal(param);",
-															"    }    ",
-															"    if (pm.request.url.getQueryString().match(/ruleId=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/ruleId=([^&]+)&/)[1];",
-															"        pm.expect(review.ruleId).to.equal(param);",
-															"    }    ",
-															"    if (pm.request.url.getQueryString().match(/groupId=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/groupId=([^&]+)&/)[1];",
-															"        pm.expect(review.groupId).to.equal(param);",
-															"    }    ",
-															"    if (pm.request.url.getQueryString().match(/cci=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/cci=([^&]+)&/)[1];",
-															"        pm.expect(review.cci).to.equal(param);",
-															"    }    ",
-															"    if (pm.request.url.getQueryString().match(/userId=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/userId=([^&]+)&/)[1];",
-															"        pm.expect(review.userId).to.equal(param);",
-															"    }    ",
-															"    if (pm.request.url.getQueryString().match(/assetId=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/assetId=([^&]+)&/)[1];",
-															"        pm.expect(review.assetId).to.equal(param);",
-															"    }        ",
-															"    if (pm.request.url.getQueryString().match(/benchmarkId=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/benchmarkId=([^&]+)&/)[1];",
-															"        pm.expect(review.stigs[0].benchmarkId).to.equal(param);",
-															"    }    ",
-															"    if (pm.request.url.getQueryString().match(/revisionStr=/)) {",
-															"        let param = pm.request.url.getQueryString().match(/revisionStr=([^&]+)&/)[1];",
-															"        pm.expect(review.stigs[0].revisionStr).to.equal(param);",
-															"        // console.log(param)",
-															"        // console.log(\"matched\")",
-															"    }  ",
-															"",
-															"    }",
-															"});",
+															"})",
 															"",
 															"",
 															"",
@@ -4600,7 +4309,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -4612,7 +4320,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -4674,12 +4382,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -4688,10 +4390,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -4711,7 +4409,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -4723,7 +4420,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?result=fail&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?result=fail&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -4784,12 +4481,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -4798,10 +4489,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -4821,7 +4508,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -4833,7 +4519,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?action=remediate&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?action=remediate&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -4894,12 +4580,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -4908,10 +4588,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -4931,7 +4607,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -4943,7 +4618,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?status=saved&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?status=saved&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -5004,12 +4679,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -5018,10 +4687,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -5041,7 +4706,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -5053,7 +4717,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?ruleId={{testRuleId}}&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?ruleId={{testRuleId}}&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -5114,12 +4778,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -5128,120 +4786,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
-														}
-													],
-													"variable": [
-														{
-															"key": "collectionId",
-															"value": "{{testCollection}}",
-															"description": "(Required) A path parameter that indentifies a Collection"
-														}
-													]
-												}
-											},
-											"response": []
-										},
-										{
-											"name": "Return a list of Reviews accessible to the requester GROUPID",
-											"event": [
-												{
-													"listen": "test",
-													"script": {
-														
-														"exec": [
-															""
-														],
-														"type": "text/javascript"
-													}
-												}
-											],
-											"request": {
-												"method": "GET",
-												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?groupId={{testGroupId}}&projection=rule&projection=stigs&projection=asset",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews"
-													],
-													"query": [
-														{
-															"key": "result",
-															"value": "fail",
-															"disabled": true
-														},
-														{
-															"key": "action",
-															"value": "remediate",
-															"disabled": true
-														},
-														{
-															"key": "status",
-															"value": "saved",
-															"disabled": true
-														},
-														{
-															"key": "ruleId",
-															"value": "{{testRuleId}}",
-															"description": "Selects Reviews of a Rule",
-															"disabled": true
-														},
-														{
-															"key": "groupId",
-															"value": "{{testGroupId}}",
-															"description": "A query parameter that indentifies a Group"
-														},
-														{
-															"key": "cci",
-															"value": "<string>",
-															"description": "A query parameter that indentifies a CCI",
-															"disabled": true
-														},
-														{
-															"key": "userId",
-															"value": "<string>",
-															"description": "A path parameter that indentifies a User",
-															"disabled": true
-														},
-														{
-															"key": "assetId",
-															"value": "<string>",
-															"description": "A query parameter that indentifies an Asset",
-															"disabled": true
-														},
-														{
-															"key": "benchmarkId",
-															"value": "<string>",
-															"description": "A query parameter that indentifies a STIG",
-															"disabled": true
-														},
-														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
-															"key": "projection",
-															"value": "rule",
-															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "stigs",
-															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -5261,7 +4805,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -5273,7 +4816,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?userId={{testUserId}}&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?userId={{testUserId}}&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -5334,12 +4877,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -5348,10 +4885,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -5371,7 +4904,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -5383,7 +4915,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?assetId={{testAsset}}&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?assetId={{testAsset}}&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -5444,12 +4976,6 @@
 															"disabled": true
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -5458,10 +4984,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -5481,7 +5003,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															""
 														],
@@ -5493,7 +5014,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?benchmarkId={{testBenchmark}}&projection=rule&projection=stigs&projection=asset",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?benchmarkId={{testBenchmark}}&projection=rule&projection=stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -5554,12 +5075,6 @@
 															"description": "A query parameter that indentifies a STIG"
 														},
 														{
-															"key": "revisionStr",
-															"value": "<string>",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId",
-															"disabled": true
-														},
-														{
 															"key": "projection",
 															"value": "rule",
 															"description": "Additional properties to include in the response.\n"
@@ -5568,119 +5083,6 @@
 															"key": "projection",
 															"value": "stigs",
 															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
-														}
-													],
-													"variable": [
-														{
-															"key": "collectionId",
-															"value": "{{testCollection}}",
-															"description": "(Required) A path parameter that indentifies a Collection"
-														}
-													]
-												}
-											},
-											"response": []
-										},
-										{
-											"name": "Return a list of Reviews accessible to the requester REVID",
-											"event": [
-												{
-													"listen": "test",
-													"script": {
-														
-														"exec": [
-															""
-														],
-														"type": "text/javascript"
-													}
-												}
-											],
-											"request": {
-												"method": "GET",
-												"header": [],
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?benchmarkId={{testBenchmark}}&revisionStr={{testRev}}&projection=rule&projection=stigs&projection=asset",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews"
-													],
-													"query": [
-														{
-															"key": "result",
-															"value": "fail",
-															"disabled": true
-														},
-														{
-															"key": "action",
-															"value": "remediate",
-															"disabled": true
-														},
-														{
-															"key": "status",
-															"value": "saved",
-															"disabled": true
-														},
-														{
-															"key": "ruleId",
-															"value": "{{testRuleId}}",
-															"description": "Selects Reviews of a Rule",
-															"disabled": true
-														},
-														{
-															"key": "groupId",
-															"value": "{{testGroupId}}",
-															"description": "A query parameter that indentifies a Group",
-															"disabled": true
-														},
-														{
-															"key": "cci",
-															"value": "{{testCci}}",
-															"description": "A query parameter that indentifies a CCI",
-															"disabled": true
-														},
-														{
-															"key": "userId",
-															"value": "{{testUserId}}",
-															"description": "A path parameter that indentifies a User",
-															"disabled": true
-														},
-														{
-															"key": "assetId",
-															"value": "{{testAsset}}",
-															"description": "A query parameter that indentifies an Asset",
-															"disabled": true
-														},
-														{
-															"key": "benchmarkId",
-															"value": "{{testBenchmark}}",
-															"description": "A query parameter that indentifies a STIG"
-														},
-														{
-															"key": "revisionStr",
-															"value": "{{testRev}}",
-															"description": "Selects Reviews mapped to a Revision [ V{version_num}R{release_num} | 'latest' ]; requires benchmarkId"
-														},
-														{
-															"key": "projection",
-															"value": "rule",
-															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "stigs",
-															"description": "Additional properties to include in the response.\n"
-														},
-														{
-															"key": "projection",
-															"value": "asset"
 														}
 													],
 													"variable": [
@@ -5699,7 +5101,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												
 												"type": "text/javascript",
 												"exec": [
 													""
@@ -5709,10 +5110,8 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"type": "text/javascript",
 												"exec": [
-													"//normal test start block:",
 													"let user = pm.environment.get(\"user\");",
 													"console.log(\"user: \" + user);",
 													"",
@@ -5736,22 +5135,16 @@
 													"    return;",
 													"}",
 													"",
-													"",
 													"let jsonData = pm.response.json();",
 													"",
 													"pm.test(\"Response JSON is an array\", function () {",
 													"    pm.expect(jsonData).to.be.an('array');",
 													"});",
 													"",
-													"",
-													"",
-													"",
-													"",
 													"let reviewKeys = [",
 													"\"assetId\",",
 													"\"assetName\",",
 													"\"ruleId\",",
-													"\"severity\",",
 													"\"result\",",
 													"\"resultComment\",",
 													"\"autoResult\",",
@@ -5762,8 +5155,7 @@
 													"\"username\",",
 													"\"ts\",",
 													"\"rejectText\",",
-													"\"rejectUserId\",",
-													"\"reviewComplete\"",
+													"\"rejectUserId\"",
 													"]",
 													"",
 													"let historyKeys = [",
@@ -5779,20 +5171,11 @@
 													"    \"rejectText\"",
 													"]",
 													"",
-													"let stigKeys = [",
-													"    \"benchmarkId\",",
-													"    \"revisionStr\"",
-													"]",
-													"",
-													"",
 													"if (pm.request.url.getQueryString().match(/projection=stigs/)) {",
 													"    reviewKeys.push(\"stigs\")",
 													"}",
 													"if (pm.request.url.getQueryString().match(/projection=rule/)) {",
 													"    reviewKeys.push(\"rule\")",
-													"}",
-													"if (pm.request.url.getQueryString().match(/projection=asset/)) {",
-													"    reviewKeys.push(\"asset\")",
 													"}",
 													"",
 													"let reviewMatchString = pm.environment.get(\"reviewMatchString\");",
@@ -5805,63 +5188,46 @@
 													"    for (let review of jsonData){",
 													"        pm.expect(review).to.have.all.keys(reviewKeys);",
 													"",
-													"        // START AZDO #107",
-													"        // pm.expect(review.resultComment).to.match(regex);",
-													"        // END AZDO #107",
+													"        pm.expect(review.resultComment).to.match(reviewRegex);",
 													"        ",
 													"        pm.expect(review.assetName).to.match(assetRegex);",
 													"",
-													"        // let regexParamString = /result=([^&]+)&/;",
-													"        // let regexParam = new RegExp(regexParamString);",
-													"        // let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];",
-													"        // console.log(regexParam)",
-													"        // console.log(param)",
-													"",
-													"    if (pm.request.url.getQueryString().match(/result=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];",
-													"        pm.expect(review.result).to.equal(param);",
-													"        // console.log(param)",
-													"        // console.log(\"matched\")",
-													"    }",
-													"    if (pm.request.url.getQueryString().match(/action=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/action=([^&]+)&/)[1];",
-													"        pm.expect(review.action).to.equal(param);",
-													"    }",
-													"    if (pm.request.url.getQueryString().match(/status=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/status=([^&]+)&/)[1];",
-													"        pm.expect(review.status).to.equal(param);",
-													"    }    ",
-													"    if (pm.request.url.getQueryString().match(/ruleId=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/ruleId=([^&]+)&/)[1];",
-													"        pm.expect(review.ruleId).to.equal(param);",
-													"    }    ",
-													"    if (pm.request.url.getQueryString().match(/groupId=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/groupId=([^&]+)&/)[1];",
-													"        pm.expect(review.rule.groupId).to.equal(param);",
-													"    }    ",
-													"    if (pm.request.url.getQueryString().match(/cci=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/cci=([^&]+)&/)[1];",
-													"        pm.expect(review.cci).to.equal(param);",
-													"    }    ",
-													"    if (pm.request.url.getQueryString().match(/userId=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/userId=([^&]+)&/)[1];",
-													"        pm.expect(review.userId).to.equal(param);",
-													"    }    ",
-													"    if (pm.request.url.getQueryString().match(/assetId=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/assetId=([^&]+)&/)[1];",
-													"        pm.expect(review.assetId).to.equal(param);",
-													"    }        ",
-													"    if (pm.request.url.getQueryString().match(/benchmarkId=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/benchmarkId=([^&]+)&/)[1];",
-													"        pm.expect(review.stigs[0].benchmarkId).to.equal(param);",
-													"    }    ",
-													"    if (pm.request.url.getQueryString().match(/revisionStr=/)) {",
-													"        let param = pm.request.url.getQueryString().match(/revisionStr=([^&]+)&/)[1];",
-													"        pm.expect(review.stigs[0].revisionStr).to.equal(param);",
-													"        // console.log(param)",
-													"        // console.log(\"matched\")",
-													"    }  ",
-													"",
+													"        if (pm.request.url.getQueryString().match(/result=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];",
+													"            pm.expect(review.result).to.equal(param);",
+													"        }",
+													"        if (pm.request.url.getQueryString().match(/action=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/action=([^&]+)&/)[1];",
+													"            pm.expect(review.action).to.equal(param);",
+													"        }",
+													"        if (pm.request.url.getQueryString().match(/status=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/status=([^&]+)&/)[1];",
+													"            pm.expect(review.status).to.equal(param);",
+													"        }    ",
+													"        if (pm.request.url.getQueryString().match(/ruleId=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/ruleId=([^&]+)&/)[1];",
+													"            pm.expect(review.ruleId).to.equal(param);",
+													"        }    ",
+													"        if (pm.request.url.getQueryString().match(/groupId=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/groupId=([^&]+)&/)[1];",
+													"            pm.expect(review.rule.groupId).to.equal(param);",
+													"        }    ",
+													"        if (pm.request.url.getQueryString().match(/cci=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/cci=([^&]+)&/)[1];",
+													"            pm.expect(review.cci).to.equal(param);",
+													"        }    ",
+													"        if (pm.request.url.getQueryString().match(/userId=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/userId=([^&]+)&/)[1];",
+													"            pm.expect(review.userId).to.equal(param);",
+													"        }    ",
+													"        if (pm.request.url.getQueryString().match(/assetId=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/assetId=([^&]+)&/)[1];",
+													"            pm.expect(review.assetId).to.equal(param);",
+													"        }        ",
+													"        if (pm.request.url.getQueryString().match(/benchmarkId=/)) {",
+													"            let param = pm.request.url.getQueryString().match(/benchmarkId=([^&]+)&/)[1];",
+													"            pm.expect(review.stigs[0]).to.equal(param);",
+													"        }    ",
 													"    }",
 													"});",
 													"",
@@ -5898,7 +5264,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -6056,7 +5421,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -6218,7 +5582,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											""
 										],
@@ -6278,7 +5641,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -6439,7 +5801,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											""
 										],
@@ -6551,7 +5912,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"pm.test(\"Status code is 200\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
@@ -6604,7 +5964,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"exec": [
 									"let user = pm.environment.get(\"user\");\r",
 									"console.log(\"user: \" + user);\r",
@@ -6730,7 +6089,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -6834,7 +6192,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
@@ -6948,7 +6305,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -7039,7 +6395,6 @@
 										{
 											"listen": "prerequest",
 											"script": {
-												
 												"type": "text/javascript",
 												"exec": [
 													""
@@ -7049,7 +6404,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"type": "text/javascript",
 												"exec": [
 													""
@@ -7066,7 +6420,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -7177,7 +6530,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -7288,7 +6640,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"//Same tests as for GET /collection/{collectionId}\r",
 													"\r",
@@ -7517,7 +6868,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -7619,7 +6969,6 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								
 								"type": "text/javascript",
 								"exec": [
 									""
@@ -7629,7 +6978,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"type": "text/javascript",
 								"exec": [
 									""
@@ -7658,7 +7006,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
@@ -7746,7 +7093,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -7828,7 +7174,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -7931,7 +7276,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -8034,7 +7378,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -8129,7 +7472,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -8240,7 +7582,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
@@ -8356,7 +7697,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
@@ -8472,7 +7812,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
@@ -8586,7 +7925,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -8683,7 +8021,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -8791,7 +8128,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -8899,7 +8235,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -9000,7 +8335,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -9105,7 +8439,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -9254,7 +8587,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -9401,7 +8733,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -9531,7 +8862,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -9682,7 +9012,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -9796,7 +9125,6 @@
 																{
 																	"listen": "test",
 																	"script": {
-																		
 																		"exec": [
 																			"//START AZDO #115\r",
 																			"\r",
@@ -9887,7 +9215,6 @@
 																{
 																	"listen": "test",
 																	"script": {
-																		
 																		"exec": [
 																			"//START AZDO #115\r",
 																			"// let user = pm.environment.get(\"user\");\r",
@@ -9991,7 +9318,6 @@
 																{
 																	"listen": "test",
 																	"script": {
-																		
 																		"exec": [
 																			"let user = pm.environment.get(\"user\");\r",
 																			"console.log(\"user: \" + user);\r",
@@ -10085,7 +9411,6 @@
 																{
 																	"listen": "test",
 																	"script": {
-																		
 																		"exec": [
 																			"let user = pm.environment.get(\"user\");\r",
 																			"console.log(\"user: \" + user);\r",
@@ -10179,7 +9504,6 @@
 																{
 																	"listen": "test",
 																	"script": {
-																		
 																		"exec": [
 																			"let user = pm.environment.get(\"user\");\r",
 																			"console.log(\"user: \" + user);\r",
@@ -10283,7 +9607,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"// START AZDO #116\r",
 																	"// let user = pm.environment.get(\"user\");\r",
@@ -10359,7 +9682,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"//START AZDO #117\r",
 																	"// let user = pm.environment.get(\"user\");\r",
@@ -10440,7 +9762,6 @@
 												{
 													"listen": "test",
 													"script": {
-														
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
@@ -10511,7 +9832,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -10581,7 +9901,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -10647,7 +9966,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -10712,7 +10030,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"// START AZDO #118\r",
 											"// let user = pm.environment.get(\"user\");\r",
@@ -10803,7 +10120,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"//START AZDO #117\r",
 											"// let user = pm.environment.get(\"user\");\r",
@@ -10890,7 +10206,6 @@
 														{
 															"listen": "test",
 															"script": {
-																
 																"exec": [
 																	"\r",
 																	"let user = pm.environment.get(\"user\");\r",
@@ -10967,7 +10282,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"\r",
 													"let user = pm.environment.get(\"user\");\r",
@@ -11030,7 +10344,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -11134,7 +10447,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"//normal test start block:\r",
 													"let user = pm.environment.get(\"user\");\r",
@@ -11391,7 +10703,6 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								
 								"type": "text/javascript",
 								"exec": [
 									""
@@ -11401,7 +10712,6 @@
 						{
 							"listen": "test",
 							"script": {
-								
 								"type": "text/javascript",
 								"exec": [
 									""
@@ -11424,7 +10734,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -11521,7 +10830,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -11625,7 +10933,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"    pm.test(\"Status code is 403 for invalid requests\", function () {\r",
 													"        pm.response.to.have.status(403);\r",
@@ -11892,7 +11199,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -12008,7 +11314,6 @@
 										{
 											"listen": "test",
 											"script": {
-												
 												"exec": [
 													"let user = pm.environment.get(\"user\");\r",
 													"console.log(\"user: \" + user);\r",
@@ -12150,7 +11455,6 @@
 								{
 									"listen": "test",
 									"script": {
-										
 										"exec": [
 											"let user = pm.environment.get(\"user\");\r",
 											"console.log(\"user: \" + user);\r",
@@ -12283,7 +11587,6 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				
 				"type": "text/javascript",
 				"exec": [
 					"// pm.environment.set(\"curUser\", \"staff\");",
@@ -12352,7 +11655,6 @@
 		{
 			"listen": "test",
 			"script": {
-				
 				"type": "text/javascript",
 				"exec": [
 					"// var user = pm.environment.get(\"user\");",
