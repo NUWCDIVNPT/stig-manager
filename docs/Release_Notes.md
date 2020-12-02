@@ -2,6 +2,13 @@
 
 ## Releases
 
+### 1.0.0-beta.8
+- (fix) #47 ungranted reviews for lvl1 (#48)
+- Update import_realm.json
+redirects include HTTPS and remove MQTT
+- (fix) Empty string scope not failing #42
+- Added more comprehensive testing, altered workflow for efficiency (#43)
+
 ### 1.0.0-beta.7
 - (fix) stigGrant projection #40
 
