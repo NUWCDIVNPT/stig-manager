@@ -171,10 +171,6 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       predicates.statements.push('status.api = :status')
       predicates.binds.status = inPredicates.status
     }
-    if (inPredicates.rules) {
-      predicates.statements.push('status.api = :status')
-      predicates.binds.status = inPredicates.status
-    }
     if (inPredicates.ruleId) {
       predicates.statements.push('r.ruleId = :ruleId')
       predicates.binds.ruleId = inPredicates.ruleId
@@ -195,8 +191,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         predicates.binds.cci = inPredicates.cci
     }
     if (inPredicates.userId) {
-      predicates.statements.push('r.userId = :userId')
-      predicates.binds.userId = inPredicates.userId
+      predicates.statements.push('r.userId = :userId2')
+      predicates.binds.userId2 = inPredicates.userId
     }
     if (inPredicates.assetId) {
       predicates.statements.push('r.assetId = :assetId')
