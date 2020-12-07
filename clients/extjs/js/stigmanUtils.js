@@ -1121,12 +1121,14 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		let actionComment = form.findField('action-comment' + idAppend)
 
 		// Initialize the lastSavedData properties
+		if ( resultCombo.value === null ) { resultCombo.value = '' }
 		resultCombo.lastSavedData = resultCombo.value
 		if (review.resultComment === null) {
 			resultComment.lastSavedData = ""
 		} else {
 			resultComment.lastSavedData = resultComment.getValue()
 		}
+		if ( actionCombo.value === null ) { actionCombo.value = '' }
 		actionCombo.lastSavedData = actionCombo.value
 		if (review.actionComment === null) {
 			actionComment.lastSavedData = ""
