@@ -1486,7 +1486,6 @@ async function addReview(leaf, selectedRule, selectedResource) {
     monitorValid: false,
     trackResetOnLoad: false,
     reviewChanged: function () { // STIG Manager defined property
-      // Issue: actionCombo value changes from null to '' once it is pulled down, even if no value is chosen
       var resultCombo = Ext.getCmp('result-combo' + idAppend);
       var resultComment = Ext.getCmp('result-comment' + idAppend);
       var actionCombo = Ext.getCmp('action-combo' + idAppend);
