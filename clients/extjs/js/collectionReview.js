@@ -1548,10 +1548,12 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					// Metadata
 					let metadata = []
 					for (const [key, value] of Object.entries(apiReview)) {
-						metadata.push({
-							property: key,
-							value: value
-						})
+						if (key !== 'history') {
+							metadata.push({
+								property: key,
+								value: value
+							})
+						}
 					}
 					Ext.getCmp('metadataGrid' + idAppend).getStore().loadData(metadata)	
 				}
