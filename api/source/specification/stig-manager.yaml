@@ -260,36 +260,36 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-    put:
-      tags:
-        - Asset
-      summary: UNIMPLEMENTED Set all the STIG assignments of an Asset
-      operationId: attachStigsToAsset
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              minItems: 1
-              items:
-                type: string
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AssetProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
+    # put:
+    #   tags:
+    #     - Asset
+    #   summary: UNIMPLEMENTED Set all the STIG assignments of an Asset
+    #   operationId: attachStigsToAsset
+    #   requestBody:
+    #     required: true
+    #     content:
+    #       application/json:
+    #         schema:
+    #           type: array
+    #           minItems: 1
+    #           items:
+    #             type: string
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/AssetProjected'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection'
     delete:
       tags:
         - Asset
@@ -316,27 +316,27 @@ paths:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
-    put:
-      tags:
-        - Asset
-      summary: UNIMPLEMENTED Assign a STIG to an Asset
-      operationId: attachStigToAsset
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/STIGs'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
+    # put:
+    #   tags:
+    #     - Asset
+    #   summary: UNIMPLEMENTED Assign a STIG to an Asset
+    #   operationId: attachStigToAsset
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/STIGs'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection'
     delete:
       tags:
         - Asset
@@ -363,140 +363,140 @@ paths:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
-    get:
-      tags:
-        - Asset
-      summary: >-
-        Return accessLevel = 1 Users granted access to this STIG-Asset
-        combination
-      operationId: getAssetStigGrants
-      responses:
-        '200':
-          description: STIGs response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserBasic'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
-    put:
-      tags:
-        - Asset
-      summary: >-
-        UNIMPLEMENTED Set all the accessLevel = 1 Users granted access to this
-        STIG-Asset combination
-      operationId: setAssetStigGrants
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  description: >-
-                    A List of userIds with accessLevel 1 on the Asset's
-                    Collection
-                  type: string
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
-    delete:
-      tags:
-        - Asset
-      summary: >-
-        UNIMPLEMENTED Revoke all accessLevel = 1 User access to this STIG-Asset
-        combination
-      operationId: deleteAssetStigGrants
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserBasic'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
+    # get:
+    #   tags:
+    #     - Asset
+    #   summary: >-
+    #     Return accessLevel = 1 Users granted access to this STIG-Asset
+    #     combination
+    #   operationId: getAssetStigGrants
+    #   responses:
+    #     '200':
+    #       description: STIGs response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: array
+    #             items:
+    #               $ref: '#/components/schemas/UserBasic'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection:read'
+    # put:
+    #   tags:
+    #     - Asset
+    #   summary: >-
+    #     UNIMPLEMENTED Set all the accessLevel = 1 Users granted access to this
+    #     STIG-Asset combination
+    #   operationId: setAssetStigGrants
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: array
+    #             items:
+    #               description: >-
+    #                 A List of userIds with accessLevel 1 on the Asset's
+    #                 Collection
+    #               type: string
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection'
+    # delete:
+    #   tags:
+    #     - Asset
+    #   summary: >-
+    #     UNIMPLEMENTED Revoke all accessLevel = 1 User access to this STIG-Asset
+    #     combination
+    #   operationId: deleteAssetStigGrants
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: array
+    #             items:
+    #               $ref: '#/components/schemas/UserBasic'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection'
   '/assets/{assetId}/stigs/{benchmarkId}/users/{userId}':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
       - $ref: '#/components/parameters/UserIdPath'
-    put:
-      tags:
-        - Asset
-      summary: >-
-        UNIMPLEMENTED Grant an accessLevel = 1 User access to a STIG-Asset
-        combination
-      operationId: setAssetStigGrant
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserBasic'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
-    delete:
-      tags:
-        - Asset
-      summary: >-
-        UNIMPLEMENTED Revoke an accessLevel = 1 User's access to a STIG-Asset
-        combination
-      operationId: deleteAssetStigGrant
-      responses:
-        '200':
-          description: AssetProjected response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserBasic'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
+    # put:
+    #   tags:
+    #     - Asset
+    #   summary: >-
+    #     UNIMPLEMENTED Grant an accessLevel = 1 User access to a STIG-Asset
+    #     combination
+    #   operationId: setAssetStigGrant
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: array
+    #             items:
+    #               $ref: '#/components/schemas/UserBasic'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection'
+    # delete:
+    #   tags:
+    #     - Asset
+    #   summary: >-
+    #     UNIMPLEMENTED Revoke an accessLevel = 1 User's access to a STIG-Asset
+    #     combination
+    #   operationId: deleteAssetStigGrant
+    #   responses:
+    #     '200':
+    #       description: AssetProjected response
+    #       content:
+    #         application/json:
+    #           schema:
+    #             type: array
+    #             items:
+    #               $ref: '#/components/schemas/UserBasic'
+    #     default:
+    #       description: unexpected error
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #   security:
+    #     - oauth:
+    #         - 'stig-manager:collection'
   /collections:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
