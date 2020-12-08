@@ -27,21 +27,21 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'r.ts',
       'r.rejectText',
       'CAST(r.rejectUserId as char) as rejectUserId',
-      // `CASE
-      //   WHEN r.ruleId is null
-      //   THEN 0
-      //   ELSE
-      //     CASE WHEN r.resultId != 4
-      //     THEN
-      //       CASE WHEN r.resultComment != ' ' and r.resultComment is not null
-      //         THEN 1
-      //         ELSE 0 END
-      //     ELSE
-      //       CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
-      //         THEN 1
-      //         ELSE 0 END
-      //     END
-      // END as "reviewComplete"`
+      `CASE
+        WHEN r.ruleId is null
+        THEN 0
+        ELSE
+          CASE WHEN r.resultId != 4
+          THEN
+            CASE WHEN r.resultComment != ' ' and r.resultComment is not null
+              THEN 1
+              ELSE 0 END
+          ELSE
+            CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
+              THEN 1
+              ELSE 0 END
+          END
+      END as "reviewComplete"`
     ]
     const groupBy = [
       'r.assetId',

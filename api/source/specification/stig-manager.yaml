@@ -2700,6 +2700,8 @@ components:
         rejectUserId:
           type: string
           readOnly: true
+        reviewComplete:
+          type: boolean
     ReviewAction:
       type: string
       nullable: true
