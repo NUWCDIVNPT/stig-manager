@@ -961,12 +961,14 @@ async function showImportResultFiles( collectionId, el ) {
                     if (modifyAssets) {
                         let apiAsset = await importAsset( collectionId, assetObj )
                         assetObj.assetId = apiAsset.assetId
-                        updateStatusText(JSON.stringify(apiAsset, null, 2))
+                        // updateStatusText(JSON.stringify(apiAsset, null, 2))
+                        updateStatusText(` OK (assetId ${apiAsset.assetId})`)
                     }
                     if (importReviews) {
                         for (const reviewArray of assetObj.reviews) {
                             let apiReviews = await importReviewArray( collectionId, assetObj.assetId, reviewArray )
-                            updateStatusText(JSON.stringify(apiReviews, null, 2))
+                            // updateStatusText(JSON.stringify(apiReviews, null, 2))
+                            updateStatusText(' OK')
                         }
                     }
                     processedCount++
@@ -1048,7 +1050,7 @@ async function showImportResultFiles( collectionId, el ) {
                         url = `${STIGMAN.Env.apiBase}/assets`
                         method = 'POST'
                     }
-                    updateStatusText(`${method} ${url}`)
+                    updateStatusText(`${method} ${values.name}`, true)
 
                     let result = await Ext.Ajax.requestPromise({
                         url: url,
@@ -1073,7 +1075,7 @@ async function showImportResultFiles( collectionId, el ) {
             async function importReviewArray ( collectionId, assetId, reviewArray ) {
                 try {
                     let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}`
-                    updateStatusText(`POST ${url}`)
+                    updateStatusText(`POST reviews for assetId ${assetId}`, true)
                     let result = await Ext.Ajax.requestPromise({
                         url: url,
                         method: 'POST',
