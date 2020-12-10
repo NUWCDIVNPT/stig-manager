@@ -40,6 +40,8 @@ services:
       - STIGMAN_DB_PASSWORD=stigman
       - STIGMAN_INIT_IMPORT_STIGS=true
       - STIGMAN_INIT_IMPORT_SCAP=true
+      # Set envvar below if non-localhost browsers will access the API
+      # - STIGMAN_CLIENT_KEYCLOAK_AUTH=<the Keycloak authorization URL relative to the Client>
     init: true
     ports:
       - "54000:54000"
