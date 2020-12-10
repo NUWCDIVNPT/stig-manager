@@ -2,6 +2,11 @@
 
 ## Releases
 
+### 1.0.0-beta.9
+- Provide guidance for non-localhost browsers (#54)
+- Client CKL/SCAP import less verbose (#55)
+- (fix) UI: Metadata has malformed History property
+- Comment out unimplemented endpoints
 ### 1.0.0-beta.8
 - (fix) #47 ungranted reviews for lvl1 (#48)
 - Update import_realm.json
