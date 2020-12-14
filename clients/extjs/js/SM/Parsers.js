@@ -128,7 +128,8 @@ function reviewsFromCkl (cklData) {
               result: result,
               resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
               action: action,
-              actionComment: action ? (vuln.COMMENTS == "" ? null : vuln.COMMENTS) : null,
+              // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
+              actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
               autoResult: false,
               status: result != 'fail' ? 'submitted' : 'saved'
             })  
