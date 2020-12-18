@@ -220,18 +220,18 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 
     // Tables: review, review_history
     for (const review of reviews) {
-      for (const h of review.history) {
-        dml.reviewHistory.insertBinds.push([
-          review.assetId,
-          review.ruleId,
-          h.activityType,
-          h.columnName,
-          h.oldValue,
-          h.newValue,
-          h.userId,
-          new Date(h.ts)
-        ])
-      }
+      // for (const h of review.history) {
+      //   dml.reviewHistory.insertBinds.push([
+      //     review.assetId,
+      //     review.ruleId,
+      //     h.activityType,
+      //     h.columnName,
+      //     h.oldValue,
+      //     h.newValue,
+      //     h.userId,
+      //     new Date(h.ts)
+      //   ])
+      // }
       dml.review.insertBinds.push([
         parseInt(review.assetId) || null,
         review.ruleId,

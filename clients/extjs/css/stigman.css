@@ -117,6 +117,18 @@ body {
 	user-select: none;
 }
 
+.sm-navtree-sprite {
+	color: #fcfcfc !important;
+	font: bold 9px Open Sans,helvetica, sans-serif;
+	position: relative;
+	top: -1px;
+	background-color: #6f93db;
+	padding: 1px 4px 2px 4px;
+	border-radius:  3px;
+	margin-left: 11px;
+	user-select: none;
+}
+
 
 .sm-severity-high {
 	color: #d74400;

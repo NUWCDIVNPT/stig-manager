@@ -1,2 +1,0 @@
-ALTER TABLE `stigman`.`user_data` 
-ADD COLUMN `lastToken` JSON NULL AFTER `disabled`;

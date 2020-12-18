@@ -52,8 +52,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
           userIds: s.users.map( r => r.userId )
         }))
       })
-      // let reviews = []
-      let reviews = await Review.exportReviews(['history'], req.userObject)
+      let reviews = await Review.exportReviews([], req.userObject)
       reviews.forEach(r => {
         ['assetName','username','reviewComplete'].forEach(k => delete r[k])
         r.history.forEach(h => delete h.username)
