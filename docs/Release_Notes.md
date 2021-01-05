@@ -2,6 +2,8 @@
 
 ## Releases
 
+### 1.0.0-beta.11
+- Experimental appdata example (#66)
 ### 1.0.0-beta.10
 - Bump ini from 1.3.5 to 1.3.8 in /api/source (#60)
 - Action Comments do not import if there is no Action (#61)
