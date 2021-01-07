@@ -1,4 +1,10 @@
 function reviewsFromCkl (cklData) {
+  function decodeHtml(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  }
+  
   try {  
     const fastparseOptions = {
       attributeNamePrefix: "",
@@ -13,6 +19,7 @@ function reviewsFromCkl (cklData) {
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
       arrayMode: true, //"strict"
+      tagValueProcessor : (val, tagName) => decodeHtml(val)
     }
     //let parsed = parser.parse(cklData.toString(), fastparseOptions)
     let parsed = parser.parse(cklData, fastparseOptions)
