@@ -367,7 +367,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			filterState: 'All',
 			title: 'Checklist',
 			split:true,
-			titleColumnDataIndex: 'groupTitle', // STIG Manager defined property
+			titleColumnDataIndex: 'ruleTitle', // STIG Manager defined property
 			//collapsible: true,
 			store: groupStore,
 			stripeRows:true,
