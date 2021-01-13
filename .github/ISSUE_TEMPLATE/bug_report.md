@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+**Bug Location**
 
 I found a bug in the:
 - [ ] API
@@ -15,9 +15,11 @@ I found a bug in the:
 - [ ] Elsewhere (Please specify)
 
 
-Please include a clear and concise description of what the bug is.
-If it is in the API, please specify endpoint.
-Including your actual request may be helpful as well.
+**Bug Description:**
+
+- If bug is in the API, please specify endpoint.
+- Including your actual request may be helpful as well.
+
 
 - [ ] I have checked to see if there is already an existing issue that describes this bug.
 
