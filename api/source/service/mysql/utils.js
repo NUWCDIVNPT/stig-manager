@@ -27,9 +27,6 @@ function getPoolConfig() {
     user: config.database.username,
     database: config.database.schema,
     typeCast: function (field, next) {
-      if (field.type == 'JSON') {
-        return (JSON.parse(field.string())); 
-      }
       if ((field.type === "BIT") && (field.length === 1)) {
         let bytes = field.buffer() || [0];
         return( bytes[ 0 ] === 1 );
