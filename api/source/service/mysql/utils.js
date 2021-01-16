@@ -258,7 +258,17 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
   }
 
 }
-module.exports.updateStatsAssetStig = async function(connection, options) {
+
+/**
+ * updateStatsAssetStig
+ * @param {PoolConnection} connection 
+ * @param {Object} param1 
+ * @param {string} param1.collectionId
+ * @param {string} param1.assetId
+ * @param {string} param1.benchmarkId
+ * @param {string[]} param1.rules
+ */
+module.exports.updateStatsAssetStig = async function(connection, { collectionId, assetId, benchmarkId, rules }) {
   try {
     if (!connection) { throw ('Connection required')}
     // Handle optional predicates, 
@@ -266,22 +276,22 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
     let binds = []
     let whereClause = ''
 
-    if (options.rules && options.rules.length > 0) {
+    if (rules && rules.length > 0) {
       predicates.push(`sa.benchmarkId IN (SELECT DISTINCT benchmarkId from current_group_rule where ruleId IN ?)`)
-      binds.push( [options.rules] )
+      binds.push( [rules] )
     }
 
-    if (options.collectionId) {
+    if (collectionId) {
       predicates.push('a.collectionId = ?')
-      binds.push(options.collectionId)
+      binds.push(collectionId)
     }
-    if (options.assetId) {
+    if (assetId) {
       predicates.push('a.assetId = ?')
-      binds.push(options.assetId)
+      binds.push(assetId)
     }
-    if (options.benchmarkId) {
+    if (benchmarkId) {
       predicates.push('sa.benchmarkId = ?')
-      binds.push(options.benchmarkId)
+      binds.push(benchmarkId)
     }
     if (predicates.length > 0) {
       whereClause = `where ${predicates.join(' and ')}`
@@ -313,48 +323,9 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
       ${whereClause}
       group by
         sa.assetId,
-        sa.benchmarkId`
-    
-    const sqlInsert = `
-      insert into stats_asset_stig (
-        minTs,
-        maxTs,
-        savedManual,
-        savedAuto,
-        submittedManual,
-        submittedAuto,
-        rejectedManual,
-        rejectedAuto,
-        acceptedManual,
-        acceptedAuto,
-        highCount,
-        mediumCount,
-        lowCount,
-        assetId,
-        benchmarkId
-      ) VALUES (:minTs,:maxTs,:savedManual,:savedAuto,:submittedManual,:submittedAuto,
-        :rejectedManual,:rejectedAuto,:acceptedManual,:acceptedAuto,:highCount,:mediumCount,:lowCount,:assetId,:benchmarkId)`
+        sa.benchmarkId
+      `
 
-    const sqlUpdate = `
-      update stats_asset_stig set  
-        minTs = :minTs,
-        maxTs = :maxTs,
-        savedManual = :savedManual,
-        savedAuto = :savedAuto,
-        submittedManual = :submittedManual,
-        submittedAuto = :submittedAuto,
-        rejectedManual = :rejectedManual,
-        rejectedAuto = :rejectedAuto,
-        acceptedManual = :acceptedManual,
-        acceptedAuto = :acceptedAuto,
-        highCount = :highCount,
-        mediumCount = :mediumCount,
-        lowCount = :lowCount
-      where
-        assetId = :assetId
-        and benchmarkId = :benchmarkId
-
-    `
     const sqlUpsert = `
     insert into stats_asset_stig (
       assetId,
@@ -372,35 +343,8 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
       highCount,
       mediumCount,
       lowCount)
-    select * from (
-      select
-        sa.assetId,
-        sa.benchmarkId,
-        min(reviews.ts) as minTs,
-        max(reviews.ts) as maxTs,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedManual,
-        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedAuto,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedManual,
-        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedAuto,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedManual,
-        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedAuto,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedManual,
-        sum(CASE WHEN reviews.autoResult = 1  and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedAuto,
-        sum(CASE WHEN reviews.resultId=4 and r.severity='high' THEN 1 ELSE 0 END) as highCount,
-        sum(CASE WHEN reviews.resultId=4 and r.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
-        sum(CASE WHEN reviews.resultId=4 and r.severity='low' THEN 1 ELSE 0 END) as lowCount
-      from
-        asset a
-        left join stig_asset_map sa using (assetId)
-        left join current_group_rule cgr using (benchmarkId)
-        left join rule r using (ruleId)
-        left join stigman.review reviews on (r.ruleId=reviews.ruleId and reviews.assetId=sa.assetId)
-      ${whereClause}
-      group by
-        sa.assetId,
-        sa.benchmarkId
-    ) as stats
-    on duplicate key update
+    VALUES ? AS stats
+      on duplicate key update
         minTs = stats.minTs,
         maxTs = stats.maxTs,
         savedManual = stats.savedManual,
@@ -415,14 +359,18 @@ module.exports.updateStatsAssetStig = async function(connection, options) {
         mediumCount = stats.mediumCount,
         lowCount = stats.lowCount
     `
-    const [stats] = await connection.query(sqlSelect, binds)
-    if (stats.length > 0) {
-      const [result] = await connection.query(sqlUpdate, stats[0])
-      if (result.affectedRows == 0) {
-        await connection.query(sqlInsert, stats[0])
-      }
+    let results;
+    [results] = await connection.query(sqlSelect, binds)
+
+    if (results.length > 0) {
+      let bindsUpsert = results.map( r => Object.values(r))
+      let stats;
+      [stats] = await connection.query(sqlUpsert, [bindsUpsert])
+      return stats
     }
-    return true  
+    else {
+      return false
+    }
   }
   catch (err) {
     throw err

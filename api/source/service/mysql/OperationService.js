@@ -255,7 +255,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
   try {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
-    res.write('replaceAppData()\n')
+    res.write('Starting import\n')
     let result, hrstart, hrend, tableOrder, dml, stats = {}
     let totalstart = process.hrtime() 
 
@@ -263,7 +263,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     dml = dmlObjectFromAppData(appData)
     hrend = process.hrtime(hrstart)
     stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    res.write('dmlObjectFromAppData()\n')
+    res.write('Parsed appdata\n')
 
     // Connect to MySQL and start transaction
     connection = await dbUtils.pool.getConnection()
@@ -289,9 +289,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'asset',
       'userData',
     ]
-    res.write('deletes\n')
     for (const table of tableOrder) {
-      res.write(`${table}\n`)
+      res.write(`Deleting: ${table}\n`)
       hrstart = process.hrtime() 
       ;[result] = await connection.query(dml[table].sqlDelete)
       hrend = process.hrtime(hrstart)
@@ -320,7 +319,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         let i, j, bindchunk, chunk = 5000;
         for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
           console.log(`table: ${table} chunk: ${i}\n`)
-          res.write(`table: ${table} chunk: ${i}\n`)
+          res.write(`Inserting: ${table} chunk: ${i}\n`)
           bindchunk = dml[table].insertBinds.slice(i,i+chunk);
           ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
         }
@@ -330,16 +329,17 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     }
 
     // Stats
-    hrstart = process.hrtime() 
-    await dbUtils.updateStatsAssetStig( connection, {} )
+    res.write('Calculating status statistics\n')
+    hrstart = process.hrtime();
+    const statusStats = await dbUtils.updateStatsAssetStig( connection, {} )
     hrend = process.hrtime(hrstart)
-    stats.stats = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     
     // Commit
     hrstart = process.hrtime() 
-    res.write(`before commit\n`)
+    res.write(`Starting commit\n`)
     await connection.query('COMMIT')
-    res.write(`after commit\n`)
+    res.write(`Commit successful\n`)
     hrend = process.hrtime(hrstart)
     stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 

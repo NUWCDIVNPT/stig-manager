@@ -359,6 +359,9 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
           VALUES
             ?`
         await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
+        await dbUtils.updateStatsAssetStig( connection, {
+          assetId: assetId
+        })
       }
     }
     // Commit the changes
@@ -1032,6 +1035,10 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
         ?`
       await connection.query(sqlInsertBenchmarks, [ binds ])
     }
+    await dbUtils.updateStatsAssetStig( connection, {
+      collectionId: collectionId,
+      benchmarkId: benchmarkId
+    })
     // Commit the changes
     await connection.commit()
   }
