@@ -2,6 +2,18 @@
 
 ## Releases
 
+### 1.0.0-beta.12
+- Update Docker.md
+- Update README.md
+- Merge pull request #93
+- Remove typeCast handling for JSON (#62)
+- Update feature_request.md
+- Update bug_report.md
+- fix: UI Import results completion message (#58)
+- fix: collection review filter (#64)
+- HTML entities in CKL are not decoded (#63)
+- Update jwks-rsa to 1.12.1(#74)
+
 ### 1.0.0-beta.11
 - Experimental appdata example (#66)
 ### 1.0.0-beta.10
