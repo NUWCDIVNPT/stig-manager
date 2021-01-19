@@ -507,6 +507,9 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         if (me.showAccessBtn) {
                             me.accessBtn.setDisabled(record.data.accessLevel != 1)
                         }
+                    },
+                    selectionchange: function (sm) {
+                        tbar.delButton.setDisabled(!sm.hasSelection());
                     }
                 }
             }),
