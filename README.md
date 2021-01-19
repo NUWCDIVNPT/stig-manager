@@ -7,8 +7,8 @@ For many deployments, our official [Docker image](https://hub.docker.com/r/nuwcd
 ## Documentation
 
 The [STIG Manager documentation](https://nuwcdivnpt.github.io/stig-manager) provides useful references, such as User and Setup Guides, videos, Release Notes, Terminology,  and deployment scenarios.
-* [User Guide](https://nuwcdivnpt.github.io/stig-manager/#/Admin_Guide)
-* [Admin Guide](https://nuwcdivnpt.github.io/stig-manager/#/Quickstart_Guide)
+* [User Guide](https://nuwcdivnpt.github.io/stig-manager/#/Quickstart_Guide)
+* [Admin Guide](https://nuwcdivnpt.github.io/stig-manager/#/Admin_Guide)
 * [Setup and Technical Information](https://nuwcdivnpt.github.io/stig-manager/#/Technical_Info)
 * [Environment Variable Reference](https://nuwcdivnpt.github.io/stig-manager/#/Environment_Variables)
 * [Release Notes](https://nuwcdivnpt.github.io/stig-manager/#/Release_Notes)
