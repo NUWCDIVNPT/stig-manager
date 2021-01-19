@@ -356,6 +356,7 @@ function addCompletionStatus(collectionId,collectionName) {
 	
 	var thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'completionTab-' + collectionId,
+		collectionId: collectionId,
 		iconCls: 'sm-report-icon',
 		title: 'Completion Status (' + collectionName + ')',
 		closable:true,
