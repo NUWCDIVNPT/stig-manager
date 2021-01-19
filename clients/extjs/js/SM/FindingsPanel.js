@@ -438,8 +438,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 130, 
 				dataIndex: 'stigs', 
 				renderer: v => {
-					const benchmarkIds = v.map( v => v.benchmarkId )
-					return columnWrap(benchmarkIds.join('\n'))
+					return columnWrap(v.join('\n'))
 				}, 
 				sortable: true, 
 			}
