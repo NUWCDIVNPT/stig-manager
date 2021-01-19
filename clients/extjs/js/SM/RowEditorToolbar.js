@@ -28,7 +28,8 @@ SM.RowEditorToolbar = Ext.extend(Ext.Toolbar, {
             itemString: this.itemString,
             deleteProperty: this.deleteProperty,
             editor: this.editor,
-            gridId: this.gridId
+            gridId: this.gridId,
+            disabled: true
         })
         let config = {
             newRecordValues: this.newRecordValues || {},
