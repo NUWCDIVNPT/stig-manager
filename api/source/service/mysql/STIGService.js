@@ -85,8 +85,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
     joins = ['current_rev r']
   }
   
-  joins.push('left join rev_group_map rg on r.revId = rg.revId')
-  joins.push('left join group g on rg.groupId = g.groupId')
+  joins.push('inner join rev_group_map rg on r.revId = rg.revId')
+  joins.push('inner join `group` g on rg.groupId = g.groupId')
 
   if (inPredicates.groupId) {
     predicates.statements.push('g.groupId = ?')
@@ -95,8 +95,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
 
   // PROJECTIONS
   if (inProjection && inProjection.includes('rules')) {
-    joins.push('left join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
-    joins.push('left join rule rule on rgr.ruleId = rule.ruleId' )
+    joins.push('inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId' )
+    joins.push('inner join rule rule on rgr.ruleId = rule.ruleId' )
     columns.push(`json_arrayagg(json_object(
       'ruleId', rule.ruleId, 
       'version', rule.version, 
@@ -119,7 +119,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
 
   try {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows)
+    return (rows.length > 0 ? rows : null)
   }
   catch (err) {
     throw err
