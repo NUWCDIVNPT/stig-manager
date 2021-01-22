@@ -1643,11 +1643,13 @@ paths:
             type: string
       responses:
         '200':
-          description: Group response
+          description: GroupProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GroupProjected'
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupProjected'
         default:
           description: unexpected error
           content:
@@ -2648,24 +2650,17 @@ components:
           type: string
         text:
           type: string
-    Group:
-      type: array
-      items:
-        type: object
-        properties:
-          groupId:
-            type: string
-          title:
-            type: string
     GroupProjected:
-      allOf:
-        - $ref: '#/components/schemas/Group'
-        - type: object
-          properties:
-            rules:
-              type: array
-              items:
-                $ref: '#/components/schemas/RuleAbbr'
+      type: object
+      properties:
+        groupId:
+          type: string
+        title:
+          type: string
+        rules:
+            type: array
+            items:
+              $ref: '#/components/schemas/RuleAbbr'
     Review:
       type: object
       properties:
