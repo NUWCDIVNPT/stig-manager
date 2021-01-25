@@ -320,7 +320,7 @@
 									"console.log(response)\r",
 									"\r",
 									"pm.test(\"Body contains string\",() => {\r",
-									"  pm.expect(response).to.include(\"after commit\");\r",
+									"  pm.expect(response).to.include(\"Commit successful\");\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -5822,20 +5822,22 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user != \"elevated\") { //placeholder for \"users\" that should fail\r",
-													"    pm.test(\"Status should be is 403 for users not elevated\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"    return;\r",
-													"}\r",
-													"else {\r",
-													"    pm.test(\"Status code is 200\", function () {\r",
-													"        pm.response.to.have.status(200);\r",
-													"    });\r",
-													"}\r",
-													"if (pm.response.code !== 200) {\r",
-													"    return;\r",
-													"}\r",
+													"//START GITHUB ISSUE #113\r",
+													"// if (user != \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"//     pm.test(\"Status should be is 403 for users not elevated\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 200\", function () {\r",
+													"//         pm.response.to.have.status(200);\r",
+													"//     });\r",
+													"// }\r",
+													"// if (pm.response.code !== 200) {\r",
+													"//     return;\r",
+													"// }\r",
+													"//END GITHUB ISSUE #113\r",
 													""
 												],
 												"type": "text/javascript"
@@ -5843,16 +5845,6 @@
 										}
 									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{token.stigmanadmin}}",
-													"type": "string"
-												}
-											]
-										},
 										"method": "GET",
 										"header": [],
 										"url": {
