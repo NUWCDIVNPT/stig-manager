@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0dda7651-7902-4379-a668-716d9f2e79e1",
+		"_postman_id": "53af7bf7-9512-455d-8c6d-1f71037b8293",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -10,7 +10,7 @@
 			"name": "LoadTestData",
 			"item": [
 				{
-					"name": "Import a new STIG - VPN",
+					"name": "Import a new STIG - VPN  (as admin)",
 					"event": [
 						{
 							"listen": "test",
@@ -104,7 +104,7 @@
 					"response": []
 				},
 				{
-					"name": "Import a new STIG - Win 10",
+					"name": "Import a new STIG - Win 10  (as admin)",
 					"event": [
 						{
 							"listen": "test",
@@ -196,7 +196,7 @@
 					"response": []
 				},
 				{
-					"name": "Import a new STIG - RHEL 7",
+					"name": "Import a new STIG - RHEL 7 (as admin)",
 					"event": [
 						{
 							"listen": "test",
@@ -287,7 +287,7 @@
 					"response": []
 				},
 				{
-					"name": "Import and overwrite application data",
+					"name": "Import and overwrite application data (as elevated Admin)",
 					"event": [
 						{
 							"listen": "test",
@@ -5809,17 +5809,42 @@
 							"item": [
 								{
 									"name": "Export application data",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"//START GITHUB ISSUE #113\r",
+													"// if (user != \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"//     pm.test(\"Status should be is 403 for users not elevated\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 200\", function () {\r",
+													"//         pm.response.to.have.status(200);\r",
+													"//     });\r",
+													"// }\r",
+													"// if (pm.response.code !== 200) {\r",
+													"//     return;\r",
+													"// }\r",
+													"//END GITHUB ISSUE #113\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{token.stigmanadmin}}",
-													"type": "string"
-												}
-											]
-										},
 										"method": "GET",
 										"header": [],
 										"url": {
@@ -9001,36 +9026,40 @@
 																	"listen": "test",
 																	"script": {
 																		"exec": [
-																			"let user = pm.environment.get(\"user\");\r",
-																			"console.log(\"user: \" + user);\r",
+																			"//START AZDO #115\r",
 																			"\r",
-																			"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-																			"    user = \"elevated\";\r",
-																			"    console.log(\"setting user to 'elevated'\");\r",
-																			"}\r",
+																			"// let user = pm.environment.get(\"user\");\r",
+																			"// console.log(\"user: \" + user);\r",
 																			"\r",
-																			"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
-																			"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
-																			"        pm.response.to.have.status(403);\r",
-																			"    });\r",
-																			"    return;\r",
-																			"}\r",
-																			"else {\r",
-																			"    pm.test(\"Status code is 200\", function () {\r",
-																			"        pm.response.to.have.status(200);\r",
-																			"    });\r",
-																			"}\r",
-																			"if (pm.response.code !== 200) {\r",
-																			"    return;\r",
-																			"}\r",
+																			"// if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																			"//     user = \"elevated\";\r",
+																			"//     console.log(\"setting user to 'elevated'\");\r",
+																			"// }\r",
+																			"\r",
+																			"// if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																			"//     pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																			"//         pm.response.to.have.status(403);\r",
+																			"//     });\r",
+																			"//     return;\r",
+																			"// }\r",
+																			"// else {\r",
+																			"//     pm.test(\"Status code is 200\", function () {\r",
+																			"//         pm.response.to.have.status(200);\r",
+																			"//     });\r",
+																			"// }\r",
+																			"// if (pm.response.code !== 200) {\r",
+																			"//     return;\r",
+																			"// }\r",
 																			"\r",
 																			"\r",
-																			"let jsonData = pm.response.json();\r",
+																			"// let jsonData = pm.response.json();\r",
 																			"\r",
 																			"\r",
-																			"pm.test(\"Response JSON is an array\", function () {\r",
-																			"    pm.expect(jsonData).to.be.an('array');\r",
-																			"});"
+																			"// pm.test(\"Response JSON is an array\", function () {\r",
+																			"//     pm.expect(jsonData).to.be.an('array');\r",
+																			"// });\r",
+																			"//END AZDO #115\r",
+																			""
 																		],
 																		"type": "text/javascript"
 																	}
@@ -9475,36 +9504,38 @@
 															"listen": "test",
 															"script": {
 																"exec": [
-																	"let user = pm.environment.get(\"user\");\r",
-																	"console.log(\"user: \" + user);\r",
+																	"// START AZDO #116\r",
+																	"// let user = pm.environment.get(\"user\");\r",
+																	"// console.log(\"user: \" + user);\r",
 																	"\r",
-																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-																	"    user = \"elevated\";\r",
-																	"    console.log(\"setting user to 'elevated'\");\r",
-																	"}\r",
+																	"// if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"//     user = \"elevated\";\r",
+																	"//     console.log(\"setting user to 'elevated'\");\r",
+																	"// }\r",
 																	"\r",
-																	"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
-																	"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
-																	"        pm.response.to.have.status(403);\r",
-																	"    });\r",
-																	"    return;\r",
-																	"}\r",
-																	"else {\r",
-																	"    pm.test(\"Status code is 200\", function () {\r",
-																	"        pm.response.to.have.status(200);\r",
-																	"    });\r",
-																	"}\r",
-																	"if (pm.response.code !== 200) {\r",
-																	"    return;\r",
-																	"}\r",
-																	"\r",
-																	"\r",
-																	"let jsonData = pm.response.json();\r",
+																	"// if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+																	"//     pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+																	"//         pm.response.to.have.status(403);\r",
+																	"//     });\r",
+																	"//     return;\r",
+																	"// }\r",
+																	"// else {\r",
+																	"//     pm.test(\"Status code is 200\", function () {\r",
+																	"//         pm.response.to.have.status(200);\r",
+																	"//     });\r",
+																	"// }\r",
+																	"// if (pm.response.code !== 200) {\r",
+																	"//     return;\r",
+																	"// }\r",
 																	"\r",
 																	"\r",
-																	"pm.test(\"Response JSON is an object\", function () {\r",
-																	"    pm.expect(jsonData).to.be.an('object');\r",
-																	"});\r",
+																	"// let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"// pm.test(\"Response JSON is an object\", function () {\r",
+																	"//     pm.expect(jsonData).to.be.an('object');\r",
+																	"// });\r",
+																	"// END AZDO #116\r",
 																	""
 																],
 																"type": "text/javascript"
@@ -10124,6 +10155,74 @@
 														}
 													},
 													"response": []
+												},
+												{
+													"name": "Deletes the specified revision of a STIG latest",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"\r",
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"//START AZDO #119\r",
+																	"// if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
+																	"//     pm.test(\"Status should be is 200 for user stigmanadmin\", function () {\r",
+																	"//         pm.response.to.have.status(200);\r",
+																	"//     });\r",
+																	"//     // return;\r",
+																	"// }\r",
+																	"// else {\r",
+																	"//     pm.test(\"Status code is 403 for all other users\", function () {\r",
+																	"//         pm.response.to.have.status(403);\r",
+																	"//     });\r",
+																	"// }\r",
+																	"// if (pm.response.code !== 200) {\r",
+																	"//     return;\r",
+																	"// }\r",
+																	"//END AZDO #119\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "DELETE",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"stigs",
+																":benchmarkId",
+																"revisions",
+																":revisionStr"
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a STIG",
+																	"key": "benchmarkId",
+																	"value": "{{testBenchmark}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]",
+																	"key": "revisionStr",
+																	"value": "latest"
+																}
+															]
+														}
+													},
+													"response": []
 												}
 											]
 										}
@@ -10285,7 +10384,7 @@
 							"name": "Assets",
 							"item": [
 								{
-									"name": "Return an Asset (no grant)",
+									"name": "Return an Asset (no grant) (lvl1 user requests w/ 1 of 2 stig grants)",
 									"event": [
 										{
 											"listen": "test",
@@ -10430,10 +10529,20 @@
 										}
 									],
 									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "addTokenTo",
+													"value": "header",
+													"type": "string"
+												}
+											]
+										},
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=adminStats&projection=stigs",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10445,7 +10554,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -10459,7 +10569,8 @@
 												},
 												{
 													"key": "projection",
-													"value": "stigGrants"
+													"value": "stigGrants",
+													"disabled": true
 												}
 											],
 											"variable": [
@@ -10474,12 +10585,112 @@
 									"response": []
 								},
 								{
+									"name": "Return an Asset (no grant) (no users have access to this asset)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"//normal test start block:\r",
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"    pm.test(\"Status should be is 204 for all users, as no user in test data set has grant to this asset\", function () {\r",
+													"        pm.response.to.have.status(204);\r",
+													"    });\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "addTokenTo",
+													"value": "header",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId?projection=adminStats&projection=stigs",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
+												},
+												{
+													"key": "projection",
+													"value": "adminStats",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigs",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "stigGrants",
+													"disabled": true
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId",
+													"value": "240",
+													"description": "(Required) A path parameter that indentifies an Asset"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Reviews",
+							"item": [
+								{
 									"name": "Return the Review for an INVALID Asset (wrong collection)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 204, this test should always return No Content\", function () {\r",
+													"    pm.response.to.have.status(204);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
 									"request": {
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=ruleInfo&projection=history&projection=stigs&projection=collections",
+											"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10493,7 +10704,7 @@
 											"query": [
 												{
 													"key": "projection",
-													"value": "ruleInfo",
+													"value": "rule",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -10507,7 +10718,8 @@
 												},
 												{
 													"key": "projection",
-													"value": "collections"
+													"value": "collections",
+													"disabled": true
 												}
 											],
 											"variable": [
@@ -10523,19 +10735,14 @@
 												},
 												{
 													"key": "ruleId",
-													"value": "{{reviews.testRule}}",
+													"value": "{{testRuleId}}",
 													"description": "(Required) A path parameter that indentifies a Rule"
 												}
 											]
 										}
 									},
 									"response": []
-								}
-							]
-						},
-						{
-							"name": "Reviews",
-							"item": [
+								},
 								{
 									"name": "GET review for non-assigned stig/rule",
 									"request": {
@@ -11292,28 +11499,9 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"let user = pm.environment.get(\"user\");\r",
-											"console.log(\"user: \" + user);\r",
-											"\r",
-											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-											"    user = \"elevated\";\r",
-											"    console.log(\"setting user to 'elevated'\");\r",
-											"}\r",
-											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
-											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
-											"        pm.response.to.have.status(200);\r",
-											"    });\r",
-											"    return;\r",
-											"}\r",
-											"else {\r",
 											"    pm.test(\"Status code is 403\", function () {\r",
 											"        pm.response.to.have.status(403);\r",
-											"    });\r",
-											"}\r",
-											"if (pm.response.code !== 200) {\r",
-											"    return;\r",
-											"}"
+											"    });"
 										],
 										"type": "text/javascript"
 									}
@@ -11440,6 +11628,11 @@
 					"item": []
 				}
 			]
+		},
+		{
+			"name": "One-off Tests",
+			"item": [],
+			"description": "Tests that do not use iteration data (or only iterate once) "
 		}
 	],
 	"auth": {
