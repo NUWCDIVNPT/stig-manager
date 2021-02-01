@@ -19,7 +19,7 @@ The environment variables consumed by the STIG Manager image are:
 |STIGMAN_DB_HOST|Default: localhost<br>The database hostname or IP from to the API server |API|
 |STIGMAN_DB_MAX_CONNECTIONS|Default: 25<br>The maximum size of the database connection pool |API|
 |STIGMAN_DB_PASSWORD|No default<br>The password used to login to the database |API|
-|STIGMAN_DB_PORT|Default: 50001<br>The database TCP port relative to the API server |API|
+|STIGMAN_DB_PORT|Default: 3306<br>The database TCP port relative to the API server |API|
 |STIGMAN_DB_SCHEMA|Default: stigman<br>The schema where the STIG Manager object are found |API|
 |STIGMAN_DB_TLS_CA_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database. | API|
 |STIGMAN_DB_TLS_CERT_FILE|No default<br>A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_KEY_FILE. | API|
