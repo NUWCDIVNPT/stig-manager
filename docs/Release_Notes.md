@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.0.0-beta.14
+- fix: Remove standard feedback widget (#120)
+- more info about workflow, possible configurations, and default db port update (#127)
+- Merge PR #119 from cd-rite
+- Added commented-out test for Issue #113 (#115)
+- API testing README (#114)
+
 ## 1.0.0-beta.13
 - fix: API issues #97 #98 (#111)
 - fix: Tab stays open on Collection Delete (#92)
