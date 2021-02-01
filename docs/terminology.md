@@ -66,12 +66,14 @@ Metadata such as the User who evaluated the Rule, and a timestamp is also collec
 
 STIG Manager supports the concept of Workflows, which apply to Collections and alter the available Statuses for the Reviews they contain.
 
-Currently, only the RMF Package Workflow is implemented.  In the RMF Package Workflow, Reviews can pass through the following states: 
-  * Saved - The Review is saved in its current state.
-  * Submitted - The Review has been Submitted to its Collection Owner for Acceptance.
-  * Accepted - A Collection Owner has Accepted the Review, locking from further changes.
-  * Returned - A Collection Owner has Returned the Review to it's evaluator for further clarification or other changes. Once changes are made, the evaluator can once again Submit the review.
+Currently, only the RMF Package Workflow is implemented. The goal of this workflow is to move evaluations towards an Accepted status that can become part of a POAM. This workflow supports the following statuses:
+  - **Saved** - The initial state for a review. An evaluation or other data is stored, but has not been "submitted" to the Collection Owner for Acceptance. 
+  - **Submitted** - The Evaluator has marked this review as "Submitted," meaning it has been flagged for attention by Collection Owners to either Accept or Reject. The Submitted status has certain requirements:
+     - All Evaluations must have both a Result and a Result Comment
+     - All "Open" Evaluations must also have an Action and an Action Comment
+  - **Accepted** - A Collection Owner has accepted this review as complete and meeting their process requirements. Once accepted, no one but a Collection Owner may edit the review further. 
+  - **Rejected** - A Collection Owner has rejected this review for further work or clarification by the Reviewer. The Reviewer will have to make changes, then set back to "Submitted" to continue the workflow.
+     - In order to be Rejected, the Collection Owner must provide a Rejection Comment.
+
 
 Each status is called out in the Status Collection Report to help gauge overall Collection progress.
-
-

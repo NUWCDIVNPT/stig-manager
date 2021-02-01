@@ -143,15 +143,19 @@ To enable TLS connections with your MySQL database, specify the following Enviro
  * `STIGMAN_DB_TLS_KEY_FILE` - A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client.
 
 
-[A sample orchestration for STIG Manager configured for TLS is available.](https://github.com/NUWCDIVNPT/stig-manager-docker-compose) This sample orchestration uses self-signed certificates and should be used for testing purposes only.
+[A sample orchestration for STIG Manager configured for TLS to MySQL is available.](https://github.com/NUWCDIVNPT/stig-manager-docker-compose) This sample orchestration uses self-signed certificates and should be used for testing purposes only.
 
 
+## Additional Suggested Configuration
+### Configure a Reverse Proxy or Kubernetes Ingress Controller
+To support HTTPS connections, STIG Manager components should be situated behind a reverse proxy or in a Kubernetes cluster.  Configure the reverse proxy (such as nginx) or the Kubernetes Ingress Controller in accordance with publisher documentation, local security requirements, and Keycloak documentation.
+In either case, you will have to set Keycloak environment variable `PROXY_ADDRESS_FORWARDING=true`  and make sure appropriate headers are forwarded.
+
+### Configure Logging
+STIG Manager outputs logging messages to standard output.  If your security requirements require you to keep these logs, that should be configured in Kubernetes or using a Docker logging driver.
 
 # First Steps
-See the ADMIN Quickstart Guide.
-Log in with a user that has the Administrator role.
-Import STIGs.
-check admin quickstart guide
+See the [ADMIN Quickstart Guide](Admin_Guide.md).
 
 # Environment Variables
 
