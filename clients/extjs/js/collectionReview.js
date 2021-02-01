@@ -1628,102 +1628,10 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 	// START Resources Panel/Feedback
 	/******************************************************/
 
-		var rejectFields = Ext.data.Record.create([
-			{	
-				name:'rejectId',
-				type: 'int'
-			},{	
-				name:'shortStr',
-				type: 'string'
-			},{
-				name: 'longStr',
-				type: 'string'
-			}
-		]);
-		
-		var rejectStore = new Ext.data.JsonStore({
-			url: 'pl/getRejectStrings.pl',
-			autoLoad: true,
-			fields: rejectFields,
-			root: 'rows',
-			idProperty: 'rejectId'
-		});
-		
-		var rejectSm = new Ext.grid.CheckboxSelectionModel({
-			checkOnly: true,
-			onRefresh: function() {
-				var ds = this.grid.store, index;
-				var s = this.getSelections();
-				for(var i = 0, len = s.length; i < len; i++){
-					var r = s[i];
-					if((index = ds.indexOfId(r.id)) != -1){
-						this.grid.view.addRowClass(index, this.grid.view.selectedRowClass);
-					}
-				}
-			},
-			listeners: {
-				selectionchange: setRejectButtonState
-			}
-		});
-
-		var rejectGrid = new Ext.grid.GridPanel({
-			id: 'rejectGrid' + idAppend,
-			title: 'Standard feedback',
-			flex: 50, // for hbox layout
-			margins: {top:0, right:10, bottom:0, left:0},
-			hideHeaders: true,
-			hideLabel: true,
-			isFormField: true,
-			store: rejectStore,
-			columns: [
-				rejectSm,
-				{ 	header: "shortStr", 
-					width: 95,
-					dataIndex: 'shortStr',
-					sortable: true,
-					renderer: function (value, metaData, record, rowIndex, colIndex, store) {
-						metaData.attr = 'ext:qtip="' + record.data.longStr + '"';
-						return value;
-					}
-				}
-			],
-			viewConfig: {
-				forceFit: true
-			},
-			sm: rejectSm,
-			setValue: function(v) {
-				var selRecords = [];
-				for(y=0;y<v.length;y++) {
-					var record = rejectStore.getById(v[y]);
-					selRecords.push(record);
-				}
-				rejectSm.selectRecords(selRecords);
-			},
-			reset: function () {
-				rejectGrid.getSelectionModel().clearSelections();
-			},
-			getValue: function() {},
-			markInvalid: function() {},
-			clearInvalid: function() {},
-			validate: function() { return true},
-			isValid: function() { return true;},
-			getName: function() {return this.name},
-			fieldLabel: '',
-			listeners: {
-				// 'afterlayout': {
-					// fn: function(p){
-						// p.disable();
-					// },
-					// single: true // important, as many layouts can occur
-				// }
-			},
-			name: 'rejectIds'
-		});
-		
 		var rejectOtherPanel = new Ext.Panel ({
 			layout: 'fit',
 			id: 'rejectOtherPanel' + idAppend,
-			title: 'Custom feedback',
+			title: 'Rejected review feedback',
 			bodyCssClass: 'sm-background-blue',
 			padding: '5',
 			flex: 50,
@@ -1731,7 +1639,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				xtype: 'textarea',
 				id: 'rejectTextArea' + idAppend,
 				enableKeyEvents: true,
-				emptyText: 'Enter other feedback...',
+				emptyText: 'Provide feedback explaining this rejection.',
 				name: 'rejectText',
 				listeners: {
 					keyup: setRejectButtonState
@@ -1756,10 +1664,10 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				layoutConfig: {
 					align: 'stretch'
 				},
-				items: [rejectGrid, rejectOtherPanel]
+				items: [rejectOtherPanel]
 			}],
 			buttons: [{
-				text: 'Return review with this feedback',
+				text: 'Reject review with this feedback',
 				id: 'rejectSubmitButton' + idAppend,
 				iconCls: 'sm-rejected-icon',
 				reviewsGrid: reviewsGrid,
@@ -1809,11 +1717,11 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			var text = Ext.getCmp('rejectTextArea' + idAppend);
 			var reviewsCount = reviewsGrid.getSelectionModel().getCount();
 			if (reviewsCount > 1) {
-				btn.setText("Return " + reviewsCount + " reviews with this feedback");
+				btn.setText("Reject " + reviewsCount + " reviews with this feedback");
 			} else {
-				btn.setText("Return review with this feedback");
+				btn.setText("Reject review with this feedback");
 			}
-			if (text.getValue() == '' && rejectSm.getCount() == 0) {
+			if (text.getValue() == '') {
 				btn.disable();
 			} else {
 				btn.enable();
