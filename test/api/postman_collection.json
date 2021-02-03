@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "53af7bf7-9512-455d-8c6d-1f71037b8293",
+		"_postman_id": "0b12d3f8-2c13-4410-92ff-554da54563fb",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -6272,8 +6272,8 @@
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
-															"        pm.response.to.have.status(200);\r",
+															"    pm.test(\"Status code is 404\", function () {\r",
+															"        pm.response.to.have.status(404);\r",
 															"    });\r",
 															"}\r",
 															"if (pm.response.code !== 200) {\r",
@@ -10208,14 +10208,14 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a STIG",
 																	"key": "benchmarkId",
-																	"value": "{{testBenchmark}}"
+																	"value": "{{testBenchmark}}",
+																	"description": "(Required) A path parameter that indentifies a STIG"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]",
 																	"key": "revisionStr",
-																	"value": "latest"
+																	"value": "latest",
+																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																}
 															]
 														}
