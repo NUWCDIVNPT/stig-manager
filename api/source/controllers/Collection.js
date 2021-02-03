@@ -257,22 +257,15 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant && collectionGrant.accessLevel >= 3 ) {
-      let totalstart = process.hrtime() 
-      let hrstart, hrend
-      hrstart = process.hrtime() 
-      
-      const setResponse = await Collection.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, req.userObject )
-      
-      hrend = process.hrtime(hrstart)
-      console.log(`${hrend[0]}s  ${hrend[1] / 1000000}ms`)
-      
-      hrstart = process.hrtime() 
-      
-      const getResponse = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
-      
-      hrend = process.hrtime(hrstart)
-      console.log(`${hrend[0]}s  ${hrend[1] / 1000000}ms`)
-      writer.writeJson(res, getResponse)
+      const collectionResponse = await Collection.getCollection(collectionId, ['grants'], false, req.userObject )
+      if (collectionResponse.grants.filter( grant => grant.accessLevel === 1 && grant.user.userId === userId).length > 0) {
+        const setResponse = await Collection.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, req.userObject ) 
+        const getResponse = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )    
+        writer.writeJson(res, getResponse)
+      }
+      else {
+        throw( writer.respondWithCode ( 404, {message: "User not found in this Collection with accessLevel === 1."} ) )
+      }
     }
     else {
       throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )

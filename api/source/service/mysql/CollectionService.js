@@ -455,7 +455,6 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
 
 exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId, userId, stigAssets, projection, userObject) {
   let connection // available to try, catch, and finally blocks
-  let hrstart, hrend
   try {
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
@@ -469,10 +468,7 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
         and saId IN (
           SELECT saId from stig_asset_map left join asset using (assetId) where asset.collectionId = ?
         )`
-        hrstart = process.hrtime()        
         await connection.execute(sqlDelete, [userId, collectionId])
-        hrend = process.hrtime(hrstart)
-        console.log(`delete: ${hrend[0]}s  ${hrend[1] / 1000000}ms`)
 
     }
     if (stigAssets.length > 0) {
@@ -485,15 +481,9 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
       }
       let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
       sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
-      hrstart = process.hrtime()        
       let [result] = await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
-      hrend = process.hrtime(hrstart)
-      console.log(`insert: ${hrend[0]}s  ${hrend[1] / 1000000}ms`)
     }
-    hrstart = process.hrtime()        
     await connection.commit()
-    hrend = process.hrtime(hrstart)
-    console.log(`commit: ${hrend[0]}s  ${hrend[1] / 1000000}ms`)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
