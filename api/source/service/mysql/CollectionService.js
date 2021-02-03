@@ -248,13 +248,6 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'title', ru.title,
         'severity', ru.severity) order by ru.ruleId), ']') as json) as "rules"`)
     }
-    if (inProjection.includes('rulesWithDiscussion')) {
-      columns.push(`cast(concat('[', group_concat(distinct json_object (
-        'ruleId', ru.ruleId,
-        'title', ru.title,
-        'severity', ru.severity,
-        'vulnDiscussion', ru.vulnDiscussion) order by ru.ruleId), ']') as json) as "rules"`)
-    }
     if (inProjection.includes('groups')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
         'groupId', g.groupId,
@@ -268,13 +261,6 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     }
     if (inProjection.includes('stigs')) {
       columns.push(`cast( concat( '[', group_concat(distinct concat('"',cgr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
-    }
-    if (inProjection.includes('stigsInfo')) {
-      columns.push(`cast( concat( '[', group_concat(distinct json_object (
-        'benchmarkId', cr.benchmarkId,
-        'version', cr.version,
-        'release', cr.release,
-        'benchmarkDate', cr.benchmarkDate) order by cr.benchmarkId), ']') as json) as "stigsInfo"`)
     }
     if (inProjection.includes('ccis')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
