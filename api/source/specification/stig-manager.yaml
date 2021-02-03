@@ -3244,7 +3244,6 @@ components:
             - rules
             - stigs
             - ccis
-            - poamRarSummary
     GroupIdPath:
       name: groupId
       in: path
