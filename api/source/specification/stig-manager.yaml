@@ -745,7 +745,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return an accessLevel = 1 User's access to the specified Collection
+      summary: Return an accessLevel = 1 User's access to the specified Collection. Request must be made by a User with accessLevel >= 3 to the Collection.
       operationId: getStigAssetsByCollectionUser
       responses:
         '200':
@@ -756,6 +756,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StigAssetProjected'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         default:
           description: unexpected error
           content:
@@ -768,7 +770,7 @@ paths:
     put:
       tags:
         - Collection
-      summary: Set all of an accessLevel = 1 User's access to the specified Collection
+      summary: Set an accessLevel = 1 User's access to the specified Collection. Request must be made by a User with accessLevel >= 3 to the Collection.
       operationId: setStigAssetsByCollectionUser
       requestBody:
         required: true
@@ -2613,9 +2615,6 @@ components:
         - message
       type: object
       properties:
-        code:
-          type: integer
-          format: int32
         message:
           type: string
     FindingProjected:
@@ -3454,6 +3453,13 @@ components:
           enum:
             - collectionGrants
             - statistics
+  responses:
+    Forbidden:
+      description: The requesting User does not have access rights to the content
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   securitySchemes:
     oauth:
       type: oauth2
