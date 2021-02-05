@@ -343,21 +343,21 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       highCount,
       mediumCount,
       lowCount)
-    VALUES ? AS stats
+    VALUES ? 
       on duplicate key update
-        minTs = stats.minTs,
-        maxTs = stats.maxTs,
-        savedManual = stats.savedManual,
-        savedAuto = stats.savedAuto,
-        submittedManual = stats.submittedManual,
-        submittedAuto = stats.submittedAuto,
-        rejectedManual = stats.rejectedManual,
-        rejectedAuto = stats.rejectedAuto,
-        acceptedManual = stats.acceptedManual,
-        acceptedAuto = stats.acceptedAuto,
-        highCount = stats.highCount,
-        mediumCount = stats.mediumCount,
-        lowCount = stats.lowCount
+        minTs = VALUES(minTs),
+        maxTs = VALUES(maxTs),
+        savedManual = VALUES(savedManual),
+        savedAuto = VALUES(savedAuto),
+        submittedManual = VALUES(submittedManual),
+        submittedAuto = VALUES(submittedAuto),
+        rejectedManual = VALUES(rejectedManual),
+        rejectedAuto = VALUES(rejectedAuto),
+        acceptedManual = VALUES(acceptedManual),
+        acceptedAuto = VALUES(acceptedAuto),
+        highCount = VALUES(highCount),
+        mediumCount = VALUES(mediumCount),
+        lowCount = VALUES(lowCount)
     `
     let results;
     [results] = await connection.query(sqlSelect, binds)
