@@ -4,14 +4,16 @@ const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
 const fs = require("fs")
+const semverLt = require('semver/functions/lt')
 
+const minMySqlVersion = '8.0.14'
 let _this = this
 
 module.exports.version = '0.6'
 module.exports.testConnection = async function () {
   try {
-    let [result] = await _this.pool.query('SHOW DATABASES')
-    return JSON.stringify(result, null, 2)
+    let [result] = await _this.pool.query('SELECT VERSION() as version')
+    return result[0].version
   }
   catch (err) {
     // console.log(err.message)
@@ -83,7 +85,7 @@ module.exports.initializeDatabase = async function () {
 
     // Preflight the pool every 5 seconds
     console.log('[DB] Attempting preflight connection.')
-    let result = await retry(_this.testConnection, {
+    const detectedMySqlVersion = await retry(_this.testConnection, {
       retries: 24,
       factor: 1,
       minTimeout: 5 * 1000,
@@ -93,6 +95,14 @@ module.exports.initializeDatabase = async function () {
       }
     })
     console.log('[DB] Preflight connection succeeded.')
+    if ( semverLt(detectedMySqlVersion, minMySqlVersion) ) {
+      console.log(`[DB] MySQL release ${detectedMySqlVersion} is too old. Update to release ${minMySqlVersion} or later.`)
+      console.log("Terminating")
+      process.exit(1)
+    } else {
+      console.log(`[DB] MySQL release ${detectedMySqlVersion} is supported.`)
+    }
+
 
     // console.log(result)
 
@@ -343,21 +353,21 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       highCount,
       mediumCount,
       lowCount)
-    VALUES ? AS stats
+    VALUES ? 
       on duplicate key update
-        minTs = stats.minTs,
-        maxTs = stats.maxTs,
-        savedManual = stats.savedManual,
-        savedAuto = stats.savedAuto,
-        submittedManual = stats.submittedManual,
-        submittedAuto = stats.submittedAuto,
-        rejectedManual = stats.rejectedManual,
-        rejectedAuto = stats.rejectedAuto,
-        acceptedManual = stats.acceptedManual,
-        acceptedAuto = stats.acceptedAuto,
-        highCount = stats.highCount,
-        mediumCount = stats.mediumCount,
-        lowCount = stats.lowCount
+        minTs = VALUES(minTs),
+        maxTs = VALUES(maxTs),
+        savedManual = VALUES(savedManual),
+        savedAuto = VALUES(savedAuto),
+        submittedManual = VALUES(submittedManual),
+        submittedAuto = VALUES(submittedAuto),
+        rejectedManual = VALUES(rejectedManual),
+        rejectedAuto = VALUES(rejectedAuto),
+        acceptedManual = VALUES(acceptedManual),
+        acceptedAuto = VALUES(acceptedAuto),
+        highCount = VALUES(highCount),
+        mediumCount = VALUES(mediumCount),
+        lowCount = VALUES(lowCount)
     `
     let results;
     [results] = await connection.query(sqlSelect, binds)
