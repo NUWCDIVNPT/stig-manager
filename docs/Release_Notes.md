@@ -1,5 +1,9 @@
-# Release Notes
-
+## 1.0.0-beta.15
+- feat: check MySQL version during startup (#136)
+- fix: Support older MySQL syntax for now (#135)
+- fix: access is set for lvl1 users only (#121)
+- fix: Make note of accessLevel requirements (#102)
+- fix: Remove unused Findings projections (#101)
 ## 1.0.0-beta.14
 - fix: Remove standard feedback widget (#120)
 - more info about workflow, possible configurations, and default db port update (#127)
