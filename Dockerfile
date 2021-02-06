@@ -11,8 +11,8 @@
 # **/uploads
 # **/docker
 
-
-FROM node:lts-alpine
+ARG BASE_IMAGE="node:lts-alpine"
+FROM ${BASE_IMAGE}
 LABEL maintainer="carl.a.smigielski@saic.com"
 ARG COMMIT_BRANCH="unspecified"
 ARG COMMIT_SHA="unspecified"
@@ -41,4 +41,5 @@ COMMIT_TAG=${COMMIT_TAG} \
 COMMIT_DESCRIBE=${COMMIT_DESCRIBE}
 
 EXPOSE 54000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=120s CMD node healthcheck.js
 CMD [ "node", "index.js" ]
