@@ -78,7 +78,7 @@ jobs:
         id: tarball
         run: |
           ZIPFILE="nodejs-ib.zip"
-          IB_TAG="nodejs-ib"
+          IB_TAG="nodejs-ib:latest"
           URL="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/development/download?job=sign+image"
           echo "Fetching $URL"
           wget --quiet -O $ZIPFILE $URL
@@ -129,7 +129,7 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            BASE_IMAGE=nodejs-ib
+            BASE_IMAGE=nodejs-ib:latest
             COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
             COMMIT_SHA=${{ github.sha }}
             COMMIT_TAG=${{ steps.prep.outputs.tag }}
