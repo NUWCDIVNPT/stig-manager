@@ -93,6 +93,7 @@ jobs:
           echo "Loaded $IMAGE_SHA"
           echo "Tagging as $IB_TAG"
           docker tag $IMAGE_SHA $IB_TAG
+          docker push $IB_TAG
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Get repository metadata
