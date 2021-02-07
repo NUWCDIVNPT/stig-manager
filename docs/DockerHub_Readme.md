@@ -4,14 +4,14 @@
 
 STIG Manager is an API and Web client for managing the assessment of Information Systems for compliance with [security checklists](https://public.cyber.mil/stigs/) published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists [distributed](https://public.cyber.mil/stigs/downloads/) as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG).
 
-**Documentation:** [https://nuwcdivnpt.github.io/stig-manager/#/](https://nuwcdivnpt.github.io/stig-manager/#/)
+**Documentation:** [https://nuwcdivnpt.github.io/stig-manager](https://nuwcdivnpt.github.io/stig-manager)
 
-**Source code:** [https://github.com/NUWCDIVNPT/stig-manager](https://github.com/NUWCDIVNPT/stig-manager)
+**Source:** [https://github.com/NUWCDIVNPT/stig-manager](https://github.com/NUWCDIVNPT/stig-manager)
 
 ## Supported tags
 - Using the `node:lts-alpine` base image (default if no tag provided)
   - `latest`, `latest-alpine`
-- Using the [Iron Bank Node.js 14 base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14)
+- Using the [Iron Bank Node.js 14 base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/development/download?job=sign+image)
   - `latest-ironbank`
 
 In addtion, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.0-beta.14` or `1.0.0-beta.14-ironbank`
