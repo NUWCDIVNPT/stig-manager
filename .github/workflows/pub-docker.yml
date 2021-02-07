@@ -74,6 +74,10 @@ jobs:
     name: Build and push from Iron Bank base
     runs-on: ubuntu-latest
     steps:
+      - name: Create local registry
+        id: local-registry
+        run: |
+          docker run -d -p 5000:5000 --name registry registry:2 
       - name: Load Iron Bank tarball
         id: tarball
         run: |
