@@ -19,7 +19,7 @@ jobs:
         id: prep
         run: |
           git fetch --prune --unshallow
-          DOCKER_IMAGE=carlsmig/stig-manager
+          DOCKER_IMAGE=nuwcdivnpt/stig-manager
           BRANCH=$(git symbolic-ref --short HEAD)
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
@@ -107,7 +107,7 @@ jobs:
         id: prep
         run: |
           git fetch --prune --unshallow
-          DOCKER_IMAGE=carlsmig/stig-manager
+          DOCKER_IMAGE=nuwcdivnpt/stig-manager
           BRANCH=$(git symbolic-ref --short HEAD)
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
