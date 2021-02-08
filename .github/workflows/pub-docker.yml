@@ -67,7 +67,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
-          repository: carlsmig/stig-manager
+          repository: nuwcdivnpt/stig-manager
           short-description: An API and Web client for managing STIG assessments.
           readme-filepath: ./docs/DockerHub_Readme.md
   build-push-ironbank:
