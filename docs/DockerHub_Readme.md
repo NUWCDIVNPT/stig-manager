@@ -14,7 +14,7 @@ STIG Manager is an API and Web client for managing the assessment of Information
 - Using the [Iron Bank Node.js 14 base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/development/download?job=sign+image)
   - `latest-ironbank`
 
-In addtion, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.0-beta.14` or `1.0.0-beta.14-ironbank`
+In addition, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.0-beta.14` or `1.0.0-beta.14-ironbank`
 
 ## Quick Start Orchestration
 *The Quick Start steps require the [official MySQL 8 image](https://hub.docker.com/_/mysql) and a [custom Keycloak 11 image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth).*
