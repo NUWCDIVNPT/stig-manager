@@ -261,30 +261,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         text: 'Submit All...',
         iconCls: 'sm-ready-icon',
         hideOnClick: true,
-        handler: function () {
-          bulkSubmit();
-        }
-        // menu: {
-        // items:[
-        // {
-        // text: 'Submit All',
-        // tooltip: 'Submit all completed checks.',
-        // iconCls: 'sm-ready-icon',
-
-        // handler: function() {
-        // bulkSubmit('all');            
-        // }	
-        // },{
-        // text: 'Submit Some',
-        // tooltip: 'Submit currently visible completed checks.',
-        // iconCls: 'sm-ready-icon',
-        // handler: function() {
-        // bulkSubmit();            
-        // }
-        // }
-        // ]
-
-        // }
+        handler: bulkSubmit
       }, {
         text: 'Reset reviews...',
         id: 'unlockMenuItem' + idAppend,
@@ -2311,150 +2288,49 @@ async function addReview(leaf, selectedRule, selectedResource) {
 
 
   function bulkSubmit(all) {
-    // groupStore;
-    var ourStore = groupStore;
-    var ruleArray = encodeStoreDone(ourStore, 'ruleId')
-
-    // var total = ourStore.getCount();
-    // var ruleArray = [];
-    // var i = 0;
-    // var record1 = ourStore.getAt(0);
-    // var data1 = ourStore.getAt(0).data;		
-    // var rule1 = ourStore.getAt(0).data.ruleId;
-    // // ruleArray.push(rule1);
-    // while (i < total){
-    // // if (isReviewComplete(resultCombo.value,resultComment.getValue(),actionCombo.value,actionComment.getValue())) { 
-    // ruleArray.push(ourStore.getAt(i).data.ruleId);
-    // // }
-    // i++;
-    // }
-
-
-
-    var fp = new Ext.FormPanel({
-      fileUpload: true,
-      baseCls: 'x-plain',
-      monitorValid: true,
-      autoHeight: true,
-      //bodyStyle: 'padding: 10px 10px 0 10px;',
-      labelWidth: 1,
-      hideLabel: true,
-      defaults: {
-        anchor: '100%',
-        allowBlank: false
-        //msgTarget: 'side'
-      },
-      baseParams: {
-        assetId: leaf.assetId,
-        assetName: leaf.assetName,
-        revId: leaf.revId,
-        stigName: leaf.stigName,
-        benchmarkId: leaf.benchmarkId,
-        ruleArray: encodeStoreDone(ourStore, 'ruleId')
-      },
-      items: [
-        {
-          xtype: 'radiogroup',
-          // fieldLabel: 'Choose your favorite',
-          columns: 1,
-          itemId: 'someOrAllChecks',
-          items: [
-            {
-              xtype: 'radio',
-              boxLabel: 'Submit all checks for this STIG and Asset.',
-              name: 'checks',
-              checked: true,
-              inputValue: 'all'
-            },
-            {
-              xtype: 'radio',
-              boxLabel: 'Submit only displayed checks.',
-              name: 'checks',
-              inputValue: 'some'
+    let completedRecords = groupStore.getRange().filter( record => record.data.reviewComplete && record.data.status !== 'submitted')
+    if (completedRecords.length) {
+      const confirmStr = `Eligible reviews: ${completedRecords.length}<br><br>Continue with submitting?`
+      Ext.Msg.confirm("Confirm", confirmStr, async function (btn) {
+        try {
+          if (btn == 'yes') {
+            Ext.getBody().mask('Submitting...')
+            const requests = []
+            for (const record of completedRecords) {
+              requests.push(
+                Ext.Ajax.requestPromise({
+                  url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+                  method: 'PATCH',
+                  jsonData: {
+                    status: 'submitted'
+                  }
+                })
+              )
             }
-          ]
-        },
-        {
-          xtype: 'displayfield',
-          id: 'infoText2',
-          // emptyText: 'Browse for a file... asset:' + leaf.assetId,
-          // fieldLabel: 'Import',
-          name: 'infoText',
-          html: "<i><b>NOTE: </b> Only completed checks will be submitted.</i>",
-          // buttonText: 'Browse...',
-          // buttonCfg: {
-          // icon: "img/disc_drive.png"
-          // }
-        }
-        // ,{ // start fieldset config
-        // xtype:'fieldset',
-        // title: 'Confirmation',
-        // autoHeight:true,
-        // items: [
-        // {
-        // xtype: 'displayfield',
-        // id: 'infoText1',
-        // // emptyText: 'Browse for a file... asset:' + leaf.assetId,
-        // // fieldLabel: 'Import',
-        // name: 'infoText',
-        // html: "Submit all completed checks?",
-        // // buttonText: 'Browse...',
-        // // buttonCfg: {
-        // // icon: "img/disc_drive.png"
-        // // }
-        // }]
-        // }
-      ]
-      //}]
-      ,
-      buttonAlign: 'center',
-      buttons: [{
-        text: 'Submit',
-        icon: 'img/ready-16.png',
-        tooltip: 'Import STIG results',
-        formBind: true,
-        handler: function () {
-          if (fp.getForm().isValid()) {
-            fp.getForm().submit({
-              url: 'pl/submitChecks.pl',
-              waitMsg: 'Submitting Checks...',
-              success: function (f, o) {
-                window.close();
-                Ext.Msg.alert(o.result.status, o.result.message);
-                groupGrid.getStore().reload();
-              },
-              failure: function (f, o) {
-                window.close();
-                Ext.Msg.alert(o.result.status, o.result.message);
-                f.reset();
+            let results = await Promise.allSettled(requests)
+
+            for (i=0, l=completedRecords.length; i < l; i++) {
+              if (results[i].status === 'fulfilled') {
+                completedRecords[i].data.status = 'submitted'
+                completedRecords[i].commit()
               }
-            });
+            }
           }
         }
-      },
-      {
-        text: 'Cancel',
-        handler: function () { window.close(); }
-      }
-      ]
-    });
+        catch (e) {
+          alert(e.message)
+        }
+        finally {
+          groupStore.reload()
+          Ext.getBody().unmask()
+        }
+      })
+    } else {
+      Ext.Msg.alert('No eligible Reviews', `There are no Reviews eligible for submission`)
+    }
 
-    var window = new Ext.Window({
-      title: 'Submit multiple reveiws.',
-      modal: true,
-      width: 350,
-      //height:140,
-      //minWidth: 500,
-      //minHeight: 140,
-      layout: 'form',
-      plain: true,
-      bodyStyle: 'padding:5px;',
-      buttonAlign: 'center',
-      items: fp
-    });
 
-    window.show(document.body);
 
-  }; //end bulkSubmit2;
+  }; //end bulkSubmit;
 
 }; //end addReview();
