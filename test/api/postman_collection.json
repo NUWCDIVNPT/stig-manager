@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0b12d3f8-2c13-4410-92ff-554da54563fb",
+		"_postman_id": "194e84fe-e578-4034-af6a-a107dfa12c1e",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1535,7 +1535,137 @@
 								},
 								{
 									"name": "poam",
-									"item": []
+									"item": [
+										{
+											"name": "Return a POAM-like spreadsheet aggregated by groupId",
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=groupId&date=01/01/1970&office=MyOffice&status=Ongoing",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"poam"
+													],
+													"query": [
+														{
+															"key": "aggregator",
+															"value": "groupId",
+															"description": "(Required) Aggregate the findings on this property"
+														},
+														{
+															"key": "date",
+															"value": "01/01/1970"
+														},
+														{
+															"key": "office",
+															"value": "MyOffice"
+														},
+														{
+															"key": "status",
+															"value": "Ongoing"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return a POAM-like spreadsheet aggregated by ruleId",
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=ruleId&date=01/01/1970&office=MyOffice&status=Ongoing",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"poam"
+													],
+													"query": [
+														{
+															"key": "aggregator",
+															"value": "ruleId"
+														},
+														{
+															"key": "date",
+															"value": "01/01/1970"
+														},
+														{
+															"key": "office",
+															"value": "MyOffice"
+														},
+														{
+															"key": "status",
+															"value": "Ongoing"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									],
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													""
+												]
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"let user = pm.environment.get(\"user\");",
+													"console.log(\"user: \" + user);",
+													"",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {",
+													"    user = \"elevated\";",
+													"    console.log(\"setting user to 'elevated'\");",
+													"}",
+													"",
+													"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {",
+													"        pm.response.to.have.status(403);",
+													"    });",
+													"    return;",
+													"}",
+													"else {",
+													"    pm.test(\"Status code is 200\", function () {",
+													"        pm.response.to.have.status(200);",
+													"    });",
+													"}",
+													"if (pm.response.code !== 200) {",
+													"    return;",
+													"}"
+												]
+											}
+										}
+									]
 								},
 								{
 									"name": "status",
