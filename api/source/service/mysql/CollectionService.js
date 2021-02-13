@@ -242,6 +242,23 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     ]
 
     // PROJECTIONS
+    
+    // Not exposed in API, used internally
+    if (inProjection.includes('rulesWithDiscussion')) {
+      columns.push(`cast(concat('[', group_concat(distinct json_object (
+        'ruleId', ru.ruleId,
+        'title', ru.title,
+        'severity', ru.severity,
+        'vulnDiscussion', ru.vulnDiscussion) order by ru.ruleId), ']') as json) as "rules"`)
+    }
+    // Not exposed in API, used internally
+    if (inProjection.includes('stigsInfo')) {
+      columns.push(`cast( concat( '[', group_concat(distinct json_object (
+        'benchmarkId', cr.benchmarkId,
+        'version', cr.version,
+        'release', cr.release,
+        'benchmarkDate', cr.benchmarkDate) order by cr.benchmarkId), ']') as json) as "stigsInfo"`)
+    }
     if (inProjection.includes('rules')) {
       columns.push(`cast(concat('[', group_concat(distinct json_object (
         'ruleId', ru.ruleId,
