@@ -1,3 +1,13 @@
+## 1.0.0-beta.16
+- feat: Asset-STIG CKL import UI enhancements (#86) (#143)
+- fix: GET /collections/{collectionId}/poam fail with 500 (#141) (#142)
+- fix: Implement submit all from Asset-STIG UI (#88)
+- feat: Iron Bank base image in CD workflow (#139)
+- feat: HEALTHCHECK and FROM argument (#108)
+- feat: Support older MySQL syntax and check minimum version (PR #137)
+- fix: access is set for lvl1 users only (#121)
+- fix: Make note of accessLevel requirements (#102)
+- fix: Remove unused Findings projections (#101)
 ## 1.0.0-beta.15
 - feat: check MySQL version during startup (#136)
 - fix: Support older MySQL syntax for now (#135)
