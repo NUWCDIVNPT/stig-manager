@@ -252,8 +252,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         text: 'Import Results...',
         iconCls: 'sm-import-icon',
         handler: function () {
-          uploadResults();
-          //initProgress();
+          showImportResultFile( {...leaf, revisionStr: groupGrid.sm_revisionStr, store: groupStore} );            
         }
       },
       '-',
@@ -705,6 +704,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
       }
       if (item.revisionStr == activeRevisionStr || (activeRevisionStr === 'latest' && i === 0)) {
         item.checked = true;
+        groupGrid.sm_revisionStr = item.revisionStr
         returnObject.activeRevisionLabel = item.text;
       } else {
         item.checked = false;

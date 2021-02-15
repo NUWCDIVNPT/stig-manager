@@ -1198,6 +1198,8 @@ function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 			return '<div class="sm-grid-result-sprite sm-result-fail">O</div>'
 		case 'notapplicable':
 			return '<div class="sm-grid-result-sprite sm-result-na">NA</div>'
+		case 'notchecked':
+			return '<div class="sm-grid-result-sprite sm-result-nr">NR</div>'
 		default:
 			return ''
 	}

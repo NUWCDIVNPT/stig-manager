@@ -88,7 +88,7 @@ function loadScripts() {
         "js/SM/FindingsPanel.js",
         "js/SM/Assignments.js",
         "js/SM/Parsers.js",
-        "js/SM/ReviewImport.js",
+        "js/SM/ReviewsImport.js",
         "js/collectionManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",

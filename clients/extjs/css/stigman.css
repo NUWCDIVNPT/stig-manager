@@ -92,6 +92,11 @@ body {
 	color: grey;
 	text-align: center;
 }
+.sm-result-nr {
+    color: hsla(0, 10%, 96%, 1);
+    background-color: #d74400;
+    text-align: center;
+}
 
 .sm-grid-sprite {
 	font: bold 11px/13px Open Sans,helvetica, sans-serif;

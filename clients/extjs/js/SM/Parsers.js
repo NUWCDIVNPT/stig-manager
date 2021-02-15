@@ -59,8 +59,16 @@ function reviewsFromCkl (cklData) {
       let checklistArray = []
       iStigElement.forEach(iStig => {
         let checklist = {}
+        // get benchmarkId
         let stigIdElement = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'stigid' )[0]
         checklist.benchmarkId = stigIdElement.SID_DATA.replace('xccdf_mil.disa.stig_benchmark_', '')
+        // get revision
+        const stigVersion = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'version' )[0].SID_DATA
+        let stigReleaseInfo = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'releaseinfo' )[0].SID_DATA
+        const stigRelease = stigReleaseInfo.match(/Release:\s*(.+?)\s/)[1]
+        const stigRevisionStr = `V${stigVersion}R${stigRelease}`
+        checklist.revisionStr = stigRevisionStr
+
         if (checklist.benchmarkId) {
           let x = processVuln(iStig.VULN)
           checklist.reviews = x.reviews
@@ -129,18 +137,16 @@ function reviewsFromCkl (cklData) {
               action = "remediate"
             } 
           }
-          if ( result !== 'notchecked') {
-            vulnArray.push({
-              ruleId: ruleId,
-              result: result,
-              resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
-              action: action,
-              // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
-              actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
-              autoResult: false,
-              status: result != 'fail' ? 'submitted' : 'saved'
-            })  
-          }
+          vulnArray.push({
+            ruleId: ruleId,
+            result: result,
+            resultComment: vuln.FINDING_DETAILS == "" ? "Imported from CKL" : vuln.FINDING_DETAILS,
+            action: action,
+            // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
+            actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
+            autoResult: false,
+            status: result === 'fail' ? 'saved' : 'submitted'
+          })  
         }
       })
   
