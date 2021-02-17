@@ -6,17 +6,6 @@ const parsers = require('../utils/parsers.js')
 const {promises: fs} = require('fs')
 const STIG = require(`../service/${config.database.type}/STIGService`)
 
-module.exports.addSTIG = async function addSTIG (req, res, next) {
-  let source = req.swagger.params['source'].value
-  try {
-    let response = await STIG.addSTIG(source, req.userObject)
-    writer.writeJson(res, response)
-  }
-  catch(err) {
-    writer.writeJson(res, err)
-  }
-}
-
 module.exports.importManualBenchmark = async function importManualBenchmark (req, res, next) {
   try {
     let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)

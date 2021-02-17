@@ -1,6 +1,82 @@
 module.exports.reviewsFromCkl = async function (cklData, assetId) {
   const fastparser = require('fast-xml-parser')
   const he = require('he')
+
+  function processAsset(assetElement) {
+    return {
+      hostname: assetElement.HOST_NAME,
+      fqdn: assetElement.HOST_FQDN,
+      ip: assetElement.HOST_IP,
+      mac: assetElement.HOST_MAC,
+    }
+  }
+
+  function processIStig(iStigElement) {
+    let resultArray = []
+    iStigElement.forEach(iStig => {
+      let vulns = processVuln(iStig.VULN)
+      resultArray.splice(-1, 0, ...vulns)
+    })
+    return resultArray
+  }
+
+  function processVuln(vulnElements) {
+    // vulnElements is an array of this object:
+    // {
+    //     COMMENTS
+    //     FINDING_DETAILS
+    //     SEVERITY_JUSTIFICATION
+    //     SEVERITY_OVERRIDE
+    //     STATUS
+    //     STIG_DATA [26]
+    // }
+
+    const results = {
+      NotAFinding: 'pass',
+      Open: 'fail',
+      NotApplicable: 'notapplicable'
+    }
+    let vulnArray = []
+    vulnElements.forEach(vuln => {
+      const result = results[vuln.STATUS]
+      // Skip unreviewed
+      if (result) {
+        let ruleId
+        // Array.some() stops once a true value is returned
+        vuln.STIG_DATA.some(stigDatum => {
+          if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
+            ruleId = stigDatum.ATTRIBUTE_DATA
+            return true
+          }
+        })
+        let action = null
+        if (result === 'fail') {
+          if (vuln.COMMENTS.startsWith("Mitigate:")) {
+            action = "mitigate"
+          } 
+          else if (vuln.COMMENTS.startsWith("Exception:")) {
+            action = "exception"
+          } 
+          else if (vuln.COMMENTS.startsWith("Remediate:")) {
+            action = "remediate"
+          } 
+        }
+        vulnArray.push({
+          ruleId: ruleId,
+          result: result,
+          resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
+          action: action,
+          // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
+          actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
+          autoResult: false,
+          status: result != 'fail' ? 'submitted' : 'saved'
+        })
+      }
+    })
+
+    return vulnArray
+  }  
+  
   try {  
     var fastparseOptions = {
       attributeNamePrefix: "",
@@ -34,81 +110,6 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
     console.info('construction execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
 
     return (returnObj)
-
-    function processAsset(assetElement) {
-      return {
-        hostname: assetElement.HOST_NAME,
-        fqdn: assetElement.HOST_FQDN,
-        ip: assetElement.HOST_IP,
-        mac: assetElement.HOST_MAC,
-      }
-    }
-  
-    function processIStig(iStigElement) {
-      let resultArray = []
-      iStigElement.forEach(iStig => {
-        let vulns = processVuln(iStig.VULN)
-        resultArray.splice(-1, 0, ...vulns)
-      })
-      return resultArray
-    }
-  
-    function processVuln(vulnElements) {
-      // vulnElements is an array of this object:
-      // {
-      //     COMMENTS
-      //     FINDING_DETAILS
-      //     SEVERITY_JUSTIFICATION
-      //     SEVERITY_OVERRIDE
-      //     STATUS
-      //     STIG_DATA [26]
-      // }
-  
-      const results = {
-        NotAFinding: 'pass',
-        Open: 'fail',
-        NotApplicable: 'notapplicable'
-      }
-      let vulnArray = []
-      vulnElements.forEach(vuln => {
-        const result = results[vuln.STATUS]
-        // Skip unreviewed
-        if (result) {
-          let ruleId
-          // Array.some() stops once a true value is returned
-          vuln.STIG_DATA.some(stigDatum => {
-            if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
-              ruleId = stigDatum.ATTRIBUTE_DATA
-              return true
-            }
-          })
-          let action = null
-          if (result === 'fail') {
-            if (vuln.COMMENTS.startsWith("Mitigate:")) {
-              action = "mitigate"
-            } 
-            else if (vuln.COMMENTS.startsWith("Exception:")) {
-              action = "exception"
-            } 
-            else if (vuln.COMMENTS.startsWith("Remediate:")) {
-              action = "remediate"
-            } 
-          }
-          vulnArray.push({
-            ruleId: ruleId,
-            result: result,
-            resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
-            action: action,
-            // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
-            actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
-            autoResult: false,
-            status: result != 'fail' ? 'submitted' : 'saved'
-          })
-        }
-      })
-  
-      return vulnArray
-    }  
   }
   catch (e) {
     throw (e)

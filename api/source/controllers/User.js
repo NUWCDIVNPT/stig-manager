@@ -13,11 +13,12 @@ module.exports.createUser = async function createUser (req, res, next) {
       let body = req.swagger.params['body'].value
       let projection = req.swagger.params['projection'].value
 
-      if (body.hasOwnProperty('grants') ) {
+      if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
-        let requestedPkgIds = body.grants.map( g => g.collectionId )
-        let availablePkgIds = await Collection.getCollections([], elevate, req.userObject)
-        if (! requestedPkgIds.every( id => availablePkgIds.includes(id) ) ) {
+        let requestedIds = body.collectionGrants.map( g => g.collectionId )
+        let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
+        let availableIds = availableCollections.map( c => c.collectionId)
+        if (! requestedIds.every( id => availableIds.includes(id) ) ) {
           throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
@@ -117,11 +118,12 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       let body = req.swagger.params['body'].value
       let projection = req.swagger.params['projection'].value
 
-      if (body.hasOwnProperty('grants') ) {
+      if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
-        let requestedPkgIds = body.grants.map( g => g.collectionId )
-        let availablePkgIds = await Collection.getCollections([], elevate, req.userObject)
-        if (! requestedPkgIds.every( id => availablePkgIds.includes(id) ) ) {
+        let requestedIds = body.collectionGrants.map( g => g.collectionId )
+        let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
+        let availableIds = availableCollections.map( c => c.collectionId)
+        if (! requestedIds.every( id => availableIds.includes(id) ) ) {
           throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
@@ -146,11 +148,12 @@ module.exports.updateUser = async function updateUser (req, res, next) {
       let body = req.swagger.params['body'].value
       let projection = req.swagger.params['projection'].value
 
-      if (body.hasOwnProperty('grants') ) {
+      if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
-        let requestedPkgIds = body.grants.map( g => g.collectionId )
-        let availablePkgIds = await Collection.getCollections([], elevate, req.userObject)
-        if (! requestedPkgIds.every( id => availablePkgIds.includes(id) ) ) {
+        let requestedIds = body.collectionGrants.map( g => g.collectionId )
+        let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
+        let availableIds = availableCollections.map( c => c.collectionId)
+        if (! requestedIds.every( id => availableIds.includes(id) ) ) {
           throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
@@ -167,7 +170,8 @@ module.exports.updateUser = async function updateUser (req, res, next) {
   }
 }
 
-module.exports.setUserData = async function refreshUser (username, fields) {
+/* c8 ignore start */
+module.exports.setUserData = async function setUserData (username, fields) {
   try {
     await User.setUserData(username, fields)
     return await User.getUserByUsername(username)
@@ -177,3 +181,4 @@ module.exports.setUserData = async function refreshUser (username, fields) {
 
   }
 }
+/* c8 ignore end */
