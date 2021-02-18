@@ -98,7 +98,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         coalesce(
           (select  innerh.h from (select json_arrayagg(
                 json_object(
-                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%d %H:%i:%s'),
+                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                   'result', result.api,
                   'resultComment', rh.resultComment,
                   'action', action.api,
@@ -387,7 +387,7 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       actionComment = VALUES(actionComment),
       statusId = VALUES(statusId),
       userId = VALUES(userId),
-      ts = NOW()`
+      ts = UTC_TIMESTAMP()`
     let sqlHistory = `
     INSERT INTO review_history (
       reviewId,

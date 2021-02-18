@@ -749,7 +749,7 @@ function Sm_HistoryData (idAppend) {
 		{
 			name:'ts',
 			type:'date',
-			dateFormat: 'Y-m-d H:i:s'
+			dateFormat: 'c'
 		},
 		{
 			name:'status',
