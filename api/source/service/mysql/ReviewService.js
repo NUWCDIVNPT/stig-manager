@@ -386,7 +386,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       actionId = VALUES(actionId),
       actionComment = VALUES(actionComment),
       statusId = VALUES(statusId),
-      userId = VALUES(userId)`
+      userId = VALUES(userId),
+      ts = NOW()`
     let sqlHistory = `
     INSERT INTO review_history (
       reviewId,
