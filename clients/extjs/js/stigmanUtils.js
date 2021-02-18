@@ -805,7 +805,7 @@ function Sm_HistoryData (idAppend) {
 				sortable: true,
 				align: 'left',
 				xtype: 'datecolumn',
-				format:	'Y-m-d H:i:s'
+				format:	'Y-m-d H:i:s T'
 			},
 			{ 	
 				header: "Status", 
@@ -1107,7 +1107,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		// Set the legacy editStr property
 		if (review.ts) {
 			let extDate = new Date(review.ts)
-			review.editStr = `${extDate.format('Y-m-d H:i')} by ${review.username}`
+			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
 		}
 
 		// Display the review
