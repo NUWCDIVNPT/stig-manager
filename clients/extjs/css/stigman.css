@@ -1,3 +1,6 @@
+.x-form-display-field {
+    padding-top: 3px;
+}
 .ext-webkit .x-small-editor .x-form-field {
     font: normal 10px Open Sans, helvetica, sans-serif;
 }

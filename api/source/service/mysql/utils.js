@@ -24,6 +24,7 @@ module.exports.testConnection = async function () {
 function getPoolConfig() {
   const poolConfig = {
     connectionLimit : config.database.maxConnections,
+    timezone: 'Z',
     host: config.database.host,
     port: config.database.port,
     user: config.database.username,
