@@ -1305,6 +1305,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 					method: 'GET',
 					params: {
+						rules: 'all',
 						ruleId: record.data.ruleId,
 					}
 				})
