@@ -1090,6 +1090,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 			method: 'GET',
 			params: {
+				rules: 'all',
 				ruleId: groupGridRecord.data.ruleId
 			}
 		})
