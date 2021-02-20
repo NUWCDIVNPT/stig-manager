@@ -2,15 +2,8 @@
 $Id: findingsSummary.js 807 2017-07-27 13:04:19Z csmig $
 */
 
-function addFindingsSummary(collectionId, collectionName) {
-	const tab = Ext.getCmp('main-tab-panel').getItem('findingsTab-' + collectionId)
-	if (tab) {
-		tab.show()
-		return
-	}
-
-	var idAppend = '-findings-summary-' + collectionId;
-	var benchmarkId = '';
+function addFindingsSummary( params ) {
+	const { collectionId, collectionName, treePath } = params
 
 	const aggregator = 'groupId'
 
@@ -19,22 +12,40 @@ function addFindingsSummary(collectionId, collectionName) {
 		aggregator: aggregator
 	})
 
-	var thisTab = Ext.getCmp('main-tab-panel').add({
+	const findingsTab = new Ext.Panel ({
 		id: 'findingsTab-' + collectionId,
 		collectionId: collectionId,
 		collectionName: collectionName,
 		iconCls: 'sm-report-icon',
-		title: 'Findings Summary (' + collectionName + ')',
+		title: '',
 		closable: true,
 		layout: 'fit',
+		sm_tabMode: 'ephemeral',
+		sm_treePath: treePath,
 		items: [findingsPanel]
-	});
-	thisTab.updateTitle = function () {
-		this.setTitle(`${this.collectionName} : Findings`)
+	})
+
+	findingsTab.updateTitle = function () {
+		findingsTab.setTitle(`${findingsTab.sm_tabMode === 'ephemeral' ? '<i>':''}${findingsTab.collectionName} / Findings${findingsTab.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+	}
+	findingsTab.makePermanent = function () {
+		findingsTab.sm_tabMode = 'permanent'
+		findingsTab.updateTitle.call(findingsTab)
+	}
+
+	let tp = Ext.getCmp('main-tab-panel')
+	let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+	let thisTab
+	if (ephTabIndex !== -1) {
+	  let ephTab = tp.items.itemAt(ephTabIndex)
+	  tp.remove(ephTab)
+	  thisTab = tp.insert(ephTabIndex, findingsTab);
+	} else {
+	  thisTab = tp.add( findingsTab )
 	}
 	thisTab.updateTitle.call(thisTab)
 	thisTab.show();
-
+  
 	findingsPanel.parent.getStore().load({
 		params: {
 			aggregator: aggregator

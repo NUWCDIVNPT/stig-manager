@@ -3,7 +3,8 @@ $Id: collectionReview.js 885 2018-02-20 16:26:08Z bmassey $
 */
 
 
-async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
+async function addCollectionReview ( params ) {
+	let { leaf, selectedRule, selectedAsset, treePath } = params
 	try {
 		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
 
@@ -1811,27 +1812,45 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		];
 		
-		var thisTab = Ext.getCmp('main-tab-panel').add({
+		let colReviewTab = new Ext.Panel ({
 			id: 'collection-review-tab' + idAppend,
 			iconCls: 'sm-collection-tab-icon',
-			title: apiCollection.name + " : " + leaf.benchmarkId,
+			title: '',
 			collectionId: leaf.collectionId,
 			benchmarkId: leaf.benchmarkId,
+			collectionName: apiCollection.name,
+			stigName: leaf.benchmarkId,
 			closable:true,
 			layout: 'border',
 			border: false,
 			items: tabItems,
+			sm_TabType: 'asset_review',
+			sm_tabMode: 'ephemeral',
+			sm_treePath: treePath,
 			listeners: {
 			}			
-		});
-
+		})
+		colReviewTab.updateTitle = function () {
+			colReviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${this.collectionName} / ${this.stigName}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+		}
+		colReviewTab.makePermanent = function () {
+			colReviewTab.sm_tabMode = 'permanent'
+			colReviewTab.updateTitle.call(colReviewTab)
+		}
+		
+		let tp = Ext.getCmp('main-tab-panel')
+		let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+		let thisTab
+		if (ephTabIndex !== -1) {
+		  let ephTab = tp.items.itemAt(ephTabIndex)
+		  tp.remove(ephTab)
+		  thisTab = tp.insert(ephTabIndex, colReviewTab);
+		} else {
+		  thisTab = tp.add( colReviewTab )
+		}
+		thisTab.updateTitle.call(thisTab)
 		thisTab.show();
 
-		// History is not ready for users to see
-		// if (!curUser.privileges.canAdmin) {
-			// Ext.getCmp('resources-tab-panel' + idAppend).hideTabStripItem('history-tab' + idAppend);
-		// }
-		
 		groupGrid.getStore().load({
 			preselect: {
 				ruleId: selectedRule,

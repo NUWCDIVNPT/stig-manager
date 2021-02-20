@@ -191,7 +191,7 @@ Ext.lib.Ajax = function() {
         if (o) {
             // Keycloak token handling, carl.a.smigielski@saic.com
             window.keycloak.updateToken(10).then(function (refreshed) {
-                console.info("updateToken() returned successfully, refreshed: " + refreshed)
+                // console.info("updateToken() returned successfully, refreshed: " + refreshed)
                 o.conn.open(method, uri, true);
                 if (window.keycloak.token) {
                     initHeader('Authorization', 'Bearer ' + window.keycloak.token)
