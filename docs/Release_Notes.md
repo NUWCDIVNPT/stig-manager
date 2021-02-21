@@ -1,3 +1,8 @@
+## 1.0.0-beta.17
+- fix: Reviews for non-current ruleIds (#155)
+- fix: Saving unchanged Review updates timestamp (#153)
+- fix: increase test coverage (#151)
+
 ## 1.0.0-beta.16
 - feat: Asset-STIG CKL import UI enhancements (#86) (#143)
 - fix: GET /collections/{collectionId}/poam fail with 500 (#141) (#142)
