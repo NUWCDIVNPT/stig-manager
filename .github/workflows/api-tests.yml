@@ -97,6 +97,19 @@ jobs:
         with:
           name: newman-htmlextra
           path: ./test/api/newman
+      - 
+        name: Collect docker logs on failure
+        if: failure() || cancelled()
+        uses: jwalton/gh-docker-logs@v1
+        with:
+          dest: './logs'
+      - 
+        name: Upload logs to GitHub
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@master
+        with:
+          name: docker-logs
+          path: ./logs
           
           
 
