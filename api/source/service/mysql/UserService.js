@@ -1,5 +1,4 @@
 'use strict';
-const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
