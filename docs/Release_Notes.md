@@ -1,3 +1,6 @@
+## 1.0.0-beta.18
+- feat: Preview tabs for workspaces (#172)
+
 ## 1.0.0-beta.17
 - fix: Reviews for non-current ruleIds (#155)
 - fix: Saving unchanged Review updates timestamp (#153)
