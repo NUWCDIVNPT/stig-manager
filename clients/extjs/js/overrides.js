@@ -532,7 +532,7 @@ SM.TabEnhancements = function(){
                 Ext.getCmp('app-nav-tree').selectPath(t.item.sm_treePath)
             }
             // make tab non-ephemeral
-            if (isLeftButtonPressed && clickCount === 2  && t.item.sm_tabType === 'ephemeral') {
+            if (isLeftButtonPressed && clickCount === 2  && t.item.sm_tabMode === 'ephemeral') {
                 t.item.makePermanent()
             }         
             // close tab on middle-click
