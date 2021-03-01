@@ -1,0 +1,2 @@
+docker run --name stig-manager-auth -p 8080:8080 -p 8443:8443 nuwcdivnpt/stig-manager-auth
+docker run --name stig-manager-db -p 50001:3306 -e MYSQL_ROOT_PASSWORD=rootpw -e MYSQL_DATABASE=stigman -e MYSQL_USER=stigman -e MYSQL_PASSWORD=stigman mysql:8
