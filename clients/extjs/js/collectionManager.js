@@ -1,4 +1,5 @@
-async function addCollectionManager( collectionId, collectionName ) {
+async function addCollectionManager( params ) {
+	let { collectionId, collectionName, treePath } = params
 	try {
 		const tab = Ext.getCmp('main-tab-panel').getItem(`${collectionId}-collection-manager-tab`)
 		if (tab) {
@@ -77,6 +78,8 @@ async function addCollectionManager( collectionId, collectionName ) {
 			collectionId: collectionId,
 			collectionName: collectionName,
 			iconCls: 'sm-collection-tab-icon',
+			sm_tabMode: 'permanent',
+			sm_treePath: treePath,
 			closable: true,
 			layout: 'border',
 			layoutConfig: {
@@ -127,12 +130,27 @@ async function addCollectionManager( collectionId, collectionName ) {
 			assetGrid.getStore().reload()
 		}
 		managerTab.updateTitle = function () {
-			this.setTitle(`${this.collectionName} : Configuration`)
+			managerTab.setTitle(`${managerTab.sm_tabMode === 'ephemeral' ? '<i>':''}${managerTab.collectionName} / Manage${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
 		}
-		let thisTab = Ext.getCmp('main-tab-panel').add(managerTab)
-		managerTab.updateTitle.call(managerTab)
-		thisTab.show();
 
+		managerTab.makePermanent = function () {
+			managerTab.sm_tabMode = 'permanent'
+			managerTab.updateTitle.call(managerTab)
+		}
+		
+		let tp = Ext.getCmp('main-tab-panel')
+		let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+		let thisTab
+		if (ephTabIndex !== -1) {
+		let ephTab = tp.items.itemAt(ephTabIndex)
+		tp.remove(ephTab)
+		thisTab = tp.insert(ephTabIndex, managerTab);
+		} else {
+		thisTab = tp.add( managerTab )
+		}
+		thisTab.updateTitle.call(thisTab)
+		thisTab.show();
+		
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			params: {

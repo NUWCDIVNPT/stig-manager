@@ -507,28 +507,48 @@ Ext.override(Ext.QuickTip, {
     }
 });
 
-// Plugin to TabPanel that allows tabs to be closed with middle-click (mouse wheel)
-// In TabPanel configuration, set "plugins: new Ext.ux.TabCloseOnMiddleClick()"
-// Source: Unknown
-Ext.ux.TabCloseOnMiddleClick = function(){
+// Plugin to TabPanel that allows tabs 
+// - to be closed with middle-click (mouse wheel)
+// - to be made non-ephemeral when double-clicked
+// - to expand the navigation tree to the source node 
+// In TabPanel configuration, set "plugins: new SM.TabEnhancements()"
+// Modified from Daniel Jagszent's example at: 
+// https://forum.sencha.com/forum/showthread.php?36414-Closing-a-tab-with-the-mouse-wheel...-how&p=172321&viewfull=1#post172321
+// Source: carl.a.smigielski@saic.com
+SM.TabEnhancements = function(){
     let tabs;
     function onMouseDown(e){
         e.preventDefault()
-        let t = tabs.findTargets(e), b = e.browserEvent.button, w = e.browserEvent.which, 
-        isMiddleButtonPressed = (w === null || w === undefined) ? b==1 : w==2; // browser dependent: http://unixpapa.com/js/mouse.html
-        
-        if (isMiddleButtonPressed && t && t.item) {
-            if (t.item.closable) {
-                tabs.remove(t.item)
-            } else {
-                e.stopPropagation()
+        const t = tabs.findTargets(e)
+        const b = e.browserEvent.button
+        const w = e.browserEvent.which
+        const clickCount = e.browserEvent.detail
+        const isMiddleButtonPressed = (w === null || w === undefined) ? b==1 : w==2; // browser dependent: http://unixpapa.com/js/mouse.html
+        const isLeftButtonPressed = (w === null || w === undefined) ? b==0 : w==1;
+
+        if (t.item) {
+            // expand the navigation tree to the source node
+            if (!t.close && t.item.sm_treePath) {
+                Ext.getCmp('app-nav-tree').selectPath(t.item.sm_treePath)
+            }
+            // make tab non-ephemeral
+            if (isLeftButtonPressed && clickCount === 2  && t.item.sm_tabType === 'ephemeral') {
+                t.item.makePermanent()
+            }         
+            // close tab on middle-click
+            if (isMiddleButtonPressed) {
+                if (t.item.closable) {
+                    tabs.remove(t.item)
+                } else {
+                    e.stopPropagation()
+                }
             }
         }
     } 
-    function onRender(){
-        tabs.strip.on({mousedown: onMouseDown})
+    function onRender() {
+        tabs.strip.on('mousedown', onMouseDown)
     }
-    this.init = function(tp){
+    this.init = function(tp) {
         tabs = tp
         tabs.on('render', onRender)
     }

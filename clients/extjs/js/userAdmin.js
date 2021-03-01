@@ -1,4 +1,5 @@
-function addUserAdmin() {
+function addUserAdmin(params ) {
+	let { treePath } = params
 	const tab = Ext.getCmp('main-tab-panel').getItem('user-admin-tab')
 	if (tab) {
 		tab.show()
@@ -301,6 +302,7 @@ function addUserAdmin() {
 
 	const thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'user-admin-tab',
+		sm_treePath: treePath, 
 		iconCls: 'sm-users-icon',
 		title: 'User Grants',
 		closable:true,

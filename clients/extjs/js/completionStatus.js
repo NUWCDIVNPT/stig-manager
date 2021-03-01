@@ -2,13 +2,8 @@
 $Id: completionStatus.js 807 2017-07-27 13:04:19Z csmig $
 */
 
-function addCompletionStatus(collectionId,collectionName) {
-
-	const tab = Ext.getCmp('main-tab-panel').getItem('completionTab-' + collectionId)
-	if (tab) {
-		tab.show()
-		return
-	}
+function addCompletionStatus( params) {
+	const { collectionId, collectionName, treePath } = params
 
 	var groupRow = [
 		{header: ' ', colspan: 2, align: 'center'},
@@ -352,17 +347,40 @@ function addCompletionStatus(collectionId,collectionName) {
 				width: 80
 			}]
 		})
-	});
-	
-	var thisTab = Ext.getCmp('main-tab-panel').add({
+	})
+
+	let statusTab = new Ext.Panel({
 		id: 'completionTab-' + collectionId,
 		collectionId: collectionId,
+		collectionName: collectionName,
 		iconCls: 'sm-report-icon',
-		title: 'Completion Status (' + collectionName + ')',
+		title: '',
 		closable:true,
 		layout: 'border',
+		sm_tabMode: 'ephemeral',
+		sm_treePath: treePath,
 		items: [completionGrid]
-	});
+	})
+
+	statusTab.updateTitle = function () {
+		statusTab.setTitle(`${statusTab.sm_tabMode === 'ephemeral' ? '<i>':''}${statusTab.collectionName} / Status${statusTab.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+	}
+	statusTab.makePermanent = function () {
+		statusTab.sm_tabMode = 'permanent'
+		statusTab.updateTitle()
+	}
+
+	let tp = Ext.getCmp('main-tab-panel')
+	let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+	let thisTab
+	if (ephTabIndex !== -1) {
+	  let ephTab = tp.items.itemAt(ephTabIndex)
+	  tp.remove(ephTab)
+	  thisTab = tp.insert(ephTabIndex, statusTab);
+	} else {
+	  thisTab = tp.add( statusTab )
+	}
+	thisTab.updateTitle.call(thisTab)
 	thisTab.show();
 	
 	completionGrid.getStore().load();

@@ -1,46 +1,35 @@
 'use strict'
 
-class Collection {
-    constructor (api) {
-        this.config = config
-        this.infoUi = config.infoUi || {}        
-        this.assetUi = config.assetUi || {}
-        this.grantUi = config.grantUi || {}        
-        this.stigUi = config.stignUi || {}        
+async function addOrUpdateCollection( collectionId, collectionObj, options ) {
+    try {
+      let url, method
+      if (collectionId) {
+        url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${options.elevate}`
+        method = 'PUT'
+      }
+      else {
+        url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate}`,
+        method = 'POST'
+      }
+      let result = await Ext.Ajax.requestPromise({
+        url: url,
+        method: method,
+        headers: { 'Content-Type': 'application/json;charset=utf-8' },
+        params: {
+          projection: ['owners', 'statistics']
+        },
+        jsonData: collectionObj
+      })
+      let apiCollection = JSON.parse(result.response.responseText)
+      // Refresh the curUser global
+      await SM.GetUserObject()
+      
+      let event = collectionId ? 'collectionchanged' : 'collectioncreated'
+      SM.Dispatcher.fireEvent( event, apiCollection, options )
     }
-
-
-    async updateBackend(putData) {
-        try {
-            let result = await Ext.Ajax.requestPromise({
-                url: `${CMSAT.Env.apiBase}/collections/${this.config.collectionId}`,
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                jsonData: putData
-            })
-            this.config = JSON.parse(result.response.responseText)
-            return result
-        }
-        catch (err) {
-            throw (err)
-        }
+    catch (e) {
+      alert (e.message)
     }
-
-    async deleteCollection() {
-        try {
-            let results = await Ext.Ajax.requestPromise({
-                url: `${CMSAT.Env.apiBase}/collections/${this.config.collectionId}`,
-                method: 'DELETE'
-            })
-            return results
-        }
-        catch (err) {
-            throw (err)
-        }
-    }
-
-    updateInfoUi () {
-        this.infoUi.panel.update(this.config)
-    }
-   
-}
+  }
+  
+  
