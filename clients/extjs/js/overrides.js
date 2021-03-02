@@ -1,3 +1,11 @@
+// Lower default z-index value from 11000 to 8000
+// Source: carl.a.smigielski@saic.com
+Ext.override(Ext.Layer, {
+    getZIndex: function(){
+        return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 8000;
+    }
+});
+
 // Prevent changing readOnly checkboxes
 // Source: https://forum.sencha.com/forum/showthread.php?90531-Readonly-Checkbox-Override
 Ext.override(Ext.form.Checkbox, {
