@@ -109,6 +109,7 @@ function loadScripts() {
         "js/scanManagement.js",
         "js/ExportButton.js",
         "js/jszip.min.js",
+        "js/FileSaver.js",
         "js/fast-xml-parser.min.js",
         "js/jsonview.bundle.js",
         "js/stigman.js"
