@@ -1,3 +1,7 @@
+## 1.0.0-beta.19
+- feat: Export Collection-STIG CKL archive (#176)
+- fix: inline row editors (#167) (#174)
+
 ## 1.0.0-beta.18
 - feat: Preview tabs for workspaces (#172)
 
