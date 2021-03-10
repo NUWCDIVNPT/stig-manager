@@ -3,7 +3,8 @@ $Id: collectionReview.js 885 2018-02-20 16:26:08Z bmassey $
 */
 
 
-async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
+async function addCollectionReview ( params ) {
+	let { leaf, selectedRule, selectedAsset, treePath } = params
 	try {
 		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
 
@@ -208,37 +209,16 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				}
 				,{ 
 					text: 'Export Results',
-					disabled: true,
+					disabled: false,
 					iconCls: 'sm-export-icon',
 					hideOnClick: false,
 					menu: {
 						items: [ 
-							// {
-								// text: 'XLS (Zip archive)',
-								// iconCls: 'sm-export-icon',
-								// handler: function(item,eventObject){
-									// var lo = groupStore.lastOptions;
-									// window.location='pl/getCurrentExcel.pl' + '?revId=' + lo.params.revId + '&assetId=' + lo.params.assetId;
-								// }
-							// }
-							// ,{
-								// id: 'groupFileMenu-export-xccdfItem' + idAppend,
-								// text: 'XCCDF (Zip archive)',
-								// iconCls: 'sm-export-icon',
-								// handler: function(item,eventObject){
-									// var lo = groupStore.lastOptions;
-									// window.location='pl/getCurrentXccdf.pl' + '?revId=' + lo.params.revId + '&assetId=' + lo.params.assetId;
-								// }
-							// }
-							// ,
 							{
 								text: 'CKL (Zip archive)',
 								iconCls: 'sm-export-icon',
-								tooltip: 'Download this checklist in DISA STIG Viewer format for each asset in the collection',
-								handler: function(item,eventObject){
-									var lo = groupStore.lastOptions;
-									window.location='pl/getCollectionCkls.pl' + '?benchmarkId=' + lo.params.benchmarkId + '&revId=' + lo.params.revId + '&collectionId=' + lo.params.collectionId;
-								}
+								tooltip: 'Download an archive with a checklist in DISA STIG Viewer format for each asset in the collection',
+								handler: exportCkls
 							}
 						]
 					}
@@ -323,6 +303,51 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			]
 		});
 
+		async function exportCkls () {
+			try {
+				const zip = new JSZip()
+				initProgress("Exporting checklists", "Initializing...")
+				let fetched = 0
+				const assetCount = apiAssets.length
+				for (const apiAsset of apiAssets) {
+					updateProgress(fetched/assetCount, `Fetching CKL for ${apiAsset.name}`)
+					updateStatusText (`Fetching checklist for ${apiAsset.name}: `, true)
+					await window.keycloak.updateToken(10)
+					const url = `${STIGMAN.Env.apiBase}/assets/${apiAsset.assetId}/checklists/${leaf.benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
+					let response = await fetch( url, {
+					  method: 'GET',
+					  headers: new Headers({
+						'Authorization': `Bearer ${window.keycloak.token}`
+					  })
+					})
+					const contentDispo = response.headers.get("content-disposition")
+					//https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+					const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+					console.log(filename)
+					const blob = await response.blob()
+					updateStatusText (`Fetched ${filename}`)
+					fetched++
+					zip.file( filename, blob )
+				}
+				updateProgress(1, 'Generating Zip archive...')
+				updateStatusText('Generating Zip archive...')
+				const blob = await zip.generateAsync({
+					type:"blob",
+					compression: "DEFLATE",
+					compressionOptions: {
+						level: 6
+					}
+				}, (metadata) => {
+					updateProgress(metadata.percent/100, `Compressing ${metadata.currentFile}`)
+				})
+				updateProgress(1, 'Done')
+				updateStatusText('Done')
+				saveAs(blob, `${apiCollection.name}-${leaf.benchmarkId}.zip`)
+			}
+			catch (e) {
+				alert (`${e.message}\n${e.stack}`)
+			}
+		}
 		
 		/******************************************************/
 		// Group grid statistics string
@@ -749,73 +774,11 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 				field: 'assetName',
 				direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
 			},
-			// proxy: new Ext.data.HttpProxy({
-			// 	method: 'POST',
-			// 	url: 'pl/getCurrentReviews.pl', // see options parameter for Ext.Ajax.request
-			// 	api: {
-			// 		// all actions except the following will use above url
-			// 		update: `${STIGMAN.Env.apiBase}/collections/${apiCollection.collectionId}/reviews`
-			// 	},
-			// 	listeners: {
-			// 		beforewrite: function (proxy, action, rs, params) {
-			// 			// set params so server-side script can return counts for rules with updated reviews
-			// 			params.collectionId = thisTab.collectionId;
-			// 			params.benchmarkId = thisTab.benchmarkId;
-			// 			params.revId = thisTab.revId;
-			// 		},
-			// 		write: function (proxy, action, data, response, rs, options) {
-			// 			if (action == 'update') { // response is from our update API
-			// 				var counts = response.raw.counts;
-			// 				for (var i=0; i <counts.length; i++) {
-			// 					var record = groupStore.getAt(groupStore.findExact('ruleId',counts[i].ruleId));
-			// 					record.data.approveCnt = counts[i].approveCnt;
-			// 					record.data.naCnt = counts[i].naCnt;
-			// 					record.data.nfCnt = counts[i].nfCnt;
-			// 					record.data.nrCnt = counts[i].nrCnt;
-			// 					record.data.oCnt = counts[i].oCnt;
-			// 					record.data.readyCnt = counts[i].readyCnt;
-			// 					record.data.rejectCnt = counts[i].rejectCnt;
-			// 					record.commit();
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }),
+
 			root: '',
-			//id: 'reviewStore' + idAppend,
 			fields: reviewsFields,
-			// writer:new Ext.data.JsonWriter({
-			// 	encode: true,
-			// 	writeAllFields: false
-			// }),
 			listeners: {
-				exception: function(misc) {
-					// var ourView = reviewsGrid.getView();
-					// var response = misc.events.exception.listeners[1].fn.arguments[4];
-					// if (response.status != 0) {
-						// var maskStr = 'Load failed: ' + response.responseText;
-						// //ourView.emptyText = 'Load failed: ' + response.responseText;
-					// } else {
-						// //ourView.emptyText = 'HTTP Server Error: ' + response.statusText;
-						// var maskStr = 'HTTP Server Error: ' + response.statusText;
-					// }
-					// //ourView.refresh();
-					// reviewsGrid.getEl().mask(maskStr);
-				},
-				load: function () {
-					// var ourGrid = Ext.getCmp('reviewsGrid' + idAppend);
-					// ourGrid.getSelectionModel().selectFirstRow();
-				}
-				// write: function ( store, action, result, res, rs ) {
-					// var one = 1;
-				// },
-				// update: function ( store, record, operation ) {
-					// var one = 1;
-				// },
-				// beforesave: function ( store, batch, data ) {
-					// var one = 1;
-				// },
-				,save: function ( store, batch, data ) {
+				save: function ( store, batch, data ) {
 					var ourGrid = Ext.getCmp('reviewsGrid' + idAppend);
 					setReviewsGridButtonStates(ourGrid.getSelectionModel());
 					Ext.getBody().unmask();
@@ -823,14 +786,6 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			},
 			idProperty: 'assetId'
 		});
-
-		// var expander = new Ext.ux.grid.RowExpander({
-			// tpl : new Ext.Template(
-				// '<p><b>Reviewer:</b> {user}</p>',
-				// '<p><b>Result Comment:</b> {resultComment}</p>',
-				// '<p><b>Action Comment:</b> {actionComment}</p>'
-			// )
-		// });
 
 		var editor = new Ext.ux.grid.RowEditor({
 			saveText: 'Update',
@@ -914,17 +869,19 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 						triggerAction: 'all'
 					}),
 					renderer: function (val) {
+						let returnStr
 						switch (val) {
 							case 'fail':
-								return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
+								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
 								break;
 							case 'pass':
-								return '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
+								returnStr = '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
 								break;
 							case 'notapplicable':
-								return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
+								returnStr = '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
 								break;
 						}
+						return SM.styledEmptyRenderer(returnStr)
 					},
 					sortable: true
 				}
@@ -933,7 +890,9 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					header: "Result comment", 
 					width: 100,
 					dataIndex: 'resultComment',
-					renderer: columnWrap,
+					renderer: function (v) {
+						return columnWrap(SM.styledEmptyRenderer(v))
+					},
 					sortable: true,
 					editor: new Ext.form.TextArea({
 						id: 'reviewsGrid-editor-resultComment' + idAppend,
@@ -1305,6 +1264,7 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 					method: 'GET',
 					params: {
+						rules: 'all',
 						ruleId: record.data.ruleId,
 					}
 				})
@@ -1810,27 +1770,45 @@ async function addCollectionReview ( leaf, selectedRule, selectedAsset ) {
 			}
 		];
 		
-		var thisTab = Ext.getCmp('main-tab-panel').add({
+		let colReviewTab = new Ext.Panel ({
 			id: 'collection-review-tab' + idAppend,
 			iconCls: 'sm-collection-tab-icon',
-			title: apiCollection.name + " : " + leaf.benchmarkId,
+			title: '',
 			collectionId: leaf.collectionId,
 			benchmarkId: leaf.benchmarkId,
+			collectionName: apiCollection.name,
+			stigName: leaf.benchmarkId,
 			closable:true,
 			layout: 'border',
 			border: false,
 			items: tabItems,
+			sm_TabType: 'asset_review',
+			sm_tabMode: 'ephemeral',
+			sm_treePath: treePath,
 			listeners: {
 			}			
-		});
-
+		})
+		colReviewTab.updateTitle = function () {
+			colReviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${this.collectionName} / ${this.stigName}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+		}
+		colReviewTab.makePermanent = function () {
+			colReviewTab.sm_tabMode = 'permanent'
+			colReviewTab.updateTitle.call(colReviewTab)
+		}
+		
+		let tp = Ext.getCmp('main-tab-panel')
+		let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+		let thisTab
+		if (ephTabIndex !== -1) {
+		  let ephTab = tp.items.itemAt(ephTabIndex)
+		  tp.remove(ephTab)
+		  thisTab = tp.insert(ephTabIndex, colReviewTab);
+		} else {
+		  thisTab = tp.add( colReviewTab )
+		}
+		thisTab.updateTitle.call(thisTab)
 		thisTab.show();
 
-		// History is not ready for users to see
-		// if (!curUser.privileges.canAdmin) {
-			// Ext.getCmp('resources-tab-panel' + idAppend).hideTabStripItem('history-tab' + idAppend);
-		// }
-		
 		groupGrid.getStore().load({
 			preselect: {
 				ruleId: selectedRule,

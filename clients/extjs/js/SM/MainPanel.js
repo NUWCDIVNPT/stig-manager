@@ -27,7 +27,7 @@ SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
       }
     }
     const config = {
-      plugins: new Ext.ux.TabCloseOnMiddleClick(),
+      plugins: new SM.TabEnhancements(),
       title: 'STIGManager',
       enableTabScroll: true,
       activeTab: 0,
@@ -52,6 +52,12 @@ SM.MainTabPanel = Ext.extend(Ext.TabPanel, {
                 }
               }
             }
+          }
+        },
+        tabchange: function (tp, tab) {
+          // expand the navigation tree to the source node
+          if (tab.sm_treePath) {
+            Ext.getCmp('app-nav-tree').selectPath(tab.sm_treePath)
           }
         }
       },

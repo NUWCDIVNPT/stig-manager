@@ -1,4 +1,5 @@
-async function addReview(leaf, selectedRule, selectedResource) {
+async function addReview( params ) {
+  let { leaf, selectedRule, selectedResource, treePath } = params
   let result = await Ext.Ajax.requestPromise({
     url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
     method: 'GET'
@@ -252,8 +253,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
         text: 'Import Results...',
         iconCls: 'sm-import-icon',
         handler: function () {
-          uploadResults();
-          //initProgress();
+          showImportResultFile( {...leaf, revisionStr: groupGrid.sm_revisionStr, store: groupStore} );            
         }
       },
       '-',
@@ -705,6 +705,7 @@ async function addReview(leaf, selectedRule, selectedResource) {
       }
       if (item.revisionStr == activeRevisionStr || (activeRevisionStr === 'latest' && i === 0)) {
         item.checked = true;
+        groupGrid.sm_revisionStr = item.revisionStr
         returnObject.activeRevisionLabel = item.text;
       } else {
         item.checked = false;
@@ -1940,6 +1941,8 @@ async function addReview(leaf, selectedRule, selectedResource) {
     title: ' ',
     closable: true,
     layout: 'border',
+    sm_tabMode: 'ephemeral',
+    sm_treePath: treePath,
     sm_TabType: 'asset_review',
     sm_GroupGridView: groupGrid.getView(),
     items: reviewItems,
@@ -1987,11 +1990,24 @@ async function addReview(leaf, selectedRule, selectedResource) {
     }
   })
   reviewTab.updateTitle = function () {
-    this.setTitle(`${this.collectionName} : ${this.assetName} : ${this.stigName}`)
+    reviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${this.collectionName} / ${this.assetName} / ${this.stigName}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+  }
+  reviewTab.makePermanent = function () {
+    reviewTab.sm_tabMode = 'permanent'
+    reviewTab.updateTitle.call(reviewTab)
   }
 
-  var thisTab = Ext.getCmp('main-tab-panel').add(reviewTab);
-  reviewTab.updateTitle.call(reviewTab)
+  let tp = Ext.getCmp('main-tab-panel')
+  let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+  let thisTab
+  if (ephTabIndex !== -1) {
+    let ephTab = tp.items.itemAt(ephTabIndex)
+    tp.remove(ephTab)
+    thisTab = tp.insert(ephTabIndex, reviewTab);
+  } else {
+    thisTab = tp.add( reviewTab )
+  }
+  thisTab.updateTitle.call(thisTab)
   thisTab.show();
 
   groupGrid.getStore().load();

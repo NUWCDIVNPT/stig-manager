@@ -1,3 +1,6 @@
+.x-form-display-field {
+    padding-top: 3px;
+}
 .ext-webkit .x-small-editor .x-form-field {
     font: normal 10px Open Sans, helvetica, sans-serif;
 }
@@ -91,6 +94,11 @@ body {
 .sm-result-na {
 	color: grey;
 	text-align: center;
+}
+.sm-result-nr {
+    color: hsla(0, 10%, 96%, 1);
+    background-color: #d74400;
+    text-align: center;
 }
 
 .sm-grid-sprite {
@@ -189,7 +197,7 @@ body {
     border-radius: 3px;
 }
 .ext-el-mask {
-    background-color: #333333;
+    background-color: #666;
 }
 .sm-round-panel .x-window-header {
 	color: #111;

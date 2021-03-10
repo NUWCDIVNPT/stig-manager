@@ -2952,6 +2952,11 @@ components:
           type: integer
         autoCount:
           type: integer
+        revisionStrs:
+          type: array
+          items:
+           type: string
+           pattern: ^V\d+R\d+(\.\d+)?$
     StigAsset:
       type: object
       required:

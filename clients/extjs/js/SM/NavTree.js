@@ -319,17 +319,17 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           listeners: {
             click: me.treeClick,
             render: this.treeRender,
-            beforeexpandnode: function (n) {
+            collapsenode: function (n) {
               n.loaded = false; // always reload from the server
             }
           }
       }
 
-      this.onCollectionCreated = function (apiCollection) {
+      this.onCollectionCreated = function (apiCollection, options) {
         const collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === apiCollection.collectionId )
         if (collectionGrant) {
           let collectionRoot = me.getNodeById('collections-root')
-          collectionRoot.appendChild( SM.CollectionNodeConfig( apiCollection ) )
+          let newNode = collectionRoot.appendChild( SM.CollectionNodeConfig( apiCollection ) )
           function sortFn (a, b) {
             if (a.attributes.id === 'collection-create-leaf') {
               return -1
@@ -346,6 +346,13 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return 0
           }
           collectionRoot.sort(sortFn)
+          if (options.showManager) {
+            me.selectPath(`${newNode.getPath()}${me.pathSeparator}${newNode.attributes.children[0].id}`, undefined, (bSuccess, oSelNode) => {
+              if (bSuccess) {
+                oSelNode.getUI().elNode.click()
+              }
+            })
+          }
         }
       }
 
@@ -696,33 +703,63 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
         }
     },
-    treeClick: function (n) {
-        var idAppend;
-        var tab;
-      
+    treeClick: function (n, e) {
+        let idAppend;
+        let tab;
+        if (!n.leaf) {
+          return
+        }
+        console.log(`in treeClick() with ${e.type}`)
         if (n.attributes.report == 'review') {
           idAppend = '-' + n.attributes.assetId + '-' + n.attributes.benchmarkId.replace(".", "_");
           tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
           if (tab) {
+            // Detect double click
+            if (e.browserEvent.detail === 2) {
+              tab.makePermanent()
+            }
             tab.show();
           } else {
-            addReview(n.attributes);
+            addReview({
+              leaf: n.attributes,
+              treePath: n.getPath()
+            })
           }
         }
         if (n.attributes.report == 'collection-review') {
           idAppend = '-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
           tab = Ext.getCmp('main-tab-panel').getItem('collection-review-tab' + idAppend);
           if (tab) {
+            // Detect double click
+            if (e.browserEvent.detail === 2) {
+              tab.makePermanent()
+            }
             tab.show();
           } else {
-            addCollectionReview(n.attributes);
+            addCollectionReview({
+              leaf: n.attributes,
+              treePath: n.getPath()
+            })
           }
         }
         if (n.attributes.action == 'import') {
           uploadArchive(n);
         }
         if (n.attributes.action == 'findings') {
-          addFindingsSummary(n.attributes.collectionId, n.attributes.collectionName);
+          tab = Ext.getCmp('main-tab-panel').getItem('findingsTab-' + n.attributes.collectionId)
+          if (tab) {
+            // Detect double click
+            if (e.browserEvent.detail === 2) {
+              tab.makePermanent()
+            }
+            tab.show()
+          } else {
+            addFindingsSummary({
+              collectionId: n.attributes.collectionId,
+              collectionName: n.attributes.collectionName,
+              treePath: n.getPath()
+            })
+          }
         }
         if (n.attributes.action == 'collection-create') {
           let collectionRootNode = n.parentNode
@@ -772,24 +809,41 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
       
         if (n.attributes.action == 'collection-management') {
-          addCollectionManager(n.attributes.collectionId, n.attributes.collectionName)
+          addCollectionManager({
+            collectionId: n.attributes.collectionId,
+            collectionName: n.attributes.collectionName,
+            treePath: n.getPath()
+          })
         }
         if (n.attributes.action == 'collection-status') {
-          addCompletionStatus(n.attributes.collectionId, n.attributes.collectionName)
+          tab = Ext.getCmp('main-tab-panel').getItem('completionTab-' + n.attributes.collectionId)       
+          if (tab) {
+            // Detect double click
+            if (e.browserEvent.detail === 2) {
+              tab.makePermanent()
+            }
+            tab.show()
+          } else {
+            addCompletionStatus({
+              collectionId: n.attributes.collectionId,
+              collectionName: n.attributes.collectionName,
+              treePath: n.getPath()
+            })
+          }
         }
 
         switch (n.id) {
           case 'collection-admin':
-            addCollectionAdmin();
+            addCollectionAdmin( { treePath: n.getPath() } );
             break;
           case 'user-admin':
-            addUserAdmin();
+            addUserAdmin( { treePath: n.getPath() });
             break;
           case 'stig-admin':
-            addStigAdmin();
+            addStigAdmin( { treePath: n.getPath() });
             break;
           case 'appdata-admin':
-            addAppDataAdmin();
+            addAppDataAdmin( { treePath: n.getPath() });
             break;
           case 'wo-admin':
             doWo();

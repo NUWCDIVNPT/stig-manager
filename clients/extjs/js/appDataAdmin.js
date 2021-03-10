@@ -1,4 +1,5 @@
-function addAppDataAdmin() {
+function addAppDataAdmin( params ) {
+  let { treePath } = params
   const tab = Ext.getCmp('main-tab-panel').getItem('appdata-admin-tab')
 	if (tab) {
 		tab.show()
@@ -205,6 +206,7 @@ function addAppDataAdmin() {
 
   const thisTab = Ext.getCmp('main-tab-panel').add({
     id: 'appdata-admin-tab',
+    sm_treePath: treePath,
     iconCls: 'sm-database-save-icon',
     title: 'Application Data',
     closable: true,

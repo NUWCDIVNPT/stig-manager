@@ -806,6 +806,11 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
           ATTRIBUTE_DATA: r[stigDatum[1]]
         })
       })
+      // STIGRef
+      vulnObj.STIG_DATA.push({
+        VULN_ATTRIBUTE: 'STIGRef',
+        ATTRIBUTE_DATA: `${stig.title} :: Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`
+      })
       // CCI_REFs
       if (r.ccis) {
         let ccis = r.ccis.split(',')

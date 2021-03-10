@@ -160,6 +160,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
             rowIndex = this.grid.getStore().indexOf(rowIndex);
         }
         if(this.fireEvent('beforeedit', this, rowIndex) !== false){
+            this.grid.getEl().mask()
             this.editing = true;
             var g = this.grid, view = g.getView(),
                 row = view.getRow(rowIndex),
@@ -200,6 +201,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
 
     stopEditing : function(saveChanges){
         this.editing = false;
+        this.grid.getEl().unmask()
         if(!this.isVisible()){
             return;
         }

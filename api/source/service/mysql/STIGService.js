@@ -16,11 +16,13 @@ exports.queryStigs = async function ( inPredicates ) {
       `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
       `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`,
       `cr.ruleCount`,
-      `cr.ovalCount as autoCount`
+      `cr.ovalCount as autoCount`,
+      `JSON_ARRAYAGG(concat('V',revision.version,'R',revision.release)) as revisionStrs`
     ]
     let joins = [
       'stig b',
-      'left join current_rev cr on b.benchmarkId = cr.benchmarkId'
+      'left join current_rev cr on b.benchmarkId = cr.benchmarkId',
+      'left join revision on b.benchmarkId = revision.benchmarkId'
     ]
 
     // PREDICATES
@@ -45,7 +47,7 @@ exports.queryStigs = async function ( inPredicates ) {
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' order by b.benchmarkId'
+    sql += ' group by b.benchmarkId order by b.benchmarkId'
 
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)

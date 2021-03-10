@@ -65,9 +65,11 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     ]
     const joins = [
       'review r',
-      'left join current_group_rule cgr on r.ruleId = cgr.ruleId',
+      'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
+      'left join rev_group_map rg on rgr.rgId = rg.rgId',
+      'left join revision on rg.revId = revision.revId',
+      'left join current_rev on rg.revId = current_rev.revId',
       'left join rule on r.ruleId = rule.ruleId',
-      // 'left join rule_cci_map rc on r.ruleId = rc.ruleId',
       'left join result on r.resultId = result.resultId',
       'left join status on r.statusId = status.statusId',
       'left join action on r.actionId = action.actionId',
@@ -75,7 +77,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       'left join asset on r.assetId = asset.assetId',
       'left join collection c on asset.collectionId = c.collectionId',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join stig_asset_map sa on (r.assetId = sa.assetId and cgr.benchmarkId = sa.benchmarkId)',
+      'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
 
@@ -98,7 +100,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         coalesce(
           (select  innerh.h from (select json_arrayagg(
                 json_object(
-                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%d %H:%i:%s'),
+                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                   'result', result.api,
                   'resultComment', rh.resultComment,
                   'action', action.api,
@@ -133,24 +135,24 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     // Role/Assignment based access control 
     if (context == dbUtils.CONTEXT_USER) {
       predicates.statements.push('cg.userId = :userId')
-      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN (usa.userId = cg.userId AND sa.benchmarkId = cgr.benchmarkId) ELSE TRUE END')
+      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN (usa.userId = cg.userId AND sa.benchmarkId = revision.benchmarkId) ELSE TRUE END')
       predicates.binds.userId = userObject.userId
     }
 
     switch (inPredicates.rules) {
       case 'current-mapped':
-        predicates.statements.push(`cgr.ruleId IS NOT NULL`)
+        predicates.statements.push(`current_rev.revId IS NOT NULL`)
         predicates.statements.push(`sa.saId IS NOT NULL`)
         break
       case 'current':
-        predicates.statements.push(`cgr.ruleId IS NOT NULL`)
+        predicates.statements.push(`current_rev.revId IS NOT NULL`)
         break
       case 'not-current-mapped':
-        predicates.statements.push(`cgr.ruleId IS NULL`)
+        predicates.statements.push(`current_rev.revId IS NULL`)
         predicates.statements.push(`sa.saId IS NULL`)
         break
       case 'not-current':
-        predicates.statements.push(`cgr.ruleId IS NULL`)
+        predicates.statements.push(`current_rev.revId IS NULL`)
         break
     }
 
@@ -176,7 +178,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       predicates.binds.ruleId = inPredicates.ruleId
     }
     if (inPredicates.groupId) {
-      predicates.statements.push(`cgr.groupId = :groupId`)
+      predicates.statements.push(`rg.groupId = :groupId`)
       predicates.binds.groupId = inPredicates.groupId
     }
     if (inPredicates.cci) {
@@ -199,7 +201,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       predicates.binds.assetId = inPredicates.assetId
     }
     if (inPredicates.benchmarkId) {
-        predicates.statements.push(`cgr.benchmarkId = :benchmarkId`)
+        predicates.statements.push(`revision.benchmarkId = :benchmarkId`)
         predicates.binds.benchmarkId = inPredicates.benchmarkId
     }
 
@@ -386,7 +388,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       actionId = VALUES(actionId),
       actionComment = VALUES(actionComment),
       statusId = VALUES(statusId),
-      userId = VALUES(userId)`
+      userId = VALUES(userId),
+      ts = UTC_TIMESTAMP()`
     let sqlHistory = `
     INSERT INTO review_history (
       reviewId,

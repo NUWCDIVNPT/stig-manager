@@ -1,5 +1,5 @@
-function addCollectionAdmin() {
-
+function addCollectionAdmin( params ) {
+  let { treePath } = params
   const tab = Ext.getCmp('main-tab-panel').getItem('collection-admin-tab')
 	if (tab) {
 		tab.show()
@@ -270,12 +270,20 @@ function addCollectionAdmin() {
 
   const thisTab = Ext.getCmp('main-tab-panel').add({
     id: 'collection-admin-tab',
+    sm_treePath: treePath,
     iconCls: 'sm-collection-icon',
     title: 'Collections',
     closable: true,
     layout: 'border',
     border: false,
-    items: [collectionGrid]
+    items: [collectionGrid],
+    listeners: {
+      beforedestroy: function () {
+        SM.Dispatcher.removeListener('collectionchanged', onCollectionChanged)
+        SM.Dispatcher.removeListener('collectioncreated', onCollectionCreated)
+        SM.Dispatcher.removeListener('collectiondeleted', onCollectionDeleted)
+      }
+    }
   })
   thisTab.show()
 

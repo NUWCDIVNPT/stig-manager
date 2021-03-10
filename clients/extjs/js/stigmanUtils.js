@@ -749,7 +749,7 @@ function Sm_HistoryData (idAppend) {
 		{
 			name:'ts',
 			type:'date',
-			dateFormat: 'Y-m-d H:i:s'
+			dateFormat: 'c'
 		},
 		{
 			name:'status',
@@ -805,7 +805,7 @@ function Sm_HistoryData (idAppend) {
 				sortable: true,
 				align: 'left',
 				xtype: 'datecolumn',
-				format:	'Y-m-d H:i:s'
+				format:	'Y-m-d H:i:s T'
 			},
 			{ 	
 				header: "Status", 
@@ -1090,6 +1090,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 			method: 'GET',
 			params: {
+				rules: 'all',
 				ruleId: groupGridRecord.data.ruleId
 			}
 		})
@@ -1107,7 +1108,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		// Set the legacy editStr property
 		if (review.ts) {
 			let extDate = new Date(review.ts)
-			review.editStr = `${extDate.format('Y-m-d H:i')} by ${review.username}`
+			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
 		}
 
 		// Display the review
@@ -1198,6 +1199,8 @@ function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 			return '<div class="sm-grid-result-sprite sm-result-fail">O</div>'
 		case 'notapplicable':
 			return '<div class="sm-grid-result-sprite sm-result-na">NA</div>'
+		case 'notchecked':
+			return '<div class="sm-grid-result-sprite sm-result-nr">NR</div>'
 		default:
 			return ''
 	}

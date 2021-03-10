@@ -286,7 +286,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         const j2x = new J2X(defaultOptions)
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
         xml += j2x.parse(response)
-        writer.writeXml(res, xml, `${benchmarkId}-${revisionStr}-${response.CHECKLIST.ASSET.HOST_NAME}.ckl`)
+        writer.writeXml(res, xml, `${response.CHECKLIST.ASSET.HOST_NAME}-${benchmarkId}-${revisionStr}.ckl`)
       }
     }
     else {
