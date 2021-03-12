@@ -1,3 +1,4 @@
+const SmError = require('./SmError')
 let config = require('./config');
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
@@ -19,6 +20,13 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
             algorithms: ['RS256']
         }
         let decoded = await verifyAndDecodeToken (token, getKey, options)
+        req.access_token = decoded
+        req.bearer = token
+        req.userObject = {
+            username: decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'null',
+            display: decoded[config.oauth.claims.name] || 'USER',
+        }
+
         let grantedScopes = decoded.scope.split(' ')
         let commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
             if (gs === rs) return gs
@@ -32,8 +40,7 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
             }
         })
         if (commonScopes.length == 0) {
-            console.log("No common scopes")
-            writer.writeJson(req.res,{message: 'Not in scope'},403)
+            throw new SmError( 403, 'Not in scope' )
         }
         else {      
             // Get privileges      
@@ -42,20 +49,12 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
             privileges.canCreateCollection = roleGetter(decoded).includes('create_collection')
             privileges.canAdmin = roleGetter(decoded).includes('admin')
 
-            // Build userObject
-            req.userObject = {
-                username: decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'null',
-                display: decoded[config.oauth.claims.name] || 'USER',
-                privileges: privileges
-            }
+            req.userObject.privileges = privileges
             const response = await User.getUserByUsername(req.userObject.username, ['collectionGrants', 'statistics'], false, null)   
             req.userObject.userId = response?.userId || null
             req.userObject.collectionGrants = response?.collectionGrants || []
             req.userObject.statistics = response?.statistics || {}
             
-            req.access_token = decoded
-            req.bearer = token
-
             const refreshFields = {}
             let now = new Date().toUTCString()
             now = new Date(now).getTime()
@@ -63,11 +62,9 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
 
             if (!response?.statistics?.lastAccess || now - response?.statistics?.lastAccess >= config.settings.lastAccessResolution) {
                 refreshFields.lastAccess = now
-                console.log('Will refresh lastAccess')
             }
             if (!response?.statistics?.lastClaims || decoded.jti !== response?.statistics?.lastClaims?.jti) {
                 refreshFields.lastClaims = decoded
-                console.log('Will refresh lastClaims')
             }
             if (req.userObject.username && (refreshFields.lastAccess || refreshFields.lastClaims)) {
                 let userId = await User.setUserData(req.userObject, refreshFields)
@@ -76,14 +73,18 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
                 }
             }
             if ('elevate' in req.query && (req.query.elevate === 'true' && !req.userObject.privileges.canAdmin)) {
-                writer.writeJson(req.res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) ) 
-                return
+                throw new SmError(403, 'User has insufficient privilege to complete this request.')
             }
             cb()
         }
     }
     catch (err) {
-        writer.writeJson(req.res, { status: 403, message: err.message }, 403)
+        if (err.name === 'SmError') {
+            writer.writeJson(req.res, { status: err.httpStatus, message: err.message }, err.httpStatus)
+        }
+        else {
+            writer.writeJson(req.res, { status: 500, message: err.message }, 500)
+        }
     }
 }
 
