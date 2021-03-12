@@ -21,8 +21,9 @@ console.log(`Starting STIG Manager ${config.version}`)
 
 // Express config
 const app = express();
+let storage =  multer.memoryStorage()
 const upload = multer({ 
-  dest: path.join(__dirname, './uploads/'),
+  storage: storage,
   limits: {
     fileSize: parseInt(config.http.maxUpload)
   }
