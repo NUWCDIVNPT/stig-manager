@@ -3,7 +3,6 @@
 const writer = require('../utils/writer.js')
 const config = require('../utils/config')
 const parsers = require('../utils/parsers.js')
-const {promises: fs} = require('fs')
 const STIG = require(`../service/${config.database.type}/STIGService`)
 
 module.exports.importManualBenchmark = async function importManualBenchmark (req, res, next) {
@@ -12,7 +11,7 @@ module.exports.importManualBenchmark = async function importManualBenchmark (req
     if (extension != 'xml') {
       throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
     }
-    let xmlData = await fs.readFile(req.file.path)
+    let xmlData = req.file.buffer
     let benchmark = parsers.benchmarkFromXccdf(xmlData)
     let response
     if (benchmark.scap) {
@@ -25,11 +24,6 @@ module.exports.importManualBenchmark = async function importManualBenchmark (req
   }
   catch(err) {
     writer.writeJson(res, err)
-  }
-  finally {
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path)
-    }
   }
 }
 

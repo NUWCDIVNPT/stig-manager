@@ -5,7 +5,6 @@ const Parsers = require('../utils/parsers.js')
 const config = require('../utils/config')
 const Review = require(`../service/${config.database.type}/ReviewService`)
 const dbUtils = require(`../service/${config.database.type}/utils`)
-const {promises: fs} = require('fs')
 
 module.exports.importReviewsByAsset = async function importReviewsByAsset (req, res, next) {
   try {
@@ -22,7 +21,7 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
           throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
         }
         let assetId = parseInt(body.assetId)
-        let data = await fs.readFile(req.file.path)
+        let data = req.file.buffer
         let result
         switch (extension) {
           case 'ckl':
@@ -55,11 +54,6 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
   }
   catch(err) {
     writer.writeJson(res, err)
-  }
-  finally {
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path)
-    }
   }
 }
 
