@@ -1,3 +1,6 @@
+## 1.0.0-beta.20
+- fix: Log username for unauthorized requests (#178)
+- feat: File uploads use memory storage (#180)
 ## 1.0.0-beta.19
 - feat: Export Collection-STIG CKL archive (#176)
 - fix: inline row editors (#167) (#174)
