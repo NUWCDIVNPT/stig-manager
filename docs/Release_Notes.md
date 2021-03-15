@@ -1,3 +1,5 @@
+## 1.0.0-beta.21
+- fix: Set Ext.Layer z-index default = 9000 (#185)
 ## 1.0.0-beta.20
 - fix: Log username for unauthorized requests (#178)
 - feat: File uploads use memory storage (#180)
