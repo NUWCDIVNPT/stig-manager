@@ -1,8 +1,8 @@
-// Lower default z-index value from 11000 to 8000
+// Lower default z-index value from 11000 to 9000
 // Source: carl.a.smigielski@saic.com
 Ext.override(Ext.Layer, {
     getZIndex: function(){
-        return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 8000;
+        return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 9000;
     }
 });
 
