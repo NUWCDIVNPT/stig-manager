@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>STIG Manager OSS on Docker Hub &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/js/custom.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Terminology and Concepts" href="../reference/index.html" />
+    <link rel="prev" title="Release Notes" href="release-notes.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">The STIG Manager Project</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">STIG Manager Contribution Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html">STIG Manager Testing Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html">STIG Manager Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html">Examples and Sample Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="requirements-and-dependencies.html">STIG Manager Requirements and Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients.html">STIG Manager Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release-notes.html">Release Notes</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">STIG Manager OSS on Docker Hub</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#docker-compose-yml">docker-compose.yml</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#steps">Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#stig-manager-oss-environment-variables">STIG Manager OSS Environment Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-as-individual-containers">Running as individual containers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#keycloak">Keycloak</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mysql">Mysql</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stig-manager-is-an-active-open-source-project">STIG Manager is an active, Open Source project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#support">Support</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">The STIG Manager Project</a> &raquo;</li>
+        
+      <li>STIG Manager OSS on Docker Hub</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/the-project/DockerHub_Readme.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="../reference/index.html" class="btn btn-neutral float-right" title="Terminology and Concepts" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+      
+        <a href="release-notes.html" class="btn btn-neutral float-left" title="Release Notes" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="stig-manager-oss-on-docker-hub">
+<h1>STIG Manager OSS on Docker Hub<a class="headerlink" href="#stig-manager-oss-on-docker-hub" title="Permalink to this headline">¶</a></h1>
+<p><em>This is pre-release software and the Docker image is made available for pilot testing only</em></p>
+<p>STIG Manager is an API and Web client for managing the assessment of Information Systems for compliance with <a class="reference external" href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a class="reference external" href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG).</p>
+<p><strong>Documentation:</strong> <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager/#/">https://nuwcdivnpt.github.io/stig-manager/#/</a></p>
+<p><strong>Source code:</strong> <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager">https://github.com/NUWCDIVNPT/stig-manager</a></p>
+<div class="section" id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p><em>The Quick Start steps require the <a class="reference external" href="https://hub.docker.com/_/mysql">official MySQL 8 image</a> and a <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth">custom Keycloak 11 image</a>.</em></p>
+<div class="section" id="docker-compose-yml">
+<h3>docker-compose.yml<a class="headerlink" href="#docker-compose-yml" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># STIG Manager docker-compose orchestration</span>
+
+<span class="n">version</span><span class="p">:</span> <span class="s1">&#39;3.7&#39;</span>
+
+<span class="n">services</span><span class="p">:</span>
+  <span class="n">auth</span><span class="p">:</span>
+    <span class="n">image</span><span class="p">:</span> <span class="n">nuwcdivnpt</span><span class="o">/</span><span class="n">stig</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">auth</span>
+    <span class="n">ports</span><span class="p">:</span>
+      <span class="o">-</span> <span class="s2">&quot;8080:8080&quot;</span>
+  <span class="n">db</span><span class="p">:</span>
+    <span class="n">image</span><span class="p">:</span> <span class="n">mysql</span><span class="p">:</span><span class="mf">8.0</span>
+    <span class="n">ports</span><span class="p">:</span>
+      <span class="o">-</span> <span class="s2">&quot;50001:3306&quot;</span>
+    <span class="n">environment</span><span class="p">:</span>
+      <span class="o">-</span> <span class="n">MYSQL_ROOT_PASSWORD</span><span class="o">=</span><span class="n">rootpw</span>
+      <span class="o">-</span> <span class="n">MYSQL_USER</span><span class="o">=</span><span class="n">stigman</span>
+      <span class="o">-</span> <span class="n">MYSQL_PASSWORD</span><span class="o">=</span><span class="n">stigman</span>
+      <span class="o">-</span> <span class="n">MYSQL_DATABASE</span><span class="o">=</span><span class="n">stigman</span>
+    <span class="n">cap_add</span><span class="p">:</span>
+      <span class="o">-</span> <span class="n">SYS_NICE</span>  <span class="c1"># workaround MySQL logging bug =&gt; mbind: Operation not permitted </span>
+  <span class="n">api</span><span class="p">:</span>
+    <span class="n">image</span><span class="p">:</span> <span class="n">nuwcdivnpt</span><span class="o">/</span><span class="n">stig</span><span class="o">-</span><span class="n">manager</span>
+    <span class="n">environment</span><span class="p">:</span>
+      <span class="o">-</span> <span class="n">STIGMAN_API_AUTHORITY</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">auth</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">realms</span><span class="o">/</span><span class="n">stigman</span>
+      <span class="o">-</span> <span class="n">STIGMAN_CLASSIFICATION</span><span class="o">=</span><span class="n">U</span>
+      <span class="o">-</span> <span class="n">STIGMAN_DB_HOST</span><span class="o">=</span><span class="n">db</span>
+      <span class="o">-</span> <span class="n">STIGMAN_DB_PASSWORD</span><span class="o">=</span><span class="n">stigman</span>
+      <span class="o">-</span> <span class="n">STIGMAN_INIT_IMPORT_STIGS</span><span class="o">=</span><span class="n">true</span>
+      <span class="o">-</span> <span class="n">STIGMAN_INIT_IMPORT_SCAP</span><span class="o">=</span><span class="n">true</span>
+      <span class="c1"># Set envvar below if non-localhost browsers will access the API</span>
+      <span class="c1"># - STIGMAN_CLIENT_KEYCLOAK_AUTH=&lt;the Keycloak authorization URL relative to the Client&gt;</span>
+    <span class="n">init</span><span class="p">:</span> <span class="n">true</span>
+    <span class="n">ports</span><span class="p">:</span>
+      <span class="o">-</span> <span class="s2">&quot;54000:54000&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="steps">
+<h3>Steps<a class="headerlink" href="#steps" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Create a <code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> file with the content above.</p></li>
+<li><p>From the directory containing <code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code>, run:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker-compose up -d &amp;&amp; docker-compose logs -f
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>On initial container startup, STIG Manager will connect to <a class="reference external" href="https://public.cyber.mil">DoD Cyber Exchange</a> and import the latest STIG Library Compilation and any available SCAP content.</p></li>
+<li><p>When all the services have started, STIG Manager will output:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Server</span> <span class="ow">is</span> <span class="n">listening</span> <span class="n">on</span> <span class="n">port</span> <span class="mi">54000</span>
+<span class="n">API</span> <span class="ow">is</span> <span class="n">available</span> <span class="n">at</span> <span class="o">/</span><span class="n">api</span>
+<span class="n">Client</span> <span class="ow">is</span> <span class="n">available</span> <span class="n">at</span> <span class="o">/</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Navigate to <code class="docutils literal notranslate"><span class="pre">http://localhost:54000</span></code></p></li>
+<li><p>Login using credentials “admin/password”, as documented for <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth">the demonstration Keycloak image</a></p></li>
+<li><p>Refer to the documentation to create your first Collection</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="stig-manager-oss-environment-variables">
+<h2>STIG Manager OSS Environment Variables<a class="headerlink" href="#stig-manager-oss-environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>Refer to our documentation for the <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager/#/Environment_Variables">environment variables consumed by STIG Manager</a></p>
+</div>
+<div class="section" id="running-as-individual-containers">
+<h2>Running as individual containers<a class="headerlink" href="#running-as-individual-containers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="keycloak">
+<h3>Keycloak<a class="headerlink" href="#keycloak" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">stig</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">auth</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">8080</span><span class="p">:</span><span class="mi">8080</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">8443</span><span class="p">:</span><span class="mi">8443</span> \
+  <span class="n">nuwcdivnpt</span><span class="o">/</span><span class="n">stig</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">auth</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mysql">
+<h3>Mysql<a class="headerlink" href="#mysql" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">stig</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">db</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">50001</span><span class="p">:</span><span class="mi">3306</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">MYSQL_ROOT_PASSWORD</span><span class="o">=</span><span class="n">rootpw</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">MYSQL_DATABASE</span><span class="o">=</span><span class="n">stigman</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">MYSQL_USER</span><span class="o">=</span><span class="n">stigman</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">MYSQL_PASSWORD</span><span class="o">=</span><span class="n">stigman</span> \
+  <span class="n">mysql</span><span class="p">:</span><span class="mi">8</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api">
+<h3>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">name</span> <span class="n">stig</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">api</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="mi">54000</span><span class="p">:</span><span class="mi">54000</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">STIGMAN_DB_HOST</span><span class="o">=&lt;</span><span class="n">DATABASE_IP</span><span class="o">&gt;</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">STIGMAN_DB_PORT</span><span class="o">=&lt;</span><span class="n">DATABASE_PORT</span><span class="o">&gt;</span> \
+  <span class="o">-</span><span class="n">e</span> <span class="n">STIGMAN_API_AUTHORITY</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">KEYCLOAK_IP</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">KEYCLOAK_PORT</span><span class="o">&gt;/</span><span class="n">auth</span><span class="o">/</span><span class="n">realms</span><span class="o">/</span><span class="n">stigman</span> \
+  <span class="n">nuwcdivnpt</span><span class="o">/</span><span class="n">stig</span><span class="o">-</span><span class="n">manager</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../reference/index.html" class="btn btn-neutral float-right" title="Terminology and Concepts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="release-notes.html" class="btn btn-neutral float-left" title="Release Notes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

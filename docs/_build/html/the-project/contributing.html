@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>STIG Manager Contribution Guide &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/js/custom.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="STIG Manager Testing Guide" href="testing.html" />
+    <link rel="prev" title="The STIG Manager Project" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">The STIG Manager Project</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">STIG Manager Contribution Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-bugs-issues">Reporting Bugs &amp; Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#developer-information">Developer Information</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#required-tools">Required Tools</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#software-components">Software Components</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#license-credits">License / Credits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html">STIG Manager Testing Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html">STIG Manager Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html">Examples and Sample Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="requirements-and-dependencies.html">STIG Manager Requirements and Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients.html">STIG Manager Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release-notes.html">Release Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DockerHub_Readme.html">STIG Manager OSS on Docker Hub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#stig-manager-is-an-active-open-source-project">STIG Manager is an active, Open Source project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#support">Support</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">The STIG Manager Project</a> &raquo;</li>
+        
+      <li>STIG Manager Contribution Guide</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/the-project/contributing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="testing.html" class="btn btn-neutral float-right" title="STIG Manager Testing Guide" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="The STIG Manager Project" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="stig-manager-contribution-guide">
+<span id="contributing"></span><h1>STIG Manager Contribution Guide<a class="headerlink" href="#stig-manager-contribution-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="reporting-bugs-issues">
+<h2>Reporting Bugs &amp; Issues<a class="headerlink" href="#reporting-bugs-issues" title="Permalink to this headline">¶</a></h2>
+<p>Please file bug reports on the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/issues">STIG Manager
+issue tracker</a>. When reporting
+a bug, please include as much information as possible. This includes:</p>
+<ul class="simple">
+<li><p>Install type: Hosted, Local, Docker, etc</p></li>
+<li><p>Action taken</p></li>
+<li><p>Expected result</p></li>
+<li><p>Actual result</p></li>
+<li><p>Screenshot (if relevant)</p></li>
+</ul>
+</div>
+<div class="section" id="developer-information">
+<h2>Developer Information<a class="headerlink" href="#developer-information" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="required-tools">
+<h3>Required Tools<a class="headerlink" href="#required-tools" title="Permalink to this headline">¶</a></h3>
+<p>The team regularly uses these tools:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Docker</p></li>
+<li><p>VS Code</p></li>
+<li><p>Postman</p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="software-components">
+<h3>Software Components<a class="headerlink" href="#software-components" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference internal" href="requirements-and-dependencies.html#requirements-and-dependencies"><span class="std std-ref">STIG Manager Requirements and Dependencies</span></a></p>
+</div>
+<div class="section" id="license-credits">
+<h3>License / Credits<a class="headerlink" href="#license-credits" title="Permalink to this headline">¶</a></h3>
+<p>The repository is licensed under the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md">MIT License</a>, with the exception of the client, which is licensed under the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md">GNU GPL
+v3</a>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="testing.html" class="btn btn-neutral float-right" title="STIG Manager Testing Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="The STIG Manager Project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

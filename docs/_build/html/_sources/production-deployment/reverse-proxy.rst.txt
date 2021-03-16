@@ -1,0 +1,34 @@
+.. _reverse-proxy:
+
+
+STIG Manager TLS 
+########################################
+
+
+
+To support TLS connections to the API, it is expected that STIG Manager would be deployed behind a reverse proxy providing this service, or in a Kubernetes environment where this service would be provided by K8 Ingress.
+
+
+
+STIG Manager with nginx for TLS
+======================================
+
+The STIG Manager OSS team maintains a repository on GitHub with a sample nginx deployment, with a configuration file that may be useful to those setting up a Production deployment:
+
+
+https://github.com/NUWCDIVNPT/stig-manager-docker-compose
+
+https://github.com/NUWCDIVNPT/stig-manager-docker-compose/tree/main/tls/nginx
+
+
+
+Suggested Configuration
+-----------------------
+
+
+
+
+
+
+
+

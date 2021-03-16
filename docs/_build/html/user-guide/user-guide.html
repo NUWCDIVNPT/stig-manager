@@ -1,0 +1,891 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>2. STIG Manager User Guide &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/js/custom.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="For Admins" href="../admin-guide/index.html" />
+    <link rel="prev" title="1. STIG Manager Walkthrough" href="user-quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">For Users</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="user-quickstart.html">1. STIG Manager Walkthrough</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. STIG Manager User Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#content-panel">2.1. Content Panel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#home-tab">2.2. Home Tab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#navigation-tree">2.3. Navigation Tree</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#collections-node">2.3.1. Collections Node</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#collection-review-workspace">2.4. Collection Review Workspace</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#checklist-with-review-summary-panel">2.4.1. Checklist with Review Summary Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rule-info-panel">2.4.2. Rule Info Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reviews-panel">2.4.3. Reviews Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#resources-panel">2.4.4. Resources Panel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#asset-review-workspace">2.5. Asset Review Workspace</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#checklist-panel">2.5.1. Checklist Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">2.5.2. Rule Info Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#review-resources-panel">2.5.3. Review Resources Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#review-panel">2.5.4. Review Panel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#findings-report-workspace">2.6. Findings Report Workspace</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#aggregated-findings">2.6.1. Aggregated Findings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#individual-findings">2.6.2. Individual Findings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">2.7. Status Report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#collection-management-workspace">2.8. Collection Management Workspace</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#collection-properties-panel">2.8.1. Collection Properties Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#grants-panel">2.8.2. Grants Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assets-panel">2.8.3. Assets Panel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stigs-panel">2.8.4. STIGs Panel</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">For Users</a> &raquo;</li>
+        
+      <li><span class="section-number">2. </span>STIG Manager User Guide</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/user-guide/user-guide.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="../admin-guide/index.html" class="btn btn-neutral float-right" title="For Admins" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+      
+        <a href="user-quickstart.html" class="btn btn-neutral float-left" title="1. STIG Manager Walkthrough" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="stig-manager-user-guide">
+<span id="user-guide-doc"></span><h1><span class="section-number">2. </span>STIG Manager User Guide<a class="headerlink" href="#stig-manager-user-guide" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">The STIG Manager User Interface</p>
+<p>This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privelege.</p>
+<p>Please see the <a class="reference internal" href="../admin-guide/admin-guide.html#admin-guide-doc"><span class="std std-ref">STIG Manager Admin Guide</span></a> for Administrative functions.</p>
+<p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
+<p class="rubric3 rubric">Overall Organization</p>
+<p>The STIG Manager UI is composed of two main elements, the Navigation Tree on the left, and the Content Panel to the right. Click the arrow or double-click the node name to expand that branch.  End nodes (those without an arrow) will open a tab in the Content Panel.</p>
+<div class="section" id="content-panel">
+<h2><span class="section-number">2.1. </span>Content Panel<a class="headerlink" href="#content-panel" title="Permalink to this headline">¶</a></h2>
+<p>The Home tab is always available in the Content Panel.
+The Content Panel will be populated with tabs opened by clicking on nodes in the Navigation Tree.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When a Review Workspace tab is opened with a single-click on a Navigation Tree Node, it opens in a Preview tab in the Content Panel. This tab will be replaced by the next tab that is opened. To make this tab permanent, double-click on the tab title at the top of the Content Panel, or edit the workspace’s contents. Opening a tab with a double-click on the Navigation Tree node will open the tab in a permanent state.</p>
+</div>
+</div>
+<div class="section" id="home-tab">
+<span id="index-0"></span><h2><span class="section-number">2.2. </span>Home Tab<a class="headerlink" href="#home-tab" title="Permalink to this headline">¶</a></h2>
+<p>The Home tab is always available in the Content Panel.
+This Tab provides links to useful information, such as this Documentation, DISA STIGs, and the RMF Process reference.
+The Home Panel also provides information about the STIG Manager Open Source Software Project, and links to the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager OSS Project on GitHub</a> for submitting Issues with the software.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-177a8e45-a579-4d12-b53f-72daa7da07e5"
+               href="../_images/home-tab1.png"
+               title="Home Tab"
+               data-title="Home Tab"
+               ><img src="../_images/home-tab1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Home Tab</figcaption>
+            </figure><hr class="docutils" />
+</div>
+<div class="section" id="navigation-tree">
+<span id="index-1"></span><h2><span class="section-number">2.3. </span>Navigation Tree<a class="headerlink" href="#navigation-tree" title="Permalink to this headline">¶</a></h2>
+<p>The Navigation Tree (Nav Tree) is in the leftmost panel of the STIG Manager app. The User can navigate all their accessible data via this interface. The Nav Tree presents a list of User’s accessible Collections, and Administrative functions for those with Administrator privileges.</p>
+<p>At the top of the Navigation Tree panel is the Users Name and a logout link. Hover over the User to view their Authentication Token information.</p>
+<p>Double-click on nodes (or single-click on the arrows) to expand that node. A single click on leaf nodes (those without arrows) will open the appropriate workspace in the Content Panel to the right.</p>
+<p>The components of the Navigation Tree are described below.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-39a606ed-bee8-4168-a871-d4673368e566"
+               href="../_images/nav-tree1.png"
+               title="Navigation Tree"
+               data-title="Navigation Tree"
+               ><img src="../_images/nav-tree1.png"
+                     class=""
+                     width="25%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Navigation Tree</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="collections-node">
+<span id="index-2"></span><h3><span class="section-number">2.3.1. </span>Collections Node<a class="headerlink" href="#collections-node" title="Permalink to this headline">¶</a></h3>
+<p>The Collection Node lists all the Collections accessible to the User, as well as the <em>+Create Collection…</em> option, for those with that privilege.</p>
+<div class="section" id="create-collection">
+<h4><span class="section-number">2.3.1.1. </span>+Create Collection…<a class="headerlink" href="#create-collection" title="Permalink to this headline">¶</a></h4>
+<p>If you have the Collection Creator privilege, this option will appear. Click this item in the Nav Tree to create a new Collection.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-d8f517b3-87e2-47c6-973c-1e26a4673ba9"
+               href="../_images/create-collection-popup1.png"
+               title="Create Collection popup"
+               data-title="Create Collection popup"
+               ><img src="../_images/create-collection-popup1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Create Collection popup</figcaption>
+            </figure></div>
+<hr class="docutils" />
+<div class="section" id="manage">
+<h4><span class="section-number">2.3.1.2. </span>Manage<a class="headerlink" href="#manage" title="Permalink to this headline">¶</a></h4>
+<p>If you have <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">Manager or Owner Collection Grants</span></a> on a Collection, you will have the option to <a class="reference internal" href="#manage-collection-workspace"><span class="std std-ref">manage</span></a> that collection. This will allow you to add Assets, STIG Assignments, and Users to the Collection.</p>
+<p>See <a class="reference internal" href="#manage-collection-workspace"><span class="std std-ref">Collection Management Workspace</span></a> for more info.</p>
+</div>
+<div class="section" id="stigs">
+<h4><span class="section-number">2.3.1.3. </span>STIGs<a class="headerlink" href="#stigs" title="Permalink to this headline">¶</a></h4>
+<p>Opening the STIGs Node of the Collection provides a list of every STIG that is assigned to at least one Asset in this Collection that the User has access to. It also provides the <em>Collection Review</em> option.</p>
+<div class="section" id="collection-review">
+<h5>Collection Review<a class="headerlink" href="#collection-review" title="Permalink to this headline">¶</a></h5>
+<p>The Collection Review node provides access to the <a class="reference internal" href="#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a>, from which the User can review ALL the assets they have access to for the STIG selected.</p>
+<p>See <a class="reference internal" href="#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a> for more info.</p>
+</div>
+<div class="section" id="stig-asset-list">
+<h5>STIG-Asset List<a class="headerlink" href="#stig-asset-list" title="Permalink to this headline">¶</a></h5>
+<p>Clicking on a STIG expands that node into the the STIG-Asset list. This provides a list of all Assets that have been assigned that STIG, and that the User has access to.</p>
+<p>Click on an Asset to access the <a class="reference internal" href="#asset-review-workspace"><span class="std std-ref">Asset Review Workspace</span></a> for that STIG-Asset.</p>
+</div>
+</div>
+<div class="section" id="assets">
+<h4><span class="section-number">2.3.1.4. </span>Assets<a class="headerlink" href="#assets" title="Permalink to this headline">¶</a></h4>
+<p>Opening the Assets Node of the Collection provides a list of every Asset that the User has been granted access to in the Collection.</p>
+<div class="section" id="asset-stig-list">
+<h5>Asset-STIG List<a class="headerlink" href="#asset-stig-list" title="Permalink to this headline">¶</a></h5>
+<p>Clicking on a particular Asset expands a list of every STIG the User has access to that has been assigned to that Asset.</p>
+<p>Click on a STIG to access the <a class="reference internal" href="#asset-review-workspace"><span class="std std-ref">Asset Review Workspace</span></a> for that Asset-STIG.</p>
+</div>
+</div>
+<div class="section" id="reports">
+<h4><span class="section-number">2.3.1.5. </span>Reports<a class="headerlink" href="#reports" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="findings-report">
+<h5>Findings Report<a class="headerlink" href="#findings-report" title="Permalink to this headline">¶</a></h5>
+<p>The Findings Report provides a way to engage with all “Open” findings in a Collection, and generate a precursor POA&amp;M from them.</p>
+<p>See <a class="reference internal" href="#id7"><span class="std std-ref">Findings Report Workspace</span></a> for more info.</p>
+</div>
+<div class="section" id="status-report">
+<h5>Status Report<a class="headerlink" href="#status-report" title="Permalink to this headline">¶</a></h5>
+<p>The Status Report provides a way to judge progress and status of all Reviews in a Collection.</p>
+<p>See <a class="reference internal" href="#id9"><span class="std std-ref">Status Report</span></a> for more info.</p>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="collection-review-workspace">
+<span id="index-3"></span><span id="id1"></span><h2><span class="section-number">2.4. </span>Collection Review Workspace<a class="headerlink" href="#collection-review-workspace" title="Permalink to this headline">¶</a></h2>
+<p>The Collection Review Workspace allows the user to assess all the Assets they have acess to that have been assigned the selected STIG.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-81895da5-54df-4994-ab21-8139fedaa2e6"
+               href="../_images/collection-review1.png"
+               title="Collection Review Workspace"
+               data-title="Collection Review Workspace"
+               ><img src="../_images/collection-review1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Review Workspace</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="checklist-with-review-summary-panel">
+<h3><span class="section-number">2.4.1. </span>Checklist with Review Summary Panel<a class="headerlink" href="#checklist-with-review-summary-panel" title="Permalink to this headline">¶</a></h3>
+<p>This checklist provides a list of Rules for the selected STIG, and a summary of the Evaluations associated with every Asset in the Collection.  Select a Rule in this Panel to see and assess the individual Assets in the Reviews Panel to the right.</p>
+<div class="section" id="menu-bar-functions">
+<h4><span class="section-number">2.4.1.1. </span>Menu Bar functions<a class="headerlink" href="#menu-bar-functions" title="Permalink to this headline">¶</a></h4>
+<p>From the Menu, some Options.
+By default, the most current STIG is displayed. The User can also select older revisions of the STIG, if they have been imported into the system by an Admin.</p>
+</div>
+<div class="section" id="columns">
+<h4><span class="section-number">2.4.1.2. </span>Columns<a class="headerlink" href="#columns" title="Permalink to this headline">¶</a></h4>
+<p>The columns in this panel represent the Rule Severity Category, Rule Id, Rule Title, and aggregated Review Columns for Open (O), Not a Finding (NF), Not Applicable (NA), Not Reviewed (NR), Submitted, Rejected, and Accepted.</p>
+</div>
+</div>
+<div class="section" id="rule-info-panel">
+<h3><span class="section-number">2.4.2. </span>Rule Info Panel<a class="headerlink" href="#rule-info-panel" title="Permalink to this headline">¶</a></h3>
+<p>This Panel provides the Rule Info for the selected Rule in the panel above.</p>
+</div>
+<div class="section" id="reviews-panel">
+<h3><span class="section-number">2.4.3. </span>Reviews Panel<a class="headerlink" href="#reviews-panel" title="Permalink to this headline">¶</a></h3>
+<p>This panel provides a list of the Reviews for the selected Rule for every Asset in the Collection.
+The Reviews can be Submitted, Accepted, and modified from this panel.</p>
+<div class="section" id="id2">
+<h4><span class="section-number">2.4.3.1. </span>Menu Bar functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>Accept (for Collection Managers or Owners only) and Submit actions are available. These actions will apply to any Assets selected. Multiple assets can be selected with Shift-Click or Ctrl-Click.</p>
+</div>
+<div class="section" id="review-actions">
+<h4><span class="section-number">2.4.3.2. </span>Review Actions<a class="headerlink" href="#review-actions" title="Permalink to this headline">¶</a></h4>
+<p>Double-click on any part of the Review Evaluation for an Asset to change them.  Actions and Action Comments can only be changed if the Result is Open.</p>
+</div>
+</div>
+<div class="section" id="resources-panel">
+<h3><span class="section-number">2.4.4. </span>Resources Panel<a class="headerlink" href="#resources-panel" title="Permalink to this headline">¶</a></h3>
+<p>This Panel provides access to the Feedback, Metadata, and History tabs.</p>
+<div class="section" id="feedback">
+<h4><span class="section-number">2.4.4.1. </span>Feedback<a class="headerlink" href="#feedback" title="Permalink to this headline">¶</a></h4>
+<p>The Feedback function allows Users to see any Feedback submitted about their review, and, if they are a Collection Owner, to reject, with feedback, any review in their Collection.</p>
+<div class="section" id="if-owner">
+<h5>If Owner<a class="headerlink" href="#if-owner" title="Permalink to this headline">¶</a></h5>
+<p>If the User is an Owner of the Collection, they will also have the option to Accept or Reject reviews.
+Reviews can be Accepted with the button at the top of the Reviews Panel, or Rejected with the Feedback function at the bottom of this workspace.</p>
+</div>
+</div>
+<div class="section" id="metadata-tab">
+<h4><span class="section-number">2.4.4.2. </span>Metadata Tab<a class="headerlink" href="#metadata-tab" title="Permalink to this headline">¶</a></h4>
+<p>The Metadata panel provides additional information about the selected Asset and Review.</p>
+</div>
+<div class="section" id="history-tab">
+<h4><span class="section-number">2.4.4.3. </span>History Tab<a class="headerlink" href="#history-tab" title="Permalink to this headline">¶</a></h4>
+<p>The History Panel displays a record of the Review as it has changed over time.</p>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+<div class="section" id="asset-review-workspace">
+<span id="index-4"></span><span id="id3"></span><h2><span class="section-number">2.5. </span>Asset Review Workspace<a class="headerlink" href="#asset-review-workspace" title="Permalink to this headline">¶</a></h2>
+<p>The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review’s History, and Feedback.
+Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-4d11ff8b-b127-4cc0-8d4d-5d126dd035a6"
+               href="../_images/asset-review1.png"
+               title="Asset Review Workspace"
+               data-title="Asset Review Workspace"
+               ><img src="../_images/asset-review1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Asset Review Workspace</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="checklist-panel">
+<h3><span class="section-number">2.5.1. </span>Checklist Panel<a class="headerlink" href="#checklist-panel" title="Permalink to this headline">¶</a></h3>
+<p>The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, and <a class="reference internal" href="../reference/index.html#term-Workflow"><span class="xref std std-term">Workflow Status</span></a>.  STIGs Rules that are known to STIG Manager to have an automated assessment option are highlighted.</p>
+<dl class="simple">
+<dt>From the Checklist menu in the Menu Bar, the User can:</dt><dd><ul class="simple">
+<li><p>Toggle between Rule and Group displays of the Checklist Panel.</p></li>
+<li><p>Export a .ckl representation of this Assets STIG results.</p></li>
+<li><p>Import STIG results for this Asset in .ckl or XCCDF form.</p></li>
+<li><p><a class="reference internal" href="../reference/index.html#term-Workflow"><span class="xref std std-term">Submit</span></a> all the displayed checks that meet this Collections Workflow requirements.</p></li>
+<li><p>Switch between Revisions of the STIG being displayed.</p></li>
+</ul>
+</dd>
+</dl>
+<p>When a .ckl or XCCDF file is imported, any Reviews that meet the <a class="reference internal" href="../reference/index.html#term-Workflow"><span class="xref std std-term">Workflow</span></a> criteria will be set to a Submitted state.</p>
+<div class="admonition-todo admonition" id="id4">
+<p class="admonition-title">Todo</p>
+<p>Issue about Result column label? (not showing up in columns list either)</p>
+</div>
+<p>The menu bar also supports a variety of status and Title filters.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager’s Database. STIG Manager can produce a new .ckl representation of its Reviews on demand.</p>
+</div>
+</div>
+<div class="section" id="id5">
+<h3><span class="section-number">2.5.2. </span>Rule Info Panel<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>The Rule Info Panel provides the text of the Rule.
+It also provides information about the Controls associated with this Rule, including CCI, AP Acronym, and RMF Control.</p>
+</div>
+<div class="section" id="review-resources-panel">
+<h3><span class="section-number">2.5.3. </span>Review Resources Panel<a class="headerlink" href="#review-resources-panel" title="Permalink to this headline">¶</a></h3>
+<p>This Panel provides resources that may be useful in performing the Rule’s Evaluation.</p>
+<div class="section" id="other-assets-tab">
+<h4><span class="section-number">2.5.3.1. </span>Other Assets tab<a class="headerlink" href="#other-assets-tab" title="Permalink to this headline">¶</a></h4>
+<p>The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset’s Review Panel below.</p>
+</div>
+<div class="section" id="feedback-tab">
+<h4><span class="section-number">2.5.3.2. </span>Feedback tab<a class="headerlink" href="#feedback-tab" title="Permalink to this headline">¶</a></h4>
+<p>If this Review has been Rejected, Feedback provided by the Collection Owner is displayed here.</p>
+</div>
+<div class="section" id="id6">
+<h4><span class="section-number">2.5.3.3. </span>History tab<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<p>This History tab displays how this Review has changed over time.</p>
+</div>
+</div>
+<div class="section" id="review-panel">
+<h3><span class="section-number">2.5.4. </span>Review Panel<a class="headerlink" href="#review-panel" title="Permalink to this headline">¶</a></h3>
+<p>The Review panel contains the Evaluation and any required Recommendation info for this Review.</p>
+<div class="section" id="evaluation">
+<h4><span class="section-number">2.5.4.1. </span>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h4>
+<p>The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Commentary. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA) and Not Reviewed (NR).</p>
+<p>When an XCCDF file is imported, the Evaluation Comment will be constructed out of available metadata in the XCCDF file.</p>
+<p>In a .ckl import or export, the equivalent fields are Finding and Finding Details.</p>
+</div>
+<div class="section" id="recommendation">
+<h4><span class="section-number">2.5.4.2. </span>Recommendation<a class="headerlink" href="#recommendation" title="Permalink to this headline">¶</a></h4>
+<p>Setting an Evaluation Result to “Open” enables the Recommendation section.
+The Recommendation holds the Action and Action Comment describing the steps the Reviewer expects must be taken to address the Open finding.  The Actions supported are: Remediate, Mitigate, and Exception.
+In a .ckl import, the Action Comment is equivalent to the Comment field.
+In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIATE:) to the Action comment, as the Action field is not present in most versions of .ckls.  STIG Manager understands this convention, and will appropriately set the Recommendation Action if it sees one of those terms prepended to the Action Comment.  .ckls produced by the commonly used tool STIG-Viewer will not set this Action unless the Reviewer adds the appropriate keyword to the beginning of their Action Comment themselves.</p>
+</div>
+<div class="section" id="modified">
+<h4><span class="section-number">2.5.4.3. </span>Modified<a class="headerlink" href="#modified" title="Permalink to this headline">¶</a></h4>
+<p>The User and Timestamp associated with the last change to this Review.</p>
+</div>
+<div class="section" id="save-and-save-submit-buttons">
+<h4><span class="section-number">2.5.4.4. </span>Save and Save/Submit Buttons<a class="headerlink" href="#save-and-save-submit-buttons" title="Permalink to this headline">¶</a></h4>
+<p>The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review, which will start its engagement with the <a class="reference internal" href="../reference/index.html#term-Workflow"><span class="xref std std-term">RMF Workflow</span></a>.  In most use cases, the goal for Evaluators will be to get every Review into a “Submitted” state.  Once Submitted, the Collection Owner can set the Review to “Accepted” to lock it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the</p>
+<hr class="docutils" />
+</div>
+</div>
+</div>
+<div class="section" id="findings-report-workspace">
+<span id="id7"></span><h2><span class="section-number">2.6. </span>Findings Report Workspace<a class="headerlink" href="#findings-report-workspace" title="Permalink to this headline">¶</a></h2>
+<p>The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-2c18c444-b1bd-43c6-ab68-404a196bc7a1"
+               href="../_images/findings-report1.png"
+               title="Findings Report"
+               data-title="Findings Report"
+               ><img src="../_images/findings-report1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Findings Report</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="aggregated-findings">
+<h3><span class="section-number">2.6.1. </span>Aggregated Findings<a class="headerlink" href="#aggregated-findings" title="Permalink to this headline">¶</a></h3>
+<p>The Aggregated Findings Panel provides a view of all Rule Ids that have at least one “Open” Evaluation in a Collection. By default this view is aggregated by Group ID, and includes the columns: Severity Category, Group ID, Group Title, Number of Assets, and relevant STIG.</p>
+<div class="section" id="menu-bar">
+<h4><span class="section-number">2.6.1.1. </span>Menu Bar<a class="headerlink" href="#menu-bar" title="Permalink to this headline">¶</a></h4>
+<p>The Menu Bar allows the User to aggregate this view by Group ID, Rule ID, or CCI.  It also allows the User to filter the list by STIG.</p>
+</div>
+<div class="section" id="export-a-csv-or-poa-m">
+<h4><span class="section-number">2.6.1.2. </span>Export a .csv or POA&amp;M<a class="headerlink" href="#export-a-csv-or-poa-m" title="Permalink to this headline">¶</a></h4>
+<p>At the bottom of this panel are Export and Generate POA&amp;M… buttons.  The Export button exports a .csv file, and the POA&amp;M button will ask the User to set a few options and will then produce a pre-populated POA&amp;M file.</p>
+</div>
+</div>
+<div class="section" id="individual-findings">
+<h3><span class="section-number">2.6.2. </span>Individual Findings<a class="headerlink" href="#individual-findings" title="Permalink to this headline">¶</a></h3>
+<p>Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
+Information about the Asset, Rule, Action, Last Modified Date, and applicable STIG or STIGs can be found in the default columns, with addional Review info in the expanding Rows.</p>
+<p>This section of the Report can be exported on its own.</p>
+<div class="admonition-todo admonition" id="id8">
+<p class="admonition-title">Todo</p>
+<p>This export button doesn’t seem to do anything. create issue.</p>
+</div>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="id9">
+<span id="id10"></span><h2><span class="section-number">2.7. </span>Status Report<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<p>Provides a view of the overall Status and Evaluation progress of the entire Collection.</p>
+<p>This report can be grouped by Asset or by STIG using the Grouping options at the top of the panel.</p>
+<p>This report consists of the total number of Checks associated with each Asset or STIG accross the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Returned, and Accepted as a way to guage overall Evaluation progress of the Collection.  The total number of “Open” Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.</p>
+<p>This report can be exported as a .csv using the Down-Arrow button at the botom of the panel.</p>
+<div class="admonition-todo admonition" id="id11">
+<p class="admonition-title">Todo</p>
+<p>This export does not seem to be working. also still uses “returned” as a column header. make issue!</p>
+</div>
+<figure class="">
+            <a 
+               data-lightbox="group-188312fb-c2c6-4f7a-a4ec-ab7e50f17781"
+               href="../_images/status-report1.png"
+               title="Status Report"
+               data-title="Status Report"
+               ><img src="../_images/status-report1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Status Report</figcaption>
+            </figure><hr class="docutils" />
+</div>
+<div class="section" id="collection-management-workspace">
+<span id="manage-collection-workspace"></span><span id="index-7"></span><h2><span class="section-number">2.8. </span>Collection Management Workspace<a class="headerlink" href="#collection-management-workspace" title="Permalink to this headline">¶</a></h2>
+<p>Allows a Collection Manager or Owner to Manage their Collection.
+From this Workspace, the User can:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Alter the Name, Workflow, and Metadata associated with the Collection</p></li>
+<li><p>Start a bulk import of .ckl or XCCDF files to automatically populate  or add to their Collection.</p></li>
+<li><p>Add/Modify/Remove Assets in the Collection</p></li>
+<li><p>Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection).</p></li>
+<li><p>Add/Modify/Remove User Grants in the Collection.</p></li>
+<li><p>Delete the Collection (If Collection Owner).</p></li>
+</ul>
+</div></blockquote>
+<figure class="">
+            <a 
+               data-lightbox="group-a6c89aa9-45ad-413d-9f1c-a5cf30c7b8e7"
+               href="../_images/manage-collection-workspace1.png"
+               title="The Manage Collections Workspace"
+               data-title="The Manage Collections Workspace"
+               ><img src="../_images/manage-collection-workspace1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>The Manage Collections Workspace</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="collection-properties-panel">
+<h3><span class="section-number">2.8.1. </span>Collection Properties Panel<a class="headerlink" href="#collection-properties-panel" title="Permalink to this headline">¶</a></h3>
+<p>This Panel allows Collection Managers and Owners to change the name of the Asset, it’s workflow, and any associated Metadata.  Collection Owners can also delete this Collection.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-dd0ef747-d00c-403e-b55d-b484b0be5d45"
+               href="../_images/collection-properties1.png"
+               title="Collection Properties"
+               data-title="Collection Properties"
+               ><img src="../_images/collection-properties1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Properties</figcaption>
+            </figure></div>
+<hr class="docutils" />
+<div class="section" id="grants-panel">
+<h3><span class="section-number">2.8.2. </span>Grants Panel<a class="headerlink" href="#grants-panel" title="Permalink to this headline">¶</a></h3>
+<p>This Panel displays all the Users who have access to some portion of this Collection.
+Users and their level of Access to the Collection can be can be added, or removed with the buttons at the top of this Panel. Double-clicking on a User Grant will allow you to alter an existing Grant. A Restricted User’s access can be further configured with the “Restricted User access list…” button.</p>
+<p>See <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> for more info about these Access Levels.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-175b4c08-5589-49d4-a38f-368b64cdd30e"
+               href="../_images/user-grants1.png"
+               title="The User Grants Panel"
+               data-title="The User Grants Panel"
+               ><img src="../_images/user-grants1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>The User Grants Panel</figcaption>
+            </figure><hr class="docutils" />
+<p>Typing into the Username field will start filtering the known users.
+If a User with a Restricted Access Level is selected, the “Restricted User access list…” button is activated.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-d25b5a19-944b-4569-bbb5-72fe600dfac6"
+               href="../_images/restricted-access-list1.png"
+               title="The Restricted User Access List"
+               data-title="The Restricted User Access List"
+               ><img src="../_images/restricted-access-list1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>The Restricted User Access List</figcaption>
+            </figure><hr class="docutils" />
+<div class="admonition-todo admonition" id="id12">
+<p class="admonition-title">Todo</p>
+<p>double-click on a grant. click on another grant(or anywhere else on screen) w/o cancelling or saving. originally selected grant staays in a modifacation state, even if .</p>
+</div>
+</div>
+<div class="section" id="assets-panel">
+<h3><span class="section-number">2.8.3. </span>Assets Panel<a class="headerlink" href="#assets-panel" title="Permalink to this headline">¶</a></h3>
+<p>This panel lists the Assets that are a part of this Collection. The columns list the Asset Name, Description, IP, computing status, number of STIGs assigned, the number of STIGs that are not assigned to a user, and the total number of Rules that apply to the Asset. These properties can be altered by double-clicking on the Asset row.</p>
+<p>The menu bar provides several functions, allowing the User to Create, Delete, and Change Assets in the Collection.
+The <a class="reference internal" href="#collection-builder"><span class="std std-ref">Import CKL or SCAP / Collection Builder</span></a> option allows the User to create many Assets and their STIG Assignments at once.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-0b6195c9-6a93-4bd9-867b-b05af481033c"
+               href="../_images/assets-panel-menu1.png"
+               title="Assets Panel Menu Bar"
+               data-title="Assets Panel Menu Bar"
+               ><img src="../_images/assets-panel-menu1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Assets Panel Menu Bar</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="create-asset">
+<h4><span class="section-number">2.8.3.1. </span>Create Asset<a class="headerlink" href="#create-asset" title="Permalink to this headline">¶</a></h4>
+<p>Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs can also be assigned to the new Asset from this interface.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-993a9f10-6822-48d3-ac14-8a5c8a67764a"
+               href="../_images/create-asset1.png"
+               title="Create an Asset"
+               data-title="Create an Asset"
+               ><img src="../_images/create-asset1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Create an Asset</figcaption>
+            </figure><hr class="docutils" />
+</div>
+<div class="section" id="import-ckl-or-scap-collection-builder">
+<span id="collection-builder"></span><span id="index-8"></span><h4><span class="section-number">2.8.3.2. </span>Import CKL or SCAP / Collection Builder<a class="headerlink" href="#import-ckl-or-scap-collection-builder" title="Permalink to this headline">¶</a></h4>
+<p>STIG Manager lets you populate your entire Collection from scratch or add to an existing Collection with a bulk import of .ckl and XCCDF files. This feature will create any new Assets you submit files for, and assign them the STIGs specified in the imported files.  If the Asset already exists, the newly imported STIGs will be assigned to them. The User can also choose whether or not to import the Reviews in the imported files, or just create the Assets and STIG Assignments.</p>
+<p>The Asset Name must match exactly.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager’s Database. STIG Manager can produce a new .ckl representation of its Reviews on demand.</p>
+</div>
+<div class="section" id="collection-builder-process">
+<h5>Collection Builder Process<a class="headerlink" href="#collection-builder-process" title="Permalink to this headline">¶</a></h5>
+<div class="admonition-todo admonition" id="id13">
+<p class="admonition-title">Todo</p>
+<p>walkthrough the bulk import process here.</p>
+</div>
+<p>From the Collection Management workspace, click the “Import CKL or SCAP…” button at the top of the Assets panel .</p>
+<figure class="">
+            <a 
+               data-lightbox="group-8cbf0ed5-de66-4d62-8cab-44d7bd9cc49e"
+               href="../_images/collection-builder-files1.png"
+               title="Collection Builder File Select"
+               data-title="Collection Builder File Select"
+               ><img src="../_images/collection-builder-files1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Builder File Select</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Drag and drop or Select one or more .ckl or XCCDF files.</p>
+<hr class="docutils" />
+<figure class="">
+            <a 
+               data-lightbox="group-71fd3713-a152-4263-8b1d-0f82fa089fe0"
+               href="../_images/collection-builder-errors-and-warnings1.png"
+               title="Collection Builder Errors and Warnings"
+               data-title="Collection Builder Errors and Warnings"
+               ><img src="../_images/collection-builder-errors-and-warnings1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Builder Errors and Warnings</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>If there is an issue with the files you selected, they will appear here. One error you may encounter is that the STIG in the selected file is not installed in STIG Manager. If this is the case, contact a STIG Manager Administrator to have them install it.</p>
+<p>This screen will be skipped if there are no issues with the files you have selected.</p>
+<hr class="docutils" />
+<figure class="">
+            <a 
+               data-lightbox="group-96a573f9-cc1e-4588-a555-63b9acfac6e8"
+               href="../_images/collection-builder-options1.png"
+               title="Collection Builder Options and Summary"
+               data-title="Collection Builder Options and Summary"
+               ><img src="../_images/collection-builder-options1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Builder Options and Summary</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>You will be presented with a summary view of the files you have submitted.
+This view shows the Assets, STIGs, Review totals, filenames and date of the data contained in the submitted files.</p>
+<p>New Assets and new STIG assignments that will result from this import are indicated with a (+) after the Asset or STIG name.</p>
+<dl class="simple">
+<dt>The User can configure the import with two options. By default, both are selected:</dt><dd><ul class="simple">
+<li><p>Create or update Assets and STIG associations: This option will create the indicated Asset and STIG Assignments.</p></li>
+<li><p>Import Reviews: This option will bring in the Review content of the submitted files. These Reviews will overwrite the equivalent Reviews already in the system.</p></li>
+</ul>
+</dd>
+</dl>
+<p>If the summary and options and options are appropriate, click the “Add to Collection…” button.</p>
+<hr class="docutils" />
+<figure class="">
+            <a 
+               data-lightbox="group-10851031-96aa-4b6a-8a21-1b5df4e2828d"
+               href="../_images/collection-builder-import1.png"
+               title="Collection Builder Import Log"
+               data-title="Collection Builder Import Log"
+               ><img src="../_images/collection-builder-import1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Builder Import Log</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>The user is presented with the log of the import.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager’s Database. STIG Manager can produce a new .ckl representation of its Reviews on demand.</p>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="delete-asset">
+<h4><span class="section-number">2.8.3.3. </span>Delete Asset<a class="headerlink" href="#delete-asset" title="Permalink to this headline">¶</a></h4>
+<p>To Delete an Asset, select an Asset and click the Delete Asset button. A popup will ask you to confirm the action.</p>
+</div>
+<div class="section" id="change-asset-properties">
+<h4><span class="section-number">2.8.3.4. </span>Change Asset Properties<a class="headerlink" href="#change-asset-properties" title="Permalink to this headline">¶</a></h4>
+<p>To alter an Asset’s properties, select an Asset and click this button, or double-click the Asset row.</p>
+</div>
+</div>
+<div class="section" id="stigs-panel">
+<h3><span class="section-number">2.8.4. </span>STIGs Panel<a class="headerlink" href="#stigs-panel" title="Permalink to this headline">¶</a></h3>
+<p>This panel lists all the STIGs that have been assigned to at least one Asset in the Collection.
+STIG Assignments can also be added or removed from Assets with the buttons at the top of this panel.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-4613763a-8ee8-40b5-bbf9-9aeef4024103"
+               href="../_images/stigs-panel1.png"
+               title="STIGs Panel"
+               data-title="STIGs Panel"
+               ><img src="../_images/stigs-panel1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>STIGs Panel</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="assign-stig">
+<h4><span class="section-number">2.8.4.1. </span>Assign STIG<a class="headerlink" href="#assign-stig" title="Permalink to this headline">¶</a></h4>
+<p>Select Assign STIG to add a new STIG to the Collection. A popup will allow you to select a STIG that is not yet assigned to an Asset. Click the Assign STIG button on this popup to select Assets that should have this STIG assigned to them.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-aa5b1734-ea5d-42e6-9a2d-bf7dc7f577bb"
+               href="../_images/stig-assignments1.png"
+               title="STIG Assignments"
+               data-title="STIG Assignments"
+               ><img src="../_images/stig-assignments1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>STIG Assignments</figcaption>
+            </figure></div>
+<hr class="docutils" />
+<div class="section" id="remove-stig">
+<h4><span class="section-number">2.8.4.2. </span>Remove STIG<a class="headerlink" href="#remove-stig" title="Permalink to this headline">¶</a></h4>
+<p>The Remove STIG button will remove the selected STIG from all Assets that are assigned it in this Collection.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Reviews for Rules in the deleted STIG will also be deleted!</p>
+</div>
+</div>
+<div class="section" id="change-assigned-assets">
+<h4><span class="section-number">2.8.4.3. </span>Change Assigned Assets<a class="headerlink" href="#change-assigned-assets" title="Permalink to this headline">¶</a></h4>
+<p>Select “Change assigned Assets…” or double-click a STIG to change what Assets are assigned this STIG in this Collection.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../admin-guide/index.html" class="btn btn-neutral float-right" title="For Admins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="user-quickstart.html" class="btn btn-neutral float-left" title="1. STIG Manager Walkthrough" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

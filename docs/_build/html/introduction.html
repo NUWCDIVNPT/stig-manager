@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Introduction &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/js/custom.js"></script>
+        <script src="_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
+        <script src="_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Features" href="features/index.html" />
+    <link rel="prev" title="Welcome to STIG Manager’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-stig-manager">What is STIG Manager?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rmf-process-support">RMF Process Support</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">The Single Source of Truth throughout Steps 3 and 4 of the RMF Process</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews">RMF Package data represented as Collections, Assets, STIGs, and Reviews</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-collections-from-your-existing-ckl-files">Create Collections From Your Existing .CKL Files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data">Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-to-track-status-and-make-progress-towards-a-poa-m">Workflow to Track Status and Make Progress Towards a POA&amp;M</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-on-findings-and-evaluation-status">Reporting on Findings and Evaluation Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#user-access-controls-to-limit-access-to-your-data">User Access Controls to Limit Access to Your Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stig-manager-is-cci-aware">STIG Manager is CCI-aware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach">STIG Manager integrates with the RMF Lifecycle approach</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started-with-stig-manager">Getting Started with STIG Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-bugs-issues">Reporting Bugs &amp; Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#license-credits">License / Credits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user-guide/index.html">For Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="the-project/index.html">The STIG Manager Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Introduction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/introduction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="features/index.html" class="btn btn-neutral float-right" title="Features" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to STIG Manager’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<span id="id1"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-stig-manager">
+<h2>What is STIG Manager?<a class="headerlink" href="#what-is-stig-manager" title="Permalink to this headline">¶</a></h2>
+<p>STIG Manager is an Open Source API and Web client for managing the assessment of Information Systems for compliance with <a class="reference external" href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a class="reference external" href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG) in the XCCDF format.</p>
+<p>Our Project incorporates software developed since 2012 by the <a class="reference external" href="https://www.navsea.navy.mil/Home/Warfare-Centers/NUWC-Newport/">U.S. Naval Undersea Warfare Center Division Newport (NUWCDIVNPT)</a>. More information, and the software itself, is available on GitHub: <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager</a></p>
+</div>
+<div class="section" id="rmf-process-support">
+<h2>RMF Process Support<a class="headerlink" href="#rmf-process-support" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">
+<h3>The Single Source of Truth throughout Steps 3 and 4 of the RMF Process<a class="headerlink" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h3>
+<p>Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it’s progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.</p>
+<p>STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.</p>
+<video width="480"  controls>
+  <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video></div>
+<hr class="docutils" />
+<div class="section" id="rmf-package-data-represented-as-collections-assets-stigs-and-reviews">
+<h3>RMF Package data represented as Collections, Assets, STIGs, and Reviews<a class="headerlink" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager’s primary organizational structure is the Collection. A Collection can be created to mirror components of an RMF Package, requirements identified in a Security Assessment Plan, or an entirely different principle that may be more convenient, such as by an organization’s Lab or by Asset OS.</p>
+<dl class="simple">
+<dt>Collections are composed of:</dt><dd><ul class="simple">
+<li><p>Assets</p></li>
+<li><p>STIGs attached to those Assets</p></li>
+<li><p>Reviews of the Rules that compose each attached STIG</p></li>
+<li><p>User Grants providing access to some or all of the Assets/STIGs in that Collection</p></li>
+<li><p>Reports providing Status and Findings information</p></li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="create-collections-from-your-existing-ckl-files">
+<h4>Create Collections From Your Existing .CKL Files<a class="headerlink" href="#create-collections-from-your-existing-ckl-files" title="Permalink to this headline">¶</a></h4>
+<p>Migrating to STIG Manager is easy because it can use your existing artifacts to build and update Collections. Assets, STIGs, and Reviews can be populated with the .ckls produced by STIG Viewer or the automated STIG assessments in XCCDF format produced by the SCC tool, as well as manually from the Collection Configuration tab.  Once a Collection is created in STIG Manager, Users can be granted access to see the current results for each STIG on an Asset, or the whole Collection. Users can see automated tool evaluations, and Rules that still require evaluation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an asset, and will create new .ckls for you on demand with the most current results.</p>
+</div>
+<video width="480"  controls>
+  <source src="./_static/videos/Collections.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video></div>
+</div>
+<hr class="docutils" />
+<div class="section" id="workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data">
+<h3>Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data<a class="headerlink" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data" title="Permalink to this headline">¶</a></h3>
+<p>The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection.</p>
+<video width="480"  controls>
+  <source src="./_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video></div>
+<hr class="docutils" />
+<div class="section" id="workflow-to-track-status-and-make-progress-towards-a-poa-m">
+<h3>Workflow to Track Status and Make Progress Towards a POA&amp;M<a class="headerlink" href="#workflow-to-track-status-and-make-progress-towards-a-poa-m" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager supports an “RMF Package Workflow” that allows designated Collection Owners to “Reject” Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also “Accept” a Review, locking it from further revision by evaluators while they prepare their POA&amp;M.</p>
+</div>
+<div class="section" id="reporting-on-findings-and-evaluation-status">
+<h3>Reporting on Findings and Evaluation Status<a class="headerlink" href="#reporting-on-findings-and-evaluation-status" title="Permalink to this headline">¶</a></h3>
+<p>Reports adjust as new STIGs are assigned, results imported, or when new DISA STIG revesions are imported, to provide information on the status and progress of evaluations.</p>
+<p>The Collection Configuration workspace provides real-time totals for level of work required as changes to Assets and STIGs are made.</p>
+</div>
+<div class="section" id="user-access-controls-to-limit-access-to-your-data">
+<h3>User Access Controls to Limit Access to Your Data<a class="headerlink" href="#user-access-controls-to-limit-access-to-your-data" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager provides granular Role-Based Access Controls that can give Users access to some or all of the Assets and their STIGs in a Collection.</p>
+</div>
+<div class="section" id="stig-manager-is-cci-aware">
+<h3>STIG Manager is CCI-aware<a class="headerlink" href="#stig-manager-is-cci-aware" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager maintains relationships between STIG Rules and their associated CCIs and Assessment Procedures. Reports can be pivoted to show Open Findings sorted by Rule, CCI, or Group.</p>
+<p>STIG Manager can produce a pre-populated POA&amp;M-like document that lists findings already decomposed into their related CCIs.</p>
+</div>
+<div class="section" id="stig-manager-integrates-with-the-rmf-lifecycle-approach">
+<h3>STIG Manager integrates with the RMF Lifecycle approach<a class="headerlink" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the implementation of the “Continuous” Workflow, STIG Manager will play a vital part of the RMF lifecycle.  When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.</p>
+</div>
+</div>
+<div class="section" id="getting-started-with-stig-manager">
+<h2>Getting Started with STIG Manager<a class="headerlink" href="#getting-started-with-stig-manager" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="user-guide/index.html#user-guide-index"><span class="std std-ref">For Users</span></a></p>
+<p><a class="reference internal" href="admin-guide/index.html#admin-guide-index"><span class="std std-ref">For Admins</span></a></p>
+<div class="section" id="reporting-bugs-issues">
+<h3>Reporting Bugs &amp; Issues<a class="headerlink" href="#reporting-bugs-issues" title="Permalink to this headline">¶</a></h3>
+<p>Please file bug reports on the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/issues">STIG Manager
+issue tracker</a>. When reporting
+a bug, please include as much information as possible. This includes:</p>
+<ul class="simple">
+<li><p>Install type: Hosted, Local, Docker, etc</p></li>
+<li><p>Action taken</p></li>
+<li><p>Expected result</p></li>
+<li><p>Actual result</p></li>
+<li><p>Screenshot (if relevant)</p></li>
+</ul>
+</div>
+<div class="section" id="license-credits">
+<h3>License / Credits<a class="headerlink" href="#license-credits" title="Permalink to this headline">¶</a></h3>
+<p>The  repository is licensed under the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md">MIT License</a>, with the exception of the client, which is licensed under the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md">GNU GPL
+v3</a>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="features/index.html" class="btn btn-neutral float-right" title="Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to STIG Manager’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

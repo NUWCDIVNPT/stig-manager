@@ -1,0 +1,36 @@
+
+.. _production-deployment-index:
+
+Deploying STIG Manager to a Production Environment
+============================================================
+
+.. meta::
+  :description: These pages cover topics relating to Production Deployments.
+
+These pages describe STIG Manager OSS Production Deployment considerations.
+
+.. note:
+   This section is still under development.
+
+
+
+
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Contents:
+
+moot
+
+
+reverse-proxy
+logging
+
+
+.. todo::
+  reverse-proxy
+  logging
+  TLS to mySQL
+  set classification level
+
