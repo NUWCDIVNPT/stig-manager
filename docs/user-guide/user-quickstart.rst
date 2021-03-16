@@ -1,7 +1,7 @@
 .. _user-quickstart:
 
 
-STIG Manager Walkthrough
+STIG Manager User Walkthrough
 ########################################
 
 This User Walkthrough will walk you through a typical use case for STIG Manager, from creating your own Collection, creating Assets in that Collection, to evaluating STIGs and creating a POAM from your findings. Depending on your role in your organization, not all of these steps may apply to you, but should be helpful in providing context for the use of this tool. If you are comfortable, feel free to skip around using the sidebar navigation to the left.

@@ -25,10 +25,9 @@ These pages describe the STIG Manager project.
 	examples
 	requirements-and-dependencies
 	clients
-	release-notes
 	DockerHub_Readme.md
 
-
+- :ref:`release-notes`
 
 STIG Manager is an active, Open Source project
 ======================================================
