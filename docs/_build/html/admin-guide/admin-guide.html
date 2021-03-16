@@ -95,8 +95,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">For Admins</a><ul class="current">
@@ -122,7 +121,17 @@
 </ul>
 <p class="caption"><span class="caption-text">Common Tasks:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#authoritative-results">Authoritative results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
 
             
@@ -205,7 +214,7 @@
 <span id="admin-guide-doc"></span><h1>STIG Manager Admin Guide<a class="headerlink" href="#stig-manager-admin-guide" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
 <h2>STIG Manager Admin Guide<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>Lists functionality available to Administrators in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see the <a class="reference internal" href="../installation-and-setup/index.html#installation-and-setup-index"><span class="std std-ref">Install, Setup, and Run</span></a> and <a class="reference internal" href="../production-deployment/index.html#production-deployment-index"><span class="std std-ref">Deploying STIG Manager to a Production Environment</span></a> sections.</p>
+<p>Lists functionality available to Administrators in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see <a class="reference internal" href="../installation-and-setup/index.html#installation-and-setup-index"><span class="std std-ref">Install, Setup, and Run</span></a>.</p>
 <div class="section" id="navigation-tree">
 <h3>Navigation Tree<a class="headerlink" href="#navigation-tree" title="Permalink to this headline">¶</a></h3>
 <p>Administrators will see the Administration branch in the Navigation tree, as well as the Collections branch available to all users.</p>
@@ -224,7 +233,7 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
 </div>
 <figure class="">
             <a 
-               data-lightbox="group-654f6c00-1a5c-428c-9ba7-eebc0d4b9a9e"
+               data-lightbox="group-8efdf065-0ae9-4948-a5ba-a85a163290f3"
                href="../_images/admin-collections1.png"
                title="Collection Administration"
                data-title="Collection Administration"
@@ -244,7 +253,7 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
 <p>Users can be Unregistered from STIG Manager, which will delete STIGMan’s information about the User. If the User accesses STIG Manager again, they will appear as a new User, with no STIG Assignments or Collection Grants.</p>
 <figure class="">
             <a 
-               data-lightbox="group-a22dbdf6-009d-4d38-ae7f-696e71d4b65b"
+               data-lightbox="group-7c4ab06f-eaf4-425f-a230-f1a4d121ab18"
                href="../_images/admin-user-grants1.png"
                title="User Grants Administration"
                data-title="User Grants Administration"
@@ -263,7 +272,7 @@ Their Columns…. Benchmark ID, STIG Title, status, Current Revision, Revision D
 <p>Use the buttons at the top to Add new STIGs (STIGs can be imported individually, or as a .zip library of many STIGs), or delete them.</p>
 <figure class="">
             <a 
-               data-lightbox="group-244f01f7-6ffa-49d5-899c-82b8c427d818"
+               data-lightbox="group-e0337d69-8271-4290-b053-8871e566c8b8"
                href="../_images/admin-stigs1.png"
                title="STIGs Administration"
                data-title="STIGs Administration"
@@ -285,7 +294,7 @@ This same data can also be imported, but be aware that if data is moved to a dif
 </div>
 <figure class="">
             <a 
-               data-lightbox="group-4b9d12bb-c169-489a-8efd-819046f0e6c9"
+               data-lightbox="group-5f8e319b-a140-4e55-b111-55777ec52c9d"
                href="../_images/admin-app-data1.png"
                title="Application Data Import/Export"
                data-title="Application Data Import/Export"

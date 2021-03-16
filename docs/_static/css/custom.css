@@ -36,6 +36,10 @@ p.rubric3 {
   font-size: 100%;
 }
 
+p.rubric-big {
+  margin-bottom: 12px;
+  font-size: 200%;
+}
 
 
 /* .rst-content .toctree-wrapper>p.caption, h1, h2, h3, h4, h5, h6, legend {

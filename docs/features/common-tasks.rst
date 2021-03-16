@@ -3,8 +3,12 @@
 
 
 
-STIG Manager simplifies common tasks
-###########################################
+.. rubric:: STIG Manager simplifies common tasks
+   :class: rubric-big
+
+
+######################################
+
 
 Build A Collection with .ckl or XCCDF Files
 ===============================================

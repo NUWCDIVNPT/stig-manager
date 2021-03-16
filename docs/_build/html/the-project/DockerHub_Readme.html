@@ -95,8 +95,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
@@ -109,7 +108,8 @@
 <li class="toctree-l2"><a class="reference internal" href="clients.html">STIG Manager Clients</a></li>
 <li class="toctree-l2"><a class="reference internal" href="release-notes.html">Release Notes</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">STIG Manager OSS on Docker Hub</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#supported-tags">Supported tags</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quick-start-orchestration">Quick Start Orchestration</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#docker-compose-yml">docker-compose.yml</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#steps">Steps</a></li>
 </ul>
@@ -131,7 +131,17 @@
 </ul>
 <p class="caption"><span class="caption-text">Common Tasks:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#authoritative-results">Authoritative results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
 
             
@@ -212,12 +222,28 @@
             
   <div class="section" id="stig-manager-oss-on-docker-hub">
 <h1>STIG Manager OSS on Docker Hub<a class="headerlink" href="#stig-manager-oss-on-docker-hub" title="Permalink to this headline">¶</a></h1>
-<p><em>This is pre-release software and the Docker image is made available for pilot testing only</em></p>
+<p><em>This is pre-release software and the Docker images are made available for pilot testing only</em></p>
 <p>STIG Manager is an API and Web client for managing the assessment of Information Systems for compliance with <a class="reference external" href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a class="reference external" href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG).</p>
-<p><strong>Documentation:</strong> <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager/#/">https://nuwcdivnpt.github.io/stig-manager/#/</a></p>
-<p><strong>Source code:</strong> <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager">https://github.com/NUWCDIVNPT/stig-manager</a></p>
-<div class="section" id="quick-start">
-<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p><strong>Documentation:</strong> <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager">https://nuwcdivnpt.github.io/stig-manager</a></p>
+<p><strong>Source:</strong> <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager">https://github.com/NUWCDIVNPT/stig-manager</a></p>
+<div class="section" id="supported-tags">
+<h2>Supported tags<a class="headerlink" href="#supported-tags" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>From the <code class="docutils literal notranslate"><span class="pre">node:lts-alpine</span></code> base image (the default if no tag is provided)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">latest</span></code>, <code class="docutils literal notranslate"><span class="pre">latest-alpine</span></code></p></li>
+</ul>
+</li>
+<li><p>From the <a class="reference external" href="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/master/download?job=build">Iron Bank Node.js 14 base image</a></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">latest-ironbank</span></code></p></li>
+</ul>
+</li>
+</ul>
+<p>In addition, we provide a limited selection of releases tagged as <em><code class="docutils literal notranslate"><span class="pre">release</span></code></em><code class="docutils literal notranslate"><span class="pre">[-</span></code><em><code class="docutils literal notranslate"><span class="pre">distro</span></code></em><code class="docutils literal notranslate"><span class="pre">]</span></code>, where <code class="docutils literal notranslate"><span class="pre">distro</span></code> defauts to <code class="docutils literal notranslate"><span class="pre">alpine</span></code>. For example, <code class="docutils literal notranslate"><span class="pre">1.0.0-beta.14</span></code> or <code class="docutils literal notranslate"><span class="pre">1.0.0-beta.14-ironbank</span></code></p>
+</div>
+<div class="section" id="quick-start-orchestration">
+<h2>Quick Start Orchestration<a class="headerlink" href="#quick-start-orchestration" title="Permalink to this headline">¶</a></h2>
 <p><em>The Quick Start steps require the <a class="reference external" href="https://hub.docker.com/_/mysql">official MySQL 8 image</a> and a <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth">custom Keycloak 11 image</a>.</em></p>
 <div class="section" id="docker-compose-yml">
 <h3>docker-compose.yml<a class="headerlink" href="#docker-compose-yml" title="Permalink to this headline">¶</a></h3>

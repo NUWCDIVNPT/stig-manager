@@ -22,6 +22,16 @@ This Walkthrough will step you through creating each of these items.
    **Collections can be structured as an RMF Package, but do not need to be.** It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
 
 
+
+.. raw:: html
+
+  <video width="480"  controls>
+    <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+  </video>
+
+
+
 Authentication 
 ================
 

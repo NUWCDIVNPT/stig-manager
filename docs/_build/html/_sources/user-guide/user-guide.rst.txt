@@ -12,6 +12,18 @@ This Document describes every part of the STIG Manager UI available to all STIG 
 
 Please see the :ref:`admin-guide-doc` for Administrative functions.
 
+
+
+
+.. raw:: html
+
+  <video width="480"  controls>
+    <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+  </video>
+
+
+
 When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right. 
 
 

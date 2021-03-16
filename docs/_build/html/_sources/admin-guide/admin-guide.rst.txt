@@ -7,8 +7,7 @@ STIG Manager Admin Guide
 STIG Manager Admin Guide
 =========================
 
-Lists functionality available to Administrators in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see the :ref:`installation-and-setup-index` and :ref:`production-deployment-index` sections.
-
+Lists functionality available to Administrators in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see :ref:`installation-and-setup-index`.
 
 Navigation Tree
 --------------------

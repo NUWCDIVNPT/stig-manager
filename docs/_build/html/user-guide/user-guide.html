@@ -95,8 +95,7 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">For Users</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="user-quickstart.html">1. STIG Manager Walkthrough</a></li>
@@ -144,7 +143,17 @@
 </ul>
 <p class="caption"><span class="caption-text">Common Tasks:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">STIG Manager simplifies common tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#authoritative-results">Authoritative results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
 
             
@@ -228,7 +237,10 @@
 <p class="rubric">The STIG Manager User Interface</p>
 <p>This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privelege.</p>
 <p>Please see the <a class="reference internal" href="../admin-guide/admin-guide.html#admin-guide-doc"><span class="std std-ref">STIG Manager Admin Guide</span></a> for Administrative functions.</p>
-<p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
+<video width="480"  controls>
+  <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video><p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
 <p class="rubric3 rubric">Overall Organization</p>
 <p>The STIG Manager UI is composed of two main elements, the Navigation Tree on the left, and the Content Panel to the right. Click the arrow or double-click the node name to expand that branch.  End nodes (those without an arrow) will open a tab in the Content Panel.</p>
 <div class="section" id="content-panel">
@@ -247,7 +259,7 @@ This Tab provides links to useful information, such as this Documentation, DISA 
 The Home Panel also provides information about the STIG Manager Open Source Software Project, and links to the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager OSS Project on GitHub</a> for submitting Issues with the software.</p>
 <figure class="">
             <a 
-               data-lightbox="group-177a8e45-a579-4d12-b53f-72daa7da07e5"
+               data-lightbox="group-fe7e3cb5-807e-4097-86ad-7ec6f23b6701"
                href="../_images/home-tab1.png"
                title="Home Tab"
                data-title="Home Tab"
@@ -267,7 +279,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>The components of the Navigation Tree are described below.</p>
 <figure class="">
             <a 
-               data-lightbox="group-39a606ed-bee8-4168-a871-d4673368e566"
+               data-lightbox="group-9625647f-2dca-4c8e-8390-acabafd17f4e"
                href="../_images/nav-tree1.png"
                title="Navigation Tree"
                data-title="Navigation Tree"
@@ -286,7 +298,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>If you have the Collection Creator privilege, this option will appear. Click this item in the Nav Tree to create a new Collection.</p>
 <figure class="">
             <a 
-               data-lightbox="group-d8f517b3-87e2-47c6-973c-1e26a4673ba9"
+               data-lightbox="group-354161e8-8b20-451f-b030-095d03778ead"
                href="../_images/create-collection-popup1.png"
                title="Create Collection popup"
                data-title="Create Collection popup"
@@ -347,7 +359,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>The Collection Review Workspace allows the user to assess all the Assets they have acess to that have been assigned the selected STIG.</p>
 <figure class="">
             <a 
-               data-lightbox="group-81895da5-54df-4994-ab21-8139fedaa2e6"
+               data-lightbox="group-cf9234c5-ee36-4c9b-81fa-e07e2b8142b2"
                href="../_images/collection-review1.png"
                title="Collection Review Workspace"
                data-title="Collection Review Workspace"
@@ -417,7 +429,7 @@ Reviews can be Accepted with the button at the top of the Reviews Panel, or Reje
 Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.</p>
 <figure class="">
             <a 
-               data-lightbox="group-4d11ff8b-b127-4cc0-8d4d-5d126dd035a6"
+               data-lightbox="group-8d959935-a35d-47e1-b8de-4d6878215c8d"
                href="../_images/asset-review1.png"
                title="Asset Review Workspace"
                data-title="Asset Review Workspace"
@@ -505,7 +517,7 @@ In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIAT
 <p>The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.</p>
 <figure class="">
             <a 
-               data-lightbox="group-2c18c444-b1bd-43c6-ab68-404a196bc7a1"
+               data-lightbox="group-540612f3-00a2-4f5a-a824-9849a99b9be9"
                href="../_images/findings-report1.png"
                title="Findings Report"
                data-title="Findings Report"
@@ -552,7 +564,7 @@ Information about the Asset, Rule, Action, Last Modified Date, and applicable ST
 </div>
 <figure class="">
             <a 
-               data-lightbox="group-188312fb-c2c6-4f7a-a4ec-ab7e50f17781"
+               data-lightbox="group-abdecb20-80bf-45f2-a0b0-2b8094343e39"
                href="../_images/status-report1.png"
                title="Status Report"
                data-title="Status Report"
@@ -580,7 +592,7 @@ From this Workspace, the User can:</p>
 </div></blockquote>
 <figure class="">
             <a 
-               data-lightbox="group-a6c89aa9-45ad-413d-9f1c-a5cf30c7b8e7"
+               data-lightbox="group-31aed951-f715-44e6-9274-8583f4176549"
                href="../_images/manage-collection-workspace1.png"
                title="The Manage Collections Workspace"
                data-title="The Manage Collections Workspace"
@@ -596,7 +608,7 @@ From this Workspace, the User can:</p>
 <p>This Panel allows Collection Managers and Owners to change the name of the Asset, it’s workflow, and any associated Metadata.  Collection Owners can also delete this Collection.</p>
 <figure class="">
             <a 
-               data-lightbox="group-dd0ef747-d00c-403e-b55d-b484b0be5d45"
+               data-lightbox="group-80444093-2d9d-494c-8e35-3c15183aee35"
                href="../_images/collection-properties1.png"
                title="Collection Properties"
                data-title="Collection Properties"
@@ -615,7 +627,7 @@ Users and their level of Access to the Collection can be can be added, or remove
 <p>See <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> for more info about these Access Levels.</p>
 <figure class="">
             <a 
-               data-lightbox="group-175b4c08-5589-49d4-a38f-368b64cdd30e"
+               data-lightbox="group-f475ce8a-fe3c-4d70-af7a-a6b3e69f3a4c"
                href="../_images/user-grants1.png"
                title="The User Grants Panel"
                data-title="The User Grants Panel"
@@ -630,7 +642,7 @@ Users and their level of Access to the Collection can be can be added, or remove
 If a User with a Restricted Access Level is selected, the “Restricted User access list…” button is activated.</p>
 <figure class="">
             <a 
-               data-lightbox="group-d25b5a19-944b-4569-bbb5-72fe600dfac6"
+               data-lightbox="group-71b2c49e-5e5a-4912-802e-e16a41ab89d1"
                href="../_images/restricted-access-list1.png"
                title="The Restricted User Access List"
                data-title="The Restricted User Access List"
@@ -653,7 +665,7 @@ If a User with a Restricted Access Level is selected, the “Restricted User acc
 The <a class="reference internal" href="#collection-builder"><span class="std std-ref">Import CKL or SCAP / Collection Builder</span></a> option allows the User to create many Assets and their STIG Assignments at once.</p>
 <figure class="">
             <a 
-               data-lightbox="group-0b6195c9-6a93-4bd9-867b-b05af481033c"
+               data-lightbox="group-5102a795-22a4-4f77-b0a0-a0ae935d468e"
                href="../_images/assets-panel-menu1.png"
                title="Assets Panel Menu Bar"
                data-title="Assets Panel Menu Bar"
@@ -669,7 +681,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <p>Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs can also be assigned to the new Asset from this interface.</p>
 <figure class="">
             <a 
-               data-lightbox="group-993a9f10-6822-48d3-ac14-8a5c8a67764a"
+               data-lightbox="group-39b880cf-2a5e-43fd-8d7b-203c65a2d8e9"
                href="../_images/create-asset1.png"
                title="Create an Asset"
                data-title="Create an Asset"
@@ -698,7 +710,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <p>From the Collection Management workspace, click the “Import CKL or SCAP…” button at the top of the Assets panel .</p>
 <figure class="">
             <a 
-               data-lightbox="group-8cbf0ed5-de66-4d62-8cab-44d7bd9cc49e"
+               data-lightbox="group-cf61acc4-1c9e-451b-90f5-fc80431e548d"
                href="../_images/collection-builder-files1.png"
                title="Collection Builder File Select"
                data-title="Collection Builder File Select"
@@ -715,7 +727,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-71fd3713-a152-4263-8b1d-0f82fa089fe0"
+               data-lightbox="group-bd091042-f415-4d7a-bc76-dba998d8841c"
                href="../_images/collection-builder-errors-and-warnings1.png"
                title="Collection Builder Errors and Warnings"
                data-title="Collection Builder Errors and Warnings"
@@ -733,7 +745,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-96a573f9-cc1e-4588-a555-63b9acfac6e8"
+               data-lightbox="group-a8269d43-a993-4c9e-a540-c52947fd48c7"
                href="../_images/collection-builder-options1.png"
                title="Collection Builder Options and Summary"
                data-title="Collection Builder Options and Summary"
@@ -760,7 +772,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-10851031-96aa-4b6a-8a21-1b5df4e2828d"
+               data-lightbox="group-8492862f-0b8d-439e-9b54-b5572d8a3e48"
                href="../_images/collection-builder-import1.png"
                title="Collection Builder Import Log"
                data-title="Collection Builder Import Log"
@@ -796,7 +808,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 STIG Assignments can also be added or removed from Assets with the buttons at the top of this panel.</p>
 <figure class="">
             <a 
-               data-lightbox="group-4613763a-8ee8-40b5-bbf9-9aeef4024103"
+               data-lightbox="group-2c1344e7-c564-448b-923a-4ceeebe3f438"
                href="../_images/stigs-panel1.png"
                title="STIGs Panel"
                data-title="STIGs Panel"
@@ -812,7 +824,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <p>Select Assign STIG to add a new STIG to the Collection. A popup will allow you to select a STIG that is not yet assigned to an Asset. Click the Assign STIG button on this popup to select Assets that should have this STIG assigned to them.</p>
 <figure class="">
             <a 
-               data-lightbox="group-aa5b1734-ea5d-42e6-9a2d-bf7dc7f577bb"
+               data-lightbox="group-c41f5886-023b-4986-94fb-cb246a4b8a20"
                href="../_images/stig-assignments1.png"
                title="STIG Assignments"
                data-title="STIG Assignments"
