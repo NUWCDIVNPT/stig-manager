@@ -27,7 +27,6 @@ These pages describe the STIG Manager project.
 	clients
 	DockerHub_Readme.md
 
-- :ref:`release-notes`
 
 STIG Manager is an active, Open Source project
 ======================================================

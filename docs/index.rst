@@ -28,7 +28,6 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
    admin-guide/index
    the-project/index
    reference/index
-   release-notes
 
 * :ref:`genindex`
 
