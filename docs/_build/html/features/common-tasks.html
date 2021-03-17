@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Build A Collection with .ckl or XCCDF Files &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/js/custom.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Terminology and Concepts" href="../reference/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction and Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#evaluation-approval">Evaluation Approval</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#poam-generation">POAM generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#package-evaluation-progress">Package Evaluation progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#authoritative-results">Authoritative results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Build A Collection with .ckl or XCCDF Files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/features/common-tasks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+      
+        <a href="../reference/index.html" class="btn btn-neutral float-left" title="Terminology and Concepts" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p class="rubric-big rubric" id="common-tasks">STIG Manager simplifies common tasks</p>
+<hr class="docutils" />
+<div class="section" id="build-a-collection-with-ckl-or-xccdf-files">
+<h1>Build A Collection with .ckl or XCCDF Files<a class="headerlink" href="#build-a-collection-with-ckl-or-xccdf-files" title="Permalink to this headline">¶</a></h1>
+<p>Create your Collection and go to it’s Collection Management workspace by selecting the “Manage” node for your Collection in the Nav Tree.
+From here, select the “Import CKL or SCAP…” button in the Asset Panel, then check out the <a class="reference internal" href="../user-guide/user-guide.html#collection-builder"><span class="std std-ref">Import CKL or SCAP / Collection Builder</span></a> portion of our User Guide for more info.</p>
+<p><a class="reference internal" href="../user-guide/user-guide.html#collection-builder"><span class="std std-ref">Import CKL or SCAP / Collection Builder</span></a></p>
+</div>
+<div class="section" id="review-a-stig-on-an-asset">
+<h1>Review a STIG on an Asset<a class="headerlink" href="#review-a-stig-on-an-asset" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../user-guide/user-guide.html#asset-review-workspace"><span class="std std-ref">Asset Review Workspace</span></a></p>
+</div>
+<div class="section" id="review-an-entire-collection-at-once">
+<h1>Review an entire Collection at once<a class="headerlink" href="#review-an-entire-collection-at-once" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../user-guide/user-guide.html#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a></p>
+</div>
+<div class="section" id="review-findings">
+<h1>Review Findings<a class="headerlink" href="#review-findings" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../user-guide/user-guide.html#id7"><span class="std std-ref">Findings Report Workspace</span></a></p>
+</div>
+<div class="section" id="evaluation-approval">
+<h1>Evaluation Approval<a class="headerlink" href="#evaluation-approval" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../user-guide/user-guide.html#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a></p>
+</div>
+<div class="section" id="poam-generation">
+<h1>POAM generation<a class="headerlink" href="#poam-generation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../user-guide/user-guide.html#id7"><span class="std std-ref">Findings Report Workspace</span></a></p>
+</div>
+<div class="section" id="package-evaluation-progress">
+<h1>Package Evaluation progress<a class="headerlink" href="#package-evaluation-progress" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../user-guide/user-guide.html#id9"><span class="std std-ref">Status Report</span></a></p>
+</div>
+<div class="section" id="add-users">
+<h1>Add Users<a class="headerlink" href="#add-users" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../installation-and-setup/installation-and-setup.html#adding-users"><span class="std std-ref">Configure Users</span></a></p>
+</div>
+<div class="section" id="authoritative-results">
+<h1>Authoritative results<a class="headerlink" href="#authoritative-results" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="update-stigs">
+<h1>Update STIGs<a class="headerlink" href="#update-stigs" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="../admin-guide/admin-quickstart.html#stig-import"><span class="std std-ref">STIG and SCAP Benchmarks</span></a></p>
+</div>
+<div class="section" id="having-a-problem-let-us-know-and-submit-an-issue-on-github">
+<h1>Having a problem? Let us know and submit an issue on GitHub!<a class="headerlink" href="#having-a-problem-let-us-know-and-submit-an-issue-on-github" title="Permalink to this headline">¶</a></h1>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../reference/index.html" class="btn btn-neutral float-left" title="Terminology and Concepts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
