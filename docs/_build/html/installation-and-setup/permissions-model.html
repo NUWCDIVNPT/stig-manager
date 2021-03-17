@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Permissions and Data &mdash; STIG Manager  documentation</title>
+  <title>6. Permissions and Data &mdash; STIG Manager  documentation</title>
   
 
   
@@ -44,8 +44,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Environment Variables" href="environment-variables.html" />
-    <link rel="prev" title="STIG Manager TLS" href="reverse-proxy.html" /> 
+    <link rel="next" title="7. Environment Variables" href="environment-variables.html" />
+    <link rel="prev" title="5. STIG Manager TLS" href="reverse-proxy.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,18 +97,18 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">STIG Manager OSS Setup and Technical Information</a></li>
-<li class="toctree-l2"><a class="reference internal" href="authentication.html">Authentication and Identity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="db.html">Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html">STIG Manager Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">STIG Manager TLS</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Permissions and Data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#data-model">Data Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#permissions-model">Permissions Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#api-endpoints-and-their-roles">API Endpoints and their Roles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="authentication.html">2. Authentication and Identity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6. Permissions and Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-model">6.1. Data Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#permissions-model">6.2. Permissions Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api-endpoints-and-their-roles">6.3. API Endpoints and their Roles</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
@@ -179,7 +179,7 @@
         
           <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
         
-      <li>Permissions and Data</li>
+      <li><span class="section-number">6. </span>Permissions and Data</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -195,10 +195,10 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="environment-variables.html" class="btn btn-neutral float-right" title="Environment Variables" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="environment-variables.html" class="btn btn-neutral float-right" title="7. Environment Variables" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
-        <a href="reverse-proxy.html" class="btn btn-neutral float-left" title="STIG Manager TLS" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reverse-proxy.html" class="btn btn-neutral float-left" title="5. STIG Manager TLS" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
       
   </div>
   
@@ -208,10 +208,10 @@
            <div itemprop="articleBody">
             
   <div class="section" id="permissions-and-data">
-<span id="id1"></span><h1>Permissions and Data<a class="headerlink" href="#permissions-and-data" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1><span class="section-number">6. </span>Permissions and Data<a class="headerlink" href="#permissions-and-data" title="Permalink to this headline">¶</a></h1>
 <p>STIG Manager</p>
 <div class="section" id="data-model">
-<h2>Data Model<a class="headerlink" href="#data-model" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.1. </span>Data Model<a class="headerlink" href="#data-model" title="Permalink to this headline">¶</a></h2>
 <p>STIG Manager’s primary organizational structure is the Collection. A Collection can be created to mirror components of an RMF Package, requirements identified in a Security Assessment Plan, or an entirely different principle that may be more convenient, such as by an organization’s Lab or by Asset OS.</p>
 <dl class="simple">
 <dt>Collections are composed of:</dt><dd><ul class="simple">
@@ -229,10 +229,10 @@
 </div>
 </div>
 <div class="section" id="permissions-model">
-<h2>Permissions Model<a class="headerlink" href="#permissions-model" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.2. </span>Permissions Model<a class="headerlink" href="#permissions-model" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="api-endpoints-and-their-roles">
-<h2>API Endpoints and their Roles<a class="headerlink" href="#api-endpoints-and-their-roles" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">6.3. </span>API Endpoints and their Roles<a class="headerlink" href="#api-endpoints-and-their-roles" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -242,8 +242,8 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="environment-variables.html" class="btn btn-neutral float-right" title="Environment Variables" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="reverse-proxy.html" class="btn btn-neutral float-left" title="STIG Manager TLS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="environment-variables.html" class="btn btn-neutral float-right" title="7. Environment Variables" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="reverse-proxy.html" class="btn btn-neutral float-left" title="5. STIG Manager TLS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

@@ -11,16 +11,17 @@ The API requires an OAuth2 JSON Web Token (JWT) to determine client and user acc
 JSON Web Token Requirements
 ----------------------------------
 
-The JWT produced by the Identity Provider must provide the following claims, which, aside from "scope," can be specified in STIGMan's environment variables if they differ from default values:
-
-    * Client Name - ``STIGMAN_JWT_SERVICENAME_CLAIM``
-    * User Roles - ``STIGMAN_JWT_ROLES_CLAIM``
-    * User Name - ``STIGMAN_JWT_NAME_CLAIM``
-    * User Email - ``STIGMAN_JWT_EMAIL_CLAIM``
-    * Scope
+The JWT produced by the Identity Provider should provide the following claims, which can be specified in STIGMan's environment variables if they differ from default values:
+    
+    * Username - ``STIGMAN_JWT_USERNAME_CLAIM`` - default ``preferred_username``
+    * User Roles - ``STIGMAN_JWT_ROLES_CLAIM`` - ``realm_access.roles``
+    * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional)``name``
+    * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) ``email``
 
 .. note::
-  Specify the field you would like STIG Manager to use for its User's names with the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable. This value defaults to the Keycloak default, which is ``preferred_username``
+  STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``
+
+If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other Keycloak configuration required. 
 
 
 Roles, Scopes, and Privileges

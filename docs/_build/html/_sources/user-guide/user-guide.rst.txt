@@ -506,8 +506,6 @@ The Asset Name must match exactly.
 Collection Builder Process
 ++++++++++++++++++++++++++++++++++++
 
-.. todo::
-   walkthrough the bulk import process here.
 
 From the Collection Management workspace, click the "Import CKL or SCAP..." button at the top of the Assets panel .
 

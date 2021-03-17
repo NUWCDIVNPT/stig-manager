@@ -45,18 +45,15 @@ STIG Manager Operations
 STIG Manager is a modern, containerized application built to take full advantage of a CI/CD DevOps pipeline. Updates to STIG Manager will trigger automatic testing and image creation. Organizations will have the option to engage with the pipeline to automatically deploy new versions to their test environments, or directly to production.
 
 
+Security
+------------------
 
-Use Cases
-------------------------
+.. todo::
+	add
 
-STIGMan @ NUWC
-
-STIGMan @ Dahlgren
-
-STIGMan @ NREN
 
 
 Support
 ==============
 
-The STIG Manager team is usually available on Microsoft Teams
+The STIG Manager team is usually available on CVR Microsoft Teams

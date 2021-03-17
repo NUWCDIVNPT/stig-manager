@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Database &mdash; STIG Manager  documentation</title>
+  <title>3. Database &mdash; STIG Manager  documentation</title>
   
 
   
@@ -44,8 +44,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="STIG Manager Logging" href="logging.html" />
-    <link rel="prev" title="Authentication and Identity" href="authentication.html" /> 
+    <link rel="next" title="4. STIG Manager Logging" href="logging.html" />
+    <link rel="prev" title="2. Authentication and Identity" href="authentication.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,22 +97,22 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">STIG Manager OSS Setup and Technical Information</a></li>
-<li class="toctree-l2"><a class="reference internal" href="authentication.html">Authentication and Identity</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Database</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#database-user-requirements">Database User Requirements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#database-mysql-8-0-14">Database - MySQL 8.0.14+</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#configure-mysql">Configure MySQL</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configure-mysql-for-tls">Configure MySQL for TLS</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configure-stig-manager-to-use-your-mysql-database">Configure STIG Manager to use your MySQL Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="authentication.html">2. Authentication and Identity</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3. Database</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#database-user-requirements">3.1. Database User Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#database-mysql-8-0-14">3.2. Database - MySQL 8.0.14+</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configure-mysql">3.2.1. Configure MySQL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-mysql-for-tls">3.2.2. Configure MySQL for TLS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-stig-manager-to-use-your-mysql-database">3.2.3. Configure STIG Manager to use your MySQL Database</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html">STIG Manager Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">STIG Manager TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">Permissions and Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
@@ -183,7 +183,7 @@
         
           <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
         
-      <li>Database</li>
+      <li><span class="section-number">3. </span>Database</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -199,10 +199,10 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="logging.html" class="btn btn-neutral float-right" title="STIG Manager Logging" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="logging.html" class="btn btn-neutral float-right" title="4. STIG Manager Logging" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
-        <a href="authentication.html" class="btn btn-neutral float-left" title="Authentication and Identity" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="authentication.html" class="btn btn-neutral float-left" title="2. Authentication and Identity" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
       
   </div>
   
@@ -212,11 +212,11 @@
            <div itemprop="articleBody">
             
   <div class="section" id="database">
-<span id="db"></span><h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
+<span id="db"></span><h1><span class="section-number">3. </span>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
 <p>The STIGMan API was developed with a Controller-Service model that allows additional database services to be developed while using the same Controller code.
 Right now, the only database supported is MySQL.</p>
 <div class="section" id="database-user-requirements">
-<h2>Database User Requirements<a class="headerlink" href="#database-user-requirements" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.1. </span>Database User Requirements<a class="headerlink" href="#database-user-requirements" title="Permalink to this headline">¶</a></h2>
 <p>The database user specified must have sufficient permissions on the specified schema to update and create tables.
 Specify the User and Schema with these environment variables:</p>
 <blockquote>
@@ -227,7 +227,7 @@ Specify the User and Schema with these environment variables:</p>
 </div></blockquote>
 </div>
 <div class="section" id="database-mysql-8-0-14">
-<span id="mysql"></span><h2>Database - MySQL 8.0.14+<a class="headerlink" href="#database-mysql-8-0-14" title="Permalink to this headline">¶</a></h2>
+<span id="mysql"></span><h2><span class="section-number">3.2. </span>Database - MySQL 8.0.14+<a class="headerlink" href="#database-mysql-8-0-14" title="Permalink to this headline">¶</a></h2>
 <p>STIG Manager has been tested with MySQL 8.0.21.</p>
 <p>The API requires knowledge of 1) the DB address/port, 2) which schema (database) is used for STIG Manager, and 3) User credentials with necessary privileges on that schema. <a class="reference external" href="https://dev.mysql.com/doc/">More information about MySQL.</a></p>
 <div class="admonition note">
@@ -235,20 +235,20 @@ Specify the User and Schema with these environment variables:</p>
 <p>The API includes a database migration function which tracks the database schema version and if necessary can automatically update the schema at launch. The initial run of the API scaffolds all database objects and static data.  Releases that require a database change will include the image label “new-data-migration” with a value that lists the database services affected.</p>
 </div>
 <div class="section" id="configure-mysql">
-<h3>Configure MySQL<a class="headerlink" href="#configure-mysql" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.2.1. </span>Configure MySQL<a class="headerlink" href="#configure-mysql" title="Permalink to this headline">¶</a></h3>
 <p>STIG Manager requires a database schema, and the use of an account with SuperUser privileges on the intended schema:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Create schema - suggested value: stigman</p></li>
 <li><p>Create user - suggested value: stigman</p></li>
-<li><p>Grant User all privileges on created schema (<cite>grant all on *stigman* schema to *stigman* user</cite>).</p></li>
+<li><p>Grant User all privileges on created schema (<code class="docutils literal notranslate"><span class="pre">grant</span> <span class="pre">all</span> <span class="pre">on</span> <span class="pre">*stigman*</span> <span class="pre">schema</span> <span class="pre">to</span> <span class="pre">*stigman*</span> <span class="pre">user</span></code>).</p></li>
 </ul>
 </div></blockquote>
 <p>The above steps are sufficient for a username/password setup, but it is highly recommended that you configure MySQL to use TLS connections.</p>
 </div>
 <div class="section" id="configure-mysql-for-tls">
-<h3>Configure MySQL for TLS<a class="headerlink" href="#configure-mysql-for-tls" title="Permalink to this headline">¶</a></h3>
-<p>Configure MySQL to use TLS by altering the <cite>/etc/mysql/conf.d/tls.cnf</cite> file, specifying the certificates it should use, and requiring TLS connections.</p>
+<h3><span class="section-number">3.2.2. </span>Configure MySQL for TLS<a class="headerlink" href="#configure-mysql-for-tls" title="Permalink to this headline">¶</a></h3>
+<p>Configure MySQL to use TLS by altering the <code class="docutils literal notranslate"><span class="pre">/etc/mysql/conf.d/tls.cnf</span></code> file, specifying the certificates it should use, and requiring TLS connections.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">Sample Configuration</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">mysqld</span><span class="p">]</span>
@@ -261,12 +261,12 @@ Specify the User and Schema with these environment variables:</p>
 </div>
 <p>Place the certificates in the locations specified in the .cnf file. This sample tls.cnf file can be found in our <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager-docker-compose/blob/main/tls/mysql/tls.cnf">sample orchestration repo on GitHub</a>.</p>
 <p>The stigman API user must be altered in MySQL such that it is identified by the subject of the valid X.509 certificate it will use to connect. The following command, customized to suit your certificates, will accomplish this:
-<cite>ALTER USER stigman&#64;’%’ IDENTIFIED BY ‘’ REQUIRE SUBJECT ‘/C=US/ST=California/L=Santa Clara/CN=fake-client’;</cite></p>
+<code class="docutils literal notranslate"><span class="pre">ALTER</span> <span class="pre">USER</span> <span class="pre">stigman&#64;'%'</span> <span class="pre">IDENTIFIED</span> <span class="pre">BY</span> <span class="pre">''</span> <span class="pre">REQUIRE</span> <span class="pre">SUBJECT</span> <span class="pre">'/C=US/ST=California/L=Santa</span> <span class="pre">Clara/CN=fake-client';</span></code></p>
 <p><a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager-docker-compose">A sample orchestration for STIG Manager configured with TLS is available.</a></p>
 <p><a class="reference external" href="https://dev.mysql.com/doc/refman/8.0/en/using-encrypted-connections.html">More information about configuring MySQL to use encrypted connections.</a></p>
 </div>
 <div class="section" id="configure-stig-manager-to-use-your-mysql-database">
-<h3>Configure STIG Manager to use your MySQL Database<a class="headerlink" href="#configure-stig-manager-to-use-your-mysql-database" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.2.3. </span>Configure STIG Manager to use your MySQL Database<a class="headerlink" href="#configure-stig-manager-to-use-your-mysql-database" title="Permalink to this headline">¶</a></h3>
 <p>Specify your MySQL DB with the following Environment Variables:</p>
 <blockquote>
 <div><ul class="simple">
@@ -296,8 +296,8 @@ Specify the User and Schema with these environment variables:</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="logging.html" class="btn btn-neutral float-right" title="STIG Manager Logging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="authentication.html" class="btn btn-neutral float-left" title="Authentication and Identity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="logging.html" class="btn btn-neutral float-right" title="4. STIG Manager Logging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="authentication.html" class="btn btn-neutral float-left" title="2. Authentication and Identity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

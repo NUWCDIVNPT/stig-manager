@@ -52,11 +52,11 @@ By default, most users will have the Collection Creator role, allowing them to c
 
 #. After logging into the system, click the *+Create Collection* item in the Nav Tree on the left.
 
-   .. image:: /assets/images/CreateCollectionNavTree.png
-      :width: 50%
-      :alt: Create a Collection from the Navtree
+.. thumbnail:: /assets/images/nav-tree.png
+      :width: 25% 
       :show_caption: True
-      :title: Create a Collection from the Navtree
+      :title: Navigation Tree
+
 
 #. You will be prompted for your collection name, and some other info. Only a Collection name and Owner are required. (Your Username will be prepopulated as an owner, and you can add other Grants at this time.)  Click "Create" when finished. You will be taken to the Collection Configuration tab for this new Collection. You can access this Collection Configuration tab later using the "Manage" option under your Collection in the Nav Tree.
 

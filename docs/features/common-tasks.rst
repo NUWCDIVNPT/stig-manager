@@ -13,7 +13,7 @@
 Build A Collection with .ckl or XCCDF Files
 ===============================================
 
-Create your Collection and go to it's Collection Management workspace by selecting the "Manage" node for your Collection in the Nav Tree.
+Create your Collection and go to its Collection Management workspace by selecting the "Manage" node for your Collection in the Nav Tree.
 From here, select the "Import CKL or SCAP..." button in the Asset Panel, then check out the :ref:`Collection Builder` portion of our User Guide for more info.
 
 :ref:`Collection Builder` 

@@ -23,7 +23,7 @@ To build the documentation locally:
     - ``recommonmark``
     - ``sphinxcontrib.images``
 
-#. Depending on the OS you are using, build the documentation using make.bat or the Makefile, and specify html as the format: ``./make html``
+#. Depending on the OS you are using, build the documentation using make.bat or the Makefile, and specify html as the format. Windows PowerShell example: ``./make html``
 
 By default, the build product is located in ``_build`` in the docs directory. 
 

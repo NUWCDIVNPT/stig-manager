@@ -15,6 +15,7 @@ These pages describe how to deploy STIG Manager.
 
 .. toctree::
 	:maxdepth: 2
+	:numbered: 4
 	:caption: Contents:
 
 	installation-and-setup

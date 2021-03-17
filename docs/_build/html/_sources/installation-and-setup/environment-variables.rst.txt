@@ -96,7 +96,7 @@ STIG Manager is configured via its Environment Variables:
      - **Default : name** The access token claim whose value is the user's full name
      - API, Client
    * - STIGMAN_JWT_ROLES_CLAIM
-     - **Default : realm_access?.roles** The access token claim whose value is the user's roles
+     - **Default : realm_access.roles** The access token claim whose value is the user's roles
      - API, Client
    * - STIGMAN_JWT_SERVICENAME_CLAIM
      - **Default : clientId** The access token claim whose value is the user's client

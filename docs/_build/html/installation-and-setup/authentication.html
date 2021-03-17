@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Authentication and Identity &mdash; STIG Manager  documentation</title>
+  <title>2. Authentication and Identity &mdash; STIG Manager  documentation</title>
   
 
   
@@ -44,8 +44,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Database" href="db.html" />
-    <link rel="prev" title="STIG Manager OSS Setup and Technical Information" href="installation-and-setup.html" /> 
+    <link rel="next" title="3. Database" href="db.html" />
+    <link rel="prev" title="1. STIG Manager OSS Setup and Technical Information" href="installation-and-setup.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,22 +97,22 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">STIG Manager OSS Setup and Technical Information</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Authentication and Identity</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#json-web-token-requirements">JSON Web Token Requirements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#roles-scopes-and-privileges">Roles, Scopes, and Privileges</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#authentication-redhat-keycloak-11">Authentication - RedHat Keycloak 11+</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#keycloak-configuration">Keycloak Configuration</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configure-stig-manager-to-use-your-authentication-provider">Configure STIG Manager to use your Authentication provider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. Authentication and Identity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#json-web-token-requirements">2.1. JSON Web Token Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#roles-scopes-and-privileges">2.2. Roles, Scopes, and Privileges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#authentication-redhat-keycloak-11">2.3. Authentication - RedHat Keycloak 11+</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#keycloak-configuration">2.3.1. Keycloak Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-stig-manager-to-use-your-authentication-provider">2.3.2. Configure STIG Manager to use your Authentication provider</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="db.html">Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html">STIG Manager Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">STIG Manager TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">Permissions and Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
@@ -183,7 +183,7 @@
         
           <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
         
-      <li>Authentication and Identity</li>
+      <li><span class="section-number">2. </span>Authentication and Identity</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -199,10 +199,10 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="db.html" class="btn btn-neutral float-right" title="Database" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="db.html" class="btn btn-neutral float-right" title="3. Database" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
-        <a href="installation-and-setup.html" class="btn btn-neutral float-left" title="STIG Manager OSS Setup and Technical Information" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation-and-setup.html" class="btn btn-neutral float-left" title="1. STIG Manager OSS Setup and Technical Information" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
       
   </div>
   
@@ -212,42 +212,42 @@
            <div itemprop="articleBody">
             
   <div class="section" id="authentication-and-identity">
-<span id="authentication"></span><h1>Authentication and Identity<a class="headerlink" href="#authentication-and-identity" title="Permalink to this headline">¶</a></h1>
+<span id="authentication"></span><h1><span class="section-number">2. </span>Authentication and Identity<a class="headerlink" href="#authentication-and-identity" title="Permalink to this headline">¶</a></h1>
 <p>The API requires an OAuth2 JSON Web Token (JWT) to determine client and user access.
 - The provided client requires Keycloak to authorize the user and generate this token, but this requirement will be removed in a future release. At that point any OAuth2 Identity provider will be able to be used, as long as the JWT it produces can be configured appropriately.</p>
 <div class="section" id="json-web-token-requirements">
-<h2>JSON Web Token Requirements<a class="headerlink" href="#json-web-token-requirements" title="Permalink to this headline">¶</a></h2>
-<p>The JWT produced by the Identity Provider must provide the following claims, which, aside from “scope,” can be specified in STIGMan’s environment variables if they differ from default values:</p>
+<h2><span class="section-number">2.1. </span>JSON Web Token Requirements<a class="headerlink" href="#json-web-token-requirements" title="Permalink to this headline">¶</a></h2>
+<p>The JWT produced by the Identity Provider should provide the following claims, which can be specified in STIGMan’s environment variables if they differ from default values:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Client Name - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_SERVICENAME_CLAIM</span></code></p></li>
-<li><p>User Roles - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_ROLES_CLAIM</span></code></p></li>
-<li><p>User Name - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_NAME_CLAIM</span></code></p></li>
-<li><p>User Email - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_EMAIL_CLAIM</span></code></p></li>
-<li><p>Scope</p></li>
+<li><p>Username - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> - default <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p></li>
+<li><p>User Roles - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_ROLES_CLAIM</span></code> - <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code></p></li>
+<li><p>User Full Name - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_NAME_CLAIM</span></code> - (optional)``name``</p></li>
+<li><p>User Email - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_EMAIL_CLAIM</span></code> - (optional) <code class="docutils literal notranslate"><span class="pre">email</span></code></p></li>
 </ul>
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Specify the field you would like STIG Manager to use for its User’s names with the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> environment variable. This value defaults to the Keycloak default, which is <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p>
+<p>STIG Manager will use the value specified in the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p>
 </div>
+<p>If you are using a service account to connect to the STIGMan API, the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_SERVICENAME_CLAIM</span></code> Environment Variable must specify the claim that will hold the client ID. The default is <code class="docutils literal notranslate"><span class="pre">clientId</span></code>. There may be other Keycloak configuration required.</p>
 </div>
 <div class="section" id="roles-scopes-and-privileges">
-<h2>Roles, Scopes, and Privileges<a class="headerlink" href="#roles-scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.2. </span>Roles, Scopes, and Privileges<a class="headerlink" href="#roles-scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
 <p>The STIG Manager API restricts endpoint access using the “scope” claims in the JWT. See the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml">API specification</a> for details.</p>
 <p>The guide provided below maps scopes to various Realm Roles that are then assigned to Users.
 These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the <a class="reference external" href="https://www.keycloak.org/documentation">Keycloak Documentation</a> for more information.</p>
 <p>The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the <a class="reference internal" href="installation-and-setup.html#user-roles-privs"><span class="std std-ref">Configure Users</span></a> section of the Setup Guide for more information.</p>
 </div>
 <div class="section" id="authentication-redhat-keycloak-11">
-<span id="keycloak"></span><h2>Authentication - RedHat Keycloak 11+<a class="headerlink" href="#authentication-redhat-keycloak-11" title="Permalink to this headline">¶</a></h2>
+<span id="keycloak"></span><h2><span class="section-number">2.3. </span>Authentication - RedHat Keycloak 11+<a class="headerlink" href="#authentication-redhat-keycloak-11" title="Permalink to this headline">¶</a></h2>
 <p>The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAUth2 JSON Web Tokens (JWTs) issued by the IdP. User roles are extracted from token claims, endpoint access is controlled by token scope.
 Keycloak is readily available, actively maintained by a major OSS vendor, supports Identity Brokering and User Federation, and is used by major DoD projects such as Air Force Iron Bank.
 Keycloak supports many External Identity Providers, but has only been tested using its own authentication.
 <a class="reference external" href="https://www.keycloak.org/documentation">More information about RedHat Keycloak.</a></p>
 <p>A sample Keycloak Realm import file, configured as specified below and containing no users, can be found <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/tree/main/docker/keycloak">in our github repo.</a></p>
 <div class="section" id="keycloak-configuration">
-<h3>Keycloak Configuration<a class="headerlink" href="#keycloak-configuration" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">2.3.1. </span>Keycloak Configuration<a class="headerlink" href="#keycloak-configuration" title="Permalink to this headline">¶</a></h3>
 <p>The following items in the Keycloak installation must be created and configured appropriately, and their values passed to STIG Manager in the appropriate Environment Variable:</p>
 <ul class="simple">
 <li><p>Keycloak Realm - suggested value: stigman</p></li>
@@ -339,7 +339,7 @@ Keycloak supports many External Identity Providers, but has only been tested usi
 <p>For other settings, the default Keycloak settings should work.</p>
 </div>
 <div class="section" id="configure-stig-manager-to-use-your-authentication-provider">
-<h3>Configure STIG Manager to use your Authentication provider<a class="headerlink" href="#configure-stig-manager-to-use-your-authentication-provider" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">2.3.2. </span>Configure STIG Manager to use your Authentication provider<a class="headerlink" href="#configure-stig-manager-to-use-your-authentication-provider" title="Permalink to this headline">¶</a></h3>
 <p>Most commonly, STIG Manager will require the below Environment Variable to be specified, unless their default values are appropriate.  Check the <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> document for an exhaustive list of Environment Variables and their default values.</p>
 <blockquote>
 <div><ul class="simple">
@@ -360,8 +360,8 @@ Keycloak supports many External Identity Providers, but has only been tested usi
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="db.html" class="btn btn-neutral float-right" title="Database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="installation-and-setup.html" class="btn btn-neutral float-left" title="STIG Manager OSS Setup and Technical Information" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="db.html" class="btn btn-neutral float-right" title="3. Database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation-and-setup.html" class="btn btn-neutral float-left" title="1. STIG Manager OSS Setup and Technical Information" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

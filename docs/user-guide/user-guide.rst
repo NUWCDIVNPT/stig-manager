@@ -420,7 +420,7 @@ From this Workspace, the User can:
 
 Collection Properties Panel
 --------------------------------
-This Panel allows Collection Managers and Owners to change the name of the Asset, it's workflow, and any associated Metadata.  Collection Owners can also delete this Collection. 
+This Panel allows Collection Managers and Owners to change the name of the Asset, its workflow, and any associated Metadata.  Collection Owners can also delete this Collection. 
 
 .. thumbnail:: /assets/images/collection-properties.png
       :width: 50% 
@@ -506,8 +506,6 @@ The Asset Name must match exactly.
 Collection Builder Process
 ++++++++++++++++++++++++++++++++++++
 
-.. todo::
-   walkthrough the bulk import process here.
 
 From the Collection Management workspace, click the "Import CKL or SCAP..." button at the top of the Assets panel .
 

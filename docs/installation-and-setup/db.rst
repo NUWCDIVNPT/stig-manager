@@ -41,14 +41,14 @@ STIG Manager requires a database schema, and the use of an account with SuperUse
 
   * Create schema - suggested value: stigman
   * Create user - suggested value: stigman
-  * Grant User all privileges on created schema (`grant all on *stigman* schema to *stigman* user`). 
+  * Grant User all privileges on created schema (``grant all on *stigman* schema to *stigman* user``). 
 
 The above steps are sufficient for a username/password setup, but it is highly recommended that you configure MySQL to use TLS connections.
 
 Configure MySQL for TLS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configure MySQL to use TLS by altering the `/etc/mysql/conf.d/tls.cnf` file, specifying the certificates it should use, and requiring TLS connections.
+Configure MySQL to use TLS by altering the ``/etc/mysql/conf.d/tls.cnf`` file, specifying the certificates it should use, and requiring TLS connections.
 
 .. code-block::
   :caption: Sample Configuration
@@ -62,7 +62,7 @@ Configure MySQL to use TLS by altering the `/etc/mysql/conf.d/tls.cnf` file, spe
 Place the certificates in the locations specified in the .cnf file. This sample tls.cnf file can be found in our `sample orchestration repo on GitHub <https://github.com/NUWCDIVNPT/stig-manager-docker-compose/blob/main/tls/mysql/tls.cnf>`_.
 
 The stigman API user must be altered in MySQL such that it is identified by the subject of the valid X.509 certificate it will use to connect. The following command, customized to suit your certificates, will accomplish this:
-`ALTER USER stigman@'%' IDENTIFIED BY '' REQUIRE SUBJECT '/C=US/ST=California/L=Santa Clara/CN=fake-client';`
+``ALTER USER stigman@'%' IDENTIFIED BY '' REQUIRE SUBJECT '/C=US/ST=California/L=Santa Clara/CN=fake-client';``
 
 `A sample orchestration for STIG Manager configured with TLS is available. <https://github.com/NUWCDIVNPT/stig-manager-docker-compose>`_
 
