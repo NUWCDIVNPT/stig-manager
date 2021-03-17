@@ -11,7 +11,7 @@ The [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/i
 * [Admin Walkthrough](https://stig-manager.readthedocs.io/en/latest/admin-guide/admin-quickstart.html)
 * [Setup and Technical Information](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/installation-and-setup.html)
 * [Environment Variable Reference](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/environment-variables.html)
-* [Release Notes](https://stig-manager.readthedocs.io/en/latest/release-notes.html)
+* [Release Notes](https://github.com/NUWCDIVNPT/stig-manager/blob/main/release-notes.rst)
 
 
 
