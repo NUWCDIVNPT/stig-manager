@@ -15,6 +15,7 @@ These pages describes the Admin-level functions of STIG Manager.
 
 .. toctree::
 	:maxdepth: 2
+	:numbered: 4
 	:caption: Contents:
 
 	admin-quickstart

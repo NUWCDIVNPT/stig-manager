@@ -31,7 +31,7 @@ The STIG Manager API restricts endpoint access using the "scope" claims in the J
 The guide provided below maps scopes to various Realm Roles that are then assigned to Users. 
 These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the `Keycloak Documentation <https://www.keycloak.org/documentation>`_ for more information. 
 
-The Roles provided in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the :ref:`user-roles-privs` section of the Setup Guide for more information. 
+The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the :ref:`user-roles-privs` section of the Setup Guide for more information. 
 
 
 .. _keycloak:

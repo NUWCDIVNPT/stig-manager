@@ -5,7 +5,7 @@ STIG Manager Administrator Walkthrough
 ########################################
 
 
-This Admin Walkthrough will walk you through typical responsibilities for a STIG Manager User with the Administrator role.
+This Admin Walkthrough will walk you through typical responsibilities for a STIG Manager User with the Administrator role. This Walkthrough assumes you are familiar with the terms and features specified in the :ref:`user-guide-doc`.
 Beyond the permissions granted to normal Users, Administrators have the ability to:
 
    * Update STIGs and SCAP Benchmarks in STIG Manager
@@ -15,13 +15,13 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
 
 
 .. ATTENTION::
-   Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, User, Collection Creator, Global Access). Creating users and assigning Roles can only be done from the Keycloak Realm Management interface, and you must have the proper permissions in Keycloak to do this.
+   Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, User, Collection Creator, Global Access). Creating users and assigning Roles can only be done from the Keycloak Management Console, and you must have the proper permissions in Keycloak to do this.
 
 
 Administrator Menu
 =======================
 
-Administrators in STIG Manager have access to 4 additional Administration tabs that other users do not.
+Administrators in STIG Manager have access to 4 additional Administration tabs that other users do not, accessible from the Navigation Tree.
 
 Collections Tab
 ---------------------------
@@ -79,6 +79,12 @@ This tab shows you a list of STIGs known to this instance of STIG Manager along 
    :show_caption: True
    :alt: STIG Admin
    :title: STIG Admin
+
+
+|
+
+Click the "Import STIGs" button to be prompted to select a file for import. 
+
 
 
 --------------------------------------------------
