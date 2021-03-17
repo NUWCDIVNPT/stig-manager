@@ -6,20 +6,32 @@ Authentication and Identity
 
 
 The API requires an OAuth2 JSON Web Token (JWT) to determine client and user access.  
-The provided client requires Keycloak to authorize the user and generate this token, but this requirement will be removed in a future release. At that point any OAuth2 Identity provider will be able to be used, as long as the JWT it produces can be configured appropriately.
+- The provided client requires Keycloak to authorize the user and generate this token, but this requirement will be removed in a future release. At that point any OAuth2 Identity provider will be able to be used, as long as the JWT it produces can be configured appropriately.
 
 JSON Web Token Requirements
 ----------------------------------
 
-The JWT produced by the Identity Provider must provide the following claims, which must be specified in STIGMan's environment variables if they differ from default values:
+The JWT produced by the Identity Provider must provide the following claims, which, aside from "scope," can be specified in STIGMan's environment variables if they differ from default values:
 
     * Client Name - ``STIGMAN_JWT_SERVICENAME_CLAIM``
     * User Roles - ``STIGMAN_JWT_ROLES_CLAIM``
     * User Name - ``STIGMAN_JWT_NAME_CLAIM``
     * User Email - ``STIGMAN_JWT_EMAIL_CLAIM``
+    * Scope
 
 .. note::
   Specify the field you would like STIG Manager to use for its User's names with the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable. This value defaults to the Keycloak default, which is ``preferred_username``
+
+
+Roles, Scopes, and Privileges
+---------------------------------
+
+The STIG Manager API restricts endpoint access using the "scope" claims in the JWT. See the `API specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ for details. 
+
+The guide provided below maps scopes to various Realm Roles that are then assigned to Users. 
+These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the `Keycloak Documentation <https://www.keycloak.org/documentation>`_ for more information. 
+
+The Roles provided in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the :ref:`user-roles-privs` section of the Setup Guide for more information. 
 
 
 .. _keycloak:

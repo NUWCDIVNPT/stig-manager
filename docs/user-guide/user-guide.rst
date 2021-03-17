@@ -18,7 +18,7 @@ Please see the :ref:`admin-guide-doc` for Administrative functions.
 .. raw:: html
 
   <video width="480"  controls>
-    <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+    <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
   Your browser does not support the video tag.
   </video>
 

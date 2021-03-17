@@ -176,7 +176,7 @@ First Steps
 
 .. _Adding Users:
 .. _Add Users:
-
+.. _user-roles-privs:
 
 Configure Users
 --------------------------
@@ -187,21 +187,29 @@ Assign Users the appropriate roles. In Keycloak, this can be done using the "Rol
 
 Assign at least one User the ``admin`` role when setting up STIG Manager for the first time. 
 
-.. list-table:: Keycloak User Types and Roles: 
-  :widths: 20 70
+.. list-table:: STIG Manager User Types, STIG Manager Privileges, and the required Roles: 
+  :widths: 20 60 20
   :header-rows: 1
   :class: tight-table
 
   * - User Type
-    - Keycloak Roles
-  * - Administrator
+    - Privileges
+    - Roles
+  * - Administrator User
+    - Access STIG Manager, Manage Collections, Import STIGs, Manage Users, Import/Export App data
     - admin, user
   * - Collection Creator User
+    - Access STIG Manager, Create Collections
     - user, create_collection
   * - Restricted User  
+    - Access STIG Manager
     - user
   * - Global Access User
+    - Access STIG Manager, Access to ALL Collection data
     - user, global_access
+
+.. note::
+   All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to Collections.  The exception to this rule is the "Global Access" privilege type, which has access to all Collection data. This privilege should only be granted with great care, and is a candidate for removal in future versions of STIGMan. 
 
 
 It is recommended that most users should be "Collection Creator Users"(ie. assigned the "user" and "create_collection" roles). A Restricted User will only have access to grants they have been assigned by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
