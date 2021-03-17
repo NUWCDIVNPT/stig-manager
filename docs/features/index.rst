@@ -6,8 +6,6 @@ Introduction and Features
 
 .. _Introduction:
 
-Introduction
-==============
 
 What is STIG Manager?
 ======================
@@ -18,12 +16,8 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
 
 
 
-
-RMF Process Support
-=========================================
-
 The Single Source of Truth throughout Steps 3 and 4 of the RMF Process
-------------------------------------------------------------------------------------
+===========================================================================================
 
 Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it's progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.
 
@@ -33,11 +27,16 @@ STIG Manager provides data structures, assessment workspaces, and Reports for ma
 .. raw:: html
 
   <video width="480"  controls>
-    <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+    <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
   Your browser does not support the video tag.
   </video>
 
 --------------------
+
+
+Features and Capabilities Overview
+====================================
+
 
 RMF Package data represented as Collections, Assets, STIGs, and Reviews
 ----------------------------------------------------------------------------------
@@ -62,7 +61,7 @@ Migrating to STIG Manager is easy because it can use your existing artifacts to 
 .. raw:: html
 
   <video width="480"  controls>
-    <source src="./_static/videos/Collections.mp4" type="video/mp4">
+    <source src="../_static/videos/Collections.mp4" type="video/mp4">
   Your browser does not support the video tag.
   </video>
 
@@ -77,7 +76,7 @@ The STIG Manager Client provides efficient workspaces for creating Collections o
 .. raw:: html
 
   <video width="480"  controls>
-    <source src="./_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
+    <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
   Your browser does not support the video tag.
   </video>
 
@@ -120,33 +119,8 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
 
 .. _features-doc:
 
-Feature List
-==================
-
-.. meta::
-  :description: These pages describes STIG Manager OSS features.
-
-These pages describes STIG Manager OSS features
-
-.. note::
-   This section is still under development.
 
 
-
-
-Features and Capabilities Overview
-====================================
-
-"A new way to think about STIG compliance"
-
-Watch a quick tour of STIG Manager's features 
-
-.. raw:: html
-
-  <video width="480"  controls>
-    <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-  </video>
 
 
 

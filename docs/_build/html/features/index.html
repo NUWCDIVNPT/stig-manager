@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta content="These pages describes STIG Manager OSS features." name="description" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Introduction and Features &mdash; STIG Manager  documentation</title>
@@ -97,10 +96,9 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction and Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-stig-manager">What is STIG Manager?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rmf-process-support">RMF Process Support</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">The Single Source of Truth throughout Steps 3 and 4 of the RMF Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">The Single Source of Truth throughout Steps 3 and 4 of the RMF Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features-and-capabilities-overview">Features and Capabilities Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews">RMF Package data represented as Collections, Assets, STIGs, and Reviews</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#create-collections-from-your-existing-ckl-files">Create Collections From Your Existing .CKL Files</a></li>
 </ul>
@@ -113,8 +111,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach">STIG Manager integrates with the RMF Lifecycle approach</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#feature-list">Feature List</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#features-and-capabilities-overview">Features and Capabilities Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#collaborate-on-steps-3-and-4-of-the-rmf-process">Collaborate on Steps 3 and 4 of the RMF Process</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#workspaces">Workspaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#collection-builder">Collection Builder</a></li>
@@ -222,25 +218,22 @@
             
   <div class="section" id="introduction-and-features">
 <span id="features-index"></span><h1>Introduction and Features<a class="headerlink" href="#introduction-and-features" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="introduction">
-<span id="id1"></span><h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-</div>
 <div class="section" id="what-is-stig-manager">
-<h2>What is STIG Manager?<a class="headerlink" href="#what-is-stig-manager" title="Permalink to this headline">¶</a></h2>
+<span id="introduction"></span><h2>What is STIG Manager?<a class="headerlink" href="#what-is-stig-manager" title="Permalink to this headline">¶</a></h2>
 <p>STIG Manager is an Open Source API and Web client for managing the assessment of Information Systems for compliance with <a class="reference external" href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a class="reference external" href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG) in the XCCDF format.</p>
 <p>Our Project incorporates software developed since 2012 by the <a class="reference external" href="https://www.navsea.navy.mil/Home/Warfare-Centers/NUWC-Newport/">U.S. Naval Undersea Warfare Center Division Newport (NUWCDIVNPT)</a>. More information, and the software itself, is available on GitHub: <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager</a></p>
 </div>
-<div class="section" id="rmf-process-support">
-<h2>RMF Process Support<a class="headerlink" href="#rmf-process-support" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">
-<h3>The Single Source of Truth throughout Steps 3 and 4 of the RMF Process<a class="headerlink" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h3>
+<h2>The Single Source of Truth throughout Steps 3 and 4 of the RMF Process<a class="headerlink" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h2>
 <p>Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it’s progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.</p>
 <p>STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.</p>
 <video width="480"  controls>
-  <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
+  <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
 Your browser does not support the video tag.
 </video></div>
 <hr class="docutils" />
+<div class="section" id="features-and-capabilities-overview">
+<h2>Features and Capabilities Overview<a class="headerlink" href="#features-and-capabilities-overview" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="rmf-package-data-represented-as-collections-assets-stigs-and-reviews">
 <h3>RMF Package data represented as Collections, Assets, STIGs, and Reviews<a class="headerlink" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews" title="Permalink to this headline">¶</a></h3>
 <p>STIG Manager’s primary organizational structure is the Collection. A Collection can be created to mirror components of an RMF Package, requirements identified in a Security Assessment Plan, or an entirely different principle that may be more convenient, such as by an organization’s Lab or by Asset OS.</p>
@@ -262,7 +255,7 @@ Your browser does not support the video tag.
 <p>STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an asset, and will create new .ckls for you on demand with the most current results.</p>
 </div>
 <video width="480"  controls>
-  <source src="./_static/videos/Collections.mp4" type="video/mp4">
+  <source src="../_static/videos/Collections.mp4" type="video/mp4">
 Your browser does not support the video tag.
 </video></div>
 </div>
@@ -271,7 +264,7 @@ Your browser does not support the video tag.
 <h3>Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data<a class="headerlink" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data" title="Permalink to this headline">¶</a></h3>
 <p>The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection.</p>
 <video width="480"  controls>
-  <source src="./_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
+  <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
 Your browser does not support the video tag.
 </video></div>
 <hr class="docutils" />
@@ -298,24 +291,8 @@ Your browser does not support the video tag.
 <p>STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the implementation of the “Continuous” Workflow, STIG Manager will play a vital part of the RMF lifecycle.  When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.</p>
 </div>
 </div>
-<div class="section" id="feature-list">
-<span id="features-doc"></span><h2>Feature List<a class="headerlink" href="#feature-list" title="Permalink to this headline">¶</a></h2>
-<p>These pages describes STIG Manager OSS features</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This section is still under development.</p>
-</div>
-</div>
-<div class="section" id="features-and-capabilities-overview">
-<h2>Features and Capabilities Overview<a class="headerlink" href="#features-and-capabilities-overview" title="Permalink to this headline">¶</a></h2>
-<p>“A new way to think about STIG compliance”</p>
-<p>Watch a quick tour of STIG Manager’s features</p>
-<video width="480"  controls>
-  <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video></div>
 <div class="section" id="collaborate-on-steps-3-and-4-of-the-rmf-process">
-<h2>Collaborate on Steps 3 and 4 of the RMF Process<a class="headerlink" href="#collaborate-on-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h2>
+<span id="features-doc"></span><h2>Collaborate on Steps 3 and 4 of the RMF Process<a class="headerlink" href="#collaborate-on-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h2>
 <p>Collaborate on STIG Evaluation and management. Make use of others expertise.</p>
 <p>Collaboratively manage your STIG assessments.</p>
 <p>Single source of truth for all parties to reference.</p>
