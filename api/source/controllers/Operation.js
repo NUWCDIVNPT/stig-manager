@@ -1,5 +1,4 @@
 const writer = require('../utils/writer.js')
-const {promises: fs} = require('fs')
 const config = require('../utils/config')
 const Operation = require(`../service/${config.database.type}/OperationService`)
 const Asset = require(`./Asset`)
@@ -90,7 +89,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
     let appdata
     if ( elevate ) {
       if (req.file && (req.file.mimetype === 'application/json' || req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') ) {
-        let data = await fs.readFile(req.file.path)
+        let data = req.file.buffer
         if (req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') {
           let zipIn = new JSZip()
           let contents = await zipIn.loadAsync(data)
@@ -115,10 +114,5 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
   }
   catch (err) {
     writer.writeJson(res, err)
-  }
-  finally {
-    if (req.file && req.file.path) {
-      fs.unlink(req.file.path)
-    }
   }
 }
