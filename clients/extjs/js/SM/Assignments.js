@@ -6,7 +6,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
       let collectionId = this.collectionId
       let config = {
           autoScroll: true,
-          title: 'Collection Resources',
           bodyStyle: 'padding:5px;',
           minSize: 220,
           root: {
@@ -314,7 +313,6 @@ SM.AssignmentAddBtn = Ext.extend(Ext.Button, {
     let grid = this.grid
     let config = {
       disabled: true,
-      text: 'Add Assignment ',
       height: 30,
       width: 150,
       margins: "10 10 10 10",
@@ -340,7 +338,6 @@ SM.AssignmentRemoveBtn = Ext.extend(Ext.Button, {
     let grid = this.grid
     let config = {
       disabled: true,
-      text: 'Remove Assignment ',
       height: 30,
       width: 150,
       margins: "10 10 10 10",
@@ -441,7 +438,6 @@ SM.AssignmentGrid = Ext.extend(Ext.grid.GridPanel, {
       disabled: false,
       getName: function() {return this.name},
       validate: function() { return true},
-      title: 'Asset-STIG Assignments',
       // width: me.width || 400,
       store: assignmentStore,
       view: new Ext.grid.GridView({
@@ -480,21 +476,25 @@ SM.AssignmentPanel = Ext.extend(Ext.Panel, {
     let me = this
     const navTree = new SM.AssignmentNavTree({
       panel: this,
+      title: 'Collection Resources',
       width: 300,
       collectionId: this.collectionId
     })
     const assignGrid = new SM.AssignmentGrid({
       panel: this,
+      title: 'Asset-STIG Assignments',
       flex: 1
     })
     this.assignmentGrid = assignGrid
     const addBtn = new SM.AssignmentAddBtn({
       tree: navTree,
+      text: 'Add Assignment ',
       grid: assignGrid
     })
     this.addButton = addBtn
     const removeBtn = new SM.AssignmentRemoveBtn({
       tree: navTree,
+      text: 'Remove Assignment ',
       grid: assignGrid
     })
     this.removeButton = removeBtn

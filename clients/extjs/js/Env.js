@@ -1,7 +1,7 @@
 Ext.ns('STIGMAN')
 
 STIGMAN.Env = {
-    version: '1.0.0-beta.3',
+    version: "1.0.0-beta.21" || "1",
     apiBase: "/api" || "../api",
     commit: {
         branch: "" || "na",

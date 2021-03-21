@@ -178,24 +178,75 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/assets/{assetId}/checklists':
+    parameters:
+      - name: assetId
+        in: path
+        description: A path parameter that identifies an Asset
+        required: true
+        schema:
+          type: string
+      - name: benchmarkId
+        in: query
+        description: Identifies a STIG. Default is all mapped STIGs.
+        schema:
+          type: array
+          items:
+            type: string
+    get:
+      tags:
+        - Asset
+      summary: Return a multi-STIG CKL for an Asset and its mapped STIGs
+      operationId: getChecklistByAsset
+      # parameters:
+      # - name: format
+      #   in: query
+      #   description: The format of the response. Default if missing is 'json'
+      #   schema:
+      #     type: string
+      #     default: json
+      #     enum:
+      #       - json
+      #       - ckl
+      responses:
+        '200':
+          description: Review response
+          content:
+            # application/json:
+            #   schema:
+            #     type: array
+            #     items:
+            #       $ref: '#/components/schemas/ChecklistAssetStigs'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ChecklistCkl'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/assets/{assetId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
       - name: assetId
         in: path
-        description: A path parameter that indentifies an Asset
+        description: A path parameter that identifies an Asset
         required: true
         schema:
           type: string
       - name: benchmarkId
         in: path
-        description: A path parameter that indentifies a STIG
+        description: A path parameter that identifies a STIG
         required: true
         schema:
           type: string
       - name: revisionStr
         in: path
         description: >-
-          A path parameter that indentifies a STIG revision [
+          A path parameter that identifies a STIG revision [
           V{version_num}R{release_num} | 'latest' ]
         required: true
         schema:
@@ -204,7 +255,7 @@ paths:
     get:
       tags:
         - Asset
-      summary: Return the Checklist for the supplied Asset and STIG
+      summary: Return JSON or a CKL file for an Asset and STIG
       operationId: getChecklistByAssetStig
       parameters:
         - name: format
@@ -669,14 +720,14 @@ paths:
       - $ref: '#/components/parameters/CollectionIdPath'
       - name: benchmarkId
         in: path
-        description: A path parameter that indentifies a STIG
+        description: A path parameter that identifies a STIG
         required: true
         schema:
           type: string
       - name: revisionStr
         in: path
         description: >-
-          A path parameter that indentifies a STIG revision [
+          A path parameter that identifies a STIG revision [
           V{version_num}R{release_num} | 'latest' ]
         required: true
         schema:
@@ -1082,6 +1133,8 @@ paths:
   '/collections/{collectionId}/status':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+      - $ref: '#/components/parameters/AssetIdQuery'
     get:
       tags:
         - Collection
@@ -1107,7 +1160,6 @@ paths:
             - 'stig-manager:collection:read'
   '/collections/{collectionId}/stigs':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
     get:
       tags:
@@ -1122,7 +1174,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/STIG'
+                  $ref: '#/components/schemas/CollectionStig'
         default:
           description: unexpected error
           content:
@@ -1359,7 +1411,7 @@ paths:
       parameters:
         - name: cci
           in: path
-          description: A path parameter that indentifies a CCI
+          description: A path parameter that identifies a CCI
           required: true
           schema:
             type: string
@@ -1393,7 +1445,7 @@ paths:
         - $ref: '#/components/parameters/RuleProjectionQuery'
         - name: ruleId
           in: path
-          description: A path parameter that indentifies a Rule
+          description: A path parameter that identifies a Rule
           required: true
           schema:
             type: string
@@ -1422,7 +1474,7 @@ paths:
       parameters:
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
@@ -1450,7 +1502,7 @@ paths:
       parameters:
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
@@ -1481,7 +1533,7 @@ paths:
       parameters:
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
@@ -1512,14 +1564,14 @@ paths:
       parameters:
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1549,14 +1601,14 @@ paths:
       parameters:
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1589,14 +1641,14 @@ paths:
       parameters:
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1630,14 +1682,14 @@ paths:
         - $ref: '#/components/parameters/GroupProjectionQuery'
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1674,14 +1726,14 @@ paths:
         - $ref: '#/components/parameters/GroupProjectionQuery'
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1689,7 +1741,7 @@ paths:
             type: string
         - name: groupId
           in: path
-          description: A path parameter that indentifies a Group
+          description: A path parameter that identifies a Group
           required: true
           schema:
             type: string
@@ -1719,14 +1771,14 @@ paths:
         - $ref: '#/components/parameters/RuleProjectionQuery'
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1760,14 +1812,14 @@ paths:
         - $ref: '#/components/parameters/RuleProjectionQuery'
         - name: benchmarkId
           in: path
-          description: A path parameter that indentifies a STIG
+          description: A path parameter that identifies a STIG
           required: true
           schema:
             type: string
         - name: revisionStr
           in: path
           description: >-
-            A path parameter that indentifies a STIG revision [
+            A path parameter that identifies a STIG revision [
             V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
@@ -1775,7 +1827,7 @@ paths:
             type: string
         - name: ruleId
           in: path
-          description: A path parameter that indentifies a Rule
+          description: A path parameter that identifies a Rule
           required: true
           schema:
             type: string
@@ -2089,6 +2141,12 @@ components:
                   type: integer
                 stigAssignedCount:
                   type: integer
+                ruleCount:
+                  type: integer
+                acceptedCount:
+                  type: integer
+                submittedCount:
+                  type: integer
             stigs:
               type: array
               description: The benchmarkIds mapped to this Asset
@@ -2219,28 +2277,39 @@ components:
         content:
           type: string
     ChecklistAssetStig:
+      type: array
+      items:
+        type: object
+        properties:
+          ruleId:
+            type: string
+          ruleTitle:
+            type: string
+          groupId:
+            type: string
+          groupTitle:
+            type: string
+          severity:
+            $ref: '#/components/schemas/RuleSeverity'
+          autoCheckAvailable:
+            type: boolean
+          result:
+            $ref: '#/components/schemas/ChecklistResult'
+          autoResult:
+            type: boolean
+          status:
+            $ref: '#/components/schemas/ChecklistStatus'
+          reviewComplete:
+            type: boolean
+    ChecklistAssetStigs:
       type: object
       properties:
-        ruleId:
+        benchmarkId:
           type: string
-        ruleTitle:
+        revisionStr:
           type: string
-        groupId:
-          type: string
-        groupTitle:
-          type: string
-        severity:
-          $ref: '#/components/schemas/RuleSeverity'
-        autoCheckAvailable:
-          type: boolean
-        result:
-          $ref: '#/components/schemas/ChecklistResult'
-        autoResult:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ChecklistStatus'
-        reviewComplete:
-          type: boolean
+        checklist:
+          $ref: '#/components/schemas/ChecklistAssetStig'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -2270,49 +2339,51 @@ components:
           type: object
           properties:
             iSTIG:
-              type: object
-              properties:
-                STIG_INFO:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      SI_DATA:
-                        type: object
-                        properties:
-                          SID_NAME:
-                            type: string
-                          SID_DATA:
-                            type: string
-                VULN:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      STIG_DATA:
-                        type: array
-                        items:
+              type: array
+              items:
+                type: object
+                properties:
+                  STIG_INFO:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        SI_DATA:
                           type: object
                           properties:
-                            VULN_ATTRIBUTE:
+                            SID_NAME:
                               type: string
-                            ATTRIBUTE_DATA:
+                            SID_DATA:
                               type: string
-                      STATUS:
-                        type: string
-                        enum:
-                          - Open
-                          - NotAFinding
-                          - Not_Applicable
-                          - Not_Reviewed
-                      FINDING_DETAILS:
-                        type: string
-                      COMMENTS:
-                        type: string
-                      SEVERITY_OVERRIDE:
-                        type: string
-                      SEVERITY_JUSTIFICATION:
-                        type: string
+                  VULN:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        STIG_DATA:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              VULN_ATTRIBUTE:
+                                type: string
+                              ATTRIBUTE_DATA:
+                                type: string
+                        STATUS:
+                          type: string
+                          enum:
+                            - Open
+                            - NotAFinding
+                            - Not_Applicable
+                            - Not_Reviewed
+                        FINDING_DETAILS:
+                          type: string
+                        COMMENTS:
+                          type: string
+                        SEVERITY_OVERRIDE:
+                          type: string
+                        SEVERITY_JUSTIFICATION:
+                          type: string
     ChecklistCollectionStig:
       type: object
       properties:
@@ -2511,6 +2582,27 @@ components:
         total:
           type: integer
         auto:
+          type: integer
+    CollectionStig:
+      type: object
+      properties:
+        benchmarkId:
+          type: string
+        title:
+          type: string
+        lastRevisionStr:
+          type: string
+        lastRevisionDate:
+          type: string
+        ruleCount:
+          type: integer
+        assetCount:
+          type: integer
+        acceptedCount:
+          type: integer
+        submittedCount:
+          type: integer
+        savedCount:
           type: integer
     CollectionUpdate:
       additionalProperties: false
@@ -3081,14 +3173,14 @@ components:
     AssetIdPath:
       name: assetId
       in: path
-      description: A path parameter that indentifies an Asset
+      description: A path parameter that identifies an Asset
       required: true
       schema:
         type: string
     AssetIdQuery:
       name: assetId
       in: query
-      description: A query parameter that indentifies an Asset
+      description: A query parameter that identifies an Asset
       schema:
         type: string
     AssetProjectionQuery:
@@ -3109,27 +3201,27 @@ components:
     BenchmarkIdPath:
       name: benchmarkId
       in: path
-      description: A path parameter that indentifies a STIG
+      description: A path parameter that identifies a STIG
       required: true
       schema:
         type: string
     BenchmarkIdQuery:
       name: benchmarkId
       in: query
-      description: A query parameter that indentifies a STIG
+      description: A query parameter that identifies a STIG
       schema:
         type: string
     CciPath:
       name: cci
       in: path
-      description: A path parameter that indentifies a CCI
+      description: A path parameter that identifies a CCI
       required: true
       schema:
         type: string
     CciQuery:
       name: cci
       in: query
-      description: A query parameter that indentifies a CCI
+      description: A query parameter that identifies a CCI
       schema:
         type: string
     ChecklistProjectionQuery:
@@ -3152,14 +3244,14 @@ components:
     CollectionIdPath:
       name: collectionId
       in: path
-      description: A path parameter that indentifies a Collection
+      description: A path parameter that identifies a Collection
       required: true
       schema:
         type: string
     CollectionIdQuery:
       name: collectionId
       in: query
-      description: A query parameter that indentifies a Collection
+      description: A query parameter that identifies a Collection
       schema:
         type: string
     CollectionMetadataQuery:
@@ -3251,14 +3343,14 @@ components:
     GroupIdPath:
       name: groupId
       in: path
-      description: A path parameter that indentifies a Group
+      description: A path parameter that identifies a Group
       required: true
       schema:
         type: string
     GroupIdQuery:
       name: groupId
       in: query
-      description: A query parameter that indentifies a Group
+      description: A query parameter that identifies a Group
       schema:
         type: string
     GroupProjectionQuery:
@@ -3350,7 +3442,7 @@ components:
       name: revisionStr
       in: path
       description: >-
-        A path parameter that indentifies a STIG revision [
+        A path parameter that identifies a STIG revision [
         V{version_num}R{release_num} | 'latest' ]
       required: true
       schema:
@@ -3368,7 +3460,7 @@ components:
     RuleIdPath:
       name: ruleId
       in: path
-      description: A path parameter that indentifies a Rule
+      description: A path parameter that identifies a Rule
       required: true
       schema:
         type: string
@@ -3428,14 +3520,14 @@ components:
     UserIdPath:
       name: userId
       in: path
-      description: A path parameter that indentifies a User
+      description: A path parameter that identifies a User
       required: true
       schema:
         type: string
     UserIdQuery:
       name: userId
       in: query
-      description: A path parameter that indentifies a User
+      description: A path parameter that identifies a User
       schema:
         type: string
     UsernameQuery:

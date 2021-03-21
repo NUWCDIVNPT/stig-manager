@@ -1,10 +1,38 @@
-// Lower default z-index value from 11000 to 9000
+// replace 'window' with 'node' as scope: this.directFn.apply(node, args);
 // Source: carl.a.smigielski@saic.com
-Ext.override(Ext.Layer, {
-    getZIndex: function(){
-        return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 9000;
+Ext.override(Ext.tree.TreeLoader, {
+    requestData : function(node, callback, scope){
+        if(this.fireEvent("beforeload", this, node, callback) !== false){
+            if(this.directFn){
+                var args = this.getParams(node);
+                args.push(this.processDirectResponse.createDelegate(this, [{callback: callback, node: node, scope: scope}], true));
+                this.directFn.apply(node, args);
+            }else{
+                this.transId = Ext.Ajax.request({
+                    method:this.requestMethod,
+                    url: this.dataUrl||this.url,
+                    success: this.handleResponse,
+                    failure: this.handleFailure,
+                    scope: this,
+                    argument: {callback: callback, node: node, scope: scope},
+                    params: this.getParams(node)
+                });
+            }
+        }else{
+            // if the load is cancelled, make sure we notify
+            // the node that we are done
+            this.runCallback(callback, scope || node, []);
+        }
     }
-});
+})
+
+// // Lower default z-index value from 11000 to 9000
+// // Source: carl.a.smigielski@saic.com
+// Ext.override(Ext.Layer, {
+//     getZIndex: function(){
+//         return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 9000;
+//     }
+// });
 
 // Prevent changing readOnly checkboxes
 // Source: https://forum.sencha.com/forum/showthread.php?90531-Readonly-Checkbox-Override

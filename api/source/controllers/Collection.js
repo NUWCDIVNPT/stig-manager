@@ -178,9 +178,11 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
 module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value
+    const benchmarkId = req.swagger.params['benchmarkId'].value
+    const assetId = req.swagger.params['assetId'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
-      const response = await Collection.getStatusByCollection( collectionId, req.userObject )
+      const response = await Collection.getStatusByCollection( collectionId, assetId, benchmarkId, req.userObject )
       writer.writeJson(res, response)
     }
     else {
@@ -214,10 +216,9 @@ module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCol
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value
-    const elevate = req.swagger.params['elevate'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
-      const response = await Collection.getStigsByCollection( collectionId, elevate, req.userObject )
+    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+      const response = await Collection.getStigsByCollection( collectionId, false, req.userObject )
       writer.writeJson(res, response)
       }
     else {

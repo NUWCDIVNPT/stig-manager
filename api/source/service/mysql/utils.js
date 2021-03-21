@@ -167,16 +167,23 @@ module.exports.parseRevisionStr = function (revisionStr) {
 }
 
 // Returns Boolean
-module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate, userObject) {
+module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkIds, elevate, userObject) {
   try {
     let sql
+    let rows
     if (userObject.privileges.globalAccess) {
-      return true
+      sql = `select
+        distinct sa.benchmarkId
+      from
+        stig_asset_map sa
+      where
+        sa.assetId = ?`
+
+      ;[rows] = await _this.pool.query(sql, [assetId])
     } 
     else {
       sql = `select
-        distinct sa.benchmarkId,
-        sa.assetId
+        distinct sa.benchmarkId
       from
         stig_asset_map sa
         left join asset a on sa.assetId = a.assetId
@@ -184,13 +191,12 @@ module.exports.userHasAssetStig = async function (assetId, benchmarkId, elevate,
         left join user_stig_asset_map usa on sa.saId = usa.saId
       where
         cg.userId = ?
-        and sa.benchmarkId = ?
         and sa.assetId = ?
         and (cg.accessLevel >= 2 or (cg.accessLevel = 1 and usa.userId = cg.userId))`
-
-      let [rows] = await _this.pool.query(sql, [userObject.userId, benchmarkId, assetId])
-      return rows.length > 0   
+      ;[rows] = await _this.pool.query(sql, [userObject.userId, assetId])
     }
+    const availableBenchmarkIds = rows.map( row => row.benchmarkId )
+    return requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))   
   }
   catch (e) {
     throw (e)
@@ -370,6 +376,15 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
         mediumCount = VALUES(mediumCount),
         lowCount = VALUES(lowCount)
     `
+    const sqlIntegrity = `
+      DELETE
+        sas 
+      FROM
+        stats_asset_stig sas
+        left join stig_asset_map sam on sas.assetId = sam.assetId and sas.benchmarkId = sam.benchmarkId
+      WHERE
+        sam.assetId is null
+    `
     let results;
     [results] = await connection.query(sqlSelect, binds)
 
@@ -377,6 +392,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       let bindsUpsert = results.map( r => Object.values(r))
       let stats;
       [stats] = await connection.query(sqlUpsert, [bindsUpsert])
+      await connection.query(sqlIntegrity)
       return stats
     }
     else {

@@ -39,6 +39,21 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 mapping: 'adminStats.stigCount'
             },
             {
+                name: 'savedPct',
+                type: 'integer',
+                convert: (v, r) => r.adminStats.ruleCount ? Math.round(((r.adminStats.savedCount + r.adminStats.submittedCount + r.adminStats.acceptedCount)/r.adminStats.ruleCount) * 100) : 0
+            },
+            {
+                name: 'submittedPct',
+                type: 'integer',
+                convert: (v, r) => r.adminStats.ruleCount ? Math.round(((r.adminStats.submittedCount + r.adminStats.acceptedCount)/r.adminStats.ruleCount) * 100) : 0
+            },
+            {
+                name: 'acceptedPct',
+                type: 'integer',
+                convert: (v, r) => r.adminStats.ruleCount ? Math.round((r.adminStats.acceptedCount/r.adminStats.ruleCount) * 100) : 0
+            },
+            {
                 name: 'stigUnassignedCount',
                 type: 'integer',
                 convert: (v, r) => r.adminStats.stigCount - r.adminStats.stigAssignedCount
@@ -88,6 +103,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
+
         let columns = [
             { 	
 				header: "Asset",
@@ -102,40 +118,66 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: SM.styledEmptyRenderer
 			},{ 	
 				header: "IP",
-				width: 100,
+				width: 70,
                 dataIndex: 'ip',
 				sortable: true,
                 renderer: SM.styledEmptyRenderer
-			},{ 
-                xtype: 'booleancolumn',
-                trueText: '&#x2714;',
-				falseText: '',
-				header: "Non-computing",
-				width: 75,
-                dataIndex: 'noncomputing',
-				align: "center",
-				tooltip:"Is this a computing asset?",
-				sortable: true
+			// },{ 
+            //     xtype: 'booleancolumn',
+            //     trueText: '&#x2714;',
+			// 	falseText: '',
+			// 	header: "Non-computing",
+			// 	width: 75,
+            //     dataIndex: 'noncomputing',
+			// 	align: "center",
+			// 	tooltip:"Is this a computing asset?",
+			// 	sortable: true
 			},{ 	
 				header: "STIGs",
-				width: 50,
+				width: 70,
+                fixed: true,
 				dataIndex: 'stigCount',
 				align: "center",
 				tooltip:"Total STIGs Assigned",
 				sortable: true
+			// },{ 	
+			// 	header: "Unassigned",
+			// 	width: 70,
+			// 	dataIndex: 'stigUnassignedCount',
+			// 	align: "center",
+			// 	tooltip:"STIGs Missing User Assignments",
+			// 	sortable: true
 			},{ 	
-				header: "Unassigned",
+				header: "Checks",
 				width: 70,
-				dataIndex: 'stigUnassignedCount',
-				align: "center",
-				tooltip:"STIGs Missing User Assignments",
-				sortable: true
-			},{ 	
-				header: "Rule count",
-				width: 70,
+                fixed: true,
 				dataIndex: 'ruleCount',
 				align: "center",
 				sortable: true
+			},{ 	
+				header: "Reviewed",
+				width: 100,
+                fixed: true,
+				dataIndex: 'savedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			},{ 	
+				header: "Submitted",
+				width: 100,
+                fixed: true,
+				dataIndex: 'submittedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			},{ 	
+				header: "Accepted",
+				width: 100,
+                fixed: true,
+				dataIndex: 'acceptedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
 			}
         ]
         let config = {
@@ -149,8 +191,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 singleSelect: true,
                 listeners: {
                     selectionchange: function (sm) {
-                        Ext.getCmp(`assetGrid-${id}-modifyBtn`).setDisabled(!sm.hasSelection());
-                        Ext.getCmp(`assetGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection());
+                        Ext.getCmp(`assetGrid-${id}-modifyBtn`).setDisabled(!sm.hasSelection())
+                        Ext.getCmp(`assetGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection())
                     }
                 }
             }),
@@ -187,6 +229,16 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         handler: function() {
                             let el = Ext.getCmp(`${me.collectionId}-collection-manager-tab`)
                             showImportResultFiles( me.collectionId, el.getEl().dom );            
+                        }
+                    }
+                    ,'-'
+                    ,{
+                        iconCls: 'sm-export-icon',
+                        id: `assetGrid-${id}-exportBtn`,
+                        text: 'Export CKLs...',
+                        disabled: false,
+                        handler: function() {
+                            showExportCklFiles( me.collectionId, me.collectionName );            
                         }
                     }
                     ,'-'

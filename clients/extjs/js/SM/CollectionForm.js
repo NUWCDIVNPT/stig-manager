@@ -479,7 +479,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             this.accessBtn = tbar.addButton({
                 iconCls: 'sm-asset-icon',
                 disabled: true,
-                text: 'Restricted User access list ...',
+                text: 'User access...',
                 handler: function() {
                     var r = me.getSelectionModel().getSelected();
                     Ext.getBody().mask('Getting access list for ' + r.get('username') + '...');
