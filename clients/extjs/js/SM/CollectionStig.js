@@ -11,7 +11,29 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {name: 'title', type: 'string'},
             {name: 'lastRevisionStr', type: 'string'},
             {name: 'lastRevisionDate', type: 'string'},
-            {name: 'ruleCount', type: 'integer'}
+            {name: 'ruleCount', type: 'integer'},
+            {name: 'assetCount', type: 'integer'},
+            {
+                name: 'checkCount',
+                type: 'integer',
+                convert: (v, r) => r.ruleCount * r.assetCount
+            },
+            {
+                name: 'acceptedPct',
+                type: 'integer',
+                convert: (v, r) => Math.round((r.acceptedCount/(r.ruleCount * r.assetCount)) * 100)
+            },
+            {
+                name: 'submittedPct',
+                type: 'integer',
+                convert: (v, r) => Math.round(((r.acceptedCount + r.submittedCount)/(r.ruleCount * r.assetCount)) * 100)
+            },
+            {
+                name: 'savedPct',
+                type: 'integer',
+                convert: (v, r) => Math.round(((r.acceptedCount + r.submittedCount + r.savedCount)/(r.ruleCount * r.assetCount)) * 100)
+            }
+
         ])
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
@@ -58,13 +80,13 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 100,
                 dataIndex: 'benchmarkId',
 				sortable: true
+			// },{ 	
+			// 	header: "Title",
+			// 	width: 150,
+            //     dataIndex: 'title',
+			// 	sortable: true
 			},{ 	
-				header: "Title",
-				width: 150,
-                dataIndex: 'title',
-				sortable: true
-			},{ 	
-				header: "Latest Revision",
+				header: "Revision",
 				width: 50,
                 dataIndex: 'lastRevisionStr',
                 align: "center",
@@ -77,11 +99,50 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true
 			},{
                 header: 'Rules',
-                width: 50,
+                width: 70,
+                fixed: true,
                 dataIndex: 'ruleCount',
                 align: "center",
                 sortable: true
-            }
+            },{
+                header: 'Assets',
+                width: 70,
+                fixed: true,
+                dataIndex: 'assetCount',
+                align: "center",
+                sortable: true
+            },{
+                header: 'Checks',
+                width: 70,
+                fixed: true,
+                dataIndex: 'checkCount',
+                align: "center",
+                sortable: true
+            },{ 	
+				header: "Reviewed",
+				width: 100,
+                fixed: true,
+				dataIndex: 'savedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			},{ 	
+				header: "Submitted",
+				width: 100,
+                fixed: true,
+				dataIndex: 'submittedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			},{ 	
+				header: "Accepted",
+				width: 100,
+                fixed: true,
+				dataIndex: 'acceptedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			}
         ]
         let config = {
             layout: 'fit',
@@ -123,6 +184,16 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         }
                     }
                     ,'-'
+                    ,{
+                        iconCls: 'sm-export-icon',
+                        id: `stigGrid-${id}-exportBtn`,
+                        text: 'Export CKLs...',
+                        disabled: false,
+                        handler: function() {
+                            showExportCklFiles( me.collectionId, me.collectionName, 'stig' );            
+                        }
+                    }
+                    ,'-'
                     , {
                         ref: '../removeBtn',
                         iconCls: 'icon-del',
@@ -155,7 +226,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'sm-asset-icon',
                         disabled: true,
                         id: `stigGrid-${id}-modifyBtn`,
-                        text: 'Change assigned Assets...',
+                        text: 'Change STIG targets...',
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
                             showCollectionStigProps(r.get('benchmarkId'), me);
@@ -541,7 +612,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
-            title: 'STIG Assignments, Collection ID ' + collectionId,
+            title: 'STIG Targets, Collection ID ' + collectionId,
             modal: true,
             hidden: true,
             width: 510,

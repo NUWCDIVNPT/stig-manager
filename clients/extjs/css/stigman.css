@@ -1,3 +1,60 @@
+
+.sm-cell-thermometer-bg {
+	background-color: #f5f5f5;
+	margin-left: 34px;
+}
+.sm-cell-thermometer-text {
+	float: left;
+	width: 30px;
+}
+.sm-cell-mercury-low {
+	background-color: #c3deab;
+}
+.sm-cell-mercury-medium {
+	background-color: #dcdcdc
+}
+.sm-cell-mercury-high {
+	background-color: #eba795;
+}
+
+
+/* Dialog buttons*/
+.x-panel-btns td.x-toolbar-cell {
+    padding: 0px 18px 10px 0px;
+}
+
+.sm-dialog-panel-text {
+	padding-bottom: 10px;
+	font: 10px Open Sans, Open Sans, helvetica, sans-serif;
+	color: #000000;
+	word-wrap: break-word;
+}
+
+.ext-gecko .x-btn button, .ext-webkit .x-btn button, .x-btn button {
+	/* padding-left: 10px;
+    padding-right: 10px; */
+	font-weight: 600;
+}
+.sm-export-sprite {
+	font: 10px Open Sans,helvetica, sans-serif;
+	/* color: hsl(0deg 0% 98%) !important; */
+	position: relative;
+	top: -1px;
+	border-radius:  12px;
+	padding: 0px 5px 1px 5px !important;
+	user-select: none;
+}
+.sm-export-sprite-high {
+	background-color: #ddd;
+}
+
+.sm-export-sprite-medium {
+	background-color: #ddd;
+}
+.sm-export-sprite-low {
+	background-color: #c3deab;
+}
+
 .x-form-display-field {
     padding-top: 3px;
 }

@@ -996,7 +996,7 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
       concat('V', ${ro.table_alias}.version, 'R', ${ro.table_alias}.release) as "revisionStr",
       ${ro.table_alias}.version,
       ${ro.table_alias}.release,
-      ${ro.table_alias}.benchmarkDateSql as "benchmarkDate",
+      date_format(${ro.table_alias}.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       ${ro.table_alias}.status,
       ${ro.table_alias}.statusDate,
       ${ro.table_alias}.description
@@ -1035,7 +1035,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
       concat('V', r.version, 'R', r.release) as "revisionStr",
       r.version,
       r.release,
-      r.benchmarkDateSql as "benchmarkDate",
+      date_format(r.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       r.status,
       r.statusDate,
       r.description

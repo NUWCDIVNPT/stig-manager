@@ -1,21 +1,16 @@
-/* 
-$Id: stigmanUtils.js 885 2018-02-20 16:26:08Z bmassey $
-*/
-
-//Global variable review to access data from the review
-/* 
-	uId
-	exists
-	state
-	stateCommment
-	action
-	actionComment
-	requireDoc
-*/
-
-//Functions used to display progress of long running middleware
 var statusText;
 
+function renderPct ( v ) {
+	const mercuryCls = v >= 100 ? 'sm-cell-mercury-low' : v >= 50 ? 'sm-cell-mercury-medium' : 'sm-cell-mercury-high'
+	let markup = `
+	<div class="sm-cell-thermometer-text">
+		${v}%
+	</div>
+	<div class="sm-cell-thermometer-bg">
+		<div class="${mercuryCls}" style="width: ${v}%;">&nbsp;</div>
+	</div>`
+	return markup
+}
 
 function getUnlockPrompt(unlockLevel, unlockObject, grid){
 	//==========================================================

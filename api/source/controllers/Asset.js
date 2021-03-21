@@ -1,6 +1,7 @@
 'use strict';
 
-const writer = require('../utils/writer.js');
+const SmError = require('../utils/SmError')
+const writer = require('../utils/writer');
 const config = require('../utils/config')
 const Asset = require(`../service/${config.database.type}/AssetService`);
 const Collection = require(`../service/${config.database.type}/CollectionService`);
@@ -181,7 +182,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     let elevate = req.swagger.params['elevate'].value
     
     // All users are permitted to query for the asset
-    // If this user has no grants permitting access to the asset, the response will be falsy
+    // If this user has no grants permitting access to the asset, the response will be undefined
     let response = await Asset.getAsset(assetId, projection, elevate, req.userObject )
 
     // If there is a response, check if the request included the stigGrants projection
@@ -262,7 +263,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let revisionStr = req.swagger.params['revisionStr'].value
     let format = req.swagger.params['format'].value || 'json'
-    if (await dbUtils.userHasAssetStig(assetId, benchmarkId, false, req.userObject)) {
+    if (await dbUtils.userHasAssetStigs(assetId, [benchmarkId], false, req.userObject)) {
       let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
         writer.writeJson(res, response)
@@ -295,6 +296,59 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
   }
   catch (err) {
     writer.writeJson(res, err)
+  }
+}
+
+module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req, res, next) {
+  try {
+    let assetId = req.swagger.params['assetId'].value
+    let requestedBenchmarkIds = req.swagger.params['benchmarkId'].value
+
+    // If this user has no grants permitting access to the asset, the response will be undefined
+    let assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
+    if (!assetResponse) {
+      throw new SmError(403, 'User has insufficient access to complete this request.')
+    }
+    const availableBenchmarkIds = assetResponse.stigs.map( r => r.benchmarkId )
+    if (availableBenchmarkIds.length === 0) {
+      writer.writeNoContent(res)
+      return
+    }
+    if (!requestedBenchmarkIds) {
+      requestedBenchmarkIds = availableBenchmarkIds
+    }
+    else if (!requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))) {
+      throw new SmError(400, 'Asset is not mapped to all requested benchmarkIds')
+    }
+
+    let cklObject = await Asset.getChecklistByAsset(assetId, requestedBenchmarkIds, 'ckl', false, req.userObject )
+    let parseOptions = {
+      attributeNamePrefix : "@_",
+      attrNodeName: "@", //default is false
+      textNodeName : "#text",
+      ignoreAttributes : true,
+      cdataTagName: "__cdata", //default is false
+      cdataPositionChar: "\\c",
+      format: true,
+      indentBy: "  ",
+      supressEmptyNode: false,
+      tagValueProcessor: a => {
+        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
+      },
+      attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
+    }
+    const j2x = new J2X(parseOptions)
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
+    xml += j2x.parse(cklObject)
+    writer.writeXml(res, xml, `${cklObject.CHECKLIST.ASSET.HOST_NAME}.ckl`)
+  }
+  catch (err) {
+    if (err.name === 'SmError') {
+      writer.writeJson(req.res, { status: err.httpStatus, message: err.message }, err.httpStatus)
+    }
+    else {
+        writer.writeJson(req.res, { status: 500, message: err.message, stack: err.stack }, 500)
+    }
   }
 }
 
