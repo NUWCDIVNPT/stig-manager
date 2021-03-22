@@ -1695,8 +1695,8 @@ function uploadStigs(n) {
 		   
 						let contents = await parentZip.loadAsync(f)
 						let fns = Object.keys(contents.files)
-						let xmlMembers = fns.filter( fn => fn.endsWith('xccdf.xml') || fn.endsWith('Benchmark.xml') )
-						let zipMembers = fns.filter( fn => fn.endsWith('.zip') )
+						let xmlMembers = fns.filter( fn => fn.toLowerCase().endsWith('xccdf.xml') || fn.toLowerCase().endsWith('benchmark.xml') )
+						let zipMembers = fns.filter( fn => fn.toLowerCase().endsWith('.zip') )
 						for (let x=0,l=xmlMembers.length; x<l; x++) {
 							let xml = xmlMembers[x]
 							updateStatusText (xml)
