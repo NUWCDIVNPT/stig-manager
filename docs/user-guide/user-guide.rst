@@ -1,6 +1,7 @@
 .. _user-guide-doc:
 
 
+
 STIG Manager User Guide 
 ############################################
 
@@ -403,11 +404,12 @@ Allows a Collection Manager or Owner to Manage their Collection.
 From this Workspace, the User can:
 
    * Alter the Name, Workflow, and Metadata associated with the Collection
-   * Start a bulk import of .ckl or XCCDF files to automatically populate  or add to their Collection.
+   * Batch import CKL or XCCDF files to automatically scaffold or add to their Collection
+   * Batch export CKL files for external tools such as eMASS
    * Add/Modify/Remove Assets in the Collection 
-   * Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection). 
-   * Add/Modify/Remove User Grants in the Collection.
-   * Delete the Collection (If Collection Owner).
+   * Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)
+   * Add/Modify/Remove User Grants in the Collection
+   * Delete the Collection (if Collection Owner)
 
 .. thumbnail:: /assets/images/manage-collection-workspace.png
       :width: 50% 
@@ -433,7 +435,8 @@ This Panel allows Collection Managers and Owners to change the name of the Asset
 Grants Panel
 -------------------
 This Panel displays all the Users who have access to some portion of this Collection.
-Users and their level of Access to the Collection can be can be added, or removed with the buttons at the top of this Panel. Double-clicking on a User Grant will allow you to alter an existing Grant. A Restricted User's access can be further configured with the "Restricted User access list..." button.
+
+User Grants can be added or removed using toolbar buttons at the top of this Panel. Double-clicking a Grant will allow you to modify the Grant. When creating or modifying a Grant, typing into the Username field will display a filtered droplist of the available users. 
 
 See :term:`User` for more info about these Access Levels.
 
@@ -445,8 +448,7 @@ See :term:`User` for more info about these Access Levels.
 
 -------------------------------
 
-Typing into the Username field will start filtering the known users. 
-If a User with a Restricted Access Level is selected, the "Restricted User access list..." button is activated. 
+When a User with a Restricted Grant is selected, the "User access..." button is enabled. Restricted Users must be given access to specific Asset-STIG pairs. 
 
 .. thumbnail:: /assets/images/restricted-access-list.png
       :width: 50% 
@@ -456,21 +458,18 @@ If a User with a Restricted Access Level is selected, the "Restricted User acces
 
 -------------------------------
 
-.. todo::
-   double-click on a grant. click on another grant(or anywhere else on screen) w/o cancelling or saving. originally selected grant staays in a modifacation state, even if . 
-         
-
+       
 Assets Panel
 ------------------
-This panel lists the Assets that are a part of this Collection. The columns list the Asset Name, Description, IP, computing status, number of STIGs assigned, the number of STIGs that are not assigned to a user, and the total number of Rules that apply to the Asset. These properties can be altered by double-clicking on the Asset row.
+This panel lists the Assets that are a part of this Collection. An Asset's properties can be modified by double-clicking on the Asset row or by choosing "Change Asset Properties..." from the toolbar.
 
 The menu bar provides several functions, allowing the User to Create, Delete, and Change Assets in the Collection.
 The :ref:`Collection Builder` option allows the User to create many Assets and their STIG Assignments at once. 
 
-.. thumbnail:: /assets/images/assets-panel-menu.png
+.. thumbnail:: /assets/images/assets-panel-toolbar.png
       :width: 50% 
       :show_caption: True
-      :title: Assets Panel Menu Bar
+      :title: Collection -> Manage -> Assets toolbar
 
 
 -------------------------------
@@ -574,6 +573,13 @@ The user is presented with the log of the import.
 -------------------------------
 
 
+Export CKLs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. todo::
+   This feature was introduced in 1.0.0-beta.22 and documentation is pending.
+
+
 Delete Asset
 ~~~~~~~~~~~~~~~~~~~~
 To Delete an Asset, select an Asset and click the Delete Asset button. A popup will ask you to confirm the action. 
@@ -621,5 +627,10 @@ Change Assigned Assets
 Select "Change assigned Assets..." or double-click a STIG to change what Assets are assigned this STIG in this Collection.
 
 
+Export CKLs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. todo::
+   This feature was introduced in 1.0.0-beta.22 and documentation is pending.
 
 

@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
 
   
   
@@ -34,10 +34,10 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -146,7 +146,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings">Analyze Findings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
@@ -259,7 +259,7 @@ This Tab provides links to useful information, such as this Documentation, DISA 
 The Home Panel also provides information about the STIG Manager Open Source Software Project, and links to the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager OSS Project on GitHub</a> for submitting Issues with the software.</p>
 <figure class="">
             <a 
-               data-lightbox="group-248f67ff-ebb8-45fd-817e-f5c12d431afd"
+               data-lightbox="group-b41c3890-5672-4bb5-af5a-e3c679d31083"
                href="../_images/home-tab1.png"
                title="Home Tab"
                data-title="Home Tab"
@@ -279,7 +279,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>The components of the Navigation Tree are described below.</p>
 <figure class="">
             <a 
-               data-lightbox="group-07579359-487d-4129-a598-a2543e51ddfc"
+               data-lightbox="group-b5472447-5a21-46e8-aea4-3785567b33ef"
                href="../_images/nav-tree1.png"
                title="Navigation Tree"
                data-title="Navigation Tree"
@@ -298,7 +298,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>If you have the Collection Creator privilege, this option will appear. Click this item in the Nav Tree to create a new Collection.</p>
 <figure class="">
             <a 
-               data-lightbox="group-9fc22365-23db-46aa-ad60-4d887f2d4299"
+               data-lightbox="group-87d1b14d-d8fb-4713-99d0-87e2a05f24e7"
                href="../_images/create-collection-popup1.png"
                title="Create Collection popup"
                data-title="Create Collection popup"
@@ -359,7 +359,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>The Collection Review Workspace allows the user to assess all the Assets they have acess to that have been assigned the selected STIG.</p>
 <figure class="">
             <a 
-               data-lightbox="group-0beace6e-c4d0-424e-a458-4146f6f070b8"
+               data-lightbox="group-21913c13-0ce2-4626-a4d6-9876615b1ef7"
                href="../_images/collection-review1.png"
                title="Collection Review Workspace"
                data-title="Collection Review Workspace"
@@ -429,7 +429,7 @@ Reviews can be Accepted with the button at the top of the Reviews Panel, or Reje
 Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.</p>
 <figure class="">
             <a 
-               data-lightbox="group-12c32772-dc4c-48e7-a96f-ec9f512135e1"
+               data-lightbox="group-7c43f874-e23d-4c70-aa19-4a7e7c4c8bf1"
                href="../_images/asset-review1.png"
                title="Asset Review Workspace"
                data-title="Asset Review Workspace"
@@ -517,7 +517,7 @@ In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIAT
 <p>The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.</p>
 <figure class="">
             <a 
-               data-lightbox="group-9503754a-71e1-4782-8f0b-de65e1641d6b"
+               data-lightbox="group-79521f6c-72b8-4ea6-8476-2426a1b4c354"
                href="../_images/findings-report1.png"
                title="Findings Report"
                data-title="Findings Report"
@@ -564,7 +564,7 @@ Information about the Asset, Rule, Action, Last Modified Date, and applicable ST
 </div>
 <figure class="">
             <a 
-               data-lightbox="group-2957957c-e0ae-45b1-a5ae-d34a172d6b74"
+               data-lightbox="group-82684155-14c7-4c6d-aedf-fb7a0ea81d3f"
                href="../_images/status-report1.png"
                title="Status Report"
                data-title="Status Report"
@@ -583,16 +583,17 @@ From this Workspace, the User can:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Alter the Name, Workflow, and Metadata associated with the Collection</p></li>
-<li><p>Start a bulk import of .ckl or XCCDF files to automatically populate  or add to their Collection.</p></li>
+<li><p>Batch import CKL or XCCDF files to automatically scaffold or add to their Collection</p></li>
+<li><p>Batch export CKL files for external tools such as eMASS</p></li>
 <li><p>Add/Modify/Remove Assets in the Collection</p></li>
-<li><p>Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection).</p></li>
-<li><p>Add/Modify/Remove User Grants in the Collection.</p></li>
-<li><p>Delete the Collection (If Collection Owner).</p></li>
+<li><p>Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)</p></li>
+<li><p>Add/Modify/Remove User Grants in the Collection</p></li>
+<li><p>Delete the Collection (if Collection Owner)</p></li>
 </ul>
 </div></blockquote>
 <figure class="">
             <a 
-               data-lightbox="group-3d788af3-00a1-4892-8fe1-2b51435d7c6b"
+               data-lightbox="group-e3c30094-f3a1-49da-97d1-111bd9cd54e0"
                href="../_images/manage-collection-workspace1.png"
                title="The Manage Collections Workspace"
                data-title="The Manage Collections Workspace"
@@ -605,10 +606,10 @@ From this Workspace, the User can:</p>
             </figure><hr class="docutils" />
 <div class="section" id="collection-properties-panel">
 <h3><span class="section-number">2.8.1. </span>Collection Properties Panel<a class="headerlink" href="#collection-properties-panel" title="Permalink to this headline">¶</a></h3>
-<p>This Panel allows Collection Managers and Owners to change the name of the Asset, it’s workflow, and any associated Metadata.  Collection Owners can also delete this Collection.</p>
+<p>This Panel allows Collection Managers and Owners to change the name of the Asset, its workflow, and any associated Metadata.  Collection Owners can also delete this Collection.</p>
 <figure class="">
             <a 
-               data-lightbox="group-1395c539-37f3-438e-99de-179a95409e77"
+               data-lightbox="group-831812a0-7caa-4f18-a986-f9869376c20a"
                href="../_images/collection-properties1.png"
                title="Collection Properties"
                data-title="Collection Properties"
@@ -622,12 +623,12 @@ From this Workspace, the User can:</p>
 <hr class="docutils" />
 <div class="section" id="grants-panel">
 <h3><span class="section-number">2.8.2. </span>Grants Panel<a class="headerlink" href="#grants-panel" title="Permalink to this headline">¶</a></h3>
-<p>This Panel displays all the Users who have access to some portion of this Collection.
-Users and their level of Access to the Collection can be can be added, or removed with the buttons at the top of this Panel. Double-clicking on a User Grant will allow you to alter an existing Grant. A Restricted User’s access can be further configured with the “Restricted User access list…” button.</p>
+<p>This Panel displays all the Users who have access to some portion of this Collection.</p>
+<p>User Grants can be added or removed using toolbar buttons at the top of this Panel. Double-clicking a Grant will allow you to modify the Grant. When creating or modifying a Grant, typing into the Username field will display a filtered droplist of the available users.</p>
 <p>See <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> for more info about these Access Levels.</p>
 <figure class="">
             <a 
-               data-lightbox="group-a77c2dca-7372-4356-9d8f-68c945d78a18"
+               data-lightbox="group-8f1a0444-5fc0-48ca-bf44-b524a3519d61"
                href="../_images/user-grants1.png"
                title="The User Grants Panel"
                data-title="The User Grants Panel"
@@ -638,11 +639,10 @@ Users and their level of Access to the Collection can be can be added, or remove
                      alt=""/>
                 </a><figcaption>The User Grants Panel</figcaption>
             </figure><hr class="docutils" />
-<p>Typing into the Username field will start filtering the known users.
-If a User with a Restricted Access Level is selected, the “Restricted User access list…” button is activated.</p>
+<p>When a User with a Restricted Grant is selected, the “User access…” button is enabled. Restricted Users must be given access to specific Asset-STIG pairs.</p>
 <figure class="">
             <a 
-               data-lightbox="group-df7f76a4-f45c-4754-8118-1d852b34dfd9"
+               data-lightbox="group-ffffedd1-a9e5-4905-be8d-4b4437021dad"
                href="../_images/restricted-access-list1.png"
                title="The Restricted User Access List"
                data-title="The Restricted User Access List"
@@ -652,36 +652,32 @@ If a User with a Restricted Access Level is selected, the “Restricted User acc
                      height="auto"
                      alt=""/>
                 </a><figcaption>The Restricted User Access List</figcaption>
-            </figure><hr class="docutils" />
-<div class="admonition-todo admonition" id="id12">
-<p class="admonition-title">Todo</p>
-<p>double-click on a grant. click on another grant(or anywhere else on screen) w/o cancelling or saving. originally selected grant staays in a modifacation state, even if .</p>
-</div>
-</div>
+            </figure></div>
+<hr class="docutils" />
 <div class="section" id="assets-panel">
 <h3><span class="section-number">2.8.3. </span>Assets Panel<a class="headerlink" href="#assets-panel" title="Permalink to this headline">¶</a></h3>
-<p>This panel lists the Assets that are a part of this Collection. The columns list the Asset Name, Description, IP, computing status, number of STIGs assigned, the number of STIGs that are not assigned to a user, and the total number of Rules that apply to the Asset. These properties can be altered by double-clicking on the Asset row.</p>
+<p>This panel lists the Assets that are a part of this Collection. An Asset’s properties can be modified by double-clicking on the Asset row or by choosing “Change Asset Properties…” from the toolbar.</p>
 <p>The menu bar provides several functions, allowing the User to Create, Delete, and Change Assets in the Collection.
 The <a class="reference internal" href="#collection-builder"><span class="std std-ref">Import CKL or SCAP / Collection Builder</span></a> option allows the User to create many Assets and their STIG Assignments at once.</p>
 <figure class="">
             <a 
-               data-lightbox="group-475d6112-c6d1-4500-83c7-b328e9ce88a1"
-               href="../_images/assets-panel-menu1.png"
-               title="Assets Panel Menu Bar"
-               data-title="Assets Panel Menu Bar"
-               ><img src="../_images/assets-panel-menu1.png"
+               data-lightbox="group-26680842-61cb-4eae-9928-cf7abf23e0bb"
+               href="../_images/assets-panel-toolbar1.png"
+               title="Collection -> Manage -> Assets toolbar"
+               data-title="Collection -> Manage -> Assets toolbar"
+               ><img src="../_images/assets-panel-toolbar1.png"
                      class=""
                      width="50%"
                      height="auto"
                      alt=""/>
-                </a><figcaption>Assets Panel Menu Bar</figcaption>
+                </a><figcaption>Collection -> Manage -> Assets toolbar</figcaption>
             </figure><hr class="docutils" />
 <div class="section" id="create-asset">
 <h4><span class="section-number">2.8.3.1. </span>Create Asset<a class="headerlink" href="#create-asset" title="Permalink to this headline">¶</a></h4>
 <p>Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs can also be assigned to the new Asset from this interface.</p>
 <figure class="">
             <a 
-               data-lightbox="group-1872d792-66a5-407f-9a74-6ce7738e92d3"
+               data-lightbox="group-9862570a-4ccf-424a-ac9b-b47e76a5a5db"
                href="../_images/create-asset1.png"
                title="Create an Asset"
                data-title="Create an Asset"
@@ -706,7 +702,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <p>From the Collection Management workspace, click the “Import CKL or SCAP…” button at the top of the Assets panel .</p>
 <figure class="">
             <a 
-               data-lightbox="group-8264cc0d-4018-4934-8f12-68fd8079763f"
+               data-lightbox="group-dee17690-1749-4e79-bd5f-a7c0e27a77b0"
                href="../_images/collection-builder-files1.png"
                title="Collection Builder File Select"
                data-title="Collection Builder File Select"
@@ -723,7 +719,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-74f6aefd-f04a-49c1-946a-1b4e3426d87e"
+               data-lightbox="group-c2fc3cf2-a51c-42ec-b3c2-19a157aed052"
                href="../_images/collection-builder-errors-and-warnings1.png"
                title="Collection Builder Errors and Warnings"
                data-title="Collection Builder Errors and Warnings"
@@ -741,7 +737,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-a323441c-278a-48e3-bbd1-70a325044ee5"
+               data-lightbox="group-a27b8934-65c1-466f-8fc7-39046b735309"
                href="../_images/collection-builder-options1.png"
                title="Collection Builder Options and Summary"
                data-title="Collection Builder Options and Summary"
@@ -768,7 +764,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-d9f8ec37-ba84-44fd-9cf8-19977b5a84df"
+               data-lightbox="group-6a3fd40a-3857-44fe-b806-6edf6312d7b4"
                href="../_images/collection-builder-import1.png"
                title="Collection Builder Import Log"
                data-title="Collection Builder Import Log"
@@ -789,12 +785,19 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 </div>
 </div>
 <hr class="docutils" />
+<div class="section" id="export-ckls">
+<h4><span class="section-number">2.8.3.3. </span>Export CKLs<a class="headerlink" href="#export-ckls" title="Permalink to this headline">¶</a></h4>
+<div class="admonition-todo admonition" id="id12">
+<p class="admonition-title">Todo</p>
+<p>This feature was introduced in 1.0.0-beta.22 and documentation is pending.</p>
+</div>
+</div>
 <div class="section" id="delete-asset">
-<h4><span class="section-number">2.8.3.3. </span>Delete Asset<a class="headerlink" href="#delete-asset" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">2.8.3.4. </span>Delete Asset<a class="headerlink" href="#delete-asset" title="Permalink to this headline">¶</a></h4>
 <p>To Delete an Asset, select an Asset and click the Delete Asset button. A popup will ask you to confirm the action.</p>
 </div>
 <div class="section" id="change-asset-properties">
-<h4><span class="section-number">2.8.3.4. </span>Change Asset Properties<a class="headerlink" href="#change-asset-properties" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">2.8.3.5. </span>Change Asset Properties<a class="headerlink" href="#change-asset-properties" title="Permalink to this headline">¶</a></h4>
 <p>To alter an Asset’s properties, select an Asset and click this button, or double-click the Asset row.</p>
 </div>
 </div>
@@ -804,7 +807,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 STIG Assignments can also be added or removed from Assets with the buttons at the top of this panel.</p>
 <figure class="">
             <a 
-               data-lightbox="group-68b6f442-719c-4cf1-95b5-5793b03b3e66"
+               data-lightbox="group-7391ea74-9bbc-405e-a6da-aacc71ef7d8a"
                href="../_images/stigs-panel1.png"
                title="STIGs Panel"
                data-title="STIGs Panel"
@@ -820,7 +823,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <p>Select Assign STIG to add a new STIG to the Collection. A popup will allow you to select a STIG that is not yet assigned to an Asset. Click the Assign STIG button on this popup to select Assets that should have this STIG assigned to them.</p>
 <figure class="">
             <a 
-               data-lightbox="group-9ba9411c-bccc-4534-a92f-55f9d27b9e98"
+               data-lightbox="group-e578b734-402b-4b56-a5d8-a2b1d4d123e1"
                href="../_images/stig-assignments1.png"
                title="STIG Assignments"
                data-title="STIG Assignments"
@@ -843,6 +846,13 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <div class="section" id="change-assigned-assets">
 <h4><span class="section-number">2.8.4.3. </span>Change Assigned Assets<a class="headerlink" href="#change-assigned-assets" title="Permalink to this headline">¶</a></h4>
 <p>Select “Change assigned Assets…” or double-click a STIG to change what Assets are assigned this STIG in this Collection.</p>
+</div>
+<div class="section" id="id13">
+<h4><span class="section-number">2.8.4.4. </span>Export CKLs<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<div class="admonition-todo admonition" id="id14">
+<p class="admonition-title">Todo</p>
+<p>This feature was introduced in 1.0.0-beta.22 and documentation is pending.</p>
+</div>
 </div>
 </div>
 </div>

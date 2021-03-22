@@ -30,7 +30,7 @@ Review an entire Collection at once
 :ref:`Collection Review Workspace`
 
 
-Review Findings
+Analyze Findings
 =======================
 
 :ref:`Findings Report`
