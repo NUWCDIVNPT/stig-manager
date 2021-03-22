@@ -1,4 +1,11 @@
 
+1.0.0-beta.22
+-----------------------
+- fix: Improved output when importing STIG XML (#192)
+- fix: case-insensitive filename matching (#192)
+- feat: Collection export management (#169)
+- docs: Build documentation with Sphinx (#188)
+
 1.0.0-beta.21
 -----------------------
 
