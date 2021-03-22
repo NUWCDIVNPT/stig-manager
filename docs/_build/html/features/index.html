@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
 
   
   
@@ -34,10 +34,10 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -109,13 +109,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach">STIG Manager integrates with the RMF Lifecycle approach</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#collaborate-on-steps-3-and-4-of-the-rmf-process">Collaborate on Steps 3 and 4 of the RMF Process</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#workspaces">Workspaces</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#collection-builder">Collection Builder</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#workflow-tracking">Workflow Tracking</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reporting">Reporting</a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
@@ -129,7 +122,7 @@
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
-<li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common-tasks.html#analyze-findings">Analyze Findings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#poam-generation">POAM generation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
@@ -222,7 +215,7 @@
 </div>
 <div class="section" id="the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">
 <h2>The Single Source of Truth throughout Steps 3 and 4 of the RMF Process<a class="headerlink" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h2>
-<p>Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and it’s progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.</p>
+<p>Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and its progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.</p>
 <p>STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.</p>
 <video width="480"  controls>
   <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
@@ -286,61 +279,6 @@ Your browser does not support the video tag.
 <div class="section" id="stig-manager-integrates-with-the-rmf-lifecycle-approach">
 <h3>STIG Manager integrates with the RMF Lifecycle approach<a class="headerlink" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach" title="Permalink to this headline">¶</a></h3>
 <p>STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the implementation of the “Continuous” Workflow, STIG Manager will play a vital part of the RMF lifecycle.  When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.</p>
-</div>
-</div>
-<div class="section" id="collaborate-on-steps-3-and-4-of-the-rmf-process">
-<span id="features-doc"></span><h2>Collaborate on Steps 3 and 4 of the RMF Process<a class="headerlink" href="#collaborate-on-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h2>
-<p>Collaborate on STIG Evaluation and management. Make use of others expertise.</p>
-<p>Collaboratively manage your STIG assessments.</p>
-<p>Single source of truth for all parties to reference.</p>
-<p>Multiple workspaces for different user approaches and responsibilitiies.</p>
-<p>Multiple workspaces for each</p>
-<p>organize and perform STIG evaluations
-Collection Management
-Asset
-STIG Evaluations
-Approve evaluations
-Report on Status, Progress, and Findings.
-Analyze Evaluation progress.</p>
-<p>Complete API</p>
-<p>Role and Assignmnet based access controls</p>
-<p>combine inputs from individuals and automated results</p>
-<p>STIG Manager serves as a central reference for current STIG Assignments, Evaluations, and progress for all parties involved in Package creation.</p>
-<p>Rather than passing .ckl files around, which, by their nature, are instantly out of date, STIG Manager provides the authoritative source for current STIG Evaluations and Package progress.</p>
-<p>Evaluate, validate, and check status of an entire Package at once. Track exactly when an Evaluation was last performed, both from automated, imported results and manual entries.</p>
-<p>Import SCAP results or .ckl files using STIG Manager’s convenient interface to build a Collection of Assets, and get a handle on their current Evaluation Status.</p>
-<p>Manual STIGs, and STIGs with incomplete automation can be completed right in STIG Manager’s UI, either individually or as a group. Convenient references, such as Evaluations for other Assets in the Collection and a history of Rule Evaluations are easily accesible. IF applicable, Reviews for other Assets can be dragged and dropped right into another Assets Evaluation.</p>
-<p>Work as a team. Stig Manager can show Evaluations you or your team have provided for other Assets in your Collection.</p>
-<p>STIG Manager tracks Reviews at the Rule level, so that When STIGs are updated, all Rules with unchanged RuleIds are carried forward to the new STIG.</p>
-<p>Enhance STIG Manager with utilities and clients of your own. STIG Manager was built with a well-documented RESTful API to enable convenient integration with other tools.</p>
-<ul class="simple">
-<li><p>Single source of truth for Evaluations and STIG Status.</p></li>
-</ul>
-<p>Targeted Remediation Efforts
-Use provided tools to target specific high value Vulnerabilities across all Assets in your Collection. Stigman does not remediate vulnerabilities, it represents accumulated data from manual evaluations and automated scans.</p>
-<p>Targeted Evaluation Efforts</p>
-<p>Track Evaluations at the Rule level. When a STIG updates, if the RuleId does not change, that result persists to the new version.</p>
-<ul class="simple">
-<li><p>Automatically create a collection of Assets from your existing .ckl files.</p></li>
-<li><p>Review all your assets at once with the Collection Review workspace.</p></li>
-<li><p>Provide a workspace for viewing manual and automated STIG evaluations together.</p></li>
-<li><p>Enforce a workflow for your Collection.</p></li>
-<li><p>Reports for Findings.</p></li>
-<li><p>Status reports, showing STIG Evaluation completeness</p></li>
-<li><p>Generate POAM from your findings.</p></li>
-<li><p>Single source of truth for Evaluations and STIG Status.</p></li>
-</ul>
-<div class="section" id="workspaces">
-<h3>Workspaces<a class="headerlink" href="#workspaces" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="collection-builder">
-<h3>Collection Builder<a class="headerlink" href="#collection-builder" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="workflow-tracking">
-<h3>Workflow Tracking<a class="headerlink" href="#workflow-tracking" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="reporting">
-<h3>Reporting<a class="headerlink" href="#reporting" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
 </div>

@@ -51,7 +51,7 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
             * Action - Remediate, Mitigate, Exception
             * Action Comment - A comment describing the selected Action.
 			
-        * Status - The current state of the Review in the Workflow. A review can be Saved, Submitted, Accepted, or Returned, according to its place in it's Collections Workflow.
+        * Status - The current state of the Review in the Workflow. A review can be Saved, Submitted, Accepted, or Returned, according to its place in its Collections Workflow.
 		
             * In order to be Submitted, the Evaluation must have a Result and a Result Comment. If the Result is set to Open, then the Recommendation Action and Action Comment are also required. If the Review was Returned, at least one field must be changed in order to Submit it again.
             * In order to be Returned, the Owner must specify a Return Comment, providing direction to the Evaluator.

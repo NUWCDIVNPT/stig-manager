@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
 
   
   
@@ -34,10 +34,10 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -107,7 +107,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-findings">Review Findings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings">Analyze Findings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
@@ -195,9 +195,9 @@
 <span id="terminology"></span><h1>Terminology and Concepts<a class="headerlink" href="#terminology-and-concepts" title="Permalink to this headline">¶</a></h1>
 <p>This is a glossary with definition terms for thing like <a class="reference internal" href="#term-Workflow"><span class="xref std std-term">Workflow</span></a>:</p>
 <dl class="glossary">
-<dt id="term-Asset">Asset</dt><dd><p>An Asset is any component to which a STIG may be attached. Assets are created and changed in the Collection Configuration screen. To conform to the Navy RMF Process, an Asset must have a Name, IP Address, MAC Address, and Fully Qualified Domain Name unless it is designated “Non-Computing.” The Asset Properties screen allows you to set all these properties, as well as attach STIGs.</p>
+<dt id="term-Asset">Asset<a class="headerlink" href="#term-Asset" title="Permalink to this term">¶</a></dt><dd><p>An Asset is any component to which a STIG may be attached. Assets are created and changed in the Collection Configuration screen. To conform to the Navy RMF Process, an Asset must have a Name, IP Address, MAC Address, and Fully Qualified Domain Name unless it is designated “Non-Computing.” The Asset Properties screen allows you to set all these properties, as well as attach STIGs.</p>
 </dd>
-<dt id="term-Collection">Collection</dt><dd><p>The Collection is STIG Manager’s primary organizational component.</p>
+<dt id="term-Collection">Collection<a class="headerlink" href="#term-Collection" title="Permalink to this term">¶</a></dt><dd><p>The Collection is STIG Manager’s primary organizational component.</p>
 <p>Collections are composed of:</p>
 <blockquote>
 <div><ul class="simple">
@@ -209,15 +209,15 @@
 </div></blockquote>
 <p><strong>Collections can be structured as an RMF Package, but do not need to be.</strong> It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy.</p>
 </dd>
-<dt id="term-Evaluation">Evaluation</dt><dd><p>The Result or compliance state, either by a user or automated process, of a Review for a particular RuleId on an Asset.</p>
+<dt id="term-Evaluation">Evaluation<a class="headerlink" href="#term-Evaluation" title="Permalink to this term">¶</a></dt><dd><p>The Result or compliance state, either by a user or automated process, of a Review for a particular RuleId on an Asset.</p>
 </dd>
-<dt id="term-Finding">Finding</dt><dd><p>See <a class="reference internal" href="#term-Review"><span class="xref std std-term">Review</span></a></p>
+<dt id="term-Finding">Finding<a class="headerlink" href="#term-Finding" title="Permalink to this term">¶</a></dt><dd><p>See <a class="reference internal" href="#term-Review"><span class="xref std std-term">Review</span></a></p>
 </dd>
-<dt id="term-Package">Package</dt><dd><p>An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections.</p>
+<dt id="term-Package">Package<a class="headerlink" href="#term-Package" title="Permalink to this term">¶</a></dt><dd><p>An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections.</p>
 </dd>
-<dt id="term-Recommendation">Recommendation</dt><dd><p>Applicable to “Open” Findings, the additional steps that will be taken to address the Open Finding. Composed of an Action (Remediate, Mitigate, Exception) and an Action Comment.</p>
+<dt id="term-Recommendation">Recommendation<a class="headerlink" href="#term-Recommendation" title="Permalink to this term">¶</a></dt><dd><p>Applicable to “Open” Findings, the additional steps that will be taken to address the Open Finding. Composed of an Action (Remediate, Mitigate, Exception) and an Action Comment.</p>
 </dd>
-<dt id="term-Review">Review</dt><dd><p>A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. A Review has several components:</p>
+<dt id="term-Review">Review<a class="headerlink" href="#term-Review" title="Permalink to this term">¶</a></dt><dd><p>A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. A Review has several components:</p>
 <ul>
 <li><p>Evaluation</p>
 <blockquote>
@@ -235,7 +235,7 @@
 </ul>
 </div></blockquote>
 </li>
-<li><p>Status - The current state of the Review in the Workflow. A review can be Saved, Submitted, Accepted, or Returned, according to its place in it’s Collections Workflow.</p>
+<li><p>Status - The current state of the Review in the Workflow. A review can be Saved, Submitted, Accepted, or Returned, according to its place in its Collections Workflow.</p>
 <blockquote>
 <div><ul>
 <li><p>In order to be Submitted, the Evaluation must have a Result and a Result Comment. If the Result is set to Open, then the Recommendation Action and Action Comment are also required. If the Review was Returned, at least one field must be changed in order to Submit it again.</p></li>
@@ -249,9 +249,9 @@
 </li>
 </ul>
 </dd>
-<dt id="term-STIG">STIG</dt><dd><p>Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated SCAP results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager.</p>
+<dt id="term-STIG">STIG<a class="headerlink" href="#term-STIG" title="Permalink to this term">¶</a></dt><dd><p>Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated SCAP results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager.</p>
 </dd>
-<dt id="term-User">User</dt><dd><p>Any User in STIG Manager can be granted access to a Collection by the Collection Owner or Manager.</p>
+<dt id="term-User">User<a class="headerlink" href="#term-User" title="Permalink to this term">¶</a></dt><dd><p>Any User in STIG Manager can be granted access to a Collection by the Collection Owner or Manager.</p>
 <ul class="simple">
 <li><p>When you grant Users access to your Collection, or when you are granted access to another Collection by someone else, that Collection will appear in the Nav Tree on the left upon refresh of the app.</p></li>
 </ul>
@@ -299,7 +299,7 @@
 </ul>
 </div></blockquote>
 </dd>
-<dt id="term-Workflow">Workflow</dt><dd><p>STIG Manager supports the concept of Workflows, which apply to Collections and alter the available Statuses for the Reviews they contain.</p>
+<dt id="term-Workflow">Workflow<a class="headerlink" href="#term-Workflow" title="Permalink to this term">¶</a></dt><dd><p>STIG Manager supports the concept of Workflows, which apply to Collections and alter the available Statuses for the Reviews they contain.</p>
 <p>Currently, only the RMF Package Workflow is implemented. The goal of this workflow is to move evaluations towards an Accepted status that can become part of a POAM. This workflow supports the following statuses:</p>
 <ul>
 <li><p><strong>Saved</strong> - The initial state for a review. An evaluation or other data is stored, but has not been “submitted” to the Collection Owner for Acceptance.</p></li>

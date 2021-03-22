@@ -1,3 +1,9 @@
+figcaption {
+  padding-top: 10px;
+  font-size: 85%;
+  font-style: italic;
+}
+
 .tight-table td {
     white-space:normal !important;
 }
