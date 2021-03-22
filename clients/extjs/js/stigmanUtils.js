@@ -1653,6 +1653,7 @@ function uploadStigs(n) {
 						formData.set('replace', 'true')
 						appwindow.close();
 						initProgress("Importing file", "Initializing...");
+						updateStatusText (file.name)
 		
 						await window.keycloak.updateToken(10)
 						let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
@@ -1662,15 +1663,11 @@ function uploadStigs(n) {
 						}),
 						body: formData
 						})
-						const reader = response.body.getReader()
-						const td = new TextDecoder("utf-8")
-						let isdone = false
-						do {
-						const {value, done} = await reader.read()
-						updateStatusText (td.decode(value),true)
-						isdone = done
-						} while (!isdone)
-
+						let json = await response.json()
+						updateStatusText (JSON.stringify(json, null, 2))
+						updateStatusText ('------------------------------------')
+						updateStatusText ('Done')
+						updateProgress(0, 'Done')
 					}
 					else if (extension === 'zip') {
 						appwindow.close()
