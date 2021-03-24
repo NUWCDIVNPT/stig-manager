@@ -69,7 +69,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
           repository: nuwcdivnpt/stig-manager
           short-description: An API and Web client for managing STIG assessments.
-          readme-filepath: ./docs/DockerHub_Readme.md
+          readme-filepath: ./docs/the-project/DockerHub_Readme.md
   build-push-ironbank:
     name: Build and push from Iron Bank base
     runs-on: ubuntu-latest
