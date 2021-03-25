@@ -259,10 +259,6 @@ From the Checklist menu in the Menu Bar, the User can:
 
 When a .ckl or XCCDF file is imported, any Reviews that meet the :term:`Workflow` criteria will be set to a Submitted state.
 
-
-.. todo::
-   Issue about Result column label? (not showing up in columns list either)
-
 The menu bar also supports a variety of status and Title filters.
 
 .. note::
@@ -362,8 +358,6 @@ Information about the Asset, Rule, Action, Last Modified Date, and applicable ST
 
 This section of the Report can be exported on its own.
 
-.. todo::
-   This export button doesn't seem to do anything. create issue.
 
 ===========================================
 
@@ -382,8 +376,6 @@ This report consists of the total number of Checks associated with each Asset or
 
 This report can be exported as a .csv using the Down-Arrow button at the botom of the panel.
 
-.. todo::
-   This export does not seem to be working. also still uses "returned" as a column header. make issue!
 
 .. thumbnail:: /assets/images/status-report.png
       :width: 50% 
