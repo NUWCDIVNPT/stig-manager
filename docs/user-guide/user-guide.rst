@@ -568,9 +568,24 @@ The user is presented with the log of the import.
 Export CKLs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. todo::
-   This feature was introduced in 1.0.0-beta.22 and documentation is pending.
+The "Export CKLs..." button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection. 
 
+One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file. 
+
+
+.. thumbnail:: /assets/images/checklist-archive-export-asset.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export by Asset
+
+
+.. thumbnail:: /assets/images/checklist-archive-export-log.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export log
+
+
+--------------------------
 
 Delete Asset
 ~~~~~~~~~~~~~~~~~~~~
@@ -622,7 +637,24 @@ Select "Change assigned Assets..." or double-click a STIG to change what Assets 
 Export CKLs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. todo::
-   This feature was introduced in 1.0.0-beta.22 and documentation is pending.
+The "Export CKLs..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection. 
+
+One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file. 
+
+
+.. thumbnail:: /assets/images/checklist-archive-export-stig.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export by STIG
+
+
+
+.. thumbnail:: /assets/images/checklist-archive-export-log.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export log
+
+
+|
 
 
