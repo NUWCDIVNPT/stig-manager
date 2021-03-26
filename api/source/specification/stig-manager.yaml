@@ -9,7 +9,7 @@ info:
     email: carl.a.smigielski@saic.com
   version: 'v1'
 servers:
-  - url: 'http://localhost:54000/api'
+  - url: 'http://localhost:64001/api'
 paths:
   /assets:
     parameters:
@@ -27,6 +27,8 @@ paths:
           description: Selects Assets mapped to a Collection
           schema:
             type: string
+        - $ref: '#/components/parameters/NameQuery'
+        - $ref: '#/components/parameters/NameMatchQuery'
         - name: benchmarkId
           in: query
           description: Selects Assets mapped to a STIG
@@ -68,6 +70,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssetProjected'
+        '400':
+          description: Client Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorDuplicateAsset'
         default:
           description: unexpected error
           content:
@@ -560,6 +568,7 @@ paths:
       operationId: getCollections
       parameters:
         - $ref: '#/components/parameters/NameQuery'
+        - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/CollectionWorkflowQuery'
         - $ref: '#/components/parameters/CollectionMetadataQuery'
       responses:
@@ -603,6 +612,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CollectionProjected'
+        '400':
+          description: Client Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorDuplicateCollection'
         default:
           description: unexpected error
           content:
@@ -1874,7 +1889,6 @@ paths:
   /users:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      - $ref: '#/components/parameters/UsernameQuery'
       - $ref: '#/components/parameters/UserProjectionQuery'
     get:
       tags:
@@ -1882,7 +1896,8 @@ paths:
       summary: Return a list of Users accessible to the requester
       operationId: getUsers
       parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/UsernameQuery'
+      - $ref: '#/components/parameters/UsernameMatchQuery'
       responses:
         '200':
           description: UserProjected response
@@ -2442,6 +2457,32 @@ components:
         - accepted
         - rejected
         - null
+    ClientErrorDuplicateAsset:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum:
+            - 400
+        message:
+          type: string
+          enum:
+            - 'Duplicate name'
+        data:
+          $ref: '#/components/schemas/AssetProjected'
+    ClientErrorDuplicateCollection:
+      type: object
+      properties:
+        code:
+          type: integer
+          enum:
+            - 400
+        message:
+          type: string
+          enum:
+            - 'Duplicate name'
+        data:
+          $ref: '#/components/schemas/CollectionProjected'
     Collection:
       type: object
       properties:
@@ -3369,9 +3410,21 @@ components:
     NameQuery:
       name: name
       in: query
-      description: Matches a string anywhere in the object name
+      description: Matches against the name according to the `name-match` parameter
       schema:
         type: string
+    NameMatchQuery:
+      name: name-match
+      in: query
+      description: How to match against the `name` parameter
+      schema:
+        type: string
+        default: exact
+        enum:
+          - exact
+          - startsWith
+          - endsWith
+          - contains
     PoamAggregatorQuery:
       name: aggregator
       required: true
@@ -3533,9 +3586,21 @@ components:
     UsernameQuery:
       name: username
       in: query
-      description: A query parameter that filters on a username
+      description: Matches against the username according to the `username-match` parameter
       schema:
         type: string
+    UsernameMatchQuery:
+      name: username-match
+      in: query
+      description: How to match against the `username` parameter
+      schema:
+        type: string
+        default: exact
+        enum:
+          - exact
+          - startsWith
+          - endsWith
+          - contains
     UserProjectionQuery:
       name: projection
       in: query

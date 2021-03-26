@@ -11,8 +11,28 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const elevate = req.swagger.params['elevate'].value
     const body = req.swagger.params['body'].value
     if ( elevate || req.userObject.privileges.canCreateCollection ) {
-      const response = await Collection.createCollection( body, projection, req.userObject)
-      writer.writeJson(res, response)
+      try {
+        const response = await Collection.createCollection( body, projection, req.userObject)
+        writer.writeJson(res, response)
+      }
+      catch (err) {
+        // This is MySQL specific, should abstract with an SmError
+        if (err.code === 'ER_DUP_ENTRY') {
+          try {
+            let response = await Collection.getCollections({
+              name: body.name
+            }, projection, elevate, req.userObject )
+            throw (writer.respondWithCode( 400, {
+              code: 400,
+              message: `Duplicate name`,
+              data: response[0]
+            }))
+          } finally {}
+        }
+        else {
+          throw err
+        }
+      }
     }
     else {
       throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
@@ -95,10 +115,12 @@ module.exports.getCollections = async function getCollections (req, res, next) {
     const projection = req.swagger.params['projection'].value
     const elevate = req.swagger.params['elevate'].value
     const name = req.swagger.params['name'].value
+    const nameMatch = req.swagger.params['name-match'].value
     const workflow = req.swagger.params['workflow'].value
     const metadata = req.swagger.params['metadata'].value
     const response = await Collection.getCollections({
       name: name,
+      nameMatch: nameMatch,
       workflow: workflow,
       metadata: metadata
     }, projection, elevate, req.userObject)

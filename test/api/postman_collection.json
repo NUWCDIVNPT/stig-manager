@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "051d290e-a493-49d6-81d2-ab400a6ad469",
+		"_postman_id": "ddfcec0a-c570-408b-9527-1e672e2b2c0f",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -2084,7 +2084,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/collections?name={{collectionMatchString}}&elevate={{elevated}}&projection=owners&projection=statistics",
+											"raw": "{{baseUrl}}/collections?name={{collectionMatchString}}&elevate={{elevated}}&projection=owners&projection=statistics&name-match={{collectionMatchType}}",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2123,6 +2123,10 @@
 													"key": "projection",
 													"value": "statistics",
 													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "name-match",
+													"value": "{{collectionMatchType}}"
 												}
 											]
 										}
@@ -13121,6 +13125,7 @@
 					"",
 					"//regex strings",
 					"pm.environment.set(\"collectionMatchString\", pm.iterationData.get(\"collectionMatchString\"));",
+					"pm.environment.set(\"collectionMatchType\", pm.iterationData.get(\"collectionMatchType\"));",
 					"pm.environment.set(\"assetMatchString\", pm.iterationData.get(\"assetMatchString\"));",
 					"pm.environment.set(\"reviewMatchString\", pm.iterationData.get(\"reviewMatchString\"));",
 					"",
