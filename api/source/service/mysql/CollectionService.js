@@ -7,7 +7,7 @@ const _this = this
 /**
 Generalized queries for collection(s).
 **/
-exports.queryCollections = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
+exports.queryCollections = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) { 
   try {
     let context
     if (userObject.privileges.globalAccess || elevate) {
@@ -133,8 +133,23 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       predicates.binds.push( inPredicates.collectionId )
     }
     if ( inPredicates.name ) {
-      predicates.statements.push('c.name LIKE ?')
-      predicates.binds.push( `%${inPredicates.name}%` )
+      let matchStr = '= ?'
+      if ( inPredicates.nameMatch && inPredicates.nameMatch !== 'exact') {
+        matchStr = 'LIKE ?'
+        switch (inPredicates.nameMatch) {
+          case 'startsWith':
+            inPredicates.name = `${inPredicates.name}%`
+            break
+          case 'endsWith':
+            inPredicates.name = `%${inPredicates.name}`
+            break
+          case 'contains':
+            inPredicates.name = `%${inPredicates.name}%`
+            break
+        }
+      }
+      predicates.statements.push(`c.name ${matchStr}`)
+      predicates.binds.push( inPredicates.name )
     }
     if ( inPredicates.workflow ) {
       predicates.statements.push('c.workflow = ?')
@@ -620,9 +635,7 @@ exports.createCollection = async function(body, projection, userObject) {
     let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
     return (row)
   }
-  catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
+  finally {}
 }
 
 

@@ -17,8 +17,26 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
 
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let asset = await Asset.createAsset( body, projection, elevate, req.userObject)    
-      writer.writeJson(res, asset, 201)
+      try {
+        let asset = await Asset.createAsset( body, projection, elevate, req.userObject)
+        writer.writeJson(res, asset, 201)
+      }
+      catch (err) {
+        // This is MySQL specific, should abstract with an SmError
+        if (err.code === 'ER_DUP_ENTRY') {
+          try {
+            let response = await Asset.getAssets(body.collectionId, body.name, 'exact', null, projection, elevate, req.userObject )
+            throw (writer.respondWithCode( 400, {
+              code: 400,
+              message: `Duplicate name`,
+              data: response[0]
+            }))
+          } finally {}
+        }
+        else {
+          throw err
+        }
+      }
     }
     else {
       // Not elevated or having collectionGrant
@@ -167,7 +185,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
 
 module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
   try {
-    let assets =  await Asset.getAssets(null, null, projection, elevate, userObject )
+    let assets =  await Asset.getAssets(null, null, null, null, projection, elevate, userObject )
     return assets
   }
   catch (err) {
@@ -204,7 +222,12 @@ module.exports.getAsset = async function getAsset (req, res, next) {
 
 module.exports.getAssets = async function getAssets (req, res, next) {
   try {
+    const predicates = {
+
+    }
     let collectionId = req.swagger.params['collectionId'].value
+    let name = req.swagger.params['name'].value
+    let nameMatch = req.swagger.params['name-match'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
@@ -220,7 +243,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
           }
         }
       }
-      let response = await Asset.getAssets(collectionId, benchmarkId, projection, elevate, req.userObject )
+      let response = await Asset.getAssets(collectionId, name, nameMatch, benchmarkId, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
     else {

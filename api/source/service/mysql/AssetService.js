@@ -121,6 +121,25 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.statements.push('a.assetId = :assetId')
       predicates.binds.assetId = inPredicates.assetId
     }
+    if ( inPredicates.name ) {
+      let matchStr = '= :name'
+      if ( inPredicates.nameMatch && inPredicates.nameMatch !== 'exact') {
+        matchStr = 'LIKE :name'
+        switch (inPredicates.nameMatch) {
+          case 'startsWith':
+            inPredicates.name = `${inPredicates.name}%`
+            break
+          case 'endsWith':
+            inPredicates.name = `%${inPredicates.name}`
+            break
+          case 'contains':
+            inPredicates.name = `%${inPredicates.name}%`
+            break
+        }
+      }
+      predicates.statements.push(`a.name ${matchStr}`)
+      predicates.binds.name = `${inPredicates.name}`
+    }
     if (inPredicates.collectionId) {
       predicates.statements.push('a.collectionId = :collectionId')
       predicates.binds.collectionId = inPredicates.collectionId
@@ -141,7 +160,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     sql += ' FROM '
     sql+= joins.join(" \n")
     if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
+      sql += "\nWHERE " + predicates.statements.join("\n and ")
     }
     sql += ' group by a.assetId, a.name, a.fqdn, a.collectionId, a.description, a.ip, a.mac, a.noncomputing, c.collectionId, c.name'
     sql += ' order by a.name'
@@ -863,9 +882,7 @@ exports.createAsset = async function(body, projection, elevate, userObject) {
     let row = await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
     return (row)
   }
-  catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
+  finally {}
 }
 
 
@@ -950,10 +967,12 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(collectionId, benchmarkId, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, name, nameMatch, benchmarkId, projection, elevate, userObject) {
   try {
     let rows = await _this.queryAssets(projection, {
       collectionId: collectionId,
+      name: name,
+      nameMatch: nameMatch,
       benchmarkId: benchmarkId
     }, elevate, userObject)
     return (rows)
