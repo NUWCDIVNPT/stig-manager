@@ -90,15 +90,15 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
         * In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the "Restricted User access list..." button in the Grants panel toolbar.
 
         Users can also be given one of 3 **Privileges** on the STIG Manager system. These privileges are administered in Keycloak through the assignment of User Roles:
-        * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
-        * Global Access: Gives the User Read access to all Collections in STIG Manager.
-        * Administrator: Gives the user Administrative access to STIG Manager via the "Administration" node of the Nav Tree. The Administrator Privilege allows the User to:
-		
-            * Import new STIGs into STIG Manager, as well as Delete them.
-            * Create and Alter Collections, and view their metadata.
-            * Create and Alter Users, and view their metadata.
-            * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager (except Review History)
-            * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Administrative interface.
+            * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
+            * Global Access: Gives the User Read access to all Collections in STIG Manager.
+            * Administrator: Gives the user Administrative access to STIG Manager via the "Administration" node of the Nav Tree. The Administrator Privilege allows the User to:
+            
+                * Import new STIGs into STIG Manager, as well as Delete them.
+                * Create and Alter Collections, and view their metadata.
+                * Create and Alter Users, and view their metadata.
+                * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager (except Review History)
+                * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Administrative interface.
 
 
     Workflow
@@ -112,7 +112,7 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
             - All Evaluations must have both a Result and a Result Comment
             - All "Open" Evaluations must also have an Action and an Action Comment
 
-        - **Accepted** - A Collection Owner has accepted this review as complete and meeting their process requirements. Once accepted, no one but a Collection Owner may edit the review further. 
+        - **Accepted** - A Collection Owner has accepted this review as complete and meeting their process requirements. Further modification of the Review will cause it to lose it's "Accepted" status.  
         - **Rejected** - A Collection Owner has rejected this review for further work or clarification by the Reviewer. The Reviewer will have to make changes, then set back to "Submitted" to continue the workflow.
 
             - In order to be Rejected, the Collection Owner must provide a Rejection Comment.

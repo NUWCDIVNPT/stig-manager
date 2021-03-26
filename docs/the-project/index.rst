@@ -23,8 +23,10 @@ These pages describe the STIG Manager project.
 	testing
 	documentation
 	examples
+	security
 	requirements-and-dependencies
 	clients
+	related-repos
 	DockerHub_Readme.md
 
 
