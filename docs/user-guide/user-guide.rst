@@ -424,6 +424,9 @@ This Panel allows Collection Managers and Owners to change the name of the Asset
 
 -------------------------------
 
+.. _grants-panel:
+
+
 Grants Panel
 -------------------
 This Panel displays all the Users who have access to some portion of this Collection.
@@ -565,7 +568,9 @@ The user is presented with the log of the import.
 -------------------------------
 
 
-Export CKLs
+.. _export-by-asset:
+
+Export CKLs by Asset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "Export CKLs..." button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection. 
@@ -634,7 +639,10 @@ Change Assigned Assets
 Select "Change assigned Assets..." or double-click a STIG to change what Assets are assigned this STIG in this Collection.
 
 
-Export CKLs
+.. _export-by-stig:
+
+
+Export CKLs by STIG
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "Export CKLs..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection. 

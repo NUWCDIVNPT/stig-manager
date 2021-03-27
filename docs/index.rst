@@ -33,7 +33,7 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Common Tasks:
 
    features/common-tasks
