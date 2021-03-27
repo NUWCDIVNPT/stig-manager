@@ -146,12 +146,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings">Analyze Findings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#authoritative-results">Authoritative results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
@@ -259,7 +258,7 @@ This Tab provides links to useful information, such as this Documentation, DISA 
 The Home Panel also provides information about the STIG Manager Open Source Software Project, and links to the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager OSS Project on GitHub</a> for submitting Issues with the software.</p>
 <figure class="">
             <a 
-               data-lightbox="group-f24f6bb2-5a59-45df-8747-8796ddd3faa6"
+               data-lightbox="group-31812c1c-33ae-46ef-9ab9-0228522131ce"
                href="../_images/home-tab1.png"
                title="Home Tab"
                data-title="Home Tab"
@@ -279,7 +278,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>The components of the Navigation Tree are described below.</p>
 <figure class="">
             <a 
-               data-lightbox="group-8100c857-cc40-4276-9338-30784065e03f"
+               data-lightbox="group-794606a0-5b2d-49eb-8aa1-3e144d5cedab"
                href="../_images/nav-tree1.png"
                title="Navigation Tree"
                data-title="Navigation Tree"
@@ -298,7 +297,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>If you have the Collection Creator privilege, this option will appear. Click this item in the Nav Tree to create a new Collection.</p>
 <figure class="">
             <a 
-               data-lightbox="group-f6978f48-4741-441b-b1ed-3eba4ab5f695"
+               data-lightbox="group-4780490b-94f0-46ee-b5f7-ed628cea6bc7"
                href="../_images/create-collection-popup1.png"
                title="Create Collection popup"
                data-title="Create Collection popup"
@@ -359,7 +358,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <p>The Collection Review Workspace allows the user to assess all the Assets they have acess to that have been assigned the selected STIG.</p>
 <figure class="">
             <a 
-               data-lightbox="group-b79ad121-e5fe-4453-8460-e9167da651ca"
+               data-lightbox="group-cd8e480c-2845-4b42-a901-8f3e6457e9cc"
                href="../_images/collection-review1.png"
                title="Collection Review Workspace"
                data-title="Collection Review Workspace"
@@ -429,7 +428,7 @@ Reviews can be Accepted with the button at the top of the Reviews Panel, or Reje
 Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.</p>
 <figure class="">
             <a 
-               data-lightbox="group-04b81ff2-2abe-48fa-b167-a9157adc7b04"
+               data-lightbox="group-89201696-abcc-4d89-ae52-e496789eec14"
                href="../_images/asset-review1.png"
                title="Asset Review Workspace"
                data-title="Asset Review Workspace"
@@ -513,7 +512,7 @@ In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIAT
 <p>The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.</p>
 <figure class="">
             <a 
-               data-lightbox="group-bddb86b6-119c-4d1a-91b5-1ee8ceac20e9"
+               data-lightbox="group-60c95f55-3465-4f70-b1f8-4159101e18fe"
                href="../_images/findings-report1.png"
                title="Findings Report"
                data-title="Findings Report"
@@ -552,7 +551,7 @@ Information about the Asset, Rule, Action, Last Modified Date, and applicable ST
 <p>This report can be exported as a .csv using the Down-Arrow button at the botom of the panel.</p>
 <figure class="">
             <a 
-               data-lightbox="group-1f8e581b-e9ee-4446-8c91-12aa25a9c880"
+               data-lightbox="group-f51d1e2c-c7e3-418a-835d-7e357f0d2536"
                href="../_images/status-report1.png"
                title="Status Report"
                data-title="Status Report"
@@ -581,7 +580,7 @@ From this Workspace, the User can:</p>
 </div></blockquote>
 <figure class="">
             <a 
-               data-lightbox="group-d778974d-57c7-4800-b22a-62542885e160"
+               data-lightbox="group-fdcca464-bda8-4a8c-bc0c-d45c9bf1f453"
                href="../_images/manage-collection-workspace1.png"
                title="The Manage Collections Workspace"
                data-title="The Manage Collections Workspace"
@@ -597,7 +596,7 @@ From this Workspace, the User can:</p>
 <p>This Panel allows Collection Managers and Owners to change the name of the Asset, its workflow, and any associated Metadata.  Collection Owners can also delete this Collection.</p>
 <figure class="">
             <a 
-               data-lightbox="group-af3149d3-60d1-4524-9853-8e899556ed52"
+               data-lightbox="group-3cbeaecb-caab-4c01-a633-1f44a2806abb"
                href="../_images/collection-properties1.png"
                title="Collection Properties"
                data-title="Collection Properties"
@@ -607,16 +606,16 @@ From this Workspace, the User can:</p>
                      height="auto"
                      alt=""/>
                 </a><figcaption>Collection Properties</figcaption>
-            </figure></div>
-<hr class="docutils" />
+            </figure><hr class="docutils" />
+</div>
 <div class="section" id="grants-panel">
-<h3><span class="section-number">2.8.2. </span>Grants Panel<a class="headerlink" href="#grants-panel" title="Permalink to this headline">¶</a></h3>
+<span id="id9"></span><h3><span class="section-number">2.8.2. </span>Grants Panel<a class="headerlink" href="#grants-panel" title="Permalink to this headline">¶</a></h3>
 <p>This Panel displays all the Users who have access to some portion of this Collection.</p>
 <p>User Grants can be added or removed using toolbar buttons at the top of this Panel. Double-clicking a Grant will allow you to modify the Grant. When creating or modifying a Grant, typing into the Username field will display a filtered droplist of the available users.</p>
 <p>See <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> for more info about these Access Levels.</p>
 <figure class="">
             <a 
-               data-lightbox="group-a506758e-7904-4eb8-b533-34132ae88c79"
+               data-lightbox="group-6015c67a-f932-453a-b72a-5ca51241264c"
                href="../_images/user-grants1.png"
                title="The User Grants Panel"
                data-title="The User Grants Panel"
@@ -630,7 +629,7 @@ From this Workspace, the User can:</p>
 <p>When a User with a Restricted Grant is selected, the “User access…” button is enabled. Restricted Users must be given access to specific Asset-STIG pairs.</p>
 <figure class="">
             <a 
-               data-lightbox="group-c8588c89-ceae-449e-a5f6-25a009e2a276"
+               data-lightbox="group-d91496d5-5658-4cf0-a926-9e60d06e678e"
                href="../_images/restricted-access-list1.png"
                title="The Restricted User Access List"
                data-title="The Restricted User Access List"
@@ -649,7 +648,7 @@ From this Workspace, the User can:</p>
 The <a class="reference internal" href="#collection-builder"><span class="std std-ref">Import CKL or SCAP / Collection Builder</span></a> option allows the User to create many Assets and their STIG Assignments at once.</p>
 <figure class="">
             <a 
-               data-lightbox="group-50498d28-2c6f-4b4e-a409-538b9b6ef287"
+               data-lightbox="group-04e510c8-3872-42f8-ab17-19006e4e8ee5"
                href="../_images/assets-panel-toolbar1.png"
                title="Collection -> Manage -> Assets toolbar"
                data-title="Collection -> Manage -> Assets toolbar"
@@ -665,7 +664,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <p>Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs can also be assigned to the new Asset from this interface.</p>
 <figure class="">
             <a 
-               data-lightbox="group-a52a8a07-ab90-4c98-abfe-389eb6f42bb2"
+               data-lightbox="group-d0a989c6-bc10-4b12-a1cf-d87c71af6943"
                href="../_images/create-asset1.png"
                title="Create an Asset"
                data-title="Create an Asset"
@@ -690,7 +689,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <p>From the Collection Management workspace, click the “Import CKL or SCAP…” button at the top of the Assets panel .</p>
 <figure class="">
             <a 
-               data-lightbox="group-5008c523-12d1-407a-9eeb-19cbc975fe7e"
+               data-lightbox="group-8fdb418b-6d23-4cf8-ace2-95c35c66a112"
                href="../_images/collection-builder-files1.png"
                title="Collection Builder File Select"
                data-title="Collection Builder File Select"
@@ -707,7 +706,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-9456fb34-0b32-4115-8b6f-4c246b430ba6"
+               data-lightbox="group-0a495142-6706-43f1-b675-0bc0eb24cf4a"
                href="../_images/collection-builder-errors-and-warnings1.png"
                title="Collection Builder Errors and Warnings"
                data-title="Collection Builder Errors and Warnings"
@@ -725,7 +724,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-f3fb1dbf-ee35-4377-a5b2-12de742aa525"
+               data-lightbox="group-f8e14631-1015-424c-9418-bf0a02a7019b"
                href="../_images/collection-builder-options1.png"
                title="Collection Builder Options and Summary"
                data-title="Collection Builder Options and Summary"
@@ -752,7 +751,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 <hr class="docutils" />
 <figure class="">
             <a 
-               data-lightbox="group-bf7579da-7c2f-4470-ae99-7f9f4e4cfd07"
+               data-lightbox="group-b25c7930-82d3-41a7-8578-dc573f1d0b21"
                href="../_images/collection-builder-import1.png"
                title="Collection Builder Import Log"
                data-title="Collection Builder Import Log"
@@ -770,16 +769,16 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 <p class="admonition-title">Note</p>
 <p>STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager’s Database. STIG Manager can produce a new .ckl representation of its Reviews on demand.</p>
 </div>
-</div>
-</div>
 <hr class="docutils" />
-<div class="section" id="export-ckls">
-<h4><span class="section-number">2.8.3.3. </span>Export CKLs<a class="headerlink" href="#export-ckls" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="export-ckls-by-asset">
+<span id="export-by-asset"></span><h4><span class="section-number">2.8.3.3. </span>Export CKLs by Asset<a class="headerlink" href="#export-ckls-by-asset" title="Permalink to this headline">¶</a></h4>
 <p>The “Export CKLs…” button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection.</p>
 <p>One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file.</p>
 <figure class="">
             <a 
-               data-lightbox="group-4783398e-65a8-4dc4-b776-6d4773356a46"
+               data-lightbox="group-ce8556ca-2547-4b1d-ad26-660980d993b7"
                href="../_images/checklist-archive-export-asset1.png"
                title="Checklist Archive Export by Asset"
                data-title="Checklist Archive Export by Asset"
@@ -791,7 +790,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
                 </a><figcaption>Checklist Archive Export by Asset</figcaption>
             </figure><figure class="">
             <a 
-               data-lightbox="group-6c2cfbb4-e057-4700-9807-4fd62080fa3a"
+               data-lightbox="group-0808df53-44a0-4ec9-ba42-9df2f89d0beb"
                href="../_images/checklist-archive-export-log1.png"
                title="Checklist Archive Export log"
                data-title="Checklist Archive Export log"
@@ -818,7 +817,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 STIG Assignments can also be added or removed from Assets with the buttons at the top of this panel.</p>
 <figure class="">
             <a 
-               data-lightbox="group-b8444464-3d8c-4b9f-a8d2-b745ee113225"
+               data-lightbox="group-0267d469-a020-4847-b604-d8d9961bf603"
                href="../_images/stigs-panel1.png"
                title="STIGs Panel"
                data-title="STIGs Panel"
@@ -834,7 +833,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <p>Select Assign STIG to add a new STIG to the Collection. A popup will allow you to select a STIG that is not yet assigned to an Asset. Click the Assign STIG button on this popup to select Assets that should have this STIG assigned to them.</p>
 <figure class="">
             <a 
-               data-lightbox="group-980ac6aa-c914-493c-8bb9-532fbb200049"
+               data-lightbox="group-e3ce6c77-e697-499a-a697-a72aadb3b493"
                href="../_images/stig-assignments1.png"
                title="STIG Assignments"
                data-title="STIG Assignments"
@@ -858,13 +857,13 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <h4><span class="section-number">2.8.4.3. </span>Change Assigned Assets<a class="headerlink" href="#change-assigned-assets" title="Permalink to this headline">¶</a></h4>
 <p>Select “Change assigned Assets…” or double-click a STIG to change what Assets are assigned this STIG in this Collection.</p>
 </div>
-<div class="section" id="id9">
-<h4><span class="section-number">2.8.4.4. </span>Export CKLs<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="export-ckls-by-stig">
+<span id="export-by-stig"></span><h4><span class="section-number">2.8.4.4. </span>Export CKLs by STIG<a class="headerlink" href="#export-ckls-by-stig" title="Permalink to this headline">¶</a></h4>
 <p>The “Export CKLs…” button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection.</p>
 <p>One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file.</p>
 <figure class="">
             <a 
-               data-lightbox="group-34cc40f3-a7c3-45ea-a10f-060de19d4e0e"
+               data-lightbox="group-c4399baa-ddb8-4760-9a86-e53a4baeac69"
                href="../_images/checklist-archive-export-stig1.png"
                title="Checklist Archive Export by STIG"
                data-title="Checklist Archive Export by STIG"
@@ -876,7 +875,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                 </a><figcaption>Checklist Archive Export by STIG</figcaption>
             </figure><figure class="">
             <a 
-               data-lightbox="group-8e9c990b-e9bd-4bd9-84ed-f2de958a55c6"
+               data-lightbox="group-c71b4982-33d4-47eb-8be3-a5fbd8d5d70f"
                href="../_images/checklist-archive-export-log1.png"
                title="Checklist Archive Export log"
                data-title="Checklist Archive Export log"

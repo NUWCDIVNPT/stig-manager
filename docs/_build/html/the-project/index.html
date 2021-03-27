@@ -105,16 +105,15 @@
 <li class="toctree-l2"><a class="reference internal" href="testing.html">STIG Manager Testing Guide</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation.html">STIG Manager Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples.html">Examples and Sample Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="security.html">Security Efforts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="requirements-and-dependencies.html">STIG Manager Requirements and Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="clients.html">STIG Manager Clients</a></li>
 <li class="toctree-l2"><a class="reference internal" href="related-repos.html">STIG Manager Accessories</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DockerHub_Readme.html">STIG Manager OSS on Docker Hub</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#stig-manager-is-an-active-open-source-project">STIG Manager is an active, Open Source project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stig-manager-is-an-active-open-source-project-maintained-by-nuwcdivnpt">STIG Manager is an active, Open Source project maintained by NUWCDIVNPT</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#stig-manager-operations">STIG Manager Operations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#security">Security</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#stig-manager-security">STIG Manager Security</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#support">Support</a></li>
 </ul>
 </li>
@@ -125,12 +124,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings">Analyze Findings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#evaluation-approval">Evaluation Approval</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#poam-generation">POAM generation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#package-evaluation-progress">Package Evaluation progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#authoritative-results">Authoritative results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
@@ -219,15 +217,14 @@
 <li class="toctree-l1"><a class="reference internal" href="testing.html">STIG Manager Testing Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="documentation.html">STIG Manager Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples and Sample Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="security.html">Security Efforts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="requirements-and-dependencies.html">STIG Manager Requirements and Dependencies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="clients.html">STIG Manager Clients</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related-repos.html">STIG Manager Accessories</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DockerHub_Readme.html">STIG Manager OSS on Docker Hub</a></li>
 </ul>
 </div>
-<div class="section" id="stig-manager-is-an-active-open-source-project">
-<h2>STIG Manager is an active, Open Source project<a class="headerlink" href="#stig-manager-is-an-active-open-source-project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="stig-manager-is-an-active-open-source-project-maintained-by-nuwcdivnpt">
+<h2>STIG Manager is an active, Open Source project maintained by NUWCDIVNPT<a class="headerlink" href="#stig-manager-is-an-active-open-source-project-maintained-by-nuwcdivnpt" title="Permalink to this headline">¶</a></h2>
 <p>STIG Manager is actively under development. Get the latest info here: <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/">STIG Manager</a></p>
 <p>STIG Manager is participating in the <a class="reference external" href="https://code.mil/">Code.mil Open Source initiative</a>.</p>
 <p>The STIG Manager project is chiefly composed of the STIG Manager API and the STIG Manager Client. The STIG Manager API provides a well-defined programmatic interface for engaging with the resources and data it maintains. The STIG Manager Client is just one use of the API that this architecture enables. In a modern, open source microservice-oriented ecosystem, other developers will be able to contribute new utilities and services that will expand functionality. User Stories, Feature Requests, Bugs, and Issues will be tracked in GitHub to help determine future efforts.</p>
@@ -235,12 +232,12 @@
 <h3>STIG Manager Operations<a class="headerlink" href="#stig-manager-operations" title="Permalink to this headline">¶</a></h3>
 <p>STIG Manager is a modern, containerized application built to take full advantage of a CI/CD DevOps pipeline. Updates to STIG Manager will trigger automatic testing and image creation. Organizations will have the option to engage with the pipeline to automatically deploy new versions to their test environments, or directly to production.</p>
 </div>
-<div class="section" id="security">
-<h3>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="stig-manager-security">
+<h2>STIG Manager Security<a class="headerlink" href="#stig-manager-security" title="Permalink to this headline">¶</a></h2>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
-<p>add</p>
-</div>
+<p>Describe STIG Manager’s scanning, testing, and adherance go to guidelines here.</p>
 </div>
 </div>
 <div class="section" id="support">

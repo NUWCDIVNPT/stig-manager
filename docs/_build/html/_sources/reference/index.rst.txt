@@ -8,7 +8,6 @@ Terminology and Concepts
 This is a glossary with definition terms for thing like :term:`Workflow`:
 
 
-
 .. glossary::
 
     Asset
