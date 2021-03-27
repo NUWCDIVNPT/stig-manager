@@ -25,11 +25,12 @@ These pages describe the STIG Manager project.
 	examples
 	requirements-and-dependencies
 	clients
+	related-repos
 	DockerHub_Readme.md
 
 
-STIG Manager is an active, Open Source project
-======================================================
+STIG Manager is an active, Open Source project maintained by NUWCDIVNPT
+========================================================================
 
 STIG Manager is actively under development. Get the latest info here: `STIG Manager <https://github.com/NUWCDIVNPT/stig-manager/>`_
 
@@ -45,12 +46,12 @@ STIG Manager Operations
 STIG Manager is a modern, containerized application built to take full advantage of a CI/CD DevOps pipeline. Updates to STIG Manager will trigger automatic testing and image creation. Organizations will have the option to engage with the pipeline to automatically deploy new versions to their test environments, or directly to production.
 
 
-Security
-------------------
+
+STIG Manager Security
+===========================================
 
 .. todo::
-	add
-
+    Describe STIG Manager's scanning, testing, and adherance go to guidelines here.
 
 
 Support

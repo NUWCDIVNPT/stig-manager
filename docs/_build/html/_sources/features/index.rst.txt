@@ -210,11 +210,20 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
 
 
 
+---------------------
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Common Tasks:
+
+   common-tasks
 
 
 
 
+---------------------
 
-
+|
 
 
