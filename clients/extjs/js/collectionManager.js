@@ -10,6 +10,7 @@ async function addCollectionManager( params ) {
 		let collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,
+			title: `Collection Properties (ID ${collectionId})`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			region: 'north',
@@ -98,7 +99,7 @@ async function addCollectionManager( params ) {
 			items: [
 				{
 					region: 'west',
-					width: 420,
+					width: '30%',
 					minWidth: 330,
 					split: true,
 					border: false,

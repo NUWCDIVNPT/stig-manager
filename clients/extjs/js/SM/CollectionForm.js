@@ -786,7 +786,7 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             }
         }
         let config = {
-            title: 'Collection properties',
+            title: this.title || 'Collection properties',
             layout: 'form',
             labelWidth: 100,
             getFieldValues: function (dirtyOnly) {
