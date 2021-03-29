@@ -1,4 +1,18 @@
-
+.x-progress-inner {
+    background-image: none;
+    background-color:  hsl(0deg 0% 95%);
+}
+.x-progress-bar {
+	background-image: none;
+	background-color: #bdd0e5;
+	border: none;
+}
+.x-progress-text {
+	color: transparent;
+}
+.x-progress-text.x-progress-text-back {
+	color: hsl(0deg 0% 33%);
+}
 .sm-cell-thermometer-bg {
 	background-color: #f5f5f5;
 	margin-left: 34px;
