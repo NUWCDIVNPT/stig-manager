@@ -318,25 +318,25 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       select
         sa.assetId,
         sa.benchmarkId,
-        min(reviews.ts) as minTs,
-        max(reviews.ts) as maxTs,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedManual,
-        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 0 THEN 1 ELSE 0 END) as savedAuto,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedManual,
-        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 1 THEN 1 ELSE 0 END) as submittedAuto,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedManual,
-        sum(CASE WHEN reviews.autoResult = 1 and reviews.statusId = 2 THEN 1 ELSE 0 END) as rejectedAuto,
-        sum(CASE WHEN reviews.autoResult = 0 and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedManual,
-        sum(CASE WHEN reviews.autoResult = 1  and reviews.statusId = 3 THEN 1 ELSE 0 END) as acceptedAuto,
-        sum(CASE WHEN reviews.resultId=4 and r.severity='high' THEN 1 ELSE 0 END) as highCount,
-        sum(CASE WHEN reviews.resultId=4 and r.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
-        sum(CASE WHEN reviews.resultId=4 and r.severity='low' THEN 1 ELSE 0 END) as lowCount
+        min(review.ts) as minTs,
+        max(review.ts) as maxTs,
+        sum(CASE WHEN review.autoResult = 0 and review.statusId = 0 THEN 1 ELSE 0 END) as savedManual,
+        sum(CASE WHEN review.autoResult = 1 and review.statusId = 0 THEN 1 ELSE 0 END) as savedAuto,
+        sum(CASE WHEN review.autoResult = 0 and review.statusId = 1 THEN 1 ELSE 0 END) as submittedManual,
+        sum(CASE WHEN review.autoResult = 1 and review.statusId = 1 THEN 1 ELSE 0 END) as submittedAuto,
+        sum(CASE WHEN review.autoResult = 0 and review.statusId = 2 THEN 1 ELSE 0 END) as rejectedManual,
+        sum(CASE WHEN review.autoResult = 1 and review.statusId = 2 THEN 1 ELSE 0 END) as rejectedAuto,
+        sum(CASE WHEN review.autoResult = 0 and review.statusId = 3 THEN 1 ELSE 0 END) as acceptedManual,
+        sum(CASE WHEN review.autoResult = 1  and review.statusId = 3 THEN 1 ELSE 0 END) as acceptedAuto,
+        sum(CASE WHEN review.resultId=4 and r.severity='high' THEN 1 ELSE 0 END) as highCount,
+        sum(CASE WHEN review.resultId=4 and r.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
+        sum(CASE WHEN review.resultId=4 and r.severity='low' THEN 1 ELSE 0 END) as lowCount
       from
         asset a
         left join stig_asset_map sa using (assetId)
         left join current_group_rule cgr using (benchmarkId)
         left join rule r using (ruleId)
-        left join stigman.review reviews on (r.ruleId=reviews.ruleId and reviews.assetId=sa.assetId)
+        left join review on (r.ruleId=review.ruleId and review.assetId=sa.assetId)
       ${whereClause}
       group by
         sa.assetId,
