@@ -1,4 +1,15 @@
 
+1.0.0-beta.23
+-----------------------
+- fix: remove hard-coded reference to schema (#211)
+- feat: UI shows collectionId (#210)
+- feat: progress bar styling (#209)
+- Common tasks elaboration, other edits (#208)
+- feat: case-sensitive collation for benchmarkId in MySQL (#206)
+- feat: name-match params and duplicate handling (#204)
+- doc: Added some documentation about new .ckl archive export feature. (#203)
+- adjust path to docker readme (#196)
+
 1.0.0-beta.22
 -----------------------
 - fix: Improved output when importing STIG XML (#192)
