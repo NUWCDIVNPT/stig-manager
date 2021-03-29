@@ -141,7 +141,14 @@ function addCollectionAdmin( params ) {
         width: 150,
         dataIndex: 'created',
         sortable: true
+      },
+      {
+        header: "ID",
+        width: 150,
+        dataIndex: 'collectionId',
+        sortable: true
       }
+
     ],
     view: new Ext.grid.GridView({
       forceFit: false,
