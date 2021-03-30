@@ -341,6 +341,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       group by
         sa.assetId,
         sa.benchmarkId
+      FOR UPDATE
       `
 
     const sqlUpsert = `
@@ -392,7 +393,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       let bindsUpsert = results.map( r => Object.values(r))
       let stats;
       [stats] = await connection.query(sqlUpsert, [bindsUpsert])
-      await connection.query(sqlIntegrity)
+      // await connection.query(sqlIntegrity)
       return stats
     }
     else {
