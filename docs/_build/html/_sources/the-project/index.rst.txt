@@ -37,7 +37,7 @@ STIG Manager is actively under development. Get the latest info here: `STIG Mana
 
 STIG Manager is participating in the `Code.mil Open Source initiative <https://code.mil/>`_.
 
-The STIG Manager project is chiefly composed of the STIG Manager API and the STIG Manager Client. The STIG Manager API provides a well-defined programmatic interface for engaging with the resources and data it maintains. The STIG Manager Client is just one use of the API that this architecture enables. In a modern, open source microservice-oriented ecosystem, other developers will be able to contribute new utilities and services that will expand functionality. User Stories, Feature Requests, Bugs, and Issues will be tracked in GitHub to help determine future efforts. 
+The STIG Manager project is chiefly composed of the STIG Manager API and the STIG Manager Client. `The STIG Manager API provides a well-defined programmatic interface for engaging with the resources and data it maintains. <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ The STIG Manager Client is just one use of the API that this architecture enables. In a modern, open source microservice-oriented ecosystem, other developers will be able to contribute new utilities and services that will expand functionality. User Stories, Feature Requests, Bugs, and Issues will be tracked in GitHub to help determine future efforts. 
 
 
 STIG Manager Operations
