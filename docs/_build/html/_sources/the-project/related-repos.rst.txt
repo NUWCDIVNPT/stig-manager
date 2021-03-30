@@ -4,7 +4,7 @@
 STIG Manager Accessories
 #############################################################
 
-The STIG Manager OSS API is designed and documented such that additional clients can be developed to enhance its utility for users. 
+`The STIG Manager OSS API is designed and documented such that additional clients can be developed to enhance its utility for users. <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_
 
 The STIG Manager OSS project provides the main reference UI Client, described in this documentation, as part of the main repository on GitHub.
 

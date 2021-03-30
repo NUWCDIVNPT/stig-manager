@@ -4,7 +4,7 @@
 STIG Manager Clients
 #############################################################
 
-The STIG Manager project consists of an API and a UI. The API is designed so that other contributors can create Clients, GUI or CLI, to take advantage of and expand on its capabilities. 
+The STIG Manager project consists of an API and a UI. `The API is designed so that other contributors can create Clients, GUI or CLI, to take advantage of and expand on its capabilities. <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_
 
 
 Provided Client
