@@ -1445,24 +1445,34 @@ async function addCollectionReview ( params ) {
 		
 		async function handleStatusChange (grid,sm,status) {
 			try {
-				Ext.getBody().mask('Updating...')
 				const selections = sm.getSelections()
-				const requests = []
-				for (const record of selections) {
-					requests.push(
-						Ext.Ajax.requestPromise({
+				const results = []
+				for (i=0, l=selections.length; i < l; i++) {
+					const record = selections[i]
+					Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
+					try {
+						const result = await Ext.Ajax.requestPromise({
 							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 							method: 'PATCH',
 							jsonData: {
 								status: status
 							}
 						})
-					)
+						results.push({
+							success: true,
+							result: result
+						})
+					}
+					catch (e) {
+						results.push({
+							success: false,
+							result: e
+						})
+					}
 				}
-				let results = await Promise.allSettled(requests)
 
 				for (i=0, l=selections.length; i < l; i++) {
-					if (results[i].status === 'fulfilled') {
+					if (results[i].success) {
 						selections[i].data.status = status
 						selections[i].commit()
 					}
