@@ -28,6 +28,7 @@ function addCompletionStatus( params) {
 			root: '',
 			fields: [
 				{name:'assetId',type:'int'},
+				'assetName',
 				{name:'benchmarkId',type:'string'},
 	
 				{name:'rulesAuto', type:'int', mapping: 'rules.auto'},
@@ -45,7 +46,6 @@ function addCompletionStatus( params) {
 				{name:'highCount',type:'int', mapping: 'findings.high'},
 				{name:'mediumCount',type:'int', mapping: 'findings.medium'},
 				{name:'lowCount',type:'int', mapping: 'findings.low'},
-				'assetName',
 				{name:'notCheckedTotal',type:'int', convert: function (v, r) { 
 					return r.rules.total - (r.status.saved.total + r.status.submitted.total + r.status.rejected.total + r.status.accepted.total) 
 				} },
@@ -86,7 +86,7 @@ function addCompletionStatus( params) {
 			{header: "Not Checked",width:10,dataIndex:'notCheckedTotal',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},
 			{header: "Saved",width:10,dataIndex:'savedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/ready-16.png width=12 height=12> Submitted",width:10,dataIndex:'submittedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "<img src=img/rejected-16.png width=12 height=12> Returned",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "<img src=img/rejected-16.png width=12 height=12> Rejected",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/lock-16.png width=12 height=12> Accepted",width:10,dataIndex:'acceptedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "Cat 1",width:10,dataIndex:'highCount',sortable:true,align:'right',renderer:renderCat1,summaryType: 'sum'},			
 			{header: "Cat 2",width:10,dataIndex:'mediumCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},			
@@ -314,29 +314,16 @@ function addCompletionStatus( params) {
 			},{
 				xtype: 'tbseparator'
 			}
-			// ,{
-				// xtype: 'tbbutton',
-				// iconCls: 'icon-excel',
-				// tooltip: 'Download an enhanced Audits report spreadsheet',
-				// //text: 'Enhanced',
-				// width: 20,
-				// handler: function(btn){
-					// var ourStore = completionGrid.getStore();
-					// var lo = ourStore.lastOptions;
-					// window.location=ourStore.url + '?xls=1&collectionId=' + lo.params.collectionId;
-				// }
-			// }
 			,{
-				xtype: 'tbbutton',
+				xtype: 'exportbutton',
+				hasMenu: false,
+				// gridBasename: collectionName + '-Completion-Status',
+				exportType: 'store',
+				storeBasename: collectionName + '-Status',
 				iconCls: 'sm-export-icon',
-				width: 20,
-				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-				handler: function(btn){
-					var ourStore = completionGrid.getStore();
-					var lo = ourStore.lastOptions;
-					window.location=ourStore.url + '?csv=1&collectionId=' + lo.params.collectionId;
-				}
-			},{
+				text: 'Export'
+			},
+			{
 				xtype: 'tbfill'
 			},{
 				xtype: 'tbseparator'
