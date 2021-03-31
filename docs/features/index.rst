@@ -38,6 +38,14 @@ Features and Capabilities Overview
 ====================================
 
 
+STIG Evaluation Data, Freed From .CKL Files
+----------------------------------------------------
+
+STIG Manager maintains a canonical set of STIGs as published by DISA, and relates all Reviews to that set. Working with this data directly in STIGMan, rather than passing .ckl files around, eliminates the possibility of STIG Evaluators using the wrong STIG revision, changing severity, creating malformed .ckls, and other issues that can hamper the efficient flow of Evaluations to Validators.  STIG Manager will import .ckl files and create Reviews that match their contents. Any remaining Evaluation gaps can be reviewed manually in the STIGMan interface, or added to with additional imports. STIGMan provide a unified view of overall Evaluation progress, and are not tied to any specific .ckl file.  
+
+Instead of relying on .CKL files that could be altered, overridden, or have missing fields, properly formed .CKLs are generated from the current Evaluation state of Assets. Once Validators verify that all reviews are as they want them, they can create an archive of .CKLs on demand for import into eMASS. 
+
+
 RMF Package data represented as Collections, Assets, STIGs, and Reviews
 ----------------------------------------------------------------------------------
 
@@ -120,6 +128,12 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
 ..
   Collaborate on Steps 3 and 4 of the RMF Process
   ===================================================
+
+  STIGMan separates your evaluation data from the .ckls that previously contained them. 
+  Instead of sending .ckls around ahving to check that they are in order, perfect .ckls are generated on demand.
+  STIG Manager produces .ckls that represent 
+
+  Based off a canonical STIG, so you don't have to worry if the .ckl STIG is altered.
 
 
   Collaborate on STIG Evaluation and management. Make use of others expertise.
