@@ -284,6 +284,7 @@ SM.StigBatchNodeConfig = function (benchmarkId, collectionId) {
     id: `${collectionId}-batch-${benchmarkId}-leaf`,
     sortToTop: true,
     text: 'Collection review',
+    collectionGrant: curUser.collectionGrants.find( g => g.collection.collectionId === collectionId ).accessLevel,
     cls: 'sm-tree-node-collection-review',
     leaf: true,
     report: 'collection-review',
