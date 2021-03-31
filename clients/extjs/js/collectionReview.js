@@ -1197,17 +1197,23 @@ async function addCollectionReview ( params ) {
 				items: [
 					{
 						xtype: 'tbbutton',
+						disabled: true,
 						icon: 'img/lock-16.png',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
+						hidden: leaf.collectionGrant !== 4,
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
 						}
 					}
-					,'-'
+					,{
+						xtype: 'tbseparator',
+						hidden: leaf.collectionGrant !== 4
+					}
 					,{
 						xtype: 'tbbutton',
+						disabled: true,
 						icon: 'img/ready-16.png',  // <-- icon
 						id: 'reviewsGrid-submitButton' + idAppend,
 						text: 'Submit',
@@ -1332,55 +1338,109 @@ async function addCollectionReview ( params ) {
 		}
 
 		function setReviewsGridButtonStates() {
-			var sm = reviewsGrid.getSelectionModel();
-			var approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
-			var submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
-			var selections = sm.getSelections();
-			var selLength = selections.length;
-			var approveBtnDisabled = false;
-			var submitBtnDisabled = false;
-			var rejectFormDisabled = false;
+			const sm = reviewsGrid.getSelectionModel();
+			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
+			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
+			const selections = sm.getSelections();
+			const selLength = selections.length;
+			let approveBtnDisabled = false;
+			let submitBtnDisabled = false;
+			let rejectFormDisabled = false;
+			let approveBtnEnabled = true;
+			let submitBtnEnabled = true;
+			let rejectFormEnabled = true;
 
-			mainloop:
-			for (i=0; i<selLength; i++) {
-				if (selections[i].data.reviewId == 0) { // a review doesn't exist
-					approveBtnDisabled = true;
-					submitBtnDisabled = true;
-					break mainloop;
+			if (selLength === 0) {
+				approveBtnEnabled = false
+				submitBtnEnabled = false
+				rejectFormEnabled = false
+			}
+			else if (selLength === 1) {
+				const selection = selections[0]
+				if (!selection.data.status) { // a review doesn't exist
+					approveBtnEnabled = false
+					submitBtnEnabled = false
+					rejectFormEnabled = false
 				}
-				var status = selections[i].data.status;
-				switchloop:
-				switch (status) {
-					case 'saved': // in progress
-						approveBtnDisabled = true;
+				else {
+					const status = selection.data.status
+					switch (status) {
+						case 'saved': // in progress
+							approveBtnDisabled = true;
+							if (isReviewComplete(
+								selection.data.result,
+								selection.data.resultComment,
+								selection.data.action,
+								selection.data.actionComment
+								)) {
+									approveBtnEnabled = false
+									submitBtnEnabled = true
+									rejectFormEnabled = false
+				
+							} else {
+								approveBtnEnabled = false
+								submitBtnEnabled = false
+								rejectFormEnabled = false
+							}
+							break
+						case 'submitted':
+							approveBtnEnabled = true
+							submitBtnEnabled = false
+							rejectFormEnabled = true
+							break
+						case 'rejected':
+							approveBtnEnabled = true
+							submitBtnEnabled = true
+							rejectFormEnabled = true
+							break
+						case 'accepted':
+							approveBtnEnabled = false
+							submitBtnEnabled = true
+							rejectFormEnabled = false
+							break
+					}
+				}
+			} 
+			else { // multiple selections
+				const counts = {
+					unsaved: 0,
+					savedComplete:0,
+					saved:0,
+					submitted:0,
+					rejected:0,
+					accepted:0
+				}
+				for (i=0; i<selLength; i++) {
+					if (!selections[i].data.status) { // a review doesn't exist
+						counts.unsaved++
+						break
+					}
+					const status = selections[i].data.status
+					if (status === 'saved') {
 						if (isReviewComplete(
 							selections[i].data.result,
 							selections[i].data.resultComment,
 							selections[i].data.action,
 							selections[i].data.actionComment
-							)) {
-								approveBtnDisabled = true;
-								submitBtnDisabled = false;
-						} else {
-							submitBtnDisabled = true;
-							rejectFormDisabled = true;
+						)) {
+							counts.savedComplete++
+						} 
+						else {
+							counts.saved++
 						}
-						break switchloop;
-					case 'submitted': // ready
-						submitBtnDisabled = true;
-						break switchloop;
-					case 'rejected': // rejected
-						break;
-					case 'accepted': // approved
-						approveBtnDisabled = true;
-						rejectFormDisabled = true;
-						break switchloop;
+					}
+					else {
+						counts[status]++
+					}	
 				}
+				approveBtnEnabled = (counts.submitted || counts.rejected) && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted)
+				submitBtnEnabled = (counts.savedComplete || counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved) && (counts.submitted !== selLength)
+				rejectFormEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
+		
 			}
-
-			approveBtn.setDisabled(approveBtnDisabled);
-			submitBtn.setDisabled(submitBtnDisabled);
-			rejectFormPanel.setDisabled(rejectFormDisabled);
+			approveBtn.setDisabled(!approveBtnEnabled);
+			submitBtn.setDisabled(!submitBtnEnabled);
+			rejectFormPanel.setDisabled(!rejectFormEnabled);
 		};
 		
 		async function handleStatusChange (grid,sm,status) {
