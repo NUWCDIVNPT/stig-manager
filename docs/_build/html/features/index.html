@@ -99,6 +99,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#what-is-stig-manager">What is STIG Manager?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process">The Single Source of Truth throughout Steps 3 and 4 of the RMF Process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#features-and-capabilities-overview">Features and Capabilities Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stig-evaluation-data-freed-from-ckl-files">STIG Evaluation Data, Freed From .CKL Files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews">RMF Package data represented as Collections, Assets, STIGs, and Reviews</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-collections-from-your-existing-ckl-files">Create Collections From Your Existing .CKL Files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data">Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data</a></li>
@@ -235,6 +236,11 @@ Your browser does not support the video tag.
 <hr class="docutils" />
 <div class="section" id="features-and-capabilities-overview">
 <h2>Features and Capabilities Overview<a class="headerlink" href="#features-and-capabilities-overview" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="stig-evaluation-data-freed-from-ckl-files">
+<h3>STIG Evaluation Data, Freed From .CKL Files<a class="headerlink" href="#stig-evaluation-data-freed-from-ckl-files" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager maintains a canonical set of STIGs as published by DISA, and relates all Reviews to that set. Working with this data directly in STIGMan, rather than passing .ckl files around, eliminates the possibility of STIG Evaluators using the wrong STIG revision, changing severity, creating malformed .ckls, and other issues that can hamper the efficient flow of Evaluations to Validators.  STIG Manager will import .ckl files and create Reviews that match their contents. Any remaining Evaluation gaps can be reviewed manually in the STIGMan interface, or added to with additional imports. STIGMan provide a unified view of overall Evaluation progress, and are not tied to any specific .ckl file.</p>
+<p>Instead of relying on .CKL files that could be altered, overridden, or have missing fields, properly formed .CKLs are generated from the current Evaluation state of Assets. Once Validators verify that all reviews are as they want them, they can create an archive of .CKLs on demand for import into eMASS.</p>
+</div>
 <div class="section" id="rmf-package-data-represented-as-collections-assets-stigs-and-reviews">
 <h3>RMF Package data represented as Collections, Assets, STIGs, and Reviews<a class="headerlink" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews" title="Permalink to this headline">¶</a></h3>
 <p>STIG Manager’s primary organizational structure is the Collection. A Collection can be created to mirror components of an RMF Package, requirements identified in a Security Assessment Plan, or an entirely different principle that may be more convenient, such as by an organization’s Lab or by Asset OS.</p>
