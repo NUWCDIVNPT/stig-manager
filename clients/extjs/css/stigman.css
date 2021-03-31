@@ -1,3 +1,8 @@
+.sm-home-widget-bwrap {
+	overflow: auto;
+	height: 338px;
+	margin-right: 0px;
+}
 .x-progress-inner {
     background-image: none;
     background-color:  hsl(0deg 0% 95%);
