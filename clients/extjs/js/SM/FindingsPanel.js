@@ -469,7 +469,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 					xtype: 'exportbutton',
 					hasMenu: false,
 					gridBasename: 'Finding Details',
-					storeBasename: 'Finding Details (store)',
+					gridSource: me,
 					iconCls: 'sm-export-icon',
 					text: 'Export'
 				},
