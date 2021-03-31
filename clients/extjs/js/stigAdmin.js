@@ -155,17 +155,14 @@ function addStigAdmin( params ) {
 		bbar: new Ext.Toolbar({
 			items: [
 			{
-				xtype: 'tbbutton',
-				id: 'stigGrid-csvBtn',
+				xtype: 'exportbutton',
+				hasMenu: false,
+				gridBasename: 'Installed-STIGs',
+				exportType: 'grid',
 				iconCls: 'sm-export-icon',
-				tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-				width: 20,
-				handler: function(btn){
-					var ourStore = stigGrid.getStore();
-					var lo = ourStore.lastOptions;
-					window.location=ourStore.url + '?csv=1&xaction=read';
-				}
-			},{
+				text: 'Export'
+			},
+			{
 				xtype: 'tbfill'
 			},{
 				xtype: 'tbseparator'
