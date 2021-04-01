@@ -1,4 +1,12 @@
 
+1.0.0-beta.24
+-----------------------
+- Multiple fixes and features (#225)
+- fix: Exports on multiple reports (#224)
+- doc: Added a little more about .ckl and data handling (#223)
+- build(deps): bump y18n from 3.2.1 to 3.2.2 in /api/source
+- fix: reduce deadlock potential (#216)
+
 1.0.0-beta.23
 -----------------------
 - fix: remove hard-coded reference to schema (#211)
