@@ -1388,6 +1388,8 @@ async function showImportResultFiles(collectionId, el) {
                     updateProgress(processedCount / entries.length, assetObj.name)
                 }
                 updateProgress(0, 'Finished')
+                SM.Dispatcher.fireEvent('stigassetschanged')
+
 
             }
             catch (e) {
