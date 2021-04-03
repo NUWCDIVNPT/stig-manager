@@ -1097,7 +1097,6 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
 		let form = reviewForm.getForm()
 		form.reset();
-		reviewForm.stopMonitoring()
 		reviewForm.isLoaded = false
 		
 		// Set the legacy editStr property
@@ -1132,7 +1131,6 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			actionComment.lastSavedData = actionComment.getValue()
 		}
 
-		reviewForm.startMonitoring();
 
 		// load others
 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
@@ -1153,6 +1151,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewWithHistory.history)
 		}
 
+		reviewForm.setReviewFormItemStates(reviewForm)
 	}
 	catch (e) {
 		if (e.response) {
