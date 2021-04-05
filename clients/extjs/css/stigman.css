@@ -1,3 +1,11 @@
+.x-form-field-wrap.sm-review-item-disabled .x-form-trigger.sm-review-trigger {
+	visibility: hidden;
+}
+.x-form-field-wrap.x-form-field-trigger-wrap .x-form-field.sm-review-combo-input[disabled] {
+	color: #000000;
+	background-color: transparent;
+	cursor: auto;
+}
 .sm-home-widget-bwrap {
 	overflow: auto;
 	height: 338px;
@@ -318,8 +326,8 @@ body {
 .x-window-br {
 	background-image: none;
 }
-.sm-review-form {
-	background-color: transparent;
+.sm-review-form, .sm-review-footer {
+	background-color: #f0f0f0;
 }
 .x-panel-header {
     color: #111;
@@ -1212,21 +1220,14 @@ input[readonly] { color:blue; }*
 
 .sm-review-result-textarea[disabled] {
 	color: black;
-	opacity: 0.8;
-    filter: alpha(opacity=80);
+	opacity: 1;
+	filter: alpha(opacity=100);
 	background: none;
 }
 .sm-review-action-textarea[disabled] {
 	color: black;
-	opacity: 0.4;
-	filter: alpha(opacity=80);
-	background: none;
-	/* border-color: white; */
-}
-.sm-enhanced-disable-textarea[disabled] {
-	color: black;
-	opacity: 0.8;
-    filter: alpha(opacity=80);
+	opacity: 1;
+	filter: alpha(opacity=100);
 	background: none;
 }
 

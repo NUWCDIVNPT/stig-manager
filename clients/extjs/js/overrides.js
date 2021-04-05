@@ -1,3 +1,21 @@
+// patch DragDropMgr to prevent a "hung" drop with cursor stuck
+// Source: carl.a.smigielski@saic.com
+Ext.dd.DragDropMgr.getZIndex = function(element) {
+    var body = document.body,
+        z,
+        zIndex = -1;
+
+    element = Ext.getDom(element);
+    // patch to ensure element is not null
+    while (element && element !== body) {
+        if (!isNaN(z = Number(Ext.fly(element).getStyle('zIndex')))) {
+            zIndex = z;
+        }
+        element = element.parentNode;
+    }
+    return zIndex;
+}
+
 // replace 'window' with 'node' as scope: this.directFn.apply(node, args);
 // Source: carl.a.smigielski@saic.com
 Ext.override(Ext.tree.TreeLoader, {
