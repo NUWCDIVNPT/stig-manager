@@ -22,6 +22,7 @@
     "envsub": "^4.0.7",
     "express": "^4.17.1",
     "fast-xml-parser": "^3.17.4",
+    "got": "^11.8.2",
     "he": "^1.2.0",
     "js-yaml": "^3.14.0",
     "jsonwebtoken": "^8.5.1",
