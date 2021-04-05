@@ -31,7 +31,6 @@
     "morgan": "^1.10.0",
     "mysql2": "^2.1.0",
     "oas-tools": "2.1.7",
-    "oracledb": "^4.2.0",
     "patch-package": "^6.2.2",
     "request": "^2.88.2",
     "semver": "^7.3.4",
