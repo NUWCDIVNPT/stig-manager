@@ -1,4 +1,10 @@
 
+1.0.0-beta.25
+-----------------------
+- chore: remove unused oracledb dependency (#229)
+- Multiple fix and features (#228)
+- fix: fetch STIG/SCAP if configured at bootstrap (#227)
+
 1.0.0-beta.24
 -----------------------
 - Multiple fixes and features (#225)
