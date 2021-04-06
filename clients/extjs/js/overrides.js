@@ -153,6 +153,22 @@ Ext.override(Ext.Ajax, {
     }
 })
 
+// Promisfied Ext.MessageBox.confirm method
+// Source: Carl Smigielski
+SM.confirmPromise = function (title, msg) {
+    return new Promise ( (resolve, reject) => {
+        callback = function (id) {
+            if (id !== undefined) {
+                resolve (id)
+            }
+            else {
+                reject (id)
+            }
+        }
+        Ext.Msg.confirm( title, msg, callback )
+    })
+}
+
 // custom Vtype for vtype:'IPAddress'
 Ext.apply(Ext.form.VTypes, {
     IPAddress:  function(v) {
