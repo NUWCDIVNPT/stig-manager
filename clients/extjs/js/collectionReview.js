@@ -818,8 +818,8 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 
 					id:'result' + idAppend,
-					header: "Result",
-					width: 50,
+					header: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+					width: 70,
 					fixed: true,
 					dataIndex: 'result',
 					editor: new Ext.form.ComboBox({
@@ -887,7 +887,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 	
 					id:'resultComment' + idAppend,
-					header: "Result comment", 
+					header: 'Result comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
 					dataIndex: 'resultComment',
 					renderer: function (v) {
@@ -915,7 +915,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 	
 					id:'action' + idAppend,
-					header: "Action", 
+					header: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 80,
 					fixed: true,
 					dataIndex: 'action',
@@ -961,7 +961,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 	
 					id:'actionComment' + idAppend,
-					header: "Action comment", 
+					header: 'Action comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
 					dataIndex: 'actionComment',
 					renderer: function (v) {
@@ -1181,16 +1181,27 @@ async function addCollectionReview ( params ) {
 				autoFill:true,
 				emptyText: 'No data to display.',
 				deferEmptyText:false,
-				// getRowClass: function(record, rowIndex, rp, ds){ // rp = rowParams
-				// 	if(record.data.result == 'fail'){
-				// 		return 'sm-grid3-row-red';
-				// 	} else if (record.data.result == 'pass') {
-				// 		return 'sm-grid3-row-green';
-				// 	} else if (record.data.result == 'notapplicable') {
-				// 		return 'sm-grid3-row-grey';
-				// 	}
-				// }
-				
+				listeners: {
+					refresh: function (view) {
+						// Setup the tooltips
+						const columns = view.grid.getColumnModel().columns
+						for( let x = 0; x < columns.length; x++ ) {
+							// Look for colums with the FontAwesome class
+							const tipEl = view.getHeaderCell(x).getElementsByClassName('fa')[0]
+							if ( tipEl ) {
+								const idPrefix = columns[x].id.split('-')[0]
+								// idPrefix should be 'result', 'resultComment', 'action' or 'actionCommnt'
+								new Ext.ToolTip({
+									target: tipEl,
+									showDelay: 0,
+									dismissDelay: 0,
+									autoWidth: true,
+									html: SM[`${idPrefix}TipText`]
+								}) 
+							}
+						}					
+					}
+				}
 			}),
 			// width: 300,
 			tbar: new Ext.Toolbar({
@@ -1447,7 +1458,8 @@ async function addCollectionReview ( params ) {
 			try {
 				const selections = sm.getSelections()
 				const results = []
-				for (i=0, l=selections.length; i < l; i++) {
+				let i, l
+				for (i = 0, l = selections.length; i < l; i++) {
 					const record = selections[i]
 					Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
 					try {
