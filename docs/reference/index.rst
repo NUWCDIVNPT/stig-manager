@@ -13,6 +13,38 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
     Asset
         An Asset is any component to which a STIG may be attached. Assets are created and changed in the Collection Configuration screen. To conform to the Navy RMF Process, an Asset must have a Name, IP Address, MAC Address, and Fully Qualified Domain Name unless it is designated "Non-Computing." The Asset Properties screen allows you to set all these properties, as well as attach STIGs.
 
+    checklist
+        The list of Rules that compose a STIG, and optionally, their Evaluations. Often encoded in the :term:`ckl` format. 
+
+    ckl
+        An xml file format used by some common STIG tools. STIG Manager can import and export checklists in the .ckl format compatible with STIG Viewer and eMASS. 
+        
+        STIG Manager maps its own data fields into and out of .ckl format as follows:
+
+        .. list-table:: STIG Manager <-> STIG Viewer <-> .ckl Mappings: 
+            :widths: 20 20 40
+            :header-rows: 1
+            :class: tight-table
+
+            * - STIGMan Field
+              - STIG Viewer Field
+              - .ckl Tag
+            * - Evaluation Result
+              - Status
+              - <CHECKLIST><STIGS><iSTIG><VULN> **<STATUS>**
+            * - Evaluation Comment
+              - Finding Detail 
+              - <CHECKLIST><STIGS><iSTIG><VULN> **<FINDING_DETAILS>**
+            * - Recommendation Action
+              - Comments
+              - <CHECKLIST><STIGS><iSTIG><VULN> **<COMMENTS>**  *(Will be prepended to .ckl Comment on export, as .ckls do not have a specific tag for this information. When imported, if the Comments start with an Action, that field will be set accordingly.)*
+            * - Recommendation Comment 
+              - Comments
+              - <CHECKLIST><STIGS><iSTIG><VULN> **<COMMENTS>**
+
+
+
+
     Collection 
         The Collection is STIG Manager's primary organizational component.
 
@@ -116,6 +148,26 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
 
 		Each status is called out in the Status Collection Report to help gauge overall Collection progress.
 
+    XCCDF
+        An XML formatted schema for encoding STIGs and their Evaluations. 
+
+        STIG Manager maps its own data fields into and out of XCCDF format as follows:
+
+        .. list-table:: STIG Manager <-> XCCDF Mappings: 
+            :widths: 20 70
+            :header-rows: 1
+            :class: tight-table
+
+            * - STIGMan Field
+              - XCCDF Tag
+            * - Evaluation Result
+              - <TestResult><rule-result> **<result>**    
+            * - Evaluation Comment
+              - <TestResult><rule-result> **<message>**
+            * - Recommendation Action
+              - <TestResult><rule-result> **<metadata action>** 
+            * - Recommendation Comment 
+              - <TestResult><rule-result> **<metadata action-comment>** 
 
 
 

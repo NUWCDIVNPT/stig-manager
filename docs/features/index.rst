@@ -67,12 +67,6 @@ Migrating to STIG Manager is easy because it can use your existing artifacts to 
 .. note::
   STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an asset, and will create new .ckls for you on demand with the most current results.
 
-.. raw:: html
-
-  <video width="480"  controls>
-    <source src="../_static/videos/Collections.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-  </video>
 
 -------------------------
 

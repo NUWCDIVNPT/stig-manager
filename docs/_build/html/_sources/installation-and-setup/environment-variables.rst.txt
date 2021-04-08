@@ -39,7 +39,7 @@ STIG Manager is configured via its Environment Variables:
      - **Default: /api** The base URL for Client requests to the API relative to the sever root at / 
      - Client
    * - STIGMAN_CLIENT_DIRECTORY
-     - **Default : ./clients** The location of the web client files, relative to the API source directory 
+     - **Default : ./clients** The location of the web client files, relative to the API source directory. Note that if running from source with a clone of the GitHub repository, the client is located at `../../clients` relative to the API directory. 
      - API, Client
    * - STIGMAN_CLIENT_DISABLED
      - **Default : false** Whether to serve the STIG Manager reference web client
