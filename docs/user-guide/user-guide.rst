@@ -487,12 +487,16 @@ Click the Create Asset button to create an Asset manually. Enter relevant Asset 
 
 .. _Collection Builder:
 
-Import CKL or SCAP / Collection Builder
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Import CKL or SCAP to Build or Update Your Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 STIG Manager lets you populate your entire Collection from scratch or add to an existing Collection with a bulk import of .ckl and XCCDF files. This feature will create any new Assets you submit files for, and assign them the STIGs specified in the imported files.  If the Asset already exists, the newly imported STIGs will be assigned to them. The User can also choose whether or not to import the Reviews in the imported files, or just create the Assets and STIG Assignments.
 
-The Asset Name must match exactly.
+The Asset Name must match exactly. Check the :term:`ckl` and :term:`XCCDF` glossary entries for how their individual fields map to STIG Manager fields. 
+
+.. note::
+   When STIG Manager creates an Asset from an imported file, it will populate the Name, FQDN, IP, and MAC fields if they are present in the file. If the asset is already created, those fields are NOT updated when a file is imported. 
+
 
 .. note::
    STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
@@ -575,7 +579,7 @@ Export CKLs by Asset
 
 The "Export CKLs..." button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection. 
 
-One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file. 
+One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
 
 .. thumbnail:: /assets/images/checklist-archive-export-asset.png
@@ -647,7 +651,7 @@ Export CKLs by STIG
 
 The "Export CKLs..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection. 
 
-One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file. 
+One multi-STIG .ckl file will be generated for every unique Asset selected. The package of :term:`ckl` files will be presented as a .zip file.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
 
 .. thumbnail:: /assets/images/checklist-archive-export-stig.png
