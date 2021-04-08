@@ -114,6 +114,8 @@ Procedure
 #. Set Environment Variables as appropriate for your environment. Windows cmd example: ``set STIGMAN_DB_HOST=10.0.0.6``
 #. From the ``/api/source`` directory, start Node, specifying the index.js file:  ``node index.js``
 
+.. note::
+  If running from source with a clone of the GitHub repository, the client is located at ``../../clients/exts`` relative to the API directory. Set this with the ``STIGMAN_CLIENT_DIRECTORY`` Environment Variable.
 
 .. note::
   It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying from source, to monitor the app and keep it running.

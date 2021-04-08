@@ -231,7 +231,7 @@
 <h2><span class="section-number">1.1. </span>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
 <figure class="">
             <a 
-               data-lightbox="group-43a0ca1e-661b-4ca3-a7ee-7b9b82fee708"
+               data-lightbox="group-e797984f-bffe-4268-8abb-3408182aed14"
                href="../_images/stigman-components-basic1.svg"
                title="Component Diagram"
                data-title="Component Diagram"
@@ -323,6 +323,10 @@ nuwcdivnpt/stig-manager
 <li><p>Set Environment Variables as appropriate for your environment. Windows cmd example: <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">STIGMAN_DB_HOST=10.0.0.6</span></code></p></li>
 <li><p>From the <code class="docutils literal notranslate"><span class="pre">/api/source</span></code> directory, start Node, specifying the index.js file:  <code class="docutils literal notranslate"><span class="pre">node</span> <span class="pre">index.js</span></code></p></li>
 </ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If running from source with a clone of the GitHub repository, the client is located at <code class="docutils literal notranslate"><span class="pre">../../clients/exts</span></code> relative to the API directory. Set this with the <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_DIRECTORY</span></code> Environment Variable.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>It is recommended that you make use of a process manager such as <a class="reference external" href="https://github.com/Unitech/pm2">PM2</a> when deploying from source, to monitor the app and keep it running.</p>
