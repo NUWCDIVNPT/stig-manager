@@ -1,4 +1,13 @@
 
+1.0.0-beta.26
+-----------------------
+- fix: sticky bit for world-writable dirs created by npm (#245)
+- feat: mercury-medium color is more blue (#243)
+- feat: Tooltips for Review labels and headers (#240) (#242)
+- doc: updates regarding ckl -> stigman field mappings, clients folder when running from source (#241)
+- build(deps): bump urllib3 from 1.26.3 to 1.26.4 in /docs (#238)
+- feat: Manage Assets -> multi-delete (#232), columns (#236)
+
 1.0.0-beta.25
 -----------------------
 - chore: remove unused oracledb dependency (#229)
