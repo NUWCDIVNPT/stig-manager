@@ -51,6 +51,7 @@ function loadScripts() {
         'ext/resources/css/ext-all.css',
         'ext/resources/css/xtheme-gray.css',
         'css/stigman.css',
+        'css/font-awesome.min.css',
         'ext/ux/fileuploadfield/css/fileuploadfield.css',
         'css/RowEditor.css',
         'css/jsonview.bundle.css'

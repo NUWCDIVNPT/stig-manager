@@ -1206,7 +1206,7 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
 	switch (record.data.status) {
 		case 'saved':
-			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
+			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
 			break;
 		case 'submitted':
 			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';

@@ -1445,7 +1445,8 @@ async function addReview( params ) {
     id: 'result-comment' + idAppend,
     //emptyText: 'Please address the specific items in the review.',
     //height: 65,
-    fieldLabel: 'Comment',
+    fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+    labelSeparator: '',
     autoScroll: 'auto',
     name: 'resultComment',
     enableKeyEvents: true,
@@ -1454,10 +1455,16 @@ async function addReview( params ) {
         ta.mon( ta.el, 'input', function (e) {
           reviewForm.setReviewFormItemStates(reviewForm)
         })
+        new Ext.ToolTip({
+          target: ta.label.dom.getElementsByClassName('fa')[0],
+          showDelay: 0,
+          dismissDelay: 0,
+          autoWidth: true,
+          html: SM.resultCommentTipText
+        }) 
       }
     }
   })
-
 
   let actionCommentTextArea = new Ext.form.TextArea({
     cls: 'sm-review-action-textarea',
@@ -1468,7 +1475,8 @@ async function addReview( params ) {
     id: 'action-comment' + idAppend,
     //emptyText: 'Please describe how the action will be accomplished.',
     //height: 65,
-    fieldLabel: 'Comment',
+    fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+    labelSeparator: '',
     autoScroll: 'auto',
     name: 'actionComment',
     enableKeyEvents: true,
@@ -1477,6 +1485,13 @@ async function addReview( params ) {
         ta.mon( ta.el, 'input', function (e) {
           reviewForm.setReviewFormItemStates(reviewForm)
         })
+        new Ext.ToolTip({
+          target: ta.label.dom.getElementsByClassName('fa')[0],
+          showDelay: 0,
+          dismissDelay: 0,
+          autoWidth: true,
+          html: SM.actionCommentTipText
+        }) 
       }
     }
   })
@@ -1487,18 +1502,10 @@ async function addReview( params ) {
     border: false,
     margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
     region: 'south',
-    //disabled: true,
     split: true,
-    //height: 420,
     height: '65%',
     minHeight: 320,
     id: 'reviewForm' + idAppend,
-    // baseCls: 'x-plain',
-    // border: true,
-    // headerCfg: {
-    //   cls: 'x-panel-header',
-    //   border: false
-    // },
     title: 'Review on ' + leaf.assetName,
     padding: 10,
     labelWidth: 54,
@@ -1524,13 +1531,12 @@ async function addReview( params ) {
         disabledClass: 'sm-review-item-disabled',
         width: 100,
         lastSavedData: "",
-        //anchor: '50%',
         id: 'result-combo' + idAppend,
         changed: false,
-        fieldLabel: 'Result',
+        fieldLabel: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+        labelSeparator: '',
         emptyText: 'Your result...',
         valueNotFoundText: 'Your result...',
-        //allowBlank: false,
         disabled: true,
         name: 'result',
         hiddenName: 'result',
@@ -1555,7 +1561,15 @@ async function addReview( params ) {
           },
           'change': function (combo, newVal, oldVal) {
             combo.changed = true;
-            // reviewForm.setReviewFormItemStates(reviewForm)
+          },
+          'render': function (combo) {
+            new Ext.ToolTip({
+              target: combo.label.dom.getElementsByClassName('fa')[0],
+              showDelay: 0,
+              dismissDelay: 0,
+              autoWidth: true,
+              html: SM.resultTipText
+            }) 
           }
         },
         triggerAction: 'all'
@@ -1575,12 +1589,10 @@ async function addReview( params ) {
         disabled: true,
         changed: false,
         allowBlank: true,
-        //anchor: '100%',
         width: 100,
         id: 'action-combo' + idAppend,
-        fieldLabel: 'Action',
-        // emptyText: 'Your action...',
-        // valueNotFoundText: 'Your action...',
+        fieldLabel: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>',
+        labelSeparator: '',
         name: 'action',
         hiddenName: 'action',
         mode: 'local',
@@ -1601,6 +1613,15 @@ async function addReview( params ) {
           'change': function (combo, newVal, oldVal) {
             combo.changed = true;
             // reviewForm.setReviewFormItemStates(reviewForm)
+          },
+          'render': function (combo) {
+            new Ext.ToolTip({
+              target: combo.label.dom.getElementsByClassName('fa')[0],
+              showDelay: 0,
+              dismissDelay: 0,
+              autoWidth: true,
+              html: SM.actionTipText
+            }) 
           }
         },
         triggerAction: 'all'

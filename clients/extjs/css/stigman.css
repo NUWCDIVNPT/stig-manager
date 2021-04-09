@@ -1,3 +1,13 @@
+.x-grid3-hd .sm-question-circle {
+	color: hsl(0deg 0% 60%);
+	margin-left: 3px;
+	font-size: 13px;
+}
+.x-form-item-label .sm-question-circle {
+	color: hsl(0deg 0% 60%);
+	margin-left: 3px;
+	font-size: 13px;
+}
 .x-form-field-wrap.sm-review-item-disabled .x-form-trigger.sm-review-trigger {
 	visibility: hidden;
 }
