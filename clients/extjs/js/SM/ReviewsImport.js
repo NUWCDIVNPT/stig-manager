@@ -1051,7 +1051,6 @@ async function showImportResultFiles(collectionId, el) {
             buttonAlign: 'center',
             items: fp
         })
-
         fpwindow.show()
 
         async function onFileDropped(e) {
@@ -1368,27 +1367,45 @@ async function showImportResultFiles(collectionId, el) {
                 let entries = Object.entries(assets)
                 let processedCount = 0
                 for (const [name, assetObj] of entries) {
-                    updateProgress(processedCount / entries.length, assetObj.name)
-                    if (modifyAssets) {
-                        let apiAsset = await importAsset(collectionId, assetObj)
-                        assetObj.assetId = apiAsset.assetId
-                        // updateStatusText(JSON.stringify(apiAsset, null, 2))
-                        updateStatusText(` OK (assetId ${apiAsset.assetId})`)
-                    }
-                    if (importReviews) {
-                        for (let reviewArray of assetObj.reviews) {
-                            // Remove 'notchecked' reviews
-                            reviewArray = reviewArray.filter( review => review.result !== 'notchecked')
-                            let apiReviews = await importReviewArray(collectionId, assetObj.assetId, reviewArray)
-                            // updateStatusText(JSON.stringify(apiReviews, null, 2))
-                            updateStatusText(' OK')
+                    try {
+                        let apiAsset
+                        updateProgress(processedCount / entries.length, assetObj.name)
+                        if (modifyAssets) {
+                            apiAsset = await importAsset(collectionId, assetObj)
+                            assetObj.assetId = apiAsset.assetId
+                            // updateStatusText(JSON.stringify(apiAsset, null, 2))
+                            updateStatusText(` OK (${assetObj.name}, id: ${apiAsset.assetId})`)
+                        }
+                        if (importReviews) {
+                            for (let reviewArray of assetObj.reviews) {
+                                // Remove 'notchecked' reviews
+                                reviewArray = reviewArray.filter( review => review.result !== 'notchecked')
+                                let apiReviews = await importReviewArray(collectionId, assetObj.assetId, reviewArray)
+                                // updateStatusText(JSON.stringify(apiReviews, null, 2))
+                                updateStatusText(' OK')
+                            }
+                            // Get the updated apiAsset
+                            const result = await Ext.Ajax.requestPromise({
+                                url: `${STIGMAN.Env.apiBase}/assets/${assetObj.assetId}`,
+                                method: 'GET',
+                                params: {
+                                    projection: ['stigs', 'adminStats']
+                                },
+                                headers: { 'Content-Type': 'application/json;charset=utf-8' }
+                            })
+                            apiAsset = JSON.parse(result.response.responseText)
+                            SM.Dispatcher.fireEvent('assetchanged', apiAsset)  
                         }
                     }
-                    processedCount++
-                    updateProgress(processedCount / entries.length, assetObj.name)
+                    catch (e) {
+                        updateStatusText(` ERROR (${e.message})`)
+                    }
+                    finally {
+                        processedCount++
+                        updateProgress(processedCount / entries.length, assetObj.name)
+                    }
                 }
                 updateProgress(0, 'Finished')
-
             }
             catch (e) {
                 alert(e.message)
@@ -1480,9 +1497,7 @@ async function showImportResultFiles(collectionId, el) {
 
                     return apiAsset
                 }
-                catch (e) {
-                    throw (e)
-                }
+                finally{}
             }
 
             async function importReviewArray(collectionId, assetId, reviewArray) {
@@ -1495,31 +1510,24 @@ async function showImportResultFiles(collectionId, el) {
                         headers: { 'Content-Type': 'application/json;charset=utf-8' },
                         jsonData: reviewArray
                     })
-                    apiReviews = JSON.parse(result.response.responseText)
+                    const apiReviews = JSON.parse(result.response.responseText)
                     return apiReviews
                 }
-                catch (e) {
-                    throw (e)
-                }
+               finally {}
             }
-
         }
-
-
     }
     catch (e) {
         if (typeof e === 'object') {
             if (e instanceof Error) {
-                e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+                e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
             }
             else {
-                // payload = JSON.stringify(payload, null, 2);
-                e = JSON.stringify(e);
+                e = JSON.stringify(e)
             }
         }
         alert(e)
         Ext.getBody().unmask()
-
     }
 }
 
@@ -1802,6 +1810,4 @@ async function showImportResultFile(params) {
         }
 
     }
-
-
 }
