@@ -82,6 +82,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         let assetStore = new Ext.data.JsonStore({
             grid: this,
+            smMaskDelay: 250,
             proxy: this.proxy,
             baseParams: {
                 collectionId: this.collectionId,
@@ -293,7 +294,10 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         tooltip: 'Reload this grid',
                         width: 20,
                         handler: function(btn){
+                            const savedSmMaskDelay = btn.grid.store.smMaskDelay
+                            btn.grid.store.smMaskDelay = 0
                             btn.grid.store.reload();
+                            btn.grid.store.smMaskDelay = savedSmMaskDelay
                         }
                     },{
                         xtype: 'tbseparator'

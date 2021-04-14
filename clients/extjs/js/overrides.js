@@ -1,3 +1,20 @@
+Ext.LoadMask.prototype.onBeforeLoad = function() {
+    if(!this.disabled){
+        if (!this.store.smMaskDelay) {
+            this.smTask = new Ext.util.DelayedTask(function () {
+                this.el.mask(this.msg, this.msgCls)
+            }, this)
+            this.smTask.delay(this.store.smMaskDelay)
+        }
+    }
+}
+Ext.LoadMask.prototype.onLoad = function() {
+    if (this.smTask) {
+        this.smTask.cancel()
+    }
+    this.el.unmask(this.removeMask);
+}
+
 // patch DragDropMgr to prevent a "hung" drop with cursor stuck
 // Source: carl.a.smigielski@saic.com
 Ext.dd.DragDropMgr.getZIndex = function(element) {
