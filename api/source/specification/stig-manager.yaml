@@ -2074,20 +2074,25 @@ components:
         name:
           type: string
           nullable: false
+          maxLength: 255
         fqdn:
           type: string
           nullable: true
+          maxLength: 255
         collection:
           $ref: '#/components/schemas/CollectionBasic'
         description:
           type: string
           nullable: true
+          maxLength: 255
         ip:
           type: string
           nullable: true
+          maxLength: 255
         mac:
           type: string
           nullable: true
+          maxLength: 255
         noncomputing:
           type: boolean
         metadata:
@@ -2113,21 +2118,26 @@ components:
         name:
           type: string
           nullable: false
+          maxLength: 255
         fqdn:
           type: string
           nullable: true
+          maxLength: 255
         collectionId:
           description: The collectionId mapped to this Asset
           type: string
         description:
           type: string
           nullable: true
+          maxLength: 255
         ip:
           type: string
           nullable: true
+          maxLength: 255
         mac:
           type: string
           nullable: true
+          maxLength: 255
         noncomputing:
           type: boolean
         metadata:
@@ -2176,21 +2186,26 @@ components:
         name:
           type: string
           nullable: false
+          maxLength: 255
         fqdn:
           type: string
           nullable: true
+          maxLength: 255
         collectionId:
           description: The collectionId mapped to this Asset
           type: string
         description:
           type: string
           nullable: true
+          maxLength: 255
         ip:
           type: string
           nullable: true
+          maxLength: 255
         mac:
           type: string
           nullable: true
+          maxLength: 255
         noncomputing:
           type: boolean
         metadata:
@@ -2494,6 +2509,7 @@ components:
           type: string
         description:
           type: string
+          nullable: true
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
@@ -2522,6 +2538,7 @@ components:
           type: string
         description:
           type: string
+          nullable: true
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
@@ -2653,6 +2670,7 @@ components:
           type: string
         description:
           type: string
+          nullable: true
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
