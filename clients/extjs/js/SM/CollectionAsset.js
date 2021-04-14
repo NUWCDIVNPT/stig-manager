@@ -716,7 +716,6 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                             anchor: '100%',
                                             emptyText: 'Enter IP',
                                             allowBlank: true,
-                                            vtype: 'IPAddress',
                                             name: 'ip'
                                         }
                                     ]
