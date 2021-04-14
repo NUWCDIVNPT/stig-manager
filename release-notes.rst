@@ -1,3 +1,11 @@
+1.0.0-beta.27
+-----------------------
+Migrates MySQL
+Migration notes included in #251 
+
+- feat: Ext.LoadMask looks for store.smMaskDelay (#254)
+- fix: batch import continues on error, refreshes grids (#252)
+- fix: increased length of asset name,ip,mac,fqdn and allow more nulls  (#251)
 
 1.0.0-beta.26
 -----------------------
