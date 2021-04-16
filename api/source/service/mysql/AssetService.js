@@ -552,7 +552,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
             group_concat(distinct 
               case when ud.userId is not null then 
                 json_object(
-                  'userId', ud.userId, 
+                  'userId', cast(ud.userId as char), 
                   'username', ud.username)
               else null end 
             order by ud.username),
