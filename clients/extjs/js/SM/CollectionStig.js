@@ -178,7 +178,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 items: [
                     {
                         iconCls: 'icon-add',
-                        text: 'Attach STIG...',
+                        text: 'Assign STIG...',
                         grid: me,
                         handler: function(btn) {
                             showCollectionStigProps( null, btn.grid );            
@@ -199,7 +199,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         ref: '../removeBtn',
                         iconCls: 'icon-del',
                         id: `stigGrid-${id}-deleteBtn`,
-                        text: 'Remove STIG',
+                        text: 'Unassign STIG',
                         disabled: true,
                         handler: function() {
                             try {
