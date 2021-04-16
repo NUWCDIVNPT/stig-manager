@@ -2059,11 +2059,28 @@ components:
     ApiConfiguration:
       type: object
       properties:
-        branch:
+        classification:
           type: string
+          enum:
+            - NONE
+            - U
+            - FOUO
+            - C
+            - S
+            - TS
+            - SCI
         commit:
-          type: string
-        nearest-tag:
+          type: object
+          properties:
+            branch:
+              type: string
+            sha:
+              type: string
+            tag:
+              type: string
+            describe:
+              type: string
+        version:
           type: string
     Asset:
       type: object
