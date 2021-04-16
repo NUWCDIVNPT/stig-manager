@@ -1,4 +1,16 @@
 const package = require("../package.json")
+
+if (process.env.STIGMAN_JWT_ROLES_CLAIM) {
+    const roleChain = process.env.STIGMAN_JWT_ROLES_CLAIM.split('.')
+    for (let x=0; x < roleChain.length; x++) {
+        if (roleChain[x].includes('-')) {
+            roleChain[x] = `['${roleChain[x]}']`
+        }
+    }
+    process.env.STIGMAN_JWT_ROLES_CLAIM = roleChain.join('.')
+    process.env.STIGMAN_JWT_ROLES_CLAIM = process.env.STIGMAN_JWT_ROLES_CLAIM.replace('.[', '[')
+}
+
 let config = {
     version: package.version,
     commit: {
