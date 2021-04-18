@@ -1646,7 +1646,7 @@ function uploadStigs(n) {
 					let input = document.getElementById("form-file-file")
 					let file = input.files[0]
 					let extension = file.name.substring(file.name.lastIndexOf(".")+1)
-					if (extension === 'xml') {
+					if (extension.toLowerCase() === 'xml') {
 						let formEl = fp.getForm().getEl().dom
 						let formData = new FormData(formEl)
 						formData.set('replace', 'true')
@@ -1691,7 +1691,7 @@ function uploadStigs(n) {
 		   
 						let contents = await parentZip.loadAsync(f)
 						let fns = Object.keys(contents.files)
-						let xmlMembers = fns.filter( fn => fn.toLowerCase().endsWith('xccdf.xml') || fn.toLowerCase().endsWith('benchmark.xml') )
+						let xmlMembers = fns.filter( fn => fn.toLowerCase().endsWith('.xml'))
 						let zipMembers = fns.filter( fn => fn.toLowerCase().endsWith('.zip') )
 						for (let x=0,l=xmlMembers.length; x<l; x++) {
 							let xml = xmlMembers[x]
