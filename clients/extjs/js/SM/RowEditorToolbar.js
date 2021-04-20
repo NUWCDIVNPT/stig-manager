@@ -20,12 +20,14 @@ SM.RowEditorToolbar = Ext.extend(Ext.Toolbar, {
         this.newButton = new SM.RowEditorNewBtn({
             toolbar: this,
             itemString: this.itemString,
+            title: this.newTitle,
             editor: this.editor,
             gridId: this.gridId,
             newRecord: this.newRecord
         })
         this.delButton = new SM.RowEditorDelBtn({
             itemString: this.itemString,
+            title: this.deleteTitle,
             deleteProperty: this.deleteProperty,
             editor: this.editor,
             gridId: this.gridId,
@@ -52,6 +54,9 @@ Ext.reg('sm-row-editor-toolbar', SM.RowEditorToolbar);
  * @class SM.RowEditorNewBtn
  * @extends Ext.Button
  * Simple Button class that invokes an editor
+ * @cfg {String} newTitle The title of the add button
+ * @cfg {String} deleteTitle The title of the delete button
+ * @cfg {String} itemString The name that will be appended to label strings
  * @cfg {String} itemString The name that will be appended to label strings
  * @cfg {String} editor The editor to invoke
  * @cfg {String} gridId The id of the grid to which the button is attached 
@@ -65,7 +70,7 @@ SM.RowEditorNewBtn = Ext.extend(Ext.Button, {
     initComponent: function() {
         let config = {
             iconCls: 'icon-add',
-            text: `New ${this.itemString}`,
+            text: this.title ?? `New ${this.itemString}`,
             handler: this.btnHandler
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -104,7 +109,7 @@ SM.RowEditorDelBtn = Ext.extend(Ext.Button, {
     initComponent: function() {
         let config = {
             iconCls: 'icon-del',
-            text: `Delete ${this.itemString}`,
+            text: this.title ?? `Delete ${this.itemString}`,
             itemString: this.itemString,
             deleteProperty: this.deleteProperty,
             handler: this.btnHandler
