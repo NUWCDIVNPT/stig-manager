@@ -1,3 +1,17 @@
+1.0.0-beta.28
+-----------------------
+- fix #264: Display feedback for rejected reviews (#265)
+- fix: Filter members only on .xml extension  (#260)
+- fix: New/Delete => Assign/Unassign (#261)
+- fix: SET NAME to utf8mb4 encoding (#262)
+- feat: format roles claim with bracket notation and optional chaining (#190)
+- fix: cast userId as char (#249)
+- fix: handle property chains with hyphens (#257)
+- fix: create date is not ISO8601 UTC (#189)
+- fix: response schema for /opt/configuration (#147)
+- fix: Attach => Assign STIG (#118)
+- fix: log servicename if present (#198)
+
 1.0.0-beta.27
 -----------------------
 Migrates MySQL
