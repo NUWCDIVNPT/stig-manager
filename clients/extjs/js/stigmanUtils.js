@@ -1150,6 +1150,8 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		else if (reviewWithHistory.history) {
 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewWithHistory.history)
 		}
+		// Feedback
+		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewWithHistory.rejectText)
 
 		reviewForm.setReviewFormItemStates(reviewForm)
 	}

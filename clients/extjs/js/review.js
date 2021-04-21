@@ -1418,7 +1418,7 @@ async function addReview( params ) {
         title: 'Feedback',
         //layout: 'fit',
         id: 'feedback-tab' + idAppend,
-        //padding: 2,
+        padding: 10,
         autoScroll: true
       },{
         title: 'History',
