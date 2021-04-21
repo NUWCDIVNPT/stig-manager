@@ -481,26 +481,29 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
     let values = {
       userId: userObject.userId
     }
-    if (body.result != undefined) {
+    if (body.result !== undefined) {
       values.resultId = dbUtils.REVIEW_RESULT_API[body.result]
     }
-    if (body.resultComment != undefined) {
+    if (body.resultComment !== undefined) {
       values.resultComment = body.resultComment
     }
-    if (body.action != undefined) {
+    if (body.action !== undefined) {
       values.actionId = dbUtils.REVIEW_ACTION_API[body.action]
     }
-    if (body.actionComment != undefined) {
+    if (body.actionComment !== undefined) {
       values.actionComment = body.actionComment
     }
-    if (body.status != undefined) {
+    if (body.status !== undefined) {
       values.statusId = dbUtils.REVIEW_STATUS_API[body.status]
     }
-    if (body.autoResult != undefined) {
+    if (body.autoResult !== undefined) {
       values.autoResult = body.autoResult ? 1 : 0
     }
-    if (body.rejectText != undefined) {
+    if (body.rejectText !== undefined) {
       values.rejectText = body.rejectText
+    }
+    if (body.rejectUserId != undefined) {
+      values.rejectUserId = body.rejectUserId
     }
 
     let binds = {
