@@ -12,7 +12,7 @@ const scapURL = 'https://public.cyber.mil/stigs/scap/'
 const stigMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*)" target=.*'
 const scapMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*enchmark.zip)" target=.*'
 
-// let localCompilationFile = 'E:/STIGs/U_SRG-STIG_Library_2021_01v2.zip'
+// let localCompilationFile = 'E:/STIGs/test.zip'
 
 
 exports.fetchCompilation = async function fetchCompilation() {
@@ -88,7 +88,14 @@ async function processZip (f) {
       let xml = xmlMembers[x]
       console.log(`PARSING   : ${xml}`)
       let xmlData = await parentZip.files[xml].async("nodebuffer")
-      let benchmark = parsers.benchmarkFromXccdf(xmlData)
+      let benchmark
+      try {
+        benchmark = await parsers.benchmarkFromXccdf(xmlData)
+      }
+      catch(err){
+        console.log(`Error while parsing file ${xml}: ${err}`)
+        continue
+      }
       let response
       if (benchmark.scap) {
         response = await STIG.insertScapBenchmark(benchmark, xmlData)
@@ -111,7 +118,7 @@ async function processZip (f) {
     }
   }
   catch (e) {
-    console.log(`Caught error: ${e}`)
+    throw (e)
   }
   
 }

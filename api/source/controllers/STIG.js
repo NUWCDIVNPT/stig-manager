@@ -12,7 +12,13 @@ module.exports.importManualBenchmark = async function importManualBenchmark (req
       throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
     }
     let xmlData = req.file.buffer
-    let benchmark = parsers.benchmarkFromXccdf(xmlData)
+    let benchmark
+    try {
+      benchmark = await parsers.benchmarkFromXccdf(xmlData)
+    }
+    catch(err){
+      throw (writer.respondWithCode( 400, {message: err.message} ))
+    }
     let response
     if (benchmark.scap) {
       response = await STIG.insertScapBenchmark(benchmark, xmlData)
@@ -23,7 +29,7 @@ module.exports.importManualBenchmark = async function importManualBenchmark (req
     writer.writeJson(res, response)
   }
   catch(err) {
-    writer.writeJson(res, {message: err.message})
+    writer.writeJson(res, err)
   }
 }
 
