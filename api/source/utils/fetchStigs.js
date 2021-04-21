@@ -12,7 +12,7 @@ const scapURL = 'https://public.cyber.mil/stigs/scap/'
 const stigMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*)" target=.*'
 const scapMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*enchmark.zip)" target=.*'
 
-// let localCompilationFile = '/STIGs/U_SRG-STIG_Library_2021_01v2.zip'
+// let localCompilationFile = 'E:/STIGs/test.zip'
 
 
 exports.fetchCompilation = async function fetchCompilation() {
@@ -72,7 +72,7 @@ exports.fetchScap = async function fetchScap() {
 //     await processZip(data)
 //   }
 //   catch (e) {
-//     throw (e)
+//     console.log(e)
 //   }
 // }
 
@@ -82,13 +82,20 @@ async function processZip (f) {
 
     let contents = await parentZip.loadAsync(f)
     let fns = Object.keys(contents.files)
-    let xmlMembers = fns.filter( fn => fn.endsWith('xccdf.xml') || fn.endsWith('Benchmark.xml') )
+    let xmlMembers = fns.filter( fn => fn.toLowerCase().endsWith('.xml'))
     let zipMembers = fns.filter( fn => fn.endsWith('.zip') )
     for (let x=0,l=xmlMembers.length; x<l; x++) {
       let xml = xmlMembers[x]
       console.log(`PARSING   : ${xml}`)
       let xmlData = await parentZip.files[xml].async("nodebuffer")
-      let benchmark = parsers.benchmarkFromXccdf(xmlData)
+      let benchmark
+      try {
+        benchmark = await parsers.benchmarkFromXccdf(xmlData)
+      }
+      catch(err){
+        console.log(`Error while parsing file ${xml}: ${err}`)
+        continue
+      }
       let response
       if (benchmark.scap) {
         response = await STIG.insertScapBenchmark(benchmark, xmlData)
