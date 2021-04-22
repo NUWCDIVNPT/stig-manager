@@ -563,6 +563,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 
         let tbar = new SM.RowEditorToolbar({
             itemString: 'STIG',
+            newTitle: 'Assign STIG',
+            deleteTitle: 'Unassign STIG',
             editor: this.editor,
             gridId: this.id,
             deleteProperty: 'benchmarkId',

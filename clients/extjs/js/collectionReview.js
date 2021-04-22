@@ -1719,6 +1719,7 @@ async function addCollectionReview ( params ) {
 		
 		async function handleRejections() {
 			try {
+				Ext.getBody().mask('Rejecting')
 				const status = 'rejected'
 				const values = rejectFormPanel.getForm().getFieldValues()
 				const selections = reviewsGrid.getSelectionModel().getSelections()
@@ -1730,7 +1731,8 @@ async function addCollectionReview ( params ) {
 							method: 'PATCH',
 							jsonData: {
 								status: status,
-								rejectText: values.rejectText
+								rejectText: values.rejectText,
+								rejectUserId: curUser.userId
 							}
 						})
 					)
@@ -1744,6 +1746,7 @@ async function addCollectionReview ( params ) {
 				}
 				reviewsGrid.updateGroupStore(reviewsGrid)
 				setReviewsGridButtonStates()
+				Ext.getBody().unmask()
 			}
 			catch (e) {
 				alert(e.message)
