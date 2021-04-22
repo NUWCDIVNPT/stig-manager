@@ -1,0 +1,17 @@
+name: Snyk-Node
+on: 
+  workflow_dispatch:
+  
+  
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      with: 
+        args: --file=api/source/package-lock.json --all-projects
+        json: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
