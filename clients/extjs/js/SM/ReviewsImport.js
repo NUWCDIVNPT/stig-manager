@@ -633,6 +633,40 @@ SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
     }
 })
 
+SM.ReviewsImport.WarningPanel = Ext.extend(Ext.Panel, {
+    initComponent: function () {
+        const me = this
+        let config = {
+            border: false,
+            layout: 'vbox',
+            layoutConfig: {
+                // align: 'stretch',
+                pack: 'start',
+                padding: '0 20 20 20',
+            },
+            items: [
+                {
+                    html: `<div class="sm-dialog-panel-title">${me.contentTitle}</div>`,
+                    border: false
+                },
+                {
+                    html: `<div class="sm-dialog-panel-content">${me.contentText}</div>`,
+                    width: 500,
+                    border: false,
+                }
+            ],
+            buttons: [{
+                xtype: 'button',
+                text: 'Continue',
+                handler: me.continueHandler
+            }],
+            buttonAlign: 'right'
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.WarningPanel.superclass.initComponent.call(this)
+    }
+})
+
 /**
  * @class SM.ReviewsImport.SelectFilesPanel
  * @extends Ext.Panel
@@ -1284,7 +1318,7 @@ async function showImportResultFiles(collectionId, el) {
                     files.push(await entryFilePromise(entry))
                 }
                 files.sort((a, b) => a.lastModified - b.lastModified)
-                showParseFiles(files)    
+                warnOnExcessFiles(files)    
             }
             catch (e) {
                 alert(e)
@@ -1372,10 +1406,44 @@ async function showImportResultFiles(collectionId, el) {
                 const files = [...input.files]
                 // Sort files oldest to newest
                 files.sort((a, b) => a.lastModified - b.lastModified)
-                showParseFiles(files)
+                warnOnExcessFiles(files)
             }
             catch (e) {
                 throw e
+            }
+        }
+
+        function warnOnExcessFiles(files) {
+            if (files.length >= 250) {
+                let warnPanel = new SM.ReviewsImport.WarningPanel({
+                    continueHandler: onContinue,
+                    contentTitle: `<b>We notice you have selected ${files.length} files to process.</b>`,
+                    contentText: `This browser app is not optimized for parsing a large number of files and performance is highly dependent on your available client resources.<br><br>
+                    <b>Recommendations</b><br><br>
+                    <ul>
+                    <li>Process your files in smaller batches.</li>
+                    <li>Consider using STIG Manager Watcher</li>
+                    </ul>
+                    <div class="sm-dialog-panel-callout">
+                    <img src="img/watcher-icon.svg" width=40px height=40px align="left" style="padding-right: 16px;"/>
+                    If you have an on-going requirement to process large batches of files you should use STIG Manager Watcher, a CLI client that
+                    can monitor your file system, process large numbers of test result files asynchronously, and post the results to your Collection.<br><br>
+                    Watcher is suitable for use as a service or daemon, as a scheduled task, in automated testing pipelines, or from the command line. 
+                    Available from <a href="https://github.com/NUWCDIVNPT/stigman-watcher">https://github.com/NUWCDIVNPT/stigman-watcher</a> 
+                    and as an NPM module.</div>`
+                    // contentText: '<ul><l1>One</li><li>Two</li></ul>'
+                })
+                fpwindow.removeAll()
+                fpwindow.setAutoScroll(true)
+                fpwindow.add(warnPanel)
+                fpwindow.doLayout()
+            }
+            else {
+                onContinue()
+            }
+
+            function onContinue() {
+                showParseFiles(files)
             }
         }
 
