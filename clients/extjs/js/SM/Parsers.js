@@ -1,11 +1,47 @@
-function reviewsFromCkl (cklData) {
-  function decodeHtml(html) {
+// const parseResult = {
+//   type: 'CKL' || 'XCCDF',
+//   target: {
+//     name: 'string',
+//     description: 'string',
+//     ip: 'string',
+//     noncomputing: 'string',
+//     fqdn: 'string',
+//     mac: 'string',
+//     metadata: {}
+//   },
+//   checklists: [
+//     {
+//       benchmrkId: 'string',
+//       revisionStr: 'string',
+//       reviews: [
+//         {
+//           ruleId: '',
+//           result: '',
+//           resultComment: '',
+//           action: '' || null,
+//           actionComment: '' || null,
+//           autoResult: false,
+//           status: ''
+//         }
+//       ],
+//       stats: {
+//         pass: 0,
+//         fail: 0,
+//         notapplicable: 0,
+//         notchecked: 0
+//       }
+//     }
+//   ]
+// }
+
+const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}) {
+  function tagValueProcessor(html) {
     var txt = document.createElement("textarea");
     txt.innerHTML = html;
     return txt.value;
   }
-  
-  try {  
+  try {
+    options.ignoreNr = !!options.ignoreNr
     const fastparseOptions = {
       attributeNamePrefix: "",
       ignoreAttributes: false,
@@ -19,9 +55,8 @@ function reviewsFromCkl (cklData) {
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
       arrayMode: true, //"strict"
-      tagValueProcessor : (val, tagName) => decodeHtml(val)
+      tagValueProcessor: val => tagValueProcessor(val)
     }
-    //let parsed = parser.parse(cklData.toString(), fastparseOptions)
     let parsed = parser.parse(cklData, fastparseOptions)
 
     if (!parsed.CHECKLIST) throw (new Error("No CHECKLIST element"))
@@ -42,19 +77,33 @@ function reviewsFromCkl (cklData) {
     function processAsset(assetElement) {
       let obj =  {
         name: assetElement.HOST_NAME,
-        ip: assetElement.HOST_IP || undefined,
-        noncomputing: assetElement.ASSET_TYPE === 'Non-Computing',
-        metadata: {
-          fqdn: assetElement.HOST_FQDN || undefined,
-          mac: assetElement.HOST_MAC || undefined,
-          role: assetElement.ROLE || undefined,
+        description: null,
+        ip: assetElement.HOST_IP || null,
+        fqdn: assetElement.HOST_FQDN || null,
+        mac: assetElement.HOST_MAC || null,
+        noncomputing: assetElement.ASSET_TYPE === 'Non-Computing'
+      }
+      const metadata = {}
+      if (assetElement.ROLE) {
+        metadata.cklRole = assetElement.ROLE
+      }
+      if (assetElement.TECH_AREA) {
+        metadata.cklTechArea = assetElement.TECH_AREA
+      }
+      if (assetElement.WEB_OR_DATABASE) {
+        metadata.cklWebOrDatabase = 'true'
+        metadata.cklHostName = assetElement.HOST_NAME
+        if (assetElement.WEB_DB_SITE) {
+          metadata.cklWebDbSite = assetElement.WEB_DB_SITE
+        }
+        if (assetElement.WEB_DB_INSTANCE) {
+          metadata.cklWebDbInstance = assetElement.WEB_DB_INSTANCE
         }
       }
-      // Remove undefined properties
-      Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key])
+      obj.metadata = metadata
       return obj
     }
-  
+      
     function processIStig(iStigElement) {
       let checklistArray = []
       iStigElement.forEach(iStig => {
@@ -98,9 +147,8 @@ function reviewsFromCkl (cklData) {
       }
       let vulnArray = []
       let nf = na = nr = o = 0
-      vulnElements.forEach(vuln => {
+      vulnElements?.forEach(vuln => {
         const result = results[vuln.STATUS]
-        // Skip unreviewed
         if (result) {
           switch (result) {
             case 'pass':
@@ -118,7 +166,6 @@ function reviewsFromCkl (cklData) {
           }
 
           let ruleId
-          // Array.some() stops once a true value is returned
           vuln.STIG_DATA.some(stigDatum => {
             if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
               ruleId = stigDatum.ATTRIBUTE_DATA
@@ -144,19 +191,16 @@ function reviewsFromCkl (cklData) {
           if (result && vuln.FINDING_DETAILS && result === 'fail' && action && vuln.COMMENTS) {
             status = 'submitted'
           }
-          
+          if (result === 'notchecked' && options.ignoreNr) return
           vulnArray.push({
             ruleId: ruleId,
             result: result,
-            // resultComment: vuln.FINDING_DETAILS == "" ? "Imported from CKL" : vuln.FINDING_DETAILS,
             resultComment: vuln.FINDING_DETAILS,
             action: action,
-            // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
             actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
             autoResult: false,
-            // status: result === 'fail' ? 'saved' : 'submitted',
             status: status
-          })  
+          })    
         }
       })
   
@@ -171,13 +215,12 @@ function reviewsFromCkl (cklData) {
       }
     }  
   }
-  catch (e) {
-    throw (e)
-  }
+  finally {}
 }
 
-function reviewsFromScc (sccFileContent) {
+const reviewsFromScc = function (sccFileContent, options = {}) {
   try {
+    options.ignoreNotChecked = !!options.ignoreNotChecked
     // Parse the XML
     const parseOptions = {
       attributeNamePrefix: "",
@@ -214,15 +257,13 @@ function reviewsFromScc (sccFileContent) {
       target: target,
       checklists: [{
         benchmarkId: benchmarkId,
+        revisionStr: null,
         reviews: x.reviews,
         stats: x.stats
       }]
     })
   }
-  catch (e) {
-    throw (e)
-  }
-
+  finally {}
 
   function processRuleResults(ruleResults) {
     const results = {
@@ -232,7 +273,7 @@ function reviewsFromScc (sccFileContent) {
       notchecked: 'notchecked'
     }
     let reviews = []
-    let nf = na = nr = o = 0
+    let nf = na = nr = o = 0   
     ruleResults.forEach(ruleResult => {
       result = results[ruleResult.result]
       if (result) {
@@ -250,15 +291,14 @@ function reviewsFromScc (sccFileContent) {
               nr++
               break
         }
-        if ( result !== 'notchecked' ) {
-          reviews.push({
-            ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
-            result: result,
-            resultComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
-            autoResult: true,
-            status: result != 'fail' ? 'accepted' : 'saved'
-          })  
-        }
+        if ( result === 'notchecked' && options.ignoreNotChecked ) return
+        reviews.push({
+          ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
+          result: result,
+          resultComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
+          autoResult: true,
+          status: result != 'fail' ? 'accepted' : 'saved'
+        })  
       }
     })
     return {
@@ -290,7 +330,7 @@ function reviewsFromScc (sccFileContent) {
     }
   }
 }
-  
+
 function readTextFileAsync(file) {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
