@@ -820,6 +820,7 @@ SM.ReviewsImport.ParseErrorPanel = Ext.extend(Ext.Panel, {
             },
             {
                 html: me.error,
+                width: 500,
                 border: false
             }
         ]
@@ -828,7 +829,7 @@ SM.ReviewsImport.ParseErrorPanel = Ext.extend(Ext.Panel, {
             border: false,
             layout: 'vbox',
             layoutConfig: {
-                align: 'stretch',
+                // align: 'stretch',
                 pack: 'start',
                 padding: '0 20 20 20',
             },
@@ -1952,11 +1953,31 @@ async function showImportResultFile(params) {
                 parseFile(file, pb)
             ])
             const apiAsset = JSON.parse(apiAssetResponse.response.responseText)
-            const assetMatches = r.target.name === params.assetName || apiAsset.metadata.cklHostName === r.target.metadata.cklHostName
+            let assetMatches = false
+            if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
+                assetMatches = apiAsset.metadata.cklHostName === r.target.metadata.cklHostName
                 && apiAsset.metadata.cklWebDbSite === r.target.metadata.cklWebDbSite
                 && apiAsset.metadata.cklWebDbInstance === r.target.metadata.cklWebDbInstance
+            } 
+            else {
+                assetMatches = r.target.name === apiAsset.name
+            }
             if (!assetMatches) {
-                throw (new Error(`The file does not include reviews for this asset</p>`))
+                let errorStr
+                if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
+                    errorStr = `The CKL file contains values in these elements:<br><br>
+                    &lt;WEB_DB_SITE&gt; = ${r.target.metadata.cklWebDbSite ?? ''}<br>
+                    &lt;WEB_DB_INSTANCE&gt = ${r.target.metadata.cklWebDbInstance ?? ''}<br><br>
+                    This Asset has these metadata properties:<br><br>
+                    cklWebDbSite = ${apiAsset.metadata.cklWebDbSite ?? ''}<br>
+                    cklWebDbInstance = ${apiAsset.metadata.cklWebDbInstance ?? ''}<br><br>
+                    The corresponding values do not match.
+                    </div>`
+                }
+                else {
+                    errorStr = `The CKL files contains reviews for ${r.target.name}`
+                }
+                throw (new Error(`<b>The file does not include reviews for this asset.</b><br><div class="sm-dialog-panel-callout">${errorStr}</div>`))
             }
             const checklistFromFile = r.checklists.filter(checklist => checklist.benchmarkId === params.benchmarkId)[0]
             if (!checklistFromFile) {
