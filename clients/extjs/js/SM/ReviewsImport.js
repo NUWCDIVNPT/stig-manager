@@ -1975,7 +1975,7 @@ async function showImportResultFile(params) {
                     </div>`
                 }
                 else {
-                    errorStr = `The CKL files contains reviews for ${r.target.name}`
+                    errorStr = `The CKL file contains reviews for ${r.target.name}`
                 }
                 throw (new Error(`<b>The file does not include reviews for this asset.</b><br><div class="sm-dialog-panel-callout">${errorStr}</div>`))
             }
