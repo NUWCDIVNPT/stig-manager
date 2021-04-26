@@ -6,12 +6,12 @@ For many deployments, our official [Docker image](https://hub.docker.com/r/nuwcd
 
 ## Documentation
 
-The [STIG Manager documentation](https://nuwcdivnpt.github.io/stig-manager) provides useful references, such as User and Setup Guides, videos, Release Notes, Terminology,  and deployment scenarios.
-* [Quickstart User Guide](https://nuwcdivnpt.github.io/stig-manager/#/Quickstart_Guide)
-* [Quickstart Admin Guide](https://nuwcdivnpt.github.io/stig-manager/#/Admin_Guide)
-* [Setup and Technical Information](https://nuwcdivnpt.github.io/stig-manager/#/Technical_Info)
-* [Environment Variable Reference](https://nuwcdivnpt.github.io/stig-manager/#/Environment_Variables)
-* [Release Notes](https://nuwcdivnpt.github.io/stig-manager/#/Release_Notes)
+The [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/index.html) provides useful references, such as User and Setup Guides, videos, Release Notes, Terminology,  and deployment scenarios.
+* [User Walkthrough](https://stig-manager.readthedocs.io/en/latest/user-guide/user-quickstart.html)
+* [Admin Walkthrough](https://stig-manager.readthedocs.io/en/latest/admin-guide/admin-quickstart.html)
+* [Setup and Technical Information](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/installation-and-setup.html)
+* [Environment Variable Reference](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/environment-variables.html)
+* [Release Notes](https://github.com/NUWCDIVNPT/stig-manager/blob/main/release-notes.rst)
 
 
 
@@ -21,6 +21,4 @@ Please read our [CONTRIBUTING](CONTRIBUTING.md) document. It explains:
 - How you can get involved in the project and contribute
 - How to set up a development environment to work with the project's code 
 
-## Roadmap
 
-All new contributions to the Project will be directed towards stable production releases of the software in accordance with our [Roadmap](docs/roadmap.md).

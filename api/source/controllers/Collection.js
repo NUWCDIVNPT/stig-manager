@@ -11,8 +11,28 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const elevate = req.swagger.params['elevate'].value
     const body = req.swagger.params['body'].value
     if ( elevate || req.userObject.privileges.canCreateCollection ) {
-      const response = await Collection.createCollection( body, projection, req.userObject)
-      writer.writeJson(res, response)
+      try {
+        const response = await Collection.createCollection( body, projection, req.userObject)
+        writer.writeJson(res, response)
+      }
+      catch (err) {
+        // This is MySQL specific, should abstract with an SmError
+        if (err.code === 'ER_DUP_ENTRY') {
+          try {
+            let response = await Collection.getCollections({
+              name: body.name
+            }, projection, elevate, req.userObject )
+            throw (writer.respondWithCode( 400, {
+              code: 400,
+              message: `Duplicate name`,
+              data: response[0]
+            }))
+          } finally {}
+        }
+        else {
+          throw err
+        }
+      }
     }
     else {
       throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
@@ -95,10 +115,12 @@ module.exports.getCollections = async function getCollections (req, res, next) {
     const projection = req.swagger.params['projection'].value
     const elevate = req.swagger.params['elevate'].value
     const name = req.swagger.params['name'].value
+    const nameMatch = req.swagger.params['name-match'].value
     const workflow = req.swagger.params['workflow'].value
     const metadata = req.swagger.params['metadata'].value
     const response = await Collection.getCollections({
       name: name,
+      nameMatch: nameMatch,
       workflow: workflow,
       metadata: metadata
     }, projection, elevate, req.userObject)
@@ -178,9 +200,11 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
 module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value
+    const benchmarkId = req.swagger.params['benchmarkId'].value
+    const assetId = req.swagger.params['assetId'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
-      const response = await Collection.getStatusByCollection( collectionId, req.userObject )
+      const response = await Collection.getStatusByCollection( collectionId, assetId, benchmarkId, req.userObject )
       writer.writeJson(res, response)
     }
     else {
@@ -214,10 +238,9 @@ module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCol
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
     const collectionId = req.swagger.params['collectionId'].value
-    const elevate = req.swagger.params['elevate'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
-      const response = await Collection.getStigsByCollection( collectionId, elevate, req.userObject )
+    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+      const response = await Collection.getStigsByCollection( collectionId, false, req.userObject )
       writer.writeJson(res, response)
       }
     else {

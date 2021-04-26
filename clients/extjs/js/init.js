@@ -51,6 +51,7 @@ function loadScripts() {
         'ext/resources/css/ext-all.css',
         'ext/resources/css/xtheme-gray.css',
         'css/stigman.css',
+        'css/font-awesome.min.css',
         'ext/ux/fileuploadfield/css/fileuploadfield.css',
         'css/RowEditor.css',
         'css/jsonview.bundle.css'
@@ -88,6 +89,7 @@ function loadScripts() {
         "js/SM/CollectionGrant.js",
         "js/SM/FindingsPanel.js",
         "js/SM/Assignments.js",
+        "js/SM/Exports.js",
         "js/SM/Parsers.js",
         "js/SM/ReviewsImport.js",
         "js/collectionManager.js",

@@ -1,10 +1,73 @@
-// Lower default z-index value from 11000 to 8000
-// Source: carl.a.smigielski@saic.com
-Ext.override(Ext.Layer, {
-    getZIndex: function(){
-        return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 8000;
+Ext.LoadMask.prototype.onBeforeLoad = function() {
+    if(!this.disabled){
+        if (!this.store.smMaskDelay) {
+            this.smTask = new Ext.util.DelayedTask(function () {
+                this.el.mask(this.msg, this.msgCls)
+            }, this)
+            this.smTask.delay(this.store.smMaskDelay)
+        }
     }
-});
+}
+Ext.LoadMask.prototype.onLoad = function() {
+    if (this.smTask) {
+        this.smTask.cancel()
+    }
+    this.el.unmask(this.removeMask);
+}
+
+// patch DragDropMgr to prevent a "hung" drop with cursor stuck
+// Source: carl.a.smigielski@saic.com
+Ext.dd.DragDropMgr.getZIndex = function(element) {
+    var body = document.body,
+        z,
+        zIndex = -1;
+
+    element = Ext.getDom(element);
+    // patch to ensure element is not null
+    while (element && element !== body) {
+        if (!isNaN(z = Number(Ext.fly(element).getStyle('zIndex')))) {
+            zIndex = z;
+        }
+        element = element.parentNode;
+    }
+    return zIndex;
+}
+
+// replace 'window' with 'node' as scope: this.directFn.apply(node, args);
+// Source: carl.a.smigielski@saic.com
+Ext.override(Ext.tree.TreeLoader, {
+    requestData : function(node, callback, scope){
+        if(this.fireEvent("beforeload", this, node, callback) !== false){
+            if(this.directFn){
+                var args = this.getParams(node);
+                args.push(this.processDirectResponse.createDelegate(this, [{callback: callback, node: node, scope: scope}], true));
+                this.directFn.apply(node, args);
+            }else{
+                this.transId = Ext.Ajax.request({
+                    method:this.requestMethod,
+                    url: this.dataUrl||this.url,
+                    success: this.handleResponse,
+                    failure: this.handleFailure,
+                    scope: this,
+                    argument: {callback: callback, node: node, scope: scope},
+                    params: this.getParams(node)
+                });
+            }
+        }else{
+            // if the load is cancelled, make sure we notify
+            // the node that we are done
+            this.runCallback(callback, scope || node, []);
+        }
+    }
+})
+
+// // Lower default z-index value from 11000 to 9000
+// // Source: carl.a.smigielski@saic.com
+// Ext.override(Ext.Layer, {
+//     getZIndex: function(){
+//         return this.zindex || parseInt((this.getShim() || this).getStyle('z-index'), 10) || 9000;
+//     }
+// });
 
 // Prevent changing readOnly checkboxes
 // Source: https://forum.sencha.com/forum/showthread.php?90531-Readonly-Checkbox-Override
@@ -106,6 +169,22 @@ Ext.override(Ext.Ajax, {
         })
     }
 })
+
+// Promisfied Ext.MessageBox.confirm method
+// Source: Carl Smigielski
+SM.confirmPromise = function (title, msg) {
+    return new Promise ( (resolve, reject) => {
+        callback = function (id) {
+            if (id !== undefined) {
+                resolve (id)
+            }
+            else {
+                reject (id)
+            }
+        }
+        Ext.Msg.confirm( title, msg, callback )
+    })
+}
 
 // custom Vtype for vtype:'IPAddress'
 Ext.apply(Ext.form.VTypes, {

@@ -35,7 +35,7 @@ app.use(express.json({
 app.use(cors())
 morgan.token('token-user', (req, res) => {
   if (req.access_token) {
-    return req.access_token[config.oauth.claims.username]
+    return req.access_token[config.oauth.claims.username] || req.access_token[config.oauth.claims.servicename]
   }
 })
 morgan.token('forwarded-for', (req, res) => {

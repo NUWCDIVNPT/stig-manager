@@ -137,15 +137,25 @@ function reviewsFromCkl (cklData) {
               action = "remediate"
             } 
           }
+          let status = 'saved'
+          if (result && vuln.FINDING_DETAILS && result !== 'fail') {
+            status = 'submitted'
+          }
+          if (result && vuln.FINDING_DETAILS && result === 'fail' && action && vuln.COMMENTS) {
+            status = 'submitted'
+          }
+          
           vulnArray.push({
             ruleId: ruleId,
             result: result,
-            resultComment: vuln.FINDING_DETAILS == "" ? "Imported from CKL" : vuln.FINDING_DETAILS,
+            // resultComment: vuln.FINDING_DETAILS == "" ? "Imported from CKL" : vuln.FINDING_DETAILS,
+            resultComment: vuln.FINDING_DETAILS,
             action: action,
             // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
             actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
             autoResult: false,
-            status: result === 'fail' ? 'saved' : 'submitted'
+            // status: result === 'fail' ? 'saved' : 'submitted',
+            status: status
           })  
         }
       })

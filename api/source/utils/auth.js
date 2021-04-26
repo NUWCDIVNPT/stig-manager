@@ -11,11 +11,14 @@ const User = require(`../service/${config.database.type}/UserService`)
 var jwksUri
 var client
 
-const roleGetter = new Function("obj", "return obj." + config.oauth.claims.roles + " || [];");
+const roleGetter = new Function("obj", "return obj?." + config.oauth.claims.roles + " || [];");
 
 const verifyRequest = async function (req, securityDefinition, requiredScopes, cb) {
     try {
         let token = getBearerToken(req)
+        if (!token) {
+            throw new SmError(401, 'OIDC bearer token must be provided')
+        }
         let options = {
             algorithms: ['RS256']
         }

@@ -38,10 +38,14 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
     // PROJECTIONS
     if (inProjection.includes('adminStats')) {
+      let statsJoin = 'stig_asset_map sam inner join stats_asset_stig sas on (sam.assetId=sas.assetId and sam.benchmarkId=sas.benchmarkId) WHERE sas.assetId = a.assetId'
       columns.push(`json_object(
         'stigCount', COUNT(distinct sa.saId),
         'stigAssignedCount', COUNT(distinct usa.saId),
-        'ruleCount', (SELECT SUM(ruleCount) FROM current_rev where benchmarkId in (select distinct benchmarkId from stig_asset_map where assetId = a.assetId))
+        'ruleCount', (SELECT SUM(ruleCount) FROM current_rev where benchmarkId in (select distinct benchmarkId from stig_asset_map where assetId = a.assetId)),
+        'acceptedCount', (SELECT SUM(acceptedManual) + SUM(acceptedAuto) FROM ${statsJoin}),
+        'submittedCount', (SELECT SUM(submittedManual) + SUM(submittedAuto) FROM ${statsJoin}),
+        'savedCount', (SELECT SUM(savedManual) + SUM(savedAuto) FROM ${statsJoin})
         ) as "adminStats"`)
     }
     if (inProjection.includes('stigGrants')) {
@@ -98,7 +102,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
                 json_object(
                   'benchmarkId', cr.benchmarkId, 
                   'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
-                  'lastRevisionDate', cr.benchmarkDateSql,
+                  'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
                   'title', st.title,
                   'ruleCount', cr.ruleCount)
               else null end 
@@ -116,6 +120,25 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (inPredicates.assetId) {
       predicates.statements.push('a.assetId = :assetId')
       predicates.binds.assetId = inPredicates.assetId
+    }
+    if ( inPredicates.name ) {
+      let matchStr = '= :name'
+      if ( inPredicates.nameMatch && inPredicates.nameMatch !== 'exact') {
+        matchStr = 'LIKE :name'
+        switch (inPredicates.nameMatch) {
+          case 'startsWith':
+            inPredicates.name = `${inPredicates.name}%`
+            break
+          case 'endsWith':
+            inPredicates.name = `%${inPredicates.name}`
+            break
+          case 'contains':
+            inPredicates.name = `%${inPredicates.name}%`
+            break
+        }
+      }
+      predicates.statements.push(`a.name ${matchStr}`)
+      predicates.binds.name = `${inPredicates.name}`
     }
     if (inPredicates.collectionId) {
       predicates.statements.push('a.collectionId = :collectionId')
@@ -137,7 +160,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     sql += ' FROM '
     sql+= joins.join(" \n")
     if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
+      sql += "\nWHERE " + predicates.statements.join("\n and ")
     }
     sql += ' group by a.assetId, a.name, a.fqdn, a.collectionId, a.description, a.ip, a.mac, a.noncomputing, c.collectionId, c.name'
     sql += ' order by a.name'
@@ -164,7 +187,7 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
     const columns = [
       'distinct cr.benchmarkId', 
       `concat('V', cr.version, 'R', cr.release) as lastRevisionStr`, 
-      'cr.benchmarkDateSql as lastRevisionDate',
+      `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
       'cr.ruleCount as ruleCount',
       'st.title'
     ]
@@ -529,7 +552,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
             group_concat(distinct 
               case when ud.userId is not null then 
                 json_object(
-                  'userId', ud.userId, 
+                  'userId', cast(ud.userId as char), 
                   'username', ud.username)
               else null end 
             order by ud.username),
@@ -583,7 +606,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
 }
 
 
-exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId, revisionStr, elevate, userObject) {
+exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmarks, elevate, userObject) {
   let connection
   try {
     let cklJs = {
@@ -603,45 +626,9 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
           WEB_DB_INSTANCE: null
         },
         STIGS: {
-          iSTIG: {
-            STIG_INFO:
-              {
-                SI_DATA: []
-              },
-            VULN: []
-          }
+          iSTIG: []
         }
       }
-    }
-    let sqlGetBenchmarkId
-    if (revisionStr === 'latest') {
-      sqlGetBenchmarkId = `select
-        cr.benchmarkId, 
-        s.title, 
-        cr.revId, 
-        cr.description, 
-        cr.version, 
-        cr.release, 
-        cr.benchmarkDate
-      from
-        current_rev cr 
-        left join stig s on cr.benchmarkId = s.benchmarkId
-      where
-        cr.benchmarkId = ?`
-    }
-    else {
-      sqlGetBenchmarkId = `select
-        r.benchmarkId,
-        s.title,
-        r.description,
-        r.version,
-        r.release,
-        r.benchmarkDate
-      from 
-        stig s 
-        left join revision r on s.benchmarkId=r.benchmarkId
-      where
-        r.revId = ?`  
     }
 
     let sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
@@ -733,96 +720,143 @@ exports.cklFromAssetStig = async function cklFromAssetStig (assetId, benchmarkId
     cklJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.role ?  resultGetAsset[0].metadata.role : 'None'
 
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
-    // Calculate revId
-    let resultGetBenchmarkId, revId
-    if (revisionStr === 'latest') {
-      ;[resultGetBenchmarkId] = await connection.query(sqlGetBenchmarkId, [benchmarkId])
-      revId = resultGetBenchmarkId[0].revId
-    }
-    else {
-      let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-      revId =  `${benchmarkId}-${results[1]}-${results[2]}`
-      ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
-    }
-
-    let stig = resultGetBenchmarkId[0]
-    let siDataRefs = [
-      { SID_NAME: 'version', SID_DATA: stig.version },
-      { SID_NAME: 'classification' },
-      { SID_NAME: 'customname' },
-      { SID_NAME: 'stigid', SID_DATA: stig.benchmarkId },
-      { SID_NAME: 'description', SID_DATA: stig.description },
-      { SID_NAME: 'filename', SID_DATA: 'stig-manager-oss' },
-      { SID_NAME: 'releaseinfo', SID_DATA: `Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`},
-      { SID_NAME: 'title', SID_DATA: stig.title },
-      { SID_NAME: 'uuid', SID_DATA: '391aad33-3cc3-4d9a-b5f7-0d7538b7b5a2' },
-      { SID_NAME: 'notice', SID_DATA: 'terms-of-use' },
-      { SID_NAME: 'source', }
-    ]
-    let siDataArray = cklJs.CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
-    siDataRefs.forEach(siDatum => {
-      siDataArray.push(siDatum)
-    })
-
-    // CHECKLIST.STIGS.iSTIG.STIG_INFO.VULN
-    let [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])
-
-    let stigDataRef = [
-      ['Vuln_Num', 'groupId' ],
-      ['Severity',  'severity' ],
-      ['Group_Title',  'groupTitle' ],
-      ['Rule_ID',  'ruleId' ],
-      ['Rule_Ver',  'version' ],
-      ['Rule_Title',  'ruleTitle' ],
-      ['Vuln_Discuss',  'vulnDiscussion' ],
-      ['IA_Controls',  'iaControls' ],
-      ['Check_Content',  'checkContent' ],
-      ['Fix_Text',  'fixText' ],
-      ['False_Positives',  'falsePositives' ],
-      ['False_Negatives',  'falseNegatives' ],
-      ['Documentable', 'documentable' ],
-      ['Mitigations', 'mitigations' ],
-      ['Potential_Impact', 'potentialImpacts' ],
-      ['Third_Party_Tools', 'thirdPartyTools' ],
-      ['Mitigation_Control', 'mitigationControl' ],
-      ['Responsibility', 'responsibility' ],
-      ['Security_Override_Guidance', 'severityOverrideGuidance' ] 
-      // STIGViewer bug requires using Security_Override_Guidance instead of Severity_Override_Guidance
-    ]
-
-    let vulnArray = cklJs.CHECKLIST.STIGS.iSTIG.VULN
-    resultGetChecklist.forEach( r => {
-      let vulnObj = {
-        STIG_DATA: [],
-        STATUS: r.result || 'Not_Reviewed',
-        FINDING_DETAILS: r.resultComment,
-        COMMENTS: r.action ? `${r.action}: ${r.actionComment}` : null,
-        SEVERITY_OVERRIDE: null,
-        SEVERITY_JUSTIFICATION: null
+    for (const benchmark of benchmarks) {
+      const regex = /^(?<benchmarkId>\S+?)(-(?<revisionStr>V\d+R\d+(\.\d+)?))?$/
+      const found = benchmark.match(regex)
+      const revisionStr = found.groups.revisionStr || 'latest'
+      const benchmarkId = found.groups.benchmarkId
+      
+      let sqlGetBenchmarkId
+      if (revisionStr === 'latest') {
+        sqlGetBenchmarkId = `select
+          cr.benchmarkId, 
+          s.title, 
+          cr.revId, 
+          cr.description, 
+          cr.version, 
+          cr.release, 
+          cr.benchmarkDate
+        from
+          current_rev cr 
+          left join stig s on cr.benchmarkId = s.benchmarkId
+        where
+          cr.benchmarkId = ?`
       }
-      stigDataRef.forEach(stigDatum => {
-        vulnObj.STIG_DATA.push({
-          VULN_ATTRIBUTE: stigDatum[0],
-          ATTRIBUTE_DATA: r[stigDatum[1]]
-        })
+      else {
+        sqlGetBenchmarkId = `select
+          r.benchmarkId,
+          s.title,
+          r.description,
+          r.version,
+          r.release,
+          r.benchmarkDate
+        from 
+          stig s 
+          left join revision r on s.benchmarkId=r.benchmarkId
+        where
+          r.revId = ?`  
+      }
+      // Calculate revId
+      let resultGetBenchmarkId, revId
+      if (revisionStr === 'latest') {
+        ;[resultGetBenchmarkId] = await connection.query(sqlGetBenchmarkId, [benchmarkId])
+        revId = resultGetBenchmarkId[0].revId
+      }
+      else {
+        let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
+      }
+  
+      let stig = resultGetBenchmarkId[0]
+      let siDataRefs = [
+        { SID_NAME: 'version', SID_DATA: stig.version },
+        { SID_NAME: 'classification' },
+        { SID_NAME: 'customname' },
+        { SID_NAME: 'stigid', SID_DATA: stig.benchmarkId },
+        { SID_NAME: 'description', SID_DATA: stig.description },
+        { SID_NAME: 'filename', SID_DATA: 'stig-manager-oss' },
+        { SID_NAME: 'releaseinfo', SID_DATA: `Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`},
+        { SID_NAME: 'title', SID_DATA: stig.title },
+        { SID_NAME: 'uuid', SID_DATA: '391aad33-3cc3-4d9a-b5f7-0d7538b7b5a2' },
+        { SID_NAME: 'notice', SID_DATA: 'terms-of-use' },
+        { SID_NAME: 'source', }
+      ]
+      let iStigJs = {
+        STIG_INFO:
+          {
+            SI_DATA: []
+          },
+        VULN: []
+      }
+      let siDataArray = iStigJs.STIG_INFO.SI_DATA
+      siDataRefs.forEach(siDatum => {
+        siDataArray.push(siDatum)
       })
-      // STIGRef
-      vulnObj.STIG_DATA.push({
-        VULN_ATTRIBUTE: 'STIGRef',
-        ATTRIBUTE_DATA: `${stig.title} :: Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`
-      })
-      // CCI_REFs
-      if (r.ccis) {
-        let ccis = r.ccis.split(',')
-        ccis.forEach( cci=> {
+  
+      // CHECKLIST.STIGS.iSTIG.STIG_INFO.VULN
+      let [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])
+  
+      let stigDataRef = [
+        ['Vuln_Num', 'groupId' ],
+        ['Severity',  'severity' ],
+        ['Group_Title',  'groupTitle' ],
+        ['Rule_ID',  'ruleId' ],
+        ['Rule_Ver',  'version' ],
+        ['Rule_Title',  'ruleTitle' ],
+        ['Vuln_Discuss',  'vulnDiscussion' ],
+        ['IA_Controls',  'iaControls' ],
+        ['Check_Content',  'checkContent' ],
+        ['Fix_Text',  'fixText' ],
+        ['False_Positives',  'falsePositives' ],
+        ['False_Negatives',  'falseNegatives' ],
+        ['Documentable', 'documentable' ],
+        ['Mitigations', 'mitigations' ],
+        ['Potential_Impact', 'potentialImpacts' ],
+        ['Third_Party_Tools', 'thirdPartyTools' ],
+        ['Mitigation_Control', 'mitigationControl' ],
+        ['Responsibility', 'responsibility' ],
+        ['Security_Override_Guidance', 'severityOverrideGuidance' ] 
+        // STIGViewer bug requires using Security_Override_Guidance instead of Severity_Override_Guidance
+      ]
+  
+      // let vulnArray = cklJs.CHECKLIST.STIGS.iSTIG.VULN
+      let vulnArray = iStigJs.VULN
+      resultGetChecklist.forEach( r => {
+        let vulnObj = {
+          STIG_DATA: [],
+          STATUS: r.result || 'Not_Reviewed',
+          FINDING_DETAILS: r.resultComment,
+          COMMENTS: r.action ? `${r.action}: ${r.actionComment}` : null,
+          SEVERITY_OVERRIDE: null,
+          SEVERITY_JUSTIFICATION: null
+        }
+        stigDataRef.forEach(stigDatum => {
           vulnObj.STIG_DATA.push({
-            VULN_ATTRIBUTE: 'CCI_REF',
-            ATTRIBUTE_DATA: `CCI-${cci}`
+            VULN_ATTRIBUTE: stigDatum[0],
+            ATTRIBUTE_DATA: r[stigDatum[1]]
           })
         })
-        vulnArray.push(vulnObj)
-      }
-    })
+        // STIGRef
+        vulnObj.STIG_DATA.push({
+          VULN_ATTRIBUTE: 'STIGRef',
+          ATTRIBUTE_DATA: `${stig.title} :: Version ${stig.version}, Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`
+        })
+        // CCI_REFs
+        if (r.ccis) {
+          let ccis = r.ccis.split(',')
+          ccis.forEach( cci=> {
+            vulnObj.STIG_DATA.push({
+              VULN_ATTRIBUTE: 'CCI_REF',
+              ATTRIBUTE_DATA: `CCI-${cci}`
+            })
+          })
+          vulnArray.push(vulnObj)
+        }
+      })
+  
+      cklJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
+    }
 
     return (cklJs)
 
@@ -848,9 +882,7 @@ exports.createAsset = async function(body, projection, elevate, userObject) {
     let row = await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
     return (row)
   }
-  catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
+  finally {}
 }
 
 
@@ -935,10 +967,12 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(collectionId, benchmarkId, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, name, nameMatch, benchmarkId, projection, elevate, userObject) {
   try {
     let rows = await _this.queryAssets(projection, {
       collectionId: collectionId,
+      name: name,
+      nameMatch: nameMatch,
       benchmarkId: benchmarkId
     }, elevate, userObject)
     return (rows)
@@ -985,7 +1019,8 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
         }, elevate, userObject)
         return (rows)
       case 'ckl':
-        let xml = await _this.cklFromAssetStig(assetId,benchmarkId, revisionStr, elevate, userObject)
+        const benchmark = revisionStr === 'latest' ? benchmarkId : `${benchmarkId}-${revisionStr}`
+        let xml = await _this.cklFromAssetStigs(assetId, [benchmark], elevate, userObject)
         return (xml)
     }
   }
@@ -993,6 +1028,20 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
+
+exports.getChecklistByAsset = async function(assetId, benchmarks, format, elevate, userObject) {
+  try {
+    switch (format) {
+      case 'ckl':
+        let xml = await _this.cklFromAssetStigs(assetId, benchmarks, elevate, userObject)
+        return (xml)
+    }
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
 
 exports.getAssetsByStig = async function( collectionId, benchmarkId, projection, elevate, userObject) {
   try {

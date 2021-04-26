@@ -8,11 +8,17 @@ const STIG = require(`../service/${config.database.type}/STIGService`)
 module.exports.importManualBenchmark = async function importManualBenchmark (req, res, next) {
   try {
     let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
-    if (extension != 'xml') {
+    if (extension.toLowerCase() != 'xml') {
       throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
     }
     let xmlData = req.file.buffer
-    let benchmark = parsers.benchmarkFromXccdf(xmlData)
+    let benchmark
+    try {
+      benchmark = await parsers.benchmarkFromXccdf(xmlData)
+    }
+    catch(err){
+      throw (writer.respondWithCode( 400, {message: err.message} ))
+    }
     let response
     if (benchmark.scap) {
       response = await STIG.insertScapBenchmark(benchmark, xmlData)

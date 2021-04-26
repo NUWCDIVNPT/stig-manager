@@ -1,5 +1,4 @@
 'use strict';
-const oracledb = require('oracledb')
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
@@ -65,9 +64,24 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       predicates.statements.push('ud.userId = :userId')
       predicates.binds.userId = inPredicates.userId
     }
-    if (inPredicates.username) {
-      predicates.statements.push('ud.username = :username')
-      predicates.binds.username = inPredicates.username
+    if ( inPredicates.username ) {
+      let matchStr = '= :username'
+      if ( inPredicates.usernameMatch && inPredicates.usernameMatch !== 'exact') {
+        matchStr = 'LIKE :username'
+        switch (inPredicates.usernameMatch) {
+          case 'startsWith':
+            inPredicates.username = `${inPredicates.username}%`
+            break
+          case 'endsWith':
+            inPredicates.username = `%${inPredicates.username}`
+            break
+          case 'contains':
+            inPredicates.username = `%${inPredicates.username}%`
+            break
+        }
+      }
+      predicates.statements.push(`ud.username ${matchStr}`)
+      predicates.binds.username = `${inPredicates.username}`
     }
 
     // CONSTRUCT MAIN QUERY
@@ -209,9 +223,7 @@ exports.createUser = async function(body, projection, elevate, userObject) {
     let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
     return (row)
   }
-  catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
-  }
+  finally {}
 }
 
 
@@ -276,10 +288,11 @@ exports.getUserByUsername = async function(username, projection, elevate, userOb
  * canAdmin Boolean Selects Users matching the condition (optional)
  * returns List of UserProjected
  **/
-exports.getUsers = async function(username, projection, elevate, userObject) {
+exports.getUsers = async function(username, usernameMatch, projection, elevate, userObject) {
   try {
     let rows = await _this.queryUsers( projection, {
-      username: username
+      username: username,
+      usernameMatch: usernameMatch
     }, elevate, userObject)
     return (rows)
   }

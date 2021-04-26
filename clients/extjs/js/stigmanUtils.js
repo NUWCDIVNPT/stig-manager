@@ -1,21 +1,16 @@
-/* 
-$Id: stigmanUtils.js 885 2018-02-20 16:26:08Z bmassey $
-*/
-
-//Global variable review to access data from the review
-/* 
-	uId
-	exists
-	state
-	stateCommment
-	action
-	actionComment
-	requireDoc
-*/
-
-//Functions used to display progress of long running middleware
 var statusText;
 
+function renderPct ( v ) {
+	const mercuryCls = v >= 100 ? 'sm-cell-mercury-low' : v >= 50 ? 'sm-cell-mercury-medium' : 'sm-cell-mercury-high'
+	let markup = `
+	<div class="sm-cell-thermometer-text">
+		${v}%
+	</div>
+	<div class="sm-cell-thermometer-bg">
+		<div class="${mercuryCls}" style="width: ${v}%;">&nbsp;</div>
+	</div>`
+	return markup
+}
 
 function getUnlockPrompt(unlockLevel, unlockObject, grid){
 	//==========================================================
@@ -1102,7 +1097,6 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
 		let form = reviewForm.getForm()
 		form.reset();
-		reviewForm.stopMonitoring()
 		reviewForm.isLoaded = false
 		
 		// Set the legacy editStr property
@@ -1137,7 +1131,6 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			actionComment.lastSavedData = actionComment.getValue()
 		}
 
-		reviewForm.startMonitoring();
 
 		// load others
 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
@@ -1157,7 +1150,10 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 		else if (reviewWithHistory.history) {
 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewWithHistory.history)
 		}
+		// Feedback
+		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewWithHistory.rejectText)
 
+		reviewForm.setReviewFormItemStates(reviewForm)
 	}
 	catch (e) {
 		if (e.response) {
@@ -1212,7 +1208,7 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
 	switch (record.data.status) {
 		case 'saved':
-			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
+			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
 			break;
 		case 'submitted':
 			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
@@ -1652,12 +1648,13 @@ function uploadStigs(n) {
 					let input = document.getElementById("form-file-file")
 					let file = input.files[0]
 					let extension = file.name.substring(file.name.lastIndexOf(".")+1)
-					if (extension === 'xml') {
+					if (extension.toLowerCase() === 'xml') {
 						let formEl = fp.getForm().getEl().dom
 						let formData = new FormData(formEl)
 						formData.set('replace', 'true')
 						appwindow.close();
 						initProgress("Importing file", "Initializing...");
+						updateStatusText (file.name)
 		
 						await window.keycloak.updateToken(10)
 						let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
@@ -1667,15 +1664,11 @@ function uploadStigs(n) {
 						}),
 						body: formData
 						})
-						const reader = response.body.getReader()
-						const td = new TextDecoder("utf-8")
-						let isdone = false
-						do {
-						const {value, done} = await reader.read()
-						updateStatusText (td.decode(value),true)
-						isdone = done
-						} while (!isdone)
-
+						let json = await response.json()
+						updateStatusText (JSON.stringify(json, null, 2))
+						updateStatusText ('------------------------------------')
+						updateStatusText ('Done')
+						updateProgress(0, 'Done')
 					}
 					else if (extension === 'zip') {
 						appwindow.close()
@@ -1700,8 +1693,8 @@ function uploadStigs(n) {
 		   
 						let contents = await parentZip.loadAsync(f)
 						let fns = Object.keys(contents.files)
-						let xmlMembers = fns.filter( fn => fn.endsWith('xccdf.xml') || fn.endsWith('Benchmark.xml') )
-						let zipMembers = fns.filter( fn => fn.endsWith('.zip') )
+						let xmlMembers = fns.filter( fn => fn.toLowerCase().endsWith('.xml'))
+						let zipMembers = fns.filter( fn => fn.toLowerCase().endsWith('.zip') )
 						for (let x=0,l=xmlMembers.length; x<l; x++) {
 							let xml = xmlMembers[x]
 							updateStatusText (xml)

@@ -1418,7 +1418,7 @@ async function addReview( params ) {
         title: 'Feedback',
         //layout: 'fit',
         id: 'feedback-tab' + idAppend,
-        //padding: 2,
+        padding: 10,
         autoScroll: true
       },{
         title: 'History',
@@ -1429,8 +1429,6 @@ async function addReview( params ) {
     }]
   });
 
-
-
   /******************************************************/
   // END Resources panel
   /******************************************************/
@@ -1438,27 +1436,79 @@ async function addReview( params ) {
   // START Input form
   /******************************************************/
 
+  let resultCommentTextArea = new Ext.form.TextArea ({
+    cls: 'sm-review-result-textarea',
+    disabled: true,
+    anchor: '100% -30',
+    lastSavedData: "",
+    allowBlank: true,
+    id: 'result-comment' + idAppend,
+    //emptyText: 'Please address the specific items in the review.',
+    //height: 65,
+    fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+    labelSeparator: '',
+    autoScroll: 'auto',
+    name: 'resultComment',
+    enableKeyEvents: true,
+    listeners: {
+      'render': function (ta) {
+        ta.mon( ta.el, 'input', function (e) {
+          reviewForm.setReviewFormItemStates(reviewForm)
+        })
+        new Ext.ToolTip({
+          target: ta.label.dom.getElementsByClassName('fa')[0],
+          showDelay: 0,
+          dismissDelay: 0,
+          autoWidth: true,
+          html: SM.resultCommentTipText
+        }) 
+      }
+    }
+  })
+
+  let actionCommentTextArea = new Ext.form.TextArea({
+    cls: 'sm-review-action-textarea',
+    lastSavedData: "",
+    disabled: true,
+    allowBlank: true,
+    anchor: '100% -30',
+    id: 'action-comment' + idAppend,
+    //emptyText: 'Please describe how the action will be accomplished.',
+    //height: 65,
+    fieldLabel: 'Comment<br><i class= "fa fa-question-circle sm-question-circle"></i>',
+    labelSeparator: '',
+    autoScroll: 'auto',
+    name: 'actionComment',
+    enableKeyEvents: true,
+    listeners: {
+      'render': function (ta) {
+        ta.mon( ta.el, 'input', function (e) {
+          reviewForm.setReviewFormItemStates(reviewForm)
+        })
+        new Ext.ToolTip({
+          target: ta.label.dom.getElementsByClassName('fa')[0],
+          showDelay: 0,
+          dismissDelay: 0,
+          autoWidth: true,
+          html: SM.actionCommentTipText
+        }) 
+      }
+    }
+  })
+
   var reviewForm = new Ext.form.FormPanel({
     cls: 'sm-round-panel',
     bodyCssClass: 'sm-review-form',
     border: false,
     margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
     region: 'south',
-    //disabled: true,
     split: true,
-    //height: 420,
     height: '65%',
     minHeight: 320,
     id: 'reviewForm' + idAppend,
-    // baseCls: 'x-plain',
-    // border: true,
-    // headerCfg: {
-    //   cls: 'x-panel-header',
-    //   border: false
-    // },
     title: 'Review on ' + leaf.assetName,
     padding: 10,
-    labelWidth: 50,
+    labelWidth: 54,
     isLoaded: false, // STIG Manager defined property
     groupGridRecord: {}, // STIG Manager defined property
     monitorValid: false,
@@ -1476,16 +1526,17 @@ async function addReview( params ) {
       title: 'Evaluation',
       items: [{
         xtype: 'combo',
-        cls: 'sm-review-result-input',
+        cls: 'sm-review-combo-input',
+        triggerClass: 'sm-review-trigger',
+        disabledClass: 'sm-review-item-disabled',
         width: 100,
         lastSavedData: "",
-        //anchor: '50%',
         id: 'result-combo' + idAppend,
         changed: false,
-        fieldLabel: 'Result',
+        fieldLabel: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+        labelSeparator: '',
         emptyText: 'Your result...',
         valueNotFoundText: 'Your result...',
-        //allowBlank: false,
         disabled: true,
         name: 'result',
         hiddenName: 'result',
@@ -1506,26 +1557,24 @@ async function addReview( params ) {
               Ext.getCmp('action-combo' + idAppend).disable();
               Ext.getCmp('action-comment' + idAppend).disable();
             }
+            reviewForm.setReviewFormItemStates(reviewForm)
           },
           'change': function (combo, newVal, oldVal) {
             combo.changed = true;
+          },
+          'render': function (combo) {
+            new Ext.ToolTip({
+              target: combo.label.dom.getElementsByClassName('fa')[0],
+              showDelay: 0,
+              dismissDelay: 0,
+              autoWidth: true,
+              html: SM.resultTipText
+            }) 
           }
         },
         triggerAction: 'all'
-      }, {
-        xtype: 'textarea',
-        cls: 'sm-review-result-textarea',
-        disabled: true,
-        anchor: '100% -30',
-        lastSavedData: "",
-        allowBlank: true,
-        id: 'result-comment' + idAppend,
-        //emptyText: 'Please address the specific items in the review.',
-        //height: 65,
-        fieldLabel: 'Comment',
-        autoScroll: 'auto',
-        name: 'resultComment'
-      }] // end fieldset items
+      },resultCommentTextArea
+    ] // end fieldset items
     }, {
       xtype: 'fieldset',
       id: 'recommendation-fs' + idAppend,
@@ -1533,16 +1582,17 @@ async function addReview( params ) {
       title: 'Recommendation',
       items: [{
         xtype: 'combo',
+        triggerClass: 'sm-review-trigger',
+        disabledClass: 'sm-review-item-disabled',
+        cls: 'sm-review-combo-input',
         lastSavedData: "",
         disabled: true,
         changed: false,
         allowBlank: true,
-        //anchor: '100%',
         width: 100,
         id: 'action-combo' + idAppend,
-        fieldLabel: 'Action',
-        emptyText: 'Your action...',
-        valueNotFoundText: 'Your action...',
+        fieldLabel: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>',
+        labelSeparator: '',
         name: 'action',
         hiddenName: 'action',
         mode: 'local',
@@ -1558,26 +1608,24 @@ async function addReview( params ) {
             if (record.data.actionId == 3) {
               Ext.getCmp('rd-checkbox' + idAppend).setValue(1);
             }
+            reviewForm.setReviewFormItemStates(reviewForm)
           },
           'change': function (combo, newVal, oldVal) {
             combo.changed = true;
+            // reviewForm.setReviewFormItemStates(reviewForm)
+          },
+          'render': function (combo) {
+            new Ext.ToolTip({
+              target: combo.label.dom.getElementsByClassName('fa')[0],
+              showDelay: 0,
+              dismissDelay: 0,
+              autoWidth: true,
+              html: SM.actionTipText
+            }) 
           }
         },
         triggerAction: 'all'
-      }, {
-        xtype: 'textarea',
-        cls: 'sm-review-action-textarea',
-        lastSavedData: "",
-        disabled: true,
-        allowBlank: true,
-        anchor: '100% -30',
-        id: 'action-comment' + idAppend,
-        //emptyText: 'Please describe how the action will be accomplished.',
-        //height: 65,
-        fieldLabel: 'Comment',
-        autoScroll: 'auto',
-        name: 'actionComment'
-      }] // end fieldset items
+      },actionCommentTextArea] // end fieldset items
     }, {
       xtype: 'displayfield',
       anchor: '100% 2%',
@@ -1596,11 +1644,13 @@ async function addReview( params ) {
       name: 'locked',
       id: 'locked' + idAppend
     }], // end form panel items,
+    footerCssClass: 'sm-review-footer',
     buttons: [
       {
-        text: 'Save without submitting',
+        text: 'Loading...',
+        disabled: true,
         id: 'reviewForm-button-1' + idAppend,
-        formBind: true,
+        // formBind: true,
         handler: function (btn) {
           saveReview({
             source: 'form',
@@ -1608,10 +1658,11 @@ async function addReview( params ) {
           });
         }
       }, {
-        text: 'Save and Submit',
+        text: 'Loading...',
+        disabled: true,
         iconCls: 'sm-ready-icon',
         id: 'reviewForm-button-2' + idAppend,
-        formBind: true,
+        // formBind: true,
         handler: function (btn) {
           saveReview({
             source: 'form',
@@ -1629,13 +1680,13 @@ async function addReview( params ) {
             var editableDest = (reviewForm.groupGridRecord.data.status == 'saved' || reviewForm.groupGridRecord.data.status == 'rejected' || reviewForm.groupGridRecord.data.status === "");
             var copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
             if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
-              //Add some flare to invite drop.
+              // // Add some flare to invite drop.
               // reviewForm.body.stopFx();
-              // reviewForm.body.highlight("eeeeee", {
+              // reviewForm.body.highlight("00ff00", {
               //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
-              //   endColor: "FFFFFF",
-              //   easing: 'easeIn',
-              //   duration: 1
+              //   endColor: "f0f0f0",
+              //   easing: 'backBoth',
+              //   duration: 0.5
               // });
             } else {
               return (reviewFormPanelDropTarget.dropNotAllowed);
@@ -1682,13 +1733,14 @@ async function addReview( params ) {
               if (!aComment.disabled) {
                 aComment.setValue(selectedRecord.data.actionComment);
               }
-              reviewForm.body.stopFx();
-              reviewForm.body.highlight("eeeeee", {
-                attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
-                endColor: "FFFFFF",
-                easing: 'easeIn',
-                duration: 1
-              })
+              // reviewForm.body.stopFx();
+              // reviewForm.body.highlight("eeeeee", {
+              //   attr: "background-color", //can be any valid CSS property (attribute) that supports a color value
+              //   endColor: "FFFFFF",
+              //   easing: 'easeIn',
+              //   duration: 1
+              // })
+              reviewForm.setReviewFormItemStates(reviewForm)
 
             }
             return (true);
@@ -1696,11 +1748,11 @@ async function addReview( params ) {
           }
         }); // end DropTarget
       }, // end render
-      clientvalidation: setReviewFormItemStates
+      // clientvalidation: setReviewFormItemStates
     } // end listeners
   });
 
-  function setReviewFormItemStates(fp, valid) {
+  reviewForm.setReviewFormItemStates = function (fp, valid) {
     var resultCombo = Ext.getCmp('result-combo' + idAppend);
     var resultComment = Ext.getCmp('result-comment' + idAppend);
     var actionCombo = Ext.getCmp('action-combo' + idAppend);
@@ -1752,15 +1804,14 @@ async function addReview( params ) {
     // Quick hide of the buttons and exit if review status is 'Approved', 
     // otherwise show the buttons and continue processing below
     if (fp.groupGridRecord.data.status == 'accepted') {
-      button1.hide();
-      button2.hide();
+      button1.show();
+      button2.show();
       attachButton.disable();
       attachButton.setTooltip('This button is disabled because the review is locked.');
-      return;
     } else {
       button1.show();
       button2.show();
-      if (fp.groupGridRecord.data.statusId == 'submitted') {
+      if (fp.groupGridRecord.data.status == 'submitted') {
         attachButton.disable();
         attachButton.setTooltip('This button is disabled because the review is submitted');
       } else {
@@ -1823,6 +1874,7 @@ async function addReview( params ) {
             button2.actionType = 'submit';
             button2.setTooltip('');
             break;
+          case 'accepted':
           case 'submitted': // ready
             // button 1
             button1.enable();
@@ -1850,18 +1902,18 @@ async function addReview( params ) {
             button2.actionType = '';
             button2.setTooltip('This button is disabled because the review has not been modified.');
             break;
-          case 'accepted': // approved
-            // we should never get here because of the earlier 'if' statement
-            // button 1
-            button1.hide();
-            button1.setText('Save without submitting');
-            button1.setIconClass('sm-database-save-icon');
-            button1.actionType = '';
-            // button 2
-            button2.hide();
-            button2.setText('Save and Submit');
-            button2.actionType = '';
-            break;
+          // case 'accepted': // approved
+          //   // we should never get here because of the earlier 'if' statement
+          //   // button 1
+          //   button1.hide();
+          //   button1.setText('Save without submitting');
+          //   button1.setIconClass('sm-database-save-icon');
+          //   button1.actionType = '';
+          //   // button 2
+          //   button2.hide();
+          //   button2.setText('Save and Submit');
+          //   button2.actionType = '';
+          //   break;
         }
       }
     } else {
@@ -2128,6 +2180,7 @@ async function addReview( params ) {
       else if (saveParams.source == "selectGroup") {
         saveParams.sm.selectRow(saveParams.index);
       }
+      reviewForm.setReviewFormItemStates(reviewForm)
       //Ext.Msg.alert('Success','Successfully updated review.');
     }
     catch (e) {
@@ -2140,149 +2193,6 @@ async function addReview( params ) {
       // Ext.getBody().unmask()
     }
   } //end saveReview();
-
-  function uploadResults() {
-    var fp = new Ext.FormPanel({
-      standardSubmit: true,
-      fileUpload: true,
-      baseCls: 'x-plain',
-      monitorValid: true,
-      autoHeight: true,
-      //bodyStyle: 'padding: 10px 10px 0 10px;',
-      labelWidth: 1,
-      hideLabel: true,
-      defaults: {
-        anchor: '100%',
-        allowBlank: false
-      },
-      items: [
-        // {
-        //   xtype: 'hidden',
-        //   id: 'import-assetId',
-        //   name: 'assetId',
-        //   value: leaf.assetId
-        // },
-        // {
-        //   xtype: 'hidden',
-        //   id: 'import-benchmarkId',
-        //   name: 'benchmarkId',
-        //   value: leaf.benchmarkId
-        // },
-        // {
-        //   xtype: 'hidden',
-        //   id: 'import-benchmarkId',
-        //   name: 'collectionId'
-        // },
-        // {
-        //   xtype: 'hidden',
-        //   id: 'import-source',
-        //   name: 'source',
-        //   value: 'review'
-        // },
-        { // start fieldset config
-          xtype: 'fieldset',
-          title: 'Instructions',
-          autoHeight: true,
-          items: [
-            {
-              xtype: 'displayfield',
-              id: 'infoText1',
-              name: 'infoText',
-              html: "Please browse for either a CKL file generated by DISA's STIG Viewer or an XCCDF file from SPAWAR's SCAP Compliance Checker (SCC).<br><br>The imported file should contain results for:<p>Asset: <b>" + leaf.assetName + '</b><p>STIG: <b>' + leaf.benchmarkId + '</b>',
-            }]
-        },
-        {
-          xtype: 'fileuploadfield',
-          id: 'form-file',
-          emptyText: 'Browse for a file...',
-          name: 'importFile',
-          accept: '.ckl,.xml',
-          buttonText: 'Browse...',
-          buttonCfg: {
-            icon: "img/disc_drive.png"
-          },
-          listeners: {
-            // fileselected: function (field, filename) {
-            //   var i = field.fileInput.dom.files[0];
-            //   var extension = i.name.substr(i.name.lastIndexOf('.') + 1).toLowerCase();
-            //   if (extension != 'ckl' && extension != 'xml') {
-            //     field.setValue("");
-            //     alert("Invalid file extension");
-            //     return;
-            //   }
-            //   // Ext.getCmp('import-filesize').setValue(i.size);
-            //   // Ext.getCmp('import-filename').setValue(i.name);
-            //   // Ext.getCmp('import-modified').setValue(Math.floor(i.lastModified / 1000));
-            //   // Ext.getCmp('import-uuid').setValue(getUuid());
-            // }
-          }
-        },
-        {
-          xtype: 'displayfield',
-          id: 'infoText2',
-          name: 'infoText',
-          html: "<i><b>IMPORTANT: Results from the imported file will overwrite any existing results!</b></i>",
-        }
-      ],
-      buttonAlign: 'center',
-      buttons: [{
-        text: 'Import',
-        icon: 'img/page_white_get.png',
-        tooltip: 'Import STIG results',
-        formBind: true,
-        handler: async function () {
-          try {
-            if (fp.getForm().isValid()) {
-              let formEl = fp.getForm().getEl().dom
-              let formData = new FormData(formEl)
-              appwindow.close();
-              initProgress("Importing file", "Please wait...", 'groupStore' + idAppend);
-
-							await window.keycloak.updateToken(10)
-              let response = await fetch(`${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}`, {
-                method: 'POST',
-                headers: new Headers({
-                  'Authorization': `Bearer ${window.keycloak.token}`
-                }),
-                body: formData
-              })
-              let json = await response.json()
-              updateStatusText(JSON.stringify(json, null, 2))
-              updateProgress(1,'Completed')
-            }
-          }
-          catch (e) {
-            alert(e.message)
-          }
-        }
-      },
-      {
-        text: 'Cancel',
-        handler: function () { appwindow.close(); }
-      }
-      ]
-    });
-
-    var appwindow = new Ext.Window({
-      title: 'Import STIG results from CKL or XCCDF',
-      modal: true,
-      width: 500,
-      //height:140,
-      //minWidth: 500,
-      //minHeight: 140,
-      layout: 'fit',
-      plain: true,
-      bodyStyle: 'padding:5px;',
-      buttonAlign: 'center',
-      items: fp
-    });
-
-    appwindow.show(document.body);
-
-
-  }; //end uploadResults();
-
-
 
   function unlockStigReviewsForAsset() {
     //===================================================
@@ -2300,8 +2210,6 @@ async function addReview( params ) {
     unlockObject.unlockDepth = "STIG-ASSET";
     getUnlockPrompt("STIG-ASSET", unlockObject, groupGrid);
   };
-
-
 
   function bulkSubmit(all) {
     let completedRecords = groupStore.getRange().filter( record => record.data.reviewComplete && record.data.status !== 'submitted')

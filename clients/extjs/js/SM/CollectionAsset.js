@@ -39,6 +39,21 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 mapping: 'adminStats.stigCount'
             },
             {
+                name: 'savedPct',
+                type: 'integer',
+                convert: (v, r) => r.adminStats.ruleCount ? Math.round(((r.adminStats.savedCount + r.adminStats.submittedCount + r.adminStats.acceptedCount)/r.adminStats.ruleCount) * 100) : 0
+            },
+            {
+                name: 'submittedPct',
+                type: 'integer',
+                convert: (v, r) => r.adminStats.ruleCount ? Math.round(((r.adminStats.submittedCount + r.adminStats.acceptedCount)/r.adminStats.ruleCount) * 100) : 0
+            },
+            {
+                name: 'acceptedPct',
+                type: 'integer',
+                convert: (v, r) => r.adminStats.ruleCount ? Math.round((r.adminStats.acceptedCount/r.adminStats.ruleCount) * 100) : 0
+            },
+            {
                 name: 'stigUnassignedCount',
                 type: 'integer',
                 convert: (v, r) => r.adminStats.stigCount - r.adminStats.stigAssignedCount
@@ -67,6 +82,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         let assetStore = new Ext.data.JsonStore({
             grid: this,
+            smMaskDelay: 250,
             proxy: this.proxy,
             baseParams: {
                 collectionId: this.collectionId,
@@ -88,54 +104,72 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
+
         let columns = [
             { 	
 				header: "Asset",
-				width: 100,
+				width: 70,
                 dataIndex: 'name',
 				sortable: true
 			},{ 	
-				header: "Description",
-				width: 150,
-                dataIndex: 'description',
-                sortable: true,
+				header: "FQDN",
+				width: 100,
+                dataIndex: 'fqdn',
+				sortable: true,
                 renderer: SM.styledEmptyRenderer
 			},{ 	
 				header: "IP",
+                fixed: true,
 				width: 100,
                 dataIndex: 'ip',
 				sortable: true,
                 renderer: SM.styledEmptyRenderer
-			},{ 
-                xtype: 'booleancolumn',
-                trueText: '&#x2714;',
-				falseText: '',
-				header: "Non-computing",
-				width: 75,
-                dataIndex: 'noncomputing',
-				align: "center",
-				tooltip:"Is this a computing asset?",
-				sortable: true
+			},{ 	
+				header: "MAC",
+                fixed: true,
+				width: 110,
+                dataIndex: 'mac',
+				sortable: true,
+                renderer: SM.styledEmptyRenderer
 			},{ 	
 				header: "STIGs",
-				width: 50,
+				width: 70,
+                fixed: true,
 				dataIndex: 'stigCount',
 				align: "center",
 				tooltip:"Total STIGs Assigned",
 				sortable: true
 			},{ 	
-				header: "Unassigned",
+				header: "Checks",
 				width: 70,
-				dataIndex: 'stigUnassignedCount',
-				align: "center",
-				tooltip:"STIGs Missing User Assignments",
-				sortable: true
-			},{ 	
-				header: "Rule count",
-				width: 70,
+                fixed: true,
 				dataIndex: 'ruleCount',
 				align: "center",
 				sortable: true
+			},{ 	
+				header: "Reviewed",
+				width: 100,
+                fixed: true,
+				dataIndex: 'savedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			},{ 	
+				header: "Submitted",
+				width: 100,
+                fixed: true,
+				dataIndex: 'submittedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
+			},{ 	
+				header: "Accepted",
+				width: 100,
+                fixed: true,
+				dataIndex: 'acceptedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPct
 			}
         ]
         let config = {
@@ -146,11 +180,11 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 columns: columns   
             }),
             sm: new Ext.grid.RowSelectionModel({
-                singleSelect: true,
+                singleSelect: false,
                 listeners: {
                     selectionchange: function (sm) {
-                        Ext.getCmp(`assetGrid-${id}-modifyBtn`).setDisabled(!sm.hasSelection());
-                        Ext.getCmp(`assetGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection());
+                        Ext.getCmp(`assetGrid-${id}-modifyBtn`).setDisabled(sm.getCount() !== 1)
+                        Ext.getCmp(`assetGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection())
                     }
                 }
             }),
@@ -179,50 +213,66 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                             Ext.getBody().mask('Loading form...');
                             showAssetProps( null, me.collectionId);            
                         }
-                    }
-                    ,'-'
-                    ,{
+                    },
+                    '-',
+
+                    {
                         iconCls: 'sm-import-icon',
                         text: 'Import CKL or SCAP...',
                         handler: function() {
                             let el = Ext.getCmp(`${me.collectionId}-collection-manager-tab`)
                             showImportResultFiles( me.collectionId, el.getEl().dom );            
                         }
-                    }
-                    ,'-'
-                    , {
+                    },
+                    '-',
+                    {
+                        iconCls: 'sm-export-icon',
+                        id: `assetGrid-${id}-exportBtn`,
+                        text: 'Export CKLs...',
+                        disabled: false,
+                        handler: function() {
+                            showExportCklFiles( me.collectionId, me.collectionName );            
+                        }
+                    },
+                    '-',
+                    {
                         ref: '../removeBtn',
                         iconCls: 'icon-del',
                         id: `assetGrid-${id}-deleteBtn`,
-                        text: 'Delete Asset',
+                        text: 'Delete Assets',
                         disabled: true,
                         handler: async function () {
                             try {
-                                var confirmStr="Deleteing this asset will <b>permanently remove</b> all data associated with the asset. This includes all the asset's existing STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the asset?";
-                                Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
-                                    if (btn == 'yes') {
-                                        let assetRecord = me.getSelectionModel().getSelected()
+                                let assetRecords = me.getSelectionModel().getSelections()
+                                const multiDelete = assetRecords.length > 1
+                                var confirmStr=`Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>permanently remove</b> all data associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to continue?`;
+                                let btn = await SM.confirmPromise("Confirm Delete", confirmStr)
+                                if (btn == 'yes') {
+                                    const l = assetRecords.length
+                                    for (let i=0; i < l; i++) {
+                                        Ext.getBody().mask(`Deleting ${i+1}/${l} Assets`)
                                         // Edge case to handle when the selected record was changed (e.g., stats updated) 
                                         // while still selected, then is deleted
-                                        assetRecord = me.store.getById(assetRecord.id)
+                                        const thisRecord = me.store.getById(assetRecords[i].id)
                                         let result = await Ext.Ajax.requestPromise({
-                                            url: `${STIGMAN.Env.apiBase}/assets/${assetRecord.data.assetId}`,
+                                            url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
                                             method: 'DELETE'
                                         })
                                         let apiAsset = JSON.parse(result.response.responseText)
-                                        me.store.remove(assetRecord)
+                                        me.store.remove(thisRecord)
                                         SM.Dispatcher.fireEvent('assetdeleted', apiAsset)
                                     }
-                                })
+                                }
                             }
                             catch (e) {
                                 alert(e.stack)
                             }
-                        },
-                    
-                    }
-                    ,'-'
-                    ,{
+                            finally {
+                                Ext.getBody().unmask()
+                            }
+                        }
+                    },
+                    '-',                    {
                         iconCls: 'sm-asset-icon',
                         disabled: true,
                         id: `assetGrid-${id}-modifyBtn`,
@@ -232,7 +282,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                             Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
                             showAssetProps(r.get('assetId'), me.collectionId);
                         }
-                    }                    
+                    }
                 ]
             }),
             bbar: new Ext.Toolbar({
@@ -244,7 +294,10 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         tooltip: 'Reload this grid',
                         width: 20,
                         handler: function(btn){
+                            const savedSmMaskDelay = btn.grid.store.smMaskDelay
+                            btn.grid.store.smMaskDelay = 0
                             btn.grid.store.reload();
+                            btn.grid.store.smMaskDelay = savedSmMaskDelay
                         }
                     },{
                         xtype: 'tbseparator'
@@ -510,6 +563,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 
         let tbar = new SM.RowEditorToolbar({
             itemString: 'STIG',
+            newTitle: 'Assign STIG',
+            deleteTitle: 'Unassign STIG',
             editor: this.editor,
             gridId: this.id,
             deleteProperty: 'benchmarkId',
@@ -667,7 +722,6 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                             anchor: '100%',
                                             emptyText: 'Enter IP',
                                             allowBlank: true,
-                                            vtype: 'IPAddress',
                                             name: 'ip'
                                         }
                                     ]

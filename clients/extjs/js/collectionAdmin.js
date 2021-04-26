@@ -141,7 +141,14 @@ function addCollectionAdmin( params ) {
         width: 150,
         dataIndex: 'created',
         sortable: true
+      },
+      {
+        header: "ID",
+        width: 150,
+        dataIndex: 'collectionId',
+        sortable: true
       }
+
     ],
     view: new Ext.grid.GridView({
       forceFit: false,
@@ -222,18 +229,16 @@ function addCollectionAdmin( params ) {
           }
         }, {
           xtype: 'tbseparator'
-        }, {
-          xtype: 'tbbutton',
-          id: 'collectionGrid-csvBtn',
+        }, 
+        {
+          xtype: 'exportbutton',
+          hasMenu: false,
+          gridBasename: 'Collection-Info',
+          exportType: 'grid',
           iconCls: 'sm-export-icon',
-          tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-          width: 20,
-          handler: function (btn) {
-            var ourStore = collectionGrid.getStore();
-            var lo = ourStore.lastOptions;
-            window.location = ourStore.url + '?csv=1&xaction=read';
-          }
-        }, {
+          text: 'Export'
+        },
+        {
           xtype: 'tbfill'
         }, {
           xtype: 'tbseparator'

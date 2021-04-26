@@ -1,0 +1,237 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Security Efforts &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+        <script src="../_static/js/custom.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">The STIG Manager Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Security Efforts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/the-project/security.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="security-efforts">
+<span id="security-doc"></span><h1>Security Efforts<a class="headerlink" href="#security-efforts" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stigman-is-open-source-maintained-by-nuwcdivnpt">
+<h2>STIGMan is Open Source, Maintained by NUWCDIVNPT<a class="headerlink" href="#stigman-is-open-source-maintained-by-nuwcdivnpt" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Describe STIG Manager’s scanning, testing, and adherance go to guidelines here.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

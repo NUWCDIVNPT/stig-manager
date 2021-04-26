@@ -29,10 +29,14 @@ USER node
 # Install app dependencies
 COPY --chown=node:node ./api/source .
 RUN npm ci
-# RUN npm audit fix
 
 RUN mkdir client
 COPY --chown=node:node ./clients/extjs ./client
+
+# Ensure sticky bit is set on all world-writable directories (fixes tenable 1000749)
+USER root
+RUN df -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d -perm -0002 2>/dev/null | xargs chmod a+t 2>/dev/null | echo 'tenable 1000749'
+USER node
 
 # Set environment
 ENV COMMIT_SHA=${COMMIT_SHA} \

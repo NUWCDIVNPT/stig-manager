@@ -22,9 +22,26 @@ module.exports.createUser = async function createUser (req, res, next) {
           throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
         }
       }
-
-      let response = await User.createUser(body, projection, elevate, req.userObject)
-      writer.writeJson(res, response)
+      try {
+        let response = await User.createUser(body, projection, elevate, req.userObject)
+        writer.writeJson(res, response)
+      }
+      catch (err) {
+        // This is MySQL specific, should abstract with an SmError
+        if (err.code === 'ER_DUP_ENTRY') {
+          try {
+            let response = await User.getUsers(body.username, body.usernameMatch, projection, elevate, req.userObject)
+            throw (writer.respondWithCode( 400, {
+              code: 400,
+              message: `Duplicate name`,
+              data: response[0]
+            }))
+          } finally {}
+        }
+        else {
+          throw err
+        }
+      }
     }
     else {
      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
@@ -56,7 +73,7 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
 module.exports.exportUsers = async function exportUsers (projection, elevate, userObject) {
   try {
     if (elevate) {
-      return await User.getUsers(null, projection, elevate, userObject )
+      return await User.getUsers(null, null, projection, elevate, userObject )
     }
     else {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
@@ -98,11 +115,12 @@ module.exports.getUsers = async function getUsers (req, res, next) {
   try {
     let elevate = req.swagger.params['elevate'].value
     let username = req.swagger.params['username'].value
+    let usernameMatch = req.swagger.params['username-match'].value
     let projection = req.swagger.params['projection'].value
     if ( !elevate && projection && projection.length > 0) {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
     }
-    let response = await User.getUsers( username, projection, elevate, req.userObject)
+    let response = await User.getUsers( username, usernameMatch, projection, elevate, req.userObject)
     writer.writeJson(res, response)
   }
   catch(err) {

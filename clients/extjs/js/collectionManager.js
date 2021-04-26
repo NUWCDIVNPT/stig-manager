@@ -10,6 +10,7 @@ async function addCollectionManager( params ) {
 		let collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
 		let collectionPanel = new SM.CollectionPanel({
 			collectionId: collectionId,
+			title: `Collection Properties (ID ${collectionId})`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			region: 'north',
@@ -55,6 +56,7 @@ async function addCollectionManager( params ) {
 		})
 		let assetGrid = new SM.CollectionAssetGrid({
 			collectionId: collectionId,
+			collectionName: collectionName,
 			url: `${STIGMAN.Env.apiBase}/assets`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
@@ -66,6 +68,7 @@ async function addCollectionManager( params ) {
 		})
 		let stigGrid = new SM.CollectionStigsGrid({
 			collectionId: collectionId,
+			collectionName: collectionName,
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
@@ -96,7 +99,8 @@ async function addCollectionManager( params ) {
 			items: [
 				{
 					region: 'west',
-					width: 500,
+					width: '30%',
+					minWidth: 330,
 					split: true,
 					border: false,
 					layout: 'border',
@@ -179,3 +183,4 @@ async function addCollectionManager( params ) {
 	}
 
 }
+

@@ -818,8 +818,8 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 
 					id:'result' + idAppend,
-					header: "Result",
-					width: 50,
+					header: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+					width: 70,
 					fixed: true,
 					dataIndex: 'result',
 					editor: new Ext.form.ComboBox({
@@ -887,7 +887,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 	
 					id:'resultComment' + idAppend,
-					header: "Result comment", 
+					header: 'Result comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
 					dataIndex: 'resultComment',
 					renderer: function (v) {
@@ -915,7 +915,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 	
 					id:'action' + idAppend,
-					header: "Action", 
+					header: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 80,
 					fixed: true,
 					dataIndex: 'action',
@@ -961,7 +961,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 	
 					id:'actionComment' + idAppend,
-					header: "Action comment", 
+					header: 'Action comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
 					width: 100,
 					dataIndex: 'actionComment',
 					renderer: function (v) {
@@ -1181,33 +1181,50 @@ async function addCollectionReview ( params ) {
 				autoFill:true,
 				emptyText: 'No data to display.',
 				deferEmptyText:false,
-				// getRowClass: function(record, rowIndex, rp, ds){ // rp = rowParams
-				// 	if(record.data.result == 'fail'){
-				// 		return 'sm-grid3-row-red';
-				// 	} else if (record.data.result == 'pass') {
-				// 		return 'sm-grid3-row-green';
-				// 	} else if (record.data.result == 'notapplicable') {
-				// 		return 'sm-grid3-row-grey';
-				// 	}
-				// }
-				
+				listeners: {
+					refresh: function (view) {
+						// Setup the tooltips
+						const columns = view.grid.getColumnModel().columns
+						for( let x = 0; x < columns.length; x++ ) {
+							// Look for colums with the FontAwesome class
+							const tipEl = view.getHeaderCell(x).getElementsByClassName('fa')[0]
+							if ( tipEl ) {
+								const idPrefix = columns[x].id.split('-')[0]
+								// idPrefix should be 'result', 'resultComment', 'action' or 'actionCommnt'
+								new Ext.ToolTip({
+									target: tipEl,
+									showDelay: 0,
+									dismissDelay: 0,
+									autoWidth: true,
+									html: SM[`${idPrefix}TipText`]
+								}) 
+							}
+						}					
+					}
+				}
 			}),
 			// width: 300,
 			tbar: new Ext.Toolbar({
 				items: [
 					{
 						xtype: 'tbbutton',
+						disabled: true,
 						icon: 'img/lock-16.png',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
+						hidden: leaf.collectionGrant !== 4,
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
 						}
 					}
-					,'-'
+					,{
+						xtype: 'tbseparator',
+						hidden: leaf.collectionGrant !== 4
+					}
 					,{
 						xtype: 'tbbutton',
+						disabled: true,
 						icon: 'img/ready-16.png',  // <-- icon
 						id: 'reviewsGrid-submitButton' + idAppend,
 						text: 'Submit',
@@ -1332,77 +1349,142 @@ async function addCollectionReview ( params ) {
 		}
 
 		function setReviewsGridButtonStates() {
-			var sm = reviewsGrid.getSelectionModel();
-			var approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
-			var submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
-			var selections = sm.getSelections();
-			var selLength = selections.length;
-			var approveBtnDisabled = false;
-			var submitBtnDisabled = false;
-			var rejectFormDisabled = false;
+			const sm = reviewsGrid.getSelectionModel();
+			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
+			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
+			const selections = sm.getSelections();
+			const selLength = selections.length;
+			let approveBtnDisabled = false;
+			let submitBtnDisabled = false;
+			let rejectFormDisabled = false;
+			let approveBtnEnabled = true;
+			let submitBtnEnabled = true;
+			let rejectFormEnabled = true;
 
-			mainloop:
-			for (i=0; i<selLength; i++) {
-				if (selections[i].data.reviewId == 0) { // a review doesn't exist
-					approveBtnDisabled = true;
-					submitBtnDisabled = true;
-					break mainloop;
+			if (selLength === 0) {
+				approveBtnEnabled = false
+				submitBtnEnabled = false
+				rejectFormEnabled = false
+			}
+			else if (selLength === 1) {
+				const selection = selections[0]
+				if (!selection.data.status) { // a review doesn't exist
+					approveBtnEnabled = false
+					submitBtnEnabled = false
+					rejectFormEnabled = false
 				}
-				var status = selections[i].data.status;
-				switchloop:
-				switch (status) {
-					case 'saved': // in progress
-						approveBtnDisabled = true;
+				else {
+					const status = selection.data.status
+					switch (status) {
+						case 'saved': // in progress
+							approveBtnDisabled = true;
+							if (isReviewComplete(
+								selection.data.result,
+								selection.data.resultComment,
+								selection.data.action,
+								selection.data.actionComment
+								)) {
+									approveBtnEnabled = false
+									submitBtnEnabled = true
+									rejectFormEnabled = false
+				
+							} else {
+								approveBtnEnabled = false
+								submitBtnEnabled = false
+								rejectFormEnabled = false
+							}
+							break
+						case 'submitted':
+							approveBtnEnabled = true
+							submitBtnEnabled = false
+							rejectFormEnabled = true
+							break
+						case 'rejected':
+							approveBtnEnabled = true
+							submitBtnEnabled = true
+							rejectFormEnabled = true
+							break
+						case 'accepted':
+							approveBtnEnabled = false
+							submitBtnEnabled = true
+							rejectFormEnabled = false
+							break
+					}
+				}
+			} 
+			else { // multiple selections
+				const counts = {
+					unsaved: 0,
+					savedComplete:0,
+					saved:0,
+					submitted:0,
+					rejected:0,
+					accepted:0
+				}
+				for (i=0; i<selLength; i++) {
+					if (!selections[i].data.status) { // a review doesn't exist
+						counts.unsaved++
+						break
+					}
+					const status = selections[i].data.status
+					if (status === 'saved') {
 						if (isReviewComplete(
 							selections[i].data.result,
 							selections[i].data.resultComment,
 							selections[i].data.action,
 							selections[i].data.actionComment
-							)) {
-								approveBtnDisabled = true;
-								submitBtnDisabled = false;
-						} else {
-							submitBtnDisabled = true;
-							rejectFormDisabled = true;
+						)) {
+							counts.savedComplete++
+						} 
+						else {
+							counts.saved++
 						}
-						break switchloop;
-					case 'submitted': // ready
-						submitBtnDisabled = true;
-						break switchloop;
-					case 'rejected': // rejected
-						break;
-					case 'accepted': // approved
-						approveBtnDisabled = true;
-						rejectFormDisabled = true;
-						break switchloop;
+					}
+					else {
+						counts[status]++
+					}	
 				}
+				approveBtnEnabled = (counts.submitted || counts.rejected) && (!counts.unsaved && !counts.saved && !counts.savedComplete)  && (counts.accepted !== selLength)
+				submitBtnEnabled = (counts.savedComplete || counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved) && (counts.submitted !== selLength)
+				rejectFormEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
+		
 			}
-
-			approveBtn.setDisabled(approveBtnDisabled);
-			submitBtn.setDisabled(submitBtnDisabled);
-			rejectFormPanel.setDisabled(rejectFormDisabled);
+			approveBtn.setDisabled(!approveBtnEnabled);
+			submitBtn.setDisabled(!submitBtnEnabled);
+			rejectFormPanel.setDisabled(!rejectFormEnabled);
 		};
 		
 		async function handleStatusChange (grid,sm,status) {
 			try {
-				Ext.getBody().mask('Updating...')
 				const selections = sm.getSelections()
-				const requests = []
-				for (const record of selections) {
-					requests.push(
-						Ext.Ajax.requestPromise({
+				const results = []
+				let i, l
+				for (i = 0, l = selections.length; i < l; i++) {
+					const record = selections[i]
+					Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
+					try {
+						const result = await Ext.Ajax.requestPromise({
 							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 							method: 'PATCH',
 							jsonData: {
 								status: status
 							}
 						})
-					)
+						results.push({
+							success: true,
+							result: result
+						})
+					}
+					catch (e) {
+						results.push({
+							success: false,
+							result: e
+						})
+					}
 				}
-				let results = await Promise.allSettled(requests)
 
 				for (i=0, l=selections.length; i < l; i++) {
-					if (results[i].status === 'fulfilled') {
+					if (results[i].success) {
 						selections[i].data.status = status
 						selections[i].commit()
 					}
@@ -1637,6 +1719,7 @@ async function addCollectionReview ( params ) {
 		
 		async function handleRejections() {
 			try {
+				Ext.getBody().mask('Rejecting')
 				const status = 'rejected'
 				const values = rejectFormPanel.getForm().getFieldValues()
 				const selections = reviewsGrid.getSelectionModel().getSelections()
@@ -1648,7 +1731,8 @@ async function addCollectionReview ( params ) {
 							method: 'PATCH',
 							jsonData: {
 								status: status,
-								rejectText: values.rejectText
+								rejectText: values.rejectText,
+								rejectUserId: curUser.userId
 							}
 						})
 					)
@@ -1662,6 +1746,7 @@ async function addCollectionReview ( params ) {
 				}
 				reviewsGrid.updateGroupStore(reviewsGrid)
 				setReviewsGridButtonStates()
+				Ext.getBody().unmask()
 			}
 			catch (e) {
 				alert(e.message)
