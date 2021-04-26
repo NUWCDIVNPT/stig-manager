@@ -1965,12 +1965,12 @@ async function showImportResultFile(params) {
             if (!assetMatches) {
                 let errorStr
                 if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
-                    errorStr = `The CKL file contains values in these elements:<br><br>
-                    &lt;WEB_DB_SITE&gt; = ${r.target.metadata.cklWebDbSite ?? ''}<br>
-                    &lt;WEB_DB_INSTANCE&gt = ${r.target.metadata.cklWebDbInstance ?? ''}<br><br>
-                    This Asset has these metadata properties:<br><br>
-                    cklWebDbSite = ${apiAsset.metadata.cklWebDbSite ?? ''}<br>
-                    cklWebDbInstance = ${apiAsset.metadata.cklWebDbInstance ?? ''}<br><br>
+                    errorStr = `CKL elements and values:<br><br>
+                    &lt;WEB_DB_SITE&gt; = ${r.target.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No value</span>'}<br>
+                    &lt;WEB_DB_INSTANCE&gt = ${r.target.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No value</span>'}<br><br>
+                    Asset metadata properties and values:<br><br>
+                    cklWebDbSite = ${apiAsset.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No property</span>'}<br>
+                    cklWebDbInstance = ${apiAsset.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No property</span>'}<br><br>
                     The corresponding values do not match.
                     </div>`
                 }
