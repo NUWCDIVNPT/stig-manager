@@ -1216,7 +1216,7 @@ class TaskObject {
                 else {
                     // The asset exists in the API. Set assetProps from the apiAsset.
                     taskAsset.knownAsset = true
-                    taskAsset.assetProps = apiAsset
+                    taskAsset.assetProps = { ...apiAsset, collectionId: this.collectionId }
                 }
                 // Insert the asset into taskAssets
                 taskAssets.set(mapKey, taskAsset)
