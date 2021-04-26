@@ -1,84 +1,46 @@
-module.exports.reviewsFromCkl = async function (cklData, assetId) {
-  const fastparser = require('fast-xml-parser')
-  const he = require('he')
+// const parseResult = {
+//   type: 'CKL' || 'XCCDF',
+//   target: {
+//     name: 'string',
+//     description: 'string',
+//     ip: 'string',
+//     noncomputing: 'string',
+//     fqdn: 'string',
+//     mac: 'string',
+//     metadata: {}
+//   },
+//   checklists: [
+//     {
+//       benchmrkId: 'string',
+//       revisionStr: 'string',
+//       reviews: [
+//         {
+//           ruleId: '',
+//           result: '',
+//           resultComment: '',
+//           action: '' || null,
+//           actionComment: '' || null,
+//           autoResult: false,
+//           status: ''
+//         }
+//       ],
+//       stats: {
+//         pass: 0,
+//         fail: 0,
+//         notapplicable: 0,
+//         notchecked: 0
+//       }
+//     }
+//   ]
+// }
 
-  function processAsset(assetElement) {
-    return {
-      hostname: assetElement.HOST_NAME,
-      fqdn: assetElement.HOST_FQDN,
-      ip: assetElement.HOST_IP,
-      mac: assetElement.HOST_MAC,
-    }
-  }
-
-  function processIStig(iStigElement) {
-    let resultArray = []
-    iStigElement.forEach(iStig => {
-      let vulns = processVuln(iStig.VULN)
-      resultArray.splice(-1, 0, ...vulns)
-    })
-    return resultArray
-  }
-
-  function processVuln(vulnElements) {
-    // vulnElements is an array of this object:
-    // {
-    //     COMMENTS
-    //     FINDING_DETAILS
-    //     SEVERITY_JUSTIFICATION
-    //     SEVERITY_OVERRIDE
-    //     STATUS
-    //     STIG_DATA [26]
-    // }
-
-    const results = {
-      NotAFinding: 'pass',
-      Open: 'fail',
-      NotApplicable: 'notapplicable'
-    }
-    let vulnArray = []
-    vulnElements.forEach(vuln => {
-      const result = results[vuln.STATUS]
-      // Skip unreviewed
-      if (result) {
-        let ruleId
-        // Array.some() stops once a true value is returned
-        vuln.STIG_DATA.some(stigDatum => {
-          if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
-            ruleId = stigDatum.ATTRIBUTE_DATA
-            return true
-          }
-        })
-        let action = null
-        if (result === 'fail') {
-          if (vuln.COMMENTS.startsWith("Mitigate:")) {
-            action = "mitigate"
-          } 
-          else if (vuln.COMMENTS.startsWith("Exception:")) {
-            action = "exception"
-          } 
-          else if (vuln.COMMENTS.startsWith("Remediate:")) {
-            action = "remediate"
-          } 
-        }
-        vulnArray.push({
-          ruleId: ruleId,
-          result: result,
-          resultComment: vuln.FINDING_DETAILS == "" ? "Imported from STIG Viewer." : vuln.FINDING_DETAILS,
-          action: action,
-          // Allow actionComments even without an action, for DISA STIG Viewer compatibility.
-          actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
-          autoResult: false,
-          status: result != 'fail' ? 'submitted' : 'saved'
-        })
-      }
-    })
-
-    return vulnArray
-  }  
-  
-  try {  
-    var fastparseOptions = {
+module.exports.reviewsFromCkl = async function (cklData, options = {}) {
+  const parser = require('fast-xml-parser')
+  const tagValueProcessor = require('he').decode
+   
+  try {
+    options.ignoreNr = !!options.ignoreNr
+    const fastparseOptions = {
       attributeNamePrefix: "",
       ignoreAttributes: false,
       ignoreNameSpace: true,
@@ -91,30 +53,167 @@ module.exports.reviewsFromCkl = async function (cklData, assetId) {
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
       arrayMode: true, //"strict"
-      tagValueProcessor : (val, tagName) => he.decode(val)
+      tagValueProcessor: val => tagValueProcessor(val)
     }
-    hrstart = process.hrtime() 
-    let parsed = fastparser.parse(cklData.toString(), fastparseOptions)
-    hrend = process.hrtime(hrstart)
-    console.info('fast-xml-parser execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
+    let parsed = parser.parse(cklData, fastparseOptions)
 
-    hrstart = process.hrtime() 
     if (!parsed.CHECKLIST) throw (new Error("No CHECKLIST element"))
     if (!parsed.CHECKLIST[0].ASSET) throw (new Error("No ASSET element"))
     if (!parsed.CHECKLIST[0].STIGS) throw (new Error("No STIGS element"))
 
     let returnObj = {}
     returnObj.target = processAsset(parsed.CHECKLIST[0].ASSET[0])
-    returnObj.reviews = processIStig(parsed.CHECKLIST[0].STIGS[0].iSTIG)
-    hrend = process.hrtime(hrstart)
-    console.info('construction execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
-
+    if (!returnObj.target.name) {
+      throw (new Error("No host_name in ASSET"))
+    }
+    returnObj.checklists = processIStig(parsed.CHECKLIST[0].STIGS[0].iSTIG)
+    if (returnObj.checklists.length === 0) {
+      throw (new Error("STIG_INFO element has no SI_DATA for SID_NAME == stigId"))
+    }
     return (returnObj)
+
+    function processAsset(assetElement) {
+      let obj =  {
+        name: assetElement.HOST_NAME,
+        description: null,
+        ip: assetElement.HOST_IP || null,
+        fqdn: assetElement.HOST_FQDN || null,
+        mac: assetElement.HOST_MAC || null,
+        noncomputing: assetElement.ASSET_TYPE === 'Non-Computing'
+      }
+      const metadata = {}
+      if (assetElement.ROLE) {
+        metadata.cklRole = assetElement.ROLE
+      }
+      if (assetElement.TECH_AREA) {
+        metadata.cklTechArea = assetElement.TECH_AREA
+      }
+      if (assetElement.WEB_OR_DATABASE) {
+        metadata.cklWebOrDatabase = 'true'
+        metadata.cklHostName = assetElement.HOST_NAME
+        if (assetElement.WEB_DB_SITE) {
+          metadata.cklWebDbSite = assetElement.WEB_DB_SITE
+        }
+        if (assetElement.WEB_DB_INSTANCE) {
+          metadata.cklWebDbInstance = assetElement.WEB_DB_INSTANCE
+        }
+      }
+      obj.metadata = metadata
+      return obj
+    }
+      
+    function processIStig(iStigElement) {
+      let checklistArray = []
+      iStigElement.forEach(iStig => {
+        let checklist = {}
+        // get benchmarkId
+        let stigIdElement = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'stigid' )[0]
+        checklist.benchmarkId = stigIdElement.SID_DATA.replace('xccdf_mil.disa.stig_benchmark_', '')
+        // get revision
+        const stigVersion = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'version' )[0].SID_DATA
+        let stigReleaseInfo = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'releaseinfo' )[0].SID_DATA
+        const stigRelease = stigReleaseInfo.match(/Release:\s*(.+?)\s/)[1]
+        const stigRevisionStr = `V${stigVersion}R${stigRelease}`
+        checklist.revisionStr = stigRevisionStr
+
+        if (checklist.benchmarkId) {
+          let x = processVuln(iStig.VULN)
+          checklist.reviews = x.reviews
+          checklist.stats = x.stats
+          checklistArray.push(checklist)
+        }
+      })
+      return checklistArray
+    }
+  
+    function processVuln(vulnElements) {
+      // vulnElements is an array of this object:
+      // {
+      //     COMMENTS
+      //     FINDING_DETAILS
+      //     SEVERITY_JUSTIFICATION
+      //     SEVERITY_OVERRIDE
+      //     STATUS
+      //     STIG_DATA [26]
+      // }
+  
+      const results = {
+        NotAFinding: 'pass',
+        Open: 'fail',
+        Not_Applicable: 'notapplicable',
+        Not_Reviewed: 'notchecked'
+      }
+      let vulnArray = []
+      let nf = na = nr = o = 0
+      vulnElements?.forEach(vuln => {
+        const result = results[vuln.STATUS]
+        if (result) {
+          switch (result) {
+            case 'pass':
+                nf++
+                break
+            case 'fail':
+                o++
+                break
+            case 'notapplicable':
+                na++
+                break
+            case 'notchecked':
+                nr++
+                break
+          }
+
+          let ruleId
+          vuln.STIG_DATA.some(stigDatum => {
+            if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
+              ruleId = stigDatum.ATTRIBUTE_DATA
+              return true
+            }
+          })
+          let action = null
+          if (result === 'fail') {
+            if (vuln.COMMENTS.startsWith("Mitigate:")) {
+              action = "mitigate"
+            } 
+            else if (vuln.COMMENTS.startsWith("Exception:")) {
+              action = "exception"
+            } 
+            else if (vuln.COMMENTS.startsWith("Remediate:")) {
+              action = "remediate"
+            } 
+          }
+          let status = 'saved'
+          if (result && vuln.FINDING_DETAILS && result !== 'fail') {
+            status = 'submitted'
+          }
+          if (result && vuln.FINDING_DETAILS && result === 'fail' && action && vuln.COMMENTS) {
+            status = 'submitted'
+          }
+          if (result === 'notchecked' && options.ignoreNr) return
+          vulnArray.push({
+            ruleId: ruleId,
+            result: result,
+            resultComment: vuln.FINDING_DETAILS,
+            action: action,
+            actionComment: vuln.COMMENTS == "" ? null : vuln.COMMENTS,
+            autoResult: false,
+            status: status
+          })    
+        }
+      })
+  
+      return {
+        reviews: vulnArray,
+        stats: {
+          notchecked: nr,
+          notapplicable: na,
+          pass: nf,
+          fail: o
+        }
+      }
+    }  
   }
-  catch (e) {
-    throw (e)
-  }
-}
+  finally {}}
 
 module.exports.benchmarkFromXccdf = function (xccdfData) {
   const Parser = require('fast-xml-parser')
