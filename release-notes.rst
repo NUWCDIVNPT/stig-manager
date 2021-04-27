@@ -1,3 +1,9 @@
+1.0.0-beta.30
+-----------------------
+- fix #270: ROLE element default value 'None' (#272)
+- fix #266: sanitize exported filenames (#273)
+- ironbank => development sign+image
+
 1.0.0-beta.29
 -----------------------
 - fix #256: CKL site/instance handling; UI refactor (#268)
