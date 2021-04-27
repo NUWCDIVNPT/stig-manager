@@ -25,13 +25,16 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
         let result
         switch (extension) {
           case 'ckl':
-            result = await Parsers.reviewsFromCkl(data, assetId)
+            result = await Parsers.reviewsFromCkl(data.toString(), assetId)
             break
           case 'xml':
-            result = Parsers.reviewsFromScc(data, assetId)
+            result = Parsers.reviewsFromScc(data.toString(), assetId)
             break
         }
-        reviewsRequested = result.reviews
+        reviewsRequested = []
+        for (const checklist of result.checklists) {
+          reviewsRequested = reviewsRequested.concat(checklist.reviews)
+        }
       }
       else {
         reviewsRequested = body

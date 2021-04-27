@@ -712,13 +712,17 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
 
     // ASSET
     let [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
-    cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].name
+    cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
     cklJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
     cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
     cklJs.CHECKLIST.ASSET.HOST_MAC = resultGetAsset[0].mac
     cklJs.CHECKLIST.ASSET.ASSET_TYPE = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
-    cklJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.role ?  resultGetAsset[0].metadata.role : 'None'
-
+    cklJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.cklRole ?? null
+    cklJs.CHECKLIST.ASSET.TECH_AREA = resultGetAsset[0].metadata.cklTechArea ?? null
+    cklJs.CHECKLIST.ASSET.WEB_OR_DATABASE = resultGetAsset[0].metadata.cklHostName ?  'true' : 'false'
+    cklJs.CHECKLIST.ASSET.WEB_DB_SITE = resultGetAsset[0].metadata.cklWebDbSite ?? null
+    cklJs.CHECKLIST.ASSET.WEB_DB_INSTANCE = resultGetAsset[0].metadata.cklWebDbInstance ?? null
+    
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
     for (const benchmark of benchmarks) {
       const regex = /^(?<benchmarkId>\S+?)(-(?<revisionStr>V\d+R\d+(\.\d+)?))?$/
@@ -858,7 +862,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       cklJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
     }
 
-    return (cklJs)
+    return ({assetName: resultGetAsset[0].name, cklJs: cklJs})
 
   }
   catch (e) {
@@ -1020,8 +1024,8 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
         return (rows)
       case 'ckl':
         const benchmark = revisionStr === 'latest' ? benchmarkId : `${benchmarkId}-${revisionStr}`
-        let xml = await _this.cklFromAssetStigs(assetId, [benchmark], elevate, userObject)
-        return (xml)
+        let cklObject = await _this.cklFromAssetStigs(assetId, [benchmark], elevate, userObject)
+        return (cklObject)
     }
   }
   catch (err) {
@@ -1033,8 +1037,8 @@ exports.getChecklistByAsset = async function(assetId, benchmarks, format, elevat
   try {
     switch (format) {
       case 'ckl':
-        let xml = await _this.cklFromAssetStigs(assetId, benchmarks, elevate, userObject)
-        return (xml)
+        let cklObject = await _this.cklFromAssetStigs(assetId, benchmarks, elevate, userObject)
+        return (cklObject)
     }
   }
   catch (err) {

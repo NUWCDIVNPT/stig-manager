@@ -42,7 +42,8 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
               - Comments
               - <CHECKLIST><STIGS><iSTIG><VULN> **<COMMENTS>**
 
-
+        .. note::
+            STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information. 
 
 
     Collection 

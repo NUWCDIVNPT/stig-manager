@@ -66,7 +66,25 @@
 	color: #000000;
 	word-wrap: break-word;
 }
-
+.sm-dialog-panel-content {
+	padding-bottom: 10px;
+	font: 11px/13px sans-serif;
+	color: #000000;
+	word-wrap: break-word;
+}
+.sm-dialog-panel-callout {
+	margin-top: 20px;
+	padding: 10px;
+	font: 11px/13px sans-serif;
+	background-color: #e6e6e6;
+	color: #000000;
+	word-wrap: break-word;
+}
+.sm-dialog-panel-content ul {
+	list-style-type: square;
+	display: list-item;
+	margin-left: 2em;
+}
 .ext-gecko .x-btn button, .ext-webkit .x-btn button, .x-btn button {
 	/* padding-left: 10px;
     padding-right: 10px; */

@@ -6,30 +6,70 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
         const fields = [
             {
                 name: 'filename',
-                mapping: 'file.name'
+                mapping: 'checklist.file.name'
             },
             {
                 name: 'fullPath',
-                mapping: 'file.fullPath'
+                mapping: 'checklist.file.fullPath'
             },
             {
                 name: 'date',
-                mapping: 'file.lastModifiedDate'
+                mapping: 'checklist.file.lastModifiedDate'
             },
-            'file',
-            'assetId',
-            'assetName',
-            'ip',
-            'noncomputing',
-            'metadata',
-            'benchmarkId',
-            'stigAttached',
-            'notchecked',
-            'pass',
-            'fail',
-            'notapplicable',
-            'reviews',
-            'apiAsset'
+            {
+                name: 'file',
+                mapping: 'checklist.file'
+            },
+            {
+                name: 'assetId',
+                mapping: 'taskAsset.assetProps.assetId'
+            },
+            {
+                name: 'assetName',
+                mapping: 'taskAsset.assetProps.name'
+            },
+            {
+                name: 'ip',
+                mapping: 'taskAsset.assetProps.ip'
+            },
+            {
+                name: 'noncomputing',
+                mapping: 'taskAsset.assetProps.noncomputing'
+            },
+            {
+                name: 'metadata',
+                mapping: 'taskAsset.assetProps.metadata'
+            },
+            {
+                name: 'benchmarkId',
+                mapping: 'checklist.benchmarkId'
+            },
+            {
+                name: 'newAssignment',
+                mapping: 'checklist.newAssignment'
+            },
+            {
+                name: 'notchecked',
+                mapping: 'checklist.stats.notchecked'
+            },
+            {
+                name: 'pass',
+                mapping: 'checklist.stats.pass'
+            },
+            {
+                name: 'fail',
+                mapping: 'checklist.stats.fail'
+            },
+            {
+                name: 'notapplicable',
+                mapping: 'checklist.stats.notapplicable'
+            },
+            {
+                name: 'reviews',
+                mapping: 'checklist.reviews'
+            },
+            'taskAsset',
+            'checklist'
         ]
         const totalTextCmp = new Ext.Toolbar.TextItem({
             text: '0 records',
@@ -40,25 +80,29 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             root: '',
             reader: new Ext.data.JsonReader({
                 fields: fields,
-                idProperty: (v) => `${v.filename}-${v.assetName}-${v.benchmarkId}`
+                // idProperty: (v) => `${v.filename}-${v.assetName}-${v.benchmarkId}`
+                idProperty: (v) => `${v.checklist.file.name}-${v.taskAsset.assetProps.name}-${v.checklist.benchmarkId}`
             }),
             sortInfo: {
                 field: 'assetName',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             listeners: {
-                load: function (store, records) {
-                    totalTextCmp.setText(records.length + ' records');
+                load: function (store) {
+                    totalTextCmp.setText(store.getCount() + ' records')
                 },
-                remove: function (store, record, index) {
-                    totalTextCmp.setText(store.getCount() + ' records');
+                datachanged: function (store) {
+                    totalTextCmp.setText(store.getCount() + ' records')
+                },
+                remove: function (store) {
+                    totalTextCmp.setText(store.getCount() + ' records')
                 }
             }
         })
         const columns = [
             {
                 header: "Asset",
-                width: 100,
+                width: 150,
                 dataIndex: 'assetName',
                 sortable: true,
                 renderer: (v, m, r) => {
@@ -66,12 +110,13 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                         return v
                     }
                     else {
-                        return `${v} (+)`
+                        return `(+) ${v}`
                     }
                 }
             },
             {
                 header: "IP",
+                hidden: true,
                 width: 100,
                 dataIndex: 'ip',
                 sortable: true,
@@ -94,11 +139,11 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'benchmarkId',
                 sortable: true,
                 renderer: (v, m, r) => {
-                    if (r.data.stigAttached) {
-                        return v
+                    if (r.data.newAssignment) {
+                        return `(+) ${v}`
                     }
                     else {
-                        return `${v} (+)`
+                        return v
                     }
                 }
             },
@@ -208,15 +253,15 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             validate: function () {
                 let one = 1
             },
-            newAssetStig: true,
+            createObjects: true,
             importReviews: true,
-            enableNewAssetStig: (enabled = true) => {
-                me.newAssetStig = enabled
+            enableCreateObjects: (enabled = true) => {
+                me.createObjects = enabled
                 if (enabled) {
                     me.store.clearFilter()
                 }
                 else {
-                    const filter = (record) => record.data.assetId && record.data.stigAttached
+                    const filter = (record) => record.data.assetId && !record.data.newAssignment
                     me.store.filterBy(filter)
                 }
             },
@@ -240,11 +285,11 @@ SM.ReviewsImport.ReviewsFilterCombo = Ext.extend(Ext.form.ComboBox, {
             editable: false,
             mode: 'local',
             triggerAction: 'all',
-            displayField:'display',
+            displayField: 'display',
             valueField: 'filter',
             store: new Ext.data.SimpleStore({
                 fields: ['display', 'filter'],
-                data : [['All results', 'all'],['Updated results only', 'resultchange']]
+                data: [['All results', 'all'], ['Updated results only', 'resultchange']]
             })
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -316,7 +361,7 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 mapping: 'new.status',
                 type: 'string'
             }
-        ]);
+        ])
         const totalTextCmp = new Ext.Toolbar.TextItem({
             text: '0 records',
             width: 80
@@ -332,15 +377,15 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             listeners: {
                 load: function (store, records) {
-                    totalTextCmp.setText(records.length + ' records');
+                    totalTextCmp.setText(records.length + ' records')
                 },
                 datachanged: function (store, record, index) {
-                    totalTextCmp.setText(store.getCount() + ' records');
+                    totalTextCmp.setText(store.getCount() + ' records')
                 }
             }
         })
         const columns = [
-              {
+            {
                 header: "<b>Rule</b>",
                 width: 150,
                 fixed: true,
@@ -348,24 +393,24 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 sortable: true,
                 renderer: v => `<b>${v}</b>`,
                 align: 'left'
-              },
-              {
+            },
+            {
                 header: "Rule Title",
                 width: 220,
                 fixed: true,
                 dataIndex: 'ruleTitle',
                 renderer: columnWrap,
                 sortable: false
-              },
-              {
+            },
+            {
                 header: "Group",
                 width: 55,
                 dataIndex: 'groupId',
                 fixed: true,
                 sortable: true,
                 align: 'left'
-              },
-              {
+            },
+            {
                 header: "CAT",
                 fixed: true,
                 width: 48,
@@ -373,8 +418,8 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'severity',
                 sortable: true,
                 renderer: renderSeverity
-              },
-              {
+            },
+            {
                 header: 'Current', // per docs
                 align: 'center',
                 menuDisabled: true,
@@ -383,8 +428,8 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'curResult',
                 sortable: true,
                 renderer: renderResult
-              },
-              {
+            },
+            {
                 header: 'New', // per docs
                 align: 'center',
                 menuDisabled: true,
@@ -393,8 +438,8 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'result',
                 sortable: true,
                 renderer: renderResult
-              },
-              {
+            },
+            {
                 header: 'Comment', // per docs
                 menuDisabled: true,
                 width: 220,
@@ -402,8 +447,8 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'resultComment',
                 renderer: columnWrap,
                 sortable: false
-              },
-              {
+            },
+            {
                 header: "Status",
                 fixed: true,
                 width: 44,
@@ -411,16 +456,16 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'status',
                 sortable: false,
                 renderer: renderStatuses
-              }
+            }
         ]
         const tbar = new Ext.Toolbar({
-			items: [
-				{
-					xtype: 'tbtext',
-                    text: 'Filter:'                    
+            items: [
+                {
+                    xtype: 'tbtext',
+                    text: 'Filter:'
                 },
-                ' ',' ',' ',
-				{
+                ' ', ' ', ' ',
+                {
                     xtype: 'sm-reviews-filter-combo',
                     value: 'all',
                     listeners: {
@@ -429,13 +474,13 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                             me.fireEvent('filterchanged', me.filterValue)
                         }
                     }
-				}
-			]
+                }
+            ]
         })
         const onFilterChanged = (filter) => {
             switch (filter) {
                 case 'resultchange':
-                    store.filterBy( record => record.data.result !== record.data.curResult )
+                    store.filterBy(record => record.data.result !== record.data.curResult)
                     break
                 default:
                     store.clearFilter()
@@ -451,7 +496,7 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
             view: new Ext.grid.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true
+                forceFit: true
             }),
             listeners: {
             },
@@ -460,7 +505,7 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 items: [
                     {
                         xtype: 'tbfill'
-                    },{
+                    }, {
                         xtype: 'tbseparator'
                     },
                     totalTextCmp
@@ -509,10 +554,10 @@ SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             listeners: {
                 load: function (store, records) {
-                    totalTextCmp.setText(records.length + ' records');
+                    totalTextCmp.setText(records.length + ' records')
                 },
                 remove: function (store, record, index) {
-                    totalTextCmp.setText(store.getCount() + ' records');
+                    totalTextCmp.setText(store.getCount() + ' records')
                 }
             }
         })
@@ -585,6 +630,40 @@ SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.ReviewsImport.ParseErrorsGrid.superclass.initComponent.call(this)
+    }
+})
+
+SM.ReviewsImport.WarningPanel = Ext.extend(Ext.Panel, {
+    initComponent: function () {
+        const me = this
+        let config = {
+            border: false,
+            layout: 'vbox',
+            layoutConfig: {
+                // align: 'stretch',
+                pack: 'start',
+                padding: '0 20 20 20',
+            },
+            items: [
+                {
+                    html: `<div class="sm-dialog-panel-title">${me.contentTitle}</div>`,
+                    border: false
+                },
+                {
+                    html: `<div class="sm-dialog-panel-content">${me.contentText}</div>`,
+                    width: 500,
+                    border: false,
+                }
+            ],
+            buttons: [{
+                xtype: 'button',
+                text: 'Continue',
+                handler: me.continueHandler
+            }],
+            buttonAlign: 'right'
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.WarningPanel.superclass.initComponent.call(this)
     }
 })
 
@@ -741,6 +820,7 @@ SM.ReviewsImport.ParseErrorPanel = Ext.extend(Ext.Panel, {
             },
             {
                 html: me.error,
+                width: 500,
                 border: false
             }
         ]
@@ -749,7 +829,7 @@ SM.ReviewsImport.ParseErrorPanel = Ext.extend(Ext.Panel, {
             border: false,
             layout: 'vbox',
             layoutConfig: {
-                align: 'stretch',
+                // align: 'stretch',
                 pack: 'start',
                 padding: '0 20 20 20',
             },
@@ -793,7 +873,7 @@ SM.ReviewsImport.OptionsPanel = Ext.extend(Ext.Panel, {
                     margins: '0 15 -2 0',
                     listeners: {
                         check: function (cb, checked) {
-                            grid.enableNewAssetStig(checked)
+                            grid.enableCreateObjects(checked)
                         }
                     }
                 },
@@ -835,7 +915,7 @@ SM.ReviewsImport.OptionsPanel = Ext.extend(Ext.Panel, {
                     margins: '0 25',
                     grid: grid,
                     handler: async () => {
-                        await me.addHandler(grid.store.getRange(), grid.newAssetStig, grid.importReviews)
+                        await me.addHandler(me.taskAssets, grid.createObjects, grid.importReviews)
                     }
                 }
             ],
@@ -856,10 +936,10 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
             name: 'reviews',
             flex: 1,
             emptyText: 'No reviews found',
-            getValue: function() {},
-            setValue: function() {},
-            markInvalid: function() {},
-            clearInvalid: function() {},
+            getValue: function () { },
+            setValue: function () { },
+            markInvalid: function () { },
+            clearInvalid: function () { },
             validate: () => true,
             getName: () => this.name,
             isValid: function () {
@@ -867,7 +947,7 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
             },
             panel: this
         })
-        const currentReviewsArray = me.checklistFromApi.map( i => [i.ruleId, i]) 
+        const currentReviewsArray = me.checklistFromApi.map(i => [i.ruleId, i])
         const currentReviews = Object.fromEntries(currentReviewsArray)
 
         //Create object for SM.ReviewImport.ReviewsGrid
@@ -879,7 +959,7 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
                 if (review.result === 'notchecked') {
                     notCheckedData.push(review.ruleId)
                 } else {
-                    matchingData.push({ new: review, current:  currentReviews[review.ruleId] })
+                    matchingData.push({ new: review, current: currentReviews[review.ruleId] })
                 }
             } else {
                 unmatchedData.push(review.ruleId)
@@ -922,7 +1002,7 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
                     flex: 1
                 })
             ]
-            items.push( {
+            items.push({
                 flex: 0.25,
                 layout: 'hbox',
                 margins: '20 0 0 0',
@@ -931,7 +1011,7 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
                     pack: 'start'
                 },
                 border: false,
-                items: errorItems,                
+                items: errorItems,
             })
         }
 
@@ -955,7 +1035,7 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
                     margins: '0 25',
                     grid: matchingGrid,
                     handler: async () => {
-                        const reviews = matchingGrid.store.getRange().map ( r => r.data.new )
+                        const reviews = matchingGrid.store.getRange().map(r => r.data.new)
                         await me.importHandler(reviews)
                     }
                 }
@@ -1023,6 +1103,176 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
     }
 })
 
+class TaskObject {
+    constructor({ apiAssets = [], apiStigs = [], parsedResults = [], collectionId }) {
+        // An array of results from the parsers
+        this.parsedResults = parsedResults
+        this.collectionId = collectionId
+        // An array of assets from the API
+        this.apiAssets = apiAssets
+        // Create Maps of the assets by assetName and metadata.cklHostName
+        this.mappedAssetNames = new Map()
+        this.mappedCklHostnames = new Map()
+        for (const apiAsset of apiAssets) {
+            // Update .stigs to an array of benchmarkId strings
+            apiAsset.stigs = apiAsset.stigs.map(stig => stig.benchmarkId)
+            this.mappedAssetNames.set(apiAsset.name.toLowerCase(), apiAsset)
+            if (apiAsset.metadata?.cklHostName) {
+                const v = this.mappedCklHostnames.get(apiAsset.metadata.cklHostName.toLowerCase())
+                if (v) {
+                    v.push(apiAsset)
+                }
+                else {
+                    this.mappedCklHostnames.set(apiAsset.metadata.cklHostName.toLowerCase(), [apiAsset])
+                }
+            }
+        }
+
+        // A Map() of the installed benchmarkIds return by the API
+        // key: benchmarkId, value: array of revisionStr
+        this.mappedStigs = new Map()
+        for (const apiStig of apiStigs) {
+            this.mappedStigs.set(apiStig.benchmarkId, apiStig.revisionStrs)
+        }
+
+        // An array of accumulated errors
+        this.errors = []
+
+        // A Map() of assets to be processed by the writer
+        this.taskAssets = this._createTaskAssets()
+    }
+
+    _findAssetFromParsedTarget(target) {
+        if (!target.metadata.cklHostName) {
+            return this.mappedAssetNames.get(target.name.toLowerCase())
+        }
+        const matchedByCklHostname = this.mappedCklHostnames.get(target.metadata.cklHostName.toLowerCase())
+        if (!matchedByCklHostname) return null
+        const matchedByAllCklMetadata = matchedByCklHostname.find(
+            asset => asset.metadata.cklWebDbInstance === target.metadata.cklWebDbInstance
+                && asset.metadata.cklWebDbSite === target.metadata.cklWebDbSite)
+        if (!matchedByAllCklMetadata) return null
+        return matchedByAllCklMetadata
+    }
+
+    _createTaskAssets() {
+        // taskAssets is a Map() keyed by mapKey, the values are
+        // {
+        //   newAsset: false, // does the asset need to be created?
+        //   assetProps: parseResult.target, // asset properties from the parsed results
+        //   hasNewBenchmarkIds: false, //  are there new STIG assignments?
+        //   stigsIgnored: [], // benchmarkIds ignored because no updates allowed
+        //   reviews: [] // the reviews to be posted
+        // }
+
+        const taskAssets = new Map()
+        for (const parsedResult of this.parsedResults) {
+            // Generate mapping key
+            let mapKey, tMeta = parsedResult.target.metadata
+            if (!tMeta.cklHostName) {
+                mapKey = parsedResult.target.name.toLowerCase()
+            }
+            else {
+                const appends = [tMeta.cklHostName]
+                appends.push(tMeta.cklWebDbSite ?? 'NA')
+                appends.push(tMeta.cklWebDbInstance ?? 'NA')
+                mapKey = appends.join('-')
+            }
+
+            // Try to find the asset in the API response
+            const apiAsset = this._findAssetFromParsedTarget(parsedResult.target)
+            if (!apiAsset && ! true) {
+                // Bail if the asset doesn't exist and we won't create it
+                this.errors.push({
+                    file: parsedResult.file,
+                    message: `asset does not exist for target`,
+                    target: parsedResult.target
+                })
+                continue
+            }
+            // Try to find the target in our Map()
+            let taskAsset = taskAssets.get(mapKey)
+
+            if (!taskAsset) {
+                // This is our first encounter with this assetName, initialize Map() value
+                taskAsset = {
+                    knownAsset: false,
+                    assetProps: null, // an object suitable for put/post to the API 
+                    hasNewAssignment: false,
+                    newAssignments: [],
+                    checklists: [], // the vetted result checklists
+                    checklistsIgnored: [], // the ignored checklists
+                    reviews: [] // the vetted reviews
+                }
+                if (!apiAsset) {
+                    // The asset does not exist in the API. Set assetProps from this parseResult.
+                    if (!tMeta.cklHostName) {
+                        taskAsset.assetProps = { ...parsedResult.target, collectionId: this.collectionId, stigs: [] }
+                    }
+                    else {
+                        taskAsset.assetProps = { ...parsedResult.target, name: mapKey, collectionId: this.collectionId, stigs: [] }
+                    }
+                }
+                else {
+                    // The asset exists in the API. Set assetProps from the apiAsset.
+                    taskAsset.knownAsset = true
+                    taskAsset.assetProps = { ...apiAsset, collectionId: this.collectionId }
+                }
+                // Insert the asset into taskAssets
+                taskAssets.set(mapKey, taskAsset)
+            }
+
+            // Helper functions
+            const stigIsInstalled = ({ benchmarkId, revisionStr }) => {
+                const revisionStrs = this.mappedStigs.get(benchmarkId)
+                if (revisionStrs) {
+                    return revisionStrs.includes(revisionStr)
+                }
+                else {
+                    return false
+                }
+            }
+            const stigIsAssigned = ({ benchmarkId }) => {
+                return taskAsset.assetProps.stigs.includes(benchmarkId)
+            }
+            const assignStig = (benchmarkId) => {
+                if (!stigIsAssigned(benchmarkId)) {
+                    taskAsset.hasNewAssignment = true
+                    taskAsset.newAssignments.push(benchmarkId)
+                    taskAsset.assetProps.stigs.push(benchmarkId)
+                }
+            }
+            const stigIsNewlyAssigned = (benchmarkId) => taskAsset.newAssignments.includes(benchmarkId)
+
+            // Vet the checklists in this parseResult 
+            for (const checklist of parsedResult.checklists) {
+                checklist.file = parsedResult.file
+                if (stigIsInstalled(checklist)) {
+                    if (stigIsAssigned(checklist)) {
+                        checklist.newAssignment = stigIsNewlyAssigned(checklist.benchmarkId)
+                        taskAsset.checklists.push(checklist)
+                    }
+                    else if (true) {
+                        assignStig(checklist.benchmarkId)
+                        checklist.newAssignment = true
+                        taskAsset.checklists.push(checklist)
+                    }
+                    else {
+                        checklist.ignored = `STIG is not assigned`
+                        taskAsset.checklistsIgnored.push(checklist)
+                    }
+                }
+                else {
+                    checklist.ignored = `STIG is not installed`
+                    taskAsset.checklistsIgnored.push(checklist)
+                }
+            }
+
+        }
+        return taskAssets
+    }
+}
+
 async function showImportResultFiles(collectionId, el) {
     try {
         const fp = new SM.ReviewsImport.SelectFilesPanel({
@@ -1054,56 +1304,100 @@ async function showImportResultFiles(collectionId, el) {
         fpwindow.show()
 
         async function onFileDropped(e) {
-            e.stopPropagation()
-            e.preventDefault()
-            this.style.border = ""
-            let entries = []
-            let files = []
-            for (let i = 0; i < e.dataTransfer.items.length; i++) {
-                entries.push(e.dataTransfer.items[i].webkitGetAsEntry())
+            try {
+                e.currentTarget.innerText = `Searching for result files...`
+                e.stopPropagation()
+                e.preventDefault()
+                this.style.border = ""
+                let entries = []
+                let files = []
+                if (!e.dataTransfer) {
+                    throw ('Event is missing the dataTransfer property')
+                }
+                entries = await getAllFileEntries(e.dataTransfer.items, e.currentTarget)
+                for (const entry of entries) {
+                    files.push(await entryFilePromise(entry))
+                }
+                files.sort((a, b) => a.lastModified - b.lastModified)
+                warnOnExcessFiles(files)    
+            }
+            catch (e) {
+                alert(e)
             }
 
-            for (const entry of entries) {
-                const entryContent = await readEntryContentAsync(entry)
-                files.push(...entryContent)
-            }
-            files.sort((a, b) => a.lastModified - b.lastModified)
-            showParseFiles(files)
-
-            function readEntryContentAsync(entry) {
-                return new Promise((resolve, reject) => {
-                    let reading = 0
-                    const files = []
-                    readEntry(entry)
-                    function readEntry(entry) {
-                        if (entry.isFile) {
-                            reading++
-                            let fullPath = entry.fullPath
-                            entry.file(file => {
-                                reading--
-                                file.fullPath = fullPath
-                                files.push(file);
-                                if (reading === 0) {
-                                    resolve(files);
-                                }
-                            })
+            async function getAllFileEntries(dataTransferItemList, el) {
+                try {
+                    let searched = 0, found = 0
+                    let fileEntries = []
+                    // Use BFS to traverse entire directory/file structure
+                    let queue = []
+                    // Unfortunately dataTransferItemList is not iterable i.e. no forEach
+                    for (let i = 0; i < dataTransferItemList.length; i++) {
+                        queue.push(dataTransferItemList[i].webkitGetAsEntry())
+                    }
+                    while (queue.length > 0) {
+                        let entry = queue.shift()
+                        searched++
+                        if (entry.isFile && entry.name.toLowerCase().endsWith('.ckl')) {
+                            fileEntries.push(entry)
+                            found++
+                            el.innerText = `Searching... Searched ${searched} files, found ${found} results files`
                         } else if (entry.isDirectory) {
-                            readReaderContent(entry.createReader())
+                            queue.push(...await readAllDirectoryEntries(entry.createReader()))
                         }
                     }
-                    function readReaderContent(reader) {
-                        reading++
-                        reader.readEntries(function (entries) {
-                            reading--
-                            for (const entry of entries) {
-                                readEntry(entry)
-                            }
-                            if (reading === 0) {
-                                resolve(files);
-                            }
-                        })
+                    el.innerText = `Finished. Searched ${searched} files, found ${found} results files`
+                    return fileEntries
+                }
+                catch (e) {
+                    alert(e)
+                }
+            }
+
+            // Get all the entries (files or sub-directories) in a directory 
+            // by calling readEntries until it returns empty array
+            async function readAllDirectoryEntries(directoryReader) {
+                try {
+                    let entries = []
+                    let readEntries = await readEntriesPromise(directoryReader)
+                    while (readEntries?.length > 0) {
+                        entries.push(...readEntries)
+                        readEntries = await readEntriesPromise(directoryReader)
                     }
-                })
+                    return entries;   
+                }
+                catch (e) {
+                    alert(e)
+                }
+            }
+
+            // Wrap readEntries in a promise to make working with readEntries easier
+            // readEntries will return only some of the entries in a directory
+            // e.g. Chrome returns at most 100 entries at a time
+            async function readEntriesPromise(directoryReader) {
+                try {
+                    return await new Promise((resolve, reject) => {
+                        directoryReader.readEntries(resolve, reject)
+                    })
+                } catch (e) {
+                    alert(e)
+                }
+            }
+
+            // Wrap entry.file() in a promise
+            async function entryFilePromise(entry) {
+                try {
+                    return await new Promise((resolve, reject) => {
+                        let fullPath = entry.fullPath
+
+                        entry.file(file => {
+                            file.fullPath = fullPath
+                            resolve(file)
+                        }, reject)
+                    })
+                } catch (e) {
+                    alert(e)
+                }
             }
         }
 
@@ -1113,10 +1407,44 @@ async function showImportResultFiles(collectionId, el) {
                 const files = [...input.files]
                 // Sort files oldest to newest
                 files.sort((a, b) => a.lastModified - b.lastModified)
-                showParseFiles(files)
+                warnOnExcessFiles(files)
             }
             catch (e) {
                 throw e
+            }
+        }
+
+        function warnOnExcessFiles(files) {
+            if (files.length >= 250) {
+                let warnPanel = new SM.ReviewsImport.WarningPanel({
+                    continueHandler: onContinue,
+                    contentTitle: `<b>We notice you have selected ${files.length} files to process.</b>`,
+                    contentText: `This browser app is not optimized for parsing a large number of files and performance is highly dependent on your available client resources.<br><br>
+                    <b>Recommendations</b><br><br>
+                    <ul>
+                    <li>Process your files in smaller batches.</li>
+                    <li>Consider using STIG Manager Watcher</li>
+                    </ul>
+                    <div class="sm-dialog-panel-callout">
+                    <img src="img/watcher-icon.svg" width=40px height=40px align="left" style="padding-right: 16px;"/>
+                    If you have an on-going requirement to process large batches of files you should use STIG Manager Watcher, a CLI client that
+                    can monitor your file system, process large numbers of test result files asynchronously, and post the results to your Collection.<br><br>
+                    Watcher is suitable for use as a service or daemon, as a scheduled task, in automated testing pipelines, or from the command line. 
+                    Available from <a href="https://github.com/NUWCDIVNPT/stigman-watcher">https://github.com/NUWCDIVNPT/stigman-watcher</a> 
+                    and as an NPM module.</div>`
+                    // contentText: '<ul><l1>One</li><li>Two</li></ul>'
+                })
+                fpwindow.removeAll()
+                fpwindow.setAutoScroll(true)
+                fpwindow.add(warnPanel)
+                fpwindow.doLayout()
+            }
+            else {
+                onContinue()
+            }
+
+            function onContinue() {
+                showParseFiles(files)
             }
         }
 
@@ -1218,7 +1546,7 @@ async function showImportResultFiles(collectionId, el) {
                     let data = await readTextFileAsync(file)
                     if (extension === 'ckl') {
                         try {
-                            const r = reviewsFromCkl(data)
+                            const r = reviewsFromCkl(data, { ignoreNr: true })
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -1231,7 +1559,7 @@ async function showImportResultFiles(collectionId, el) {
                     }
                     if (extension === 'xml') {
                         try {
-                            const r = reviewsFromScc(data)
+                            const r = reviewsFromScc(data, { ignoreNotChecked: false })
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -1251,57 +1579,32 @@ async function showImportResultFiles(collectionId, el) {
 
                 apiStigsResult = await apiStigsResult
                 const apiStigs = JSON.parse(apiStigsResult.response.responseText)
-                const apiBenchmarkIds = new Set(apiStigs.map(stig => stig.benchmarkId))
 
+                const tasks = new TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, collectionId })
                 // Transform into data for SM.ReviewsImport.Grid
-                const gridData = {
+                const results = {
+                    taskAssets: tasks.taskAssets,
                     rows: [],
                     errors: parseResults.fail
                 }
-                for (const parseResult of parseResults.success) {
-                    // Try to find this asset by name
-                    let apiAsset = apiAssets.find(apiAsset => apiAsset.name.toUpperCase() === parseResult.target.name.toUpperCase())
-                    let assetId, name, assetBenchmarkIds = []
-                    if (apiAsset) {
-                        assetId = apiAsset.assetId
-                        name = apiAsset.name
-                        assetBenchmarkIds = apiAsset.stigs.map(stig => stig.benchmarkId)
+                for (const taskAsset of tasks.taskAssets.values()) {
+                    for (const checklist of taskAsset.checklists) {
+                        const data = {
+                            checklist: checklist,
+                            taskAsset: taskAsset
+                        }
+                        results.rows.push(data)
                     }
-                    for (const checklist of parseResult.checklists) {
-                        if (apiBenchmarkIds.has(checklist.benchmarkId)) {
-                            // Try to find this STIG by benchmarkId
-                            let stigAttached = false
-                            if (assetBenchmarkIds.length > 0) {
-                                stigAttached = assetBenchmarkIds.includes(checklist.benchmarkId)
-                            }
-                            const data = {
-                                file: parseResult.file,
-                                assetId: assetId,
-                                assetName: name || parseResult.target.name,
-                                apiAsset: apiAsset,
-                                ip: parseResult.target.ip,
-                                noncomputing: parseResult.target.noncomputing,
-                                metadata: parseResult.target.metadata,
-                                benchmarkId: checklist.benchmarkId,
-                                stigAttached: stigAttached,
-                                pass: checklist.stats.pass,
-                                fail: checklist.stats.fail,
-                                notchecked: checklist.stats.notchecked,
-                                notapplicable: checklist.stats.notapplicable,
-                                reviews: checklist.reviews
-                            }
-                            gridData.rows.push(data)
-                        }
-                        else {
-                            gridData.errors.push({
-                                file: parseResult.file,
-                                error: `Ignoring ${checklist.benchmarkId}, which is not installed`
-                            })
-                        }
+                    for (const ignoredChecklist of taskAsset.checklistsIgnored) {
+                        results.errors.push({
+                            file: ignoredChecklist.file,
+                            error: `Ignoring ${ignoredChecklist.benchmarkId}, ${ignoredChecklist.ignored}`
+                        })
                     }
                 }
-                let assetStigPairs = gridData.rows.reduce((a, v, i) => {
-                    const key = `${v.assetName.toUpperCase()}-${v.benchmarkId}`
+
+                let assetStigPairs = results.rows.reduce((a, v, i) => {
+                    const key = `${v.taskAsset.assetProps.name.toUpperCase()}-${v.checklist.benchmarkId}`
                     if (a[key]) {
                         a[key].push(i)
                     }
@@ -1310,9 +1613,9 @@ async function showImportResultFiles(collectionId, el) {
                     }
                     return a
                 }, {})
-                gridData.hasDuplicates = Object.keys(assetStigPairs).some(key => assetStigPairs[key].length > 1)
-                gridData.pairs = assetStigPairs
-                return gridData
+                results.hasDuplicates = Object.keys(assetStigPairs).some(key => assetStigPairs[key].length > 1)
+                results.pairs = assetStigPairs
+                return results
             }
             catch (e) {
                 throw (e)
@@ -1343,6 +1646,7 @@ async function showImportResultFiles(collectionId, el) {
         function showOptions(results) {
             let optionsPanel = new SM.ReviewsImport.OptionsPanel({
                 gridData: results.rows,
+                taskAssets: results.taskAssets,
                 addHandler: showImportProgress
             })
             fpwindow.removeAll()
@@ -1350,7 +1654,7 @@ async function showImportResultFiles(collectionId, el) {
             fpwindow.doLayout()
         }
 
-        async function showImportProgress(records, modifyAssets, importReviews) {
+        async function showImportProgress(taskAssets, modifyAssets, importReviews) {
             let statusText = ''
             let progressPanel
             try {
@@ -1363,30 +1667,30 @@ async function showImportResultFiles(collectionId, el) {
                 fpwindow.add(progressPanel)
                 fpwindow.doLayout()
 
-                let assets = recordsToAssets(records)
-                let entries = Object.entries(assets)
                 let processedCount = 0
-                for (const [name, assetObj] of entries) {
+                for (const taskAsset of taskAssets.values()) {
                     try {
-                        let apiAsset
-                        updateProgress(processedCount / entries.length, assetObj.name)
-                        if (modifyAssets) {
-                            apiAsset = await importAsset(collectionId, assetObj)
-                            assetObj.assetId = apiAsset.assetId
-                            // updateStatusText(JSON.stringify(apiAsset, null, 2))
-                            updateStatusText(` OK (${assetObj.name}, id: ${apiAsset.assetId})`)
+                        let assetId = taskAsset.assetProps.assetId
+                        let sentRequest = false
+                        updateProgress(processedCount / taskAssets.size, taskAsset.assetProps.name)
+                        if (modifyAssets && (!taskAsset.knownAsset || taskAsset.hasNewAssignment)) {
+                            assetId = await importAsset(taskAsset)
+                            updateStatusText(` OK (${taskAsset.assetProps.name}, id: ${assetId})`)
+                            sentRequest = true
                         }
                         if (importReviews) {
-                            for (let reviewArray of assetObj.reviews) {
-                                // Remove 'notchecked' reviews
-                                reviewArray = reviewArray.filter( review => review.result !== 'notchecked')
-                                let apiReviews = await importReviewArray(collectionId, assetObj.assetId, reviewArray)
-                                // updateStatusText(JSON.stringify(apiReviews, null, 2))
-                                updateStatusText(' OK')
+                            let reviewsArray = []
+                            for (let checklist of taskAsset.checklists) {
+                                reviewsArray = reviewsArray.concat(checklist.reviews)
                             }
+                            await importReviewArray(collectionId, assetId, reviewsArray)
+                            updateStatusText(' OK')
+                            sentRequest = true
+                        }
+                        if (sentRequest) {
                             // Get the updated apiAsset
                             const result = await Ext.Ajax.requestPromise({
-                                url: `${STIGMAN.Env.apiBase}/assets/${assetObj.assetId}`,
+                                url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                                 method: 'GET',
                                 params: {
                                     projection: ['stigs', 'adminStats']
@@ -1394,7 +1698,10 @@ async function showImportResultFiles(collectionId, el) {
                                 headers: { 'Content-Type': 'application/json;charset=utf-8' }
                             })
                             apiAsset = JSON.parse(result.response.responseText)
-                            SM.Dispatcher.fireEvent('assetchanged', apiAsset)  
+                            SM.Dispatcher.fireEvent('assetchanged', apiAsset)
+                        }
+                        else {
+                            updateStatusText(` Nothing to do for ${taskAsset.assetProps.name}`)
                         }
                     }
                     catch (e) {
@@ -1402,7 +1709,7 @@ async function showImportResultFiles(collectionId, el) {
                     }
                     finally {
                         processedCount++
-                        updateProgress(processedCount / entries.length, assetObj.name)
+                        updateProgress(processedCount / taskAssets.size, taskAsset.assetProps.name)
                     }
                 }
                 updateProgress(0, 'Finished')
@@ -1412,7 +1719,7 @@ async function showImportResultFiles(collectionId, el) {
             }
 
             function updateProgress(value, text) {
-                progressPanel.pb.updateProgress(value, Ext.util.Format.htmlEncode(text));
+                progressPanel.pb.updateProgress(value, Ext.util.Format.htmlEncode(text))
             }
 
             function updateStatusText(text, noNL, replace) {
@@ -1426,61 +1733,23 @@ async function showImportResultFiles(collectionId, el) {
                 progressPanel.st.getEl().dom.scrollTop = 99999; // scroll to bottom
             }
 
-            function recordsToAssets(records) {
-                let data = records.map(r => r.data)
-                data.sort((a, b) => a.file.lastModified - b.file.lastModified) // ascending date
-                let assets = {}
-                for (const r of data) {
-                    if (!assets[r.assetName]) {
-                        if (r.apiAsset) {
-                            assets[r.assetName] = {
-                                assetId: r.apiAsset.assetId,
-                                name: r.assetName,
-                                description: r.apiAsset.description || '',
-                                ip: r.apiAsset.ip,
-                                noncomputing: r.apiAsset.noncomputing,
-                                metadata: r.apiAsset.metadata,
-                                stigs: r.apiAsset.stigs.map(s => s.benchmarkId),
-                                reviews: []
-                            }
-                        }
-                        else {
-                            assets[r.assetName] = {
-                                assetId: null,
-                                name: r.assetName,
-                                description: '',
-                                ip: null,
-                                noncomputing: null,
-                                metadata: null,
-                                stigs: [],
-                                reviews: []
-                            }
-                        }
-                    }
-                    if (r.ip) { assets[r.assetName].ip = r.ip }
-                    assets[r.assetName].noncomputing = r.noncomputing
-                    assets[r.assetName].metadata = { ...assets[r.assetName].metadata, ...r.metadata }
-                    if (!r.stigAttached) { assets[r.assetName].stigs.push(r.benchmarkId) }
-                    if (r.reviews.length) { assets[r.assetName].reviews.push(r.reviews) }
-                }
-                return assets
-            }
-
-            async function importAsset(collectionId, assetObj) {
+            async function importAsset(taskAsset) {
                 try {
-                    const { reviews, ...assetData } = assetObj
-                    const { assetId, ...values } = assetData
-                    values.collectionId = collectionId
-                    let url, method
-                    if (assetId) {
-                        url = `${STIGMAN.Env.apiBase}/assets/${assetId}`
-                        method = 'PUT'
+                    let url, method, jsonData
+                    if (taskAsset.knownAsset && taskAsset.hasNewAssignment) {
+                        url = `${STIGMAN.Env.apiBase}/assets/${taskAsset.assetProps.assetId}`
+                        method = 'PATCH'
+                        jsonData = {
+                            collectionId: taskAsset.assetProps.collectionId,
+                            stigs: taskAsset.assetProps.stigs
+                        }
                     }
                     else {
                         url = `${STIGMAN.Env.apiBase}/assets`
                         method = 'POST'
+                        jsonData = taskAsset.assetProps
                     }
-                    updateStatusText(`${method} ${values.name}`, true)
+                    updateStatusText(`${method} ${taskAsset.assetProps.name}`, true)
 
                     let result = await Ext.Ajax.requestPromise({
                         url: url,
@@ -1489,15 +1758,15 @@ async function showImportResultFiles(collectionId, el) {
                             projection: ['stigs', 'adminStats']
                         },
                         headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                        jsonData: values
+                        jsonData: jsonData
                     })
                     const apiAsset = JSON.parse(result.response.responseText)
                     let event = method === 'POST' ? 'assetcreated' : 'assetchanged'
                     SM.Dispatcher.fireEvent(event, apiAsset)
 
-                    return apiAsset
+                    return apiAsset.assetId
                 }
-                finally{}
+                finally { }
             }
 
             async function importReviewArray(collectionId, assetId, reviewArray) {
@@ -1513,7 +1782,7 @@ async function showImportResultFiles(collectionId, el) {
                     const apiReviews = JSON.parse(result.response.responseText)
                     return apiReviews
                 }
-               finally {}
+                finally { }
             }
         }
     }
@@ -1566,11 +1835,11 @@ async function showImportResultFile(params) {
     catch (e) {
         if (typeof e === 'object') {
             if (e instanceof Error) {
-                e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+                e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
             }
             else {
-                // payload = JSON.stringify(payload, null, 2);
-                e = JSON.stringify(e);
+                // payload = JSON.stringify(payload, null, 2)
+                e = JSON.stringify(e)
             }
         }
         alert(e)
@@ -1605,9 +1874,9 @@ async function showImportResultFile(params) {
                         entry.file(file => {
                             reading--
                             file.fullPath = fullPath
-                            files.push(file);
+                            files.push(file)
                             if (reading === 0) {
-                                resolve(files);
+                                resolve(files)
                             }
                         })
                     } else if (entry.isDirectory) {
@@ -1622,7 +1891,7 @@ async function showImportResultFile(params) {
                             readEntry(entry)
                         }
                         if (reading === 0) {
-                            resolve(files);
+                            resolve(files)
                         }
                     })
                 }
@@ -1675,11 +1944,40 @@ async function showImportResultFile(params) {
             })
             task.delay(250)
 
-            const r = await parseFile(file, pb)
 
-            const assetMatches = r.target.name === params.assetName
+            const [apiAssetResponse, r] = await Promise.all([
+                Ext.Ajax.requestPromise({
+                    url: `${STIGMAN.Env.apiBase}/assets/${params.assetId}`,
+                    method: 'GET'
+                }),
+                parseFile(file, pb)
+            ])
+            const apiAsset = JSON.parse(apiAssetResponse.response.responseText)
+            let assetMatches = false
+            if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
+                assetMatches = apiAsset.metadata.cklHostName === r.target.metadata.cklHostName
+                && apiAsset.metadata.cklWebDbSite === r.target.metadata.cklWebDbSite
+                && apiAsset.metadata.cklWebDbInstance === r.target.metadata.cklWebDbInstance
+            } 
+            else {
+                assetMatches = r.target.name === apiAsset.name
+            }
             if (!assetMatches) {
-                throw (new Error(`The file does not include reviews for asset: <b>${params.assetName}</b><br>The file includes reviews for: ${r.target.name}</p>`))
+                let errorStr
+                if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
+                    errorStr = `CKL elements and values:<br><br>
+                    &lt;WEB_DB_SITE&gt; = ${r.target.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No value</span>'}<br>
+                    &lt;WEB_DB_INSTANCE&gt = ${r.target.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No value</span>'}<br><br>
+                    Asset metadata properties and values:<br><br>
+                    cklWebDbSite = ${apiAsset.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No property</span>'}<br>
+                    cklWebDbInstance = ${apiAsset.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No property</span>'}<br><br>
+                    The corresponding values do not match.
+                    </div>`
+                }
+                else {
+                    errorStr = `The CKL file contains reviews for ${r.target.name}`
+                }
+                throw (new Error(`<b>The file does not include reviews for this asset.</b><br><div class="sm-dialog-panel-callout">${errorStr}</div>`))
             }
             const checklistFromFile = r.checklists.filter(checklist => checklist.benchmarkId === params.benchmarkId)[0]
             if (!checklistFromFile) {
@@ -1709,10 +2007,10 @@ async function showImportResultFile(params) {
             let data = await readTextFileAsync(file)
             let r
             if (extension === 'ckl') {
-                r = reviewsFromCkl(data)
+                r = reviewsFromCkl(data, { ignoreNr: false })
             }
             if (extension === 'xml') {
-                r = reviewsFromScc(data)
+                r = reviewsFromScc(data, { ignoreNotChecked: false })
             }
             r.file = file
             return r
@@ -1777,7 +2075,7 @@ async function showImportResultFile(params) {
         }
 
         function updateProgress(value, text) {
-            progressPanel.pb.updateProgress(value, Ext.util.Format.htmlEncode(text));
+            progressPanel.pb.updateProgress(value, Ext.util.Format.htmlEncode(text))
         }
 
         function updateStatusText(text, noNL, replace) {
