@@ -310,7 +310,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         const j2x = new J2X(defaultOptions)
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
         xml += j2x.parse(response.cklJs)
-        writer.writeXml(res, xml, `${response.assetName}-${benchmarkId}-${revisionStr}.ckl`)
+        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${revisionStr}.ckl`, 'application/xml')
       }
     }
     else {
@@ -363,7 +363,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
     const j2x = new J2X(parseOptions)
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
     xml += j2x.parse(cklObject.cklJs)
-    writer.writeXml(res, xml, `${cklObject.assetName}.ckl`)
+    writer.writeInlineFile(res, xml, `${cklObject.assetName}.ckl`, 'application/xml')
   }
   catch (err) {
     if (err.name === 'SmError') {

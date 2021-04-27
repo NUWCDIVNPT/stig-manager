@@ -71,8 +71,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
             level: 3
         }
       })
-      writer.writeZipFile(res, buffer, 'stig-manager-appdata.json.zip')
-      // writer.writeJsonFile(res, response, 'stig-manager-appdata.json')
+      writer.writeInlineFile(res, buffer, 'stig-manager-appdata.json.zip', 'application/zip')
     }
     else {
       throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )

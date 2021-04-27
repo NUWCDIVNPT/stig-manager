@@ -55,55 +55,15 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
   response.end(payload);
 }
 
-exports.writeZipFile = function(response, buffer, filename) {
+const charToHexStr = (c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`
+
+const goodFilename = (string) =>
+  string.replace(/[<>:"/\\|?*\x00-\x1F]| +$/g, charToHexStr)
+
+exports.writeInlineFile = function(response, payload, filename, contentType) {
   response.writeHead(200, {
-    'Content-Type': 'application/zip', 
-    'Content-Disposition': `attachment; filename="${filename}"`,
-    'Access-Control-Expose-Headers': 'Content-Disposition'
-  })
-  response.write(buffer)
-  response.end()
-}
-exports.writeJsonFile = function(response, payload, filename) {
-  response.writeHead(200, {
-    'Content-Type': 'application/json', 
-    'Content-Disposition': `attachment; filename="${filename}"`,
-    'Access-Control-Expose-Headers': 'Content-Disposition'
-  })
-  response.write(JSON.stringify(payload))
-  response.end()
-}
-exports.writePdf = function(response, payload, filename) {
-  response.writeHead(200, {
-    'Content-Type': 'application/pdf', 
-    'Content-Disposition': `inline; filename="${filename}"`,
-    'Access-Control-Expose-Headers': 'Content-Disposition'
-  })
-  response.write(payload)
-  response.end()
-}
-exports.writeCsv = function(response, payload, filename) {
-  response.writeHead(200, {
-    'Content-Type': 'text/csv',
-    'Content-Disposition': `inline; filename="${filename}"`,
-    'Access-Control-Expose-Headers': 'Content-Disposition'
-  })
-  response.write(payload)
-  response.end()
-}
-exports.writeXml = function(response, payload, filename) {
-  response.writeHead(200, {
-    'Content-Type': 'application/xml',
-    'Content-Disposition': `inline; filename="${filename}"`,
-    'Access-Control-Expose-Headers': 'Content-Disposition'
-  })
-  response.write(payload)
-  response.end()
-}
-exports.writeXlsx = function(response, payload, filename) {
-  response.writeHead(200, {
-    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'Content-Disposition': `inline; filename="${filename}"`,
+    'Content-Type': contentType,
+    'Content-Disposition': `inline; filename="${goodFilename(filename)}"`,
     'Access-Control-Expose-Headers': 'Content-Disposition'
   })
   response.write(payload)
