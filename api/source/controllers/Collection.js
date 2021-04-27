@@ -186,7 +186,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       else {
         collectionName = collectionGrant.collection.name
       }
-      writer.writeXlsx( res, xlsx, `POAM-${collectionName}.xlsx`)
+      writer.writeInlineFile( res, xlsx, `POAM-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     }
     else {
       throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
