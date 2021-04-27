@@ -264,6 +264,9 @@ The menu bar also supports a variety of status and Title filters.
 .. note::
    STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
 
+.. note::
+   STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
+
 Rule Info Panel
 -------------------
 The Rule Info Panel provides the text of the Rule. 
@@ -569,6 +572,9 @@ The user is presented with the log of the import.
 .. note::
    STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
 
+.. note::
+   STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
+
 -------------------------------
 
 
@@ -665,6 +671,53 @@ One multi-STIG .ckl file will be generated for every unique Asset selected. The 
       :width: 50% 
       :show_caption: True
       :title: Checklist Archive Export log
+
+
+|
+
+
+.. _ckl-processing:
+
+A Note on .CKL Processing
+=================================
+
+When the STIG Manager Client imports data from :term:`.ckl files <ckl>`, in the simplest case it will attempt to match (and, in some instances, create) the Asset specified in the .ckl's ``<HOST_NAME>`` element.  However, if the ``<ASSET><WEB_OR_DATABASE>`` element in the .ckl has a value of ``true``, special processing is invoked. This processing will attempt to match the ``<HOST_NAME>``, ``<WEB_DB_SITE>`` and ``<WEB_DB_INSTANCE>`` values in the .ckl with Asset metadata when identifying the Asset.  When the STIG Manager Client creates Assets from .ckls with these elements populated, it will populate the same Asset metadata according to the table below. 
+
+Conversely, when STIG Manager produces a .ckl file from an Asset that has the below metadata values set, it will populate the appropriate .ckl elements. 
+
+The following metadata properties are used when the value of ``<ASSET><WEB_OR_DATABASE>``  is ``true``:
+
+.. list-table:: **CKL elements map to STIG Manager Asset metadata**
+   :widths: 20 20 60
+   :header-rows: 1
+   :class: tight-table
+
+   * - ``<ASSET>`` Child Element
+     - Asset metadata
+     - Note
+   * - ``<WEB_OR_DATABASE>``
+     - ``cklWebOrDatabase``    
+     - When set to true, invokes additional processing using the below elements and metadata     
+   * - ``<HOST_NAME>``
+     - ``cklHostName``    
+     - This value will populate the ``<HOST_NAME>`` element of a ckl, as opposed to the Asset name in other cases.
+   * - ``<WEB_DB_SITE>``
+     - ``cklWebDbSite``
+     - No specific purpose for STIG Manager, other than contributing to Asset identification 
+   * - ``<WEB_DB_INSTANCE>``
+     - ``cklWebDbInstance``          
+     - No specific purpose for STIG Manager, other than contributing to Asset identification 
+
+   
+If the importer needs to create an Asset, it will set this metadata and set the initial Asset name to ``<HOST_NAME>-[<WEB_DB_SITE> | "NA"]-[<WEB_DB_INSTANCE> | "NA"]``. The Asset name is not meaningful (to STIG Manager) and it can be changed by the user later, if required.
+
+
+.. thumbnail:: /assets/images/asset-metadata-and-ckl-elements.png
+      :width: 75% 
+      :show_caption: True
+      :title: Corresponding Asset Metadata and .ckl elements
+
+
 
 
 |
