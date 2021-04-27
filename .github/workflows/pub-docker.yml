@@ -84,7 +84,7 @@ jobs:
         run: |
           ZIPFILE="nodejs-ib.zip"
           IB_TAG="localhost:5000/stig-manager/nodejs-ib:latest"
-          URL="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/master/download?job=build"
+          URL="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/development/download?job=sign+image"
           echo "Fetching $URL"
           wget --quiet -O $ZIPFILE $URL
           echo "Unzipping the tarball"
