@@ -1,3 +1,7 @@
+1.0.0-beta.29
+-----------------------
+- fix #256: CKL site/instance handling; UI refactor (#268)
+
 1.0.0-beta.28
 -----------------------
 - fix #264: Display feedback for rejected reviews (#265)
