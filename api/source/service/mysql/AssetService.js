@@ -378,7 +378,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
         // INSERT into stig_asset_map
         let sqlInsertBenchmarks = `
           INSERT IGNORE INTO 
-            stigman.stig_asset_map (benchmarkId, assetId)
+            stig_asset_map (benchmarkId, assetId)
           VALUES
             ?`
         await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
