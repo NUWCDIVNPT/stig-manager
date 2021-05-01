@@ -25,7 +25,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
         // This is MySQL specific, should abstract with an SmError
         if (err.code === 'ER_DUP_ENTRY') {
           try {
-            let response = await Asset.getAssets(body.collectionId, body.name, 'exact', null, projection, elevate, req.userObject )
+            let response = await Asset.getAssets(body.collectionId, body.name, 'exact', null, null, projection, elevate, req.userObject )
             throw (writer.respondWithCode( 400, {
               code: 400,
               message: `Duplicate name`,
@@ -185,7 +185,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
 
 module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
   try {
-    let assets =  await Asset.getAssets(null, null, null, null, projection, elevate, userObject )
+    let assets =  await Asset.getAssets(null, null, null, null, null, projection, elevate, userObject )
     return assets
   }
   catch (err) {
@@ -229,6 +229,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let name = req.swagger.params['name'].value
     let nameMatch = req.swagger.params['name-match'].value
     let benchmarkId = req.swagger.params['benchmarkId'].value
+    let metadata = req.swagger.params['metadata'].value
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
@@ -243,7 +244,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
           }
         }
       }
-      let response = await Asset.getAssets(collectionId, name, nameMatch, benchmarkId, projection, elevate, req.userObject )
+      let response = await Asset.getAssets(collectionId, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
       writer.writeJson(res, response)
     }
     else {

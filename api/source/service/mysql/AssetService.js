@@ -115,16 +115,16 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     // PREDICATES
     let predicates = {
       statements: [],
-      binds: {}
+      binds: []
     }
     if (inPredicates.assetId) {
       predicates.statements.push('a.assetId = :assetId')
       predicates.binds.assetId = inPredicates.assetId
     }
     if ( inPredicates.name ) {
-      let matchStr = '= :name'
+      let matchStr = '= ?'
       if ( inPredicates.nameMatch && inPredicates.nameMatch !== 'exact') {
-        matchStr = 'LIKE :name'
+        matchStr = 'LIKE ?'
         switch (inPredicates.nameMatch) {
           case 'startsWith':
             inPredicates.name = `${inPredicates.name}%`
@@ -138,20 +138,27 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
         }
       }
       predicates.statements.push(`a.name ${matchStr}`)
-      predicates.binds.name = `${inPredicates.name}`
+      predicates.binds.push(inPredicates.name)
     }
     if (inPredicates.collectionId) {
-      predicates.statements.push('a.collectionId = :collectionId')
-      predicates.binds.collectionId = inPredicates.collectionId
+      predicates.statements.push('a.collectionId = ?')
+      predicates.binds.push(inPredicates.collectionId)
     }
     if (inPredicates.benchmarkId) {
-      predicates.statements.push('sa.benchmarkId = :benchmarkId')
-      predicates.binds.benchmarkId = inPredicates.benchmarkId
+      predicates.statements.push('sa.benchmarkId = ?')
+      predicates.binds.push(inPredicates.benchmarkId)
+    }
+    if ( inPredicates.metadata ) {
+      for (const pair of inPredicates.metadata) {
+        const [key, value] = pair.split(':')
+        predicates.statements.push('JSON_CONTAINS(a.metadata, ?, ?)')
+        predicates.binds.push( `"${value}"`,  `$.${key}`)
+      }
     }
     if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('cg.userId = :userId')
+      predicates.statements.push('cg.userId = ?')
       predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
-      predicates.binds.userId = userObject.userId
+      predicates.binds.push(userObject.userId)
     }
 
     // CONSTRUCT MAIN QUERY
@@ -166,7 +173,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
+    // connection.config.namedPlaceholders = true
     let [rows] = await connection.query(sql, predicates.binds)
     return (rows)
   }
@@ -971,13 +978,14 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(collectionId, name, nameMatch, benchmarkId, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, name, nameMatch, benchmarkId, metadata, projection, elevate, userObject) {
   try {
     let rows = await _this.queryAssets(projection, {
-      collectionId: collectionId,
-      name: name,
-      nameMatch: nameMatch,
-      benchmarkId: benchmarkId
+      collectionId,
+      name,
+      nameMatch,
+      benchmarkId,
+      metadata
     }, elevate, userObject)
     return (rows)
   }
