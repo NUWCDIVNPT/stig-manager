@@ -46,6 +46,7 @@ todo_include_todos = True
 images_config = {
     'override_image_directive': True,
     'default_image_width': '50%',
+    'default_group': 'default'
 }
 
 
