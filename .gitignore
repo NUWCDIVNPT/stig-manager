@@ -31,3 +31,4 @@ api/source/tls/mysql2/tls.cnf
 clients/extjs/js/keycloak.json
 .gitignore
 newman/
+/docs/_build/doctrees/
