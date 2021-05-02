@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ddfcec0a-c570-408b-9527-1e672e2b2c0f",
+		"_postman_id": "281e8b52-c68f-4e3b-81e7-cec45e01ed1a",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -7356,8 +7356,8 @@
 																	"let jsonData = pm.response.json();\r",
 																	"\r",
 																	"\r",
-																	"pm.test(\"Response JSON is an object\", function () {\r",
-																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"pm.test(\"Response JSON is an array\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
 																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
 																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
 																	"\r",
@@ -7441,11 +7441,9 @@
 															"let jsonData = pm.response.json();\r",
 															"\r",
 															"\r",
-															"pm.test(\"Response JSON is an array\", function () {\r",
+															"pm.test(\"Response JSON is an empty array\", function () {\r",
 															"    pm.expect(jsonData).to.be.an('array');\r",
-															"    pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
-															"\r",
+															"    pm.expect(jsonData).to.have.lengthOf(0);\r",
 															"});\r",
 															""
 														],

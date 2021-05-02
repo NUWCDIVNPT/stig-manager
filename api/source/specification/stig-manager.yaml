@@ -29,6 +29,7 @@ paths:
             type: string
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
+        - $ref: '#/components/parameters/MetadataQuery'
         - name: benchmarkId
           in: query
           description: Selects Assets mapped to a STIG
@@ -375,27 +376,27 @@ paths:
       - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
-    # put:
-    #   tags:
-    #     - Asset
-    #   summary: UNIMPLEMENTED Assign a STIG to an Asset
-    #   operationId: attachStigToAsset
-    #   responses:
-    #     '200':
-    #       description: AssetProjected response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/STIGs'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:collection'
+    put:
+      tags:
+        - Asset
+      summary: Assign a STIG to an Asset
+      operationId: attachStigToAsset
+      responses:
+        '200':
+          description: STIGs response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/STIGs'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
     delete:
       tags:
         - Asset
@@ -570,7 +571,7 @@ paths:
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/CollectionWorkflowQuery'
-        - $ref: '#/components/parameters/CollectionMetadataQuery'
+        - $ref: '#/components/parameters/MetadataQuery'
       responses:
         '200':
           description: CollectionProjected response
@@ -3330,17 +3331,6 @@ components:
       description: A query parameter that identifies a Collection
       schema:
         type: string
-    CollectionMetadataQuery:
-      name: metadata
-      in: query
-      description: >-
-        A query parameter that specifies metadata key:value pairs to select
-        matching Collections
-      schema:
-        type: array
-        items:
-          pattern: '^([\w\.]+\:.*?)$'
-          type: string
     CollectionProjectionQuery:
       name: projection
       in: query
@@ -3442,6 +3432,17 @@ components:
           type: string
           enum:
             - rules
+    MetadataQuery:
+      name: metadata
+      in: query
+      description: >-
+        A query parameter that specifies metadata key:value pairs to select
+        matching Objects
+      schema:
+        type: array
+        items:
+          pattern: '^([\w\.]+\:.*?)$'
+          type: string
     NameQuery:
       name: name
       in: query
