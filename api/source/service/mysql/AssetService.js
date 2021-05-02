@@ -915,15 +915,28 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   }
 }
 
+exports.attachStigToAsset = async function (assetId, benchmarkId, elevate, userObject ) {
+  try {
+    let sqlInsert = `INSERT IGNORE INTO stig_asset_map (assetId, benchmarkId) VALUES (?, ?)`
+    await dbUtils.pool.query(sqlInsert, [assetId, benchmarkId])
+    let rows = await _this.queryStigsByAsset( {
+      assetId: assetId
+    }, elevate, userObject)
+    return (rows)
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+  }
+}
+
 exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, userObject ) {
   try {
-    let rows = await _this.queryStigsByAsset( {
-      assetId: assetId,
-      benchmarkId: benchmarkId
-    }, elevate, userObject)
     let sqlDelete = `DELETE FROM stig_asset_map where assetId = ? and benchmarkId = ?`
     await dbUtils.pool.query(sqlDelete, [assetId, benchmarkId])
-    return (rows[0])
+    let rows = await _this.queryStigsByAsset( {
+      assetId: assetId
+    }, elevate, userObject)
+    return (rows)
   }
   catch (err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
@@ -932,9 +945,9 @@ exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, use
 
 exports.removeStigsFromAsset = async function (assetId, elevate, userObject ) {
   try {
-    let rows = await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
     let sqlDelete = `DELETE FROM stig_asset_map where assetId = ?`
     await dbUtils.pool.query(sqlDelete, [assetId])
+    let rows = await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
     return (rows)
   }
   catch (err) {
