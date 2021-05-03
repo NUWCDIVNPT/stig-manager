@@ -71,8 +71,8 @@ jobs:
       -
         name: Run Newman Collection GETS
         id: newman-run-gets
-        if: success()
-        needs: [newman-run-loadTestData]
+          if: success()
+          needs: [newman-run-loadTestData]
         working-directory: ./test/api
         run: |
           set -o pipefail
@@ -80,8 +80,8 @@ jobs:
       -
         name: Run Newman Collection Posts, Puts, Patches, Deletes
         id: newman-run-pppd
-        if: always()
-        needs: [newman-run-gets]
+          if: always()
+          needs: [newman-run-gets]
         working-directory: ./test/api
         run: |
           set -o pipefail
@@ -89,8 +89,8 @@ jobs:
       -
         name: Run Newman Collection STIGS
         id: newman-run-stigs
-        if: always()
-        needs: [newman-run-gets]        
+          if: always()
+          needs: [newman-run-gets]        
         working-directory: ./test/api
         run: |
           set -o pipefail
@@ -98,8 +98,8 @@ jobs:
       -
         name: Run Newman Collection LVL1 Cross-Boundary Tests
         id: newman-run-lvl1-cross-boundary
-        if: always()
-        needs: [newman-run-gets]        
+          if: always()
+          needs: [newman-run-gets]        
         working-directory: ./test/api
         run: |
           set -o pipefail
