@@ -89,6 +89,13 @@ jobs:
         run: |
           set -o pipefail
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection LVL1 Cross-Boundary Tests
+        id: newman-run-stigs
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json --folder "LVL1 cross-boundary tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/lvl1Report.html | grep -A18 '┌─────'
       - 
         name: Upload artifact
         id: artifact-upload
