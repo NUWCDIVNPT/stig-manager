@@ -1,6 +1,5 @@
 'use strict';
 const writer = require('../../utils/writer.js')
-const parsers = require('../../utils/parsers.js')
 const dbUtils = require('./utils')
 
 let _this = this
@@ -591,4 +590,65 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
       await connection.release()
     }
   }
+}
+
+// Returns a Set of ruleIds
+exports.getRulesByAssetUser = async function ( assetId, userObject ) {
+  try {
+    const binds = []
+    let sql = `
+      select
+        distinct rgr.ruleId 
+      from 
+        asset a
+        left join collection_grant cg on a.collectionId = cg.collectionId
+        left join stig_asset_map sa using (assetId)
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+        left join revision rev using (benchmarkId)
+        left join rev_group_map rg using (revId)
+        left join rev_group_rule_map rgr using (rgId)
+      where 
+        a.assetid = ?`
+    binds.push(assetId)
+    if (!userObject.privileges.globalAccess) {
+      sql += `
+      and cg.userId = ?
+      and CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END`
+      binds.push(userObject.userId)
+    }
+    let [rows] = await dbUtils.pool.query(sql, binds)
+    return new Set(rows.map( row => row.ruleId ))
+  }
+  finally { }
+}
+
+// Returns a Boolean
+exports.checkRuleByAssetUser = async function (ruleId, assetId, userObject) {
+  try {
+    const binds = []
+    let sql = `
+      select
+        distinct rgr.ruleId 
+      from 
+        asset a
+        left join collection_grant cg on a.collectionId = cg.collectionId
+        left join stig_asset_map sa using (assetId)
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+        left join revision rev using (benchmarkId)
+        left join rev_group_map rg using (revId)
+        left join rev_group_rule_map rgr using (rgId)
+      where 
+        a.assetId = ?
+        and rgr.ruleId = ?`
+    binds.push(assetId, ruleId)
+    if (!userObject.privileges.globalAccess) {
+      sql += `
+      and cg.userId = ?
+      and CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END`
+      binds.push(userObject.userId)
+    }    
+    let [rows] = await dbUtils.pool.query(sql, binds)
+    return rows.length > 0
+  }
+  finally { }
 }
