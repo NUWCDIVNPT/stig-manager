@@ -482,7 +482,7 @@ module.exports.reviewsFromScc = function (sccFileContent, options = {}) {
         reviews.push({
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
           result: result,
-          resultComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
+          resultComment: `SCC Reviewed at ${ruleResult.time}`,
           autoResult: true,
           status: result != 'fail' ? 'accepted' : 'saved'
         })  
