@@ -1,3 +1,13 @@
+1.0.0-beta.31
+-----------------------
+- fix #275: handle rule-result without check (#290)
+- feat: Drag from Review History (#288)
+- fix #145: Review vetting for all users (#285)
+- feat: Endpoint updates (#284)
+- docs: Added default_group to prevent guid generation, removed doctrees, added a bit of info to Contributing doc. (#281)
+- chore: remove obsolete docker dir (#278)
+- fix #276: remove reference to database 'stigman'
+
 1.0.0-beta.30
 -----------------------
 - fix #270: ROLE element default value 'None' (#272)
