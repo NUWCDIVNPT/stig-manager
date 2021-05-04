@@ -780,6 +780,8 @@ function Sm_HistoryData (idAppend) {
 	
 	this.grid = new Ext.grid.GridPanel({
 		layout: 'fit',
+    enableDragDrop: true,
+    ddGroup: 'gridDDGroup',
 		plugins: expander,
 		border: false,
 		id: 'historyGrid' + idAppend,
