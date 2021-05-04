@@ -61,37 +61,37 @@ jobs:
         name: Wait for bootstrap
         run: until $(curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration); do printf '.'; sleep 5; done
       
-      # -
-      #   name: Run Newman Collection LoadTestData
-      #   id: newman-run-loadTestData
-      #   working-directory: ./test/api
-      #   run: |
-      #     set -o pipefail
-      #     newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport.html | grep -A18 '┌─────'
-      # -
-      #   name: Run Newman Collection GETS
-      #   id: newman-run-gets
-      #   if: success()
-      #   working-directory: ./test/api
-      #   run: |
-      #     set -o pipefail
-      #     newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
-      # -
-      #   name: Run Newman Collection Posts, Puts, Patches, Deletes
-      #   id: newman-run-pppd
-      #   if: always()
-      #   working-directory: ./test/api
-      #   run: |
-      #     set -o pipefail
-      #     newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
-      # -
-      #   name: Run Newman Collection STIGS
-      #   id: newman-run-stigs
-      #   if: always()
-      #   working-directory: ./test/api
-      #   run: |
-      #     set -o pipefail
-      #     newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection LoadTestData
+        id: newman-run-loadTestData
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection GETS
+        id: newman-run-gets
+        if: success()
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection Posts, Puts, Patches, Deletes
+        id: newman-run-pppd
+        if: always()
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
+      -
+        name: Run Newman Collection STIGS
+        id: newman-run-stigs
+        if: always()
+        working-directory: ./test/api
+        run: |
+          set -o pipefail
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport.html | grep -A18 '┌─────'
       -
         name: Run Newman Collection LVL1 Cross-Boundary Tests
         id: newman-run-lvl1-cross-boundary
