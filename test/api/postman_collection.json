@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "438485d9-3b74-4ed7-88b5-ef2fb4e49eda",
+		"_postman_id": "64a9b36e-cea2-41b3-9e94-1834be66ff42",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -8579,12 +8579,12 @@
 															"pm.test(\"Response JSON is an object, with component arrays of proper length\", function () {\r",
 															"    pm.expect(jsonData).to.be.an('object');\r",
 															"    if ( user == \"collectioncreator\" ) { //User lvl1 can only submit one of these reviews.\r",
-															"    pm.expect(jsonData.permitted).to.have.lengthOf(1);\r",
-															"    pm.expect(jsonData.rejected).to.have.lengthOf(1);\r",
+															"        pm.expect(jsonData.permitted).to.have.lengthOf(1);\r",
+															"        pm.expect(jsonData.rejected).to.have.lengthOf(1);\r",
 															"    }\r",
 															"    else{\r",
-															"    pm.expect(jsonData.permitted).to.have.lengthOf(2);\r",
-															"    pm.expect(jsonData.rejected).to.have.lengthOf(0);\r",
+															"        pm.expect(jsonData.permitted).to.have.lengthOf(1);\r",
+															"        pm.expect(jsonData.rejected).to.have.lengthOf(1);\r",
 															"    }\r",
 															"});\r",
 															"\r",
@@ -13362,14 +13362,14 @@
 							],
 							"variable": [
 								{
-									"description": "(Required) A path parameter that indentifies a Collection",
 									"key": "collectionId",
-									"value": "{{testCollection}}"
+									"value": "{{testCollection}}",
+									"description": "(Required) A path parameter that indentifies a Collection"
 								},
 								{
-									"description": "(Required) A path parameter that indentifies an Asset",
 									"key": "assetId",
-									"value": "{{testAsset}}"
+									"value": "{{testAsset}}",
+									"description": "(Required) A path parameter that indentifies an Asset"
 								}
 							]
 						}
@@ -13777,19 +13777,19 @@
 							],
 							"variable": [
 								{
-									"description": "(Required) A path parameter that indentifies a Collection",
 									"key": "collectionId",
-									"value": "{{testCollection}}"
+									"value": "{{testCollection}}",
+									"description": "(Required) A path parameter that indentifies a Collection"
 								},
 								{
-									"description": "(Required) A path parameter that indentifies an Asset",
 									"key": "assetId",
-									"value": "{{testAsset}}"
+									"value": "{{testAsset}}",
+									"description": "(Required) A path parameter that indentifies an Asset"
 								},
 								{
-									"description": "(Required) A path parameter that indentifies a Rule",
 									"key": "ruleId",
-									"value": "{{testRuleId-lvl1NoAccess}}"
+									"value": "{{testRuleId-lvl1NoAccess}}",
+									"description": "(Required) A path parameter that indentifies a Rule"
 								}
 							]
 						}

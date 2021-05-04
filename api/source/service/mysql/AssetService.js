@@ -38,18 +38,17 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
     // PROJECTIONS
     if (inProjection.includes('adminStats')) {
-      let statsJoin = 'stig_asset_map sam inner join stats_asset_stig sas on (sam.assetId=sas.assetId and sam.benchmarkId=sas.benchmarkId) WHERE sas.assetId = a.assetId'
+      joins.push('inner join stats_asset_stig sas on (sa.assetId=sas.assetId and sa.benchmarkId=sas.benchmarkId)')
       columns.push(`json_object(
-        'stigCount', COUNT(distinct sa.saId),
+        'stigCount', COUNT(distinct sas.benchmarkId),
         'stigAssignedCount', COUNT(distinct usa.saId),
-        'ruleCount', (SELECT SUM(ruleCount) FROM current_rev where benchmarkId in (select distinct benchmarkId from stig_asset_map where assetId = a.assetId)),
-        'acceptedCount', (SELECT SUM(acceptedManual) + SUM(acceptedAuto) FROM ${statsJoin}),
-        'submittedCount', (SELECT SUM(submittedManual) + SUM(submittedAuto) FROM ${statsJoin}),
-        'savedCount', (SELECT SUM(savedManual) + SUM(savedAuto) FROM ${statsJoin})
+        'ruleCount', SUM(cr.ruleCount),
+        'acceptedCount', SUM(sas.acceptedManual) + SUM(sas.acceptedAuto),
+        'submittedCount', SUM(submittedManual) + SUM(submittedAuto),
+        'savedCount', SUM(savedManual) + SUM(savedAuto)
         ) as "adminStats"`)
     }
     if (inProjection.includes('stigGrants')) {
-      // A bit more complex than the Oracle query because we can't use nested json_arrayagg's
       columns.push(`(select
         CASE WHEN COUNT(byStig.stigAssetUsers) > 0 THEN json_arrayagg(byStig.stigAssetUsers) ELSE json_array() END
       from
