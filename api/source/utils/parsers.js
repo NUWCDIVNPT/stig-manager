@@ -508,10 +508,13 @@ module.exports.reviewsFromScc = function (sccFileContent, options = {}) {
         target[name] = fact['#text'] 
       }
     })
-    const {ip, host_name, ...metadata} = target
+    const {ip, host_name, fqdn, mac, ...metadata} = target
     return {
       name: host_name,
+      description: '',
       ip: ip,
+      mac: mac,
+      fqdn: fqdn,
       noncomputing: false,
       metadata: metadata
     }
