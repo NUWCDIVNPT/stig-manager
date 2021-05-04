@@ -1226,7 +1226,8 @@ class TaskObject {
             const stigIsInstalled = ({ benchmarkId, revisionStr }) => {
                 const revisionStrs = this.mappedStigs.get(benchmarkId)
                 if (revisionStrs) {
-                    return revisionStrs.includes(revisionStr)
+                    if (revisionStr) return revisionStrs.includes(revisionStr)
+                    return true
                 }
                 else {
                     return false

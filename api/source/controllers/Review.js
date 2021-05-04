@@ -29,7 +29,7 @@ module.exports.importReviewsByAsset = async function importReviewsByAsset (req, 
             result = await Parsers.reviewsFromCkl(data.toString(), {ignoreNr: true})
             break
           case 'xml':
-            result = Parsers.reviewsFromScc(data.toString(), {ignoreNr: true})
+            result = Parsers.reviewsFromScc(data.toString(), {ignoreNotChecked: true})
             break
         }
         reviewsRequested = []
