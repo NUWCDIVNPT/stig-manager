@@ -34,10 +34,10 @@
 //   ]
 // }
 
-module.exports.reviewsFromCkl = async function (cklData, options = {}) {
-  const parser = require('fast-xml-parser')
-  const tagValueProcessor = require('he').decode
-   
+const parser = require('fast-xml-parser')
+const tagValueProcessor = require('he').decode
+
+module.exports.reviewsFromCkl = async function (cklData, options = {}) {  
   try {
     options.ignoreNr = !!options.ignoreNr
     const fastparseOptions = {
@@ -235,11 +235,11 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
       arrayMode: true, //"strict"
-      attrValueProcessor: (val, attrName) => he.decode(val, {isAttributeValue: true}),
-      tagValueProcessor: (val, tagName) => he.decode(val)
+      attrValueProcessor: (val) => tagValueProcessor(val, {isAttributeValue: true}),
+      tagValueProcessor: (val) => tagValueProcessor(val)
     }
 
-    let j = Parser.parse(xccdfData.toString(), fastparseOptions)
+    let j = parser.parse(xccdfData.toString(), fastparseOptions)
     let bIn, isScap=false
 
     if (j['data-stream-collection'] && j['data-stream-collection'][0]) {
@@ -405,11 +405,11 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
   }
 }
 
-module.exports.reviewsFromScc = function (sccFileContent, assetId) {
-  const parser = require('fast-xml-parser')
+module.exports.reviewsFromScc = function (sccFileContent, options = {}) {
   try {
+    options.ignoreNotChecked = !!options.ignoreNotChecked
     // Parse the XML
-    var parseOptions = {
+    const parseOptions = {
       attributeNamePrefix: "",
       ignoreAttributes: false,
       ignoreNameSpace: true,
@@ -423,59 +423,98 @@ module.exports.reviewsFromScc = function (sccFileContent, assetId) {
       parseTrueNumberOnly: false,
       arrayMode: false //"strict"
     }
-    let parsed = parser.parse(sccFileContent.toString(), parseOptions)
+    let parsed = parser.parse(sccFileContent, parseOptions)
 
     // Baic sanity checks
-    if (!parsed.Benchmark) throw (new Error("No <Benchmark> element"))
-    if (!parsed.Benchmark.TestResult) throw (new Error("No <TestResult> element"))
-    if (!parsed.Benchmark.TestResult['target-facts']) throw (new Error("No <target-facts> element"))
-    if (!parsed.Benchmark.TestResult['rule-result']) throw (new Error("No <rule-result> element"))
+    if (!parsed.Benchmark) throw (new Error("No Benchmark element"))
+    if (!parsed.Benchmark.TestResult) throw (new Error("No TestResult element"))
+    if (!parsed.Benchmark.TestResult['target-facts']) throw (new Error("No target-facts element"))
+    if (!parsed.Benchmark.TestResult['rule-result']) throw (new Error("No rule-result element"))
 
     // Process parsed data
+    let benchmarkId = parsed.Benchmark.id.replace('xccdf_mil.disa.stig_benchmark_', '')
     let target = processTargetFacts(parsed.Benchmark.TestResult['target-facts'].fact)
-    let reviews = processRuleResults(parsed.Benchmark.TestResult['rule-result'])
+    if (!target.name) {
+      throw (new Error('No host_name fact'))
+    }
+    let x = processRuleResults(parsed.Benchmark.TestResult['rule-result'])
 
     // Return object
     return ({
       target: target,
-      reviews: reviews
+      checklists: [{
+        benchmarkId: benchmarkId,
+        revisionStr: null,
+        reviews: x.reviews,
+        stats: x.stats
+      }]
     })
   }
-  catch (e) {
-    throw (e)
-  }
-
+  finally {}
 
   function processRuleResults(ruleResults) {
     const results = {
       pass: 'pass',
       fail: 'fail',
-      notapplicable: 'notapplicable'
+      notapplicable: 'notapplicable',
+      notchecked: 'notchecked'
     }
     let reviews = []
-    
+    let nf = na = nr = o = 0   
     ruleResults.forEach(ruleResult => {
       result = results[ruleResult.result]
       if (result) {
+        switch (result) {
+          case 'pass':
+              nf++
+              break
+          case 'fail':
+              o++
+              break
+          case 'notapplicable':
+              na++
+              break
+          case 'notchecked':
+              nr++
+              break
+        }
+        if ( result === 'notchecked' && options.ignoreNotChecked ) return
         reviews.push({
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
           result: result,
           resultComment: `SCC Reviewed at ${ruleResult.time} using:\n${ruleResult.check['check-content-ref'].href.replace('#scap_mil.disa.stig_comp_', '')}`,
           autoResult: true,
           status: result != 'fail' ? 'accepted' : 'saved'
-        })
+        })  
       }
     })
-    return reviews
+    return {
+      reviews: reviews,
+      stats: {
+        notchecked: nr,
+        notapplicable: na,
+        pass: nf,
+        fail: o
+      }  
+    }
   }
 
   function processTargetFacts(facts) {
     let target = {}
     facts.forEach(fact => {
-      let name = fact.name.replace('urn:scap:fact:asset:identifier:', '')
-      target[name] = fact['#text']
+      if (fact['#text']) {
+        let name = fact.name.replace('urn:scap:fact:asset:identifier:', '')
+        name = name === 'ipv4' ? 'ip' : name
+        target[name] = fact['#text'] 
+      }
     })
-    return target
+    const {ip, host_name, ...metadata} = target
+    return {
+      name: host_name,
+      ip: ip,
+      noncomputing: false,
+      metadata: metadata
+    }
   }
 }
   
