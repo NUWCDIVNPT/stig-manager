@@ -167,7 +167,7 @@ If the VPN Gateway does not ensure inbound and outbound traffic is configured wi
         </STIG_DATA>
         <STIG_DATA>
           <VULN_ATTRIBUTE>Rule_ID</VULN_ATTRIBUTE>
-          <ATTRIBUTE_DATA>SV-220697r569187_rule</ATTRIBUTE_DATA>
+          <ATTRIBUTE_DATA>SV-77809r3_rule</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STIG_DATA>
           <VULN_ATTRIBUTE>Rule_Ver</VULN_ATTRIBUTE>

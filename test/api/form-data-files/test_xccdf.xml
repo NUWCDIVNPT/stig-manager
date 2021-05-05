@@ -288,7 +288,7 @@ Specify the Transcript output directory to point to a Central Log Server or anot
         <cdf:check-content-ref name="oval:mil.disa.stig.windows:def:15" href="#scap_mil.disa.stig_comp_U_MS_Windows_10_V2R1_STIG_SCAP_1-2_Benchmark-oval.xml"/>
       </cdf:check>
     </cdf:rule-result>
-    <cdf:rule-result time="2021-04-07T11:21:29" severity="medium" idref="xccdf_mil.disa.stig_rule_SV-220697r569187_rule" weight="10.0" version="WN10-00-000030">
+    <cdf:rule-result time="2021-04-07T11:21:29" severity="medium" idref="xccdf_mil.disa.stig_rule_SV-77809r3_rule" weight="10.0" version="WN10-00-000030">
       <cdf:result>pass</cdf:result>
       <cdf:ident system="http://cyber.mil/legacy">SV-77827</cdf:ident>
       <cdf:ident system="http://cyber.mil/legacy">V-63337</cdf:ident>
