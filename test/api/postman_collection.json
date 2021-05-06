@@ -7228,7 +7228,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Patched\",\n  \"pocEmail\": \"pocEmail@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": true\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+											"raw": "{\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Patched\",\n  \"pocEmail\": \"pocEmail@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -7335,7 +7335,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": true\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+											"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -7668,7 +7668,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": \"Collection TEST description\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Put\",\n  \"pocEmail\": \"pocEmailPut@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": true\n  },\n    \"grants\": [\n\n        {\n                \"userId\": \"1\",\n            \"accessLevel\": 4\n        }\n    ]\n}\n"
+									"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": \"Collection TEST description\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Put\",\n  \"pocEmail\": \"pocEmailPut@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": \"true\"\n  },\n    \"grants\": [\n\n        {\n                \"userId\": \"1\",\n            \"accessLevel\": 4\n        }\n    ]\n}\n"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=grants",
@@ -12523,7 +12523,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Patched\",\n  \"pocEmail\": \"pocEmail@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": true\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+							"raw": "{\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Patched\",\n  \"pocEmail\": \"pocEmail@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/collections/:collectionId?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -12631,7 +12631,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": true\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+							"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
