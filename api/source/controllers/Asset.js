@@ -199,12 +199,14 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     let projection = req.swagger.params['projection'].value
     let elevate = req.swagger.params['elevate'].value
     
-    // All users are permitted to query for the asset
     // If this user has no grants permitting access to the asset, the response will be undefined
     let response = await Asset.getAsset(assetId, projection, elevate, req.userObject )
-
+    if (!response) {
+      throw (writer.respondWithCode ( 403, {message: `User has insufficient privilege to make this request.`} ) )
+    }
+    
     // If there is a response, check if the request included the stigGrants projection
-    if (response && projection && projection.includes('stigGrants')) {
+    if (projection && projection.includes('stigGrants')) {
       // Check if the stigGrants projection is forbidden
       if (!elevate) {
         const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === response.collection.collectionId )
