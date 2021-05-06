@@ -12339,7 +12339,7 @@
 					"response": []
 				},
 				{
-					"name": "Return an Asset (lvl1 user requests w/ ZERO of 2 stig grants, check proper AdminStats)",
+					"name": "Return an Asset (lvl1 user requests w/ ZERO of 2 stig grants, expect fail)",
 					"event": [
 						{
 							"listen": "test",
@@ -12354,18 +12354,9 @@
 									"    console.log(\"setting user to 'elevated'\");\r",
 									"}\r",
 									"\r",
-									"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
-									"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
-									"        pm.response.to.have.status(403);\r",
-									"    });\r",
-									"    return;\r",
-									"}\r",
-									"else {\r",
-									"    pm.test(\"Status code is 204\", function () {\r",
-									"        pm.response.to.have.status(204);\r",
-									"    });\r",
-									"}\r",
-									"return;\r",
+									"pm.test(\"Status should be is 403 for user lvl1\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
 									"\r",
 									"\r",
 									"\r",
