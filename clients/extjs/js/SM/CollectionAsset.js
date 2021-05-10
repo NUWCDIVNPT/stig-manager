@@ -8,14 +8,14 @@ Ext.ns('SM')
 */
 SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
     onAssetChanged: function (apiAsset) {
-        if (apiAsset.collectionId === this.collectionId) {
+        if (apiAsset.collection.collectionId === this.collectionId) {
             this.store.loadData(apiAsset, true) // append with replace
             const sortState = this.store.getSortState()
             this.store.sort(sortState.field, sortState.direction)    
         }
     },
     onAssetCreated: function (apiAsset) {
-        if (apiAsset.collectionId === this.collectionId) {
+        if (apiAsset.collection.collectionId === this.collectionId) {
             this.store.loadData(apiAsset, true) // append with replace
             const sortState = this.store.getSortState()
             this.store.sort(sortState.field, sortState.direction)
