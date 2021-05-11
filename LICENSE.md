@@ -7,7 +7,9 @@
 
 ## MIT License
 
-Copyright (c) 2020 U.S. Federal Government (in countries where recognized)
+Copyright (c) 2020-2021 U.S. Federal Government (in countries where recognized)
+Copyright (c) 2020-2021 Science Applications International Corporation
+Copyright (c) 2020-2021 Rite-Solutions, Inc. 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

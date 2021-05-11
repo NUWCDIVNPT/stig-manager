@@ -4,9 +4,9 @@
 
 ## Signed-off-by
 
-- Copyright 2021 U.S. Federal Government (in countries where recognized)
-- Copyright 2021 Carl Smigielski, carl.a.smigielski@saic.com
-- Copyright 2021 Christopher Daley, cdaley@rite-solutions.com
+- Copyright 2020-2021 U.S. Federal Government (in countries where recognized)
+- Copyright 2020-2021 Carl Smigielski, carl.a.smigielski@saic.com
+- Copyright 2020-2021 Christopher Daley, cdaley@rite-solutions.com
 - _Add the copyright date, your name, and email address here. (PLEASE KEEP THIS LINE)_
 
 ## Note for U.S. Federal Employees
