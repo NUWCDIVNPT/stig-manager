@@ -2216,37 +2216,34 @@ async function addReview( params ) {
     if (completedRecords.length) {
       const confirmStr = `Eligible reviews: ${completedRecords.length}<br><br>Continue with submitting?`
       Ext.Msg.confirm("Confirm", confirmStr, async function (btn) {
-        try {
-          if (btn == 'yes') {
-            Ext.getBody().mask('Submitting...')
-            const requests = []
-            for (const record of completedRecords) {
-              requests.push(
-                Ext.Ajax.requestPromise({
-                  url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
-                  method: 'PATCH',
-                  jsonData: {
-                    status: 'submitted'
-                  }
-                })
-              )
+        if (btn == 'yes') {
+          const results = []
+          let i, l
+          for (i = 0, l = completedRecords.length; i < l; i++) {
+            const record = completedRecords[i]
+            Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
+            try {
+              const result = await Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+                method: 'PATCH',
+                jsonData: {
+                  status: 'submitted'
+                }
+              })
+              results.push({
+                success: true,
+                result: result
+              })
             }
-            let results = await Promise.allSettled(requests)
-
-            for (i=0, l=completedRecords.length; i < l; i++) {
-              if (results[i].status === 'fulfilled') {
-                completedRecords[i].data.status = 'submitted'
-                completedRecords[i].commit()
-              }
+            catch (e) {
+              results.push({
+                success: false,
+                result: e
+              })
             }
           }
-        }
-        catch (e) {
-          alert(e.message)
-        }
-        finally {
           groupStore.reload()
-          Ext.getBody().unmask()
+          Ext.getBody().unmask()    
         }
       })
     } else {
