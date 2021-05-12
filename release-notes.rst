@@ -1,3 +1,13 @@
+1.0.0-beta.32
+-----------------------
+- fix: Throttle requests for Submit All (#306)
+- docs: follow code.mil guidance on license.md file (#301)
+- build(deps): bump hosted-git-info from 2.8.8 to 2.8.9 in /api/source (#302)
+- fix: Check for collectionId in event handlers (#299)
+- build(deps): bump handlebars from 4.7.6 to 4.7.7 in /api/source (#296)
+- build(deps): bump lodash from 4.17.19 to 4.17.21 in /api/source (#297)
+- fix: Asset endpoints: test coverage, implementation (#295)
+
 1.0.0-beta.31
 -----------------------
 - fix #275: handle rule-result without check (#290)
