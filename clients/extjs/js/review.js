@@ -384,7 +384,7 @@ async function addReview( params ) {
     var checksO = 0;
     var checksNF = 0;
     var checksNA = 0;
-    var checksNR = 0;
+    var checksOther = 0;
     store.data.each(function (item, index, totalItems) {
       switch (item.data.result) {
         case 'fail':
@@ -396,12 +396,12 @@ async function addReview( params ) {
         case 'notapplicable':
           checksNA++;
           break;
-        case '':
-          checksNR++;
+        default:
+          checksOther++;
           break;
       }
     });
-    return totalChecks + ' checks (' + checksO + ' Open, ' + checksNF + ' NF, ' + checksNA + ' NA, ' + checksNR + ' NR)';
+    return totalChecks + ' checks (' + checksO + ' Open, ' + checksNF + ' NF, ' + checksNA + ' NA, ' + checksOther + ' NR/Other )';
   };
 
   /******************************************************/
@@ -972,19 +972,7 @@ async function addReview( params ) {
 				fixed: true,
         dataIndex: 'result',
         sortable: true,
-        renderer: function (val) {
-					switch (val) {
-						case 'fail':
-							return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
-							break;
-						case 'pass':
-							return '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
-							break;
-						case 'notapplicable':
-							return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
-							break;
-					}
-				}
+        renderer: renderResult
       },
       // {
       //   header: 'Comment',
@@ -1536,7 +1524,6 @@ async function addReview( params ) {
         fieldLabel: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
         labelSeparator: '',
         emptyText: 'Your result...',
-        valueNotFoundText: 'Your result...',
         disabled: true,
         name: 'result',
         hiddenName: 'result',
