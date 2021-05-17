@@ -49,6 +49,10 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 mapping: 'checklist.newAssignment'
             },
             {
+                name: 'informational',
+                mapping: 'checklist.stats.informational'
+            },
+            {
                 name: 'notchecked',
                 mapping: 'checklist.stats.notchecked'
             },
@@ -146,6 +150,14 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                         return v
                     }
                 }
+            },
+            {
+                header: '<div class="sm-grid-result-sprite sm-result-na">I</div></div>',
+                width: 50,
+                align: 'center',
+                dataIndex: 'informational',
+                sortable: true,
+                renderer: (v) => me.importReviews ? v : '--'
             },
             {
                 header: '<div class="sm-grid-result-sprite sm-result-na">NR</div></div>',

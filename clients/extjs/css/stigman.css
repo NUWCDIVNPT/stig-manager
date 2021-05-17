@@ -204,12 +204,11 @@ body {
 	text-align: center;
 }
 .sm-result-na {
-	color: grey;
+	color: #b1b1b1;
 	text-align: center;
 }
 .sm-result-nr {
-    color: hsla(0, 10%, 96%, 1);
-    background-color: #d74400;
+    color: #404040;
     text-align: center;
 }
 

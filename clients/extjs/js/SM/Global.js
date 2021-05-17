@@ -36,4 +36,51 @@ SM.actionTipText = `<b>Recommended Action</b><br>For failed results (i.e., Open)
 SM.actionCommentTipText = `<b>Recommended Action Comment</b><br>For failed results (i.e., Open), the action plan recommended by the evaluator.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
 <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata action-comment&gt;`
 
+SM.RenderResult = {
+    fail: {
+        css: 'sm-result-fail',
+        textDisa: 'O',
+        textNist: 'F'
+    },
+    pass: {
+        css: 'sm-result-pass',
+        textDisa: 'NF',
+        textNist: 'P'
+    },
+    notapplicable: {
+        css: 'sm-result-na',
+        textDisa: 'NA',
+        textNist: 'N'
+    },
+    notchecked: {
+        css: 'sm-result-nr',
+        textDisa: 'NR',
+        textNist: 'K'
+    },
+    unknown: {
+        css: 'sm-result-nr',
+        textDisa: 'U',
+        textNist: 'U'
+    },
+    error: {
+        css: 'sm-result-nr',
+        textDisa: 'E',
+        textNist: 'E'
+    },
+    notselected: {
+        css: 'sm-result-nr',
+        textDisa: 'S',
+        textNist: 'S'
+    },
+    informational: {
+        css: 'sm-result-nr',
+        textDisa: 'I',
+        textNist: 'I'
+    },
+    fixed: {
+        css: 'sm-result-pass',
+        textDisa: 'F',
+        textNist: 'F'
+    }
+}
 

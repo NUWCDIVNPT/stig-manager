@@ -818,19 +818,7 @@ function Sm_HistoryData (idAppend) {
 				width: 50,
 				fixed: true,
 				dataIndex: 'result',
-				renderer: function (val) {
-					switch (val) {
-						case 'fail':
-							return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
-							break;
-						case 'pass':
-							return '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
-							break;
-						case 'notapplicable':
-							return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
-							break;
-					}
-				},
+				renderer: renderResult,
 				sortable: true
 			},
 			{ 	
@@ -1189,22 +1177,12 @@ function checked(val) {
 // 	}
 // }
 
+
+
 function renderResult(val, metaData, record, rowIndex, colIndex, store) {
-	switch (val) {
-		case 'pass':
-			return '<div class="sm-grid-result-sprite sm-result-pass">NF</div>'
-		case 'fail':
-			return '<div class="sm-grid-result-sprite sm-result-fail">O</div>'
-		case 'notapplicable':
-			return '<div class="sm-grid-result-sprite sm-result-na">NA</div>'
-		case 'notchecked':
-			return '<div class="sm-grid-result-sprite sm-result-nr">NR</div>'
-		default:
-			return ''
-	}
+	if (!val) return ''
+	return `<div class="sm-grid-result-sprite ${SM.RenderResult[val]?.css}" ext:qtip="${val}">${SM.RenderResult[val]?.textDisa}</div>`
 }
-
-
 
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';

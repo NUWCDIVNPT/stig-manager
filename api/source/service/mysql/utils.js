@@ -409,42 +409,21 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
 module.exports.CONTEXT_ALL = 'all'
 module.exports.CONTEXT_DEPT = 'department'
 module.exports.CONTEXT_USER = 'user'
-module.exports.REVIEW_RESULT_ID = { 
-  1: {api: 'notchecked', ckl: 'Not_Reviewed', abbr: 'NC'},
-  2: {api: 'notapplicable', ckl: 'Not_Applicable', abbr: 'NA'},
-  3: {api: 'pass', ckl: 'NotAFinding', abbr: 'NF'},
-  4: {api: 'fail', ckl: 'Open', abbr: 'O'}
-}
 module.exports.REVIEW_RESULT_API = { 
+  'notchecked': 1,
   'notapplicable': 2,
   'pass': 3,
-  'fail': 4
-}
-module.exports.REVIEW_RESULT_CKL = { 
-  'Not_Applicable': {id: 2},
-  'NotAFinding': {id: 3},
-  'Open': {id: 4}
-}
-module.exports.REVIEW_RESULT_ABBR = { 
-  'NA': {id: 2},
-  'NF': {id: 3},
-  'O': {id: 4}
-}
-module.exports.REVIEW_ACTION_ID = { 
-  1: 'remediate',
-  2: 'mitigate',
-  3: 'exception'
+  'fail': 4,
+  'unknown': 5,
+  'error': 6,
+  'notselected': 7,
+  'informational': 8,
+  'fixed': 9
 }
 module.exports.REVIEW_ACTION_API = { 
   'remediate': 1,
   'mitigate': 2,
   'exception': 3
-}
-module.exports.REVIEW_STATUS_ID = { 
-  0: 'saved',
-  1: 'submitted',
-  2: 'rejected',
-  3: 'approved'
 }
 module.exports.REVIEW_STATUS_API = { 
   'saved': 0,
@@ -457,14 +436,3 @@ module.exports.WRITE_ACTION = {
   REPLACE: 1,
   UPDATE: 2
 }
-module.exports.USER_ROLE_ID = {
-  2: {role: "IAWF", display: "IA Workforce"},
-  3: {role: "IAO", display: "IA Officer"},
-  4: {role: "Staff", display: "IA Staff"}
-}
-module.exports.USER_ROLE = {
-  IAWF: {id: 2, display: "IA Workforce"},
-  IAO: {id: 3, display: "IA Officer"},
-  Staff: {id: 4, display: "IA Staff"}
-}
-

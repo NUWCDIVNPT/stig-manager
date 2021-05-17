@@ -25,10 +25,15 @@
 //         }
 //       ],
 //       stats: {
-//         pass: 0,
-//         fail: 0,
-//         notapplicable: 0,
-//         notchecked: 0
+//          pass: 0,
+//          fail: 0,
+//          notapplicable: 0,
+//          notchecked: 0,
+//          notselected: 0,
+//          informational: 0,
+//          error: 0,
+//          fixed: 0,
+//          unknown: 0
 //       }
 //     }
 //   ]
@@ -137,32 +142,29 @@ module.exports.reviewsFromCkl = async function (cklData, options = {}) {
       //     STIG_DATA [26]
       // }
   
-      const results = {
+      const resultMap = {
         NotAFinding: 'pass',
         Open: 'fail',
         Not_Applicable: 'notapplicable',
         Not_Reviewed: 'notchecked'
       }
+      const resultStats = {
+        pass: 0,
+        fail: 0,
+        notapplicable: 0,
+        notchecked: 0,
+        notselected: 0,
+        informational: 0,
+        error: 0,
+        fixed: 0,
+        unknown: 0
+      }  
       let vulnArray = []
-      let nf = na = nr = o = 0
       vulnElements?.forEach(vuln => {
-        const result = results[vuln.STATUS]
+        let result = resultMap[vuln.STATUS]
         if (result) {
-          switch (result) {
-            case 'pass':
-                nf++
-                break
-            case 'fail':
-                o++
-                break
-            case 'notapplicable':
-                na++
-                break
-            case 'notchecked':
-                nr++
-                break
-          }
-
+          if (result === 'notchecked' && vuln.FINDING_DETAILS) result = 'informational'
+          resultStats[result]++
           let ruleId
           vuln.STIG_DATA.some(stigDatum => {
             if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
@@ -204,16 +206,12 @@ module.exports.reviewsFromCkl = async function (cklData, options = {}) {
   
       return {
         reviews: vulnArray,
-        stats: {
-          notchecked: nr,
-          notapplicable: na,
-          pass: nf,
-          fail: o
-        }
+        stats: resultStats
       }
     }  
   }
-  finally {}}
+  finally {}
+}
 
 module.exports.benchmarkFromXccdf = function (xccdfData) {
   const Parser = require('fast-xml-parser')
@@ -453,49 +451,34 @@ module.exports.reviewsFromScc = function (sccFileContent, options = {}) {
   finally {}
 
   function processRuleResults(ruleResults) {
-    const results = {
-      pass: 'pass',
-      fail: 'fail',
-      notapplicable: 'notapplicable',
-      notchecked: 'notchecked'
+    const resultStats = {
+      pass: 0,
+      fail: 0,
+      notapplicable: 0,
+      notchecked: 0,
+      notselected: 0,
+      informational: 0,
+      error: 0,
+      fixed: 0,
+      unknown: 0
     }
     let reviews = []
-    let nf = na = nr = o = 0   
     ruleResults.forEach(ruleResult => {
-      result = results[ruleResult.result]
-      if (result) {
-        switch (result) {
-          case 'pass':
-              nf++
-              break
-          case 'fail':
-              o++
-              break
-          case 'notapplicable':
-              na++
-              break
-          case 'notchecked':
-              nr++
-              break
-        }
-        if ( result === 'notchecked' && options.ignoreNotChecked ) return
+      resultStats[ruleResult.result]++
+      if (ruleResult.result) {
+        if ( ruleResult.result === 'notchecked' && options.ignoreNotChecked ) return
         reviews.push({
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
-          result: result,
+          result: ruleResult.result,
           resultComment: `SCC Reviewed at ${ruleResult.time}`,
           autoResult: true,
-          status: result != 'fail' ? 'accepted' : 'saved'
+          status: ruleResult.result != 'fail' ? 'accepted' : 'saved'
         })  
       }
     })
     return {
       reviews: reviews,
-      stats: {
-        notchecked: nr,
-        notapplicable: na,
-        pass: nf,
-        fail: o
-      }  
+      stats: resultStats
     }
   }
 

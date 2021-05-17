@@ -2480,6 +2480,12 @@ components:
         - fail
         - pass
         - notapplicable
+        - notchecked
+        - unknown
+        - error
+        - notselected
+        - informational
+        - fixed
         - null
     ChecklistStatus:
       type: string
@@ -2969,6 +2975,12 @@ components:
         - fail
         - pass
         - notapplicable
+        - notchecked
+        - unknown
+        - error
+        - notselected
+        - informational
+        - fixed
     ReviewStatus:
       type: string
       enum:
