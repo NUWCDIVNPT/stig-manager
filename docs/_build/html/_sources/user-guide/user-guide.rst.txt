@@ -23,7 +23,14 @@ Please see the :ref:`admin-guide-doc` for Administrative functions.
   Your browser does not support the video tag.
   </video>
 
+-------------------------
 
+.. raw:: html
+
+  <video width="480"  controls>
+    <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+  </video>
 
 When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right. 
 
@@ -718,6 +725,10 @@ If the importer needs to create an Asset, it will set this metadata and set the 
       :title: Corresponding Asset Metadata and .ckl elements
 
 
+|
+
+.. note::
+   STIG Manager does not typically import .ckl reviews with a "Not_Reviewed" status. However, if a "Not_Reviewed" result includes data in the "Finding_Details" element, it will be imported with a result of "Informational". Upon export as a .ckl, any Informational results that remain will be generated with a "Not_Reviewed" status once more. 
 
 
 |

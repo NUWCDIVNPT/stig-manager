@@ -240,6 +240,10 @@
 <video width="480"  controls>
   <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
 Your browser does not support the video tag.
+</video><hr class="docutils" />
+<video width="480"  controls>
+  <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
+Your browser does not support the video tag.
 </video><p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
 <p class="rubric3 rubric">Overall Organization</p>
 <p>The STIG Manager UI is composed of two main elements, the Navigation Tree on the left, and the Content Panel to the right. Click the arrow or double-click the node name to expand that branch.  End nodes (those without an arrow) will open a tab in the Content Panel.</p>
@@ -955,6 +959,13 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                      alt=""/>
                 </a><figcaption>Corresponding Asset Metadata and .ckl elements</figcaption>
             </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>STIG Manager does not typically import .ckl reviews with a “Not_Reviewed” status. However, if a “Not_Reviewed” result includes data in the “Finding_Details” element, it will be imported with a result of “Informational”. Upon export as a .ckl, any Informational results that remain will be generated with a “Not_Reviewed” status once more.</p>
+</div>
+<div class="line-block">
 <div class="line"><br /></div>
 </div>
 </div>
