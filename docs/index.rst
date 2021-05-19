@@ -56,7 +56,7 @@ Getting Started with STIG Manager
 .. raw:: html
 
   <video width="480"  controls>
-    <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
+    <source src="./_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
   Your browser does not support the video tag.
   </video>
 
