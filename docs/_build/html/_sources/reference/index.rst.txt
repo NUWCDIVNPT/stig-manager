@@ -170,6 +170,10 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
             * - Recommendation Comment 
               - <TestResult><rule-result> **<metadata action-comment>** 
 
+        .. note::
+            The STIG Manager API supports all XCCDF rule result enumerations: fail, pass, notapplicable, notchecked, unknown, error, notselected, informational, and fixed. However, only the first 3 can be selected in the manual evaluation portions of the GUI. Those 3 results are mapped to display as Open, Not a Finding, and Not Applicable, respectively, as these terms are commonly used during the RMF Process.  
+
+
 
 
 
