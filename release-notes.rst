@@ -1,3 +1,9 @@
+1.0.0-beta.33
+-----------------------
+- doc: relative link to video was wrong for top-level index.rst file (#311)
+- doc: updates to docs and tests relating to Not Reviewed functionality. Workflow change for new Test Collection folder. (#308)
+- feat: Accept all XCCDF result values (#307)
+
 1.0.0-beta.32
 -----------------------
 - fix: Throttle requests for Submit All (#306)
