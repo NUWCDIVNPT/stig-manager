@@ -75,26 +75,6 @@ jobs:
     name: Build and push from Iron Bank base
     runs-on: ubuntu-latest
     steps:
-      - name: Create local registry
-        id: local-registry
-        run: |
-          docker run -d -p 5000:5000 --name registry registry:2 
-      - name: Load Iron Bank tarball
-        id: tarball
-        run: |
-          ZIPFILE="nodejs-ib.zip"
-          IB_TAG="localhost:5000/stig-manager/nodejs-ib:latest"
-          URL="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/development/download?job=sign+image"
-          echo "Fetching $URL"
-          wget --quiet -O $ZIPFILE $URL
-          echo "Unzipping the tarball"
-          unzip -jq $ZIPFILE "*.tar"
-          echo "Docker loading the tarball"
-          IMAGE_SHA=$(find . -name "node*.tar" -exec docker load -i {} \; -quit | awk '{print $4}')
-          echo "Loaded $IMAGE_SHA"
-          echo "Tagging as $IB_TAG"
-          docker tag $IMAGE_SHA $IB_TAG
-          docker push $IB_TAG
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Get repository metadata
@@ -122,13 +102,17 @@ jobs:
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')                    
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-        with:
-          driver-opts: network=host
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
+      - name: Login to Iron Bank
+        uses: docker/login-action@v1
+        with:
+          registry: registry1.dso.mil
+          username: ${{ secrets.IRONBANK_USERNAME }}
+          password: ${{ secrets.IRONBANK_CLI_TOKEN }}          
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
@@ -137,7 +121,7 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            BASE_IMAGE=localhost:5000/stig-manager/nodejs-ib:latest
+            BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs14:latest
             COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
             COMMIT_SHA=${{ github.sha }}
             COMMIT_TAG=${{ steps.prep.outputs.tag }}
