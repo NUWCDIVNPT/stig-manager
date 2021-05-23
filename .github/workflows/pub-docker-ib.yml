@@ -1,4 +1,4 @@
-name: Publish Docker image to Iron Bank
+name: Publish Docker image from Iron Bank base
 on:
   workflow_dispatch:
 jobs:
