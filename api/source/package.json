@@ -19,7 +19,6 @@
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
-    "envsub": "^4.0.7",
     "express": "^4.17.1",
     "fast-xml-parser": "^3.17.4",
     "got": "^11.8.2",
