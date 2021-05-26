@@ -129,7 +129,6 @@ async function run() {
 async function setupClient(app, directory) {
   try {
     console.log(`[CLIENT] Setting up STIG Manager client...`)
-    const envsub = require('envsub')
     let options = {
       all: false,
       diff: false,
@@ -143,16 +142,52 @@ async function setupClient(app, directory) {
     process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID = process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID || 'stig-manager'
     process.env.STIGMAN_VERSION = config.version
     
-    let templateFile = path.join(__dirname, directory, '/js/Env.js.template')
-    let outputFile = path.join(__dirname, directory, '/js/Env.js')
-    let envobj
-    envobj = await envsub({templateFile, outputFile, options})
-  
-    templateFile = path.join(__dirname, directory, '/js/keycloak.json.template')
-    outputFile = path.join(__dirname, directory, '/js/keycloak.json')
-    envobj = await envsub({templateFile, outputFile, options})
+    const envJS = 
+`
+Ext.ns('STIGMAN')
+
+STIGMAN.Env = {
+    version: "${process.env.STIGMAN_VERSION}",
+    apiBase: "${process.env.STIGMAN_CLIENT_API_BASE}",
+    commit: {
+        branch: "${process.env.COMMIT_BRANCH}" || "na",
+        sha: "${process.env.COMMIT_SHA}" || "na",
+        tag: "${process.env.COMMIT_TAG}" || "na",
+        describe: "${process.env.COMMIT_DESCRIBE}" || "na"
+    },
+    oauth: {
+        claims: {
+            username: "${process.env.STIGMAN_JWT_USERNAME_CLAIM}" || "preferred_username",
+            servicename: "${process.env.STIGMAN_JWT_SERVICENAME_CLAIM}" || "clientId",
+            name: "${process.env.STIGMAN_JWT_NAME_CLAIM}" || "name",
+            roles: "${process.env.STIGMAN_JWT_ROLES_CLAIM}" || "realm_access?.roles",
+            email: "${process.env.STIGMAN_JWT_EMAIL_CLAIM}" || "email"
+        }
+    }
+}    
+`
+
+    const keycloakJson = 
+`
+{
+  "realm": "${process.env.STIGMAN_CLIENT_KEYCLOAK_REALM}",
+  "auth-server-url": "${process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH}",
+  "ssl-required": "external",
+  "resource": "${process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID}",
+  "public-client": true,
+  "confidential-port": 0
+}    
+`
+
+    app.get('/js/Env.js', function (req, res) {
+      writer.writeWithContentType(res, {payload: envJS, contentType: "application/javascript"})
+    })
+    app.get('/js/keycloak.json', function (req, res) {
+      writer.writeWithContentType(res, {payload: keycloakJson})
+    })
 
     app.use('/', express.static(path.join(__dirname, directory)))
+
   }
   catch (err) {
     console.error(err.message)
