@@ -19,8 +19,6 @@ a bug, please include as much information as possible. This includes:
 -  Screenshot (if relevant)
 
 
-
-
 Developer Information
 ======================================
 
@@ -28,7 +26,66 @@ STIG Manager is being developed using a `Forking Workflow <https://www.atlassian
 
 Contributors should be comfortable with the `licences <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__ governing the project and any other conditions specified in the Project's `Contributing.md <https://github.com/cd-rite/stig-manager/blob/main/CONTRIBUTING.md>`_ document. On first PR submission, feel free to add yourself to the `Contributors <https://github.com/cd-rite/stig-manager/blob/main/CONTRIBUTORS.md>`_ document. 
 
+Development functional components
+======================================
 
+These are the components of the project, their technologies and maintainers. We are soliciting individuals and organizations interesting in helping maintain any of these components. 
+
+.. list-table:: **API**
+   :widths: 50 25 25 
+   :header-rows: 1
+   :class: tight-table
+
+   * - Component
+     - Technology
+     - Maintainers
+   * - API definition
+     - OpenAPI 3.0
+     - @csmig
+   * - Express middleware
+     - | Node.js
+       | Express
+     - @csmig
+   * - MySQL service
+     - | Node.js
+       | myslq2
+     - @csmig
+   * - Microsoft SQL Server service
+     - | Node.js
+       | mssql
+     - @csmig
+   * - Test suites
+     - | Postman
+       | newman
+     - @cd-rite
+   * - CI/CD pipelines
+     - | GitHub Actions
+     - | @cd-rite
+       | @csmig
+   * - Documentation
+     - | Python
+       | sphinx
+     - @cd-rite
+     
+.. list-table:: **Clients**
+   :widths: 50 25 25 
+   :header-rows: 1
+   :class: tight-table
+
+   * - Component
+     - Technology
+     - Maintainers
+   * - NAVSEA single-page web app
+     - ExtJS 3.4
+     - @csmig
+   * - STIGMAN Watcher
+     - | Node.js
+     - @csmig
+   * - Documentation
+     - | Python
+       | sphinx
+     - | @cd-rite
+       | @csmig
 
 Required Tools
 ----------------
