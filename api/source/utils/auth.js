@@ -123,6 +123,20 @@ function initializeAuth() {
             console.info("[AUTH] Trying OIDC discovery at " + wellKnown)
             request(wellKnown, function(err, res, body) {
                 if (err) {
+                    function replaceErrors(key, value) {
+                        if (value instanceof Error) {
+                            var error = {}
+                    
+                            Object.getOwnPropertyNames(value).forEach(function (propName) {
+                                error[propName] = value[propName]
+                            })
+                    
+                            return error
+                        }
+                    
+                        return value
+                    }
+                    console.info(`[AUTH] ERROR ${JSON.stringify(err, replaceErrors)}`)
                     console.info(`[AUTH] Couldn't connect. Trying again in 5 seconds...`)
                     setTimeout(getJwks, 5000)
                     return
