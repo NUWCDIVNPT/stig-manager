@@ -1312,6 +1312,9 @@ async function addCollectionReview ( params ) {
 		function handleGroupSelectionForCollection(record, idAppend, leaf, benchmarkId, revisionStr) {
 			getContent(benchmarkId, revisionStr, record.data.ruleId, record.data.groupId)
 			getReviews(leaf.collectionId, record)
+			//when new group is selected, deselect rows from reviews grid (to make resources panel clear)
+			reviewsGrid.getSelectionModel().clearSelections();
+
 
 			// // Content panel
 			// let contentPanel = Ext.getCmp('content-panel' + idAppend);
@@ -1579,7 +1582,21 @@ async function addCollectionReview ( params ) {
 				})
 				if (result.response.status === 200) {
 					let apiReview = JSON.parse(result.response.responseText)
-					//TODO: Set the history
+					//TODO: Set the history (does not set history on handleGroupSelectionForCollection)
+					//append the current state of the review to history
+					let currentReview = {
+						action: apiReview.action,
+						actionComment: apiReview.actionComment,
+						autoResult: apiReview.autoResult,
+						rejectText: apiReview.rejectText,
+						result: apiReview.result,
+						resultComment: apiReview.resultComment,
+						status: apiReview.status,
+						ts: apiReview.ts,
+						userId: apiReview.userId,
+						username: apiReview.username
+					  }
+					apiReview.history.push(currentReview)
 					Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
 	
 					// Reject text
@@ -1845,7 +1862,7 @@ async function addCollectionReview ( params ) {
 							layout: 'fit',
 							items: metadataGrid
 						},{
-							title: 'History',
+							title: 'Log',
 							layout: 'fit',
 							id: 'history-tab' + idAppend,
 							items: historyData.grid
