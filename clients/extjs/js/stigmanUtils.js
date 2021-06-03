@@ -1138,6 +1138,20 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
 		}
 		else if (reviewWithHistory.history) {
+			// append current state of review to history grid
+			let currentReview = {
+				action: reviewWithHistory.action,
+				actionComment: reviewWithHistory.actionComment,
+				autoResult: reviewWithHistory.autoResult,
+				rejectText: reviewWithHistory.rejectText,
+				result: reviewWithHistory.result,
+				resultComment: reviewWithHistory.resultComment,
+				status: reviewWithHistory.status,
+				ts: reviewWithHistory.ts,
+				userId: reviewWithHistory.userId,
+				username: reviewWithHistory.username
+			  }
+			reviewWithHistory.history.push(currentReview)
 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewWithHistory.history)
 		}
 		// Feedback

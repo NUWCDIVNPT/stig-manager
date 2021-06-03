@@ -2151,6 +2151,20 @@ async function addReview( params ) {
       Ext.getCmp('editor' + idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
 
       // Update history
+      // append current state of review to history grid
+      let currentReview = {
+        action: reviewFromApi.action,
+        actionComment: reviewFromApi.actionComment,
+        autoResult: reviewFromApi.autoResult,
+        rejectText: reviewFromApi.rejectText,
+        result: reviewFromApi.result,
+        resultComment: reviewFromApi.resultComment,
+        status: reviewFromApi.status,
+        ts: reviewFromApi.ts,
+        userId: reviewFromApi.userId,
+        username: reviewFromApi.username
+      }
+      reviewFromApi.history.push(currentReview)
       historyData.store.loadData(reviewFromApi.history)
 
       //Reset lastSavedData to current values, so we do not trigger the save again:
