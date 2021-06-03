@@ -115,6 +115,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#stig-manager-oss-environment-variables">STIG Manager OSS Environment Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stig-manager-container-healthcheck">STIG Manager Container Healthcheck</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-as-individual-containers">Running as individual containers</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#keycloak">Keycloak</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#mysql">Mysql</a></li>
@@ -224,7 +225,7 @@
 <h1>STIG Manager OSS on Docker Hub<a class="headerlink" href="#stig-manager-oss-on-docker-hub" title="Permalink to this headline">¶</a></h1>
 <p><em>This is pre-release software and the Docker images are made available for pilot testing only</em></p>
 <p>STIG Manager is an API and Web client for managing the assessment of Information Systems for compliance with <a class="reference external" href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a class="reference external" href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG).</p>
-<p><strong>Documentation:</strong> <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager">https://nuwcdivnpt.github.io/stig-manager</a></p>
+<p><strong>Documentation:</strong> <a class="reference external" href="https://stig-manager.readthedocs.io/en/latest/">https://nuwcdivnpt.github.io/stig-manager</a></p>
 <p><strong>Source:</strong> <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager">https://github.com/NUWCDIVNPT/stig-manager</a></p>
 <div class="section" id="supported-tags">
 <h2>Supported tags<a class="headerlink" href="#supported-tags" title="Permalink to this headline">¶</a></h2>
@@ -234,7 +235,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">latest</span></code>, <code class="docutils literal notranslate"><span class="pre">latest-alpine</span></code></p></li>
 </ul>
 </li>
-<li><p>From the <a class="reference external" href="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/jobs/artifacts/master/download?job=build">Iron Bank Node.js 14 base image</a></p>
+<li><p>From the <a class="reference external" href="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/">Iron Bank Node.js 14 base image</a></p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">latest-ironbank</span></code></p></li>
 </ul>
@@ -312,6 +313,10 @@
 <div class="section" id="stig-manager-oss-environment-variables">
 <h2>STIG Manager OSS Environment Variables<a class="headerlink" href="#stig-manager-oss-environment-variables" title="Permalink to this headline">¶</a></h2>
 <p>Refer to our documentation for the <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager/#/Environment_Variables">environment variables consumed by STIG Manager</a></p>
+</div>
+<div class="section" id="stig-manager-container-healthcheck">
+<h2>STIG Manager Container Healthcheck<a class="headerlink" href="#stig-manager-container-healthcheck" title="Permalink to this headline">¶</a></h2>
+<p>The container’s Healthcheck starts 120 seconds after startup, and polls the API /op/configuration endpoint every 30 seconds for an acceptable status code.</p>
 </div>
 <div class="section" id="running-as-individual-containers">
 <h2>Running as individual containers<a class="headerlink" href="#running-as-individual-containers" title="Permalink to this headline">¶</a></h2>
