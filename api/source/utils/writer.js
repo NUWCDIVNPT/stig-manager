@@ -70,6 +70,13 @@ exports.writeInlineFile = function(response, payload, filename, contentType) {
   response.end()
 }
 
+exports.writeWithContentType = function(response, {payload, status = "200", contentType = "application/json"}) {
+  response.writeHead(status, {
+    'Content-Type': contentType
+  })
+  response.end(payload)
+}
+
 exports.writeNoContent = function (response) {
   response.writeHead(204)
   response.end()

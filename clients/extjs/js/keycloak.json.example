@@ -5,4 +5,5 @@
   "resource": "stig-manager",
   "public-client": true,
   "confidential-port": 0
-}
+}    
+    
