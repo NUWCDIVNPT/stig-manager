@@ -789,7 +789,7 @@ function Sm_HistoryData (idAppend) {
 		stripeRows:true,
 		view: new Ext.grid.GridView({
 			forceFit:true,
-			emptyText: 'No history to display.',
+			emptyText: 'No log to display.',
 			deferEmptyText:false
 		}),
 		columns: [

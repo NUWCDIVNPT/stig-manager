@@ -1409,7 +1409,7 @@ async function addReview( params ) {
         padding: 10,
         autoScroll: true
       },{
-        title: 'History',
+        title: 'Log',
         layout: 'fit',
         id: 'history-tab' + idAppend,
         items: historyData.grid

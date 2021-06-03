@@ -1862,7 +1862,7 @@ async function addCollectionReview ( params ) {
 							layout: 'fit',
 							items: metadataGrid
 						},{
-							title: 'History',
+							title: 'Log',
 							layout: 'fit',
 							id: 'history-tab' + idAppend,
 							items: historyData.grid
