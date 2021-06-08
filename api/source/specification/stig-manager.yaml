@@ -1381,8 +1381,8 @@ paths:
     post:
       tags:
         - STIG
-      summary: Import a new STIG
-      operationId: importManualBenchmark
+      summary: Import a STIG or SCAP Benchmark
+      operationId: importBenchmark
       requestBody:
         required: true
         content:
@@ -1416,8 +1416,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig'
-      x-rbac:
-        - admin
   '/stigs/ccis/{cci}':
     get:
       tags:
@@ -1472,6 +1470,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RuleProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:stig:read'
+  '/stigs/scap-maps':
+    get:
+      tags:
+        - STIG
+      summary: Return a list of SCAP benchmarkIds mapped to Manual benchmarkIds
+      operationId: getScapMap
+      responses:
+        '200':
+          description: SCAP Map response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SCAPMap'
         default:
           description: unexpected error
           content:
@@ -3116,6 +3138,13 @@ components:
         - high
         - medium
         - low
+    SCAPMap:
+      type: object
+      properties:
+        scapBenchmarkId:
+          type: string
+        benchmarkId:
+          type: string
     STIG:
       type: object
       properties:

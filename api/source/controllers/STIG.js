@@ -5,7 +5,7 @@ const config = require('../utils/config')
 const parsers = require('../utils/parsers.js')
 const STIG = require(`../service/${config.database.type}/STIGService`)
 
-module.exports.importManualBenchmark = async function importManualBenchmark (req, res, next) {
+module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
   try {
     let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
     if (extension.toLowerCase() != 'xml') {
@@ -194,4 +194,25 @@ module.exports.getStigById = async function getStigById (req, res, next) {
   catch(err) {
     writer.writeJson(res, err)
   }
+}
+
+module.exports.getScapMap = async function getStigById (req, res, next) {
+  writer.writeJson(res, [
+    {
+      scapBenchmarkId: 'CAN_Ubuntu_18-04_STIG',
+      benchmarkId: 'U_CAN_Ubuntu_18-04_STIG'
+    },
+    {
+      scapBenchmarkId: 'Mozilla_Firefox_RHEL',
+      benchmarkId: 'Mozilla_Firefox'
+    },
+    {
+      scapBenchmarkId: 'Mozilla_Firefox_Windows',
+      benchmarkId: 'Mozilla_Firefox'
+    },
+    {
+      scapBenchmarkId: 'Solaris_10_X86_STIG',
+      benchmarkId: 'Solaris_10_X86'
+    }
+  ])
 }

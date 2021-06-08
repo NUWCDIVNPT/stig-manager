@@ -1546,6 +1546,9 @@ async function showImportResultFiles(collectionId, el) {
                     method: 'GET'
                 })
 
+                // Get SCAP benchmarkId map
+                let scapBenchmarkMap = await getScapBenchmarkMap()
+
                 let filesHandled = 0
                 const parseResults = {
                     success: [],
@@ -1572,7 +1575,7 @@ async function showImportResultFiles(collectionId, el) {
                     }
                     if (extension === 'xml') {
                         try {
-                            const r = reviewsFromScc(data, { ignoreNotChecked: false })
+                            const r = reviewsFromScc(data, { ignoreNotChecked: false, scapBenchmarkMap })
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -2121,4 +2124,13 @@ async function showImportResultFile(params) {
         }
 
     }
+}
+
+async function getScapBenchmarkMap() {
+    let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/stigs/scap-maps`,
+        method: 'GET'
+    })
+    apiScapMaps = JSON.parse(result.response.responseText)
+    return new Map(apiScapMaps.map(apiScapMap => [apiScapMap.scapBenchmarkId, apiScapMap.benchmarkId]))
 }
