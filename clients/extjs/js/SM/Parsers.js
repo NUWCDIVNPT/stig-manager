@@ -242,6 +242,9 @@ const reviewsFromScc = function (sccFileContent, options = {}) {
 
     // Process parsed data
     let benchmarkId = parsed.Benchmark.id.replace('xccdf_mil.disa.stig_benchmark_', '')
+    if (options.scapBenchmarkMap && options.scapBenchmarkMap.has(benchmarkId)) {
+      benchmarkId = options.scapBenchmarkMap.get(benchmarkId)
+    }
     let target = processTargetFacts(parsed.Benchmark.TestResult['target-facts'].fact)
     if (!target.name) {
       throw (new Error('No host_name fact'))
