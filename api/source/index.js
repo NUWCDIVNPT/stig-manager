@@ -135,33 +135,27 @@ async function setupClient(app, directory) {
       protect: false,
       syntax: 'default',
       system: true
-    }
-    process.env.STIGMAN_CLIENT_API_BASE = process.env.STIGMAN_CLIENT_API_BASE || '/api'
-    process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH = process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH || 'http://localhost:8080/auth'
-    process.env.STIGMAN_CLIENT_KEYCLOAK_REALM = process.env.STIGMAN_CLIENT_KEYCLOAK_REALM || 'stigman'
-    process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID = process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID || 'stig-manager'
-    process.env.STIGMAN_VERSION = config.version
-    
+    }   
     const envJS = 
 `
 Ext.ns('STIGMAN')
 
 STIGMAN.Env = {
-    version: "${process.env.STIGMAN_VERSION}",
-    apiBase: "${process.env.STIGMAN_CLIENT_API_BASE}",
+    version: "${config.version}",
+    apiBase: "${process.env.STIGMAN_CLIENT_API_BASE ?? '/api'}",
     commit: {
-        branch: "${process.env.COMMIT_BRANCH}" || "na",
-        sha: "${process.env.COMMIT_SHA}" || "na",
-        tag: "${process.env.COMMIT_TAG}" || "na",
-        describe: "${process.env.COMMIT_DESCRIBE}" || "na"
+        branch: "${process.env.COMMIT_BRANCH ?? 'na'}",
+        sha: "${process.env.COMMIT_SHA ?? 'na'}",
+        tag: "${process.env.COMMIT_TAG ?? 'na'}",
+        describe: "${process.env.COMMIT_DESCRIBE ?? 'na'}"
     },
     oauth: {
         claims: {
-            username: "${process.env.STIGMAN_JWT_USERNAME_CLAIM}" || "preferred_username",
-            servicename: "${process.env.STIGMAN_JWT_SERVICENAME_CLAIM}" || "clientId",
-            name: "${process.env.STIGMAN_JWT_NAME_CLAIM}" || "name",
-            roles: "${process.env.STIGMAN_JWT_ROLES_CLAIM}" || "realm_access?.roles",
-            email: "${process.env.STIGMAN_JWT_EMAIL_CLAIM}" || "email"
+            username: "${process.env.STIGMAN_JWT_USERNAME_CLAIM ?? 'preferred_username'}",
+            servicename: "${process.env.STIGMAN_JWT_SERVICENAME_CLAIM ?? 'clientId'}",
+            name: "${process.env.STIGMAN_JWT_NAME_CLAIM ?? 'name'}",
+            roles: "${process.env.STIGMAN_JWT_ROLES_CLAIM ?? 'realm_access.roles'}",
+            email: "${process.env.STIGMAN_JWT_EMAIL_CLAIM ?? 'email'}"
         }
     }
 }    
@@ -170,10 +164,10 @@ STIGMAN.Env = {
     const keycloakJson = 
 `
 {
-  "realm": "${process.env.STIGMAN_CLIENT_KEYCLOAK_REALM}",
-  "auth-server-url": "${process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH}",
+  "realm": "${process.env.STIGMAN_CLIENT_KEYCLOAK_REALM ?? 'stigman'}",
+  "auth-server-url": "${process.env.STIGMAN_CLIENT_KEYCLOAK_AUTH ?? 'http://localhost:8080/auth'}",
   "ssl-required": "external",
-  "resource": "${process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID}",
+  "resource": "${process.env.STIGMAN_CLIENT_KEYCLOAK_CLIENTID ?? 'stig-manager'}",
   "public-client": true,
   "confidential-port": 0
 }    
