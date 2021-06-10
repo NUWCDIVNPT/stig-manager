@@ -1,3 +1,16 @@
+1.0.0-beta.34
+-----------------------
+- fix: Refactor Env.js/keycloak.json handling (#335)
+- feat: SCAP benchmarkId Map (#329)
+- feat: History -> Log, include current Review (#328)
+- feat: Dynamically generate Env.js and keycloak.json (#327)
+- feat: Verbose logging of AUTH bootstrap errors (#325)
+- docs: contributing information updated (#326)
+- build(deps): bump urllib3 from 1.26.4 to 1.26.5 in /docs (#321)
+- docs: Updates to project Contributing docs (#318)
+- chore: Matched workflow name and job name
+- feat: gave Iron Bank its own workflow file so it can be run independently (#315)
+
 1.0.0-beta.33
 -----------------------
 - doc: relative link to video was wrong for top-level index.rst file (#311)
