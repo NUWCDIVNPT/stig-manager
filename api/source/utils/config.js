@@ -1,13 +1,5 @@
 const package = require("../package.json")
 
-if (process.env.STIGMAN_JWT_ROLES_CLAIM) {
-    const roleChain = process.env.STIGMAN_JWT_ROLES_CLAIM.split('.')
-    for (let x=0; x < roleChain.length; x++) {
-        roleChain[x] = `['${roleChain[x]}']`
-    }
-    process.env.STIGMAN_JWT_ROLES_CLAIM = roleChain.join('?.')
-}
-
 let config = {
     version: package.version,
     commit: {
@@ -62,10 +54,19 @@ let config = {
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
             name: process.env.STIGMAN_JWT_NAME_CLAIM || "name",
-            roles: process.env.STIGMAN_JWT_ROLES_CLAIM || "realm_access.roles",
+            roles: formatChain(process.env.STIGMAN_JWT_ROLES_CLAIM || "realm_access.roles"),
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
         }
     }
 }
 
+function formatChain(path) {
+    const components = path?.split('.')
+    if (!components?.length) return path
+    for (let x=0; x < components.length; x++) {
+      components[x] = `['${components[x]}']`
+    }
+    return components.join('?.')
+  }
+  
 module.exports = config
