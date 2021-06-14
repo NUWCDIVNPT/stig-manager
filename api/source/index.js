@@ -151,11 +151,11 @@ STIGMAN.Env = {
     },
     oauth: {
         claims: {
-            username: "${process.env.STIGMAN_JWT_USERNAME_CLAIM ?? 'preferred_username'}",
-            servicename: "${process.env.STIGMAN_JWT_SERVICENAME_CLAIM ?? 'clientId'}",
-            name: "${process.env.STIGMAN_JWT_NAME_CLAIM ?? 'name'}",
-            roles: "${process.env.STIGMAN_JWT_ROLES_CLAIM ?? 'realm_access.roles'}",
-            email: "${process.env.STIGMAN_JWT_EMAIL_CLAIM ?? 'email'}"
+            username: "${config.oauth.claims.username}",
+            servicename: "${config.oauth.claims.servicename}",
+            name: "${config.oauth.claims.name}}",
+            roles: "${config.oauth.claims.roles}",
+            email: "${config.oauth.claims.email}"
         }
     }
 }    
@@ -177,7 +177,7 @@ STIGMAN.Env = {
       writer.writeWithContentType(res, {payload: envJS, contentType: "application/javascript"})
     })
     app.get('/js/keycloak.json', function (req, res) {
-      writer.writeWithContentType(res, {payload: keycloakJson})
+      writer.writeWithContentType(res, {payload: keycloakJson, contentType: "application/json"})
     })
 
     app.use('/', express.static(path.join(__dirname, directory)))
