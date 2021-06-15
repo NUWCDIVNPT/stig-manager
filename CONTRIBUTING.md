@@ -1,6 +1,6 @@
 # Contributing to STIG Manager
 
-**NOTE: This CONTRIBUTING.md is for software contributions. You do not need to follow the Developer's Certificate of Origin (DCO) process for commenting on the STIG Manager repository documentation, such as CONTRIBUTING.md, INTENT.md, etc. or for submitting issues.**
+**NOTE: This CONTRIBUTING.md describes our software contribution policy. You do not need to follow the Developer's Certificate of Origin (DCO) process for commenting on the STIG Manager repository documentation, such as CONTRIBUTING.md, INTENT.md, etc. or for submitting issues. For more information about developing and contributing to the project, please see the [STIG Manager Contribution Guide](https://stig-manager.readthedocs.io/en/latest/the-project/contributing.html) that is part of our [overall documentation](https://stig-manager.readthedocs.io/en/latest/index.html)**
 
 Thanks for thinking about using or contributing to this software ("Project") and its documentation!
 
@@ -71,34 +71,3 @@ By making a contribution to this project, I certify that:
     maintained indefinitely and may be redistributed consistent with
     this project or the open source license(s) involved.
 ```
-
-## Getting Started
-
-During the Project's initial phase we are migratating features of the original "classic" API (implemented as Perl CGI scripts) to a REST API. We're excited about this but also understand the effort requires a good understanding of the classic API. We expect most contributions during this phase will be made by the Project Team. However, if you wish to help please read our [Roadmap document](docs/roadmap.md). It explains the technologies we are abandoning and those we are using and will make the discussion below easier to follow.
-
-### Required tools
-
-You will need the following tools installed on your development workstation:
-- [Docker](https://www.docker.com/)
-- [Node.js](https://nodejs.org/en/download/)
-
-### Software components
-
-STIG Manager provides an SPA client that consumes an API service which queries a database. During API modernization, the SPA is being iteratively refactored and for a period it will interact with both the classic and new APIs at the same time. This requires that both APIs are querying a common data source. The classic API only supports an Oracle backend, so during the modernization phase Oracle is the required database.
-
-Endpoints implemented by either the classic or new API require an OpenID Connect bearer token. For API development, the recommended IdP is [Keycloak](https://www.keycloak.org/) running in a Docker container with a Project-specific Realm. At this time, Keycloak is the only IdP supported by the SPA.
-
-## Submitting an Issue
-
-You should feel free to [submit an issue](https://github.com/Code-dot-mil/code.mil/issues) on our GitHub repository for anything you find that needs attention on the website. That includes content, functionality, design, or anything else!
-
-### Submitting a Bug Report
-
-When submitting a bug report on the website, please be sure to include accurate and thorough information about the problem you're observing. Be sure to include:
-
-* Steps to reproduce the problem,
-* The URL of the page where you observed the problem,
-* What you expected to happen,
-* What actually happend (or didn't happen), and
-* Technical details including your Operating System name and version and Web browser name and version number.
-

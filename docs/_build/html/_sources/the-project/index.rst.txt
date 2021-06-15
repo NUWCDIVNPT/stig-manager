@@ -57,4 +57,7 @@ STIG Manager Security
 Support
 ==============
 
-The STIG Manager team is usually available on CVR Microsoft Teams
+The STIG Manager team is usually available on the Flank Speed instance of Microsoft Teams
+
+|
+
