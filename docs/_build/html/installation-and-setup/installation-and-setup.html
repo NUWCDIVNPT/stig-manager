@@ -111,7 +111,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#additional-suggested-configuration">1.3. Additional Suggested Configuration</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#tls">1.3.1. TLS</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configure-logging">1.3.2. Configure Logging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#enable-extra-ca-certificates">1.3.2. Enable Extra CA Certificates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-logging">1.3.3. Configure Logging</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#first-steps">1.4. First Steps</a><ul>
@@ -386,8 +387,13 @@ nuwcdivnpt/stig-manager
 <h3><span class="section-number">1.3.1. </span>TLS<a class="headerlink" href="#tls" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="reverse-proxy.html#reverse-proxy"><span class="std std-ref">Set up TLS with a reverse proxy to secure connections to STIG Manager.</span></a></p>
 </div>
+<div class="section" id="enable-extra-ca-certificates">
+<h3><span class="section-number">1.3.2. </span>Enable Extra CA Certificates<a class="headerlink" href="#enable-extra-ca-certificates" title="Permalink to this headline">¶</a></h3>
+<p>Set the <code class="docutils literal notranslate"><span class="pre">NODE_EXTRA_CA_CERTS=file-path</span></code> Node.js environment variable to direct Node to accept CA certificates you have provided, in addition to its built-in CA certs. In the case of the Iron Bank based image, DoD CA certificates are already located here: <code class="docutils literal notranslate"><span class="pre">/etc/pki/ca-trust/source/anchors/Certificates_PKCS7_v5.7_DoD.pem</span></code></p>
+<p>Check the <a class="reference external" href="https://nodejs.org/api/cli.html#cli_node_extra_ca_certs_file">Node.js documentation for more information.</a></p>
+</div>
 <div class="section" id="configure-logging">
-<h3><span class="section-number">1.3.2. </span>Configure Logging<a class="headerlink" href="#configure-logging" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.3.3. </span>Configure Logging<a class="headerlink" href="#configure-logging" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="logging.html#logging"><span class="std std-ref">Store logs according to Organization requirements.</span></a></p>
 </div>
 </div>

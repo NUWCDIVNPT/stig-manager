@@ -166,6 +166,14 @@ TLS
 ----
 :ref:`Set up TLS with a reverse proxy to secure connections to STIG Manager. <reverse-proxy>`
 
+
+Enable Extra CA Certificates
+----------------------------------------
+Set the ``NODE_EXTRA_CA_CERTS=file-path`` Node.js environment variable to direct Node to accept CA certificates you have provided, in addition to its built-in CA certs. In the case of the Iron Bank based image, DoD CA certificates are already located here: ``/etc/pki/ca-trust/source/anchors/Certificates_PKCS7_v5.7_DoD.pem``
+
+Check the `Node.js documentation for more information. <https://nodejs.org/api/cli.html#cli_node_extra_ca_certs_file>`_
+
+
 Configure Logging
 -----------------------
 :ref:`Store logs according to Organization requirements. <logging>`
