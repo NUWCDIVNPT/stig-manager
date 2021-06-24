@@ -988,10 +988,9 @@ paths:
       tags:
         - Review
       summary: >-
-        Import one or more Reviews from a JSON body, a STIGViewer CKL file, or
-        an SCC XCCDF file
+        Post one or more Reviews
       description: ''
-      operationId: importReviewsByAsset
+      operationId: postReviewsByAsset
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
         - $ref: '#/components/parameters/AssetIdPath'
@@ -1002,26 +1001,6 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/ReviewPut'
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - importFile
-                - assetId
-              properties:
-                strictAssetCheck:
-                  description: Whether file contents will be checked for asset name match
-                  type: boolean
-                  default: false
-                benchmarkId:
-                  description: 'If provided, file contents will be checked for match'
-                  type: string
-                importFile:
-                  description: >-
-                    Extension .ckl from STIGVewer or .xml from SCAP Compliance
-                    Checker (SCC)
-                  type: string
-                  format: binary
       responses:
         '200':
           description: ReviewsProjected response
