@@ -5,42 +5,14 @@ const Parsers = require('../utils/parsers.js')
 const config = require('../utils/config')
 const Review = require(`../service/${config.database.type}/ReviewService`)
 
-module.exports.importReviewsByAsset = async function importReviewsByAsset (req, res, next) {
+module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res, next) {
   try {
-    let reviewsRequested, reviews
     let collectionId = req.swagger.params['collectionId'].value
     let assetId = req.swagger.params['assetId'].value
-    let body = req.swagger.params['body'].value
+    let reviewsRequested = req.swagger.params['body'].value
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
-      if (req.headers['content-type'].startsWith('multipart/form-data') && !req.file) {
-        throw (writer.respondWithCode ( 400, {message: `Form data did not include file content`} ))
-      }
-      if (req.file) {
-        let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
-        if (extension != 'ckl' && extension != 'xml' && extension != 'zip') {
-          throw (writer.respondWithCode ( 400, {message: `File extension .${extension} not supported`} ))
-        }
-        let data = req.file.buffer
-        let result
-        switch (extension) {
-          case 'ckl':
-            result = await Parsers.reviewsFromCkl(data.toString(), {ignoreNr: true})
-            break
-          case 'xml':
-            result = Parsers.reviewsFromScc(data.toString(), {ignoreNotChecked: true})
-            break
-        }
-        reviewsRequested = []
-        for (const checklist of result.checklists) {
-          reviewsRequested = reviewsRequested.concat(checklist.reviews)
-        }
-      }
-      else {
-        reviewsRequested = body
-      }
-
       //Check each reviewed rule against grants and stig assignments
       const userRules = await Review.getRulesByAssetUser( assetId, req.userObject )
       const permitted = [], rejected = []

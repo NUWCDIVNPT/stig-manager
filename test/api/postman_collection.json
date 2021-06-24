@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cb0d68ca-3f94-4254-8fd0-f5567e33429e",
+		"_postman_id": "24294ed2-7273-49c1-93e1-e753c6aecd12",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -2966,9 +2966,9 @@
 											],
 											"variable": [
 												{
-													"description": "(Required) A path parameter that indentifies an Asset",
 													"key": "assetId",
-													"value": "{{testAsset-NoStigs}}"
+													"value": "{{testAsset-NoStigs}}",
+													"description": "(Required) A path parameter that indentifies an Asset"
 												}
 											]
 										}
@@ -3364,9 +3364,9 @@
 											],
 											"variable": [
 												{
-													"description": "(Required) A path parameter that indentifies an Asset",
 													"key": "assetId",
-													"value": "{{testAsset-NoStigs}}"
+													"value": "{{testAsset-NoStigs}}",
+													"description": "(Required) A path parameter that indentifies an Asset"
 												}
 											]
 										}
@@ -8861,457 +8861,6 @@
 											]
 										},
 										{
-											"name": "Import one or more Reviews from a STIGViewer CKL file",
-											"event": [
-												{
-													"listen": "test",
-													"script": {
-														"exec": [
-															"let user = pm.environment.get(\"user\");\r",
-															"console.log(\"user: \" + user);\r",
-															"\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
-															"\r",
-															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
-															"        pm.response.to.have.status(403);\r",
-															"    });\r",
-															"    return;\r",
-															"}\r",
-															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
-															"        pm.response.to.have.status(200);\r",
-															"    });\r",
-															"}\r",
-															"if (pm.response.code !== 200) {\r",
-															"    return;\r",
-															"}\r",
-															"\r",
-															"let jsonData = pm.response.json();\r",
-															"\r",
-															"pm.test(\"Response JSON is an object\", function () {\r",
-															"    pm.expect(jsonData).to.be.an('object');\r",
-															"});\r",
-															"\r",
-															"let responseKeys = [\r",
-															"    \"permitted\",\r",
-															"    \"rejected\",\r",
-															"    \"errors\"\r",
-															"]\r",
-															"\r",
-															"let revKeys = [\r",
-															"    \"ruleId\",\r",
-															"    \"result\",\r",
-															"    \"resultComment\",\r",
-															"    \"action\",\r",
-															"    \"actionComment\",\r",
-															"    \"autoResult\",\r",
-															"    \"status\"\r",
-															"]\r",
-															"\r",
-															"\r",
-															"\r",
-															"pm.test(\"Check if object contains all provided keys\", function () {\r",
-															"    pm.expect(jsonData).to.have.all.keys(responseKeys);\r",
-															"});\r",
-															"\r",
-															"\r",
-															"pm.test(\"Check if object contains all provided keys, and that special test case for RuleID SV-106179r1_rule, which has null action but non-null actionComment is properly accepted.\", function () {\r",
-															"    for (let review of jsonData.permitted){\r",
-															"        pm.expect(review).to.have.all.keys(revKeys);\r",
-															"        if (review.ruleId == \"SV-106179r1_rule\"){\r",
-															"            pm.expect(review.actionComment).to.not.be.null; \r",
-															"        }\r",
-															"\r",
-															"    }\r",
-															"});\r",
-															"\r",
-															"\r",
-															""
-														],
-														"type": "text/javascript"
-													}
-												}
-											],
-											"request": {
-												"method": "POST",
-												"header": [
-													{
-														"key": "Content-Type",
-														"value": "multipart/form-data"
-													}
-												],
-												"body": {
-													"mode": "formdata",
-													"formdata": [
-														{
-															"key": "importFile",
-															"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-															"type": "file",
-															"src": "./{{formDataFiles}}/{{cklFile1}}"
-														},
-														{
-															"key": "strictAssetCheck",
-															"value": "false",
-															"description": "Whether file contents will be checked for asset name match",
-															"type": "text"
-														},
-														{
-															"key": "benchmarkId",
-															"value": "{{testBenchmark}}",
-															"description": "If provided, file contents will be checked for match",
-															"type": "text"
-														}
-													]
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews",
-														":assetId"
-													],
-													"variable": [
-														{
-															"key": "collectionId",
-															"value": "{{testCollection}}",
-															"description": "(Required) A path parameter that indentifies a Collection"
-														},
-														{
-															"key": "assetId",
-															"value": "{{testAsset}}",
-															"description": "(Required) A path parameter that indentifies an Asset"
-														}
-													]
-												}
-											},
-											"response": []
-										},
-										{
-											"name": "Import one or more Reviews from a STIGViewer CKL file - Strict Asset Check",
-											"event": [
-												{
-													"listen": "test",
-													"script": {
-														"exec": [
-															"let user = pm.environment.get(\"user\");\r",
-															"console.log(\"user: \" + user);\r",
-															"\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
-															"\r",
-															"// START AZDO #155\r",
-															"// pm.test(\"Status should be non-200 for all users, as this request should fail Strict Asset Check\", function () {\r",
-															"//     pm.response.to.not.have.status(200);\r",
-															"// });\r",
-															"// return;\r",
-															"\r",
-															"\r",
-															"// if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
-															"//         pm.response.to.have.status(403);\r",
-															"//     });\r",
-															"//     return;\r",
-															"// }\r",
-															"// else {\r",
-															"//     pm.test(\"Status code is 200\", function () {\r",
-															"//         pm.response.to.have.status(200);\r",
-															"//     });\r",
-															"// }\r",
-															"// if (pm.response.code !== 200) {\r",
-															"//     return;\r",
-															"// }\r",
-															"\r",
-															"// END AZDO #155\r",
-															"\r",
-															"\r",
-															""
-														],
-														"type": "text/javascript"
-													}
-												}
-											],
-											"request": {
-												"method": "POST",
-												"header": [
-													{
-														"key": "Content-Type",
-														"value": "multipart/form-data"
-													}
-												],
-												"body": {
-													"mode": "formdata",
-													"formdata": [
-														{
-															"key": "importFile",
-															"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-															"type": "file",
-															"src": "./{{formDataFiles}}/{{cklFile1}}"
-														},
-														{
-															"key": "strictAssetCheck",
-															"value": "true",
-															"description": "Whether file contents will be checked for asset name match",
-															"type": "text"
-														},
-														{
-															"key": "benchmarkId",
-															"value": "{{testBenchmark}}",
-															"description": "If provided, file contents will be checked for match",
-															"type": "text"
-														}
-													]
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews",
-														":assetId"
-													],
-													"variable": [
-														{
-															"key": "collectionId",
-															"value": "{{testCollection}}",
-															"description": "(Required) A path parameter that indentifies a Collection"
-														},
-														{
-															"key": "assetId",
-															"value": "{{scrapAsset}}",
-															"description": "(Required) A path parameter that indentifies an Asset"
-														}
-													]
-												}
-											},
-											"response": []
-										},
-										{
-											"name": "Import one or more Reviews from a STIGViewer CKL file - Strict Asset Check Copy",
-											"event": [
-												{
-													"listen": "test",
-													"script": {
-														"exec": [
-															"let user = pm.environment.get(\"user\");\r",
-															"console.log(\"user: \" + user);\r",
-															"\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
-															"\r",
-															"// START AZDO #155\r",
-															"// pm.test(\"Status should be non-200 for all users, as this request should fail Strict Asset Check\", function () {\r",
-															"//     pm.response.to.not.have.status(200);\r",
-															"// });\r",
-															"// return;\r",
-															"\r",
-															"\r",
-															"// if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
-															"//         pm.response.to.have.status(403);\r",
-															"//     });\r",
-															"//     return;\r",
-															"// }\r",
-															"// else {\r",
-															"//     pm.test(\"Status code is 200\", function () {\r",
-															"//         pm.response.to.have.status(200);\r",
-															"//     });\r",
-															"// }\r",
-															"// if (pm.response.code !== 200) {\r",
-															"//     return;\r",
-															"// }\r",
-															"\r",
-															"// END AZDO #155\r",
-															"\r",
-															"\r",
-															""
-														],
-														"type": "text/javascript"
-													}
-												}
-											],
-											"request": {
-												"method": "POST",
-												"header": [
-													{
-														"key": "Content-Type",
-														"value": "multipart/form-data"
-													}
-												],
-												"body": {
-													"mode": "formdata",
-													"formdata": [
-														{
-															"key": "importFile",
-															"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-															"type": "file",
-															"src": "./{{formDataFiles}}/{{cklFile1}}"
-														},
-														{
-															"key": "strictAssetCheck",
-															"value": "false",
-															"description": "Whether file contents will be checked for asset name match",
-															"type": "text"
-														},
-														{
-															"key": "benchmarkId",
-															"value": "{{scrapBenchmark}}",
-															"description": "If provided, file contents will be checked for match",
-															"type": "text"
-														}
-													]
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews",
-														":assetId"
-													],
-													"variable": [
-														{
-															"key": "collectionId",
-															"value": "{{testCollection}}",
-															"description": "(Required) A path parameter that indentifies a Collection"
-														},
-														{
-															"key": "assetId",
-															"value": "{{testAsset}}",
-															"description": "(Required) A path parameter that indentifies an Asset"
-														}
-													]
-												}
-											},
-											"response": []
-										},
-										{
-											"name": "Import one or more Reviews from an SCC XCCDF file",
-											"event": [
-												{
-													"listen": "test",
-													"script": {
-														"exec": [
-															"let user = pm.environment.get(\"user\");\r",
-															"console.log(\"user: \" + user);\r",
-															"\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
-															"\r",
-															"if ( user == \"collectioncreator\" ) { // \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for CollectionCreator only.\", function () {\r",
-															"        pm.response.to.have.status(403);\r",
-															"    });\r",
-															"    return;\r",
-															"}\r",
-															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
-															"        pm.response.to.have.status(200);\r",
-															"    });\r",
-															"}\r",
-															"if (pm.response.code !== 200) {\r",
-															"    return;\r",
-															"}\r",
-															"\r",
-															"let jsonData = pm.response.json();\r",
-															"\r",
-															"pm.test(\"Response JSON is an object, with component arrays of proper length\", function () {\r",
-															"    pm.expect(jsonData).to.be.an('object');\r",
-															"    if ( user == \"lvl1\" ) { //User lvl1 can only submit one of these reviews.\r",
-															"        pm.expect(jsonData.permitted).to.have.lengthOf(1);\r",
-															"        pm.expect(jsonData.rejected).to.have.lengthOf(1);\r",
-															"    }\r",
-															"    else{\r",
-															"        pm.expect(jsonData.permitted).to.have.lengthOf(2);\r",
-															"        pm.expect(jsonData.rejected).to.have.lengthOf(0);\r",
-															"    }\r",
-															"});\r",
-															"\r",
-															"\r",
-															""
-														],
-														"type": "text/javascript"
-													}
-												}
-											],
-											"request": {
-												"method": "POST",
-												"header": [
-													{
-														"key": "Content-Type",
-														"value": "multipart/form-data"
-													}
-												],
-												"body": {
-													"mode": "formdata",
-													"formdata": [
-														{
-															"key": "importFile",
-															"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-															"type": "file",
-															"src": "./{{formDataFiles}}/{{xccdfFile1}}"
-														},
-														{
-															"key": "strictAssetCheck",
-															"value": "false",
-															"description": "Whether file contents will be checked for asset name match",
-															"type": "text"
-														},
-														{
-															"key": "benchmarkId",
-															"value": "{{testBenchmark}}",
-															"description": "If provided, file contents will be checked for match",
-															"type": "text"
-														}
-													]
-												},
-												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-													"host": [
-														"{{baseUrl}}"
-													],
-													"path": [
-														"collections",
-														":collectionId",
-														"reviews",
-														":assetId"
-													],
-													"variable": [
-														{
-															"key": "collectionId",
-															"value": "{{testCollection}}",
-															"description": "(Required) A path parameter that indentifies a Collection"
-														},
-														{
-															"key": "assetId",
-															"value": "{{testAsset}}",
-															"description": "(Required) A path parameter that indentifies an Asset"
-														}
-													]
-												}
-											},
-											"response": []
-										},
-										{
 											"name": "Import one or more Reviews from a JSON body",
 											"event": [
 												{
@@ -13536,149 +13085,6 @@
 					"response": []
 				},
 				{
-					"name": "Import one or more Reviews from a STIGViewer CKL file - lvl1 - mixed ruleId access",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let user = pm.environment.get(\"user\");\r",
-									"console.log(\"user: \" + user);\r",
-									"\r",
-									"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-									"    user = \"elevated\";\r",
-									"    console.log(\"setting user to 'elevated'\");\r",
-									"}\r",
-									"\r",
-									"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-									"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
-									"        pm.response.to.have.status(403);\r",
-									"    });\r",
-									"    return;\r",
-									"}\r",
-									"else {\r",
-									"    pm.test(\"Status code is 200\", function () {\r",
-									"        pm.response.to.have.status(200);\r",
-									"    });\r",
-									"}\r",
-									"if (pm.response.code !== 200) {\r",
-									"    return;\r",
-									"}\r",
-									"\r",
-									"let jsonData = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Response JSON is an object, with component arrays of proper length\", function () {\r",
-									"    pm.expect(jsonData).to.be.an('object');\r",
-									"    pm.expect(jsonData.permitted).to.have.lengthOf(1);\r",
-									"    pm.expect(jsonData.rejected).to.have.lengthOf(1);\r",
-									"\r",
-									"});\r",
-									"\r",
-									"\r",
-									"let baseUrl = pm.environment.get(\"baseUrl\");\r",
-									"let assetId = pm.environment.get(\"testAsset\");\r",
-									"let ruleId = pm.environment.get(\"testRuleId-lvl1NoAccess\");\r",
-									"let collectionId = pm.environment.get(\"testCollection\");\r",
-									"let stigmanadmin = pm.environment.get(\"token.stigmanadmin\");\r",
-									"console.log(baseUrl)\r",
-									"\r",
-									"// const postRequest = {\r",
-									"//   url: `${baseUrl}/collections/${collectionId}/reviews/${assetId}/${ruleId}`,\r",
-									"//   method: 'GET',\r",
-									"//   header: {\r",
-									"//     'Content-Type': 'application/json',\r",
-									"//     'X-Foo': 'bar',\r",
-									"//     'Authorization': `Bearer ${stigmanadmin}`\r",
-									"//   }\r",
-									"// };\r",
-									"\r",
-									"// pm.sendRequest(postRequest, (error, response) => {\r",
-									"//   if (error) {\r",
-									"//     console.log(error);\r",
-									"//   }\r",
-									"\r",
-									"//   pm.test('admin requesting same review', () => {\r",
-									"//     pm.expect(error).to.equal(null);\r",
-									"//     pm.expect(response).to.have.property('code', 200);\r",
-									"//     pm.expect(response).to.have.property('status', 'OK');\r",
-									"//   });\r",
-									"\r",
-									"//     let adminCheckJsonData = response.json();\r",
-									"\r",
-									"\r",
-									"//     pm.test(\"admin user checking to see if this request altered review\", function () {\r",
-									"//         pm.expect(adminCheckJsonData).to.be.an('object');\r",
-									"//         pm.expect(adminCheckJsonData.resultComment).to.not.eql(\"LVL1 POSTED THIS VIA CKL\");\r",
-									"\r",
-									"//     });\r",
-									"\r",
-									"// });\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "multipart/form-data"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "importFile",
-									"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-									"type": "file",
-									"src": "./{{formDataFiles}}/{{cklFile1-lvl1NoAccess}}"
-								},
-								{
-									"key": "strictAssetCheck",
-									"value": "false",
-									"description": "Whether file contents will be checked for asset name match",
-									"type": "text"
-								},
-								{
-									"key": "benchmarkId",
-									"value": "{{testBenchmark}}",
-									"description": "If provided, file contents will be checked for match",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"collections",
-								":collectionId",
-								"reviews",
-								":assetId"
-							],
-							"variable": [
-								{
-									"key": "collectionId",
-									"value": "{{testCollection}}",
-									"description": "(Required) A path parameter that indentifies a Collection"
-								},
-								{
-									"key": "assetId",
-									"value": "{{testAsset}}",
-									"description": "(Required) A path parameter that indentifies an Asset"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Import one or more Reviews from a JSON body - no STIG-Asset Access",
 					"event": [
 						{
@@ -13915,110 +13321,6 @@
 								{
 									"key": "assetId",
 									"value": "{{testAsset}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Import one or more Reviews from an SCC XCCDF file - lvl1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let user = pm.environment.get(\"user\");\r",
-									"console.log(\"user: \" + user);\r",
-									"\r",
-									"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-									"    user = \"elevated\";\r",
-									"    console.log(\"setting user to 'elevated'\");\r",
-									"}\r",
-									"\r",
-									"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-									"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
-									"        pm.response.to.have.status(403);\r",
-									"    });\r",
-									"    return;\r",
-									"}\r",
-									"else {\r",
-									"    pm.test(\"Status code is 200\", function () {\r",
-									"        pm.response.to.have.status(200);\r",
-									"    });\r",
-									"}\r",
-									"if (pm.response.code !== 200) {\r",
-									"    return;\r",
-									"}\r",
-									"\r",
-									"\r",
-									"let jsonData = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Response JSON is an object, with component arrays of proper length\", function () {\r",
-									"    pm.expect(jsonData).to.be.an('object');\r",
-									"    pm.expect(jsonData.permitted).to.have.lengthOf(1);\r",
-									"    pm.expect(jsonData.rejected).to.have.lengthOf(1);\r",
-									"\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "multipart/form-data"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "importFile",
-									"description": "Extension .ckl from STIGVewer or .xml from SCAP Compliance Checker (SCC)",
-									"type": "file",
-									"src": "./{{formDataFiles}}/{{xccdfFile1}}"
-								},
-								{
-									"key": "strictAssetCheck",
-									"value": "false",
-									"description": "Whether file contents will be checked for asset name match",
-									"type": "text"
-								},
-								{
-									"key": "benchmarkId",
-									"value": "{{testBenchmark}}",
-									"description": "If provided, file contents will be checked for match",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"collections",
-								":collectionId",
-								"reviews",
-								":assetId"
-							],
-							"variable": [
-								{
-									"key": "collectionId",
-									"value": "{{testCollection}}",
-									"description": "(Required) A path parameter that indentifies a Collection"
-								},
-								{
-									"key": "assetId",
-									"value": "{{testAsset}}",
-									"description": "(Required) A path parameter that indentifies an Asset"
 								}
 							]
 						}
@@ -14961,19 +14263,19 @@
 									],
 									"variable": [
 										{
-											"description": "(Required) A path parameter that indentifies a Collection",
 											"key": "collectionId",
-											"value": "21"
+											"value": "21",
+											"description": "(Required) A path parameter that indentifies a Collection"
 										},
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
 											"key": "assetId",
-											"value": "42"
+											"value": "42",
+											"description": "(Required) A path parameter that indentifies an Asset"
 										},
 										{
-											"description": "(Required) A path parameter that indentifies a Rule",
 											"key": "ruleId",
-											"value": "SV-106179r1_rule"
+											"value": "SV-106179r1_rule",
+											"description": "(Required) A path parameter that indentifies a Rule"
 										}
 									]
 								}
@@ -15222,19 +14524,19 @@
 									],
 									"variable": [
 										{
-											"description": "(Required) A path parameter that indentifies a Collection",
 											"key": "collectionId",
-											"value": "21"
+											"value": "21",
+											"description": "(Required) A path parameter that indentifies a Collection"
 										},
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
 											"key": "assetId",
-											"value": "42"
+											"value": "42",
+											"description": "(Required) A path parameter that indentifies an Asset"
 										},
 										{
-											"description": "(Required) A path parameter that indentifies a Rule",
 											"key": "ruleId",
-											"value": "SV-106179r1_rule"
+											"value": "SV-106179r1_rule",
+											"description": "(Required) A path parameter that indentifies a Rule"
 										}
 									]
 								}
