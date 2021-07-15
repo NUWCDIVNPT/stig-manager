@@ -259,7 +259,6 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
 
 };
 
-
 /**
  * Create or update a complete Review
  *
