@@ -240,8 +240,24 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
  * returns ReviewProjected
  **/
 exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, userObject) {
-}
+  try {
+    let binds = {
+      assetId: assetId,
+      ruleId: ruleId
+    };
 
+    let rows = await _this.getReviews(projection, binds, userObject);
+    
+    let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
+    await dbUtils.pool.query(sqlDelete, binds);
+
+    return (rows[0]);
+  }
+  catch (err) {
+    throw ( writer.respondWithCode ( 500, {message: err.message, stack: err.stack} ) );
+  }
+
+};
 
 /**
  * Create or update a complete Review
