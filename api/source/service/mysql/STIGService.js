@@ -343,7 +343,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
 
     // For JSON.stringify(), remove keys with null value
-    result.rows.toJSON = function () {
+    rows.toJSON = function () {
       for (let x = 0, l = this.length; x < l; x++) {
         let record = this[x]
         Object.keys(record).forEach(key => record[key] == null && delete record[key])
