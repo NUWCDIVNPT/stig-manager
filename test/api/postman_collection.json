@@ -10097,7 +10097,7 @@
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=details&projection=cci&projection=checks&projection=fixes",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=detail&projection=ccis&projection=checks&projection=fixes",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -10111,12 +10111,12 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "details",
+																			"value": "detail",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
-																			"value": "cci",
+																			"value": "ccis",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
@@ -10190,7 +10190,7 @@
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=details&projection=cci&projection=checks&projection=fixes",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules?projection=detail&projection=ccis&projection=checks&projection=fixes",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -10204,12 +10204,12 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "details",
+																			"value": "detail",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
-																			"value": "cci",
+																			"value": "ccis",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
@@ -10283,7 +10283,7 @@
 																"method": "GET",
 																"header": [],
 																"url": {
-																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=details&projection=cci&projection=checks&projection=fixes",
+																	"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=detail&projection=ccis&projection=checks&projection=fixes",
 																	"host": [
 																		"{{baseUrl}}"
 																	],
@@ -10298,12 +10298,12 @@
 																	"query": [
 																		{
 																			"key": "projection",
-																			"value": "details",
+																			"value": "detail",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
 																			"key": "projection",
-																			"value": "cci",
+																			"value": "ccis",
 																			"description": "Additional properties to include in the response.\n"
 																		},
 																		{
@@ -10805,7 +10805,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs/rules/:ruleId?projection=details&projection=cci&projection=checks&projection=fixes",
+									"raw": "{{baseUrl}}/stigs/rules/:ruleId?projection=detail&projection=ccis&projection=checks&projection=fixes",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10817,12 +10817,12 @@
 									"query": [
 										{
 											"key": "projection",
-											"value": "details",
+											"value": "detail",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
 											"key": "projection",
-											"value": "cci",
+											"value": "ccis",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
