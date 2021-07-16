@@ -397,7 +397,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
       }
       return this
     }
-    return (rows)
+    return (rows[0])
   }
   catch (err) {
     throw err
