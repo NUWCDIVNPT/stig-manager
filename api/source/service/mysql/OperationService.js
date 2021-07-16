@@ -153,7 +153,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           ts,
           rejectText,
           rejectUserId,
-          statusId
+          statusId,
+          metadata
         ) VALUES ?`,
         insertBinds: []
       }
@@ -244,7 +245,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         new Date(review.ts),
         review.rejectText,
         parseInt(review.rejectUserId) || null,
-        review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0
+        review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0,
+        JSON.stringify(review.metadata || {})
       ])
     }
 

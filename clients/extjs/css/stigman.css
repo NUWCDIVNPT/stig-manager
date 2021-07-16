@@ -1169,10 +1169,16 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 
 
 .x-grid3-row-over .artifact-download { 
-    background-image: url(../img/download-16.png); 
-    background-size: 14px 14px;
-    background-position: 2px 5px; 
-    background-repeat: no-repeat; 
+	background-image: url(../img/download-16.png); 
+	background-size: 14px 14px;
+	background-position: 2px 5px; 
+	background-repeat: no-repeat; 
+}
+.x-grid3-row-over .artifact-view { 
+	background-image: url(../img/eye.svg); 
+	background-size: 14px 14px;
+	background-position: 2px 5px; 
+	background-repeat: no-repeat; 
 }
 .x-grid3-row-over .artifact-edit { 
     background-image: url(../img/edit-16.png); 

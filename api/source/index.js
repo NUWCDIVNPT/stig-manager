@@ -30,6 +30,7 @@ const upload = multer({
  })
 app.use(upload.single('importFile'))
 app.use(express.json({
+  strict: false, // allow root to be any JSON value, per https://datatracker.ietf.org/doc/html/rfc7159#section-2
   limit: parseInt(config.http.maxJsonBody)
 })) //Handle JSON request body
 app.use(cors())

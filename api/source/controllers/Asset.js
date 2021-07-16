@@ -224,9 +224,6 @@ module.exports.getAsset = async function getAsset (req, res, next) {
 
 module.exports.getAssets = async function getAssets (req, res, next) {
   try {
-    const predicates = {
-
-    }
     let collectionId = req.swagger.params['collectionId'].value
     let name = req.swagger.params['name'].value
     let nameMatch = req.swagger.params['name-match'].value
@@ -246,7 +243,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
           }
         }
       }
-      let response = await Asset.getAssets(collectionId, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
+      let response = await Asset.getAssets(collectionId, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject)
       writer.writeJson(res, response)
     }
     else {

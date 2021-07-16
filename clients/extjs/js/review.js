@@ -1025,347 +1025,12 @@ async function addReview( params ) {
   /******************************************************/
   // START Attachments Panel
   /******************************************************/
-
-  var attachFields = Ext.data.Record.create([
-    {
-      name: 'raId',
-      type: 'int'
-    }, {
-      name: 'artId',
-      type: 'int'
-    }, {
-      name: 'filename',
-      type: 'string'
-    }, {
-      name: 'userName',
-      type: 'string'
-    }, {
-      name: 'description',
-      type: 'string'
-    }, {
-      name: 'ts',
-      type: 'date',
-      dateFormat: 'Y-m-d H:i:s'
-    }
-  ]);
-
-  var attachStore = new Ext.data.JsonStore({
-    root: 'rows',
-    storeId: 'attachStore' + idAppend,
-    fields: attachFields,
-    sortInfo: {
-      field: 'filename',
-      direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-    },
-    idProperty: 'raId'
-  });
-
-  var attachGrid = new Ext.grid.GridPanel({
-    //region: 'center',
-    disableSelection: true,
-    layout: 'fit',
-    cls: 'custom-artifacts',
-    hideHeaders: true,
-    border: false,
-    id: 'attachGrid' + idAppend,
-    store: attachStore,
-    stripeRows: true,
-    // sm: new Ext.grid.RowSelectionModel ({
-    // singleSelect: true
-    // }),
-    view: new Ext.grid.GridView({
-      forceFit: true,
-      emptyText: 'No attachments to display.',
-      deferEmptyText: false
-    }),
-    tbar: new Ext.Toolbar({
-      items: [
-        {
-          xtype: 'tbbutton',
-          text: 'Attach artifact...',
-          id: 'attachGrid-add-button' + idAppend,
-          icon: 'img/attach-16.png',
-          handler: function (btn) {
-            attachArtifact();
-          }
-        }
-      ]
-    }),
-    columns: [
-      {
-        id: 'attach-filename' + idAppend,
-        header: "Artifact",
-        width: 100,
-        dataIndex: 'filename',
-        sortable: true,
-        align: 'left',
-        renderer: function (value, metadata, record) {
-          //var returnStr = '<img src="' + getFileIcon(value) + '" width=12px height=12px>&nbsp;';
-          var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">';
-          returnStr += '<b>' + value + '</b>';
-          returnStr += '<br><br><b>Attached by:</b> ' + record.data.userName;
-          returnStr += '<br><b>Description:</b> ' + record.data.description;
-          returnStr += '<br><br>';
-          return returnStr;
-        }
-      }
-      , {
-        width: 25,
-        header: 'download', // not shown, used in cellclick handler
-        fixed: true,
-        dataIndex: 'none',
-        renderer: function (value, metadata, record) {
-          metadata.css = 'artifact-download';
-          metadata.attr = 'ext:qtip="Download artifact"';
-          return '';
-        }
-      }
-      , {
-        width: 25,
-        header: 'delete',
-        fixed: true,
-        dataIndex: 'none',
-        renderer: function (value, metadata, record) {
-          if (attachGrid.groupGridRecord.data.statusId == 0 || attachGrid.groupGridRecord.data.statusId == 2) {
-            metadata.css = 'artifact-delete';
-            metadata.attr = 'ext:qtip="Unattach the artifact from this review"';
-          }
-          return '';
-        }
-      }
-    ],
-    loadMask: true,
-    autoExpandColumn: 'attach-filename' + idAppend,
-    emptyText: 'No attachments to display',
-    listeners: {
-      cellclick: function (grid, rowIndex, columnIndex, e) {
-        //if (grid.getSelectionModel().isSelected(rowIndex)) {
-        var r = grid.getStore().getAt(rowIndex);
-        var header = grid.getColumnModel().getColumnHeader(columnIndex);
-        switch (header) {
-          case 'download':
-            window.location = 'pl/getArtifact.pl?artId=' + r.data.artId;
-            break;
-          case 'delete':
-            removeMap(r);
-            break;
-        }
-        //}
-      }
-    }
-  });
-
-
-  function removeMap(r) {
-    var confirmStr = 'Do you want to unattach the artifact "' + r.data.filename + '"?';
-    Ext.Msg.confirm("Confirm", confirmStr, function (btn, text) {
-      if (btn == 'yes') {
-        Ext.Ajax.request({
-          url: 'pl/removeArtifactMap.pl',
-          params: {
-            raId: r.data.raId
-          },
-          success: function (response, request) {
-            var responseObj = Ext.util.JSON.decode(response.responseText);
-            if (responseObj.success) {
-              attachStore.remove(r);
-              if (attachStore.getCount() > 0) {
-                reviewForm.groupGridRecord.set('hasAttach', 1);
-              } else {
-                reviewForm.groupGridRecord.set('hasAttach', 0);
-              }
-            }
-          },
-          failure: function (results, request) {
-            // if (p.maskEl != undefined) {
-            // p.maskEl.unmask();
-            // }
-            // alert('Error: review could not be updated.');
-          }
-        });
-      }
-    });
-
-  };
-
-  function attachArtifact() {
-    var reviewForm = Ext.getCmp('reviewForm' + idAppend);
-    var assetId = reviewForm.groupGridRecord.data.assetId;
-    var ruleId = reviewForm.groupGridRecord.data.ruleId;
-
-    var deptArtifactFields = Ext.data.Record.create([
-      {
-        name: 'artId',
-        type: 'int'
-      }, {
-        name: 'filename',
-        type: 'string'
-      }, {
-        name: 'userName',
-        type: 'string'
-      }, {
-        name: 'dept',
-        type: 'string'
-      }, {
-        name: 'sha1',
-        type: 'string'
-      }, {
-        name: 'description',
-        type: 'string'
-      }, {
-        name: 'ts',
-        type: 'date',
-        dateFormat: 'Y-m-d H:i:s'
-      }
-    ]);
-
-    var deptArtifactStore = new Ext.data.JsonStore({
-      url: 'pl/getArtifacts.pl',
-      autoLoad: true,
-      root: 'rows',
-      fields: deptArtifactFields,
-      totalProperty: 'records',
-      idProperty: 'artId',
-      listeners: {
-        load: function (store, records) {
-          deptArtifactGrid.getSelectionModel().selectFirstRow();
-        }
-      }
-    });
-
-    var sm = new Ext.grid.RowSelectionModel({
-      singleSelect: true,
-      listeners: {
-        rowselect: function (sm, rowIndex, r) {
-          Ext.getCmp('dpt-attach-btn' + idAppend).setText('Attach "' + r.data.filename + '"');
-        }
-      }
-    });
-
-    var deptArtifactGrid = new Ext.grid.GridPanel({
-      cls: 'artifact-grid',
-      anchor: '100% -20',
-      height: 200,
-      store: deptArtifactStore,
-      stripeRows: true,
-      sm: sm,
-      columns: [
-        {
-          header: "Artifact",
-          width: 100,
-          dataIndex: 'filename',
-          sortable: true,
-          align: 'left',
-          renderer: function (value, metadata, record) {
-            // var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">' + '<a href="pl/getArtifact.pl?artId=' + record.data.artId + '" style="color:#000;cursor:pointer;">' + value + '</a>';
-            var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">' + value;
-            return returnStr;
-          }
-        }
-        , {
-          header: "Description",
-          id: 'artifact-description',
-          width: 100,
-          dataIndex: 'description',
-          sortable: true,
-          align: 'left',
-        }
-      ],
-      autoExpandColumn: 'artifact-description',
-      view: new Ext.grid.GridView({
-        autoFill: true,
-        deferEmptyText: false
-      }),
-      loadMask: false,
-      listeners: {
-        // cellclick: function (grid,rowIndex,columnIndex,e) {
-        // window.location='http://www.google.com';
-        // var r = grid.getStore().getAt(rowIndex);
-        // var header = grid.getColumnModel().getColumnHeader(columnIndex);
-        // switch (header) {
-        // case 'download':
-        // //window.location='pl/getAttachment.pl?aiId=' + r.data.aiId;
-        // window.location='pl/getAttachment.pl?aiId=11';
-        // break;
-        // }
-        // //}
-        // }
-      },
-      setValue: function (v) {
-      },
-      getValue: function () {
-        //return this.getSelectionModel().getSelected().data.artId
-      },
-      markInvalid: function () { },
-      clearInvalid: function () { },
-      isValid: function () { return true },
-      disabled: false,
-      getName: function () { return this.name },
-      validate: function () { return true },
-      hideLabel: true,
-      isFormField: true,
-      name: 'artId'
-    });
-
-
-
-    var fp = new Ext.FormPanel({
-      baseCls: 'x-plain',
-      monitorValid: true,
-      bodyStyle: 'padding: 10px 10px 0 10px;',
-      labelWidth: 60,
-      items: [
-        deptArtifactGrid
-      ],
-      buttons: [{
-        text: 'Attach',
-        id: 'dpt-attach-btn' + idAppend,
-        icon: 'img/attach-16.png',
-        tooltip: 'Attach an artifact to this review.',
-        formBind: true,
-        handler: function () {
-          if (fp.getForm().isValid()) {
-            fp.getForm().submit({
-              url: 'pl/attachArtifact.pl',
-              params: {
-                assetId: assetId,
-                ruleId: ruleId,
-                artId: deptArtifactGrid.getSelectionModel().getSelected().data.artId
-              },
-              waitMsg: 'Attaching artifact...',
-              success: function (f, o) {
-                window.close();
-                attachStore.loadData(o.result.artifacts, true); // append new record
-                attachStore.sort('filename');
-                reviewForm.groupGridRecord.set('hasAttach', 1);
-              },
-              failure: function (f, o) {
-                window.close();
-                Ext.Msg.alert('Failure', o.result.message);
-              }
-            });
-          }
-        }
-      }]
-    });
-
-    var window = new Ext.Window({
-      title: 'Attach artifact',
-      modal: true,
-      width: 600,
-      height: 300,
-      //minWidth: 500,
-      //minHeight: 140,
-      layout: 'fit',
-      plain: true,
-      bodyStyle: 'padding:5px;',
-      buttonAlign: 'center',
-      items: fp
-    });
-
-    window.show(document.body);
-  };
-
+  const attachmentsGrid = new SM.Attachments.Grid({
+    id: 'attachmentsGrid' + idAppend,
+    title: 'Attachments',
+    collectionId: leaf.collectionId,
+    assetId: leaf.assetId
+  })
   /******************************************************/
   // END Attachments Panel
   /******************************************************/
@@ -1377,6 +1042,43 @@ async function addReview( params ) {
 
   /******************************************************/
   // END History Panel
+  /******************************************************/
+
+  /******************************************************/
+  // START Metadata Panel
+  /******************************************************/
+  const metadataGrid = new SM.MetadataGrid({
+    title: 'Metadata',
+    curReview: {
+      collectionId: leaf.collectionId,
+      assetId: leaf.assetId,
+      ruleId: null
+    },
+    id: 'metadataGrid' + idAppend,
+    anchor: '100%',
+    listeners: {
+        metadatachanged: async grid => {
+            try {
+                let data = grid.getValue()
+                console.log(data)
+                let result = await Ext.Ajax.requestPromise({
+                    url: `${STIGMAN.Env.apiBase}/collections/${grid.curReview.collectionId}/reviews/${grid.curReview.assetId}/${grid.curReview.ruleId}?projection=metadata`,
+                    method: 'PATCH',
+                    jsonData: {
+                        metadata: data
+                    }
+                })
+                let collection = JSON.parse(result.response.responseText)
+                grid.setValue(collection.metadata)
+            }
+            catch (e) {
+                alert ('Metadata save failed')
+            }
+        }
+    }
+  })
+  /******************************************************/
+  // END Metadata Panel
   /******************************************************/
 
   var resourcesPanel = new Ext.Panel({
@@ -1391,29 +1093,35 @@ async function addReview( params ) {
       border: false,
       deferredRender: false,
       id: 'resources-tabs' + idAppend,
-      activeTab: ('undefined' !== typeof selectedResource ? selectedResource : 'other-tab' + idAppend),
+      activeTab: ('undefined' !== typeof selectedResource ? selectedResource : 'attachmentsGrid' + idAppend),
       listeners: {
         beforerender: function (tabs) {
         }
       },
-      items: [{
-        title: 'Other Assets',
-        border: false,
-        layout: 'fit',
-        id: 'other-tab' + idAppend,
-        items: otherGrid
-      }, {
-        title: 'Feedback',
-        //layout: 'fit',
-        id: 'feedback-tab' + idAppend,
-        padding: 10,
-        autoScroll: true
-      },{
-        title: 'Log',
-        layout: 'fit',
-        id: 'history-tab' + idAppend,
-        items: historyData.grid
-      }]
+      items: [
+        attachmentsGrid,
+        {
+          title: 'Other Assets',
+          border: false,
+          layout: 'fit',
+          id: 'other-tab' + idAppend,
+          items: otherGrid
+        },
+        {
+          title: 'Feedback',
+          //layout: 'fit',
+          id: 'feedback-tab' + idAppend,
+          padding: 10,
+          autoScroll: true
+        },
+        {
+          title: 'Log',
+          layout: 'fit',
+          id: 'history-tab' + idAppend,
+          items: historyData.grid
+        },
+        // metadataGrid
+      ]
     }]
   });
 
@@ -1746,7 +1454,7 @@ async function addReview( params ) {
     var actionComment = Ext.getCmp('action-comment' + idAppend);
     var button1 = Ext.getCmp('reviewForm-button-1' + idAppend); // left button
     var button2 = Ext.getCmp('reviewForm-button-2' + idAppend); // right button
-    var attachButton = Ext.getCmp('attachGrid-add-button' + idAppend); // 'add attachment' button
+    var attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField; // 'add attachment' button
     var autoResultField = Ext.getCmp('autoResult' + idAppend); // hidden 'autoResult' field
 
     // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
@@ -1781,32 +1489,12 @@ async function addReview( params ) {
     //Disable the add attachment button if the review has not been saved yet
     if (fp.groupGridRecord.data.result == "") {
       attachButton.disable();
-      attachButton.setTooltip('This button is disabled because the review has never been saved.');
+      attachButton.button.setTooltip('This button is disabled because the review has never been saved.');
     } else {
       attachButton.enable();
       //attachButton.setTooltip('Attach a file to this review.'); 
-      attachButton.setTooltip('');
+      attachButton.button.setTooltip('');
     }
-
-    // Quick hide of the buttons and exit if review status is 'Approved', 
-    // otherwise show the buttons and continue processing below
-    if (fp.groupGridRecord.data.status == 'accepted') {
-      button1.show();
-      button2.show();
-      attachButton.disable();
-      attachButton.setTooltip('This button is disabled because the review is locked.');
-    } else {
-      button1.show();
-      button2.show();
-      if (fp.groupGridRecord.data.status == 'submitted') {
-        attachButton.disable();
-        attachButton.setTooltip('This button is disabled because the review is submitted');
-      } else {
-        attachButton.enable();
-        attachButton.setTooltip('');
-      }
-    }
-
 
     if (isReviewComplete(resultCombo.value, resultComment.getValue(), actionCombo.value, actionComment.getValue())) {
       if (fp.reviewChanged()) {
