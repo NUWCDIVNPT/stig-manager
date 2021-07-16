@@ -129,6 +129,7 @@ Ext.ux.form.FileUploadField = Ext.extend(Ext.form.TextField,  {
             cls: 'x-form-file',
             tag: 'input',
             type: 'file',
+            title: ' ',
             accept: this.accept || '*',
             // size: 100
         })

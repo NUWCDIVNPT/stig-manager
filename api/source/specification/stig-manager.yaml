@@ -932,6 +932,7 @@ paths:
         - $ref: '#/components/parameters/UserIdQuery'
         - $ref: '#/components/parameters/AssetIdQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/MetadataQuery'
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
@@ -965,6 +966,7 @@ paths:
         - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/MetadataQuery'
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
@@ -1116,6 +1118,181 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/RuleIdPath'
+    get:
+      tags:
+        - Review
+      summary: Return the metadata for Review
+      operationId: getReviewMetadata
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    patch:
+      tags:
+        - Review
+      summary: Merge the provided object to a Review metadata
+      operationId: patchReviewMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metadata'
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    put:
+      tags:
+        - Review
+      summary: Set a Review metadata to the provided object
+      operationId: putReviewMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metadata'
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/RuleIdPath'
+    get:
+      tags:
+        - Review
+      summary: Return the keys of the provided Review's metadata
+      operationId: getReviewMetadataKeys
+      responses:
+        '200':
+          description: MetadataKeys response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataKey'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/RuleIdPath'
+      - $ref: '#/components/parameters/MetadataKeyPath'
+    get:
+      tags:
+        - Review
+      summary: Return the value of the provided Review metadata key
+      operationId: getReviewMetadataValue
+      responses:
+        '200':
+          description: MetadataValue response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataValue'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Review
+      summary: Set the value of the provided Review metadata key to the provided string
+      operationId: putReviewMetadataValue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataValue'
+      responses:
+        '204':
+          description: Empty to avoid large response after putting key with large value
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Review
+      summary: Remove the provided Review metadata key
+      operationId: deleteReviewMetadataKey
+      responses:
+        '204':
+          description: Empty to avoid large response after deleteing key with large value
         default:
           description: unexpected error
           content:
@@ -2115,7 +2292,7 @@ components:
         noncomputing:
           type: boolean
         metadata:
-          type: object
+          $ref: '#/components/schemas/Metadata'
     AssetBasic:
       type: object
       properties:
@@ -2160,7 +2337,7 @@ components:
         noncomputing:
           type: boolean
         metadata:
-          type: object
+          $ref: '#/components/schemas/Metadata'
         stigs:
           description: The benchmarkIds mapped to this Asset
           type: array
@@ -2228,7 +2405,7 @@ components:
         noncomputing:
           type: boolean
         metadata:
-          type: object
+          $ref: '#/components/schemas/Metadata'
         stigs:
           description: The benchmarkIds mapped to this Asset
           type: array
@@ -2538,7 +2715,7 @@ components:
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
-          type: object
+          $ref: '#/components/schemas/Metadata'
         created:
           type: string
     CollectionBasic:
@@ -2567,7 +2744,7 @@ components:
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
-          type: object
+          $ref: '#/components/schemas/Metadata'
         grants:
           type: array
           items:
@@ -2699,7 +2876,7 @@ components:
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
         metadata:
-          type: object
+          $ref: '#/components/schemas/Metadata'
         grants:
           type: array
           items:
@@ -2836,6 +3013,14 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RuleAbbr'
+    Metadata:
+      type: object
+      additionalProperties:
+        type: string
+    MetadataKey:
+      type: string
+    MetadataValue:
+      type: string
     Review:
       type: object
       properties:
@@ -2855,6 +3040,8 @@ components:
           $ref: '#/components/schemas/ReviewAction'
         actionComment:
           type: string
+        metadata:
+          $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatus'
         userId:
@@ -2865,7 +3052,6 @@ components:
           type: string
           readOnly: true
         rejectText:
-          description: Ignored unless status='Rejected'
           type: string
         rejectUserId:
           type: string
@@ -2895,6 +3081,10 @@ components:
           nullable: true
         autoResult:
           type: boolean
+        rejectText:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatus'
     ReviewAssetRulePut:
@@ -2902,6 +3092,7 @@ components:
       required:
         - result
         - resultComment
+        - status
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
@@ -2915,6 +3106,8 @@ components:
           nullable: true
         autoResult:
           type: boolean
+        metadata:
+          $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatus'
     ReviewCheckType:
@@ -2939,6 +3132,8 @@ components:
           nullable: true
         autoResult:
           type: boolean
+        metadata:
+          $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatus'
         userId:
@@ -2950,7 +3145,10 @@ components:
     ReviewPut:
       type: object
       required:
+        - ruleId
         - result
+        - resultComment
+        - status
       properties:
         ruleId:
           type: string
@@ -2969,6 +3167,8 @@ components:
           nullable: true
         status:
           $ref: '#/components/schemas/ReviewStatus'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
     ReviewResult:
       description: The Review result
       type: string
@@ -3004,6 +3204,8 @@ components:
                 type: string
             rule:
               $ref: '#/components/schemas/RuleAbbr'
+            metadata:
+              $ref: '#/components/schemas/Metadata'
     ReviewsProjected:
       allOf:
         - $ref: '#/components/schemas/Review'
@@ -3015,6 +3217,8 @@ components:
                 type: string
             rule:
               $ref: '#/components/schemas/RuleAbbr'
+            metadata:
+              $ref: '#/components/schemas/Metadata'
     Revision:
       type: object
       properties:
@@ -3452,6 +3656,15 @@ components:
           type: string
           enum:
             - rules
+    MetadataKeyPath:
+      name: key
+      in: path
+      required: true
+      description: >-
+        A path parameter that specifies a metadata key
+      schema:
+        pattern: '^([\w\.]+)$'
+        type: string
     MetadataQuery:
       name: metadata
       in: query
@@ -3508,6 +3721,7 @@ components:
         items:
           type: string
           enum:
+            - metadata
             - rule
             - stigs
             - history
@@ -3523,6 +3737,7 @@ components:
         items:
           type: string
           enum:
+            - metadata
             - rule
             - stigs
     ReviewResultQuery:
