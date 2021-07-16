@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "24294ed2-7273-49c1-93e1-e753c6aecd12",
-		"name": "stig-manager",
+		"_postman_id": "5d1a07ef-e23d-424e-a98a-2e35bf464553",
+		"name": "stig-manager - csmig",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -4540,7 +4540,9 @@
 																	"if (pm.request.url.getQueryString().match(/projection=rule/)) {\r",
 																	"    reviewKeys.push(\"rule\")\r",
 																	"}\r",
-																	"\r",
+																	"if (pm.request.url.getQueryString().match(/projection=metadata/)) {\r",
+																	"    reviewKeys.push(\"metadata\")\r",
+																	"}\r",
 																	"pm.test(\"Check if object contains all provided keys\", function () {\r",
 																	"    pm.expect(jsonData).to.have.all.keys(reviewKeys);\r",
 																	"});\r",
@@ -4565,7 +4567,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule&projection=metadata",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -4588,6 +4590,10 @@
 																{
 																	"key": "projection",
 																	"value": "rule"
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata"
 																}
 															],
 															"variable": [
@@ -4605,6 +4611,287 @@
 																	"key": "ruleId",
 																	"value": "{{testRuleId}}",
 																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Return the Review Metadata for an Asset and Rule",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Check if review metadata object contains proper metadata\", function () {\r",
+																	"    let testMetadataKey = pm.environment.get(\"testMetadataKey\");\r",
+																	"    let testMetadataValue = pm.environment.get(\"testMetadataValue\");\r",
+																	"    pm.expect(jsonData[testMetadataKey]).to.eql(testMetadataValue);\r",
+																	"});\r",
+																	"\r",
+																	"// pm.test(\"Check review comment for regex match string\", function () {\r",
+																	"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+																	"//     var regex = new RegExp(reviewMatchString);\r",
+																	"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
+																	"// });\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata"
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Return the Review Metadata KEYS for an Asset and Rule",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Check if review metadata object contains proper metadata\", function () {\r",
+																	"    let testMetadataKey = pm.environment.get(\"testMetadataKey\");\r",
+																	"    pm.expect(jsonData).to.include(testMetadataKey);\r",
+																	"});\r",
+																	"\r",
+																	"// pm.test(\"Check review comment for regex match string\", function () {\r",
+																	"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+																	"//     var regex = new RegExp(reviewMatchString);\r",
+																	"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
+																	"// });\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata/keys",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata",
+																"keys"
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Return the Review Metadata VALUE for an Asset/Rule/metadata KEY",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('string');\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Check if review metadata object contains proper metadata\", function () {\r",
+																	"    let testMetadataValue = pm.environment.get(\"testMetadataValue\");\r",
+																	"    pm.expect(jsonData).to.eql(testMetadataValue);\r",
+																	"});\r",
+																	"\r",
+																	"// pm.test(\"Check review comment for regex match string\", function () {\r",
+																	"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+																	"//     var regex = new RegExp(reviewMatchString);\r",
+																	"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
+																	"// });\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata/keys/:key",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata",
+																"keys",
+																":key"
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																},
+																{
+																	"key": "key",
+																	"value": "{{testMetadataKey}}"
 																}
 															]
 														}
@@ -5141,6 +5428,90 @@
 														}
 													},
 													"response": []
+												},
+												{
+													"name": "Return a list of Reviews for an Asset BENCHMARK - metadata",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?projection=rule&projection=stigs&projection=metadata&metadata={{testMetadataKey}}:{{testMetadataValue}}",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId"
+															],
+															"query": [
+																{
+																	"key": "result",
+																	"value": "pass",
+																	"disabled": true
+																},
+																{
+																	"key": "action",
+																	"value": "remediate",
+																	"disabled": true
+																},
+																{
+																	"key": "status",
+																	"value": "submitted",
+																	"disabled": true
+																},
+																{
+																	"key": "benchmarkId",
+																	"value": "{{testBenchmark}}",
+																	"description": "A query parameter that indentifies a STIG",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata"
+																},
+																{
+																	"key": "metadata",
+																	"value": "{{testMetadataKey}}:{{testMetadataValue}}"
+																}
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																}
+															]
+														}
+													},
+													"response": []
 												}
 											],
 											"event": [
@@ -5224,7 +5595,9 @@
 															"if (pm.request.url.getQueryString().match(/projection=rule/)) {",
 															"    reviewKeys.push(\"rule\")",
 															"}",
-															"",
+															"if (pm.request.url.getQueryString().match(/projection=metadata/)) {",
+															"    reviewKeys.push(\"metadata\")",
+															"}",
 															"let testAsset = pm.environment.get(\"testAsset\");",
 															"",
 															"pm.test(\"Check if each object contains expected keys/values\", function () {",
@@ -6083,6 +6456,114 @@
 												}
 											},
 											"response": []
+										},
+										{
+											"name": "Return a list of Reviews accessible to the requester - metadata",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?projection=rule&projection=stigs&metadata={{testMetadataKey}}:{{testMetadataValue}}&projection=metadata",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"reviews"
+													],
+													"query": [
+														{
+															"key": "result",
+															"value": "fail",
+															"disabled": true
+														},
+														{
+															"key": "action",
+															"value": "remediate",
+															"disabled": true
+														},
+														{
+															"key": "status",
+															"value": "saved",
+															"disabled": true
+														},
+														{
+															"key": "ruleId",
+															"value": "{{testRuleId}}",
+															"description": "Selects Reviews of a Rule",
+															"disabled": true
+														},
+														{
+															"key": "groupId",
+															"value": "{{testGroupId}}",
+															"description": "A query parameter that indentifies a Group",
+															"disabled": true
+														},
+														{
+															"key": "cci",
+															"value": "{{testCci}}",
+															"description": "A query parameter that indentifies a CCI",
+															"disabled": true
+														},
+														{
+															"key": "userId",
+															"value": "{{testUserId}}",
+															"description": "A path parameter that indentifies a User",
+															"disabled": true
+														},
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}",
+															"description": "A query parameter that indentifies an Asset",
+															"disabled": true
+														},
+														{
+															"key": "benchmarkId",
+															"value": "{{testBenchmark}}",
+															"description": "A query parameter that indentifies a STIG",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n"
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"description": "Additional properties to include in the response.\n"
+														},
+														{
+															"key": "metadata",
+															"value": "{{testMetadataKey}}:{{testMetadataValue}}"
+														},
+														{
+															"key": "projection",
+															"value": "metadata"
+														}
+													],
+													"variable": [
+														{
+															"description": "(Required) A path parameter that indentifies a Collection",
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
 										}
 									],
 									"event": [
@@ -6166,7 +6647,9 @@
 													"if (pm.request.url.getQueryString().match(/projection=rule/)) {",
 													"    reviewKeys.push(\"rule\")",
 													"}",
-													"",
+													"if (pm.request.url.getQueryString().match(/projection=metadata/)) {",
+													"    reviewKeys.push(\"metadata\")",
+													"}",
 													"let reviewMatchString = pm.environment.get(\"reviewMatchString\");",
 													"let reviewRegex = new RegExp(reviewMatchString);",
 													"let assetMatchString = pm.environment.get(\"assetMatchString\");",
@@ -8553,13 +9036,13 @@
 																	"}\r",
 																	"\r",
 																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-																	"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+																	"    pm.test(\"Status should be is 403 for collectionCreator\", function () {\r",
 																	"        pm.response.to.have.status(403);\r",
 																	"    });\r",
 																	"    return;\r",
 																	"}\r",
 																	"else {\r",
-																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"    pm.test(\"Status code is 200 for all users but collectionCreator\", function () {\r",
 																	"        pm.response.to.have.status(200);\r",
 																	"    });\r",
 																	"}\r",
@@ -8646,6 +9129,581 @@
 													"response": []
 												},
 												{
+													"name": "Set all properties of a Review - with metadata",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"pass\",\n    \"resultComment\": \"test\\nvisible to lvl1\",\n    \"action\": \"mitigate\",\n    \"actionComment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\",\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    }\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs&projection=metadata",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs"
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata"
+																}
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "Set all metadata of a Review",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200 for all users except collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"{{testMetadataKey}}\":\"{{testMetadataValue}}\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "Set one metadata key/value of a Review",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 204 for all users but collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(204);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 204) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "\"{{metadataValue}}\""
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata/keys/:key",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata",
+																"keys",
+																":key"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																},
+																{
+																	"key": "key",
+																	"value": "{{testMetadataKey}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "Delete one metadata key/value of a Review",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 204 for all users but collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(204);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 204) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "DELETE",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "\"{{metadataValue}}\""
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata/keys/:key",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata",
+																"keys",
+																":key"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																},
+																{
+																	"key": "key",
+																	"value": "{{testMetadataKey}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "Merge metadata property/value into a Review",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PATCH",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"{{testMetadataKey}}\":\"{{metadataValue}}\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId/metadata",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId",
+																"metadata"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"description": "(Required) A path parameter that indentifies a Collection",
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies an Asset",
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"description": "(Required) A path parameter that indentifies a Rule",
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
 													"name": "Merge provided properties with a Review",
 													"event": [
 														{
@@ -8704,7 +9762,7 @@
 															"raw": "{\n    \"result\": \"pass\",\n    \"resultComment\": \"test\\nvisible to lvl1\",\n    \"action\": \"mitigate\",\n    \"actionComment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
 														},
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs&projection=metadata",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -8729,6 +9787,10 @@
 																{
 																	"key": "projection",
 																	"value": "stigs"
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata"
 																}
 															],
 															"variable": [
@@ -10880,8 +11942,8 @@
 											"// let jsonData = pm.response.json();\r",
 											"\r",
 											"\r",
-											"// pm.test(\"Response JSON is an object\", function () {\r",
-											"//     pm.expect(jsonData).to.be.an('object');\r",
+											"// pm.test(\"Response JSON is an array\", function () {\r",
+											"//     pm.expect(jsonData).to.be.an('array');\r",
 											"// });\r",
 											"\r",
 											"//END AZDO #117\r",
@@ -11577,6 +12639,115 @@
 							],
 							"path": [
 								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Return the Review for an Asset and Rule - expect fail for lvl1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let user = pm.environment.get(\"user\");\r",
+									"console.log(\"user: \" + user);\r",
+									"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+									"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+									"        pm.response.to.have.status(403);\r",
+									"    });\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"if (user == \"lvl1\" ) {\r",
+									"    pm.test(\"Status should be 204 for user lvl1\", function () {\r",
+									"        pm.response.to.have.status(204);\r",
+									"    });\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+									"    user = \"elevated\";\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Check for an array of checklist items.\", function () {\r",
+									"    pm.expect(jsonData).to.be.an('array');\r",
+									"    // console.log(\"jsonData:\" + jsonData);\r",
+									"\r",
+									"});\r",
+									"\r",
+									"let checklistLength = pm.environment.get(\"checklistLength\");\r",
+									"\r",
+									"pm.test(\"Check for an array of correct length.\", function () {\r",
+									"    pm.expect(jsonData).to.be.an('array').of.length(checklistLength);\r",
+									"    // console.log(\"jsonData:\" + jsonData);\r",
+									"\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule&projection=metadata",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections",
+								":collectionId",
+								"reviews",
+								":assetId",
+								":ruleId"
+							],
+							"query": [
+								{
+									"key": "projection",
+									"value": "history"
+								},
+								{
+									"key": "projection",
+									"value": "stigs"
+								},
+								{
+									"key": "projection",
+									"value": "rule"
+								},
+								{
+									"key": "projection",
+									"value": "metadata"
+								}
+							],
+							"variable": [
+								{
+									"description": "(Required) A path parameter that indentifies a Collection",
+									"key": "collectionId",
+									"value": "{{testCollection}}"
+								},
+								{
+									"description": "(Required) A path parameter that indentifies an Asset",
+									"key": "assetId",
+									"value": "{{testAsset}}"
+								},
+								{
+									"description": "(Required) A path parameter that indentifies a Rule",
+									"key": "ruleId",
+									"value": "{{testRuleId-lvl1NoAccess}}"
+								}
 							]
 						}
 					},
