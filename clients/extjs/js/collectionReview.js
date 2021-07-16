@@ -1087,14 +1087,11 @@ async function addCollectionReview ( params ) {
 					rowselect: function(sm,index,record) {
 						if (sm.getCount() == 1) { //single row selected
 							metadataGrid.enable();
-							// attachGrid.enable();
 							historyData.grid.enable();
 							loadResources(record);
 						} else {
-							metadataStore.removeAll();
+							metadataGrid.getStore().removeAll();
 							metadataGrid.disable();
-							// attachStore.removeAll();
-							// attachGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
@@ -1105,14 +1102,11 @@ async function addCollectionReview ( params ) {
 						if (sm.getCount() == 1) { //single row selected
 							selectedRecord = sm.getSelected();
 							metadataGrid.enable();
-							// attachGrid.enable();
 							historyData.grid.enable();
 							loadResources(selectedRecord);
 						} else {
-							metadataStore.removeAll();
+							metadataGrid.getStore().removeAll();
 							metadataGrid.disable();
-							// attachStore.removeAll();
-							// attachGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
@@ -1235,18 +1229,6 @@ async function addCollectionReview ( params ) {
 					}
 				]
 			}),
-			// bbar: new Ext.Toolbar({
-			// 	items: [
-			// 	{
-			// 		xtype: 'tbbutton',
-			// 		iconCls: 'icon-refresh',
-			// 		tooltip: 'Reload this grid',
-			// 		width: 20,
-			// 		handler: function(btn){
-			// 			reviewsGrid.getStore().reload();
-			// 		}
-			// 	}]
-			// }),
 			loadMask: true,
 			emptyText: 'No data to display'
 		});
@@ -1314,41 +1296,6 @@ async function addCollectionReview ( params ) {
 			getReviews(leaf.collectionId, record)
 			//when new group is selected, deselect rows from reviews grid (to make resources panel clear)
 			reviewsGrid.getSelectionModel().clearSelections();
-
-
-			// // Content panel
-			// let contentPanel = Ext.getCmp('content-panel' + idAppend);
-			// let contentReq = await Ext.Ajax.requestPromise({
-			// 	url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${record.data.ruleId}`,
-			// 	method: 'GET',
-			// 	params: {
-			// 		projection: ['details','cci','checks','fixes']
-			// 	}
-			// })
-			// let content = JSON.parse(contentReq.response.responseText)
-			// contentPanel.update(content)
-			// contentPanel.setTitle('Rule for Group ' + record.data.groupId);
-		
-			// // Reviews grid
-			// let reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
-			// let reviewsReq = await Ext.Ajax.requestPromise({
-			// 	url: `${STIGMAN.Env.apiBase}/reviews`,
-			// 	method: 'GET',
-			// 	params: {
-			// 		collectionId: leaf.collectionId,
-			// 		ruleId: record.data.ruleId,
-			// 	}
-			// })
-			// let fetchedReviews = JSON.parse(reviewsReq.response.responseText)
-			// let fetchedReviewsLookup = {}
-			// for (const fetchedReview of fetchedReviews) {
-			// 	fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
-			// }
-			// let colReviews = colAssets.map(colAsset => {
-			// 	return {...colAsset, ...fetchedReviewsLookup[colAsset.assetId]}
-			// })
-		
-			// reviewsGrid.getStore().loadData(colReviews)
 		}
 
 		function setReviewsGridButtonStates() {
@@ -1573,11 +1520,15 @@ async function addCollectionReview ( params ) {
 			try {
 				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
 				activeTab.getEl().mask('Loading...')
+				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
+				attachmentsGrid.assetId = record.data.assetId
+				attachmentsGrid.ruleId = record.data.ruleId
+				
 				let result = await Ext.Ajax.requestPromise({
 					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 					method: 'GET',
 					params: {
-						projection: 'history'
+						projection: ['history', 'metadata']
 					}
 				})
 				if (result.response.status === 200) {
@@ -1604,17 +1555,8 @@ async function addCollectionReview ( params ) {
 					rejectFp.getForm().setValues(apiReview)
 					setRejectButtonState()
 	
-					// Metadata
-					let metadata = []
-					for (const [key, value] of Object.entries(apiReview)) {
-						if (key !== 'history') {
-							metadata.push({
-								property: key,
-								value: value
-							})
-						}
-					}
-					Ext.getCmp('metadataGrid' + idAppend).getStore().loadData(metadata)	
+					// Attachments
+				attachmentsGrid.loadArtifacts()	
 				}
 			}
 			catch (e) {
@@ -1638,51 +1580,53 @@ async function addCollectionReview ( params ) {
 	// START Resources Panel/Metadata
 	/******************************************************/
 
-		var metadataFields = Ext.data.Record.create([
-			{	
-				name:'property',
-				type: 'string'
-			},{
-				name: 'value',
-				type: 'string'
-			}
-		]);
-		
-		var metadataStore = new Ext.data.JsonStore({
-			fields: metadataFields,
-			root: '',
-			idProperty: 'property'
-		});
-		
-		var metadataGrid = new Ext.grid.GridPanel({
-			id: 'metadataGrid' + idAppend,
-			sm: new Ext.grid.RowSelectionModel ({singleSelect: true}),
-			loadMask: true,
-			stripeRows: true,
-			border: false,
-			view: new Ext.grid.GridView({forceFit:true}),
-			store: metadataStore,
-			columns: [
-			{ 	
-				id:'metadataGrid-property' + idAppend,
-				header: "Property", 
-				width: 150,
-				fixed: true,
-				dataIndex: 'property',
-				sortable: true
-			},
-			{ 	
-				id:'metadataGrid-value' + idAppend,
-				header: "Value", 
-				width: 150,
-				dataIndex: 'value',
-				sortable: true
-			}]
-		});
+  const metadataGrid = new SM.MetadataGrid({
+    title: 'Metadata',
+    curReview: {
+      collectionId: leaf.collectionId,
+      assetId: leaf.assetId,
+      ruleId: null
+    },
+    id: 'metadataGrid' + idAppend,
+    anchor: '100%',
+    listeners: {
+        metadatachanged: async grid => {
+            try {
+                let data = grid.getValue()
+                console.log(data)
+                let result = await Ext.Ajax.requestPromise({
+                    url: `${STIGMAN.Env.apiBase}/collections/${grid.curReview.collectionId}/reviews/${grid.curReview.assetId}/${grid.curReview.ruleId}?projection=metadata`,
+                    method: 'PATCH',
+                    jsonData: {
+                        metadata: data
+                    }
+                })
+                let collection = JSON.parse(result.response.responseText)
+                grid.setValue(collection.metadata)
+            }
+            catch (e) {
+                alert ('Metadata save failed')
+            }
+        }
+    }
+  })
 		
 	/******************************************************/
 	// END Resources Panel/Metadata
 	/******************************************************/
+
+	  /******************************************************/
+  // START Attachments Panel
+  /******************************************************/
+  const attachmentsGrid = new SM.Attachments.Grid({
+    id: 'attachmentsGrid' + idAppend,
+    title: 'Attachments',
+    collectionId: leaf.collectionId
+  })
+  /******************************************************/
+  // END Attachments Panel
+  /******************************************************/
+
 	/******************************************************/
 	// START Resources Panel/Feedback
 	/******************************************************/
@@ -1851,17 +1795,19 @@ async function addCollectionReview ( params ) {
 							layout: 'fit',
 							items: rejectFormPanel
 						},
+						{
+							title: 'Attachments',
+							id: 'attachment-panel' + idAppend,
+							layout: 'fit',
+							items: attachmentsGrid
+						},
 						// {
-						// 	title: 'Attachments',
+						// 	title: 'Metadata',
+						// 	id: 'metadata-panel' + idAppend,
 						// 	layout: 'fit',
-						// 	items: attachGrid
+						// 	items: metadataGrid
 						// },
 						{
-							title: 'Metadata',
-							id: 'metadata-panel' + idAppend,
-							layout: 'fit',
-							items: metadataGrid
-						},{
 							title: 'Log',
 							layout: 'fit',
 							id: 'history-tab' + idAppend,

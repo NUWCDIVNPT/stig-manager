@@ -89,6 +89,8 @@ function loadScripts() {
         "js/SM/CollectionGrant.js",
         "js/SM/FindingsPanel.js",
         "js/SM/Assignments.js",
+        "js/SM/asmcrypto.all.es5.js",
+        "js/SM/Attachments.js",
         "js/SM/Exports.js",
         "js/SM/Parsers.js",
         "js/SM/ReviewsImport.js",

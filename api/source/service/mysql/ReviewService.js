@@ -81,6 +81,10 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     ]
 
     // PROJECTIONS
+    if (inProjection.includes('metadata')) {
+      columns.push(`r.metadata`)
+      groupBy.push(`r.metadata`)
+    }
     if (inProjection.includes('stigs')) {
       columns.push(`json_arrayagg(sa.benchmarkId) as "stigs"`)
     }
@@ -128,14 +132,14 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     // PREDICATES
     let predicates = {
       statements: [],
-      binds: {}
+      binds: []
     }
     
     // Role/Assignment based access control 
     if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('cg.userId = :userId')
+      predicates.statements.push('cg.userId = ?')
       predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN (usa.userId = cg.userId AND sa.benchmarkId = revision.benchmarkId) ELSE TRUE END')
-      predicates.binds.userId = userObject.userId
+      predicates.binds.push(userObject.userId)
     }
 
     switch (inPredicates.rules) {
@@ -157,28 +161,28 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
 
       // COMMON
     if (inPredicates.collectionId) {
-      predicates.statements.push('asset.collectionId = :collectionId')
-      predicates.binds.collectionId = inPredicates.collectionId
+      predicates.statements.push('asset.collectionId = ?')
+      predicates.binds.push(inPredicates.collectionId)
     }
     if (inPredicates.result) {
-      predicates.statements.push('result.api = :result')
-      predicates.binds.result = inPredicates.result
+      predicates.statements.push('result.api = ?')
+      predicates.binds.push(inPredicates.result)
     }
     if (inPredicates.action) {
-      predicates.statements.push('action.api = :action')
-      predicates.binds.action = inPredicates.action
+      predicates.statements.push('action.api = ?')
+      predicates.binds.push(inPredicates.action)
     }
     if (inPredicates.status) {
-      predicates.statements.push('status.api = :status')
-      predicates.binds.status = inPredicates.status
+      predicates.statements.push('status.api = ?')
+      predicates.binds.push(inPredicates.status)
     }
     if (inPredicates.ruleId) {
-      predicates.statements.push('r.ruleId = :ruleId')
-      predicates.binds.ruleId = inPredicates.ruleId
+      predicates.statements.push('r.ruleId = ?')
+      predicates.binds.push(inPredicates.ruleId)
     }
     if (inPredicates.groupId) {
-      predicates.statements.push(`rg.groupId = :groupId`)
-      predicates.binds.groupId = inPredicates.groupId
+      predicates.statements.push(`rg.groupId = ?`)
+      predicates.binds.push(inPredicates.groupId)
     }
     if (inPredicates.cci) {
       predicates.statements.push(`r.ruleId IN (
@@ -187,22 +191,30 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         FROM
           rule_cci_map
         WHERE
-          cci = :cci
+          cci = ?
         )` )
-        predicates.binds.cci = inPredicates.cci
+        predicates.binds.push(inPredicates.cci)
     }
     if (inPredicates.userId) {
-      predicates.statements.push('r.userId = :userId2')
-      predicates.binds.userId2 = inPredicates.userId
+      predicates.statements.push('r.userId = ?')
+      predicates.binds.push(inPredicates.userId)
     }
     if (inPredicates.assetId) {
-      predicates.statements.push('r.assetId = :assetId')
-      predicates.binds.assetId = inPredicates.assetId
+      predicates.statements.push('r.assetId = ?')
+      predicates.binds.push(inPredicates.assetId)
     }
     if (inPredicates.benchmarkId) {
-        predicates.statements.push(`revision.benchmarkId = :benchmarkId`)
-        predicates.binds.benchmarkId = inPredicates.benchmarkId
+        predicates.statements.push(`revision.benchmarkId = ?`)
+        predicates.binds.push(inPredicates.benchmarkId)
     }
+    if ( inPredicates.metadata ) {
+      for (const pair of inPredicates.metadata) {
+        const [key, value] = pair.split(':')
+        predicates.statements.push('JSON_CONTAINS(r.metadata, ?, ?)')
+        predicates.binds.push( `"${value}"`,  `$.${key}`)
+      }
+    }
+
 
     // CONSTRUCT MAIN QUERY
     let sql = 'SELECT '
@@ -215,19 +227,12 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     sql += ` GROUP BY ${groupBy.join(', ')}`
     sql += ' order by r.assetId, r.ruleId'
 
-    connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
-    let [rows] = await connection.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
     return (rows)
   }
   catch (err) {
     throw err
-  }
-  finally {
-    if (typeof connection !== 'undefined') {
-      await connection.release()
-    }
   }
 }
 
@@ -312,7 +317,8 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
       actionId: body.action ? dbUtils.REVIEW_ACTION_API[body.action] : null,
       actionComment: body.actionComment || null,
       statusId: body.status ? dbUtils.REVIEW_STATUS_API[body.status] : null,
-      autoResult: body.autoResult? 1 : 0
+      autoResult: body.autoResult? 1 : 0,
+      metadata: body.metadata ? JSON.stringify(body.metadata) : '{}'
     }
 
     let binds = {
@@ -344,9 +350,9 @@ exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body,
       }
       let sqlInsert = `
         INSERT INTO review
-        (assetId, ruleId, resultId, resultComment, actionId, actionComment, statusId, userId, autoResult)
+        (assetId, ruleId, resultId, resultComment, actionId, actionComment, statusId, userId, autoResult, metadata)
         VALUES
-        (:assetId, :ruleId, :resultId, :resultComment, :actionId, :actionComment, :statusId, :userId, :autoResult)
+        (:assetId, :ruleId, :resultId, :resultComment, :actionId, :actionComment, :statusId, :userId, :autoResult, :metadata)
       `
       ;[result] = await connection.query(sqlInsert, binds)
       status = 'created'
@@ -393,7 +399,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       actionId,
       actionComment,
       statusId,
-      userId
+      userId,
+      metadata
     ) VALUES ? ON DUPLICATE KEY UPDATE 
       assetId = VALUES(assetId),
       ruleId = VALUES(ruleId),
@@ -404,6 +411,7 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
       actionComment = VALUES(actionComment),
       statusId = VALUES(statusId),
       userId = VALUES(userId),
+      metadata = VALUES(metadata),
       ts = UTC_TIMESTAMP()`
     let sqlHistory = `
     INSERT INTO review_history (
@@ -450,7 +458,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
         review.action ? dbUtils.REVIEW_ACTION_API[review.action] : null,
         review.actionComment || null,
         review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0,
-        userObject.userId
+        userObject.userId,
+        review.metadata ? JSON.stringify(review.metadata) : '{}'
       ])
       historyRules.push(review.ruleId) 
     }
@@ -520,6 +529,10 @@ exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, bod
     if (body.rejectUserId != undefined) {
       values.rejectUserId = body.rejectUserId
     }
+    if (body.metadata != undefined) {
+      values.metadata = JSON.stringify(body.metadata)
+    }
+
 
     let binds = {
       assetId: assetId,
@@ -667,4 +680,109 @@ exports.checkRuleByAssetUser = async function (ruleId, assetId, userObject) {
     return rows.length > 0
   }
   finally { }
+}
+
+exports.getReviewMetadataKeys = async function ( assetId, ruleId ) {
+  const binds = []
+  let sql = `
+    select
+      JSON_KEYS(metadata) as keyArray
+    from 
+      review r
+    where 
+      r.assetId = ?
+      and r.ruleId = ?`
+  binds.push(assetId, ruleId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].keyArray : []
+}
+
+exports.getReviewMetadata = async function ( assetId, ruleId ) {
+    const binds = []
+    let sql = `
+      select
+        metadata 
+      from 
+        review r
+      where 
+        r.assetId = ?
+        and r.ruleId = ?`
+    binds.push(assetId, ruleId)
+    let [rows] = await dbUtils.pool.query(sql, binds)
+    return rows.length > 0 ? rows[0].metadata : {}
+}
+
+exports.patchReviewMetadata = async function ( assetId, ruleId, metadata ) {
+  const binds = []
+  let sql = `
+    update
+      review 
+    set 
+      metadata = JSON_MERGE_PATCH(metadata, ?)
+    where 
+      assetId = ?
+      and ruleId = ?`
+  binds.push(JSON.stringify(metadata), assetId, ruleId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return true
+}
+
+exports.putReviewMetadata = async function ( assetId, ruleId, metadata ) {
+  const binds = []
+  let sql = `
+    update
+      review
+    set 
+      metadata = ?
+    where 
+      assetId = ?
+      and ruleId = ?`
+  binds.push(JSON.stringify(metadata), assetId, ruleId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return true
+}
+
+exports.getReviewMetadataValue = async function ( assetId, ruleId, key ) {
+  const binds = []
+  let sql = `
+    select
+      JSON_EXTRACT(metadata, ?) as value
+    from 
+      review r
+    where 
+      r.assetId = ?
+      and r.ruleId = ?`
+  binds.push(`$."${key}"`, assetId, ruleId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].value : ""
+}
+
+exports.putReviewMetadataValue = async function ( assetId, ruleId, key, value ) {
+  const binds = []
+  let sql = `
+    update
+      review
+    set 
+      metadata = JSON_SET(metadata, ?, ?)
+    where 
+      assetId = ?
+      and ruleId = ?`
+  binds.push(`$."${key}"`, value, assetId, ruleId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].value : ""
+}
+
+exports.deleteReviewMetadataKey = async function ( assetId, ruleId, key ) {
+  const binds = []
+  let sql = `
+    update
+      review 
+    set 
+      metadata = JSON_REMOVE(metadata, ?)
+    where 
+      assetId = ?
+      and ruleId = ?`
+binds.push(`$."${key}"`, assetId, ruleId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].value : ""
 }
