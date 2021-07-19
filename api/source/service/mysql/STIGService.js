@@ -328,19 +328,10 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     columns.push(`(select 
       coalesce
       (
-        (select json_arrayagg (
-          json_object(
-            'cci', rc.cci,
-            'apAcronym', cci.apAcronym,
-            'control',  cr.indexDisa
-          )
-        ) 
-        from
-          rule_cci_map rc 
-          left join cci cci on rc.cci = cci.cci
-          left join cci_reference_map cr on cci.cci = cr.cci
-        where 
-          rc.ruleId = r.ruleId
+        (
+          select json_arrayagg (rc.cci)
+          from rule_cci_map rc 
+          where rc.ruleId = r.ruleId
         ), 
         json_array()
       )
