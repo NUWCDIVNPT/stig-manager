@@ -293,26 +293,21 @@ Generalized queries for a single Rule, optionally with Check and Fix
 exports.queryRules = async function ( ruleId, inProjection ) {
   let columns = [
     'r.ruleId',
-    'r.title',
     'r.version',
+    'r.title',
     'r.severity',
-    'r.weight',
-    'r.vulnDiscussion',
-    'r.falsePositives',
-    'r.falseNegatives',
-    'r.documentable',
-    'r.mitigations',
-    'r.severityOverrideGuidance',
-    'r.potentialImpacts',
-    'r.thirdPartyTools',
-    'r.mitigationControl',
-    'r.responsibility'
+    'g.groupId',
+    'g.Title as "groupTitle"'
   ]
 
   let joins = [
-    'rule r'
-  ]
-
+    'revision rev ',
+    'left join rev_group_map rg on rev.revId = rg.revId ',
+    'left join rev_group_rule_map rgr on rg.rgId = rgr.rgId ', 
+    'left join `group` g on rg.groupId = g.groupId ',
+    'left join rule r on rgr.ruleId = r.ruleId ' 
+    ]
+  
   let predicates = {
     statements: [],
     binds: []
@@ -324,6 +319,22 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
+  if ( inProjection && inProjection.includes('detail') ) {
+    columns.push(
+      'r.weight',
+      'r.vulnDiscussion',
+      'r.falsePositives',
+      'r.falseNegatives',
+      'r.documentable',
+      'r.mitigations',
+      'r.severityOverrideGuidance',
+      'r.potentialImpacts',
+      'r.thirdPartyTools',
+      'r.mitigationControl',
+      'r.responsibility'
+    )
+  }
+
   if ( inProjection && inProjection.includes('ccis') ) {
     columns.push(`(select 
       coalesce
@@ -357,12 +368,6 @@ exports.queryRules = async function ( ruleId, inProjection ) {
         left join rev_group_rule_map rgr on rf.rgrId = rgr.rgrId
       where rgr.ruleId = r.ruleId) as "fixes"`)
   }  
-
-  if ( inProjection && inProjection.includes('detail') ) {
-    columns.push(
-      'r.iacontrols'
-    )
-  }
 
 
   // CONSTRUCT MAIN QUERY
