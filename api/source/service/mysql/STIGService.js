@@ -307,11 +307,12 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     'r.thirdPartyTools',
     'r.mitigationControl',
     'r.responsibility'
-]
+  ]
 
   let joins = [
     'rule r'
   ]
+
   let predicates = {
     statements: [],
     binds: []
@@ -323,39 +324,86 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
-  if ( inProjection && inProjection.includes('cci') ) {
+  if ( inProjection && inProjection.includes('ccis') ) {
+    columns.push(`(select 
+      coalesce
+      (
+        (select json_arrayagg (
+          json_object(
+            'cci', rc.cci,
+            'apAcronym', cci.apAcronym,
+            'control',  cr.indexDisa
+          )
+        ) 
+        from
+          rule_cci_map rc 
+          left join cci cci on rc.cci = cci.cci
+          left join cci_reference_map cr on cci.cci = cr.cci
+        where 
+          rc.ruleId = r.ruleId
+        ), 
+        json_array()
+      )
+    ) as "ccis"`)
   }
+
+  if ( inProjection && inProjection.includes('checks') ) {
+    columns.push(`(select json_arrayagg(json_object(
+      'checkId', rck.checkId,
+      'content', chk.content))
+      from rev_group_rule_check_map rck 
+        left join \`check\` chk on chk.checkId = rck.checkId
+        left join rev_group_rule_map rgr on rck.rgrId = rgr.rgrId
+      where rgr.ruleId = r.ruleId) as "checks"`)
+  }
+
+  if ( inProjection && inProjection.includes('fixes') ) {
+    columns.push(`(select json_arrayagg(json_object(
+      'fixId', rf.fixId,
+      'text', fix.text))
+      from rev_group_rule_fix_map rf 
+        left join fix fix on fix.fixId = rf.fixId
+        left join rev_group_rule_map rgr on rf.rgrId = rgr.rgrId
+      where rgr.ruleId = r.ruleId) as "fixes"`)
+  }  
+
+  if ( inProjection && inProjection.includes('detail') ) {
+    columns.push(
+      'r.iacontrols'
+    )
+  }
+
 
   // CONSTRUCT MAIN QUERY
   let sql = 'SELECT '
-  sql+= columns.join(",\n")
+  sql += columns.join(",\n")
   sql += ' FROM '
-  sql+= joins.join(" \n")
+  sql += joins.join(" \n")
+
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  // if (inProjection && inProjection.includes('rules')) {
-  //   sql += "\nGROUP BY g.groupId, g.title\n"
-  // }  
+
   sql += ` order by substring(r.ruleId from 4) + 0`
 
   try {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
 
     // For JSON.stringify(), remove keys with null value
-    result.rows.toJSON = function () {
+    rows.toJSON = function () {
       for (let x = 0, l = this.length; x < l; x++) {
         let record = this[x]
         Object.keys(record).forEach(key => record[key] == null && delete record[key])
       }
       return this
     }
-    return (rows)
+    return (rows[0])
   }
   catch (err) {
     throw err
   }  
 }
+
 
 exports.insertManualBenchmark = async function (b) {
   function dmlObjectFromBenchmarkData (b) {

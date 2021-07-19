@@ -2033,7 +2033,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RuleDetailProjected'
+                  $ref: '#/components/schemas/RuleProjected'
         default:
           description: unexpected error
           content:
@@ -2483,17 +2483,6 @@ components:
         textRefNist:
           type: string
         parentControl:
-          type: string
-    CciRuleItem:
-      type: object
-      properties:
-        cci:
-          type: string
-        apAcronym:
-          description: eMASS Assessment Procedure
-          type: string
-        control:
-          description: NIST 800-53r4 control
           type: string
     Check:
       type: object
@@ -3245,21 +3234,6 @@ components:
           type: string
         revisionStr:
           type: string
-    Rule:
-      type: object
-      properties:
-        ruleId:
-          type: string
-        groupId:
-          type: string
-        groupTitle:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string
     RuleAbbr:
       type: object
       properties:
@@ -3271,27 +3245,30 @@ components:
           type: string
         severity:
           type: string
-    RuleDetailProjected:
-      allOf:
-        - $ref: '#/components/schemas/RuleProjected'
-        - type: object
-          properties:
-            cci:
-              type: array
-              items:
-                $ref: '#/components/schemas/CciRuleItem'
-            checks:
-              type: array
-              items:
-                $ref: '#/components/schemas/Check'
-            fixes:
-              type: array
-              items:
-                $ref: '#/components/schemas/Fix'
     RuleProjected:
-      allOf:
-        - $ref: '#/components/schemas/Rule'
-        - type: object
+      type: object
+      required:
+        - ruleId
+        - version
+        - title
+        - severity
+        - groupId
+        - groupTitle
+      properties:
+        ruleId:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        severity:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
+          type: string
+        detail:
+          type: object
           properties:
             weight:
               type: string
@@ -3314,7 +3291,19 @@ components:
             mitigationControl:
               type: string
             responsibility:
-              type: string
+              type: string              
+        ccis:
+          type: array
+          items:
+            type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+        fixes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fix'
     RuleSeverity:
       type: string
       enum:
@@ -3806,23 +3795,10 @@ components:
         items:
           type: string
           enum:
-            - details
-            - cci
+            - detail
+            - ccis
             - checks
             - fixes
-    RulesProjectionQuery:
-      name: projection
-      in: query
-      description: |
-        Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - details
     StigAssetsProjectionQuery:
       name: projection
       in: query
