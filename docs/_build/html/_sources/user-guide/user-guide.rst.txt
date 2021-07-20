@@ -214,7 +214,7 @@ Double-click on any part of the Review Evaluation for an Asset to change them.  
 
 Resources Panel
 -------------------
-This Panel provides access to the Feedback, Metadata, and History tabs.
+This Panel provides access to the Feedback, Attachments, and Log tabs.
 
 Feedback 
 ~~~~~~~~~~~~~~~~~
@@ -225,13 +225,15 @@ If Owner
 If the User is an Owner of the Collection, they will also have the option to Accept or Reject reviews.
 Reviews can be Accepted with the button at the top of the Reviews Panel, or Rejected with the Feedback function at the bottom of this workspace.
 
-Metadata Tab
-~~~~~~~~~~~~~~~~~~~~~
-The Metadata panel provides additional information about the selected Asset and Review.
 
-History Tab
+Attachments tab
+~~~~~~~~~~~~~~~~~
+The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/cd-rite/stig-manager/issues/new/choose>`_ are submitted. 
+
+
+Log Tab
 ~~~~~~~~~~~~~~~~~~~~
-The History Panel displays a record of the Review as it has changed over time.
+The Log Panel displays a record of the Review as it has changed over time.
 
 ================================
 
@@ -242,7 +244,7 @@ The History Panel displays a record of the Review as it has changed over time.
 
 Asset Review Workspace
 ====================================
-The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's History, and Feedback.
+The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's Log, and Feedback.
 Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.
 
 .. thumbnail:: /assets/images/asset-review.png
@@ -284,6 +286,21 @@ Review Resources Panel
 ------------------------
 This Panel provides resources that may be useful in performing the Rule's Evaluation.
 
+Attachments tab
+~~~~~~~~~~~~~~~~~
+The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/cd-rite/stig-manager/issues/new/choose>`_ are submitted. 
+
+.. thumbnail:: /assets/images/attachments-hover-crop.png
+      :width: 25% 
+      :show_caption: True
+      :title: Attachments Tab
+
+.. thumbnail:: /assets/images/attachments-preview-crop.png
+      :width: 25% 
+      :show_caption: True
+      :title: Attachment Preview
+
+|
 
 Other Assets tab
 ~~~~~~~~~~~~~~~~~
@@ -294,9 +311,9 @@ Feedback tab
 ~~~~~~~~~~~~~~~~~~
 If this Review has been Rejected, Feedback provided by the Collection Owner is displayed here.
 
-History tab
+Log tab
 ~~~~~~~~~~~~~~~~~
-This History tab displays how this Review has changed over time.
+This Log tab displays how this Review has changed over time.
 
 
 Review Panel

@@ -125,7 +125,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#individual-findings">2.6.2. Individual Findings</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#id7">2.7. Status Report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">2.7. Status Report</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#collection-management-workspace">2.8. Collection Management Workspace</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#collection-properties-panel">2.8.1. Collection Properties Panel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#grants-panel">2.8.2. Grants Panel</a></li>
@@ -347,12 +347,12 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 <div class="section" id="findings-report">
 <h5>Findings Report<a class="headerlink" href="#findings-report" title="Permalink to this headline">¶</a></h5>
 <p>The Findings Report provides a way to engage with all “Open” findings in a Collection, and generate a precursor POA&amp;M from them.</p>
-<p>See <a class="reference internal" href="#id6"><span class="std std-ref">Findings Report Workspace</span></a> for more info.</p>
+<p>See <a class="reference internal" href="#id8"><span class="std std-ref">Findings Report Workspace</span></a> for more info.</p>
 </div>
 <div class="section" id="status-report">
 <h5>Status Report<a class="headerlink" href="#status-report" title="Permalink to this headline">¶</a></h5>
 <p>The Status Report provides a way to judge progress and status of all Reviews in a Collection.</p>
-<p>See <a class="reference internal" href="#id7"><span class="std std-ref">Status Report</span></a> for more info.</p>
+<p>See <a class="reference internal" href="#id9"><span class="std std-ref">Status Report</span></a> for more info.</p>
 <hr class="docutils" />
 </div>
 </div>
@@ -406,7 +406,7 @@ The Reviews can be Submitted, Accepted, and modified from this panel.</p>
 </div>
 <div class="section" id="resources-panel">
 <h3><span class="section-number">2.4.4. </span>Resources Panel<a class="headerlink" href="#resources-panel" title="Permalink to this headline">¶</a></h3>
-<p>This Panel provides access to the Feedback, Metadata, and History tabs.</p>
+<p>This Panel provides access to the Feedback, Attachments, and Log tabs.</p>
 <div class="section" id="feedback">
 <h4><span class="section-number">2.4.4.1. </span>Feedback<a class="headerlink" href="#feedback" title="Permalink to this headline">¶</a></h4>
 <p>The Feedback function allows Users to see any Feedback submitted about their review, and, if they are a Collection Owner, to reject, with feedback, any review in their Collection.</p>
@@ -416,20 +416,20 @@ The Reviews can be Submitted, Accepted, and modified from this panel.</p>
 Reviews can be Accepted with the button at the top of the Reviews Panel, or Rejected with the Feedback function at the bottom of this workspace.</p>
 </div>
 </div>
-<div class="section" id="metadata-tab">
-<h4><span class="section-number">2.4.4.2. </span>Metadata Tab<a class="headerlink" href="#metadata-tab" title="Permalink to this headline">¶</a></h4>
-<p>The Metadata panel provides additional information about the selected Asset and Review.</p>
+<div class="section" id="attachments-tab">
+<h4><span class="section-number">2.4.4.2. </span>Attachments tab<a class="headerlink" href="#attachments-tab" title="Permalink to this headline">¶</a></h4>
+<p>The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The “Attach Image…” button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if <a class="reference external" href="https://github.com/cd-rite/stig-manager/issues/new/choose">Feature Requests</a> are submitted.</p>
 </div>
-<div class="section" id="history-tab">
-<h4><span class="section-number">2.4.4.3. </span>History Tab<a class="headerlink" href="#history-tab" title="Permalink to this headline">¶</a></h4>
-<p>The History Panel displays a record of the Review as it has changed over time.</p>
+<div class="section" id="log-tab">
+<h4><span class="section-number">2.4.4.3. </span>Log Tab<a class="headerlink" href="#log-tab" title="Permalink to this headline">¶</a></h4>
+<p>The Log Panel displays a record of the Review as it has changed over time.</p>
 <hr class="docutils" />
 </div>
 </div>
 </div>
 <div class="section" id="asset-review-workspace">
 <span id="index-4"></span><span id="id3"></span><h2><span class="section-number">2.5. </span>Asset Review Workspace<a class="headerlink" href="#asset-review-workspace" title="Permalink to this headline">¶</a></h2>
-<p>The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review’s History, and Feedback.
+<p>The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review’s Log, and Feedback.
 Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.</p>
 <figure class="">
             <a 
@@ -476,17 +476,48 @@ It also provides information about the Controls associated with this Rule, inclu
 <div class="section" id="review-resources-panel">
 <h3><span class="section-number">2.5.3. </span>Review Resources Panel<a class="headerlink" href="#review-resources-panel" title="Permalink to this headline">¶</a></h3>
 <p>This Panel provides resources that may be useful in performing the Rule’s Evaluation.</p>
+<div class="section" id="id5">
+<h4><span class="section-number">2.5.3.1. </span>Attachments tab<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<p>The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The “Attach Image…” button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if <a class="reference external" href="https://github.com/cd-rite/stig-manager/issues/new/choose">Feature Requests</a> are submitted.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/attachments-hover-crop1.png"
+               title="Attachments Tab"
+               data-title="Attachments Tab"
+               ><img src="../_images/attachments-hover-crop1.png"
+                     class=""
+                     width="25%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Attachments Tab</figcaption>
+            </figure><figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/attachments-preview-crop1.png"
+               title="Attachment Preview"
+               data-title="Attachment Preview"
+               ><img src="../_images/attachments-preview-crop1.png"
+                     class=""
+                     width="25%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Attachment Preview</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
 <div class="section" id="other-assets-tab">
-<h4><span class="section-number">2.5.3.1. </span>Other Assets tab<a class="headerlink" href="#other-assets-tab" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">2.5.3.2. </span>Other Assets tab<a class="headerlink" href="#other-assets-tab" title="Permalink to this headline">¶</a></h4>
 <p>The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset’s Review Panel below.</p>
 </div>
 <div class="section" id="feedback-tab">
-<h4><span class="section-number">2.5.3.2. </span>Feedback tab<a class="headerlink" href="#feedback-tab" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">2.5.3.3. </span>Feedback tab<a class="headerlink" href="#feedback-tab" title="Permalink to this headline">¶</a></h4>
 <p>If this Review has been Rejected, Feedback provided by the Collection Owner is displayed here.</p>
 </div>
-<div class="section" id="id5">
-<h4><span class="section-number">2.5.3.3. </span>History tab<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
-<p>This History tab displays how this Review has changed over time.</p>
+<div class="section" id="id7">
+<h4><span class="section-number">2.5.3.4. </span>Log tab<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<p>This Log tab displays how this Review has changed over time.</p>
 </div>
 </div>
 <div class="section" id="review-panel">
@@ -517,7 +548,7 @@ In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIAT
 </div>
 </div>
 <div class="section" id="findings-report-workspace">
-<span id="id6"></span><h2><span class="section-number">2.6. </span>Findings Report Workspace<a class="headerlink" href="#findings-report-workspace" title="Permalink to this headline">¶</a></h2>
+<span id="id8"></span><h2><span class="section-number">2.6. </span>Findings Report Workspace<a class="headerlink" href="#findings-report-workspace" title="Permalink to this headline">¶</a></h2>
 <p>The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.</p>
 <figure class="">
             <a 
@@ -552,8 +583,8 @@ Information about the Asset, Rule, Action, Last Modified Date, and applicable ST
 <hr class="docutils" />
 </div>
 </div>
-<div class="section" id="id7">
-<span id="id8"></span><h2><span class="section-number">2.7. </span>Status Report<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id9">
+<span id="id10"></span><h2><span class="section-number">2.7. </span>Status Report<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
 <p>Provides a view of the overall Status and Evaluation progress of the entire Collection.</p>
 <p>This report can be grouped by Asset or by STIG using the Grouping options at the top of the panel.</p>
 <p>This report consists of the total number of Checks associated with each Asset or STIG accross the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Returned, and Accepted as a way to guage overall Evaluation progress of the Collection.  The total number of “Open” Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.</p>
@@ -618,7 +649,7 @@ From this Workspace, the User can:</p>
             </figure><hr class="docutils" />
 </div>
 <div class="section" id="grants-panel">
-<span id="id9"></span><h3><span class="section-number">2.8.2. </span>Grants Panel<a class="headerlink" href="#grants-panel" title="Permalink to this headline">¶</a></h3>
+<span id="id11"></span><h3><span class="section-number">2.8.2. </span>Grants Panel<a class="headerlink" href="#grants-panel" title="Permalink to this headline">¶</a></h3>
 <p>This Panel displays all the Users who have access to some portion of this Collection.</p>
 <p>User Grants can be added or removed using toolbar buttons at the top of this Panel. Double-clicking a Grant will allow you to modify the Grant. When creating or modifying a Grant, typing into the Username field will display a filtered droplist of the available users.</p>
 <p>See <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> for more info about these Access Levels.</p>
@@ -913,8 +944,8 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <p>When the STIG Manager Client imports data from <a class="reference internal" href="../reference/index.html#term-ckl"><span class="xref std std-term">.ckl files</span></a>, in the simplest case it will attempt to match (and, in some instances, create) the Asset specified in the .ckl’s <code class="docutils literal notranslate"><span class="pre">&lt;HOST_NAME&gt;</span></code> element.  However, if the <code class="docutils literal notranslate"><span class="pre">&lt;ASSET&gt;&lt;WEB_OR_DATABASE&gt;</span></code> element in the .ckl has a value of <code class="docutils literal notranslate"><span class="pre">true</span></code>, special processing is invoked. This processing will attempt to match the <code class="docutils literal notranslate"><span class="pre">&lt;HOST_NAME&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;WEB_DB_SITE&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;WEB_DB_INSTANCE&gt;</span></code> values in the .ckl with Asset metadata when identifying the Asset.  When the STIG Manager Client creates Assets from .ckls with these elements populated, it will populate the same Asset metadata according to the table below.</p>
 <p>Conversely, when STIG Manager produces a .ckl file from an Asset that has the below metadata values set, it will populate the appropriate .ckl elements.</p>
 <p>The following metadata properties are used when the value of <code class="docutils literal notranslate"><span class="pre">&lt;ASSET&gt;&lt;WEB_OR_DATABASE&gt;</span></code>  is <code class="docutils literal notranslate"><span class="pre">true</span></code>:</p>
-<table class="colwidths-given tight-table docutils align-default" id="id10">
-<caption><span class="caption-text"><strong>CKL elements map to STIG Manager Asset metadata</strong></span><a class="headerlink" href="#id10" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given tight-table docutils align-default" id="id12">
+<caption><span class="caption-text"><strong>CKL elements map to STIG Manager Asset metadata</strong></span><a class="headerlink" href="#id12" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 20%" />
