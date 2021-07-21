@@ -228,7 +228,7 @@ Reviews can be Accepted with the button at the top of the Reviews Panel, or Reje
 
 Attachments tab
 ~~~~~~~~~~~~~~~~~
-The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/cd-rite/stig-manager/issues/new/choose>`_ are submitted. 
+The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
 
 
 Log Tab
@@ -288,7 +288,7 @@ This Panel provides resources that may be useful in performing the Rule's Evalua
 
 Attachments tab
 ~~~~~~~~~~~~~~~~~
-The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/cd-rite/stig-manager/issues/new/choose>`_ are submitted. 
+The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
 
 .. thumbnail:: /assets/images/attachments-hover-crop.png
       :width: 25% 
