@@ -35,6 +35,11 @@ Setup Options
 
 STIG Manager requires Node.js 14+, Keycloak, and a MySQL Database. It is configured using :ref:`Environment Variables`, and can be deployed as a container from the image provided on Docker Hub or directly from source code.  
 
+Quick Start Orchestration with Docker Compose
+-------------------------------------------------
+
+To quickly establish a demonstration instance of STIG Manager, follow the `Quick Start Orchestration instructions on Docker Hub. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
+
 
 Container Deployment with Docker Desktop
 -------------------------------------------------
