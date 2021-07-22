@@ -983,7 +983,12 @@ exports.getCci = async function(cci, inProjection, userObject) {
         (
           select json_arrayagg (json_object(
             'creator', crm.creator,
-            'title', crm.title
+            'title', crm.title,
+            'version', crm.version,
+            'location', crm.location,
+            'indexDisa', crm.indexDisa,
+            'textRefNist', crm.textRefNist,
+            'parentControl', crm.parentControl
           ))
           from cci_reference_map crm
           where crm.cci = c.cci
@@ -1058,8 +1063,13 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
           c.type,
         COALESCE((
           SELECT JSON_ARRAYAGG(JSON_OBJECT(
-            "creator", crm.creator,
-            "title", crm.title
+            'creator', crm.creator,
+            'title', crm.title,
+            'version', crm.version,
+            'location', crm.location,
+            'indexDisa', crm.indexDisa,
+            'textRefNist', crm.textRefNist,
+            'parentControl', crm.parentControl
           ))
           FROM cci_reference_map crm
           WHERE crm.cci = c.cci
