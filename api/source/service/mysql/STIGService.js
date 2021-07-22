@@ -286,25 +286,30 @@ Generalized queries for a single Rule, optionally with Check and Fix
 exports.queryRules = async function ( ruleId, inProjection ) {
   let columns = [
     'r.ruleId',
-    'r.title',
     'r.version',
+    'r.title',
     'r.severity',
-    'r.weight',
-    'r.vulnDiscussion',
-    'r.falsePositives',
-    'r.falseNegatives',
-    'r.documentable',
-    'r.mitigations',
-    'r.severityOverrideGuidance',
-    'r.potentialImpacts',
-    'r.thirdPartyTools',
-    'r.mitigationControl',
-    'r.responsibility'
-]
+    'g.groupId',
+    'g.Title as "groupTitle"'
+  ]
+  
+  let groupBy = [
+    'r.ruleId',
+    'r.version',
+    'r.title',
+    'r.severity',
+    'g.groupId',
+    'g.Title'
+  ]
 
   let joins = [
-    'rule r'
+    'rule r',
+    'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
+    'left join rev_group_map rg on rgr.rgId = rg.rgId',
+    'left join `group` g on rg.groupId = g.groupId'
   ]
+
+
   let predicates = {
     statements: [],
     binds: []
@@ -314,41 +319,86 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   predicates.statements.push('r.ruleId = ?')
   predicates.binds.push(ruleId)
   
+
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
-  if ( inProjection && inProjection.includes('cci') ) {
+  if ( inProjection && inProjection.includes('detail') ) {
+    let detailColumns = [
+      'r.weight',
+      'r.vulnDiscussion',
+      'r.falsePositives',
+      'r.falseNegatives',
+      'r.documentable',
+      'r.mitigations',
+      'r.severityOverrideGuidance',
+      'r.potentialImpacts',
+      'r.thirdPartyTools',
+      'r.mitigationControl',
+      'r.responsibility'
+    ]
+
+    columns.push(...detailColumns)
+    groupBy.push(...detailColumns)
   }
+
+  if ( inProjection && inProjection.includes('ccis') ) {
+    columns.push(`(select 
+      coalesce
+      (
+        (
+          select json_arrayagg (rc.cci)
+          from rule_cci_map rc 
+          where rc.ruleId = r.ruleId
+        ), 
+        json_array()
+      )
+    ) as "ccis"`)
+  }
+
+  if ( inProjection && inProjection.includes('checks') ) {
+    columns.push(`(select json_arrayagg(json_object(
+      'checkId', rck.checkId,
+      'content', chk.content))
+      from rev_group_rule_check_map rck 
+        left join \`check\` chk on chk.checkId = rck.checkId
+        left join rev_group_rule_map rgr on rck.rgrId = rgr.rgrId
+      where rgr.ruleId = r.ruleId) as "checks"`)
+  }
+
+  if ( inProjection && inProjection.includes('fixes') ) {
+    columns.push(`(select json_arrayagg(json_object(
+      'fixId', rf.fixId,
+      'text', fix.text))
+      from rev_group_rule_fix_map rf 
+        left join fix fix on fix.fixId = rf.fixId
+        left join rev_group_rule_map rgr on rf.rgrId = rgr.rgrId
+      where rgr.ruleId = r.ruleId) as "fixes"`)
+  }  
+
 
   // CONSTRUCT MAIN QUERY
   let sql = 'SELECT '
-  sql+= columns.join(",\n")
+  sql += columns.join(",\n")
   sql += ' FROM '
-  sql+= joins.join(" \n")
+  sql += joins.join(" \n")
+
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  // if (inProjection && inProjection.includes('rules')) {
-  //   sql += "\nGROUP BY g.groupId, g.title\n"
-  // }  
-  sql += ` order by substring(r.ruleId from 4) + 0`
+
+  sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
+
+  sql += ` ORDER BY substring(r.ruleId from 4) + 0`
 
   try {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
-
-    // For JSON.stringify(), remove keys with null value
-    result.rows.toJSON = function () {
-      for (let x = 0, l = this.length; x < l; x++) {
-        let record = this[x]
-        Object.keys(record).forEach(key => record[key] == null && delete record[key])
-      }
-      return this
-    }
-    return (rows)
+    return (rows[0])
   }
   catch (err) {
     throw err
   }  
 }
+
 
 exports.insertManualBenchmark = async function (b) {
   function dmlObjectFromBenchmarkData (b) {
