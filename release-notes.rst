@@ -1,3 +1,8 @@
+1.0.0-beta.36
+-----------------------
+- fix: UI now handles missing vulnDiscussion (#361)
+- doc: Fixed link to create new github issues (#358)
+
 1.0.0-beta.35
 -----------------------
 - doc: document Attachment feature; reorganize with minor terminology changes. (#357)

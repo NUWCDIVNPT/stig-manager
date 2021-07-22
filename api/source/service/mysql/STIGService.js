@@ -271,14 +271,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   sql += ` order by substring(r.ruleId from 4) + 0`
 
   try {
-    let formatted = dbUtils.pool.format(sql, predicates.binds)
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
-    for (let x = 0, l = rows.length; x < l; x++) {
-      let record = rows[x]
-      // remove keys with null value
-      Object.keys(record).forEach(key => record[key] == null && delete record[key])
-    }
-
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)
   }
   catch (err) {
