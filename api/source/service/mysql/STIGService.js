@@ -1035,7 +1035,6 @@ exports.getCci = async function(cci, inProjection, userObject) {
     return (rows[0])
   }
   catch(err) {
-    console.log(sql);
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
@@ -1083,19 +1082,6 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   catch(err) {
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
-
-  /*
-    CciListItem:
-      type: object
-      properties:
-        cci:
-          type: string
-        type:
-          type: string
-        references:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciReferenceItem'*/  
 }
 
 
