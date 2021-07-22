@@ -286,6 +286,8 @@ Generalized queries for a single Rule, optionally with Check and Fix
 exports.queryRules = async function ( ruleId, inProjection ) {
   let columns = [
     'r.ruleId',
+<<<<<<< HEAD
+=======
     'r.version',
     'r.title',
     'r.severity',
@@ -295,10 +297,24 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   
   let groupBy = [
     'r.ruleId',
+>>>>>>> main
     'r.version',
     'r.title',
     'r.severity',
     'g.groupId',
+<<<<<<< HEAD
+    'g.Title as "groupTitle"'
+  ]
+
+  let joins = [
+    'revision rev ',
+    'left join rev_group_map rg on rev.revId = rg.revId ',
+    'left join rev_group_rule_map rgr on rg.rgId = rgr.rgId ', 
+    'left join `group` g on rg.groupId = g.groupId ',
+    'left join rule r on rgr.ruleId = r.ruleId ' 
+    ]
+  
+=======
     'g.Title'
   ]
 
@@ -310,6 +326,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   ]
 
 
+>>>>>>> main
   let predicates = {
     statements: [],
     binds: []
@@ -323,7 +340,11 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
   if ( inProjection && inProjection.includes('detail') ) {
+<<<<<<< HEAD
+    columns.push(
+=======
     let detailColumns = [
+>>>>>>> main
       'r.weight',
       'r.vulnDiscussion',
       'r.falsePositives',
@@ -335,6 +356,25 @@ exports.queryRules = async function ( ruleId, inProjection ) {
       'r.thirdPartyTools',
       'r.mitigationControl',
       'r.responsibility'
+<<<<<<< HEAD
+    )
+  }
+
+  if ( inProjection && inProjection.includes('ccis') ) {
+    columns.push(`(select 
+      coalesce
+      (
+        (
+          select json_arrayagg (rc.cci)
+          from rule_cci_map rc 
+          where rc.ruleId = r.ruleId
+        ), 
+        json_array()
+      )
+    ) as "ccis"`)
+  }
+
+=======
     ]
 
     columns.push(...detailColumns)
@@ -355,6 +395,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     ) as "ccis"`)
   }
 
+>>>>>>> main
   if ( inProjection && inProjection.includes('checks') ) {
     columns.push(`(select json_arrayagg(json_object(
       'checkId', rck.checkId,
@@ -386,12 +427,28 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
 
+<<<<<<< HEAD
+  sql += ` order by substring(r.ruleId from 4) + 0`
+
+  try {
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+
+    // For JSON.stringify(), remove keys with null value
+    rows.toJSON = function () {
+      for (let x = 0, l = this.length; x < l; x++) {
+        let record = this[x]
+        Object.keys(record).forEach(key => record[key] == null && delete record[key])
+      }
+      return this
+    }
+=======
   sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
 
   sql += ` ORDER BY substring(r.ruleId from 4) + 0`
 
   try {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+>>>>>>> main
     return (rows[0])
   }
   catch (err) {
