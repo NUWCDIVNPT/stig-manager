@@ -185,23 +185,21 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   joins.push('left join rule r on rgr.ruleId = r.ruleId' )
 
   // PROJECTIONS
-  // Include extra columns for Rules with details OR individual Rule
-  if ( inProjection && inProjection.includes('details') ) {
-    columns.push(
-      'r.version',
-      'r.weight',
-      'r.vulnDiscussion',
-      'r.falsePositives',
-      'r.falseNegatives',
-      'r.documentable',
-      'r.mitigations',
-      'r.severityOverrideGuidance',
-      'r.potentialImpacts',
-      'r.thirdPartyTools',
-      'r.mitigationControl',
-      'r.responsibility',
-      'r.iacontrols'
-    )
+  if ( inProjection && inProjection.includes('detail') ) {
+    columns.push(`json_object(
+      'version', r.version,
+      'weight', r.weight,
+      'vulnDiscussion', r.vulnDiscussion,
+      'falsePositives', r.falsePositives,
+      'falseNegatives', r.falseNegatives,
+      'documentable', r.documentable,
+      'mitigations', r.mitigations,
+      'severityOverrideGuidance', r.severityOverrideGuidance,
+      'potentialImpacts', r.potentialImpacts,
+      'thirdPartyTools', r.thirdPartyTools,
+      'mitigationControl', r.mitigationControl,
+      'responsibility', r.responsibility
+    ) as detail`)
     groupBy.push(
       'r.version',
       'r.weight',
@@ -219,7 +217,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     )
   }
 
-  if ( inProjection && inProjection.includes('cci') ) {
+  if ( inProjection && inProjection.includes('ccis') ) {
     columns.push(`(select 
       coalesce
       (
@@ -321,8 +319,21 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   
 
   // PROJECTIONS
-  // Include extra columns for Rules with details OR individual Rule
   if ( inProjection && inProjection.includes('detail') ) {
+    columns.push(`json_object(
+      'version', r.version,
+      'weight', r.weight,
+      'vulnDiscussion', r.vulnDiscussion,
+      'falsePositives', r.falsePositives,
+      'falseNegatives', r.falseNegatives,
+      'documentable', r.documentable,
+      'mitigations', r.mitigations,
+      'severityOverrideGuidance', r.severityOverrideGuidance,
+      'potentialImpacts', r.potentialImpacts,
+      'thirdPartyTools', r.thirdPartyTools,
+      'mitigationControl', r.mitigationControl,
+      'responsibility', r.responsibility
+    ) as detail`)
     let detailColumns = [
       'r.weight',
       'r.vulnDiscussion',
@@ -336,8 +347,6 @@ exports.queryRules = async function ( ruleId, inProjection ) {
       'r.mitigationControl',
       'r.responsibility'
     ]
-
-    columns.push(...detailColumns)
     groupBy.push(...detailColumns)
   }
 

@@ -1063,8 +1063,7 @@ async function handleGroupSelectionForAsset (groupGridRecord, collectionId, asse
 			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
 			method: 'GET',
 			params: {
-				projection: ['details','cci','checks','fixes']
-				// projection: 'details'
+				projection: ['detail','ccis','checks','fixes']
 			}
 		})
 		let content = JSON.parse(contentReq.response.responseText)
