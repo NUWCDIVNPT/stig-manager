@@ -17,7 +17,7 @@ STIG Manager is an API and Web client for managing the assessment of Information
 In addition, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.0-beta.14` or `1.0.0-beta.14-ironbank`
 
 ## Quick Start Orchestration
-*The Quick Start steps require the [official MySQL 8 image](https://hub.docker.com/_/mysql) and a [custom Keycloak 11 image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth).*
+*The Quick Start steps require the [official MySQL 8 image](https://hub.docker.com/_/mysql) and a [custom Keycloak image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth).*
 
 ### docker-compose.yml
 ```

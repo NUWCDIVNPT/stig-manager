@@ -104,9 +104,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#setup-options">1.2. Setup Options</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#container-deployment-with-docker-desktop">1.2.1. Container Deployment with Docker Desktop</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#deployment-from-source-code">1.2.2. Deployment from Source Code</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#common-configuration-variables">1.2.3. Common Configuration Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quick-start-orchestration-with-docker-compose">1.2.1. Quick Start Orchestration with Docker Compose</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#container-deployment-with-docker-desktop">1.2.2. Container Deployment with Docker Desktop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deployment-from-source-code">1.2.3. Deployment from Source Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#common-configuration-variables">1.2.4. Common Configuration Variables</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#additional-suggested-configuration">1.3. Additional Suggested Configuration</a><ul>
@@ -255,15 +256,19 @@
 <div class="section" id="setup-options">
 <h2><span class="section-number">1.2. </span>Setup Options<a class="headerlink" href="#setup-options" title="Permalink to this headline">¶</a></h2>
 <p>STIG Manager requires Node.js 14+, Keycloak, and a MySQL Database. It is configured using <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a>, and can be deployed as a container from the image provided on Docker Hub or directly from source code.</p>
+<div class="section" id="quick-start-orchestration-with-docker-compose">
+<h3><span class="section-number">1.2.1. </span>Quick Start Orchestration with Docker Compose<a class="headerlink" href="#quick-start-orchestration-with-docker-compose" title="Permalink to this headline">¶</a></h3>
+<p>To quickly establish a demonstration instance of STIG Manager, follow the <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager">Quick Start Orchestration instructions on Docker Hub.</a></p>
+</div>
 <div class="section" id="container-deployment-with-docker-desktop">
-<h3><span class="section-number">1.2.1. </span>Container Deployment with Docker Desktop<a class="headerlink" href="#container-deployment-with-docker-desktop" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.2.2. </span>Container Deployment with Docker Desktop<a class="headerlink" href="#container-deployment-with-docker-desktop" title="Permalink to this headline">¶</a></h3>
 <p>Using the STIG Manager container image is the recommended way to deploy the app. These instructions specify a Docker Desktop deployment, but the app will run just as well in a Kubernetes or other orchestration environment. Using this deployment approach satisfies the application’s NodeJS requirement.</p>
 <div class="section" id="requirements">
-<h4><span class="section-number">1.2.1.1. </span>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">1.2.2.1. </span>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
 <p><a class="reference external" href="https://www.docker.com/get-started">Docker</a></p>
 </div>
 <div class="section" id="procedure">
-<h4><span class="section-number">1.2.1.2. </span>Procedure<a class="headerlink" href="#procedure" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">1.2.2.2. </span>Procedure<a class="headerlink" href="#procedure" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic">
 <li><p>Install Docker</p></li>
 <li><p>Install and configure the Authentication and Database requirements. Sample configuration instructions for these requirements can be found here:</p>
@@ -298,17 +303,17 @@ nuwcdivnpt/stig-manager
 </div>
 </div>
 <div class="section" id="deployment-from-source-code">
-<h3><span class="section-number">1.2.2. </span>Deployment from Source Code<a class="headerlink" href="#deployment-from-source-code" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.2.3. </span>Deployment from Source Code<a class="headerlink" href="#deployment-from-source-code" title="Permalink to this headline">¶</a></h3>
 <p>STIG Manager can be deployed from source if the proper Node.js runtime is provided. These instructions relate to a Windows deployment, but the app will run just as well wherever Node.JS is available.</p>
 <div class="section" id="id1">
-<h4><span class="section-number">1.2.2.1. </span>Requirements<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">1.2.3.1. </span>Requirements<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference external" href="https://nodejs.org/en/">Node.js 14.15+</a></p></li>
 <li><p><a class="reference external" href="https://git-scm.com/downloads">git</a> <em>(recommended)</em></p></li>
 </ul>
 </div>
 <div class="section" id="id2">
-<h4><span class="section-number">1.2.2.2. </span>Procedure<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">1.2.3.2. </span>Procedure<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic">
 <li><p>Install Node.js</p></li>
 <li><p>Install and configure the Authentication and Database requirements. Sample configuration instructions for these requirements can be found here:</p>
@@ -335,7 +340,7 @@ nuwcdivnpt/stig-manager
 </div>
 </div>
 <div class="section" id="common-configuration-variables">
-<h3><span class="section-number">1.2.3. </span>Common Configuration Variables<a class="headerlink" href="#common-configuration-variables" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.2.4. </span>Common Configuration Variables<a class="headerlink" href="#common-configuration-variables" title="Permalink to this headline">¶</a></h3>
 <p>It is likely you will have to set at least some of these Environment Variables, but check the full <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> reference for the full list:</p>
 <blockquote>
 <div><ul class="simple">

@@ -1,3 +1,12 @@
+1.0.0-beta.35
+-----------------------
+- doc: document Attachment feature; reorganize with minor terminology changes. (#357)
+- feat: Review metadata and attachments (#353)
+- fix: implement MySQL deleteReviewByAssetRule method (#351)
+- chore: remove CKL/SCAP import endpoint (#343)
+- doc: Updates to contribution docs, node.js envvar setting (#339)
+- fix: Format roles claim for optional chaining (#338)
+
 1.0.0-beta.34
 -----------------------
 - fix: Refactor Env.js/keycloak.json handling (#335)
