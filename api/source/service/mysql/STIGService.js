@@ -299,15 +299,24 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     'g.groupId',
     'g.Title as "groupTitle"'
   ]
+  
+  let groupBy = [
+    'r.ruleId',
+    'r.version',
+    'r.title',
+    'r.severity',
+    'g.groupId',
+    'g.Title'
+  ]
 
   let joins = [
-    'revision rev ',
-    'left join rev_group_map rg on rev.revId = rg.revId ',
-    'left join rev_group_rule_map rgr on rg.rgId = rgr.rgId ', 
-    'left join `group` g on rg.groupId = g.groupId ',
-    'left join rule r on rgr.ruleId = r.ruleId ' 
-    ]
-  
+    'rule r',
+    'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
+    'left join rev_group_map rg on rgr.rgId = rg.rgId',
+    'left join `group` g on rg.groupId = g.groupId'
+  ]
+
+
   let predicates = {
     statements: [],
     binds: []
@@ -317,10 +326,11 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   predicates.statements.push('r.ruleId = ?')
   predicates.binds.push(ruleId)
   
+
   // PROJECTIONS
   // Include extra columns for Rules with details OR individual Rule
   if ( inProjection && inProjection.includes('detail') ) {
-    columns.push(
+    let detailColumns = [
       'r.weight',
       'r.vulnDiscussion',
       'r.falsePositives',
@@ -332,7 +342,10 @@ exports.queryRules = async function ( ruleId, inProjection ) {
       'r.thirdPartyTools',
       'r.mitigationControl',
       'r.responsibility'
-    )
+    ]
+
+    columns.push(...detailColumns)
+    groupBy.push(...detailColumns)
   }
 
   if ( inProjection && inProjection.includes('ccis') ) {
@@ -380,19 +393,12 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
 
-  sql += ` order by substring(r.ruleId from 4) + 0`
+  sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
+
+  sql += ` ORDER BY substring(r.ruleId from 4) + 0`
 
   try {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
-
-    // For JSON.stringify(), remove keys with null value
-    rows.toJSON = function () {
-      for (let x = 0, l = this.length; x < l; x++) {
-        let record = this[x]
-        Object.keys(record).forEach(key => record[key] == null && delete record[key])
-      }
-      return this
-    }
     return (rows[0])
   }
   catch (err) {
