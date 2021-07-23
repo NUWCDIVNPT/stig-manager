@@ -2787,7 +2787,7 @@ components:
             owners:
               type: array
               items:
-                $ref: '#/components/schemas/UserBasic'
+                $ref: '#/components/schemas/User'
             statistics:
               type: object
     CollectionStatus:
@@ -3377,6 +3377,10 @@ components:
           type: string
           readOnly: true
         username:
+          type: string
+        displayName:
+          type: string
+        email:
           type: string
     UserBasic:
       type: object
