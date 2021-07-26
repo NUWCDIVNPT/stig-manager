@@ -1053,43 +1053,69 @@ exports.getCci = async function(cci, inProjection, userObject) {
  * returns List
  **/
 exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject) {
+  let columns = [
+    'c.cci',
+    'c.type',
+    `COALESCE((
+      SELECT JSON_ARRAYAGG(JSON_OBJECT(
+        "creator", crm.creator,
+        "title", crm.title,
+        "version", crm.version,
+        "location", crm.location,
+        "indexDisa", crm.indexDisa,
+        "textRefNist", crm.textRefNist,
+        "parentControl", crm.parentControl
+      ))
+      FROM cci_reference_map crm
+      WHERE crm.cci = c.cci
+    ), JSON_ARRAY()) AS "references"`
+  ]
+
+  let joins
+  let predicates = {
+    statements: [],
+    binds: []
+  }
+  
+  predicates.statements.push('r.benchmarkId = ?')
+  predicates.binds.push(benchmarkId)
+  
+  if (revisionStr != 'latest') {
+    joins = ['revision r']
+
+    let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    predicates.statements.push('r.version = ?')
+    predicates.binds.push(version)
+    predicates.statements.push('r.release = ?')
+    predicates.binds.push(release)
+  } 
+  else {
+    joins = ['current_rev r']
+  }
+  
+  joins.push('LEFT JOIN rev_group_map rgm on r.revId = rgm.revId')
+  joins.push('LEFT JOIN rev_group_rule_map AS rgrm ON rgrm.rgId = rgm.rgId')
+  joins.push('LEFT JOIN rule_cci_map AS rcm ON rgrm.ruleId = rcm.ruleId')
+  joins.push('LEFT JOIN cci AS c ON rcm.cci = c.cci')
+  joins.push('LEFT JOIN cci_reference_map AS crm ON crm.cci = c.cci')
+
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT DISTINCT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += ` ORDER BY c.cci`
+
   try {
-
-    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-
-    let sql = `
-      SELECT DISTINCT
-          c.cci,
-          c.type,
-        COALESCE((
-          SELECT JSON_ARRAYAGG(JSON_OBJECT(
-            'creator', crm.creator,
-            'title', crm.title,
-            'version', crm.version,
-            'location', crm.location,
-            'indexDisa', crm.indexDisa,
-            'textRefNist', crm.textRefNist,
-            'parentControl', crm.parentControl
-          ))
-          FROM cci_reference_map crm
-          WHERE crm.cci = c.cci
-        ), JSON_ARRAY()) AS "references"
-      FROM revision rv
-        LEFT JOIN rev_group_map AS rgm ON rgm.revId = rv.revId
-        LEFT JOIN rev_group_rule_map AS rgrm ON rgrm.rgId = rgm.rgId
-        LEFT JOIN rule_cci_map AS rcm ON rgrm.ruleId = rcm.ruleId
-        LEFT JOIN cci AS c ON rcm.cci = c.cci
-        LEFT JOIN cci_reference_map AS crm ON crm.cci = c.cci
-      WHERE rv.benchmarkId = ?
-        AND rv.version = ?
-        AND rv.release = ?
-    `
-
-    let [rows, fields] = await dbUtils.pool.query(sql, [benchmarkId, version, release ])
-
-    return (rows)
+    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    return (rows.length > 0 ? rows : null)
   }
   catch(err) {
+    console.log(sql)
     throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
   }
 }
