@@ -245,6 +245,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
  * returns ReviewProjected
  **/
 exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, userObject) {
+  let connection
   try {
     let binds = {
       assetId: assetId,
@@ -253,13 +254,27 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
 
     let rows = await _this.getReviews(projection, binds, userObject);
     
+    connection = await dbUtils.pool.getConnection()
+    await connection.query('START TRANSACTION')
+
     let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
     await dbUtils.pool.query(sqlDelete, binds);
+
+    await dbUtils.updateStatsAssetStig( connection, { ruleId, assetId })
+    await connection.commit()
 
     return (rows[0]);
   }
   catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }    
     throw ( writer.respondWithCode ( 500, {message: err.message, stack: err.stack} ) );
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
   }
 
 };
