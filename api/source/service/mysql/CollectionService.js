@@ -1,6 +1,7 @@
 'use strict';
 const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
+const config = require('../../utils/config.js')
 
 const _this = this
 
@@ -90,15 +91,19 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
           (select json_arrayagg(
             json_object(
               'userId', CAST(user_data.userId as char),
-              'username', user_data.username
+              'username', user_data.username,
+              'email', JSON_VALUE(user_data.lastClaims, "$.${config.oauth.claims.email}"), 
+              'displayName', JSON_VALUE(user_data.lastClaims, "$.${config.oauth.claims.name}")
             )
           )
-          from collection_grant left join user_data using (userId)
+          from collection_grant 
+            left join user_data using (userId)
           where collectionId = c.collectionId and accessLevel = 4)
         ,  json_array()
         )
       ) as "owners"`)
     }
+
     if (inProjection.includes('statistics')) {
       if (context == dbUtils.CONTEXT_USER) {
         joins.push('left join collection_grant cgstat on c.collectionId = cgstat.collectionId')
