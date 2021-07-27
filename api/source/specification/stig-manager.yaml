@@ -1579,11 +1579,13 @@ paths:
       summary: Return data for the specified CCI
       operationId: getCci
       parameters:
+        - $ref: '#/components/parameters/CciProjectionQuery'
         - name: cci
           in: path
           description: A path parameter that identifies a CCI
           required: true
           schema:
+            pattern: ^[0-9]{6}$
             type: string
       responses:
         '200':
@@ -2428,6 +2430,7 @@ components:
           type: string
         emassAp:
           $ref: '#/components/schemas/EmassAp'
+          nullable: true
         references:
           type: array
           items:
@@ -3512,6 +3515,21 @@ components:
       required: true
       schema:
         type: string
+    CciProjectionQuery:
+      name: projection
+      in: query
+      description: |
+        Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - emassAp
+            - stigs
+            - references
     CciQuery:
       name: cci
       in: query
