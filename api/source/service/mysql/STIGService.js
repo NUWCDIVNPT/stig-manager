@@ -1112,7 +1112,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
 
   try {
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows.length > 0 ? rows : null)
+    return rows
   }
   catch(err) {
     console.log(sql)
