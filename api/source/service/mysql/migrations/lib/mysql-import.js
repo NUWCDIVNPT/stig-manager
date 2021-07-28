@@ -4,7 +4,10 @@
  * @author Rob Parham
  * @website https://github.com/pamblam/mysql-import#readme
  * @license MIT
- */
+ * 
+ * Modified to support mysql2 PromisePool
+ * https://github.com/NUWCDIVNPT/stig-manager/api/source/service/mysql/migrations/lib/mysql-import.js
+ **/
 
 'use strict';
 
@@ -121,7 +124,7 @@ class Importer{
 	 * @param bool graceful - force close?
 	 * @returns {Promise}
 	 */
-	async disconnect(graceful=true){
+	async disconnect(){
 		try {
 			if (!this._conn) {
 				return
@@ -157,10 +160,9 @@ class Importer{
 						next();
 						return;
 					}
-					this._conn.query(query, err=>{
-						if (err) error = err;
-						next();
-					});
+					this._conn.query(query)
+						.catch(err => { error = err })
+						.then(() => { next() })	
 				}).then(()=>{
 					if(error){
 						reject(error);
