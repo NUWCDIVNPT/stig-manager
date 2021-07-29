@@ -118,7 +118,7 @@ async function processZip (f) {
     }
   }
   catch (e) {
-    throw (e)
+    console.log(`ERROR: ${e.message}`)
   }
   
 }
