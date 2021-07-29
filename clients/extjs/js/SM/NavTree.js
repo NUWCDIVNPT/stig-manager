@@ -687,10 +687,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             let content = []
             if (apiAssets.length > 0) {
             // Allow for batch review node
-            collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
-              if (curUser.privileges.globalAccess || (collectionGrant && collectionGrant.accessLevel >= 2)) {
-                content.push( SM.StigBatchNodeConfig( benchmarkId, collectionId ) )
-              }
+              content.push( SM.StigBatchNodeConfig( benchmarkId, collectionId ) )
               let stigAssetNodes = apiAssets.map(asset => SM.StigAssetNodeConfig({benchmarkId: benchmarkId}, asset))
               content = content.concat(stigAssetNodes)
             }      
