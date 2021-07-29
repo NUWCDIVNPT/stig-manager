@@ -1733,7 +1733,8 @@ function uploadStigs(n) {
 
 					}
 					catch (e) {
-						throw (e)
+						updateStatusText (`Error processing ZIP: ${e.message}`)
+						updateStatusText ('------------------------------------')
 					}
 				  
 				}
