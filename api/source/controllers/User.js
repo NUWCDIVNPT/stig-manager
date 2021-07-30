@@ -1,6 +1,5 @@
 'use strict';
 
-const writer = require('../utils/writer.js')
 const config = require('../utils/config')
 const User = require(`../service/${config.database.type}/UserService`)
 const Asset = require(`../service/${config.database.type}/AssetService`)
@@ -8,10 +7,10 @@ const Collection = require(`../service/${config.database.type}/CollectionService
 
 module.exports.createUser = async function createUser (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
+    let elevate = req.query.elevate
     if (elevate) {
-      let body = req.swagger.params['body'].value
-      let projection = req.swagger.params['projection'].value
+      let body = req.body
+      let projection = req.query.projection
 
       if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
@@ -19,24 +18,24 @@ module.exports.createUser = async function createUser (req, res, next) {
         let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
+          throw( {status: 400, message: `One or more collectionIds are invalid.`} )
         }
       }
       try {
         let response = await User.createUser(body, projection, elevate, req.userObject)
-        writer.writeJson(res, response)
+        res.status(201).json(response)
       }
       catch (err) {
-        // This is MySQL specific, should abstract with an SmError
+        // This is MySQL specific, should abstract
         if (err.code === 'ER_DUP_ENTRY') {
-          try {
+          // try {
             let response = await User.getUsers(body.username, body.usernameMatch, projection, elevate, req.userObject)
-            throw (writer.respondWithCode( 400, {
-              code: 400,
+            throw ({
+              status: 400, 
               message: `Duplicate name`,
               data: response[0]
-            }))
-          } finally {}
+            })
+          // } finally {}
         }
         else {
           throw err
@@ -44,29 +43,29 @@ module.exports.createUser = async function createUser (req, res, next) {
       }
     }
     else {
-     throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.deleteUser = async function deleteUser (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
+    let elevate = req.query.elevate
     if (elevate) {
-      let userId = req.swagger.params['userId'].value
-      let projection = req.swagger.params['projection'].value
+      let userId = req.params.userId
+      let projection = req.query.projection
       let response = await User.deleteUser(userId, projection, elevate, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
@@ -76,7 +75,7 @@ module.exports.exportUsers = async function exportUsers (projection, elevate, us
       return await User.getUsers(null, null, projection, elevate, userObject )
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
     }
   }
   catch (err) {
@@ -86,55 +85,55 @@ module.exports.exportUsers = async function exportUsers (projection, elevate, us
 
 module.exports.getUserObject = async function getUserObject (req, res, next) {
   try {
-    writer.writeJson(res, req.userObject)
+    res.json(req.userObject)
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getUserByUserId = async function getUserByUserId (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
+    let elevate = req.query.elevate
     if ( elevate ) {
-      let userId = req.swagger.params['userId'].value
-      let projection = req.swagger.params['projection'].value
+      let userId = req.params.userId
+      let projection = req.query.projection
       let response = await User.getUserByUserId(userId, projection, elevate, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getUsers = async function getUsers (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
-    let username = req.swagger.params['username'].value
-    let usernameMatch = req.swagger.params['username-match'].value
-    let projection = req.swagger.params['projection'].value
+    let elevate = req.query.elevate
+    let username = req.query.username
+    let usernameMatch = req.query['username-match']
+    let projection = req.query.projection
     if ( !elevate && projection && projection.length > 0) {
-      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
     let response = await User.getUsers( username, usernameMatch, projection, elevate, req.userObject)
-    writer.writeJson(res, response)
+    res.json(response)
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.replaceUser = async function replaceUser (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
-    let userId = req.swagger.params['userId'].value
+    let elevate = req.query.elevate
+    let userId = req.params.userId
     if (elevate) {
-      let body = req.swagger.params['body'].value
-      let projection = req.swagger.params['projection'].value
+      let body = req.body
+      let projection = req.query.projection
 
       if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
@@ -142,29 +141,29 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
         let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
+          throw( {status:400, message: `One or more collectionIds are invalid.`} ) 
         }
       }
 
       let response = await User.replaceUser(userId, body, projection, elevate, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-     throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.updateUser = async function updateUser (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
-    let userId = req.swagger.params['userId'].value
+    let elevate = req.query.elevate
+    let userId = req.params.userId
     if (elevate) {
-      let body = req.swagger.params['body'].value
-      let projection = req.swagger.params['projection'].value
+      let body = req.body
+      let projection = req.query.projection
 
       if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
@@ -172,19 +171,19 @@ module.exports.updateUser = async function updateUser (req, res, next) {
         let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw( writer.respondWithCode ( 400, {message: `One or more collectionIds are invalid.`} ) )    
+          throw( {status: 400, message: `One or more collectionIds are invalid.`} )   
         }
       }
 
       let response = await User.replaceUser(userId, body, projection, elevate, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-     throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )    
+     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
@@ -195,7 +194,7 @@ module.exports.setUserData = async function setUserData (username, fields) {
     return await User.getUserByUsername(username)
   }
   catch (e) {
-    writer.writeJson(res, err)
+    next(err)
 
   }
 }

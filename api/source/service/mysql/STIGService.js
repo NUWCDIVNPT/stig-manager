@@ -1,5 +1,4 @@
 'use strict';
-const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
 let _this = this
@@ -928,7 +927,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -947,7 +946,7 @@ exports.deleteStigById = async function(benchmarkId, userObject) {
     return (rows[0])
   }
   catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1049,8 +1048,9 @@ exports.getCci = async function(cci, inProjection, userObject) {
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} ) 
   }
+  // finally{}
 }
 
 
@@ -1124,8 +1124,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
     return rows
   }
   catch(err) {
-    console.log(sql)
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1149,7 +1148,7 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, p
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1170,7 +1169,7 @@ exports.getGroupsByRevision = async function(benchmarkId, revisionStr, projectio
     return (rows)
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1211,7 +1210,7 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1245,7 +1244,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
     return (rows)
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1262,7 +1261,7 @@ exports.getRuleByRuleId = async function(ruleId, projection, userObject) {
     return (rows)
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1282,7 +1281,7 @@ exports.getRuleByRevision = async function(benchmarkId, revisionStr, ruleId, pro
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1300,7 +1299,7 @@ exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection
     return (rows)
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1319,7 +1318,7 @@ exports.getSTIGs = async function(title, userObject) {
     return (rows)
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -1338,7 +1337,7 @@ exports.getStigById = async function(benchmarkId, userObject) {
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
