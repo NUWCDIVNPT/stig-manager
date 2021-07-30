@@ -1,15 +1,14 @@
 'use strict';
 
-const writer = require('../utils/writer.js')
 const Parsers = require('../utils/parsers.js')
 const config = require('../utils/config')
 const Review = require(`../service/${config.database.type}/ReviewService`)
 
 module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let reviewsRequested = req.swagger.params['body'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let reviewsRequested = req.body
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
@@ -28,44 +27,44 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
       if (permitted.length > 0) {
          errors = await Review.putReviewsByAsset(assetId, permitted, req.userObject)
       }
-      writer.writeJson(res, {
+      res.json({
         permitted,
         rejected,
         errors
       })
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule (req, res, next) {
 try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let projection = req.swagger.params['projection'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject)
-        writer.writeJson(res, response)
+        res.json(response)
       }
       else {
-        throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to delete the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to delete the review of this rule."} )
       }
       }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
@@ -80,10 +79,10 @@ module.exports.exportReviews = async function exportReviews (projection, userObj
 
 module.exports.getReviewByAssetRule = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let projection = req.swagger.params['projection'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
@@ -91,317 +90,320 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
         assetId: assetId,
         ruleId: ruleId
       }, req.userObject)
-      writer.writeJson(res, response[0])
+      // res.json(response[0])
+      // res.status(typeof response === 'undefined' ? 204 : 200).json(response[0])
+      res.status(response.length == 0 ? 204 : 200).json(response[0])
+
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getReviewsByCollection = async function getReviewsByCollection (req, res, next) {
   try {
-    let projection = req.swagger.params['projection'].value
-    let collectionId = req.swagger.params['collectionId'].value
+    let projection = req.query.projection
+    let collectionId = req.params.collectionId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
-        result: req.swagger.params['result'].value,
-        action: req.swagger.params['action'].value,
-        status: req.swagger.params['status'].value,
-        rules: req.swagger.params['rules'].value || 'current-mapped',
-        ruleId: req.swagger.params['ruleId'].value,
-        groupId: req.swagger.params['groupId'].value,
-        cci: req.swagger.params['cci'].value,
-        userId: req.swagger.params['userId'].value,
-        assetId: req.swagger.params['assetId'].value,
-        benchmarkId: req.swagger.params['benchmarkId'].value,
-        metadata: req.swagger.params['metadata'].value
+        result: req.query.result,
+        action: req.query.action,
+        status: req.query.status,
+        rules: req.query.rules || 'current-mapped',
+        ruleId: req.query.ruleId,
+        groupId: req.query.groupId,
+        cci: req.query.cci,
+        userId: req.query.userId,
+        assetId: req.query.assetId,
+        benchmarkId: req.query.benchmarkId,
+        metadata: req.query.metadata
       }, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getReviewsByAsset = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let projection = req.swagger.params['projection'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
-        rules: req.swagger.params['rules'].value || 'current-mapped',
-        result: req.swagger.params['result'].value,
-        action: req.swagger.params['action'].value,
-        status: req.swagger.params['status'].value,
-        benchmarkId: req.swagger.params['benchmarkId'].value,
-        metadata: req.swagger.params['metadata'].value
+        rules: req.query.rules || 'current-mapped',
+        result: req.query.result,
+        action: req.query.action,
+        status: req.query.status,
+        benchmarkId: req.query.benchmarkId,
+        metadata: req.query.metadata
       }, req.userObject )
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.putReviewByAssetRule = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let body = req.swagger.params['body'].value
-    let projection = req.swagger.params['projection'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let body = req.body
+    let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.putReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
         if (response.status === 'created') {
-          writer.writeJson(res, response.row, 201)
+          res.status(201).json(response.row)
         } else {
-          writer.writeJson(res, response.row )
+          res.json(response.row)
         }
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to put a review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to put a review of this rule."} )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.patchReviewByAssetRule = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let body = req.swagger.params['body'].value
-    let projection = req.swagger.params['projection'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let body = req.body
+    let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.patchReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
-        writer.writeJson(res, response )
+        res.json(response)
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."} )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.getReviewMetadata = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.getReviewMetadata( assetId, ruleId, req.userObject)
-        writer.writeJson(res, response )
+        res.json(response)
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."} )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.patchReviewMetadata = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let metadata = req.swagger.params['body'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let metadata = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         await Review.patchReviewMetadata( assetId, ruleId, metadata)
         let response = await Review.getReviewMetadata( assetId, ruleId)
-        writer.writeJson(res, response )
+        res.json(response)
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.putReviewMetadata = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let body = req.swagger.params['body'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         await Review.putReviewMetadata( assetId, ruleId, body)
         let response = await Review.getReviewMetadata( assetId, ruleId)
-        writer.writeJson(res, response )
+        res.json(response)
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.getReviewMetadataKeys = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.getReviewMetadataKeys( assetId, ruleId, req.userObject)
-        if (!response)  throw ( writer.respondWithCode ( 404, { message: `metadata keys not found`} ) )
-        writer.writeJson(res, response )
+        if (!response)  throw ( {status: 404, message: `metadata keys not found`} )
+        res.json(response)
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.getReviewMetadataValue = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let key = req.swagger.params['key'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let key = req.params.key
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.getReviewMetadataValue( assetId, ruleId, key, req.userObject)
-        if (!response)  throw ( writer.respondWithCode ( 404, { message: `metadata key not found`} ) )
-        writer.writeJson(res, response )
+        if (!response)  throw ( {status: 404, message: `metadata key not found`} )
+        res.json(response)
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.putReviewMetadataValue = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let key = req.swagger.params['key'].value
-    let value = req.swagger.params['body'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let key = req.params.key
+    let value = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.putReviewMetadataValue( assetId, ruleId, key, value)
-        writer.writeJson(res, response )
+        res.status(204).send()
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 
 module.exports.deleteReviewMetadataKey = async function (req, res, next) {
   try {
-    let collectionId = req.swagger.params['collectionId'].value
-    let assetId = req.swagger.params['assetId'].value
-    let ruleId = req.swagger.params['ruleId'].value
-    let key = req.swagger.params['key'].value
+    let collectionId = req.params.collectionId
+    let assetId = req.params.assetId
+    let ruleId = req.params.ruleId
+    let key = req.params.key
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.deleteReviewMetadataKey( assetId, ruleId, key, req.userObject)
-        writer.writeJson(res, response )
+        res.status(204).send()
       }
       else {
-        throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to patch the review of this rule."} ) )
+        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
       }
     }
     else {
-      throw (writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 

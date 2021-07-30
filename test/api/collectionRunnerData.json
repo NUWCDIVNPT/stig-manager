@@ -33,7 +33,6 @@
   "reviewMatchString": "test",
   "testRuleId": "SV-106179r1_rule",
   "testGroupId": "V-97041",
-  "testCci": "000001",
   "testCollectionInvalid": "83",
   "scrapLvl1": "86",
   "scrapAdmin": "87",

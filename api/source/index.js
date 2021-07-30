@@ -5,7 +5,6 @@ const http = require('http')
 const express = require('express')
 const cors = require('cors');
 const morgan = require('morgan')
-const oasTools = require('oas-tools')
 const config = require('./utils/config')
 const auth = require('./utils/auth')
 const swaggerUi = require('swagger-ui-express')
@@ -16,8 +15,18 @@ const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
 const compression = require('compression')
 const smFetch = require('./utils/fetchStigs')
+const {
+  middleware: openApiMiddleware,
+  resolvers,
+} = require('express-openapi-validator');
+
 
 console.log(`Starting STIG Manager ${config.version}`)
+
+//Catch unhandled errors. 
+process.on('uncaughtException', (err, origin) => {
+  console.log(`Uncaught ${err} from ${origin}`)
+})
 
 // Express config
 const app = express();
@@ -51,47 +60,81 @@ app.use(morgan(':remote-addr :forwarded-for :token-user [:date[clf]] ":method :u
 // compress all responses
 // app.use(compression())
 
-
-// swaggerRouter configuration
-let options = {
-  loglevel: 'error',
-  controllers: path.join(__dirname, './controllers'),
-  checkControllers: false,
-  useStubs: process.env.NODE_ENV === 'development', // Conditionally turn on stubs (mock mode)
-  oasSecurity: true,
-  securityFile: {
-    oauth: auth.verifyRequest 
-  }
-}
-
 // OpenAPI specification
 //let spec = fs.readFileSync(path.join(__dirname,'api/openapi.yaml'), 'utf8')
 let spec = fs.readFileSync(path.join(__dirname,'./specification/stig-manager.yaml'), 'utf8')
 let oasDoc = jsyaml.safeLoad(spec)
 oasDoc.info.version = config.version
-// oas-tools uses x-name property of requestBody to set name of the body parameter
-// oas-tools uses x-swagger-router-controller property to determine the controller
-// Set x-swagger-router-controller based on the first tag of each path/method
-for (const path in oasDoc.paths) {
-  for (const method in oasDoc.paths[path]) {
-    if (Array.isArray(oasDoc.paths[path][method].tags)) {
-      oasDoc.paths[path][method]['x-swagger-router-controller'] = oasDoc.paths[path][method].tags[0]
-    }  
-    if (oasDoc.paths[path][method].requestBody) {
-      oasDoc.paths[path][method].requestBody['x-name'] = 'body'
-    }
-  }
-}
 
-// Replace host with environmental values
+// Replace host with config values
 oasDoc.servers[0].url = config.swaggerUi.server
 oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${config.swaggerUi.authority}/protocol/openid-connect/auth`
 
-// Initialize the Swagger middleware
-oasTools.configure(options)
-oasTools.initialize(oasDoc, app, function () {
-  run()
-})
+const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
+
+//  2. Install the OpenApiValidator middleware
+app.use(
+  openApiMiddleware({
+    apiSpec: apiSpecPath,
+    validateRequests: {
+      coerceTypes: true,
+      allowUnknownQueryParameters: false,
+    },    // validateResponses: true, // default false
+    // validateResponses: {
+    //   removeAdditional: 'failing',
+    // },
+    // validateResponses: {
+    //   onError: (error, body, req) => {
+    //     console.log(`Response body fails validation: `, error);
+    //     console.log(`Emitted from:`, req.originalUrl);
+    //     console.debug(body);
+    //   }
+    // },
+    validateApiSpec: true,
+    $refParser: {
+      mode: 'dereference',
+    },
+    operationHandlers: {
+      // 3. Provide the path to the controllers directory
+      basePath: path.join(__dirname, 'controllers'),
+      // 4. Provide a function responsible for resolving an Express RequestHandler
+      //    function from the current OpenAPI Route object.
+      resolver: modulePathResolver,
+    },
+    validateSecurity: {
+      handlers:{
+        oauth: auth.verifyRequest 
+      }
+    },
+    fileUploader: false
+    //   fileUploader: { 
+    //     storage: storage,
+    //   limits: {
+    //     fileSize: parseInt(config.http.maxUpload),
+    //     files: 1
+    //   }
+    //  }
+  }),
+);
+
+
+app.use((err, req, res, next) => {
+  // 7. Customize errors
+  console.error(err); // dump error to console for debug
+  // res.status(err.status || 500).json({
+  //   message: err.message,
+  //   errors: err.errors,
+  //   code: err.code
+  // });
+  //Perhaps only return the whole error object when in a "Dev" mode?
+  res.status(err.status || 500).json(err);
+});
+
+
+
+run()
+
+
 
 async function run() {
   try {
@@ -110,14 +153,6 @@ async function run() {
           res.send(oasDoc);
       })
     }
-    app.use((err, req, res, next) => {
-      if (err) {
-        console.log('Invalid Request data')
-        writer.writeJson(res, writer.respondWithCode ( 400, {message: err.message} ))
-      } else {
-        next()
-      }
-    })
     startServer(app)
   }
   catch (err) {
@@ -229,3 +264,24 @@ async function startServer(app) {
   }
 }
 
+
+function modulePathResolver(
+  handlersPath,
+  route,
+  apiDoc
+)
+{
+  const pathKey = route.openApiRoute.substring(route.basePath.length);
+  const schema = apiDoc.paths[pathKey][route.method.toLowerCase()];
+  // const [controller, method] = schema['operationId'].split('.');
+  const controller = schema.tags[0]
+  const method = schema['operationId']
+  const modulePath = path.join(handlersPath, controller);
+  const handler = require(modulePath);
+  if (handler[method] === undefined) {
+    throw new Error(
+      `Could not find a [${method}] function in ${modulePath} when trying to route [${route.method} ${route.expressRoute}].`,
+    );
+  }
+  return handler[method];
+}

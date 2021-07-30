@@ -1,9 +1,7 @@
-const SmError = require('./SmError')
 let config = require('./config');
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
 const request = require('request')
-const writer = require('./writer.js')
 const _ = require('lodash')
 const {promisify} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
@@ -13,11 +11,11 @@ var client
 
 const roleGetter = new Function("obj", "return obj?." + config.oauth.claims.roles + " || [];");
 
-const verifyRequest = async function (req, securityDefinition, requiredScopes, cb) {
-    try {
+const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         let token = getBearerToken(req)
         if (!token) {
-            throw new SmError(401, 'OIDC bearer token must be provided')
+            throw({status: 401, message: 'OIDC bearer token must be provided'})
+
         }
         let options = {
             algorithms: ['RS256']
@@ -43,7 +41,7 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
             }
         })
         if (commonScopes.length == 0) {
-            throw new SmError( 403, 'Not in scope' )
+            throw({status: 403, message: 'Not in scope'})
         }
         else {      
             // Get privileges      
@@ -76,24 +74,13 @@ const verifyRequest = async function (req, securityDefinition, requiredScopes, c
                 }
             }
             if ('elevate' in req.query && (req.query.elevate === 'true' && !req.userObject.privileges.canAdmin)) {
-                throw new SmError(403, 'User has insufficient privilege to complete this request.')
+                throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
             }
-            cb()
+            return true;
         }
-    }
-    catch (err) {
-        if (err.name === 'SmError') {
-            writer.writeJson(req.res, { status: err.httpStatus, message: err.message }, err.httpStatus)
-        }
-        else {
-            writer.writeJson(req.res, { status: 500, message: err.message }, 500)
-        }
-    }
-}
-
-async function refreshUserData (userId, token) {
 
 }
+
 
 const verifyAndDecodeToken = promisify(jwt.verify)
 

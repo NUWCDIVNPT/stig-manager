@@ -7,27 +7,27 @@ var Serialize = require(`../utils/serializers`)
 
 module.exports.createCollection = async function createCollection (req, res, next) {
   try {
-    const projection = req.swagger.params['projection'].value
-    const elevate = req.swagger.params['elevate'].value
-    const body = req.swagger.params['body'].value
+    const projection = req.query.projection
+    const elevate = req.query.elevate
+    const body = req.body
     if ( elevate || req.userObject.privileges.canCreateCollection ) {
       try {
         const response = await Collection.createCollection( body, projection, req.userObject)
-        writer.writeJson(res, response)
+        res.status(201).json(response)
       }
       catch (err) {
-        // This is MySQL specific, should abstract with an SmError
+        // This is MySQL specific, should abstract
         if (err.code === 'ER_DUP_ENTRY') {
-          try {
+          // try {
             let response = await Collection.getCollections({
               name: body.name
             }, projection, elevate, req.userObject )
-            throw (writer.respondWithCode( 400, {
-              code: 400,
+            throw ({
+              status: 400,
               message: `Duplicate name`,
-              data: response[0]
-            }))
-          } finally {}
+              data: response[0] ?? null
+            })
+          // } finally {}
         }
         else {
           throw err
@@ -35,30 +35,30 @@ module.exports.createCollection = async function createCollection (req, res, nex
       }
     }
     else {
-      throw ( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }  
 }
 
 module.exports.deleteCollection = async function deleteCollection (req, res, next) {
   try {
-    const elevate = req.swagger.params['elevate'].value
-    const collectionId = req.swagger.params['collectionId'].value
-    const projection = req.swagger.params['projection'].value
+    const elevate = req.query.elevate
+    const collectionId = req.params.collectionId
+    const projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (elevate || (collectionGrant && collectionGrant.accessLevel === 4)) {
       const response = await Collection.deleteCollection(collectionId, projection, elevate, req.userObject)
-      writer.writeJson (res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
@@ -67,103 +67,103 @@ module.exports.exportCollections = async function exportCollections (projection,
     return await Collection.getCollections( {}, projection, elevate, userObject )
   }
   catch (err) {
-    throw (err)
+    next(err)
   }
 } 
 
 module.exports.getChecklistByCollectionStig = async function getChecklistByCollectionStig (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const benchmarkId = req.swagger.params['benchmarkId'].value
-    const revisionStr = req.swagger.params['revisionStr'].value
+    const collectionId = req.params.collectionId
+    const benchmarkId = req.params.benchmarkId
+    const revisionStr = req.params.revisionStr
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant || req.userObject.privileges.globalAccess ) {
       const response = await Collection.getChecklistByCollectionStig(collectionId, benchmarkId, revisionStr, req.userObject )
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getCollection = async function getCollection (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const projection = req.swagger.params['projection'].value
-    const elevate = req.swagger.params['elevate'].value
+    const collectionId = req.params.collectionId
+    const projection = req.query.projection
+    const elevate = req.query.elevate
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
       const response = await Collection.getCollection(collectionId, projection, elevate, req.userObject )
-      writer.writeJson(res, response)
+      res.status(typeof response === 'undefined' ? 204 : 200).json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getCollections = async function getCollections (req, res, next) {
   try {
-    const projection = req.swagger.params['projection'].value
-    const elevate = req.swagger.params['elevate'].value
-    const name = req.swagger.params['name'].value
-    const nameMatch = req.swagger.params['name-match'].value
-    const workflow = req.swagger.params['workflow'].value
-    const metadata = req.swagger.params['metadata'].value
+    const projection = req.query.projection
+    const elevate = req.query.elevate
+    const name = req.query.name
+    const nameMatch = req.query['name-match']
+    const workflow = req.query.workflow
+    const metadata = req.query.metadata
     const response = await Collection.getCollections({
       name: name,
       nameMatch: nameMatch,
       workflow: workflow,
       metadata: metadata
     }, projection, elevate, req.userObject)
-    writer.writeJson(res, response)
+    res.json(response)
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getFindingsByCollection = async function getFindingsByCollection (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const aggregator = req.swagger.params['aggregator'].value
-    const benchmarkId = req.swagger.params['benchmarkId'].value
-    const assetId = req.swagger.params['assetId'].value
-    const acceptedOnly = req.swagger.params['acceptedOnly'].value
-    const projection = req.swagger.params['projection'].value
+    const collectionId = req.params.collectionId
+    const aggregator = req.query.aggregator
+    const benchmarkId = req.query.benchmarkId
+    const assetId = req.query.assetId
+    const acceptedOnly = req.query.acceptedOnly
+    const projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
       const response = await Collection.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
-      writer.writeJson(res, response)
+      res.json(response)
       }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getPoamByCollection = async function getFindingsByCollection (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const aggregator = req.swagger.params['aggregator'].value
-    const benchmarkId = req.swagger.params['benchmarkId'].value
-    const assetId = req.swagger.params['assetId'].value
-    const acceptedOnly = req.swagger.params['acceptedOnly'].value
+    const collectionId = req.params.collectionId
+    const aggregator = req.query.aggregator
+    const benchmarkId = req.query.benchmarkId
+    const assetId = req.query.assetId
+    const acceptedOnly = req.query.acceptedOnly
     const defaults = {
-      date: req.swagger.params['date'].value,
-      office: req.swagger.params['office'].value,
-      status: req.swagger.params['status'].value
+      date: req.query.date,
+      office: req.query.office,
+      status: req.query.status
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
@@ -189,132 +189,132 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       writer.writeInlineFile( res, xlsx, `POAM-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const benchmarkId = req.swagger.params['benchmarkId'].value
-    const assetId = req.swagger.params['assetId'].value
+    const collectionId = req.params.collectionId
+    const benchmarkId = req.query.benchmarkId
+    const assetId = req.query.assetId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
       const response = await Collection.getStatusByCollection( collectionId, assetId, benchmarkId, req.userObject )
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCollectionUser (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const userId = req.swagger.params['userId'].value
+    const collectionId = req.params.collectionId
+    const userId = req.params.userId
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant && collectionGrant.accessLevel >= 3 ) {
       const response = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
+    const collectionId = req.params.collectionId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
       const response = await Collection.getStigsByCollection( collectionId, false, req.userObject )
-      writer.writeJson(res, response)
+      res.json(response)
       }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.replaceCollection = async function updateCollection (req, res, next) {
   try {
-    const elevate = req.swagger.params['elevate'].value
-    const collectionId = req.swagger.params['collectionId'].value
-    const projection = req.swagger.params['projection'].value
+    const elevate = req.query.elevate
+    const collectionId = req.params.collectionId
+    const projection = req.query.projection
     const body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       const response = await Collection.replaceCollection(collectionId, body, projection, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }    
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
-module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCollectionUser (req, res) {
+module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCollectionUser (req, res, next) {
   try {
-    const collectionId = req.swagger.params['collectionId'].value
-    const userId = req.swagger.params['userId'].value
-    const stigAssets = req.swagger.params['body'].value
+    const collectionId = req.params.collectionId
+    const userId = req.query.userId
+    const stigAssets = req.body
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( collectionGrant && collectionGrant.accessLevel >= 3 ) {
       const collectionResponse = await Collection.getCollection(collectionId, ['grants'], false, req.userObject )
       if (collectionResponse.grants.filter( grant => grant.accessLevel === 1 && grant.user.userId === userId).length > 0) {
         const setResponse = await Collection.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, req.userObject ) 
-        const getResponse = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )    
-        writer.writeJson(res, getResponse)
+        const getResponse = await Collection.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
+        res.json(getResponse)    
       }
       else {
-        throw( writer.respondWithCode ( 404, {message: "User not found in this Collection with accessLevel === 1."} ) )
+        throw( {status: 404, message: "User not found in this Collection with accessLevel === 1."})
       }
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.updateCollection = async function updateCollection (req, res, next) {
   try {
-    const elevate = req.swagger.params['elevate'].value
-    const collectionId = req.swagger.params['collectionId'].value
-    const projection = req.swagger.params['projection'].value
+    const elevate = req.query.elevate
+    const collectionId = req.params.collectionId
+    const projection = req.query.projection
     const body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       let response = await Collection.replaceCollection(collectionId, body, projection, req.userObject)
-      writer.writeJson(res, response)
+      res.json(response)
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: "User has insufficient privilege to complete this request."} ) )
+      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
     }    
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }

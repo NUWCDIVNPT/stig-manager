@@ -560,7 +560,7 @@ paths:
   /collections:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      - $ref: '#/components/parameters/CollectionsProjectionQuery'
+      # - $ref: '#/components/parameters/CollectionsProjectionQuery'
     get:
       tags:
         - Collection
@@ -572,9 +572,10 @@ paths:
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/CollectionWorkflowQuery'
         - $ref: '#/components/parameters/MetadataQuery'
+        - $ref: '#/components/parameters/CollectionsProjectionQuery'
       responses:
         '200':
-          description: CollectionProjected response
+          description: CollectionsProjected response
           content:
             application/json:
               schema:
@@ -610,9 +611,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CollectionProjected'
+                $ref: '#/components/schemas/CollectionProjected'
         '400':
           description: Client Error
           content:
@@ -646,6 +645,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CollectionProjected'
+        '204':
+          description: No Content
         default:
           description: unexpected error
           content:
@@ -760,7 +761,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChecklistCollectionStig'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChecklistCollectionStig'
         default:
           description: unexpected error
           content:
@@ -1545,14 +1548,7 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required:
-                - replace
               properties:
-                replace:
-                  type: string
-                  enum:
-                    - 'true'
-                    - 'false'
                 importFile:
                   type: string
                   format: binary
@@ -2956,7 +2952,6 @@ components:
         - completed
     Error:
       required:
-        - code
         - message
       type: object
       properties:
@@ -3429,10 +3424,16 @@ components:
               type: string
             username:
               type: string
+          required:
+            - userId
+            - username
         accessLevel:
           type: integer
           minimum: 1
           maximum: 4
+      required:
+        - user          
+        - accessLevel
     UserProjected:
       allOf:
         - $ref: '#/components/schemas/User'

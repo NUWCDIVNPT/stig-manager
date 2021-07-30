@@ -1,5 +1,4 @@
 'use strict';
-const writer = require('../../utils/writer.js')
 const dbUtils = require('./utils')
 
 const _this = this
@@ -206,7 +205,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     return row
   }
   catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }  
 }
 
@@ -241,7 +240,7 @@ exports.deleteUser = async function(userId, projection, elevate, userObject) {
     return (row[0])
   }
   catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -261,7 +260,7 @@ exports.getUserByUserId = async function(userId, projection, elevate, userObject
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -273,7 +272,7 @@ exports.getUserByUsername = async function(username, projection, elevate, userOb
     return (rows[0])
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -297,7 +296,7 @@ exports.getUsers = async function(username, usernameMatch, projection, elevate, 
     return (rows)
   }
   catch(err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -307,7 +306,7 @@ exports.replaceUser = async function( userId, body, projection, elevate, userObj
     return (row)
   } 
   catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 
@@ -317,7 +316,7 @@ exports.updateUser = async function( userId, body, projection, elevate, userObje
     return (row)
   } 
   catch (err) {
-    throw ( writer.respondWithCode ( 500, {message: err.message,stack: err.stack} ) )
+    throw ( {status: 500, message: err.message, stack: err.stack} )
   }
 }
 

@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "5d1a07ef-e23d-424e-a98a-2e35bf464553",
-		"name": "stig-manager - csmig",
+		"_postman_id": "acb62bf9-c924-40dc-bbe8-bfaca13b9f55",
+		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -725,7 +725,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -739,7 +739,8 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "{{elevated}}"
+															"value": "{{elevated}}",
+															"disabled": true
 														}
 													],
 													"variable": [
@@ -1557,7 +1558,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=groupId&date=01/01/1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -1574,7 +1575,7 @@
 														},
 														{
 															"key": "date",
-															"value": "01/01/1970"
+															"value": "01%2F01%2F1970"
 														},
 														{
 															"key": "office",
@@ -1621,7 +1622,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=ruleId&date=01/01/1970&office=MyOffice&status=Ongoing",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -1637,7 +1638,7 @@
 														},
 														{
 															"key": "date",
-															"value": "01/01/1970"
+															"value": "01%2F01%2F1970"
 														},
 														{
 															"key": "office",
@@ -1756,20 +1757,24 @@
 													"    // \"username\"\r",
 													"]\r",
 													"\r",
-													"// START AZDO #151\r",
 													"let userBasicKeys = [\r",
+													"    // \"user\",\r",
+													"    // \"accessLevel\",\r",
 													"    \"userId\",\r",
 													"    \"username\"\r",
+													"     // ,\r",
+													"    // \"display\",\r",
+													"    // \"email\"   \r",
 													"]\r",
 													"\r",
 													"let userKeys = [\r",
+													"    // \"user\",\r",
+													"    // \"accessLevel\",\r",
 													"    \"userId\",\r",
 													"    \"username\",\r",
 													"    \"displayName\",\r",
 													"    \"email\"   \r",
 													"]\r",
-													"// END AZDO #151\r",
-													"\r",
 													"\r",
 													"let stigKeys = [\r",
 													"    \"title\",\r",
@@ -2214,7 +2219,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/collections?metadata={{metadataKey}}:{{metadataValue}}&elevate={{elevated}}&projection=owners&projection=statistics",
+											"raw": "{{baseUrl}}/collections?metadata={{metadataKey}}%3A{{metadataValue}}&elevate={{elevated}}&projection=owners&projection=statistics",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2236,7 +2241,7 @@
 												},
 												{
 													"key": "metadata",
-													"value": "{{metadataKey}}:{{metadataValue}}",
+													"value": "{{metadataKey}}%3A{{metadataValue}}",
 													"description": "A query parameter that specifies metadata key:value pairs to select matching Collections"
 												},
 												{
@@ -2332,6 +2337,15 @@
 											"    \"username\"",
 											"]",
 											"",
+											"let userKeys = [",
+											"    // \"user\",",
+											"    // \"accessLevel\",",
+											"    \"userId\",",
+											"    \"username\",",
+											"    \"displayName\",",
+											"    \"email\"   ",
+											"]",
+											"",
 											"let stigKeys = [",
 											"    \"title\",",
 											"    \"ruleCount\",",
@@ -2340,13 +2354,13 @@
 											"    \"lastRevisionStr\"",
 											"]",
 											"",
-											"let ownerKeys = [\r",
-											"    \"userId\",\r",
-											"    \"username\",\r",
-											"    \"displayName\",\r",
-											"    \"email\"   \r",
-											"]\r",
-
+											"let ownerKeys = [",
+											"    \"userId\",",
+											"    \"username\"",
+											"    // ,",
+											"    // \"display\",",
+											"    // \"email\"",
+											"]",
 											"",
 											"let statisticsKeys = [",
 											"    \"created\",",
@@ -2408,7 +2422,7 @@
 											"        if (pm.request.url.getQueryString().match(/projection=owners/)) {",
 											"            pm.expect(item).to.have.property('owners');",
 											"            for (let owner of item.owners){",
-											"                pm.expect(owner).to.have.all.keys(ownerKeys);",
+											"                pm.expect(owner).to.have.all.keys(userKeys);",
 											"            }",
 											"        }",
 											"",
@@ -4692,19 +4706,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																}
 															]
 														}
@@ -4784,19 +4798,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																}
 															]
 														}
@@ -4877,19 +4891,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																},
 																{
 																	"key": "key",
@@ -5448,7 +5462,7 @@
 														"method": "GET",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?projection=rule&projection=stigs&projection=metadata&metadata={{testMetadataKey}}:{{testMetadataValue}}",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId?projection=rule&projection=stigs&projection=metadata&metadata={{testMetadataKey}}%3A{{testMetadataValue}}",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -5496,19 +5510,19 @@
 																},
 																{
 																	"key": "metadata",
-																	"value": "{{testMetadataKey}}:{{testMetadataValue}}"
+																	"value": "{{testMetadataKey}}%3A{{testMetadataValue}}"
 																}
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																}
 															]
 														}
@@ -6476,7 +6490,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/reviews?projection=rule&projection=stigs&metadata={{testMetadataKey}}:{{testMetadataValue}}&projection=metadata",
+													"raw": "{{baseUrl}}/collections/:collectionId/reviews?projection=rule&projection=stigs&metadata={{testMetadataKey}}%3A{{testMetadataValue}}&projection=metadata",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -6549,7 +6563,7 @@
 														},
 														{
 															"key": "metadata",
-															"value": "{{testMetadataKey}}:{{testMetadataValue}}"
+															"value": "{{testMetadataKey}}%3A{{testMetadataValue}}"
 														},
 														{
 															"key": "projection",
@@ -6558,9 +6572,9 @@
 													],
 													"variable": [
 														{
-															"description": "(Required) A path parameter that indentifies a Collection",
 															"key": "collectionId",
-															"value": "{{testCollection}}"
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
 														}
 													]
 												}
@@ -8159,18 +8173,21 @@
 													"    // \"username\"\r",
 													"]\r",
 													"\r",
-													"// START AZDO #151\r",
 													"let userBasicKeys = [\r",
 													"    \"userId\",\r",
 													"    \"username\"\r",
+													"    // \"userId\",\r",
+													"    // \"username\",\r",
+													"    // \"display\",\r",
+													"    // \"email\"    \r",
 													"]\r",
+													"\r",
 													"let userKeys = [\r",
 													"    \"userId\",\r",
 													"    \"username\",\r",
 													"    \"displayName\",\r",
 													"    \"email\"    \r",
 													"]\r",
-													"// END AZDO #151\r",
 													"\r",
 													"let stigKeys = [\r",
 													"    \"title\",\r",
@@ -8356,11 +8373,11 @@
 											"    return;\r",
 											"}\r",
 											"else {\r",
-											"    pm.test(\"Status code is 200\", function () {\r",
-											"        pm.response.to.have.status(200); //AZDO #157 status should be 201\r",
+											"    pm.test(\"Status code is 201\", function () {\r",
+											"        pm.response.to.have.status(201); //AZDO #157 status should be 201\r",
 											"    });\r",
 											"}\r",
-											"if (pm.response.code !== 200) {\r",
+											"if (pm.response.code !== 201) {\r",
 											"    return;\r",
 											"}\r",
 											"\r",
@@ -9224,19 +9241,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																}
 															]
 														},
@@ -9341,19 +9358,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																}
 															]
 														},
@@ -9451,19 +9468,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																},
 																{
 																	"key": "key",
@@ -9566,19 +9583,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																},
 																{
 																	"key": "key",
@@ -9687,19 +9704,19 @@
 															],
 															"variable": [
 																{
-																	"description": "(Required) A path parameter that indentifies a Collection",
 																	"key": "collectionId",
-																	"value": "{{testCollection}}"
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies an Asset",
 																	"key": "assetId",
-																	"value": "{{testAsset}}"
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
 																},
 																{
-																	"description": "(Required) A path parameter that indentifies a Rule",
 																	"key": "ruleId",
-																	"value": "{{testRuleId}}"
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
 																}
 															]
 														},
@@ -10452,16 +10469,16 @@
 											"}\r",
 											"\r",
 											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
-											"    pm.test(\"Status should be is 200 for users not elevated\", function () {\r",
-											"        pm.response.to.have.status(200);\r",
+											"    pm.test(\"Status should be 201 for elevated users\", function () {\r",
+											"        pm.response.to.have.status(201);\r",
 											"    });\r",
 											"}\r",
 											"else {\r",
-											"    pm.test(\"Status code is 403\", function () {\r",
+											"    pm.test(\"Status should be 403 for non-elevated users\", function () {\r",
 											"        pm.response.to.have.status(403);\r",
 											"    });\r",
 											"}\r",
-											"if (pm.response.code !== 200) {\r",
+											"if (pm.response.code !== 201) {\r",
 											"    return;\r",
 											"}\r",
 											"\r",
@@ -12738,19 +12755,19 @@
 							],
 							"variable": [
 								{
-									"description": "(Required) A path parameter that indentifies a Collection",
 									"key": "collectionId",
-									"value": "{{testCollection}}"
+									"value": "{{testCollection}}",
+									"description": "(Required) A path parameter that indentifies a Collection"
 								},
 								{
-									"description": "(Required) A path parameter that indentifies an Asset",
 									"key": "assetId",
-									"value": "{{testAsset}}"
+									"value": "{{testAsset}}",
+									"description": "(Required) A path parameter that indentifies an Asset"
 								},
 								{
-									"description": "(Required) A path parameter that indentifies a Rule",
 									"key": "ruleId",
-									"value": "{{testRuleId-lvl1NoAccess}}"
+									"value": "{{testRuleId-lvl1NoAccess}}",
+									"description": "(Required) A path parameter that indentifies a Rule"
 								}
 							]
 						}
@@ -13137,7 +13154,7 @@
 					"response": []
 				},
 				{
-					"name": "Return the Checklist for the supplied Collection and STIG-revStr - lvl1 no access, expect 204",
+					"name": "Return the Checklist for the supplied Collection and STIG-revStr - lvl1 no access, empty array",
 					"event": [
 						{
 							"listen": "test",
@@ -13153,8 +13170,8 @@
 									"}\r",
 									"\r",
 									"if (user == \"lvl1\" ) {\r",
-									"    pm.test(\"Status should be 204 for user lvl1\", function () {\r",
-									"        pm.response.to.have.status(204);\r",
+									"    pm.test(\"Status should be 200 with empty array for user lvl1\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
 									"    });\r",
 									"    return;\r",
 									"}\r",
@@ -13178,7 +13195,7 @@
 									"let checklistLength = pm.environment.get(\"checklistLength\");\r",
 									"\r",
 									"pm.test(\"Check for an array of correct length.\", function () {\r",
-									"    pm.expect(jsonData).to.be.an('array').of.length(checklistLength);\r",
+									"    pm.expect(jsonData).to.be.an('array').of.length(0);\r",
 									"    // console.log(\"jsonData:\" + jsonData);\r",
 									"\r",
 									"});\r",

@@ -14,10 +14,10 @@ module.exports.getConfiguration = async function getConfiguration (req, res, nex
     let version = {version: config.version}
     let commit = {commit: config.commit}
     let response = { ...version, ...commit, ...dbConfigs }
-    writer.writeJson(res, response)
+    res.json(response)
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
@@ -26,13 +26,13 @@ module.exports.setConfigurationItem = async function setConfigurationItem (req, 
     //TODO: Implement
   }
   catch(err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
 
 module.exports.getAppData = async function getAppData (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
+    let elevate = req.query.elevate
     if ( elevate ) {
       let collections = await Collection.exportCollections( ['grants'], elevate, req.userObject )
       for (const collection of collections) {
@@ -74,17 +74,17 @@ module.exports.getAppData = async function getAppData (req, res, next) {
       writer.writeInlineFile(res, buffer, 'stig-manager-appdata.json.zip', 'application/zip')
     }
     else {
-      throw( writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+      throw( {status: 403, message: `User has insufficient privilege to complete this request.`} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err, 500)
+    next(err)
   }
 }
 
 module.exports.replaceAppData = async function replaceAppData (req, res, next) {
   try {
-    let elevate = req.swagger.params['elevate'].value
+    let elevate = req.query.elevate
     let appdata
     if ( elevate ) {
       if (req.file && (req.file.mimetype === 'application/json' || req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') ) {
@@ -94,7 +94,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
           let contents = await zipIn.loadAsync(data)
           let fns = Object.keys(contents.files)
           if (fns.length > 1) {
-            throw( writer.respondWithCode ( 400, {message: `ZIP archive has too many files.`} ) )
+            throw( {status: 400, message: `ZIP archive has too many files.`} )
           }
           let fn = fns[0]
           data = await contents.files[fn].async("nodebuffer")
@@ -102,16 +102,16 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
         appdata = JSON.parse(data)
       }
       else {
-        appdata = req.swagger.params['body'].value
+        appdata = req.body
       }
       let options = []
       let response = await Operation.replaceAppData(options, appdata, req.userObject, res )
     }
     else {
-      writer.writeJson(res, writer.respondWithCode ( 403, {message: `User has insufficient privilege to complete this request.`} ) )
+      throw( {status: 403, message: `User has insufficient privilege to complete this request.`} )
     }
   }
   catch (err) {
-    writer.writeJson(res, err)
+    next(err)
   }
 }
