@@ -919,15 +919,85 @@ exports.insertScapBenchmark = async function (b) {
  * returns Revision
  **/
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
+
+  let dmls = [
+    "DELETE FROM revision WHERE benchmarkId = :benchmarkId and \`version\` = :version and \`release\` = :release;",
+    "DELETE FROM \`rule\` WHERE ruleId NOT IN (select ruleId from rev_group_rule_map );",
+    "DELETE FROM \`check\` WHERE checkId NOT IN (select checkId from rev_group_rule_check_map);",
+    "DELETE FROM fix WHERE fixId NOT IN (select fixId from rev_group_rule_fix_map);",
+    "DELETE FROM \`group\` WHERE groupId NOT IN (select groupId from rev_group_map);",
+    "DELETE from current_rev where benchmarkId = :benchmarkId;",
+    `INSERT INTO current_rev (
+        revId,
+        benchmarkId,
+        \`version\`, 
+        \`release\`, 
+        benchmarkDate,
+        benchmarkDateSql,
+        status,
+        statusDate,
+        description,
+        active,
+        groupCount,
+        ruleCount,
+        checkCount,
+        fixCount,
+        ovalCount)
+      SELECT 
+        revId,
+        benchmarkId,
+        \`version\`,
+        \`release\`,
+        benchmarkDate,
+        benchmarkDateSql,
+        status,
+        statusDate,
+        description,
+        active,
+        groupCount,
+        ruleCount,
+        checkCount,
+        fixCount,
+        ovalCount
+      FROM
+        v_current_rev
+      WHERE
+        v_current_rev.benchmarkId = :benchmarkId;`,        
+    "DELETE FROM stig WHERE benchmarkId NOT IN (select benchmarkId FROM current_rev);"
+  ]
+
+  let connection;
   try {
-    let rows = await _this.getRevisionByString(benchmarkId, revisionStr, userObject)
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    let sqlDelete = `DELETE from revision WHERE benchmarkId = ? and version = ? and release = ?`
-    await dbUtils.pool.query(sqlDelete, [benchmarkId, version, release])
-    return (rows[0])
+    let binds = {
+      benchmarkId: benchmarkId,
+      version: version,
+      release: release
+    }
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION')
+
+    dmls.forEach(sql => { 
+      console.log(sql);
+      dbUtils.pool.execute(sql, binds);
+    })
+
+
+    await connection.commit()
+    return;
   }
   catch(err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
   }
 }
 

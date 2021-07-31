@@ -1801,10 +1801,10 @@ paths:
           in: path
           description: >-
             A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+            V{version_num}R{release_num} ]
           required: true
           schema:
-            pattern: ^(V\d+R\d+(\.\d+)?|latest)$
+            pattern: ^(V\d+R\d+(\.\d+)?)$
             type: string
       responses:
         '200':
