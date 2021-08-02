@@ -119,9 +119,8 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
 
         * In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the "Restricted User access list..." button in the Grants panel toolbar.
 
-        Users can also be given one of 3 **Privileges** on the STIG Manager system. These privileges are administered in Keycloak through the assignment of User Roles:
+        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges are administered in Keycloak through the assignment of User Roles:
             * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
-            * Global Access: Gives the User Read access to all Collections in STIG Manager.
             * Administrator: Gives the user Administrative access to STIG Manager via the "Administration" node of the Nav Tree. The Administrator Privilege allows the User to:
             
                 * Import new STIGs into STIG Manager, as well as Delete them.

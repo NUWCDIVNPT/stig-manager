@@ -42,7 +42,7 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
 
 User Grants Admin Panel
 ---------------------------------
-This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, date of first User access, last User access, User's privileges ( Create Collection, Global Access, or Administrator), and their internal userid.
+This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, date of first User access, last User access, User's privileges ( Create Collection or Administrator), and their internal userid.
 
 STIG Manager's Users are automatically created when they have successfully used Keycloak to authenticate and are redirected back to the STIGMan application.
 

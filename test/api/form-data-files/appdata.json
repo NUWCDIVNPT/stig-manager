@@ -55,51 +55,6 @@
             }
         },
         {
-            "userId": "77",
-            "username": "globular",
-            "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
-                "lastAccess": 1602652622,
-                "lastClaims": {
-                    "acr": "1",
-                    "aud": "account",
-                    "azp": "stig-manager",
-                    "exp": 1602652921,
-                    "iat": 1602652621,
-                    "iss": "http://localhost:8080/auth/realms/stigman-test",
-                    "jti": "f010c969-c723-4907-a657-2f8da857beff",
-                    "sub": "fadebec4-d02b-4c26-a5a2-c55fd65c3cea",
-                    "typ": "Bearer",
-                    "nonce": "40226133-b67b-4601-91db-65e569a80cf4",
-                    "scope": "openid stig-manager:user:read stig-manager:collection stig-manager:user stig-manager:op stig-manager:stig stig-manager:stig:read email profile",
-                    "auth_time": 1602652621,
-                    "realm_access": {
-                        "roles": [
-                            "global_access",
-                            "create_collection",
-                            "user"
-                        ]
-                    },
-                    "session_state": "f50801ac-d957-4245-8afc-9e29a9db072e",
-                    "email_verified": false,
-                    "allowed-origins": [
-                        "*"
-                    ],
-                    "resource_access": {
-                        "account": {
-                            "roles": [
-                                "manage-account",
-                                "manage-account-links",
-                                "view-profile"
-                            ]
-                        }
-                    },
-                    "preferred_username": "globular"
-                },
-                "collectionGrantCount": 0
-            }
-        },
-        {
             "userId": "85",
             "username": "lvl1",
             "statistics": {
@@ -1002,7 +957,7 @@
             "assetId": "240",
             "ruleId": "SV-106179r1_rule",
             "result": "pass",
-            "resultComment": "test\nno one but admin and globular users should see this. I think.",
+            "resultComment": "test\nno one but admin users should see this.",
             "autoResult": false,
             "action": null,
             "actionComment": null,

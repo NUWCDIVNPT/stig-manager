@@ -46,7 +46,6 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         else {      
             // Get privileges      
             const privileges = {}
-            privileges.globalAccess = roleGetter(decoded).includes('global_access')
             privileges.canCreateCollection = roleGetter(decoded).includes('create_collection')
             privileges.canAdmin = roleGetter(decoded).includes('admin')
 
