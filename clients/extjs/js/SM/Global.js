@@ -15,6 +15,17 @@ SM.GetUserObject = async function () {
             method: 'GET'
         })
         curUser = JSON.parse(result.response.responseText)
+        curUser.collectionGrants.sort((a, b) => {
+            const nameA = a.collection.name
+            const nameB = b.collection.name
+            if (nameA < nameB) {
+                return -1
+            }
+            if (nameA > nameB) {
+                return 1
+            }
+            return 0
+        })
         return curUser
     }
     catch (e) {
