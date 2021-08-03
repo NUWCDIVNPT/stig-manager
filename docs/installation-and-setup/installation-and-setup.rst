@@ -196,7 +196,7 @@ First Steps
 Configure Users
 --------------------------
 
-Users are not created in the STIG Manager application itself. All users must be present in Keycloak and be assigned the appropriate roles before they can access the sytem. Upon first access after successful Keycloak Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
+Users are not created in the STIG Manager application itself. All users must be present in Keycloak (Or any other supported Authentication Provider) and be assigned the appropriate roles before they can access the sytem. Upon first access after successful Keycloak Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
 
 Assign Users the appropriate roles. In Keycloak, this can be done using the "Role Mappings" tab for that user, or you can set these roles as defaults using the Configure->Roles->Default Roles interface.
 
@@ -219,17 +219,13 @@ Assign at least one User the ``admin`` role when setting up STIG Manager for the
   * - Restricted User  
     - Access STIG Manager
     - user
-  * - Global Access User
-    - Access STIG Manager, Access to ALL Collection data
-    - user, global_access
 
 .. note::
-   All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to Collections.  The exception to this rule is the "Global Access" privilege type, which has access to all Collection data. This privilege should only be granted with great care, and is a candidate for removal in future versions of STIGMan. 
-
+   All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection. 
 
 It is recommended that most users should be "Collection Creator Users"(ie. assigned the "user" and "create_collection" roles). A Restricted User will only have access to grants they have been assigned by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
 
-STIG Manager will automatically create its own user associations for Collection grants once a KeyCloak authenticated user accesses the system. The roles Admin, Collection Creator, and Global Access are visible in the User Grants administrative tab, but must be managed in Keycloak. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
+STIG Manager will automatically create its own user associations for Collection grants once a KeyCloak authenticated user accesses the system. The roles Admin and Collection Creator are visible in the User Grants administrative tab, but must be managed in Keycloak. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
 
 
 Import STIGs

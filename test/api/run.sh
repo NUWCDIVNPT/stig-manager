@@ -9,7 +9,7 @@ newman run postman_collection.json -e postman_environment.json -d collectionRunn
   ./newman/dataPreloadReport.html | grep -A18 '┌─────'
 
 echo "GETs"
-newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 \
+newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 \
   --folder "GETs" -r cli,htmlextra \
   --reporter-cli-no-assertions \
   --reporter-cli-no-console \
@@ -17,7 +17,7 @@ newman run postman_collection.json -e postman_environment.json -d collectionRunn
   ./newman/GetsReport.html | grep -A18 '┌─────'
 
 echo "POSTS, Puts, Patches, and Deletes"
-newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 \
+newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 \
   --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra \
   --reporter-cli-no-assertions \
   --reporter-cli-no-console \
@@ -39,3 +39,11 @@ newman run postman_collection.json -e postman_environment.json -d collectionRunn
 --reporter-cli-no-console \
 --reporter-htmlextra-export \
 ./newman/lvl1Report.html | grep -A18 '┌─────'
+
+echo "Additional Sundry Tests"
+newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 \
+--folder "Additional sundry tests" -r cli,htmlextra \
+--reporter-cli-no-assertions \
+--reporter-cli-no-console \
+--reporter-htmlextra-export \
+./newman/AdditionalSundryReport.html | grep -A18 '┌─────'

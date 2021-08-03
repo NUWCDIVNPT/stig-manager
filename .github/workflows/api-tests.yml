@@ -75,7 +75,7 @@ jobs:
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
       -
         name: Run Newman Collection Posts, Puts, Patches, Deletes
         id: newman-run-pppd
@@ -83,7 +83,7 @@ jobs:
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 7 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
       -
         name: Run Newman Collection STIGS
         id: newman-run-stigs

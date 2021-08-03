@@ -15,7 +15,7 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
 
 
 .. ATTENTION::
-   Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, User, Collection Creator, Global Access). Creating users and assigning Roles can only be done from the Keycloak Management Console, and you must have the proper permissions in Keycloak to do this.
+   Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, or Collection Creator). Creating users and assigning Roles can only be done from the Keycloak Management Console, and you must have the proper permissions in Keycloak to do this.
 
 
 Administrator Menu

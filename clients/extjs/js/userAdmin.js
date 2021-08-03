@@ -122,14 +122,6 @@ function addUserAdmin(params ) {
 				}
 			},
 			{ 	
-				header: "Global Access",
-				width: 100,
-				align: 'center',
-				renderer: function (value, metaData, record) {
-					return roleGetter(record.data.statistics.lastClaims).includes('global_access') ? '&#x2714;' : ''
-				}
-			},
-			{ 	
 				header: "Administrator",
 				width: 100,
 				align: 'center',

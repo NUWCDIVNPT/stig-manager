@@ -193,47 +193,10 @@
 
 },
 {
-  "Test Case Description":" globular, not elevated, etc.",
-  "user": "globular",
-  "userExpectations":"allpkgs",
-  "accessLevel": "global",
-  "globalAccess":"true",
-  "elevate": "false",
-
-  "testCollection": "21",
-  "scrapCollection": "1",
-  "testCollectionName": "Collection X",
-  "collectionMatchString":"Collection",
-  "collectionMatchType":"contains",
-  "testAsset": "42",
-  "testAsset-NoStigs": "29",
-  "testAssetName": "lvl1",
-  "deleteAsset" : "38",
-  "deleteCollection" : "85",
-  "scrapAsset" : "34",
-  "assetMatchString":"asset",
-  "metadataKey":"pocName",
-  "metadataValue":"poc2Patched",
-  "stigs.valid": "[\"VPN_SRG\",\"Windows_10_STIG\"]",
-  "testBenchmark": "VPN_SRG",
-  "testRev": "V1R1",
-  "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NzA0MzM2MDQsImlhdCI6MTYwNTYzMzYwNSwiYXV0aF90aW1lIjoxNjA1NjMzNjA0LCJqdGkiOiI5MWMyOWY0ZC05MjU2LTQ5NmItODY3Ni01NTA0NTA3ZGE0NTYiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiI1ZWU4YmQ2Ni01YWNmLTRkOWEtYjUzOC05ZDJiMmQ0NGNkZGIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6ImQyNTFhMjQxLTU2N2ItNDNhMi05MGIxLWVlM2VhZDQwNWFjYyIsInNlc3Npb25fc3RhdGUiOiI0MjYxMTc2Ny00MjZhLTRjZDYtOWM5My02ZGFmODM3MjhkZGYiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImdsb2JhbF9hY2Nlc3MiLCJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJ2aWV3LXVzZXJzIiwicXVlcnktZ3JvdXBzIiwicXVlcnktdXNlcnMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHN0aWctbWFuYWdlcjpjb2xsZWN0aW9uIHN0aWctbWFuYWdlcjpzdGlnOnJlYWQgc3RpZy1tYW5hZ2VyOnVzZXI6cmVhZCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiMDUgVXNlciIsInByZWZlcnJlZF91c2VybmFtZSI6Imdsb2J1bGFyIiwiZ2l2ZW5fbmFtZSI6IjA1IiwiZmFtaWx5X25hbWUiOiJVc2VyIiwiZW1haWwiOiJ1c2VyMDVAbm8uZW1haWwifQ.Pbs5IJeXgWWMFy4yx91hw9jPpCkuYV5jocTL-xrzGLi8r8YQcuVXvjIWvV5a2pajCsvAP24hVMKMdRr73x7ZB-2ENnW-W-9_RTht48g4ZqhO9Wfy3JPe_itBulQTwrUjrEAhOVXIFXEHgLXUYtOlIZkZppStsfjyQBQ-182MSJs",
-
-  "checklistLength" : "81",
-  "testUserId": "1",
-  "userMatchString": "lvl1",
-  "reviewMatchString": "test",
-  "testRuleId": "SV-106179r1_rule",
-  "scrapLvl1": "86",
-  "scrapAdmin": "87",
-  "scrapBenchmark": "RHEL_7_STIG"
-
- },
-{
   "Test Case Description":" collectionCreator, not elevated, etc.",
   "user": "collectioncreator",
   "userExpectations":"allpkgs",
-  "accessLevel": "global",
+  "accessLevel": "collection_creator",
   "globalAccess":"false",
   "elevate": "false",
 

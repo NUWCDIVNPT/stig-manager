@@ -62,7 +62,6 @@ Required Keycloak settings for the "stigman" realm:
   * user
   * create_collection
   * admin
-  * global_access
 
 .. note::
   These roles can also be set up at the Client level, rather than the Realm level. Make adjustments accordingly.
