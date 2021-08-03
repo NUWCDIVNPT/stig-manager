@@ -94,6 +94,7 @@ function loadScripts() {
         "js/SM/Exports.js",
         "js/SM/Parsers.js",
         "js/SM/ReviewsImport.js",
+        "js/SM/TransferAssets.js",
         "js/collectionManager.js",
         "js/stigmanUtils.js",
         "js/userProperties.js",

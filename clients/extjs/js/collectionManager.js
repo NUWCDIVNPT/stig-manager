@@ -128,10 +128,16 @@ async function addCollectionManager( params ) {
 			]
 		})
 		let onAssetEvent = (apiAsset) => {
-			stigGrid.getStore().reload()
+			if (apiAsset.collection.collectionId === collectionId) {
+				assetGrid.getStore().reload()
+				stigGrid.getStore().reload()
+			}
 		}
-		let onStigAssetsChanged = () => {
-			assetGrid.getStore().reload()
+		let onStigAssetsChanged = (eCollectionId) => {
+			if (e.collectionId === collectionId) {
+				assetGrid.getStore().reload()
+				stigGrid.getStore().reload()
+			}
 		}
 		managerTab.updateTitle = function () {
 			managerTab.setTitle(`${managerTab.sm_tabMode === 'ephemeral' ? '<i>':''}${managerTab.collectionName} / Manage${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
