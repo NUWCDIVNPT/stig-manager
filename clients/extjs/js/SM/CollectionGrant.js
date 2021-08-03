@@ -403,14 +403,6 @@ SM.UserProperties = Ext.extend(Ext.form.FormPanel, {
                     },
                     {
                         xtype: 'checkbox',
-                        name: 'globalAccess',
-                        checked: false,
-                        boxLabel: 'Global access',
-                        flex: 1,
-                        readOnly: true
-                    },
-                    {
-                        xtype: 'checkbox',
                         name: 'canAdmin',
                         checked: false,
                         boxLabel: 'Administrator',
@@ -601,7 +593,6 @@ async function showUserProps( userId ) {
                 name: apiUser.statistics.lastClaims?.[STIGMAN.Env.oauth.claims.name],
                 email: apiUser.statistics.lastClaims?.[STIGMAN.Env.oauth.claims.email],
                 canCreateCollection: roleGetter(apiUser.statistics.lastClaims).includes('create_collection'),
-                globalAccess: roleGetter(apiUser.statistics.lastClaims).includes('global_access'),
                 canAdmin: roleGetter(apiUser.statistics.lastClaims).includes('admin'),
                 lastClaims: apiUser.statistics.lastClaims,
                 collectionGrants: apiUser.collectionGrants || []
