@@ -37,8 +37,14 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
   let benchmarkId = req.params.benchmarkId
   let revisionStr = req.params.revisionStr
   try {
-    let response = await STIG.deleteRevisionByString(benchmarkId, revisionStr, req.userObject)
-    res.json(response)
+    let response = await STIG.getRevisionByString(benchmarkId, revisionStr, req.userObject)
+    if(response == undefined) {
+      throw ({status: 404, message: "No matching revision found."} )
+    }
+    else {
+      await STIG.deleteRevisionByString(benchmarkId, revisionStr, req.userObject)
+      res.json(response)
+    }
   }
   catch(err) {
     next(err)

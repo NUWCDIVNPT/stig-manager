@@ -919,15 +919,113 @@ exports.insertScapBenchmark = async function (b) {
  * returns Revision
  **/
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
+
+  let dmls = [
+    "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
+    "DELETE FROM `rule` WHERE ruleId NOT IN (select ruleId from rev_group_rule_map )",
+    "DELETE FROM `check` WHERE checkId NOT IN (select checkId from rev_group_rule_check_map)",
+    "DELETE FROM fix WHERE fixId NOT IN (select fixId from rev_group_rule_fix_map)",
+    "DELETE FROM `group` WHERE groupId NOT IN (select groupId from rev_group_map)"
+  ]
+  let currentRevDmls = [
+    "DELETE from current_rev where benchmarkId = :benchmarkId",
+    `INSERT INTO current_rev (
+        revId,
+        benchmarkId,
+        \`version\`, 
+        \`release\`, 
+        benchmarkDate,
+        benchmarkDateSql,
+        status,
+        statusDate,
+        description,
+        active,
+        groupCount,
+        ruleCount,
+        checkCount,
+        fixCount,
+        ovalCount)
+      SELECT 
+        revId,
+        benchmarkId,
+        \`version\`,
+        \`release\`,
+        benchmarkDate,
+        benchmarkDateSql,
+        status,
+        statusDate,
+        description,
+        active,
+        groupCount,
+        ruleCount,
+        checkCount,
+        fixCount,
+        ovalCount
+      FROM
+        v_current_rev
+      WHERE
+        v_current_rev.benchmarkId = :benchmarkId`,
+    "DELETE FROM current_group_rule WHERE benchmarkId = :benchmarkId",
+    `INSERT INTO current_group_rule (groupId, ruleId, benchmarkId)
+    SELECT rg.groupId,
+      rgr.ruleId,
+      cr.benchmarkId
+    from
+      current_rev cr
+      left join rev_group_map rg on rg.revId=cr.revId
+      left join rev_group_rule_map rgr on rgr.rgId=rg.rgId
+    where
+      cr.benchmarkId = :benchmarkId
+    order by
+      rg.groupId,rgr.ruleId,cr.benchmarkId`,     
+    "DELETE FROM stig WHERE benchmarkId NOT IN (select benchmarkId FROM current_rev)"
+  ]
+
+  let connection;
   try {
-    let rows = await _this.getRevisionByString(benchmarkId, revisionStr, userObject)
     let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    let sqlDelete = `DELETE from revision WHERE benchmarkId = ? and version = ? and release = ?`
-    await dbUtils.pool.query(sqlDelete, [benchmarkId, version, release])
-    return (rows[0])
+    let binds = {
+      benchmarkId: benchmarkId,
+      version: version,
+      release: release
+    }
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION')
+
+    // note if this is the current revision
+    const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
+    const isCurrentRev = !!crRows.length
+    
+    // re-materialize current_rev and current_group_rule if we're deleteing the current revision
+    if (isCurrentRev) {
+      dmls = dmls.concat(currentRevDmls)
+    }
+
+    for (const sql of dmls) {
+     await connection.query(sql, binds)
+    }
+
+    // re-calculate review statistics if we've affected current_rev
+    // NOTE: for performance we could skip this if the only revision has 
+    // been deleted (STIG itself is now deleted)
+    if (isCurrentRev) {
+      await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
+    }
+
+    await connection.commit()
   }
   catch(err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
   }
 }
 
