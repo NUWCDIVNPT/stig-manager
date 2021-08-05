@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "acb62bf9-c924-40dc-bbe8-bfaca13b9f55",
+		"_postman_id": "77c7f0dd-c886-442f-8acf-7509db822c09",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1704,7 +1704,174 @@
 								},
 								{
 									"name": "status",
-									"item": []
+									"item": [
+										{
+											"name": "Return the status statistics for the specified Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/status",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"status"
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the status statistics for the specified Collection - Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/status?assetId={{testAsset}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"status"
+													],
+													"query": [
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the status statistics for the specified Collection - Benchmark",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/status?benchmarkId={{testBenchmark}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"status"
+													],
+													"query": [
+														{
+															"key": "benchmarkId",
+															"value": "{{testBenchmark}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the status statistics for the specified Collection - Asset and Benchmark",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/status?benchmarkId={{testBenchmark}}&assetId={{testAsset}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"status"
+													],
+													"query": [
+														{
+															"key": "benchmarkId",
+															"value": "{{testBenchmark}}"
+														},
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									]
 								},
 								{
 									"name": "Return a Collection",
@@ -6811,6 +6978,7 @@
 													"]\r",
 													"let privilegesKeys = [\r",
 													"    \"canAdmin\",\r",
+													"    \"globalAccess\",\r",
 													"    \"canCreateCollection\"\r",
 													"]\r",
 													"\r",
@@ -6965,6 +7133,7 @@
 											"]\r",
 											"let privilegesKeys = [\r",
 											"    \"canAdmin\",\r",
+											"    \"globalAccess\",\r",
 											"    \"canCreateCollection\"\r",
 											"]\r",
 											"\r",
@@ -7184,6 +7353,7 @@
 											"]\r",
 											"let privilegesKeys = [\r",
 											"    \"canAdmin\",\r",
+											"    \"globalAccess\",\r",
 											"    \"canCreateCollection\"\r",
 											"]\r",
 											"\r",
@@ -7530,6 +7700,7 @@
 									"]\r",
 									"let privilegesKeys = [\r",
 									"    \"canAdmin\",\r",
+									"    \"globalAccess\",\r",
 									"    \"canCreateCollection\"\r",
 									"]\r",
 									"\r",
@@ -10917,6 +11088,542 @@
 							]
 						}
 					]
+				},
+				{
+					"name": "Asset Transfers",
+					"item": [
+						{
+							"name": "Merge provided properties with an Asset - Change Collection - Fail for all users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"pm.test(\"Status code should be 403 for all users\", function () {\r",
+											"    pm.response.to.have.status(403);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"//         pm.response.to.have.status(403);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"// else {\r",
+											"//     pm.test(\"Status code is 200\", function () {\r",
+											"//         pm.response.to.have.status(200);\r",
+											"//     });\r",
+											"// }\r",
+											"// if (pm.response.code !== 200) {\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"// let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"// pm.test(\"Response JSON is an object\", function () {\r",
+											"//     pm.expect(jsonData).to.be.an('object');\r",
+											"//     // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"//     // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"// });\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"description": "(Required) A path parameter that indentifies an Asset",
+											"key": "assetId",
+											"value": "{{testAsset}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Merge provided properties with an Asset - Change Collection - valid for lvl3 and lvl4 only",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"let destinationCollectionId = pm.environment.get(\"scrapCollection\");\r",
+											"\r",
+											"pm.test(\"Response JSON indicates proper collection\", function () {\r",
+											"    // pm.expect(jsonData).to.be.an('object');\r",
+											"    pm.expect(jsonData.collection.collectionId).to.equal(destinationCollectionId);\r",
+											"\r",
+											"});\r",
+											"pm.test(\"Response JSON indicates stigGrants were cleared\", function () {\r",
+											"    pm.expect(jsonData.stigGrants).to.have.lengthOf(0);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"description": "(Required) A path parameter that indentifies an Asset",
+											"key": "assetId",
+											"value": "{{testAsset}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import and overwrite application data (as elevated Admin) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"Commit successful\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{appDataFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/op/appdata?elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"op",
+										"appdata"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set all properties of an Asset - Change Collection - invalid for all users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code should be 403 for all users\", function () {\r",
+											"    pm.response.to.have.status(403);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"// if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"//         pm.response.to.have.status(403);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"// else {\r",
+											"//     pm.test(\"Status code is 200\", function () {\r",
+											"//         pm.response.to.have.status(200);\r",
+											"//     });\r",
+											"// }\r",
+											"// if (pm.response.code !== 200) {\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"// let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"// pm.test(\"Response JSON is an object\", function () {\r",
+											"//     pm.expect(jsonData).to.be.an('object');\r",
+											"//     // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"//     // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"// });\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"description": "(Required) A path parameter that indentifies an Asset",
+											"key": "assetId",
+											"value": "{{testAsset}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set all properties of an Asset - Change Collection - valid for stigmanAdmin only",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"\r",
+											"let destinationCollectionId = pm.environment.get(\"scrapCollection\");\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON indicates proper collection\", function () {\r",
+											"    // pm.expect(jsonData).to.be.an('object');\r",
+											"    pm.expect(jsonData.collection.collectionId).to.equal(destinationCollectionId);\r",
+											"\r",
+											"});\r",
+											"pm.test(\"Response JSON indicates stigGrants were cleared\", function () {\r",
+											"    pm.expect(jsonData.stigGrants).to.have.lengthOf(0);\r",
+											"\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "adminStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"description": "(Required) A path parameter that indentifies an Asset",
+											"key": "assetId",
+											"value": "{{testAsset}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			],
 			"description": "Requests that alter data"
@@ -11974,7 +12681,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs/ccis/:cci?projection=stigs&projection=references&projection=emassAp",
+									"raw": "{{baseUrl}}/stigs/ccis/:cci",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -12025,20 +12732,20 @@
 																	"}\r",
 																	"\r",
 																	"//START AZDO #119\r",
-																	"if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
-																	"    pm.test(\"Status should be is 200 for user stigmanadmin\", function () {\r",
-																	"        pm.response.to.have.status(200);\r",
-																	"    });\r",
-																	"    // return;\r",
-																	"}\r",
-																	"else {\r",
-																	"    pm.test(\"Status code is 403 for all other users\", function () {\r",
-																	"        pm.response.to.have.status(403);\r",
-																	"    });\r",
-																	"}\r",
-																	"if (pm.response.code !== 200) {\r",
-																	"    return;\r",
-																	"}\r",
+																	"// if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
+																	"//     pm.test(\"Status should be is 200 for user stigmanadmin\", function () {\r",
+																	"//         pm.response.to.have.status(200);\r",
+																	"//     });\r",
+																	"//     // return;\r",
+																	"// }\r",
+																	"// else {\r",
+																	"//     pm.test(\"Status code is 403 for all other users\", function () {\r",
+																	"//         pm.response.to.have.status(403);\r",
+																	"//     });\r",
+																	"// }\r",
+																	"// if (pm.response.code !== 200) {\r",
+																	"//     return;\r",
+																	"// }\r",
 																	"//END AZDO #119\r",
 																	""
 																],
@@ -12093,20 +12800,20 @@
 																	"}\r",
 																	"\r",
 																	"//START AZDO #119\r",
-																	"if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
-																	"    pm.test(\"Status should be is 400 for user stigmanadmin\", function () {\r",
-																	"        pm.response.to.have.status(400);\r",
-																	"    });\r",
-																	"    // return;\r",
-																	"}\r",
-																	"else {\r",
-																	"    pm.test(\"Status code is 403 for all other users\", function () {\r",
-																	"        pm.response.to.have.status(403);\r",
-																	"    });\r",
-																	"}\r",
-																	"if (pm.response.code !== 400) {\r",
-																	"    return;\r",
-																	"}\r",
+																	"// if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
+																	"//     pm.test(\"Status should be is 200 for user stigmanadmin\", function () {\r",
+																	"//         pm.response.to.have.status(200);\r",
+																	"//     });\r",
+																	"//     // return;\r",
+																	"// }\r",
+																	"// else {\r",
+																	"//     pm.test(\"Status code is 403 for all other users\", function () {\r",
+																	"//         pm.response.to.have.status(403);\r",
+																	"//     });\r",
+																	"// }\r",
+																	"// if (pm.response.code !== 200) {\r",
+																	"//     return;\r",
+																	"// }\r",
 																	"//END AZDO #119\r",
 																	""
 																],
@@ -12137,7 +12844,7 @@
 																{
 																	"key": "revisionStr",
 																	"value": "latest",
-																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} ]"
+																	"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 																}
 															]
 														}
@@ -12614,6 +13321,7 @@
 									"]\r",
 									"let privilegesKeys = [\r",
 									"    \"canAdmin\",\r",
+									"    \"globalAccess\",\r",
 									"    \"canCreateCollection\"\r",
 									"]\r",
 									"\r",
@@ -15835,6 +16543,7 @@
 					"pm.environment.set(\"reviewMatchString\", pm.iterationData.get(\"reviewMatchString\"));",
 					"",
 					"//misc",
+					"pm.environment.set(\"globalAccess\", pm.iterationData.get(\"globalAccess\"));",
 					"pm.environment.set(\"accessLevel\", pm.iterationData.get(\"accessLevel\"));",
 					"",
 					""
