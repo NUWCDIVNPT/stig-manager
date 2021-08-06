@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "acb62bf9-c924-40dc-bbe8-bfaca13b9f55",
+		"_postman_id": "395283e0-a9a2-424d-82e7-34709e126c67",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1705,6 +1705,263 @@
 								{
 									"name": "status",
 									"item": []
+								},
+								{
+									"name": "metadata",
+									"item": [
+										{
+											"name": "Return the Metadata for a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"    let testMetadataKey = pm.environment.get(\"pocEmail\");\r",
+															"    let testMetadataValue = pm.environment.get(\"pocEmail@email.com\");\r",
+															"    pm.expect(jsonData[testMetadataKey]).to.eql(testMetadataValue);\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata?elevate={{elevated}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the Metadata KEYS for a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"    pm.expect(jsonData).to.include(\"pocEmail\");\r",
+															"});\r",
+															"\r",
+															"// pm.test(\"Check review comment for regex match string\", function () {\r",
+															"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+															"//     var regex = new RegExp(reviewMatchString);\r",
+															"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
+															"// });\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata/keys?elevate={{elevated}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata",
+														"keys"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the Metadata VALUE for a Collection metadata KEY",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('string');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"    pm.expect(jsonData).to.eql(\"poc2Patched\");\r",
+															"});\r",
+															"\r",
+															"// pm.test(\"Check review comment for regex match string\", function () {\r",
+															"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+															"//     var regex = new RegExp(reviewMatchString);\r",
+															"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
+															"// });\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata/keys/:key?elevate={{elevated}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata",
+														"keys",
+														":key"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														},
+														{
+															"key": "key",
+															"value": "{{metadataKey}}"
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									]
 								},
 								{
 									"name": "Return a Collection",
@@ -7903,6 +8160,529 @@
 									]
 								},
 								{
+									"name": "metadata",
+									"item": [
+										{
+											"name": "Set all properties of a Collection- with metadata",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														},
+														{
+															"key": "projection",
+															"value": "assets",
+															"description": "Additional properties to include in the response.\n"
+														},
+														{
+															"key": "projection",
+															"value": "grants",
+															"description": "Additional properties to include in the response.\n"
+														},
+														{
+															"key": "projection",
+															"value": "owners"
+														},
+														{
+															"key": "projection",
+															"value": "statistics"
+														},
+														{
+															"key": "projection",
+															"value": "stigs"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Set all metadata of a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for all users except collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"{{testMetadataKey}}\":\"{{testMetadataValue}}\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Set one metadata key/value of a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 204 for all users but collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(204);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 204) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "\"{{metadataValue}}\""
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata/keys/:key",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata",
+														"keys",
+														":key"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														},
+														{
+															"key": "key",
+															"value": "{{testMetadataKey}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Delete one metadata key/value of a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 204 for all users but collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(204);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 204) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "\"{{metadataValue}}\""
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata/keys/:key",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata",
+														"keys",
+														":key"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														},
+														{
+															"key": "key",
+															"value": "{{testMetadataKey}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Merge metadata property/value into a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"{{testMetadataKey}}\":\"{{metadataValue}}\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										}
+									]
+								},
+								{
 									"name": "Merge provided properties with a Collection",
 									"event": [
 										{
@@ -11974,7 +12754,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs/ccis/:cci?projection=stigs&projection=references&projection=emassAp",
+									"raw": "{{baseUrl}}/stigs/ccis/:cci",
 									"host": [
 										"{{baseUrl}}"
 									],
