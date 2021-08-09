@@ -597,3 +597,116 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
   }
 }
 
+
+async function getAssetIdAndCheckPermission(request) {
+  const elevate = request.query.elevate
+  let assetId = request.params.assetId
+
+  // fetch the Asset for access control checks and the response
+  let assetToAffect = await Asset.getAsset(assetId, [], elevate, request.userObject)
+  // can the user fetch this Asset?
+  if (!assetToAffect) {
+    throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+  }
+  const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
+  // is the granted accessLevel high enough?
+  if (!( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) )) {
+    throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+  }
+  return assetId
+}
+
+
+module.exports.getAssetMetadata = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let result = await Asset.getAssetMetadata(assetId, req.userObject)
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+
+module.exports.patchAssetMetadata = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let metadata = req.body
+    await Asset.patchAssetMetadata(assetId, metadata)
+    let result = await Asset.getAssetMetadata(assetId)
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+
+module.exports.putAssetMetadata = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let body = req.body
+    await Asset.putAssetMetadata(assetId, body)
+    let result = await Asset.getAssetMetadata(assetId)
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+
+module.exports.getAssetMetadataKeys = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let result = await Asset.getAssetMetadataKeys(assetId, req.userObject)
+    if (!result) {
+      throw ( {status: 404, message: "metadata keys not found"} )
+    }
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+
+module.exports.getAssetMetadataValue = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let key = req.params.key
+    let result = await Asset.getAssetMetadataValue(assetId, key, req.userObject)
+    if (!result) { 
+      throw ( {status: 404, message: "metadata key not found"} )
+    }
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+
+module.exports.putAssetMetadataValue = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let key = req.params.key
+    let value = req.body
+    let result = await Asset.putAssetMetadataValue(assetId, key, value)
+    res.status(204).send()
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+
+
+module.exports.deleteAssetMetadataKey = async function (req, res, next) {
+  try {
+    let assetId = await getAssetIdAndCheckPermission(req)
+    let key = req.params.key
+
+    let result = await Asset.deleteAssetMetadataKey(assetId, key, req.userObject)
+    res.status(204).send()
+  }
+  catch (err) {
+    next(err)
+  }  
+}
+

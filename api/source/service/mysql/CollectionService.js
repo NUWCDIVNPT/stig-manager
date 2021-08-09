@@ -982,3 +982,101 @@ exports.updateCollection = async function( collectionId, body, projection, userO
   }
 }
 
+
+exports.getCollectionMetadataKeys = async function ( collectionId ) {
+  const binds = []
+  let sql = `
+    select
+      JSON_KEYS(metadata) as keyArray
+    from 
+      collection
+    where 
+      collectionId = ?`
+  binds.push(collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].keyArray : []
+}
+
+exports.getCollectionMetadata = async function ( collectionId ) {
+  const binds = []
+  let sql = `
+    select
+      metadata 
+    from 
+      collection
+    where 
+      collectionId = ?`
+  binds.push(collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].metadata : {}
+}
+
+exports.patchCollectionMetadata = async function ( collectionId, metadata ) {
+  const binds = []
+  let sql = `
+    update
+      collection 
+    set 
+      metadata = JSON_MERGE_PATCH(metadata, ?)
+    where 
+      collectionId = ?`
+  binds.push(JSON.stringify(metadata), collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return true
+}
+
+exports.putCollectionMetadata = async function ( collectionId, metadata ) {
+  const binds = []
+  let sql = `
+    update
+      collection
+    set 
+      metadata = ?
+    where 
+      collectionId = ?`
+  binds.push(JSON.stringify(metadata), collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return true
+}
+
+exports.getCollectionMetadataValue = async function ( collectionId, key ) {
+  const binds = []
+  let sql = `
+    select
+      JSON_EXTRACT(metadata, ?) as value
+    from 
+      collection
+    where 
+      collectionId = ?`
+  binds.push(`$."${key}"`, collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].value : ""
+}
+
+exports.putCollectionMetadataValue = async function ( collectionId, key, value ) {
+  const binds = []
+  let sql = `
+    update
+      collection
+    set 
+      metadata = JSON_SET(metadata, ?, ?)
+    where 
+      collectionId = ?`
+  binds.push(`$."${key}"`, value, collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].value : ""
+}
+
+exports.deleteCollectionMetadataKey = async function ( collectionId, key ) {
+  const binds = []
+  let sql = `
+    update
+      collection
+    set 
+      metadata = JSON_REMOVE(metadata, ?)
+    where 
+      collectionId = ?`
+  binds.push(`$."${key}"`, collectionId)
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return rows.length > 0 ? rows[0].value : ""
+}
