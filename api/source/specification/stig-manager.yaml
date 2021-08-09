@@ -1479,6 +1479,7 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/metadata':
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
     get:
       tags:
@@ -1557,6 +1558,7 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/metadata/keys':
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
     get:
       tags:
@@ -1581,8 +1583,9 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/assets/{assetId}/metadata/keys{key}':
+  '/assets/{assetId}/metadata/keys/{key}':
     parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/MetadataKeyPath'
     get:

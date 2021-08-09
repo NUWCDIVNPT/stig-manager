@@ -603,12 +603,12 @@ async function getAssetIdAndCheckPermission(request) {
   let assetId = request.params.assetId
 
   // fetch the Asset for access control checks and the response
-  let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
+  let assetToAffect = await Asset.getAsset(assetId, [], elevate, request.userObject)
   // can the user fetch this Asset?
   if (!assetToAffect) {
     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
   }
-  const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
+  const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
   // is the granted accessLevel high enough?
   if (!( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) )) {
     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
@@ -646,7 +646,7 @@ module.exports.putAssetMetadata = async function (req, res, next) {
     let assetId = await getAssetIdAndCheckPermission(req)
     let body = req.body
     await Asset.putAssetMetadata(assetId, body)
-    let result = await Asset.getAssetMetadata(assetId, ruleId)
+    let result = await Asset.getAssetMetadata(assetId)
     res.json(result)
   }
   catch (err) {

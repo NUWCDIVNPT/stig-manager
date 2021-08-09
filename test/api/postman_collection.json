@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "395283e0-a9a2-424d-82e7-34709e126c67",
+		"_postman_id": "d5dc2bb6-2810-426d-80ae-0aa1e5c7b221",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1718,23 +1718,25 @@
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
-															"\r",
 															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
 															"    user = \"elevated\";\r",
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
-															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"//&& user != \"collectioncreator\"\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated), collectioncreator, or >= level 3\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
+															"    pm.test(\"Status code is 200 for \" + user, function () {\r",
 															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
+															"\r",
+															"\r",
 															"if (pm.response.code !== 200) {\r",
 															"    return;\r",
 															"}\r",
@@ -1803,8 +1805,8 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
-															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
@@ -1818,6 +1820,7 @@
 															"    return;\r",
 															"}\r",
 															"\r",
+															"\r",
 															"let jsonData = pm.response.json();\r",
 															"\r",
 															"pm.test(\"Response JSON is an array\", function () {\r",
@@ -1829,12 +1832,6 @@
 															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
 															"    pm.expect(jsonData).to.include(\"pocEmail\");\r",
 															"});\r",
-															"\r",
-															"// pm.test(\"Check review comment for regex match string\", function () {\r",
-															"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
-															"//     var regex = new RegExp(reviewMatchString);\r",
-															"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
-															"// });\r",
 															""
 														],
 														"type": "text/javascript"
@@ -1887,14 +1884,14 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
-															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
+															"    pm.test(\"Status code is 200 for \" + user, function () {\r",
 															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
@@ -1913,12 +1910,6 @@
 															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
 															"    pm.expect(jsonData).to.eql(\"poc2Patched\");\r",
 															"});\r",
-															"\r",
-															"// pm.test(\"Check review comment for regex match string\", function () {\r",
-															"//     let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
-															"//     var regex = new RegExp(reviewMatchString);\r",
-															"//     pm.expect(jsonData.resultComment).to.match(regex);\r",
-															"// });\r",
 															""
 														],
 														"type": "text/javascript"
@@ -2726,6 +2717,251 @@
 						{
 							"name": "{asset Id}",
 							"item": [
+								{
+									"name": "metadata",
+									"item": [
+										{
+											"name": "Return the Metadata for an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"//&& user != \"collectioncreator\"\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated), collectioncreator, or >= level 3\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for \" + user, function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"\r",
+															"\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"    let testMetadataKey = pm.environment.get(\"pocEmail\");\r",
+															"    let testMetadataValue = pm.environment.get(\"pocEmail@email.com\");\r",
+															"    pm.expect(jsonData[testMetadataKey]).to.eql(testMetadataValue);\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata?elevate={{elevated}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the Metadata KEYS for an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"/*\r",
+															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"    pm.expect(jsonData).to.include(\"pocEmail\");\r",
+															"});\r",
+															"*/"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys?elevate={{elevated}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata",
+														"keys"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the Metadata VALUE for an Asset metadata KEY",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"/*\r",
+															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for \" + user, function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('string');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"    pm.expect(jsonData).to.eql(\"poc2Patched\");\r",
+															"});\r",
+															"*/"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys/:key?elevate={{elevated}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata",
+														"keys",
+														":key"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{testAsset}}"
+														},
+														{
+															"key": "key",
+															"value": "{{metadataKey}}"
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
 								{
 									"name": "stigs",
 									"item": [
@@ -8177,14 +8413,14 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
 															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
@@ -8284,17 +8520,18 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200 for all users except collectioncreator\", function () {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
 															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
+															"\r",
 															"if (pm.response.code !== 200) {\r",
 															"    return;\r",
 															"}\r",
@@ -8388,20 +8625,22 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 204 for all users but collectioncreator\", function () {\r",
+															"    pm.test(\"Status code is 204 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
 															"        pm.response.to.have.status(204);\r",
 															"    });\r",
 															"}\r",
+															"\r",
 															"if (pm.response.code !== 204) {\r",
 															"    return;\r",
 															"}\r",
+															"\r",
 															"\r",
 															"\r",
 															""
@@ -8489,20 +8728,22 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 204 for all users but collectioncreator\", function () {\r",
+															"    pm.test(\"Status code is 204 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
 															"        pm.response.to.have.status(204);\r",
 															"    });\r",
 															"}\r",
+															"\r",
 															"if (pm.response.code !== 204) {\r",
 															"    return;\r",
 															"}\r",
+															"\r",
 															"\r",
 															"\r",
 															"\r",
@@ -8591,21 +8832,21 @@
 															"    console.log(\"setting user to 'elevated'\");\r",
 															"}\r",
 															"\r",
-															"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-															"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
 															"        pm.response.to.have.status(403);\r",
 															"    });\r",
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
 															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
+															"\r",
 															"if (pm.response.code !== 200) {\r",
 															"    return;\r",
 															"}\r",
-															"\r",
 															"\r",
 															"let jsonData = pm.response.json();\r",
 															"\r",
@@ -9423,6 +9664,519 @@
 									]
 								},
 								{
+									"name": "metadata",
+									"item": [
+										{
+											"name": "Set all properties of an Asset- with metadata",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}\n"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}"
+														},
+														{
+															"key": "projection",
+															"value": "adminStats"
+														},
+														{
+															"key": "projection",
+															"value": "stigs"
+														},
+														{
+															"key": "projection",
+															"value": "stigGrants"
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{scrapAsset}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Set all metadata of an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"{{testMetadataKey}}\":\"{{testMetadataValue}}\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{scrapAsset}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Set one metadata key/value of an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator, lvl1, or lvl2\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 204 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(204);\r",
+															"    });\r",
+															"}\r",
+															"\r",
+															"if (pm.response.code !== 204) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "\"{{metadataValue}}\""
+												},
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys/:key",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata",
+														"keys",
+														":key"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{scrapAsset}}"
+														},
+														{
+															"key": "key",
+															"value": "{{testMetadataKey}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Delete one metadata key/value of an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator, or lvl1, or lvl2\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 204 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(204);\r",
+															"    });\r",
+															"}\r",
+															"\r",
+															"if (pm.response.code !== 204) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "DELETE",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "\"{{metadataValue}}\""
+												},
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys/:key",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata",
+														"keys",
+														":key"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{scrapAsset}}"
+														},
+														{
+															"key": "key",
+															"value": "{{testMetadataKey}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
+											"name": "Merge metadata property/value into an Asset",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"{{testMetadataKey}}\":\"{{metadataValue}}\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/assets/:assetId/metadata",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"assets",
+														":assetId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "assetId",
+															"value": "{{scrapAsset}}"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										}
+									]
+								},
+								{
 									"name": "Merge provided properties with an Asset",
 									"event": [
 										{
@@ -9478,7 +10232,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+											"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
@@ -9577,7 +10331,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
@@ -9768,7 +10522,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
