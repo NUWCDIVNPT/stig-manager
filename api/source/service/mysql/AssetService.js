@@ -310,7 +310,7 @@ exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = fal
   }
 }
 
-exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, elevate, userObject) {
+exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, transferring, userObject) {
   let connection
   try {
     // CREATE: assetId will be null
@@ -357,6 +357,14 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
             WHERE
               assetId = ?`
         await connection.query(sqlUpdate, [assetFields, assetId])
+        if (transferring) {
+          let sqlDeleteRestrictedUsers = 
+            `DELETE user_stig_asset_map
+            FROM user_stig_asset_map
+            INNER JOIN stig_asset_map USING (saId)
+            WHERE stig_asset_map.assetId = ?`
+          await connection.query(sqlDeleteRestrictedUsers, [assetId])
+        }
       }
     }
     else {
@@ -409,7 +417,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
 
   // Fetch the new or updated Asset for the response
   try {
-    let row = await _this.getAsset(assetId, projection, elevate, userObject)
+    let row = await _this.getAsset(assetId, projection, false, userObject)
     return row
   }
   catch (err) {
@@ -1139,27 +1147,9 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
  * assetId Integer A path parameter that indentifies an Asset
  * returns AssetDetail
  **/
-exports.updateAsset = async function( assetId, body, projection, elevate, userObject ) {
+exports.updateAsset = async function( assetId, body, projection, transferring, userObject ) {
   try {
-    let row = await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, elevate, userObject)
-    return (row)
-  } 
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
-}
-
-/**
- * Replace an Asset
- *
- * body Asset
- * projection
- * assetId Integer A path parameter that indentifies an Asset
- * returns AssetDetail
- **/
-exports.replaceAsset = async function( assetId, body, projection, elevate, userObject ) {
-  try {
-    let row = await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.REPLACE, assetId, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, transferring, userObject)
     return (row)
   } 
   catch (err) {
