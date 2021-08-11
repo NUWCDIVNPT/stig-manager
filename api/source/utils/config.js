@@ -10,7 +10,12 @@ let config = {
     },
     settings: {
         setClassification: process.env.STIGMAN_CLASSIFICATION,
-        lastAccessResolution: 60
+        lastAccessResolution: 60,
+        // Supported STIGMAN_DEV_RESPONSE_VALIDATION values: 
+        // "logOnly" (logs failing response, but still sends them) 
+        // "none"(no validation performed)
+        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none"
+
     },
     client: {
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",

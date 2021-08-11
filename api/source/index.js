@@ -72,6 +72,9 @@ oasDoc.components.securitySchemes.oauth.flows.implicit.authorizationUrl = `${con
 
 const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
 
+
+let responseValidationConfig = buildResponseValidationConfig();
+
 //  2. Install the OpenApiValidator middleware
 app.use(
   openApiMiddleware({
@@ -79,17 +82,8 @@ app.use(
     validateRequests: {
       coerceTypes: true,
       allowUnknownQueryParameters: false,
-    },    // validateResponses: true, // default false
-    // validateResponses: {
-    //   removeAdditional: 'failing',
-    // },
-    // validateResponses: {
-    //   onError: (error, body, req) => {
-    //     console.log(`Response body fails validation: `, error);
-    //     console.log(`Emitted from:`, req.originalUrl);
-    //     console.debug(body);
-    //   }
-    // },
+    },
+    validateResponses: responseValidationConfig,
     validateApiSpec: true,
     $refParser: {
       mode: 'dereference',
@@ -107,13 +101,6 @@ app.use(
       }
     },
     fileUploader: false
-    //   fileUploader: { 
-    //     storage: storage,
-    //   limits: {
-    //     fileSize: parseInt(config.http.maxUpload),
-    //     files: 1
-    //   }
-    //  }
   }),
 );
 
@@ -121,12 +108,6 @@ app.use(
 app.use((err, req, res, next) => {
   // 7. Customize errors
   console.error(err); // dump error to console for debug
-  // res.status(err.status || 500).json({
-  //   message: err.message,
-  //   errors: err.errors,
-  //   code: err.code
-  // });
-  //Perhaps only return the whole error object when in a "Dev" mode?
   res.status(err.status || 500).json(err);
 });
 
@@ -284,4 +265,20 @@ function modulePathResolver(
     );
   }
   return handler[method];
+}
+
+function buildResponseValidationConfig(){
+  if ( config.settings.responseValidation == "logOnly" ){
+    return {
+        onError: (error, body, req) => {
+          console.log(`Response body fails validation: `, error);
+          console.log(`Response body emitted from:`, req.originalUrl);
+          console.debug(`Response body:`, body);
+        }
+      }
+  }
+  else {
+    return false
+  }
+
 }
