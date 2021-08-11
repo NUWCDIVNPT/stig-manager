@@ -295,6 +295,175 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/assets/{assetId}/metadata':
+    parameters:
+      - $ref: '#/components/parameters/AssetIdPath'
+    get:
+      tags:
+        - Asset
+      summary: Return the metadata for Asset
+      operationId: getAssetMetadata
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    patch:
+      tags:
+        - Asset
+      summary: Merge the provided object to a Assetmetadata
+      operationId: patchAssetMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metadata'
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    put:
+      tags:
+        - Asset
+      summary: Set a Asset metadata to the provided object
+      operationId: putAssetMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metadata'
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/assets/{assetId}/metadata/keys':
+    parameters:
+      - $ref: '#/components/parameters/AssetIdPath'
+    get:
+      tags:
+        - Asset
+      summary: Return the keys of the provided Asset's metadata
+      operationId: getAssetMetadataKeys
+      responses:
+        '200':
+          description: MetadataKeys response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataKey'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/assets/{assetId}/metadata/keys/{key}':
+    parameters:
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/MetadataKeyPath'
+    get:
+      tags:
+        - Asset
+      summary: Return the value of the provided Asset metadata key
+      operationId: getAssetMetadataValue
+      responses:
+        '200':
+          description: MetadataValue response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataValue'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Asset
+      summary: Set the value of the provided Asset metadata key to the provided string
+      operationId: putAssetMetadataValue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataValue'
+      responses:
+        '204':
+          description: Empty to avoid large response after putting key with large value
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Asset
+      summary: Remove the provided Asset metadata key
+      operationId: deleteAssetMetadataKey
+      responses:
+        '204':
+          description: Empty to avoid large response after deleteing key with large value
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/assets/{assetId}/stigs':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -1293,6 +1462,178 @@ paths:
         - Review
       summary: Remove the provided Review metadata key
       operationId: deleteReviewMetadataKey
+      responses:
+        '204':
+          description: Empty to avoid large response after deleteing key with large value
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/metadata':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/ElevateQuery'
+    get:
+      tags:
+        - Collection
+      summary: Return the metadata for Collection
+      operationId: getCollectionMetadata
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    patch:
+      tags:
+        - Collection
+      summary: Merge the provided object to a Collection metadata
+      operationId: patchCollectionMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metadata'
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    put:
+      tags:
+        - Collection
+      summary: Set a Collection metadata to the provided object
+      operationId: putCollectionMetadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Metadata'
+      responses:
+        '200':
+          description: Metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/metadata/keys':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/ElevateQuery'
+    get:
+      tags:
+        - Collection
+      summary: Return the keys of the provided Collection metadata
+      operationId: getCollectionMetadataKeys
+      responses:
+        '200':
+          description: MetadataKeys response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataKey'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metadata/keys/{key}':
+    parameters:
+      - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/MetadataKeyPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the value of the provided Collection metadata key
+      operationId: getCollectionMetadataValue
+      responses:
+        '200':
+          description: MetadataValue response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataValue'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+      summary: Set the value of the provided Collection metadata key to the provided string
+      operationId: putCollectionMetadataValue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataValue'
+      responses:
+        '204':
+          description: Empty to avoid large response after putting key with large value
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Collection
+      summary: Remove the provided Collection metadata key
+      operationId: deleteCollectionMetadataKey
       responses:
         '204':
           description: Empty to avoid large response after deleteing key with large value
