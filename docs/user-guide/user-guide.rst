@@ -426,6 +426,7 @@ From this Workspace, the User can:
    * Batch import CKL or XCCDF files to automatically scaffold or add to their Collection
    * Batch export CKL files for external tools such as eMASS
    * Add/Modify/Remove Assets in the Collection 
+   * Transfer Assets to another Collection
    * Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)
    * Add/Modify/Remove User Grants in the Collection
    * Delete the Collection (if Collection Owner)
@@ -629,6 +630,26 @@ One multi-STIG .ckl file will be generated for every unique Asset selected. The 
 Delete Asset
 ~~~~~~~~~~~~~~~~~~~~
 To Delete an Asset, select an Asset and click the Delete Asset button. A popup will ask you to confirm the action. 
+
+
+.. _transfer-asset:
+
+Transfer Asset(s) to Another Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Select one or more(with Shift+Click) Assets, click the "Transfer To" button, and select the destination Collection.  You will be prompted with a confirmation pop-up. Click "Yes" to transfer the Assets to the new Collection. 
+
+You must have "Manage" or "Owner" levels of access on both the originating and destination Collections. You will only see Collections that you have sufficient access to in the "Transfer To" pulldown.  
+Individual Asset-STIG assignments to Restricted Users are removed when an Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset.  
+
+
+.. thumbnail:: /assets/images/transfer-asset.png
+      :width: 50% 
+      :show_caption: True
+      :title: Transfer Assets to Another Collection
+
+
+-------------------------------
+
 
 Change Asset Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

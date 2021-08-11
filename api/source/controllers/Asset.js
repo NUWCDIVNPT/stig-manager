@@ -6,7 +6,7 @@ const Asset = require(`../service/${config.database.type}/AssetService`);
 const Collection = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const J2X = require("fast-xml-parser").j2xParser
-const he = require('he');
+const he = require('he')
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -392,19 +392,38 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
 
 module.exports.replaceAsset = async function replaceAsset (req, res, next) {
   try {
-    let elevate = req.query.elevate
-    let assetId = req.params.assetId
-    let projection = req.query.projection
-    let body = req.body
+    const elevate = req.query.elevate
+    const assetId = req.params.assetId
+    const projection = req.query.projection
+    const body = req.body
 
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
-      res.json(response)
+    // If this user has no grants permitting access to the asset, the response will be undefined
+    const currentAsset = await Asset.getAsset(assetId, projection, elevate, req.userObject )
+    if (!currentAsset) {
+      throw( {status: 403, message: "User has insufficient privilege to modify this asset."} )
     }
-    else {
-      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})    
-    }    
+    // Check if the user has an appropriate grant to the asset's collection
+    const currentCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === currentAsset.collection.collectionId )
+    if ( !currentCollectionGrant || currentCollectionGrant.accessLevel < 3 ) {
+      throw( {status: 403, message: `User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`} )
+    }
+    // Check if the asset is being transferred
+    const transferring = currentAsset.collection.collectionId !== body.collectionId
+    if (transferring) {
+      // If so, Check if the user has an appropriate grant to the asset's updated collection
+      const updatedCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
+      if ( !updatedCollectionGrant || updatedCollectionGrant.accessLevel < 3 ) {
+        throw( {status: 403, message: `User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`} )
+      }
+    }
+    const response = await Asset.updateAsset(
+      assetId,
+      body,
+      projection,
+      transferring,
+      req.userObject
+    )
+    res.json(response)
   }
   catch (err) {
     next(err)
@@ -578,19 +597,38 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
 
 module.exports.updateAsset = async function updateAsset (req, res, next) {
   try {
-    let elevate = req.query.elevate
-    let assetId = req.params.assetId
-    let projection = req.query.projection
-    let body = req.body
+    const elevate = req.query.elevate
+    const assetId = req.params.assetId
+    const projection = req.query.projection
+    const body = req.body
 
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await Asset.updateAsset( assetId, body, projection, elevate, req.userObject )
-      res.json(response)
+    // If this user has no grants permitting access to the asset, the response will be undefined
+    const currentAsset = await Asset.getAsset(assetId, projection, elevate, req.userObject )
+    if (!currentAsset) {
+      throw( {status: 403, message: "User has insufficient privilege to modify this asset."} )
     }
-    else {
-      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})    
-    }    
+    // Check if the user has an appropriate grant to the asset's collection
+    const currentCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === currentAsset.collection.collectionId )
+    if ( !currentCollectionGrant || currentCollectionGrant.accessLevel < 3 ) {
+      throw( {status: 403, message: `User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`} )
+    }
+    // Check if the asset's collectionId is being changed
+    const transferring = body.collectionId && currentAsset.collection.collectionId !== body.collectionId
+    if (transferring) {
+      // If so, Check if the user has an appropriate grant to the asset's updated collection
+      const updatedCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
+      if ( !updatedCollectionGrant || updatedCollectionGrant.accessLevel < 3 ) {
+        throw( {status: 403, message: `User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`} )
+      }
+    }
+    const response = await Asset.updateAsset(
+      assetId,
+      body,
+      projection,
+      transferring,
+      req.userObject
+    )
+    res.json(response)
   }
   catch (err) {
     next(err)
