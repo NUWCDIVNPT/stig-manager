@@ -152,6 +152,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#transfer-assets-to-another-collection">Transfer Assets to Another Collection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
@@ -613,6 +614,7 @@ From this Workspace, the User can:</p>
 <li><p>Batch import CKL or XCCDF files to automatically scaffold or add to their Collection</p></li>
 <li><p>Batch export CKL files for external tools such as eMASS</p></li>
 <li><p>Add/Modify/Remove Assets in the Collection</p></li>
+<li><p>Transfer Assets to another Collection</p></li>
 <li><p>Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)</p></li>
 <li><p>Add/Modify/Remove User Grants in the Collection</p></li>
 <li><p>Delete the Collection (if Collection Owner)</p></li>
@@ -854,8 +856,27 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 <h4><span class="section-number">2.8.3.4. </span>Delete Asset<a class="headerlink" href="#delete-asset" title="Permalink to this headline">¶</a></h4>
 <p>To Delete an Asset, select an Asset and click the Delete Asset button. A popup will ask you to confirm the action.</p>
 </div>
+<div class="section" id="transfer-asset-s-to-another-collection">
+<span id="transfer-asset"></span><h4><span class="section-number">2.8.3.5. </span>Transfer Asset(s) to Another Collection<a class="headerlink" href="#transfer-asset-s-to-another-collection" title="Permalink to this headline">¶</a></h4>
+<p>Select one or more(with Shift+Click) Assets, click the “Transfer To” button, and select the destination Collection.  You will be prompted with a confirmation pop-up. Click “Yes” to transfer the Assets to the new Collection.</p>
+<p>You must have “Manage” or “Owner” levels of access on both the originating and destination Collections. You will only see Collections that you have sufficient access to in the “Transfer To” pulldown.
+Individual Asset-STIG assignments to Restricted Users are removed when an Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/transfer-asset1.png"
+               title="Transfer Assets to Another Collection"
+               data-title="Transfer Assets to Another Collection"
+               ><img src="../_images/transfer-asset1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Transfer Assets to Another Collection</figcaption>
+            </figure></div>
+<hr class="docutils" />
 <div class="section" id="change-asset-properties">
-<h4><span class="section-number">2.8.3.5. </span>Change Asset Properties<a class="headerlink" href="#change-asset-properties" title="Permalink to this headline">¶</a></h4>
+<h4><span class="section-number">2.8.3.6. </span>Change Asset Properties<a class="headerlink" href="#change-asset-properties" title="Permalink to this headline">¶</a></h4>
 <p>To alter an Asset’s properties, select an Asset and click this button, or double-click the Asset row.</p>
 </div>
 </div>

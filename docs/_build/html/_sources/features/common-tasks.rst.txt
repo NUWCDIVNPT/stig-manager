@@ -81,6 +81,12 @@ You can quickly check the status of our Collection in the Collection Management 
 
 These exports are available organized :ref:`by Asset <export-by-asset>` or :ref:`by STIG. <export-by-stig>`
 
+Transfer Assets to Another Collection
+==========================================
+
+Assets can be moved from one Collection to another if a User has "Manage" or "Owner" grants on both Collections. 
+
+Transfer Assets with the :ref:`"Transfer To" button in the Manage Collection Workspace.<transfer-asset>`
 
 
 Update STIGs
