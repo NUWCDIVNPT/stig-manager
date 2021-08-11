@@ -599,7 +599,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
 
 
 async function getAssetIdAndCheckPermission(request) {
-  const elevate = request.query.elevate
+  const elevate = false
   let assetId = request.params.assetId
 
   // fetch the Asset for access control checks and the response

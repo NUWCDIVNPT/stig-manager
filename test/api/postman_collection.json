@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d5dc2bb6-2810-426d-80ae-0aa1e5c7b221",
+		"_postman_id": "f12fa892-017e-4f7b-8d61-9e96325843b3",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -2729,10 +2729,7 @@
 														"exec": [
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
+															"\r",
 															"\r",
 															"//&& user != \"collectioncreator\"\r",
 															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
@@ -2775,7 +2772,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId/metadata?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/assets/:assetId/metadata",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -2783,12 +2780,6 @@
 														"assets",
 														":assetId",
 														"metadata"
-													],
-													"query": [
-														{
-															"key": "elevate",
-															"value": "{{elevated}}"
-														}
 													],
 													"variable": [
 														{
@@ -2810,10 +2801,6 @@
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
 															"\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
 															"\r",
 															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
 															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
@@ -2852,7 +2839,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -2861,12 +2848,6 @@
 														":assetId",
 														"metadata",
 														"keys"
-													],
-													"query": [
-														{
-															"key": "elevate",
-															"value": "{{elevated}}"
-														}
 													],
 													"variable": [
 														{
@@ -2888,10 +2869,6 @@
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
 															"\r",
-															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-															"    user = \"elevated\";\r",
-															"    console.log(\"setting user to 'elevated'\");\r",
-															"}\r",
 															"/*\r",
 															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
 															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
@@ -2929,7 +2906,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys/:key?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/assets/:assetId/metadata/keys/:key",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -2939,12 +2916,6 @@
 														"metadata",
 														"keys",
 														":key"
-													],
-													"query": [
-														{
-															"key": "elevate",
-															"value": "{{elevated}}"
-														}
 													],
 													"variable": [
 														{
