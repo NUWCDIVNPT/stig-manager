@@ -599,13 +599,13 @@ SM.RequestAndServePoam = async function ( collectionId, params ) {
 		const search = new URLSearchParams(params).toString()
 		let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/poam?${search}`
 	
-		await window.keycloak.updateToken(10)
+		await window.oidcProvider.updateToken(10)
 		let response = await fetch(
 			url,
 			{
 				method: 'GET',
 				headers: new Headers({
-					  'Authorization': `Bearer ${window.keycloak.token}`
+					  'Authorization': `Bearer ${window.oidcProvider.token}`
 				})
 			}
 		)

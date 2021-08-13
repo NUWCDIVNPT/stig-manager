@@ -36,7 +36,7 @@ async function start () {
 		if (curUser.username !== undefined) {
 			loadApp();
 		} else {
-			Ext.get( 'indicator' ).dom.innerHTML =`No account for ${window.keycloak.token}`;
+			Ext.get( 'indicator' ).dom.innerHTML =`No account for ${window.oidcProvider.token}`;
 		}
 	}
 	catch (e) {

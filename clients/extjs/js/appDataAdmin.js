@@ -123,11 +123,11 @@ function addAppDataAdmin( params ) {
               // appwindow.close();
               initProgress("Importing file", "Waiting for response...");
               updateStatusText ('Waiting for API response...')
-							await window.keycloak.updateToken(10)
+							await window.oidcProvider.updateToken(10)
               let response = await fetch(`${STIGMAN.Env.apiBase}/op/appdata?elevate=true`, {
                 method: 'POST',
                 headers: new Headers({
-                  'Authorization': `Bearer ${window.keycloak.token}`
+                  'Authorization': `Bearer ${window.oidcProvider.token}`
                 }),
                 body: formData
               })
@@ -170,13 +170,13 @@ function addAppDataAdmin( params ) {
   const getAppdata = async function () {
     try {
       let url = `${STIGMAN.Env.apiBase}/op/appdata?elevate=true`
-      await window.keycloak.updateToken(10)
+      await window.oidcProvider.updateToken(10)
       let response = await fetch(
         url,
         {
           method: 'GET',
           headers: new Headers({
-              'Authorization': `Bearer ${window.keycloak.token}`
+              'Authorization': `Bearer ${window.oidcProvider.token}`
           })
         }
       )

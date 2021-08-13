@@ -90,7 +90,7 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
           `<div class=sm-home-widget-header>`,
           `<div class='sm-home-widget-title'>Welcome</div>`,
           `</div>`,
-          `<div class='sm-home-widget-text'><img src="../img/navy.png" width=125 height=125 class="sm-home-widget-image-text-wrap" /><b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG)</div>`,
+          `<div class='sm-home-widget-text'><img src="img/navy.png" width=125 height=125 class="sm-home-widget-image-text-wrap" /><b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG)</div>`,
         )
       const config = {
         tpl: tpl,

@@ -9,7 +9,7 @@ const User = require(`../service/${config.database.type}/UserService`)
 var jwksUri
 var client
 
-const roleGetter = new Function("obj", "return obj?." + config.oauth.claims.roles + " || [];");
+const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
 
 const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         let token = getBearerToken(req)
@@ -46,8 +46,8 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         else {      
             // Get privileges      
             const privileges = {}
-            privileges.canCreateCollection = roleGetter(decoded).includes('create_collection')
-            privileges.canAdmin = roleGetter(decoded).includes('admin')
+            privileges.canCreateCollection = privilegeGetter(decoded).includes('create_collection')
+            privileges.canAdmin = privilegeGetter(decoded).includes('admin')
 
             req.userObject.privileges = privileges
             const response = await User.getUserByUsername(req.userObject.username, ['collectionGrants', 'statistics'], false, null)   

@@ -303,7 +303,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           autoScroll: true,
           split: true,
           collapsible: true,
-          title: '<span onclick="window.keycloak.logout()">' + curUser.display + ' - Logout</span>',
+          title: '<span onclick="window.oidcProvider.logout()">' + curUser.display + ' - Logout</span>',
           bodyStyle: 'padding:5px;',
           width: me.width || 300,
           minSize: 220,
@@ -853,7 +853,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           let h = 400
           let left = (window.innerWidth/2)-(w/2)
           let top = (window.innerHeight/2)-(h/2)
-          doWoWindow = window.open(window.keycloak.createLoginUrl({
+          doWoWindow = window.open(window.oidcProvider.createLoginUrl({
             scope: 'stig-manager'
           }),'doWo', `top=${top},left=${left},width=${w},height=${h},resizeable,scrollbars,status`)
           let one = doWoWindow
@@ -869,7 +869,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           title: 'OAuth2 token payload',
           listeners: {
               show: function (tip) {
-                let tokenParsed = { ...window.keycloak.tokenParsed }
+                let tokenParsed = { ...window.oidcProvider.tokenParsed }
                 let expDate = new Date(tokenParsed.exp*1000)
                 let iatDate = new Date(tokenParsed.iat*1000)
                 let authTimeDate = new Date(tokenParsed.auth_time*1000)

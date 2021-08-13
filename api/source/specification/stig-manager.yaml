@@ -1841,6 +1841,7 @@ paths:
         - Operation
       summary: Return API version and configuration information
       operationId: getConfiguration
+      security: []
       responses:
         '200':
           description: Configuration response
@@ -4235,18 +4236,16 @@ components:
             $ref: '#/components/schemas/Error'
   securitySchemes:
     oauth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: >-
-            http://localhost:8080/auth/realms/stigman/protocol/openid-connect/auth
-          scopes:
-            stig-manager: Top-accessLevel scope
-            'stig-manager:op': Full access to the Operation endpoints
-            'stig-manager:op:read': Read access to the Operation endpoints
-            'stig-manager:stig': Full access to the STIG endpoints
-            'stig-manager:stig:read': Read access to the STIG endpoints
-            'stig-manager:collection': Full access to the Collection endpoints
-            'stig-manager:collection:read': Read-only access to the Collection endpoints
-            'stig-manager:user': Full access to the Users endpoints
-            'stig-manager:user:read': Read-only access to the Users endpoints
+      type: openIdConnect
+      openIdConnectUrl: http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration
+# security:
+#   - oauth:
+#     - stig-manager
+#     - 'stig-manager:op'
+#     - 'stig-manager:op:read'
+#     - 'stig-manager:stig'
+#     - 'stig-manager:stig:read'
+#     - 'stig-manager:collection'
+#     - 'stig-manager:collection:read'
+#     - 'stig-manager:user'
+#     - 'stig-manager:user:read'

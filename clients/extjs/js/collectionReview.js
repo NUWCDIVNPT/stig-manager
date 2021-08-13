@@ -312,12 +312,12 @@ async function addCollectionReview ( params ) {
 				for (const apiAsset of apiAssets) {
 					updateProgress(fetched/assetCount, `Fetching CKL for ${apiAsset.name}`)
 					updateStatusText (`Fetching checklist for ${apiAsset.name}: `, true)
-					await window.keycloak.updateToken(10)
+					await window.oidcProvider.updateToken(10)
 					const url = `${STIGMAN.Env.apiBase}/assets/${apiAsset.assetId}/checklists/${leaf.benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
 					let response = await fetch( url, {
 					  method: 'GET',
 					  headers: new Headers({
-						'Authorization': `Bearer ${window.keycloak.token}`
+						'Authorization': `Bearer ${window.oidcProvider.token}`
 					  })
 					})
 					const contentDispo = response.headers.get("content-disposition")

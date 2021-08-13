@@ -1551,11 +1551,11 @@ function uploadArchive(n) {
 							fd.append('collectionId', n.attributes.collectionId)
 							fd.append('source', 'collection')
 
-							await window.keycloak.updateToken(10)
+							await window.oidcProvider.updateToken(10)
 							let response = await fetch(`${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`, {
 								method: 'POST',
 								headers: new Headers({
-								  'Authorization': `Bearer ${window.keycloak.token}`
+								  'Authorization': `Bearer ${window.oidcProvider.token}`
 								}),
 								body: fd
 							  })
@@ -1661,11 +1661,11 @@ function uploadStigs(n) {
 						initProgress("Importing file", "Initializing...");
 						updateStatusText (file.name)
 		
-						await window.keycloak.updateToken(10)
+						await window.oidcProvider.updateToken(10)
 						let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
 						method: 'POST',
 						headers: new Headers({
-							'Authorization': `Bearer ${window.keycloak.token}`
+							'Authorization': `Bearer ${window.oidcProvider.token}`
 						}),
 						body: formData
 						})
@@ -1708,11 +1708,11 @@ function uploadStigs(n) {
 							fd.append('importFile', data, xml)
 							fd.append('replace', 'true')
 
-							await window.keycloak.updateToken(10)
+							await window.oidcProvider.updateToken(10)
 							let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
 								method: 'POST',
 								headers: new Headers({
-									'Authorization': `Bearer ${window.keycloak.token}`
+									'Authorization': `Bearer ${window.oidcProvider.token}`
 								}),
 								body: fd
 							})
