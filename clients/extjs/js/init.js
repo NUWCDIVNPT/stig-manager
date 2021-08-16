@@ -1,41 +1,55 @@
-async function authorizeViaKeycloak() {
-    let keycloak = Keycloak('js/keycloak.json');
-    keycloak.refreshExpWarnCallback = function (expTs) {
-       keycloak.onRefreshExpWarn && keycloak.onRefreshExpWarn(expTs)
+async function authorizeOidc() {
+    let oidcProvider = OidcProvider({
+        oidcProvider: STIGMAN.Env.oauth.authority,
+        clientId: STIGMAN.Env.oauth.clientId, //'0oa15s1xbhJtGfytI5d7'
+        refreshDisabled: STIGMAN.Env.oauth.refreshToken.disabled
+    });
+    oidcProvider.refreshExpWarnCallback = function (expTs) {
+       oidcProvider.onRefreshExpWarn && oidcProvider.onRefreshExpWarn(expTs)
     }
-    keycloak.onTokenExpired = function() {
-        console.info('token expired at ' + keycloak.tokenParsed['exp'] + ' Date: ' + new Date(keycloak.tokenParsed['exp']*1000));
+    oidcProvider.onTokenExpired = function() {
+        console.info('token expired at ' + oidcProvider.tokenParsed['exp'] + ' Date: ' + new Date(oidcProvider.tokenParsed['exp']*1000));
     }
-    keycloak.onAuthSuccess = function() {
-        let refreshExpDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
-        let refreshExpWarnDelay = (keycloak.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + keycloak.timeSkew) * 1000;
-         window.keycloak.refreshTokenParsed.exp - 60
-        if (keycloak.refreshExpWarnTid) {
-            clearTimeout(keycloak.refreshExpWarnTid)
-        }
-        keycloak.refreshExpWarnTid = setTimeout(keycloak.refreshExpWarnCallback, refreshExpWarnDelay, keycloak.refreshTokenParsed.exp)
-        console.info(`authSuccess: refresh expires ${refreshExpDate}`)
+    oidcProvider.onAuthSuccess = function() {
+        // let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
+        // let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000;
+        //  window.oidcProvider.refreshTokenParsed.exp - 60
+        // if (oidcProvider.refreshExpWarnTid) {
+        //     clearTimeout(oidcProvider.refreshExpWarnTid)
+        // }
+        // oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
+        // console.info(`authSuccess: refresh expires ${refreshExpDate}`)
     }
-    keycloak.onAuthRefreshSuccess = function() {
-        let refreshExpDate = new Date(keycloak.refreshTokenParsed.exp * 1000)
-        let refreshExpWarnDelay = (keycloak.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + keycloak.timeSkew) * 1000
-         window.keycloak.refreshTokenParsed.exp - 60
-        if (keycloak.refreshExpWarnTid) {
-            clearTimeout(keycloak.refreshExpWarnTid)
-        }
-        keycloak.refreshExpWarnTid = setTimeout(keycloak.refreshExpWarnCallback, refreshExpWarnDelay, keycloak.refreshTokenParsed.exp)
-        console.info(`authRefreshSuccess: refresh expires ${refreshExpDate}`)
+    oidcProvider.onAuthRefreshSuccess = function() {
+        // let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
+        // let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000
+        //  window.oidcProvider.refreshTokenParsed.exp - 60
+        // if (oidcProvider.refreshExpWarnTid) {
+        //     clearTimeout(oidcProvider.refreshExpWarnTid)
+        // }
+        // oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
+        // console.info(`authRefreshSuccess: refresh expires ${refreshExpDate}`)
     }
-   
-
+    
     try {
-        window.keycloak = keycloak
-        let response = await keycloak.init({ 
+        let scopes = [
+            "stig-manager:stig",
+            "stig-manager:stig:read",
+            "stig-manager:collection",
+            "stig-manager:user",
+            "stig-manager:user:read",
+            "stig-manager:op"
+        ]
+        if (STIGMAN.Env.oauth.extraScopes) {
+            scopes.push(...STIGMAN.Env.oauth.extraScopes.split(" "))
+        }
+        window.oidcProvider = oidcProvider
+        let response = await oidcProvider.init({ 
             onLoad: 'login-required',
+            checkLoginIframe: false,
             pkceMethod: 'S256',
             defaultLoginOptions: {
-                scope: "stig-manager:stig stig-manager:stig:read stig-manager:collection stig-manager:user stig-manager:user:read stig-manager:op"
-                // ,prompt: "login"
+                scope: scopes.join(" ")
             },
             enableLogging: true
         })
@@ -74,7 +88,6 @@ function loadScripts() {
         'js/SM/Classification.js',
         'js/SM/MainPanel.js',
         'js/SM/EventDispatcher.js',
-        "js/Env.js",
         "js/FileUploadField.js",
         "js/overrides.js",
         "js/RowEditor.js",
@@ -126,4 +139,4 @@ function loadScripts() {
       });
 }
 
-authorizeViaKeycloak()
+authorizeOidc()

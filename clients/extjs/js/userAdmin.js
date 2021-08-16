@@ -67,7 +67,7 @@ function addUserAdmin(params ) {
 		}
 	})
 
-	const roleGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.roles + " || [];");
+	const privilegeGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.privileges + " || [];");
 
 	const userGrid = new Ext.grid.GridPanel({
 		cls: 'sm-round-panel',
@@ -118,7 +118,7 @@ function addUserAdmin(params ) {
 				width: 100,
 				align: 'center',
 				renderer: function (value, metaData, record) {
-					return roleGetter(record.data.statistics.lastClaims).includes('create_collection') ? '&#x2714;' : ''
+					return privilegeGetter(record.data.statistics.lastClaims).includes('create_collection') ? '&#x2714;' : ''
 				}
 			},
 			{ 	
@@ -126,7 +126,7 @@ function addUserAdmin(params ) {
 				width: 100,
 				align: 'center',
 				renderer: function (value, metaData, record) {
-					return roleGetter(record.data.statistics.lastClaims).includes('admin') ? '&#x2714;' : ''
+					return privilegeGetter(record.data.statistics.lastClaims).includes('admin') ? '&#x2714;' : ''
 				}
 			},
 			{

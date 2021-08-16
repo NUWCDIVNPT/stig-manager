@@ -1,8 +1,0 @@
-{
-  "realm": "${STIGMAN_CLIENT_KEYCLOAK_REALM}",
-  "auth-server-url": "${STIGMAN_CLIENT_KEYCLOAK_AUTH}",
-  "ssl-required": "external",
-  "resource": "${STIGMAN_CLIENT_KEYCLOAK_CLIENTID}",
-  "public-client": true,
-  "confidential-port": 0
-}

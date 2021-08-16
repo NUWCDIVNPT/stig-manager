@@ -568,7 +568,7 @@ async function showUserProps( userId ) {
         
         appwindow.render(document.body)
 
-        const roleGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.roles + " || [];");
+        const privilegeGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.privileges + " || [];");
 
         if (userId) {
             let result = await Ext.Ajax.requestPromise({
@@ -592,8 +592,8 @@ async function showUserProps( userId ) {
                 username: apiUser.username,
                 name: apiUser.statistics.lastClaims?.[STIGMAN.Env.oauth.claims.name],
                 email: apiUser.statistics.lastClaims?.[STIGMAN.Env.oauth.claims.email],
-                canCreateCollection: roleGetter(apiUser.statistics.lastClaims).includes('create_collection'),
-                canAdmin: roleGetter(apiUser.statistics.lastClaims).includes('admin'),
+                canCreateCollection: privilegeGetter(apiUser.statistics.lastClaims).includes('create_collection'),
+                canAdmin: privilegeGetter(apiUser.statistics.lastClaims).includes('admin'),
                 lastClaims: apiUser.statistics.lastClaims,
                 collectionGrants: apiUser.collectionGrants || []
             }

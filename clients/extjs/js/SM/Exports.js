@@ -560,12 +560,12 @@ async function exportCklArchive(collectionName, checklists, multiStig) {
         }
         updateProgress(fetched / cklCount, `Fetching CKL for ${assetName}`)
         updateStatusText(`Fetching checklist for ${assetName}: `, true)
-        await window.keycloak.updateToken(10)
+        await window.oidcProvider.updateToken(10)
         const url = `${STIGMAN.Env.apiBase}/assets/${assetId}/checklists${queryParams}`
         let response = await fetch(url, {
           method: 'GET',
           headers: new Headers({
-            'Authorization': `Bearer ${window.keycloak.token}`
+            'Authorization': `Bearer ${window.oidcProvider.token}`
           })
         })
         const contentDispo = response.headers.get("content-disposition")

@@ -210,8 +210,8 @@ async function addReview( params ) {
             var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
             xhr.open('GET', url)
             xhr.responseType = 'blob'
-            await window.keycloak.updateToken(10)
-            xhr.setRequestHeader('Authorization', 'Bearer ' + window.keycloak.token)
+            await window.oidcProvider.updateToken(10)
+            xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
             xhr.onload = function () {
               if (this.status >= 200 && this.status < 300) {
                 var contentDispo = this.getResponseHeader('Content-Disposition')
