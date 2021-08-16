@@ -12695,9 +12695,9 @@
 									],
 									"variable": [
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
 											"key": "assetId",
-											"value": "{{testAsset}}"
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
 										}
 									]
 								}
@@ -12814,9 +12814,9 @@
 									],
 									"variable": [
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
 											"key": "assetId",
-											"value": "{{testAsset}}"
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
 										}
 									]
 								}
@@ -13007,9 +13007,9 @@
 									],
 									"variable": [
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
 											"key": "assetId",
-											"value": "{{testAsset}}"
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
 										}
 									]
 								}
@@ -13123,9 +13123,9 @@
 									],
 									"variable": [
 										{
-											"description": "(Required) A path parameter that indentifies an Asset",
 											"key": "assetId",
-											"value": "{{testAsset}}"
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
 										}
 									]
 								}
@@ -14179,7 +14179,20 @@
 											"    pm.expect(jsonData).to.be.an('object');\r",
 											"});\r",
 											"\r",
-											"//END AZDO #117\r",
+											"\r",
+											"pm.test(\"Response JSON contains requested projections\", function () {\r",
+											"    if (pm.request.url.getQueryString().match(/projection=emassAp/)) {\r",
+											"        pm.expect(jsonData.emassAp).to.be.an('object');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=references/)) {\r",
+											"        pm.expect(jsonData.references).to.be.an('array');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+											"        pm.expect(jsonData.stigs).to.be.an('array');\r",
+											"}});\r",
+											"\r",
+											"\r",
+											"\r",
 											""
 										],
 										"type": "text/javascript"
@@ -14190,7 +14203,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs/ccis/:cci",
+									"raw": "{{baseUrl}}/stigs/ccis/:cci?projection=stigs&projection=emassAp&projection=references",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -14198,6 +14211,20 @@
 										"stigs",
 										"ccis",
 										":cci"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "stigs"
+										},
+										{
+											"key": "projection",
+											"value": "emassAp"
+										},
+										{
+											"key": "projection",
+											"value": "references"
+										}
 									],
 									"variable": [
 										{

@@ -69,7 +69,7 @@ module.exports.deleteStigById = async function deleteStigById (req, res, next) {
 
 module.exports.getCci = async function getCci (req, res, next) {
   let cci = req.params.cci
-  let projection = req.params.projection
+  let projection = req.query.projection
   try {
     let response = await STIG.getCci(cci, projection, req.userObject)
     res.json(response)
