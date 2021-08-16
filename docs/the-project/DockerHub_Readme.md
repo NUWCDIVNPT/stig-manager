@@ -44,14 +44,14 @@ services:
   api:
     image: nuwcdivnpt/stig-manager
     environment:
-      - STIGMAN_API_AUTHORITY=http://auth:8080/auth/realms/stigman
+      - STIGMAN_OIDC_PROVIDER=http://auth:8080/auth/realms/stigman
       - STIGMAN_CLASSIFICATION=U
       - STIGMAN_DB_HOST=db
       - STIGMAN_DB_PASSWORD=stigman
       - STIGMAN_INIT_IMPORT_STIGS=true
       - STIGMAN_INIT_IMPORT_SCAP=true
       # Set envvar below if non-localhost browsers will access the API
-      # - STIGMAN_CLIENT_KEYCLOAK_AUTH=<the Keycloak authorization URL relative to the Client>
+      # - STIGMAN_CLIENT_OIDC_PROVIDER=<the Keycloak authorization URL relative to the Client>
     init: true
     ports:
       - "54000:54000"
@@ -107,7 +107,7 @@ docker run --name stig-manager-api \
   -p 54000:54000 \
   -e STIGMAN_DB_HOST=<DATABASE_IP> \
   -e STIGMAN_DB_PORT=<DATABASE_PORT> \
-  -e STIGMAN_API_AUTHORITY=http://<KEYCLOAK_IP>:<KEYCLOAK_PORT>/auth/realms/stigman \
+  -e STIGMAN_OIDC_PROVIDER=http://<KEYCLOAK_IP>:<KEYCLOAK_PORT>/auth/realms/stigman \
   nuwcdivnpt/stig-manager
 ```
 

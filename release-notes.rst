@@ -1,3 +1,34 @@
+1.0.0-beta.37
+-----------------------
+- feat: support generic OIDC providers (#403)
+- fix: cci param, added checks for projections to tests (#404)
+- feat: Adds metadata handling for Assets and Collections (#396)
+- feat: STIGMAN_DEV_RESPONSE_VALIDATION environment variable (#398)
+- fix: access control checks for assets (#400)
+- chore: update sample appdata (#394)
+- fix: implement delete STIG revision (#383)
+- feat: Removed global_access privilege (#386)
+- feat: UI for asset transfers (#385)
+- feat: switched OpenAPI validation/router library to express-openapi-validator (#382)
+- feat: continue on corrupted member of STIG zip (#377)
+- feat: continue on error when importing zips of STIGs (#376)
+- feat: All users can access Collection Review (#375)
+- fix: use promise interface for conn.query() (#372)
+- fix: implement CCI endpoints (#363)
+- fix: recalculate stats on Review delete (#367)
+- feat: add name and email to User object (#369)
+- fix: UI sends correct projections (#368)
+- fix: implement GET /stigs/rules/{ruleId} (#354)
+
+Introduced new envvars, which deprecate existing envvars in some cases:
+
+- ``STIGMAN_OIDC_PROVIDER`` deprecates ``STIGMAN_API_AUTHORITY``
+- ``STIGMAN_CLIENT_EXTRA_SCOPES`` is new
+- ``STIGMAN_CLIENT_ID`` deprecates ``STIGMAN_CLIENT_KEYCLOAK_CLIENTID``
+- ``STIGMAN_CLIENT_OIDC_PROVIDER`` deprecates ``STIGMAN_CLIENT_KEYCLOAK_AUTH`` and ``STIGMAN_CLIENT_KEYCLOAK_REALM``
+- ``STIGMAN_JWT_PRIVILEGES_CLAIM`` deprecates ``STIGMAN_JWT_ROLES_CLAIM``
+- ``STIGMAN_SWAGGER_OIDC_PROVIDER`` deprecates ``STIGMAN_SWAGGER_AUTHORITY``
+
 1.0.0-beta.36
 -----------------------
 - fix: UI now handles missing vulnDiscussion (#361)
