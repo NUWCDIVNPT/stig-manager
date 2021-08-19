@@ -5,30 +5,32 @@ async function authorizeOidc() {
         refreshDisabled: STIGMAN.Env.oauth.refreshToken.disabled
     });
     oidcProvider.refreshExpWarnCallback = function (expTs) {
-       oidcProvider.onRefreshExpWarn && oidcProvider.onRefreshExpWarn(expTs)
+        window.oidcProvider.updateToken(-1)
     }
     oidcProvider.onTokenExpired = function() {
-        console.info('token expired at ' + oidcProvider.tokenParsed['exp'] + ' Date: ' + new Date(oidcProvider.tokenParsed['exp']*1000));
+        console.info('[OIDCPROVIDER] Token expired at ' + new Date(oidcProvider.tokenParsed['exp']*1000));
     }
     oidcProvider.onAuthSuccess = function() {
-        // let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
-        // let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000;
-        //  window.oidcProvider.refreshTokenParsed.exp - 60
-        // if (oidcProvider.refreshExpWarnTid) {
-        //     clearTimeout(oidcProvider.refreshExpWarnTid)
-        // }
-        // oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
-        // console.info(`authSuccess: refresh expires ${refreshExpDate}`)
+        if (oidcProvider.refreshTokenParsed) {
+            let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
+            let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000;
+            if (oidcProvider.refreshExpWarnTid) {
+                clearTimeout(oidcProvider.refreshExpWarnTid)
+            }
+            oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
+            console.info(`[OIDCPROVIDER] authSuccess: refresh expires ${refreshExpDate}`)
+        }
     }
     oidcProvider.onAuthRefreshSuccess = function() {
-        // let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
-        // let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000
-        //  window.oidcProvider.refreshTokenParsed.exp - 60
-        // if (oidcProvider.refreshExpWarnTid) {
-        //     clearTimeout(oidcProvider.refreshExpWarnTid)
-        // }
-        // oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
-        // console.info(`authRefreshSuccess: refresh expires ${refreshExpDate}`)
+        if (oidcProvider.refreshTokenParsed) {
+            let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
+            let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000
+            if (oidcProvider.refreshExpWarnTid) {
+                clearTimeout(oidcProvider.refreshExpWarnTid)
+            }
+            oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
+            console.info(`[OIDCPROVIDER] authRefreshSuccess: refresh expires ${refreshExpDate}`)
+        }
     }
     
     try {
