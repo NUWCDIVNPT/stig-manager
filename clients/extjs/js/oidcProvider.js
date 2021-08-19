@@ -1038,7 +1038,9 @@
 
                     if (kc.onTokenExpired) {
                         var expiresIn = (kc.tokenParsed['exp'] - (new Date().getTime() / 1000) + kc.timeSkew) * 1000;
-                        logInfo('[OIDCPROVIDER] Token expires in ' + Math.round(expiresIn / 1000) + ' s');
+                        // logInfo('[OIDCPROVIDER] Token expires in ' + Math.round(expiresIn / 1000) + ' s');
+                        logInfo('[OIDCPROVIDER] Token expires ' + new Date(kc.tokenParsed['exp'] * 1000));
+
                         if (expiresIn <= 0) {
                             kc.onTokenExpired();
                         } else {
