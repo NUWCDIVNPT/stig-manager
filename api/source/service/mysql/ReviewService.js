@@ -224,7 +224,6 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
     sql += ` GROUP BY ${groupBy.join(', ')}`
-    sql += ' order by r.assetId, r.ruleId'
 
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
