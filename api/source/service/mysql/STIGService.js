@@ -914,8 +914,8 @@ exports.insertScapBenchmark = async function (b) {
 /**
  * Deletes the specified revision of a STIG
  *
- * benchmarkId String A path parameter that indentifies a STIG
- * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
+ * benchmarkId String A path parameter that identifies a STIG
+ * revisionStr String A path parameter that identifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns Revision
  **/
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
@@ -1037,14 +1037,50 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
  * returns STIG
  **/
 exports.deleteStigById = async function(benchmarkId, userObject) {
+
+  let dmls = [
+    "DELETE FROM revision WHERE benchmarkId = :benchmarkId",
+    "DELETE from current_rev where benchmarkId = :benchmarkId",
+    "DELETE FROM current_group_rule WHERE benchmarkId = :benchmarkId",
+    "DELETE from stig where benchmarkId = :benchmarkId",
+    "DELETE FROM `rule` WHERE ruleId NOT IN (select ruleId from rev_group_rule_map )",
+    "DELETE FROM `check` WHERE checkId NOT IN (select checkId from rev_group_rule_check_map)",
+    "DELETE FROM fix WHERE fixId NOT IN (select fixId from rev_group_rule_fix_map)",
+    "DELETE FROM `group` WHERE groupId NOT IN (select groupId from rev_group_map)"
+  ]
+
+  let connection;
+
   try {
     let rows = await _this.queryStigs( {benchmarkId: benchmarkId}, userObject)
-    let sqlDelete = `DELETE FROM stig where benchmarkId = ?`
-    await dbUtils.pool.query(sqlDelete, [benchmarkId])
+
+    let binds = {
+      benchmarkId: benchmarkId
+    }
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = true
+    await connection.query('START TRANSACTION')
+
+    for (const sql of dmls) {
+      await connection.query(sql, binds)
+    }
+ 
+    await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
+ 
+    await connection.commit()
     return (rows[0])
   }
   catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
     throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
   }
 }
 
