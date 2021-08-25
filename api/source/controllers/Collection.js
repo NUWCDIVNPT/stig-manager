@@ -275,7 +275,7 @@ module.exports.replaceCollection = async function updateCollection (req, res, ne
 module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCollectionUser (req, res, next) {
   try {
     const collectionId = req.params.collectionId
-    const userId = req.query.userId
+    const userId = req.params.userId
     const stigAssets = req.body
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
