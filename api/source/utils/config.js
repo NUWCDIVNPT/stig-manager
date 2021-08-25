@@ -62,6 +62,10 @@ let config = {
             disabled: process.env.STIGMAN_CLIENT_REFRESH_DISABLED ? process.env.STIGMAN_CLIENT_REFRESH_DISABLED === "true" : false,
         }
     },
+    docs: {
+        disabled: process.env.STIGMAN_DOCS_DISABLED  === "true",
+        docsDirectory: process.env.STIGMAN_DOCS_DIRECTORY || "./docs",
+    },    
     http: {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
         port: process.env.STIGMAN_API_PORT || 54000,

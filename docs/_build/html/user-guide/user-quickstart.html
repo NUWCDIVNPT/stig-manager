@@ -13,7 +13,9 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
@@ -31,11 +33,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
         <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
     
@@ -93,7 +95,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
@@ -124,7 +126,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
@@ -134,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#transfer-assets-to-another-collection">Transfer Assets to Another Collection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
@@ -231,14 +234,8 @@ Collections are composed of:</p>
 <p class="admonition-title">Attention</p>
 <p><strong>Collections can be structured as an RMF Package, but do not need to be.</strong> It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy.</p>
 </div>
-<video width="480"  controls>
-  <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video><hr class="docutils" />
-<video width="480"  controls>
-  <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video><div class="section" id="authentication">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wv_Gdbl_LrU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><hr class="docutils" />
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><div class="section" id="authentication">
 <h2><span class="section-number">1.1. </span>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
 <p>When first accessing STIG Manager, you will be redirected to the Keycloak Log In screen.  Your method of authentication will depend on your Organization’s specific deployment (CAC, username/password, account brokering, etc). Once complete, you will be redirected back to the STIG Manager User Interface.</p>
 </div>
@@ -261,6 +258,7 @@ Your browser does not support the video tag.
                href="../_images/nav-tree1.png"
                title="Navigation Tree"
                data-title="Navigation Tree"
+               
                ><img src="../_images/nav-tree1.png"
                      class=""
                      width="25%"
@@ -278,6 +276,7 @@ Your browser does not support the video tag.
                href="../_images/CreateCollectionPopup1.png"
                title="Create Collection Popup"
                data-title="Create Collection Popup"
+               
                ><img src="../_images/CreateCollectionPopup1.png"
                      class=""
                      width="50%"
@@ -308,6 +307,7 @@ Your browser does not support the video tag.
                href="../_images/AssetCreationPopup1.png"
                title="Asset Creation Popup"
                data-title="Asset Creation Popup"
+               
                ><img src="../_images/AssetCreationPopup1.png"
                      class=""
                      width="50%"
@@ -362,6 +362,7 @@ Your browser does not support the video tag.
                href="../_images/CollectionConfig_Populated1.png"
                title="Collection Management panel with demo Assets"
                data-title="Collection Management panel with demo Assets"
+               
                ><img src="../_images/CollectionConfig_Populated1.png"
                      class=""
                      width="50%"
@@ -391,6 +392,7 @@ Your browser does not support the video tag.
                href="../_images/EvaluationPanel1.png"
                title="Evaluation Panel"
                data-title="Evaluation Panel"
+               
                ><img src="../_images/EvaluationPanel1.png"
                      class=""
                      width="50%"
@@ -427,6 +429,7 @@ Your browser does not support the video tag.
                href="../_images/CollectionReviewPanel_beingEdited1.png"
                title="Editing in the Collection Review panel"
                data-title="Editing in the Collection Review panel"
+               
                ><img src="../_images/CollectionReviewPanel_beingEdited1.png"
                      class=""
                      width="50%"
@@ -470,6 +473,7 @@ Your browser does not support the video tag.
                href="../_images/FindingsReport1.png"
                title="The Findings report"
                data-title="The Findings report"
+               
                ><img src="../_images/FindingsReport1.png"
                      class=""
                      width="50%"
@@ -498,6 +502,7 @@ Your browser does not support the video tag.
                href="../_images/StatusReport1.png"
                title="The Status report"
                data-title="The Status report"
+               
                ><img src="../_images/StatusReport1.png"
                      class=""
                      width="50%"

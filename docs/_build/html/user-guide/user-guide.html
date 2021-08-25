@@ -13,7 +13,9 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
@@ -31,11 +33,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
         <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
     
@@ -93,7 +95,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
@@ -142,7 +144,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
@@ -238,14 +240,8 @@
 <p class="rubric">The STIG Manager User Interface</p>
 <p>This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privelege.</p>
 <p>Please see the <a class="reference internal" href="../admin-guide/admin-guide.html#admin-guide-doc"><span class="std std-ref">STIG Manager Admin Guide</span></a> for Administrative functions.</p>
-<video width="480"  controls>
-  <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video><hr class="docutils" />
-<video width="480"  controls>
-  <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video><p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wv_Gdbl_LrU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><hr class="docutils" />
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
 <p class="rubric3 rubric">Overall Organization</p>
 <p>The STIG Manager UI is composed of two main elements, the Navigation Tree on the left, and the Content Panel to the right. Click the arrow or double-click the node name to expand that branch.  End nodes (those without an arrow) will open a tab in the Content Panel.</p>
 <div class="section" id="content-panel">
@@ -268,6 +264,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
                href="../_images/home-tab1.png"
                title="Home Tab"
                data-title="Home Tab"
+               
                ><img src="../_images/home-tab1.png"
                      class=""
                      width="50%"
@@ -288,6 +285,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
                href="../_images/nav-tree1.png"
                title="Navigation Tree"
                data-title="Navigation Tree"
+               
                ><img src="../_images/nav-tree1.png"
                      class=""
                      width="25%"
@@ -307,6 +305,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
                href="../_images/create-collection-popup1.png"
                title="Create Collection popup"
                data-title="Create Collection popup"
+               
                ><img src="../_images/create-collection-popup1.png"
                      class=""
                      width="50%"
@@ -368,6 +367,7 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
                href="../_images/collection-review1.png"
                title="Collection Review Workspace"
                data-title="Collection Review Workspace"
+               
                ><img src="../_images/collection-review1.png"
                      class=""
                      width="50%"
@@ -438,6 +438,7 @@ Users can also import results from .ckl or XCCDF formats, and export their resul
                href="../_images/asset-review1.png"
                title="Asset Review Workspace"
                data-title="Asset Review Workspace"
+               
                ><img src="../_images/asset-review1.png"
                      class=""
                      width="50%"
@@ -486,6 +487,7 @@ It also provides information about the Controls associated with this Rule, inclu
                href="../_images/attachments-hover-crop1.png"
                title="Attachments Tab"
                data-title="Attachments Tab"
+               
                ><img src="../_images/attachments-hover-crop1.png"
                      class=""
                      width="25%"
@@ -498,6 +500,7 @@ It also provides information about the Controls associated with this Rule, inclu
                href="../_images/attachments-preview-crop1.png"
                title="Attachment Preview"
                data-title="Attachment Preview"
+               
                ><img src="../_images/attachments-preview-crop1.png"
                      class=""
                      width="25%"
@@ -557,6 +560,7 @@ In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIAT
                href="../_images/findings-report1.png"
                title="Findings Report"
                data-title="Findings Report"
+               
                ><img src="../_images/findings-report1.png"
                      class=""
                      width="50%"
@@ -596,6 +600,7 @@ Information about the Asset, Rule, Action, Last Modified Date, and applicable ST
                href="../_images/status-report1.png"
                title="Status Report"
                data-title="Status Report"
+               
                ><img src="../_images/status-report1.png"
                      class=""
                      width="50%"
@@ -626,6 +631,7 @@ From this Workspace, the User can:</p>
                href="../_images/manage-collection-workspace1.png"
                title="The Manage Collections Workspace"
                data-title="The Manage Collections Workspace"
+               
                ><img src="../_images/manage-collection-workspace1.png"
                      class=""
                      width="50%"
@@ -642,6 +648,7 @@ From this Workspace, the User can:</p>
                href="../_images/collection-properties1.png"
                title="Collection Properties"
                data-title="Collection Properties"
+               
                ><img src="../_images/collection-properties1.png"
                      class=""
                      width="50%"
@@ -661,6 +668,7 @@ From this Workspace, the User can:</p>
                href="../_images/user-grants1.png"
                title="The User Grants Panel"
                data-title="The User Grants Panel"
+               
                ><img src="../_images/user-grants1.png"
                      class=""
                      width="50%"
@@ -675,6 +683,7 @@ From this Workspace, the User can:</p>
                href="../_images/restricted-access-list1.png"
                title="The Restricted User Access List"
                data-title="The Restricted User Access List"
+               
                ><img src="../_images/restricted-access-list1.png"
                      class=""
                      width="50%"
@@ -694,6 +703,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
                href="../_images/assets-panel-toolbar1.png"
                title="Collection -> Manage -> Assets toolbar"
                data-title="Collection -> Manage -> Assets toolbar"
+               
                ><img src="../_images/assets-panel-toolbar1.png"
                      class=""
                      width="50%"
@@ -710,6 +720,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
                href="../_images/create-asset1.png"
                title="Create an Asset"
                data-title="Create an Asset"
+               
                ><img src="../_images/create-asset1.png"
                      class=""
                      width="50%"
@@ -739,6 +750,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
                href="../_images/collection-builder-files1.png"
                title="Collection Builder File Select"
                data-title="Collection Builder File Select"
+               
                ><img src="../_images/collection-builder-files1.png"
                      class=""
                      width="50%"
@@ -756,6 +768,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
                href="../_images/collection-builder-errors-and-warnings1.png"
                title="Collection Builder Errors and Warnings"
                data-title="Collection Builder Errors and Warnings"
+               
                ><img src="../_images/collection-builder-errors-and-warnings1.png"
                      class=""
                      width="50%"
@@ -774,6 +787,7 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
                href="../_images/collection-builder-options1.png"
                title="Collection Builder Options and Summary"
                data-title="Collection Builder Options and Summary"
+               
                ><img src="../_images/collection-builder-options1.png"
                      class=""
                      width="50%"
@@ -801,6 +815,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
                href="../_images/collection-builder-import1.png"
                title="Collection Builder Import Log"
                data-title="Collection Builder Import Log"
+               
                ><img src="../_images/collection-builder-import1.png"
                      class=""
                      width="50%"
@@ -832,6 +847,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
                href="../_images/checklist-archive-export-asset1.png"
                title="Checklist Archive Export by Asset"
                data-title="Checklist Archive Export by Asset"
+               
                ><img src="../_images/checklist-archive-export-asset1.png"
                      class=""
                      width="50%"
@@ -844,6 +860,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
                href="../_images/checklist-archive-export-log1.png"
                title="Checklist Archive Export log"
                data-title="Checklist Archive Export log"
+               
                ><img src="../_images/checklist-archive-export-log1.png"
                      class=""
                      width="50%"
@@ -867,6 +884,7 @@ Individual Asset-STIG assignments to Restricted Users are removed when an Asset 
                href="../_images/transfer-asset1.png"
                title="Transfer Assets to Another Collection"
                data-title="Transfer Assets to Another Collection"
+               
                ><img src="../_images/transfer-asset1.png"
                      class=""
                      width="50%"
@@ -890,6 +908,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                href="../_images/stigs-panel1.png"
                title="STIGs Panel"
                data-title="STIGs Panel"
+               
                ><img src="../_images/stigs-panel1.png"
                      class=""
                      width="50%"
@@ -906,6 +925,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                href="../_images/stig-assignments1.png"
                title="STIG Assignments"
                data-title="STIG Assignments"
+               
                ><img src="../_images/stig-assignments1.png"
                      class=""
                      width="50%"
@@ -936,6 +956,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                href="../_images/checklist-archive-export-stig1.png"
                title="Checklist Archive Export by STIG"
                data-title="Checklist Archive Export by STIG"
+               
                ><img src="../_images/checklist-archive-export-stig1.png"
                      class=""
                      width="50%"
@@ -948,6 +969,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                href="../_images/checklist-archive-export-log1.png"
                title="Checklist Archive Export log"
                data-title="Checklist Archive Export log"
+               
                ><img src="../_images/checklist-archive-export-log1.png"
                      class=""
                      width="50%"
@@ -1004,6 +1026,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
                href="../_images/asset-metadata-and-ckl-elements1.png"
                title="Corresponding Asset Metadata and .ckl elements"
                data-title="Corresponding Asset Metadata and .ckl elements"
+               
                ><img src="../_images/asset-metadata-and-ckl-elements1.png"
                      class=""
                      width="75%"

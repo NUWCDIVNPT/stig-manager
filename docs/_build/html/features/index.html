@@ -13,7 +13,9 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
@@ -31,11 +33,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
         <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
     
@@ -93,7 +95,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction and Features</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-stig-manager">What is STIG Manager?</a></li>
@@ -131,7 +133,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
@@ -231,10 +233,7 @@
 <h2>The Single Source of Truth throughout Steps 3 and 4 of the RMF Process<a class="headerlink" href="#the-single-source-of-truth-throughout-steps-3-and-4-of-the-rmf-process" title="Permalink to this headline">¶</a></h2>
 <p>Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and its progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.</p>
 <p>STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.</p>
-<video width="480"  controls>
-  <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video></div>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wv_Gdbl_LrU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 <hr class="docutils" />
 <div class="section" id="features-and-capabilities-overview">
 <h2>Features and Capabilities Overview<a class="headerlink" href="#features-and-capabilities-overview" title="Permalink to this headline">¶</a></h2>
@@ -269,10 +268,7 @@ Your browser does not support the video tag.
 <div class="section" id="workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data">
 <h3>Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data<a class="headerlink" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data" title="Permalink to this headline">¶</a></h3>
 <p>The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection.</p>
-<video width="480"  controls>
-  <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video></div>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 <hr class="docutils" />
 <div class="section" id="workflow-to-track-status-and-make-progress-towards-a-poa-m">
 <h3>Workflow to Track Status and Make Progress Towards a POA&amp;M<a class="headerlink" href="#workflow-to-track-status-and-make-progress-towards-a-poa-m" title="Permalink to this headline">¶</a></h3>
@@ -297,7 +293,7 @@ Your browser does not support the video tag.
 <p>STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the implementation of the “Continuous” Workflow, STIG Manager will play a vital part of the RMF lifecycle.  When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.</p>
 <hr class="docutils" />
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>

@@ -13,7 +13,9 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
@@ -31,11 +33,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
         <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
     
@@ -93,7 +95,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
@@ -111,7 +113,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
@@ -121,6 +123,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#transfer-assets-to-another-collection">Transfer Assets to Another Collection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
@@ -219,59 +222,75 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>STIGMAN_API_ADDRESS</p></td>
-<td><p><strong>Default: 0.0.0.0</strong>   The IP address on which the the server will listen</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code> The IP address on which the the API server will listen</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_API_AUTHORITY</p></td>
-<td><p><strong>Default: http://localhost:8080/auth/realms/stigman</strong>   The URL of the OIDC authority providing signed JWTs to the API server.  The API will append <cite>/.well-known/openid-configuration</cite> to this URL</p></td>
-<td><p>API</p></td>
+<td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code></p></td>
+<td><p>Deprecated</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_API_MAX_JSON_BODY</p></td>
-<td><p><strong>Default: 5242880</strong>   The maximum size in bytes of the request body when Content-Type is application/json</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">5242880</span></code>   The maximum size in bytes of the request body when Content-Type is application/json</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_API_MAX_UPLOAD</p></td>
-<td><p><strong>Default: 1073741824</strong> The maximum size in bytes of the file uploaded with Content-Type multipart/form-data</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">1073741824</span></code> The maximum size in bytes of the file uploaded with Content-Type multipart/form-data</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_API_PORT</p></td>
-<td><p><strong>Default: 54000</strong> The TCP port on which the server will listen</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">54000</span></code> The TCP port on which the server will listen</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_CLASSIFICATION</p></td>
-<td><p><strong>Default: U</strong> Sets the classification banner, if any. Available values: NONE, U, FOUO, C, S, TS, SCI</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">U</span></code> Sets the classification banner, if any. Available values: <code class="docutils literal notranslate"><span class="pre">NONE</span></code> <code class="docutils literal notranslate"><span class="pre">U</span></code> <code class="docutils literal notranslate"><span class="pre">FOUO</span></code> <code class="docutils literal notranslate"><span class="pre">C</span></code> <code class="docutils literal notranslate"><span class="pre">S</span></code> <code class="docutils literal notranslate"><span class="pre">TS</span></code> <code class="docutils literal notranslate"><span class="pre">SCI</span></code></p></td>
 <td><p>API, Client</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_CLIENT_API_BASE</p></td>
-<td><p><strong>Default: /api</strong> The base URL for Client requests to the API relative to the sever root at /</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">./api</span></code> The base URL for Client requests to the API relative to the sever root at /</p></td>
 <td><p>Client</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_CLIENT_DIRECTORY</p></td>
-<td><p><strong>Default : ./clients</strong> The location of the web client files, relative to the API source directory. Note that if running from source with a clone of the GitHub repository, the client is located at <cite>../../clients</cite> relative to the API directory.</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">./clients</span></code> The location of the web client files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the client is located at <cite>../../clients</cite> relative to the API directory.</p></td>
 <td><p>API, Client</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_CLIENT_DISABLED</p></td>
-<td><p><strong>Default : false</strong> Whether to serve the STIG Manager reference web client</p></td>
-<td><p>API</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to <em>not</em> serve the reference web client</p></td>
+<td><p>Client</p></td>
+</tr>
+<tr class="row-odd"><td><p>STIGMAN_CLIENT_EXTRA_SCOPES</p></td>
+<td><p><strong>No default</strong> OAuth2 scopes to request in addition to <code class="docutils literal notranslate"><span class="pre">stig-manager:stig</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:stig:read</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:collection</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:user</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:user:read</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:op</span></code></p></td>
+<td><p>Client</p></td>
+</tr>
+<tr class="row-even"><td><p>STIGMAN_CLIENT_ID</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">stig-manager</span></code> The OIDC clientId of the web client</p></td>
+<td><p>Client</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_CLIENT_KEYCLOAK_AUTH</p></td>
-<td><p><strong>Default : http://localhost:8080/auth</strong> The Keycloak authorization URL relative to the Client</p></td>
-<td><p>Client</p></td>
+<td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_OIDC_PROVIDER</span></code></p></td>
+<td><p>Deprecated</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_CLIENT_KEYCLOAK_CLIENTID</p></td>
-<td><p><strong>Default : stig-manager</strong> The Keycloak client-id of the web client</p></td>
-<td><p>Client</p></td>
+<td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_ID</span></code></p></td>
+<td><p>Deprecated</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_CLIENT_KEYCLOAK_REALM</p></td>
-<td><p><strong>Default : stigman</strong> The Keycloak realm with STIG Manager users</p></td>
+<td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_OIDC_PROVIDER</span></code></p></td>
+<td><p>Deprecated</p></td>
+</tr>
+<tr class="row-even"><td><p>STIGMAN_CLIENT_OIDC_PROVIDER</p></td>
+<td><p><strong>Default</strong> Value of <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code> Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended by the client when fetching metadata.</p></td>
+<td><p>Client</p></td>
+</tr>
+<tr class="row-odd"><td><p>STIGMAN_CLIENT_REFRESH_DISABLED</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether the web client should expect the OIDC provider to <em>not</em> issue an OAuth2 refresh token</p></td>
 <td><p>Client</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_DB_HOST</p></td>
-<td><p><strong>Default : localhost</strong> The database hostname or IP from to the API server</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">localhost</span></code> The database hostname or IP from to the API server</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_DB_MAX_CONNECTIONS</p></td>
-<td><p><strong>Default : 25</strong> The maximum size of the database connection pool</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">25</span></code> The maximum size of the database connection pool</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_DB_PASSWORD</p></td>
@@ -279,11 +298,11 @@
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_DB_PORT</p></td>
-<td><p><strong>Default : 3306</strong> The database TCP port relative to the API server</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">3306</span></code> The database TCP port relative to the API server</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_DB_SCHEMA</p></td>
-<td><p><strong>Default : stigman</strong> The schema where the STIG Manager object are found</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">stigman</span></code> The schema where the STIG Manager object are found</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_DB_TLS_CA_FILE</p></td>
@@ -291,63 +310,83 @@
 <td><p>API</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_DB_TLS_CERT_FILE</p></td>
-<td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_KEY_FILE.</p></td>
+<td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_CA_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_KEY_FILE</span></code>.</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_DB_TLS_KEY_FILE</p></td>
-<td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionally requires setting values for STIGMAN_DB_TLS_CA_FILE and STIGMAN_DB_TLS_CERT_FILE.</p></td>
+<td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionally requires setting values for <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_CA_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_CERT_FILE</span></code>.</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_DB_TYPE</p></td>
-<td><p><strong>Default : mysql</strong> The database type. Valid values are [mysql]</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">mysql</span></code> The database type. Valid values are <code class="docutils literal notranslate"><span class="pre">mysql</span></code></p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_DB_USER</p></td>
-<td><p><strong>Default : stigman</strong> The user account used to login to the database</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">stigman</span></code> The user account used to login to the database</p></td>
 <td><p>API</p></td>
 </tr>
+<tr class="row-even"><td><p>STIGMAN_DOCS_DIRECTORY</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">./docs</span></code> The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at <cite>../../docs/_build/html</cite> relative to the API directory.</p></td>
+<td><p>API, documentation</p></td>
+</tr>
+<tr class="row-odd"><td><p>STIGMAN_DOCS_DISABLED</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to <em>not</em> serve the project Documentation.  NOTE: If you choose to serve the Client from the API container but not the Documentation, the links do the Docs on the home page will not work.</p></td>
+<td><p>Documentation</p></td>
+</tr>
 <tr class="row-even"><td><p>STIGMAN_INIT_IMPORT_STIGS</p></td>
-<td><p><strong>Default : false</strong> Whether to fetch and import the current DISA STIG Library compilation from public.cyber.mil on initial database migration</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to fetch and import the current DISA STIG Library compilation from public.cyber.mil on initial database migration</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_INIT_IMPORT_SCAP</p></td>
-<td><p><strong>Default : false</strong> Whether to fetch and import current DISA SCAP content from public.cyber.mil on initial database migration</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to fetch and import current DISA SCAP content from public.cyber.mil on initial database migration</p></td>
 <td><p>API</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_JWT_EMAIL_CLAIM</p></td>
-<td><p><strong>Default : email</strong> The access token claim whose value is the user’s email address</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">email</span></code> The access token claim whose value is the user’s email address</p></td>
 <td><p>API, Client</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_JWT_NAME_CLAIM</p></td>
-<td><p><strong>Default : name</strong> The access token claim whose value is the user’s full name</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">name</span></code> The access token claim whose value is the user’s full name</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_JWT_ROLES_CLAIM</p></td>
-<td><p><strong>Default : realm_access.roles</strong> The access token claim whose value is the user’s roles</p></td>
+<tr class="row-even"><td><p>STIGMAN_JWT_PRIVILEGES_CLAIM</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code> The access token claim whose value is the user’s privileges</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_JWT_SERVICENAME_CLAIM</p></td>
-<td><p><strong>Default : clientId</strong> The access token claim whose value is the user’s client</p></td>
+<tr class="row-odd"><td><p>STIGMAN_JWT_ROLES_CLAIM</p></td>
+<td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_PRIVILEGES_CLAIM</span></code></p></td>
+<td><p>Deprecated</p></td>
+</tr>
+<tr class="row-even"><td><p>STIGMAN_JWT_SERVICENAME_CLAIM</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">clientId</span></code> The access token claim whose value is the user’s client</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_JWT_USERNAME_CLAIM</p></td>
-<td><p><strong>Default : preferred_username</strong> The access token claim whose value is the user’s username</p></td>
+<tr class="row-odd"><td><p>STIGMAN_JWT_USERNAME_CLAIM</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code> The access token claim whose value is the user’s username</p></td>
+<td><p>API, Client</p></td>
+</tr>
+<tr class="row-even"><td><p>STIGMAN_OIDC_PROVIDER</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">http://localhost:8080/auth/realms/stigman</span></code>  The base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended when fetching metadata.</p></td>
 <td><p>API, Client</p></td>
 </tr>
 <tr class="row-odd"><td><p>STIGMAN_SWAGGER_AUTHORITY</p></td>
-<td><p><strong>Default : http://localhost:8080/auth/realms/stigman</strong> The Keycloak authorization URL relative to the SwaggerUI</p></td>
-<td><p>API</p></td>
+<td><p><strong>Deprecated</strong> and will be removed soon. Use STIGMAN_SWAGGER_OIDC_PROVIDER</p></td>
+<td><p>Deprecated</p></td>
 </tr>
 <tr class="row-even"><td><p>STIGMAN_SWAGGER_ENABLED</p></td>
-<td><p><strong>Default : false</strong> Whether to enable the SwaggerUI SPA at /api-docs</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to enable the SwaggerUI SPA at /api-docs</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_SWAGGER_REDIRECT</p></td>
-<td><p><strong>Default : http://localhost:54000/api-docs/oauth2-redirect.html</strong> The redirect URL sent by SwaggerUI to Keycloak when authorizing</p></td>
+<tr class="row-odd"><td><p>STIGMAN_SWAGGER_OIDC_PROVIDER</p></td>
+<td><p><strong>Default</strong> Value of <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code> SwaggerUI override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended by the SwaggerUI when fetching metadata.</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_SWAGGER_SERVER</p></td>
-<td><p><strong>Default: http://localhost:54000/api</strong> The API server relative to the SwaggerUI</p></td>
+<tr class="row-even"><td><p>STIGMAN_SWAGGER_REDIRECT</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">http://localhost:54000/api-docs/oauth2-redirect.html</span></code> The redirect URL sent by SwaggerUI to the OIDC provider when authorizing</p></td>
+<td><p>API</p></td>
+</tr>
+<tr class="row-odd"><td><p>STIGMAN_SWAGGER_SERVER</p></td>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">http://localhost:54000/api</span></code> The API server URL relative to the SwaggerUI</p></td>
 <td><p>API</p></td>
 </tr>
 </tbody>

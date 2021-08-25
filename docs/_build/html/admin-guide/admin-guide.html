@@ -13,7 +13,9 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
@@ -31,11 +33,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\jquery-1.11.0.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\js\lightbox.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
         <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
     
@@ -93,7 +95,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
@@ -119,7 +121,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Common Tasks:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
@@ -237,6 +239,7 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
                href="../_images/admin-collections1.png"
                title="Collection Administration"
                data-title="Collection Administration"
+               
                ><img src="../_images/admin-collections1.png"
                      class=""
                      width="50%"
@@ -257,6 +260,7 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
                href="../_images/admin-user-grants1.png"
                title="User Grants Administration"
                data-title="User Grants Administration"
+               
                ><img src="../_images/admin-user-grants1.png"
                      class=""
                      width="50%"
@@ -267,22 +271,27 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
 <hr class="docutils" />
 <div class="section" id="stig-and-scap-benchmarks-admin-panel">
 <h3><span class="section-number">2.2.3. </span>STIG and SCAP Benchmarks Admin Panel<a class="headerlink" href="#stig-and-scap-benchmarks-admin-panel" title="Permalink to this headline">¶</a></h3>
-<p>This panel lists every STIG that has been loaded into STIG Manager.
-Their Columns…. Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules.</p>
-<p>Use the buttons at the top to Add new STIGs (STIGs can be imported individually, or as a .zip library of many STIGs), or delete them.</p>
+<p>This panel lists every STIG that has been loaded into STIG Manager and allows Admins to import new STIGs into STIG Manager.
+The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.</p>
+<p>Use the button at the top to Add new STIGs. STIGs can be imported individually, or as a .zip library of many STIGs.</p>
 <figure class="">
             <a 
                data-lightbox="group-default"
                href="../_images/admin-stigs1.png"
                title="STIGs Administration"
                data-title="STIGs Administration"
+               
                ><img src="../_images/admin-stigs1.png"
                      class=""
                      width="50%"
                      height="auto"
                      alt=""/>
                 </a><figcaption>STIGs Administration</figcaption>
-            </figure><hr class="docutils" />
+            </figure><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by Admins, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist-&gt;Revisions menu item in the Asset Review workspace for that STIG.</p>
+</div>
+<hr class="docutils" />
 </div>
 <div class="section" id="application-data-panel">
 <span id="app-data"></span><h3><span class="section-number">2.2.4. </span>Application Data Panel<a class="headerlink" href="#application-data-panel" title="Permalink to this headline">¶</a></h3>
@@ -298,6 +307,7 @@ This same data can also be imported, but be aware that if data is moved to a dif
                href="../_images/admin-app-data1.png"
                title="Application Data Import/Export"
                data-title="Application Data Import/Export"
+               
                ><img src="../_images/admin-app-data1.png"
                      class=""
                      width="50%"

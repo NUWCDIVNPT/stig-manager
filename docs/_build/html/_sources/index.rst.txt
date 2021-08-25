@@ -46,26 +46,21 @@ Getting Started with STIG Manager
 
 .. raw:: html
 
-  <video width="480"  controls>
-    <source src="./_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-  </video>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/wv_Gdbl_LrU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ------------------------
 
 .. raw:: html
 
-  <video width="480"  controls>
-    <source src="./_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-  </video>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+-----------------------------------
+
+These videos and others are available on our `YouTube channel. <https://www.youtube.com/channel/UC3kkvP64MRKsTaqcQQ8QA9A>`_
 
 ---------------------------
 
-- :ref:`Installation and Setup walkthrough`
-- :ref:`user-guide-index`
-- :ref:`admin-guide-index`
-
+|
 
 
 Reporting Bugs & Issues
