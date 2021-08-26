@@ -1,3 +1,12 @@
+1.0.0-beta.38
+-----------------------
+- fix: don't sort for history projection (#419)
+- doc: include build in Docker image and serve with express (#414)
+- fix: setting stig-asset access was generating 404 incorrectly  (#416)
+- fix: don't sort reviews to workaround MySQL bug (#411)
+- feat: deleting a STIG updates related tables (#409)
+- feat: UI keeps tokens refreshed (#408)
+
 1.0.0-beta.37
 -----------------------
 - feat: support generic OIDC providers (#403)
@@ -42,6 +51,9 @@ Introduced new envvars, which deprecate existing envvars in some cases:
 - chore: remove CKL/SCAP import endpoint (#343)
 - doc: Updates to contribution docs, node.js envvar setting (#339)
 - fix: Format roles claim for optional chaining (#338)
+
+There is a database migration included in this release that adds a metadata column to the review table with a default value of {}. No other changes are made to the schemas and no data is moved, modified, or deleted.
+
 
 1.0.0-beta.34
 -----------------------
