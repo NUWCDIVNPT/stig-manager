@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "77c7f0dd-c886-442f-8acf-7509db822c09",
+		"_postman_id": "7e202405-e00c-48c3-bad3-a4979971fab7",
 		"name": "stig-manager",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -677,7 +677,7 @@
 															"\r",
 															"\r",
 															"pm.test(\"Response JSON is an array\", function () {\r",
-															"    pm.expect(jsonData).to.be.an('array');\r",
+															"    pm.expect(jsonData).to.be.an('array').of.length(2);\r",
 															"});\r",
 															"\r",
 															"\r",
@@ -750,7 +750,7 @@
 														},
 														{
 															"key": "userId",
-															"value": "{{testUserId}}"
+															"value": "{{testLvl1User}}"
 														}
 													]
 												}
@@ -7442,7 +7442,6 @@
 													"]\r",
 													"let privilegesKeys = [\r",
 													"    \"canAdmin\",\r",
-													"    \"globalAccess\",\r",
 													"    \"canCreateCollection\"\r",
 													"]\r",
 													"\r",
@@ -7597,7 +7596,6 @@
 											"]\r",
 											"let privilegesKeys = [\r",
 											"    \"canAdmin\",\r",
-											"    \"globalAccess\",\r",
 											"    \"canCreateCollection\"\r",
 											"]\r",
 											"\r",
@@ -7817,7 +7815,6 @@
 											"]\r",
 											"let privilegesKeys = [\r",
 											"    \"canAdmin\",\r",
-											"    \"globalAccess\",\r",
 											"    \"canCreateCollection\"\r",
 											"]\r",
 											"\r",
@@ -8164,7 +8161,6 @@
 									"]\r",
 									"let privilegesKeys = [\r",
 									"    \"canAdmin\",\r",
-									"    \"globalAccess\",\r",
 									"    \"canCreateCollection\"\r",
 									"]\r",
 									"\r",
@@ -8446,8 +8442,8 @@
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 404\", function () {\r",
-															"        pm.response.to.have.status(404);\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
 															"if (pm.response.code !== 200) {\r",
@@ -14857,7 +14853,6 @@
 									"]\r",
 									"let privilegesKeys = [\r",
 									"    \"canAdmin\",\r",
-									"    \"globalAccess\",\r",
 									"    \"canCreateCollection\"\r",
 									"]\r",
 									"\r",
@@ -18079,7 +18074,6 @@
 					"pm.environment.set(\"reviewMatchString\", pm.iterationData.get(\"reviewMatchString\"));",
 					"",
 					"//misc",
-					"pm.environment.set(\"globalAccess\", pm.iterationData.get(\"globalAccess\"));",
 					"pm.environment.set(\"accessLevel\", pm.iterationData.get(\"accessLevel\"));",
 					"",
 					""

@@ -4,17 +4,17 @@
             "userId": "86",
             "username": "bizarroLvl1",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": null,
                 "lastClaims": {},
-                "collectionGrantCount": 1
+                "collectionGrantCount": 2
             }
         },
         {
             "userId": "82",
             "username": "collectionCreator",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": 1602652554,
                 "lastClaims": {
                     "acr": "1",
@@ -58,7 +58,7 @@
             "userId": "85",
             "username": "lvl1",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": 1602652493,
                 "lastClaims": {
                     "acr": "1",
@@ -101,7 +101,7 @@
             "userId": "21",
             "username": "lvl2",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": 1602652507,
                 "lastClaims": {
                     "acr": "1",
@@ -144,7 +144,7 @@
             "userId": "44",
             "username": "lvl3",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": 1602652565,
                 "lastClaims": {
                     "acr": "1",
@@ -187,7 +187,7 @@
             "userId": "45",
             "username": "lvl4",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": 1602652573,
                 "lastClaims": {
                     "acr": "1",
@@ -230,8 +230,8 @@
             "userId": "1",
             "username": "stigmanadmin",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
-                "lastAccess": 1626406482,
+                "created": "2021-08-25 21:48:59.000000",
+                "lastAccess": 1629928142,
                 "lastClaims": {
                     "acr": "0",
                     "aud": [
@@ -239,15 +239,15 @@
                         "account"
                     ],
                     "azp": "stig-manager",
-                    "exp": 1691170187,
-                    "iat": 1626406229,
+                    "exp": 1694718991,
+                    "iat": 1629928142,
                     "iss": "http://localhost:8080/auth/realms/stigman",
-                    "jti": "5331b4bc-a6bd-4f7b-ac3e-1fcb7ddc82ab",
+                    "jti": "0fb1ad40-a244-46e1-a175-bc3d5138bc67",
                     "sub": "eb965d15-aa78-43fc-a2a6-3d86258c1eec",
                     "typ": "Bearer",
-                    "nonce": "b256d0e1-bbda-4247-875d-1c1e989f6797",
+                    "nonce": "07adced8-e7cb-41d6-b17a-2f718fdef94b",
                     "scope": "openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig",
-                    "auth_time": 1626370187,
+                    "auth_time": 1629918991,
                     "realm_access": {
                         "roles": [
                             "create_collection",
@@ -255,7 +255,7 @@
                             "user"
                         ]
                     },
-                    "session_state": "2e5fe407-e9ea-41ee-a710-f56ded9fdf97",
+                    "session_state": "41f80214-7eff-4bf1-aca3-18bd671fbd36",
                     "email_verified": false,
                     "resource_access": {
                         "account": {
@@ -282,7 +282,7 @@
             "userId": "22",
             "username": "wf-test",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": null,
                 "lastClaims": {},
                 "collectionGrantCount": 0
@@ -292,7 +292,7 @@
             "userId": "43",
             "username": "workforce-60",
             "statistics": {
-                "created": "2021-07-16 03:33:16.000000",
+                "created": "2021-08-25 21:48:59.000000",
                 "lastAccess": null,
                 "lastClaims": {},
                 "collectionGrantCount": 0
@@ -368,6 +368,10 @@
                 "pocPhone": "12342"
             },
             "grants": [
+                {
+                    "accessLevel": 1,
+                    "userId": "86"
+                },
                 {
                     "accessLevel": 2,
                     "userId": "21"
