@@ -26,10 +26,7 @@ STIG Manager provides data structures, assessment workspaces, and Reports for ma
 
 .. raw:: html
 
-  <video width="480"  controls>
-    <source src="../_static/videos/STIG_Manager_Introduction.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-  </video>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/wv_Gdbl_LrU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 --------------------
 
@@ -78,10 +75,7 @@ The STIG Manager Client provides efficient workspaces for creating Collections o
 
 .. raw:: html
 
-  <video width="480"  controls>
-    <source src="../_static/videos/STIG_Manager_Workspace_Walkthrough.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-  </video>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 -------------------
 

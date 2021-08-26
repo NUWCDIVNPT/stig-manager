@@ -90,7 +90,8 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
           `<div class=sm-home-widget-header>`,
           `<div class='sm-home-widget-title'>Welcome</div>`,
           `</div>`,
-          `<div class='sm-home-widget-text'><img src="img/navy.png" width=125 height=125 class="sm-home-widget-image-text-wrap" /><b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG)</div>`,
+          `<div class='sm-home-widget-text'><img src="img/navy.png" width=125 height=125 class="sm-home-widget-image-text-wrap" /><b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG)</div>`, 
+
         )
       const config = {
         tpl: tpl,
@@ -112,12 +113,21 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
           `<div class=sm-home-widget-header>`,
           `<div class='sm-home-widget-title'>Documentation</div>`,
           `</div>`,        
+
           `<div class='sm-home-widget-subtitle'>Project Home</div>`,
           `<div class='sm-home-widget-text'>What is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager#stig-manager">STIG Manager OSS</a>?</div>`,
-          `<div class='sm-home-widget-subtitle'>User Guide</div>`,
-          `<div class='sm-home-widget-text'>Visit our <a target="_blank" href="https://nuwcdivnpt.github.io/stig-manager">User Guide</a> on GitHub Pages</div>`,
-          `<div class='sm-home-widget-subtitle'>Issues and Contributions</div>`,
-          `<div class='sm-home-widget-text'>Want to help out? <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/blob/phase-1-dev/CONTRIBUTING.md">Check out our Contribution Guide</a></div>`,
+
+          `<div class='sm-home-widget-subtitle'>The Docs</div>`,
+          `<div class='sm-home-widget-text'>Need help? Check out our <a target="_blank" href="docs/index.html">Documentation</a></div>`,
+          
+          `<div class='sm-home-widget-subtitle'> Just Geting Started? </div>`,
+          `<div class='sm-home-widget-text'>Check out our <a target="_blank" href="docs/user-guide/user-quickstart.html">User Walkthrough</a> or the <a target="_blank" href="docs/user-guide/user-guide.html">User Guide</a></div>`,
+
+          `<div class='sm-home-widget-subtitle'>Common Tasks </div>`,
+          `<div class='sm-home-widget-text'>Not sure how to do something in STIG Manager? Check out these links to <a target="_blank" href="docs/features/common-tasks.html">Common Tasks</a></div>`,
+
+          `<div class='sm-home-widget-subtitle'>Issues, Feature Requests, and Contributions</div>`,
+          `<div class='sm-home-widget-text'>Want to report a bug, request a feature, or help out the project? <a target="_blank" href="docs/the-project/contributing.html">Check out our Contribution Guide</a></div>`,
           
         )
       const config = {

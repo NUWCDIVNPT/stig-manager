@@ -60,16 +60,21 @@ Users can be Unregistered from STIG Manager, which will delete STIGMan's informa
 
 STIG and SCAP Benchmarks Admin Panel
 -----------------------------------------
-This panel lists every STIG that has been loaded into STIG Manager.
-Their Columns.... Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules.
+This panel lists every STIG that has been loaded into STIG Manager and allows Admins to import new STIGs into STIG Manager.
+The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.
 
-Use the buttons at the top to Add new STIGs (STIGs can be imported individually, or as a .zip library of many STIGs), or delete them. 
+Use the button at the top to Add new STIGs. STIGs can be imported individually, or as a .zip library of many STIGs.
 
 
 .. thumbnail:: /assets/images/admin-stigs.png
       :width: 50% 
       :show_caption: True
       :title: STIGs Administration
+
+
+.. note::
+   STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by Admins, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist->Revisions menu item in the Asset Review workspace for that STIG.
+
 
 
 -------------------------

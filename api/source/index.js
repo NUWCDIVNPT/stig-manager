@@ -113,6 +113,15 @@ async function run() {
     else {
       console.log('[CLIENT] Client is disabled')
     }
+    if (!config.docs.disabled) {
+      // setup documentation route
+      console.log('[DOCS] Setting up STIG Manager Documentation')
+      app.use('/docs', express.static(path.join(__dirname, config.docs.docsDirectory)))
+
+    }
+    else {
+      console.log('[DOCS] Documentation is disabled')
+    }
     if (config.swaggerUi.enabled) {
       // Read and modify OpenAPI specification
       let spec = fs.readFileSync(path.join(__dirname,'./specification/stig-manager.yaml'), 'utf8')

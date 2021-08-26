@@ -94,7 +94,13 @@ STIG Manager is configured via its Environment Variables:
      - API          
    * - STIGMAN_DB_USER
      - **Default** ``stigman`` The user account used to login to the database 
-     - API          
+     - API    
+   * - STIGMAN_DOCS_DIRECTORY
+     - **Default** ``./docs`` The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at `../../docs/_build/html` relative to the API directory. 
+     - API, documentation
+   * - STIGMAN_DOCS_DISABLED
+     - **Default** ``false`` Whether to *not* serve the project Documentation.  NOTE: If you choose to serve the Client from the API container but not the Documentation, the links do the Docs on the home page will not work. 
+     - Documentation                
    * - STIGMAN_INIT_IMPORT_STIGS
      - **Default** ``false`` Whether to fetch and import the current DISA STIG Library compilation from public.cyber.mil on initial database migration 
      - API          
