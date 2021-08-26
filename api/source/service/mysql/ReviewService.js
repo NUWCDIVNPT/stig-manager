@@ -100,7 +100,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       columns.push(`
       (select
         coalesce(
-          (select  innerh.h from (select json_arrayagg(
+          (select json_arrayagg(
                 json_object(
                   'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                   'result', result.api,
@@ -113,8 +113,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
                   'rejectText', rh.rejectText,
                   'status', status.api
                 )
-              ) OVER (order by rh.ts desc) as h,
-              ROW_NUMBER() OVER (order by rh.ts) as rn
+              )
             FROM
               review_history rh
               left join result on rh.resultId = result.resultId 
@@ -122,7 +121,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
               left join action on rh.actionId = action.actionId 
               left join user_data ud on ud.userId=rh.userId
             where
-              rh.reviewId = r.reviewId LIMIT 1) as innerh),
+              rh.reviewId = r.reviewId),
           json_array()
         )
       ) as "history"`)
