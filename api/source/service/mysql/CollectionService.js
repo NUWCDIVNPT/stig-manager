@@ -1117,7 +1117,7 @@ exports.deleteReviewHistoryByCollection = async function (collectionId, retentio
 
 /*
 GET /collections/{collectionId}/review-history
-Available to all users with a grant to the collection. For level 1 users, only entries that fall under their Asset-STIG grants should be returned.
+Available to level 2 and higher users with a grant to the collection.
 Returns block of review history entries that fit criteria. Takes optional:
 Start Date
 End Date
@@ -1127,9 +1127,7 @@ Rule ID - only return history for this rule id
 status- only return history with this status
 If rule and asset id provided, return that intersection.
 */
-exports.getReviewHistoryByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status, userObject) {
-  const restrictedUser = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId && g.accessLevel === Security.ACCESS_LEVEL.Restricted)
-
+exports.getReviewHistoryByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status) {
   let binds = {
     collectionId: collectionId
   }
@@ -1195,19 +1193,6 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     sql += " AND a.assetId = :assetId"
   }
 
-  if(restrictedUser) {
-    binds.restrictedUser = userObject.userId
-    sql += ` 
-      AND a.assetId IN (
-        SELECT sam.assetId
-        FROM stig_asset_map sam
-          INNER JOIN user_stig_asset_map usam ON sam.saId = usam.saId
-        WHERE usam.userId = :restrictedUser
-      )
-    `
-  }
-
-
   try {
     let [rows] = await dbUtils.pool.query(sql, binds)
     return (rows)
@@ -1219,13 +1204,12 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
 
 /*
 GET /collections/{collectionId}/review-history/stats
-Available to all users with a grant to the collection. For level 1 users, only entries that fall under their Asset-STIG grants should be returned.
+Available to level 2 and higher users with a grant to the collection.
 Return some simple stats about the number/properties of history entries.
 Uses same params as GET review-history, expecting stats to be scoped to whatever would be returned by that query.
 Projection: asset - Break out statistics by Asset in the specified collection
 */
-exports.getReviewHistoryStatsByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status, projection, userObject) {
-  const restrictedUser = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId && g.accessLevel === Security.ACCESS_LEVEL.Restricted)
+exports.getReviewHistoryStatsByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status, projection) {
 
   let binds = {
     collectionId: collectionId
@@ -1289,18 +1273,6 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
   if(assetId) {
     binds.assetId = assetId
     additionalPredicates += " AND a.assetId = :assetId"
-  }
-
-  if(restrictedUser) {
-    binds.restrictedUser = userObject.userId
-    additionalPredicates += ` 
-      AND a.assetId IN (
-        SELECT sam.assetId
-        FROM stig_asset_map sam
-          INNER JOIN user_stig_asset_map usam ON sam.saId = usam.saId
-        WHERE usam.userId = :restrictedUser
-      )
-    `
   }
 
   sql = sql.replace(/additionalPredicates/g, additionalPredicates)

@@ -429,6 +429,7 @@ module.exports.deleteReviewHistoryByCollection = async function (req, res, next)
     let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const retentionDate = req.query.retentionDate
     const assetId = req.query.assetId
+    
     let result = await Collection.deleteReviewHistoryByCollection(collectionId, retentionDate, assetId)
     res.json(result)
   }
@@ -439,13 +440,14 @@ module.exports.deleteReviewHistoryByCollection = async function (req, res, next)
 
 module.exports.getReviewHistoryByCollection = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Full)
     const startDate = req.query.startDate
     const endDate = req.query.endDate
     const assetId = req.query.assetId
     const ruleId = req.query.ruleId
     const status = req.query.status
-      let result = await Collection.getReviewHistoryByCollection(collectionId, startDate, endDate, assetId, ruleId, status, req.userObject)
+
+    let result = await Collection.getReviewHistoryByCollection(collectionId, startDate, endDate, assetId, ruleId, status)
     res.json(result)
   }
   catch (err) {
@@ -455,14 +457,15 @@ module.exports.getReviewHistoryByCollection = async function (req, res, next) {
 
 module.exports.getReviewHistoryStatsByCollection = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Full)
     const startDate = req.query.startDate
     const endDate = req.query.endDate
     const assetId = req.query.assetId
     const ruleId = req.query.ruleId
     const status = req.query.status
     const projection = req.query.projection
-      let result = await Collection.getReviewHistoryStatsByCollection(collectionId, startDate, endDate, assetId, ruleId, status, projection, req.userObject)
+
+    let result = await Collection.getReviewHistoryStatsByCollection(collectionId, startDate, endDate, assetId, ruleId, status, projection)
     res.json(result)
   }
   catch (err) {
