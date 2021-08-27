@@ -1,7 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../../utils/config.js')
-const Security = require('../utils/accessLevels')
+const Security = require('../../utils/accessLevels')
 
 const _this = this
 
@@ -1128,7 +1128,7 @@ status- only return history with this status
 If rule and asset id provided, return that intersection.
 */
 exports.getReviewHistoryByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status, userObject) {
-  const level1User = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId && g.collection.lvl1User)
+  const restrictedUser = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId && g.accessLevel === Security.ACCESS_LEVEL.Restricted)
 
   let binds = {
     collectionId: collectionId
@@ -1142,12 +1142,12 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
             (
             'ruleId', rv.ruleId,
             'ts', rh.ts, 
-            'resultId', rh.resultId,
+            'result', result.api,
             'resultComment', rh.resultComment,
-            'actionId', rh.actionId,
+            'action', action.api,
             'actionComment', rh.actionComment,
             'autoResult', rh.autoResult = 1,
-            'statusId', rh.statusId,
+            'status', status.api,
             'userId', rh.userId,
             'username', ud.username,
             'rejectText', rh.rejectText,
@@ -1157,6 +1157,9 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
           FROM review_history rh
             INNER JOIN review rv on rh.reviewId = rv.reviewId
             INNER JOIN user_data ud on rh.userId = ud.userId
+            INNER JOIN result on rh.resultId = result.resultId
+            INNER JOIN status on rh.statusId = status.statusId
+            INNER JOIN action on rh.actionId = action.actionId
           WHERE rv.assetId = a.assetId`
 
   if (startDate) {
@@ -1192,14 +1195,14 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     sql += " AND a.assetId = :assetId"
   }
 
-  if(level1User) {
-    binds.level1User = userObject.userId
+  if(restrictedUser) {
+    binds.restrictedUser = userObject.userId
     sql += ` 
       AND a.assetId IN (
         SELECT sam.assetId
         FROM stig_asset_map sam
           INNER JOIN user_stig_asset_map usam ON sam.saId = usam.saId
-        WHERE usam.userId = :level1User
+        WHERE usam.userId = :restrictedUser
       )
     `
   }
@@ -1207,21 +1210,6 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
 
   try {
     let [rows] = await dbUtils.pool.query(sql, binds)
-    for(const row of rows) {
-      for(const history of row.history) {
-
-        //Translate the numeric values from the database back to text since we don't have lookup tables for these.
-        history.result = Security.getKeyByValue(dbUtils.REVIEW_RESULT_API, history.resultId)
-        history.action = Security.getKeyByValue(dbUtils.REVIEW_ACTION_API, history.actionId)
-        history.status = Security.getKeyByValue(dbUtils.REVIEW_STATUS_API, history.statusId)
-  
-        // Remove the properties which have been translated to text.
-        delete history.resultId
-        delete history.actionId
-        delete history.statusId
-      }
-    }
-
     return (rows)
   }
   catch(err) {
@@ -1237,7 +1225,7 @@ Uses same params as GET review-history, expecting stats to be scoped to whatever
 Projection: asset - Break out statistics by Asset in the specified collection
 */
 exports.getReviewHistoryStatsByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status, projection, userObject) {
-  const level1User = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId && g.collection.lvl1User)
+  const restrictedUser = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId && g.accessLevel === Security.ACCESS_LEVEL.Restricted)
 
   let binds = {
     collectionId: collectionId
@@ -1303,14 +1291,14 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
     additionalPredicates += " AND a.assetId = :assetId"
   }
 
-  if(level1User) {
-    binds.level1User = userObject.userId
+  if(restrictedUser) {
+    binds.restrictedUser = userObject.userId
     additionalPredicates += ` 
       AND a.assetId IN (
         SELECT sam.assetId
         FROM stig_asset_map sam
           INNER JOIN user_stig_asset_map usam ON sam.saId = usam.saId
-        WHERE usam.userId = :level1User
+        WHERE usam.userId = :restrictedUser
       )
     `
   }
