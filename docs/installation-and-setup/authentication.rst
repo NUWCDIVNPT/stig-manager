@@ -5,26 +5,91 @@ Authentication and Identity
 ########################################
 
 
-The API requires an OAuth2 JSON Web Token (JWT) to determine client and user access.  
-- The provided client requires Keycloak to authorize the user and generate this token, but this requirement will be removed in a future release. At that point any OAuth2 Identity provider will be able to be used, as long as the JWT it produces can be configured appropriately.
+The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access.  The STIG Manager OSS Project suggests the use of the Authorization Code Flow with Proof Key for Code Exchange (PKCE)​ flavor of OAuth 2.0​.
+
+STIG Manager OSS has been tested to work with Keycloak and Okta as OIDC providers.  It is expected to work with other OIDC providers if they can be configured to provide a token that meets the requirements specified below. Please create an Issue with details on our GitHub project if you experience issues with other providers.
+
+.. note::
+  If you are using the demonstration Keycloak container from the Project's Docker Hub page, you may not need to change any settings or variables described in this section. 
+
 
 JSON Web Token Requirements
 ----------------------------------
 
-The JWT produced by the Identity Provider should provide the following claims, which can be specified in STIGMan's environment variables if they differ from default values:
+The JWT produced by the Identity Provider should provide the claims specified below. Some of them may have different names in your configuration, and can be specified in STIGMan's environment variables if they differ from the default values:
     
-    * Username - ``STIGMAN_JWT_USERNAME_CLAIM`` - default ``preferred_username``
-    * User Roles - ``STIGMAN_JWT_ROLES_CLAIM`` - ``realm_access.roles``
-    * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional)``name``
-    * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) ``email``
+    * Username - ``STIGMAN_JWT_USERNAME_CLAIM`` - **default:** ``preferred_username``
+    * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional) **default:** ``name``
+    * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) **default:** ``email``
+    * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
+    * scope - OIDC standard. Not configurable.
 
 .. note::
   STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``
 
+
+.. code-block:: JSON
+   :caption: The decoded data payload of a sample JWT, with some relevant claims highlighted.
+   :name: A Decoded JWT
+   :emphasize-lines: 17,18,19,20,21,22,23,40,42
+
+    {
+      "exp": 1695154418,
+      "iat": 1630360166,
+      "auth_time": 1630354418,
+      "jti": "5b17970e-428a-4b54-a0bd-7ed29a436803",
+      "iss": "http://localhost:8080/auth/realms/stigman",
+      "aud": [
+        "realm-management",
+        "account"
+      ],
+      "sub": "eb965d15-aa78-43fc-a2a6-3d86258c1eec",
+      "typ": "Bearer",
+      "azp": "stig-manager",
+      "nonce": "2a6a0726-6795-47f5-88a6-00eb8aed9e23",
+      "session_state": "dca9233f-3d5b-4237-9e6e-be52d90cebdc",
+      "acr": "0",
+      "realm_access": {
+        "roles": [
+          "create_collection",
+          "admin",
+          "user"
+        ]
+      },
+      "resource_access": {
+        "realm-management": {
+          "roles": [
+            "view-users",
+            "query-groups",
+            "query-users"
+          ]
+        },
+        "account": {
+          "roles": [
+            "manage-account",
+            "manage-account-links",
+            "view-profile"
+          ]
+        }
+      },
+      "scope": "openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig",
+      "email_verified": false,
+      "preferred_username": "Jane Stigsdottir"
+    }
+
+
+The fields highlighted in the sample token above control the access and information STIG Manager requires to allow users to access the application.  The token your OIDC provider creates does not need to look exactly like this, but where it differs the relevant claims must be specified using STIG Manager Environment Variables. 
+
+
+
+
+Service Account Client Setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other Keycloak configuration required. 
 
 
-Roles, Scopes, and Privileges
+Scopes, and Privileges
 ---------------------------------
 
 The STIG Manager API restricts endpoint access using the "scope" claims in the JWT. See the `API specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ for details. 
@@ -33,6 +98,10 @@ The guide provided below maps scopes to various Realm Roles that are then assign
 These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the `Keycloak Documentation <https://www.keycloak.org/documentation>`_ for more information. 
 
 The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the :ref:`user-roles-privs` section of the Setup Guide for more information. 
+
+
+.. note::
+  The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your specific organizations Security Policy.
 
 
 .. _keycloak:
@@ -120,10 +189,12 @@ Configure STIG Manager to use your Authentication provider
 
 Most commonly, STIG Manager will require the below Environment Variable to be specified, unless their default values are appropriate.  Check the :ref:`Environment Variables` document for an exhaustive list of Environment Variables and their default values.
 
- * *STIGMAN_API_AUTHORITY* - Sample value:  http://*keycloakAddress*:8080/auth/realms/stigman
- * *STIGMAN_CLIENT_KEYCLOAK_AUTH*  - Sample value:  http://*keycloakAddress*:8080/auth
- * *STIGMAN_CLIENT_KEYCLOAK_REALM* - Suggested value: stigman
- * *STIGMAN_CLIENT_KEYCLOAK_CLIENTID* - Suggested value: stig-manager
+ * ``STIGMAN_OIDC_PROVIDER`` - Sample value:  ``http://localhost:8080/auth/realms/stigman`` - The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.
+ * ``STIGMAN_CLIENT_OIDC_PROVIDER``  - Default value: Value of ``STIGMAN_OIDC_PROVIDER`` - Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.
+ * ``STIGMAN_CLIENT_KEYCLOAK_CLIENTID`` - Suggested value: ``stig-manager``
+ * ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - Sample value: ``realm_access.roles``
+ * ``STIGMAN_CLIENT_EXTRA_SCOPES`` - Sample value: ``offline_access`` 
+
 
 A sample Keycloak image, recommended only for testing purposes, is available on `Docker Hub. <https://hub.docker.com/repository/docker/nuwcdivnpt/stig-manager-auth>`_ Most of the default values for the above Environment variables will work with this image. 
 

@@ -50,8 +50,8 @@ services:
       - STIGMAN_DB_PASSWORD=stigman
       - STIGMAN_INIT_IMPORT_STIGS=true
       - STIGMAN_INIT_IMPORT_SCAP=true
-      # Set envvar below if non-localhost browsers will access the API
-      # - STIGMAN_CLIENT_OIDC_PROVIDER=<the Keycloak authorization URL relative to the Client>
+      # Change envvar below if non-localhost browsers will access the API
+      - STIGMAN_CLIENT_OIDC_PROVIDER=http://localhost:8080/auth/realms/stigman
     init: true
     ports:
       - "54000:54000"

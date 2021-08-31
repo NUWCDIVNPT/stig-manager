@@ -280,8 +280,8 @@
       <span class="o">-</span> <span class="n">STIGMAN_DB_PASSWORD</span><span class="o">=</span><span class="n">stigman</span>
       <span class="o">-</span> <span class="n">STIGMAN_INIT_IMPORT_STIGS</span><span class="o">=</span><span class="n">true</span>
       <span class="o">-</span> <span class="n">STIGMAN_INIT_IMPORT_SCAP</span><span class="o">=</span><span class="n">true</span>
-      <span class="c1"># Set envvar below if non-localhost browsers will access the API</span>
-      <span class="c1"># - STIGMAN_CLIENT_OIDC_PROVIDER=&lt;the Keycloak authorization URL relative to the Client&gt;</span>
+      <span class="c1"># Change envvar below if non-localhost browsers will access the API</span>
+      <span class="o">-</span> <span class="n">STIGMAN_CLIENT_OIDC_PROVIDER</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">realms</span><span class="o">/</span><span class="n">stigman</span>
     <span class="n">init</span><span class="p">:</span> <span class="n">true</span>
     <span class="n">ports</span><span class="p">:</span>
       <span class="o">-</span> <span class="s2">&quot;54000:54000&quot;</span>

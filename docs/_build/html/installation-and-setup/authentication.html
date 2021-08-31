@@ -101,8 +101,11 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">2. Authentication and Identity</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#json-web-token-requirements">2.1. JSON Web Token Requirements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#roles-scopes-and-privileges">2.2. Roles, Scopes, and Privileges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#json-web-token-requirements">2.1. JSON Web Token Requirements</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#service-account-client-setup">2.1.1. Service Account Client Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scopes-and-privileges">2.2. Scopes, and Privileges</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#authentication-redhat-keycloak-11">2.3. Authentication - RedHat Keycloak 11+</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#keycloak-configuration">2.3.1. Keycloak Configuration</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#configure-stig-manager-to-use-your-authentication-provider">2.3.2. Configure STIG Manager to use your Authentication provider</a></li>
@@ -215,31 +218,92 @@
             
   <div class="section" id="authentication-and-identity">
 <span id="authentication"></span><h1><span class="section-number">2. </span>Authentication and Identity<a class="headerlink" href="#authentication-and-identity" title="Permalink to this headline">¶</a></h1>
-<p>The API requires an OAuth2 JSON Web Token (JWT) to determine client and user access.
-- The provided client requires Keycloak to authorize the user and generate this token, but this requirement will be removed in a future release. At that point any OAuth2 Identity provider will be able to be used, as long as the JWT it produces can be configured appropriately.</p>
+<p>The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access.  The STIG Manager OSS Project suggests the use of the Authorization Code Flow with Proof Key for Code Exchange (PKCE)​ flavor of OAuth 2.0​.</p>
+<p>STIG Manager OSS has been tested to work with Keycloak and Okta as OIDC providers.  It is expected to work with other OIDC providers if they can be configured to provide a token that meets the requirements specified below. Please create an Issue with details on our GitHub project if you experience issues with other providers.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are using the demonstration Keycloak container from the Project’s Docker Hub page, you may not need to change any settings or variables described in this section.</p>
+</div>
 <div class="section" id="json-web-token-requirements">
 <h2><span class="section-number">2.1. </span>JSON Web Token Requirements<a class="headerlink" href="#json-web-token-requirements" title="Permalink to this headline">¶</a></h2>
-<p>The JWT produced by the Identity Provider should provide the following claims, which can be specified in STIGMan’s environment variables if they differ from default values:</p>
+<p>The JWT produced by the Identity Provider should provide the claims specified below. Some of them may have different names in your configuration, and can be specified in STIGMan’s environment variables if they differ from the default values:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Username - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> - default <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p></li>
-<li><p>User Roles - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_ROLES_CLAIM</span></code> - <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code></p></li>
-<li><p>User Full Name - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_NAME_CLAIM</span></code> - (optional)``name``</p></li>
-<li><p>User Email - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_EMAIL_CLAIM</span></code> - (optional) <code class="docutils literal notranslate"><span class="pre">email</span></code></p></li>
+<li><p>Username - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> - <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p></li>
+<li><p>User Full Name - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_NAME_CLAIM</span></code> - (optional) <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">name</span></code></p></li>
+<li><p>User Email - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_EMAIL_CLAIM</span></code> - (optional) <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">email</span></code></p></li>
+<li><p>User Privileges - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_PRIVILEGES_CLAIM</span></code> - <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code></p></li>
+<li><p>scope - OIDC standard. Not configurable.</p></li>
 </ul>
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>STIG Manager will use the value specified in the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p>
 </div>
+<div class="literal-block-wrapper docutils container" id="a-decoded-jwt">
+<div class="code-block-caption"><span class="caption-text">The decoded data payload of a sample JWT, with some relevant claims highlighted.</span><a class="headerlink" href="#a-decoded-jwt" title="Permalink to this code">¶</a></div>
+<div class="highlight-JSON notranslate"><div class="highlight"><pre><span></span> <span class="p">{</span>
+   <span class="nt">&quot;exp&quot;</span><span class="p">:</span> <span class="mi">1695154418</span><span class="p">,</span>
+   <span class="nt">&quot;iat&quot;</span><span class="p">:</span> <span class="mi">1630360166</span><span class="p">,</span>
+   <span class="nt">&quot;auth_time&quot;</span><span class="p">:</span> <span class="mi">1630354418</span><span class="p">,</span>
+   <span class="nt">&quot;jti&quot;</span><span class="p">:</span> <span class="s2">&quot;5b17970e-428a-4b54-a0bd-7ed29a436803&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;iss&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8080/auth/realms/stigman&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;aud&quot;</span><span class="p">:</span> <span class="p">[</span>
+     <span class="s2">&quot;realm-management&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;account&quot;</span>
+   <span class="p">],</span>
+   <span class="nt">&quot;sub&quot;</span><span class="p">:</span> <span class="s2">&quot;eb965d15-aa78-43fc-a2a6-3d86258c1eec&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;typ&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;azp&quot;</span><span class="p">:</span> <span class="s2">&quot;stig-manager&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;nonce&quot;</span><span class="p">:</span> <span class="s2">&quot;2a6a0726-6795-47f5-88a6-00eb8aed9e23&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;session_state&quot;</span><span class="p">:</span> <span class="s2">&quot;dca9233f-3d5b-4237-9e6e-be52d90cebdc&quot;</span><span class="p">,</span>
+   <span class="nt">&quot;acr&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+<span class="hll">   <span class="nt">&quot;realm_access&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class="hll">     <span class="nt">&quot;roles&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class="hll">       <span class="s2">&quot;create_collection&quot;</span><span class="p">,</span>
+</span><span class="hll">       <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
+</span><span class="hll">       <span class="s2">&quot;user&quot;</span>
+</span><span class="hll">     <span class="p">]</span>
+</span><span class="hll">   <span class="p">},</span>
+</span>   <span class="nt">&quot;resource_access&quot;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="nt">&quot;realm-management&quot;</span><span class="p">:</span> <span class="p">{</span>
+       <span class="nt">&quot;roles&quot;</span><span class="p">:</span> <span class="p">[</span>
+         <span class="s2">&quot;view-users&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;query-groups&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;query-users&quot;</span>
+       <span class="p">]</span>
+     <span class="p">},</span>
+     <span class="nt">&quot;account&quot;</span><span class="p">:</span> <span class="p">{</span>
+       <span class="nt">&quot;roles&quot;</span><span class="p">:</span> <span class="p">[</span>
+         <span class="s2">&quot;manage-account&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;manage-account-links&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;view-profile&quot;</span>
+       <span class="p">]</span>
+     <span class="p">}</span>
+   <span class="p">},</span>
+<span class="hll">   <span class="nt">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig&quot;</span><span class="p">,</span>
+</span>   <span class="nt">&quot;email_verified&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+<span class="hll">   <span class="nt">&quot;preferred_username&quot;</span><span class="p">:</span> <span class="s2">&quot;Jane Stigsdottir&quot;</span>
+</span> <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The fields highlighted in the sample token above control the access and information STIG Manager requires to allow users to access the application.  The token your OIDC provider creates does not need to look exactly like this, but where it differs the relevant claims must be specified using STIG Manager Environment Variables.</p>
+<div class="section" id="service-account-client-setup">
+<h3><span class="section-number">2.1.1. </span>Service Account Client Setup<a class="headerlink" href="#service-account-client-setup" title="Permalink to this headline">¶</a></h3>
 <p>If you are using a service account to connect to the STIGMan API, the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_SERVICENAME_CLAIM</span></code> Environment Variable must specify the claim that will hold the client ID. The default is <code class="docutils literal notranslate"><span class="pre">clientId</span></code>. There may be other Keycloak configuration required.</p>
 </div>
-<div class="section" id="roles-scopes-and-privileges">
-<h2><span class="section-number">2.2. </span>Roles, Scopes, and Privileges<a class="headerlink" href="#roles-scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="scopes-and-privileges">
+<h2><span class="section-number">2.2. </span>Scopes, and Privileges<a class="headerlink" href="#scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
 <p>The STIG Manager API restricts endpoint access using the “scope” claims in the JWT. See the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml">API specification</a> for details.</p>
 <p>The guide provided below maps scopes to various Realm Roles that are then assigned to Users.
 These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the <a class="reference external" href="https://www.keycloak.org/documentation">Keycloak Documentation</a> for more information.</p>
 <p>The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the <a class="reference internal" href="installation-and-setup.html#user-roles-privs"><span class="std std-ref">Configure Users</span></a> section of the Setup Guide for more information.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your specific organizations Security Policy.</p>
+</div>
 </div>
 <div class="section" id="authentication-redhat-keycloak-11">
 <span id="keycloak"></span><h2><span class="section-number">2.3. </span>Authentication - RedHat Keycloak 11+<a class="headerlink" href="#authentication-redhat-keycloak-11" title="Permalink to this headline">¶</a></h2>
@@ -344,10 +408,11 @@ Keycloak supports many External Identity Providers, but has only been tested usi
 <p>Most commonly, STIG Manager will require the below Environment Variable to be specified, unless their default values are appropriate.  Check the <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> document for an exhaustive list of Environment Variables and their default values.</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><em>STIGMAN_API_AUTHORITY</em> - Sample value:  <a class="reference external" href="http://">http://</a><em>keycloakAddress</em>:8080/auth/realms/stigman</p></li>
-<li><p><em>STIGMAN_CLIENT_KEYCLOAK_AUTH</em>  - Sample value:  <a class="reference external" href="http://">http://</a><em>keycloakAddress</em>:8080/auth</p></li>
-<li><p><em>STIGMAN_CLIENT_KEYCLOAK_REALM</em> - Suggested value: stigman</p></li>
-<li><p><em>STIGMAN_CLIENT_KEYCLOAK_CLIENTID</em> - Suggested value: stig-manager</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code> - Sample value:  <code class="docutils literal notranslate"><span class="pre">http://localhost:8080/auth/realms/stigman</span></code> - The base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended when fetching metadata.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_OIDC_PROVIDER</span></code>  - Default value: Value of <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code> - Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended by the client when fetching metadata.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_KEYCLOAK_CLIENTID</span></code> - Suggested value: <code class="docutils literal notranslate"><span class="pre">stig-manager</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_PRIVILEGES_CLAIM</span></code> - Sample value: <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_EXTRA_SCOPES</span></code> - Sample value: <code class="docutils literal notranslate"><span class="pre">offline_access</span></code></p></li>
 </ul>
 </div></blockquote>
 <p>A sample Keycloak image, recommended only for testing purposes, is available on <a class="reference external" href="https://hub.docker.com/repository/docker/nuwcdivnpt/stig-manager-auth">Docker Hub.</a> Most of the default values for the above Environment variables will work with this image.</p>
