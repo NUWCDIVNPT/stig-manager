@@ -81,6 +81,13 @@ The JWT produced by the Identity Provider should provide the claims specified be
 The fields highlighted in the sample token above control the access and information STIG Manager requires to allow users to access the application.  The token your OIDC provider creates does not need to look exactly like this, but where it differs the relevant claims must be specified using STIG Manager Environment Variables. 
 
 
+Cross-Origin Resource Sharing (CORS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your deployment environment has your OIDC Provider and the STIGMan Client in different origins (ie. domains), you will need to specify the Client origin in the Web Origins configuration options of your OIDC Provider. This will set the ``Access-Control-Allow-Origin`` header in the OIDC Provider's responses, and permit browsers to make subsequent requests to the OIDC provider.  
+
+Alternatively, you could situate your OIDC Provider and the Client server behind a reverse proxy that is configured to present them both as coming from the same origin, avoiding the problem. 
+
 
 
 Service Account Client Setup
