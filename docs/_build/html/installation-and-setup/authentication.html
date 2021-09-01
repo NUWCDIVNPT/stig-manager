@@ -102,7 +102,8 @@
 <li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">2. Authentication and Identity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#json-web-token-requirements">2.1. JSON Web Token Requirements</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#service-account-client-setup">2.1.1. Service Account Client Setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cross-origin-resource-sharing-cors">2.1.1. Cross-Origin Resource Sharing (CORS)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#service-account-client-setup">2.1.2. Service Account Client Setup</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#scopes-and-privileges">2.2. Scopes, and Privileges</a></li>
@@ -289,8 +290,13 @@
 </div>
 </div>
 <p>The fields highlighted in the sample token above control the access and information STIG Manager requires to allow users to access the application.  The token your OIDC provider creates does not need to look exactly like this, but where it differs the relevant claims must be specified using STIG Manager Environment Variables.</p>
+<div class="section" id="cross-origin-resource-sharing-cors">
+<h3><span class="section-number">2.1.1. </span>Cross-Origin Resource Sharing (CORS)<a class="headerlink" href="#cross-origin-resource-sharing-cors" title="Permalink to this headline">¶</a></h3>
+<p>If your deployment environment has your OIDC Provider and the STIGMan Client in different origins (ie. domains), you will need to specify the Client origin in the Web Origins configuration options of your OIDC Provider. This will set the <code class="docutils literal notranslate"><span class="pre">Access-Control-Allow-Origin</span></code> header in the OIDC Provider’s responses, and permit browsers to make subsequent requests to the OIDC provider.</p>
+<p>Alternatively, you could situate your OIDC Provider and the Client server behind a reverse proxy that is configured to present them both as coming from the same origin, avoiding the problem.</p>
+</div>
 <div class="section" id="service-account-client-setup">
-<h3><span class="section-number">2.1.1. </span>Service Account Client Setup<a class="headerlink" href="#service-account-client-setup" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">2.1.2. </span>Service Account Client Setup<a class="headerlink" href="#service-account-client-setup" title="Permalink to this headline">¶</a></h3>
 <p>If you are using a service account to connect to the STIGMan API, the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_SERVICENAME_CLAIM</span></code> Environment Variable must specify the claim that will hold the client ID. The default is <code class="docutils literal notranslate"><span class="pre">clientId</span></code>. There may be other Keycloak configuration required.</p>
 </div>
 </div>
