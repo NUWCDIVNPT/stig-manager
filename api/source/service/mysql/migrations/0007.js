@@ -1,4 +1,4 @@
-const MigrationHandler = require('../MigrationHandler')
+const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
   'SET FOREIGN_KEY_CHECKS=0',
@@ -27,9 +27,9 @@ const downMigration = [
 const migrationHandler = new MigrationHandler(upMigration, downMigration)
 module.exports = {
   up: async (pool) => {
-    migrationHandler.up(pool, __filename)
+    await migrationHandler.up(pool, __filename)
   },
   down: async (pool) => {
-    migrationHandler.down(pool, __filename)
+    await migrationHandler.down(pool, __filename)
   }
 }

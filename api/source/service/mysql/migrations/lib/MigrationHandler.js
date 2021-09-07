@@ -16,7 +16,7 @@ module.exports = class MigrationHandler {
           connection = await pool.getConnection()
           for (const statement of this._upCommands) {
             console.log(`[DB] Execute: ${statement}`)
-            connection.query(statement)
+            await connection.query(statement)
           }
         }
         catch (e) {
@@ -36,7 +36,7 @@ module.exports = class MigrationHandler {
           connection = await pool.getConnection()
           for (const statement of this._downCommands) {
             console.log(`[DB] Execute: ${statement}`)
-            connection.query(statement)
+            await connection.query(statement)
           }
           await connection.release()
         }

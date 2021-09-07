@@ -1,4 +1,4 @@
-const MigrationHandler = require('../migrationHandler')
+const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
   'ALTER TABLE asset MODIFY COLUMN name VARCHAR(255) NOT NULL',
@@ -15,9 +15,9 @@ const downMigration = [
 const migrationHandler = new MigrationHandler(upMigration, downMigration)
 module.exports = {
   up: async (pool) => {
-    migrationHandler.up(pool, __filename)
+    await migrationHandler.up(pool, __filename)
   },
   down: async (pool) => {
-    migrationHandler.down(pool, __filename)
+    await migrationHandler.down(pool, __filename)
   }
 }
