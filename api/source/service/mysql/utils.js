@@ -289,7 +289,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
   try {
     if (!connection) { throw ('Connection required')}
     // Handle optional predicates, 
-    let predicates = []
+    let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
     let binds = []
     let whereClause = ''
 
@@ -311,7 +311,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       binds.push(benchmarkId)
     }
     if (predicates.length > 0) {
-      whereClause = `where ${predicates.join(' and ')}`
+      whereClause = `where  ${predicates.join(' and ')}`
     }
 
     const sqlSelect = `
@@ -345,7 +345,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       `
 
     const sqlUpsert = `
-    insert into stats_asset_stig (
+    insert into stig_asset_map (
       assetId,
       benchmarkId,
       minTs,
@@ -377,15 +377,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
         mediumCount = VALUES(mediumCount),
         lowCount = VALUES(lowCount)
     `
-    const sqlIntegrity = `
-      DELETE
-        sas 
-      FROM
-        stats_asset_stig sas
-        left join stig_asset_map sam on sas.assetId = sam.assetId and sas.benchmarkId = sam.benchmarkId
-      WHERE
-        sam.assetId is null
-    `
+
     let results;
     [results] = await connection.query(sqlSelect, binds)
 
@@ -393,7 +385,6 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
       let bindsUpsert = results.map( r => Object.values(r))
       let stats;
       [stats] = await connection.query(sqlUpsert, [bindsUpsert])
-      // await connection.query(sqlIntegrity)
       return stats
     }
     else {

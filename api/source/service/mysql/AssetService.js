@@ -37,12 +37,11 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
     // PROJECTIONS
     if (inProjection.includes('adminStats')) {
-      joins.push('left join stats_asset_stig sas on (sa.assetId=sas.assetId and sa.benchmarkId=sas.benchmarkId)')
       columns.push(`json_object(
-        'stigCount', COUNT(distinct sas.benchmarkId),
+        'stigCount', COUNT(sa.benchmarkId),
         'stigAssignedCount', COUNT(distinct usa.saId),
         'ruleCount', SUM(cr.ruleCount),
-        'acceptedCount', SUM(sas.acceptedManual) + SUM(sas.acceptedAuto),
+        'acceptedCount', SUM(sa.acceptedManual) + SUM(sa.acceptedAuto),
         'submittedCount', SUM(submittedManual) + SUM(submittedAuto),
         'savedCount', SUM(savedManual) + SUM(savedAuto)
         ) as "adminStats"`)

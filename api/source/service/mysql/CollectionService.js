@@ -355,31 +355,31 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
     let columns = [
       `distinct cast(a.assetId as char) as assetId`,
       'a.name as assetName',
-      'sas.benchmarkId',
+      'sa.benchmarkId',
       `json_object(
         'total', cr.ruleCount,
         'auto', cr.ovalCount
       ) as rules`,
-      'sas.minTs',
-      'sas.maxTs',
+      'sa.minTs',
+      'sa.maxTs',
       `json_object(
-        'low', sas.lowCount,
-          'medium', sas.mediumCount,
-          'high', sas.highCount
+        'low', sa.lowCount,
+          'medium', sa.mediumCount,
+          'high', sa.highCount
       ) as findings`,
      `json_object(
         'saved', json_object(
-          'total', sas.savedManual + sas.savedAuto,
-              'auto', sas.savedAuto),
+          'total', sa.savedManual + sa.savedAuto,
+              'auto', sa.savedAuto),
         'submitted', json_object(
-           'total', sas.submittedManual + sas.submittedAuto,
-              'auto', sas.submittedAuto),
+           'total', sa.submittedManual + sa.submittedAuto,
+              'auto', sa.submittedAuto),
         'rejected', json_object(
-           'total', sas.rejectedManual + sas.rejectedAuto,
-              'auto', sas.rejectedAuto),
+           'total', sa.rejectedManual + sa.rejectedAuto,
+              'auto', sa.rejectedAuto),
         'accepted', json_object(
-           'total', sas.acceptedManual + sas.acceptedAuto,
-              'auto', sas.acceptedAuto)
+           'total', sa.acceptedManual + sa.acceptedAuto,
+              'auto', sa.acceptedAuto)
       ) as status`           
     ]
     let joins = [
@@ -388,8 +388,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
       'left join asset a on c.collectionId = a.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId',
-      'inner join stats_asset_stig sas on (sa.assetId = sas.assetId and sa.benchmarkId = sas.benchmarkId)',
-      'left join current_rev cr on sas.benchmarkId = cr.benchmarkId',
+      'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
     ]
 
     // PROJECTIONS
@@ -425,7 +424,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += '\norder by a.name, sas.benchmarkId'
+    sql += '\norder by a.name, sa.benchmarkId'
     
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)
@@ -888,9 +887,9 @@ exports.getStigsByCollection = async function( collectionId, elevate, userObject
       'st.title',
       'cr.ruleCount',
       'COUNT(a.assetId) as assetCount',
-      'CAST(SUM(sas.acceptedManual) + SUM(sas.acceptedAuto) AS SIGNED) as acceptedCount',
-      'CAST(SUM(sas.submittedManual) + SUM(sas.submittedAuto) AS SIGNED) as submittedCount',
-      'CAST(SUM(sas.savedManual) + SUM(sas.savedAuto) AS SIGNED) as savedCount'
+      'CAST(SUM(sa.acceptedManual) + SUM(sa.acceptedAuto) AS SIGNED) as acceptedCount',
+      'CAST(SUM(sa.submittedManual) + SUM(sa.submittedAuto) AS SIGNED) as submittedCount',
+      'CAST(SUM(sa.savedManual) + SUM(sa.savedAuto) AS SIGNED) as savedCount'
     ]
 
     let joins = [
@@ -899,8 +898,7 @@ exports.getStigsByCollection = async function( collectionId, elevate, userObject
       'left join asset a on c.collectionId = a.collectionId',
       'inner join stig_asset_map sa on a.assetId = sa.assetId',
       'left join current_rev cr on sa.benchmarkId=cr.benchmarkId',
-      'left join stig st on cr.benchmarkId=st.benchmarkId',
-      'left join stats_asset_stig sas on sa.assetId = sas.assetId and sa.benchmarkId = sas.benchmarkId'
+      'left join stig st on cr.benchmarkId=st.benchmarkId'
     ]
 
     // PREDICATES
