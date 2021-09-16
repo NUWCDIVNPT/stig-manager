@@ -761,7 +761,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
         if (n.attributes.action == 'collection-create') {
           let collectionRootNode = n.parentNode
-          let fp = new SM.CollectionForm({
+          let fp = new SM.Collection.CreateForm({
             btnText: 'Create',
             btnHandler: async () => {
               try {
@@ -792,13 +792,14 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
 
           let appwindow = new Ext.Window({
             id: 'window-project-info',
+            cls: 'sm-dialog-window sm-round-panel',
             title: 'Create Collection',
             modal: true,
             width: 560,
-            height:550,
+            height:560,
             layout: 'fit',
             plain: false,
-            bodyStyle:'padding:5px;',
+            // bodyStyle:'padding:5px;',
             buttonAlign:'right',
             items: fp
           })

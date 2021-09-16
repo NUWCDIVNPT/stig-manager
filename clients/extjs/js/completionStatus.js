@@ -87,7 +87,7 @@ function addCompletionStatus( params) {
 			{header: "Saved",width:10,dataIndex:'savedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/ready-16.png width=12 height=12> Submitted",width:10,dataIndex:'submittedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/rejected-16.png width=12 height=12> Rejected",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "<img src=img/lock-16.png width=12 height=12> Accepted",width:10,dataIndex:'acceptedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "<img src=img/star.svg width=12 height=12> Accepted",width:10,dataIndex:'acceptedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "Cat 1",width:10,dataIndex:'highCount',sortable:true,align:'right',renderer:renderCat1,summaryType: 'sum'},			
 			{header: "Cat 2",width:10,dataIndex:'mediumCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},			
 			{header: "Cat 3",width:10,dataIndex:'lowCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}

@@ -1,26 +1,27 @@
 'use strict'
 
 Ext.ns('SM')
+Ext.ns('SM.Collection')
 
 SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
+    initComponent: function () {
         let config = {
             displayField: 'display',
             valueField: 'value',
             triggerAction: 'all',
             mode: 'local',
-            editable: false      
+            editable: false
         }
-        let me = this
+        let _this = this
         let data = [
             ['emass', 'RMF Package'],
-            ['continuous','Continuous']
+            ['continuous', 'Continuous']
         ]
         this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
+            fields: ['value', 'display']
         })
-        this.store.on('load',function(store){
-            me.setValue(store.getAt(0).get('value'))
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -31,6 +32,23 @@ SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
 })
 Ext.reg('sm-workflow-combo', SM.WorkflowComboBox);
 
+SM.CollectionDescriptionTextArea = Ext.extend(Ext.form.TextArea, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            cls: 'sm-review-result-textarea',
+            lastSavedData: "",
+            allowBlank: true,
+            fieldLabel: 'Description',
+            labelSeparator: '',
+            autoScroll: 'auto',
+            enableKeyEvents: true
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.CollectionDescriptionTextArea.superclass.initComponent.call(this)
+    }
+})
+
 SM.AccessLevelStrings = [
     'Undefined',
     'Restricted',
@@ -40,8 +58,8 @@ SM.AccessLevelStrings = [
 ]
 
 SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
-        let me = this
+    initComponent: function () {
+        let _this = this
         let config = {
             displayField: 'display',
             valueField: 'value',
@@ -50,11 +68,11 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
             editable: false,
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
-                if (me.grid.editor.editing == false) {
+                if (_this.grid.editor.editing == false) {
                     return true
                 }
                 if (v === "") { return "Blank values no allowed" }
-            }    
+            }
         }
         let data = [
             [1, SM.AccessLevelStrings[1]],
@@ -63,10 +81,10 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
             [4, SM.AccessLevelStrings[4]],
         ]
         this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
+            fields: ['value', 'display']
         })
-        this.store.on('load',function(store){
-            me.setValue(store.getAt(0).get('value'))
+        this.store.on('load', function (store) {
+            _this.setValue(store.getAt(0).get('value'))
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -78,19 +96,19 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
 Ext.reg('sm-accesslevel-field', SM.AccessLevelField);
 
 SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
-    initComponent: function() {
-        const id = Ext.id()
-        let fields = ['key','value']
-        let newFields = ['key','value']
-        let fieldsConstructor = Ext.data.Record.create(fields) 
+    initComponent: function () {
+        const _this = this
+        let fields = ['key', 'value']
+        let newFields = ['key', 'value']
+        let fieldsConstructor = Ext.data.Record.create(fields)
         this.newRecordConstructor = Ext.data.Record.create(newFields)
-        this.editor =  new Ext.ux.grid.RowEditor({
+        this.editor = new Ext.ux.grid.RowEditor({
             saveText: 'Save',
             grid: this,
             clicksToEdit: 2,
             errorSummary: false, // don't display errors during validation monitoring
             listeners: {
-                canceledit: function (editor,forced) {
+                canceledit: function (editor, forced) {
                     // The 'editing' property is set by RowEditorToolbar.js
                     if (editor.record.editing === true) { // was the edit on a new record?
                         this.grid.store.suspendEvents(false);
@@ -108,7 +126,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
 
                     delete mc.map[generatedId]
                     mc.map[record.id] = record
-                    for (let x=0,l=mc.keys.length; x<l; x++) {
+                    for (let x = 0, l = mc.keys.length; x < l; x++) {
                         if (mc.keys[x] === generatedId) {
                             mc.keys[x] = record.id
                         }
@@ -117,22 +135,23 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
-        this.totalTextCmp = new Ext.Toolbar.TextItem ({
+        this.totalTextCmp = new Ext.Toolbar.TextItem({
             text: '0 records',
             width: 80
         })
         let writer = new Ext.data.DataWriter()
-        let bbar = new SM.RowEditorToolbar({
+        let tbar = new SM.RowEditorToolbar({
             itemString: 'key',
             editor: this.editor,
             gridId: this.id,
             deleteProperty: 'key',
             newRecord: this.newRecordConstructor
         })
-        bbar.delButton.disable()
+        tbar.delButton.disable()
         let config = {
             //title: this.title || 'Parent',
             isFormField: true,
+            ignoreKeys: _this.ignoreKeys || [],
             allowBlank: true,
             layout: 'fit',
             height: 150,
@@ -142,7 +161,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             listeners: {
             },
-            store: new Ext.data.ArrayStore ({
+            store: new Ext.data.ArrayStore({
                 grid: this,
                 writer: writer,
                 autoSave: false,
@@ -163,35 +182,35 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
             view: new Ext.grid.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true
+                forceFit: true
             }),
-            sm: new Ext.grid.RowSelectionModel ({
+            sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
                 listeners: {
                     selectionchange: function (sm) {
-                        bbar.delButton.setDisabled(!sm.hasSelection())
+                        tbar.delButton.setDisabled(!sm.hasSelection())
                     }
                 }
             }),
-            cm: new Ext.grid.ColumnModel ({
+            cm: new Ext.grid.ColumnModel({
                 columns: [
                     {
-                        header: "Key", 
+                        header: "Key",
                         dataIndex: 'key',
                         sortable: true,
                         width: 150,
                         editor: new Ext.form.TextField({
                             grid: this,
-                            submitValue:false,
+                            submitValue: false,
                             validator: function (v) {
                                 // Don't keep the form from validating when I'm not active
                                 if (this.grid.editor.editing == false) {
                                     return true
                                 }
                                 if (v === "") { return "Blank values no allowed" }
-                                // Is there an item in the store like me?
-                                let searchIdx = this.grid.store.findExact('key',v)
-                                // Is it me?
+                                // Is there an item in the store like _this?
+                                let searchIdx = this.grid.store.findExact('key', v)
+                                // Is it _this?
                                 let isMe = this.grid.selModel.isSelected(searchIdx)
                                 if (searchIdx == -1 || isMe) {
                                     return true
@@ -202,34 +221,35 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                         })
                     },
                     {
-                        header: "Value", 
+                        header: "Value",
                         dataIndex: 'value',
                         sortable: false,
                         width: 250,
                         editor: new Ext.form.TextField({
-                            submitValue:false
+                            submitValue: false
                         })
                     }
-                ]   
+                ]
             }),
-            bbar: bbar,
-            getValue: function() {
+            tbar: tbar,
+            getValue: function () {
                 let value = {}
                 this.store.data.items.forEach((i) => {
                     value[i.data.key] = i.data.value
                 })
                 return value
             },
-            markInvalid: function() {},
-            clearInvalid: function() {},
-            isValid: function() { 
+            markInvalid: function () { },
+            clearInvalid: function () { },
+            isValid: function () {
                 return true
             },
             disabled: false,
-            getName: function() {return this.name},
-            validate: function() { return true},
-            setValue: function(v) {
-                this.store.loadData(Object.entries(v))
+            getName: function () { return this.name },
+            validate: function () { return true },
+            setValue: function (v) {
+                const entries = _this.ignoreKeys.length ? Object.entries(v).filter(entry =>  !_this.ignoreKeys.includes(entry[0])) : Object.entries(v)
+                this.store.loadData(entries)
             }
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -238,15 +258,16 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-metadata-grid', SM.MetadataGrid)
 
-SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
-    initComponent: function() {
-        let me = this
+SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let _this = this
         const userStore = new Ext.data.JsonStore({
             fields: [
-                {	name:'userId',
+                {
+                    name: 'userId',
                     type: 'string'
-                },{
-                    name:'username',
+                }, {
+                    name: 'username',
                     type: 'string'
                 }
             ],
@@ -266,53 +287,53 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
             valueField: 'userId',
             mode: 'local',
             forceSelection: true,
-			typeAhead: true,
-			minChars: 0,
+            typeAhead: true,
+            minChars: 0,
             hideTrigger: false,
             triggerAction: 'all',
             lastQuery: '',
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
-                if (me.grid.editor.editing == false) {
+                if (_this.grid.editor.editing == false) {
                     return true
                 }
                 if (v === "") { return "Blank values no allowed" }
-            },    
-			doQuery : function(q, forceAll){
-				q = Ext.isEmpty(q) ? '' : q;
-				var qe = {
-					query: q,
-					forceAll: forceAll,
-					combo: this,
-					cancel:false
-				};
-				if(this.fireEvent('beforequery', qe)===false || qe.cancel){
-					return false;
-				}
-				q = qe.query;
-				forceAll = qe.forceAll;
-				if(forceAll === true || (q.length >= this.minChars)){
-					if(this.lastQuery !== q){
-						this.lastQuery = q;
-						if(this.mode == 'local'){
-							this.selectedIndex = -1;
-							if(forceAll){
-								this.store.clearFilter();
-							}else{
-								this.store.filter(this.displayField, q, false, false);
-							}
-							this.onLoad();
-						}else{
-							this.store.baseParams[this.queryParam] = q;
-							this.store.load({
-								params: this.getParams(q)
-							});
-							this.expand();
-						}
-					}else{
-						this.selectedIndex = -1;
-						this.onLoad();
-					}
+            },
+            doQuery: function (q, forceAll) {
+                q = Ext.isEmpty(q) ? '' : q;
+                var qe = {
+                    query: q,
+                    forceAll: forceAll,
+                    combo: this,
+                    cancel: false
+                };
+                if (this.fireEvent('beforequery', qe) === false || qe.cancel) {
+                    return false;
+                }
+                q = qe.query;
+                forceAll = qe.forceAll;
+                if (forceAll === true || (q.length >= this.minChars)) {
+                    if (this.lastQuery !== q) {
+                        this.lastQuery = q;
+                        if (this.mode == 'local') {
+                            this.selectedIndex = -1;
+                            if (forceAll) {
+                                this.store.clearFilter();
+                            } else {
+                                this.store.filter(this.displayField, q, false, false);
+                            }
+                            this.onLoad();
+                        } else {
+                            this.store.baseParams[this.queryParam] = q;
+                            this.store.load({
+                                params: this.getParams(q)
+                            });
+                            this.expand();
+                        }
+                    } else {
+                        this.selectedIndex = -1;
+                        this.onLoad();
+                    }
                 }
             },
             listeners: {
@@ -328,7 +349,7 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
                         )
                     }
                 }
-            }       
+            }
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.UserSelectionField.superclass.initComponent.call(this)
@@ -337,10 +358,10 @@ SM.UserSelectionField = Ext.extend( Ext.form.ComboBox, {
 Ext.reg('sm-user-selection-field', SM.UserSelectionField);
 
 SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
-    initComponent: function() {
-        const me = this
+    initComponent: function () {
+        const _this = this
         const newFields = [
-            { 
+            {
                 name: 'userId'
             },
             {
@@ -351,7 +372,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         ]
         this.newRecordConstructor = Ext.data.Record.create(newFields)
-        const totalTextCmp = new Ext.Toolbar.TextItem ({
+        const totalTextCmp = new Ext.Toolbar.TextItem({
             text: '0 records',
             width: 80
         })
@@ -360,7 +381,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             url: this.url,
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             listeners: {
-                exception: function ( proxy, type, action, options, response, arg ) {
+                exception: function (proxy, type, action, options, response, arg) {
                     let message
                     if (response.responseText) {
                         message = response.responseText
@@ -383,10 +404,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             listeners: {
-                load: function (store,records) {
+                load: function (store, records) {
                     totalTextCmp.setText(records.length + ' records');
                 },
-                remove: function (store,record,index) {
+                remove: function (store, record, index) {
                     totalTextCmp.setText(store.getCount() + ' records');
                     store.grid.fireEvent('grantschanged', store.grid)
                 }
@@ -402,23 +423,23 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this
         })
         const columns = [
-            { 	
-				header: "Username",
-				width: 150,
+            {
+                header: "Username",
+                width: 150,
                 dataIndex: 'username',
                 sortable: true,
                 editor: userSelectionField
             },
-            { 	
-				header: "Access Level",
-				width: 100,
+            {
+                header: "Access Level",
+                width: 100,
                 dataIndex: 'accessLevel',
                 sortable: true,
                 renderer: (v) => SM.AccessLevelStrings[v],
                 editor: accessLevelField
             }
         ]
-        this.editor =  new Ext.ux.grid.RowEditor({
+        this.editor = new Ext.ux.grid.RowEditor({
             saveText: 'Save',
             grid: this,
             userSelectionField: userSelectionField,
@@ -430,12 +451,12 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     // RowEditor unhelpfully sets changes.username to the userId value. 
                     if (changes.hasOwnProperty('username')) {
                         let userEditor = editor.userSelectionField
-                        let userRecord = userEditor.store.getAt(userEditor.selectedIndex) 
+                        let userRecord = userEditor.store.getAt(userEditor.selectedIndex)
                         changes.username = userRecord.data.username
                         changes.userId = userRecord.data.userId
                     }
                 },
-                canceledit: function (editor,forced) {
+                canceledit: function (editor, forced) {
                     // The 'editing' property is set by RowEditorToolbar.js
                     if (editor.record.editing === true) { // was the edit on a new record?
                         this.grid.store.suspendEvents(false);
@@ -454,13 +475,13 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     record.dirty = false
                     delete mc.map[generatedId]
                     mc.map[record.id] = record
-                    for (let x=0,l=mc.keys.length; x<l; x++) {
+                    for (let x = 0, l = mc.keys.length; x < l; x++) {
                         if (mc.keys[x] === generatedId) {
                             mc.keys[x] = record.id
                         }
                     }
-                    if (me.showAccessBtn) {
-                        me.accessBtn.setDisabled(record.data.accessLevel != 1)
+                    if (_this.showAccessBtn) {
+                        _this.accessBtn.setDisabled(record.data.accessLevel != 1)
                     }
                     editor.grid.fireEvent('grantschanged', editor.grid)
                 }
@@ -480,14 +501,14 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 iconCls: 'sm-asset-icon',
                 disabled: true,
                 text: 'User access...',
-                handler: function() {
-                    var r = me.getSelectionModel().getSelected();
+                handler: function () {
+                    var r = _this.getSelectionModel().getSelected();
                     Ext.getBody().mask('Getting access list for ' + r.get('username') + '...');
-                    showUserAccess(me.collectionId, r.get('userId'));
+                    showUserAccess(_this.collectionId, r.get('userId'));
                 }
-            })    
+            })
         }
-        
+
         const config = {
             //title: this.title || 'Parent',
             isFormField: true,
@@ -497,15 +518,15 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             height: 150,
             plugins: [this.editor],
             store: grantStore,
-            cm: new Ext.grid.ColumnModel ({
-                columns: columns   
+            cm: new Ext.grid.ColumnModel({
+                columns: columns
             }),
             sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
                 listeners: {
                     rowselect: function (sm, index, record) {
-                        if (me.showAccessBtn) {
-                            me.accessBtn.setDisabled(record.data.accessLevel != 1)
+                        if (_this.showAccessBtn) {
+                            _this.accessBtn.setDisabled(record.data.accessLevel != 1)
                         }
                     },
                     selectionchange: function (sm) {
@@ -523,7 +544,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             tbar: tbar,
 
-            getValue: function() {
+            getValue: function () {
                 let grants = []
                 grantStore.data.items.forEach((i) => {
                     grants.push({
@@ -533,8 +554,8 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 })
                 return grants
             },
-            setValue: function(v) {
-                const data = v.map( (g) => ({
+            setValue: function (v) {
+                const data = v.map((g) => ({
                     userId: g.user.userId,
                     username: g.user.username,
                     accessLevel: g.accessLevel
@@ -544,15 +565,15 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             validator: function (v) {
                 let one = 1
             },
-            markInvalid: function() {
+            markInvalid: function () {
                 let one = 1
             },
-            clearInvalid: function() {
+            clearInvalid: function () {
                 let one = 1
             },
             isValid: function () {
-                const value = me.getValue()
-                const owners = value.filter( g => g.accessLevel === 4)
+                const value = _this.getValue()
+                const owners = value.filter(g => g.accessLevel === 4)
                 return owners.length > 0
             },
             getName: () => this.name,
@@ -567,98 +588,20 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 
-SM.CollectionForm = Ext.extend(Ext.form.FormPanel, {
-    initComponent: function() {
-        let config = {
-            baseCls: 'x-plain',
-            bodyStyle:'padding:10px 10px 10px 10px;',
-            border: false,
-            labelWidth: 100,
-            monitorValid: true,
-            getFieldValues: function (dirtyOnly) {
-                // Override Ext.form.FormPanel implementation to check submitValue
-                let o = {}, n, key, val;
-                this.items.each(function(f) {
-                    if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
-                        n = f.getName()
-                        key = o[n]
-                        val = f.getValue()   
-                        if (Ext.isDefined(key)){
-                            if (Ext.isArray(key)){
-                                o[n].push(val);
-                            } else {
-                                o[n] = [key, val]
-                            }
-                        } else {
-                            o[n] = val
-                        }
-                    }
-                })
-                return o
-            },
-            items: [
-                {
-                    xtype: 'fieldset',
-                    title: '<b>Collection information</b>',
-                    items: [
-                        {
-                            xtype: 'textfield',
-                            fieldLabel: 'Name',
-                            name: 'name',
-                            allowBlank: false,
-                            anchor:'100%'  // anchor width by percentage
-                        },{
-                            xtype: 'sm-workflow-combo',
-                            fieldLabel: 'Workflow',
-                            name: 'workflow',
-                            margins: '0 10 0 0',
-                            width: 200,
-                            value: 'emass'
-                        },{
-                            xtype: 'sm-metadata-grid',
-                            fieldLabel: 'Metadata',
-                            name: 'metadata',
-                            anchor: '100%'
-                        }
-                    ]
-                },
-                {
-                    xtype: 'fieldset',
-                    title: '<b>Access Control</b>',
-                    items: [
-                        {
-                            xtype: 'sm-user-grants-grid',
-                            fieldLabel: 'Grants',
-                            anchor: '100%'
-                        }
-                    ]
-                }
-            ],
-            buttons: [{
-                text: this.btnText || 'Save',
-                formBind: true,
-                handler: this.btnHandler || function () {}
-            }]
-        }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.CollectionForm.superclass.initComponent.call(this);
-    }
-})
-
-SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
-// SM.CollectionPanel = Ext.extend(Ext.Panel, {
-    initComponent: function() {
-        let me = this
-        let nameField = new Ext.form.TextField({
+SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
+    initComponent: function () {
+        const _this = this
+        const nameField = new Ext.form.TextField({
             fieldLabel: 'Name',
+            labelStyle: 'font-weight: 600;',
             name: 'name',
             allowBlank: false,
-            anchor:'100%',
+            anchor: '100%',
             enableKeyEvents: true,
             keys: [
-                { 
+                {
                     key: Ext.EventObject.ENTER,
-                    fn: (a , b, c) => {
+                    fn: (a, b, c) => {
                         let one = a
                         nameField.getEl().blur()
                     }
@@ -671,41 +614,291 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                     }
                 },
                 change: async (field, newValue, oldValue) => {
+                    if (!newValue?.trim()) { // only spaces
+                        field.setValue(oldValue)
+                        return
+                    }
+                }
+            }
+        })
+        const descriptionField = new Ext.form.TextArea({
+            fieldLabel: 'Description',
+            labelStyle: 'font-weight: 600;',
+            name: 'description',
+            anchor: '100% 0',
+        })
+        const metadataGrid = new SM.MetadataGrid({
+            title: 'Metadata',
+            iconCls: 'sm-database-save-icon',
+            name: 'metadata',
+            ignoreKeys: ['fieldSettings', 'statusSettings'],
+            anchor: '100% 0',
+            border: true
+        })
+        const settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
+            iconCls: 'sm-stig-icon',
+            border: true,
+            autoHeight: true
+        })
+        const settingsStatusFields = new SM.Collection.StatusSettings.StatusFields({
+            iconCls: 'sm-star-icon-16',
+            border: true,
+            autoHeight: true
+        })
+        const grantGrid = new SM.UserGrantsGrid({
+            iconCls: 'sm-users-icon',
+			showAccessBtn: false,
+			title: 'Grants',
+			border: true
+		})
+
+        let config = {
+            baseCls: 'x-plain',
+            cls: 'sm-collection-manage-layout sm-round-panel',
+            bodyStyle: 'padding:10px 10px 10px 10px;',
+            border: false,
+            labelWidth: 100,
+            monitorValid: true,
+            setFieldValues: function (apiCollection) {
+                nameField.setValue(apiCollection.name)
+                descriptionField.setValue(apiCollection.description)
+                metadataGrid.setValue(apiCollection.metadata)
+                if (apiCollection.metadata.fieldSettings) {
+                    settingsReviewFields.setValues(JSON.parse(apiCollection.metadata.fieldSettings))
+                }
+                if (apiCollection.metadata.statusSettings) {
+                    settingsStatusFields.setValues(JSON.parse(apiCollection.metadata.statusSettings))
+                }
+                grantGrid.setValue(apiCollection.grants)
+            },
+            getFieldValues: function (dirtyOnly) {
+                // Override Ext.form.FormPanel implementation to check submitValue
+                // and to create metadata from the review fields configuration
+                let o = {}, n, key, val;
+                this.items.each(function (f) {
+                    if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
+                        n = f.getName()
+                        key = o[n]
+                        val = f.getValue()
+                        if (Ext.isDefined(key)) {
+                            if (Ext.isArray(key)) {
+                                o[n].push(val);
+                            } else {
+                                o[n] = [key, val]
+                            }
+                        } else {
+                            o[n] = val
+                        }
+                    }
+                })
+                _this.serializeFieldSettings(o)
+                _this.serializeStatusSettings(o)
+                return o
+            },
+            items: [
+                {
+                    layout: 'border',
+                    anchor: '100% 0',
+                    hideLabels: true,
+                    border: false,
+                    baseCls: 'x-plain',
+                    // style: 'background-color: white;',
+                    items: [
+                        {
+                            layoutConfig: {
+                                getLayoutTargetSize : function() {
+                                  var target = this.container.getLayoutTarget(), ret = {};
+                                  if (target) {
+                                      ret = target.getViewSize();
+                          
+                                      // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
+                                      // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
+                                      // with getViewSize
+                                      if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
+                                          ret =  target.getStyleSize();
+                                      }
+                                      ret.width -= target.getPadding('lr');
+                                      ret.height -= target.getPadding('tb');
+                                      // change in this override to account for space used by 
+                                      // the Result combo box and the 4px bottom-margin of each textarea
+                                      ret.height -= 30 
+                                  }
+                                  return ret;
+                                }
+                            }, 
+                            // style: 'background-color: white;',
+                            xtype: 'fieldset',
+                            region: 'north',
+                            height: 200,
+                            split: false,
+                            title: 'Information',
+                            items: [ nameField, descriptionField]
+                        },
+                        {
+                            xtype: 'hidden',
+                            name: 'workflow',
+                            value: 'emass'
+                        },
+                        {
+                            xtype: 'tabpanel',
+                            style: {
+                                paddingTop: "10px"
+                            },
+                            region: 'center',
+                            deferredRender: false, // needed for RowEditor.stopEditing() unmask
+                            activeTab: 0,
+                            border: false,
+                            items: [ 
+                                {
+                                    xtype: 'panel',
+                                    title: 'Settings',
+                                    layout: 'form',
+                                    iconCls: 'sm-setting-icon',
+                                    border: true,
+                                    padding: 10,
+                                    items: [
+                                        settingsReviewFields,
+                                        settingsStatusFields
+                                    ]
+                                },
+                                grantGrid,
+                                metadataGrid
+                            ]      
+                                
+                        }
+                               
+                    ]
+                }
+            ],
+            buttons: [{
+                text: this.btnText || 'Save',
+                formBind: true,
+                handler: this.btnHandler || function () { }
+            }]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.CreateForm.superclass.initComponent.call(this);
+    },
+    serializeFieldSettings: function (o) {
+        const reviewFields = [
+            'commentEnabled',
+            'commentRequired',
+            'detailEnabled',
+            'detailRequired'
+        ]
+        const fieldSettings = {}
+        for (const field of reviewFields) {
+            fieldSettings[field] = o[field]
+            delete o[field]
+        }
+        if (o.metadata) {
+            o.metadata.fieldSettings = JSON.stringify(fieldSettings)
+        }
+        else {
+            o.metadata = {
+                fieldSettings: JSON.stringify(fieldSettings)
+            }
+        }
+    },
+    serializeStatusSettings: function (o) {
+        const statusFields = [
+            'canAccept',
+            'minGrant'
+        ]
+        const statusSettings = {}
+        for (const field of statusFields) {
+            statusSettings[field] = o[field]
+            delete o[field]
+        }
+        if (o.metadata) {
+            o.metadata.statusSettings = JSON.stringify(statusSettings)
+        }
+        else {
+            o.metadata = {
+                statusSettings: JSON.stringify(statusSettings)
+            }
+        }
+    }
+})
+
+SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
+    // SM.Collection.ManagePanel = Ext.extend(Ext.Panel, {
+    initComponent: function () {
+        let _this = this
+        async function putMetadataValue(key, value) {
+            const result = await Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/${key}`,
+                method: 'PUT',
+                jsonData: JSON.stringify(value)
+            })
+            return result.response.responseText ? JSON.parse(result.response.responseText) : ""
+        }
+        async function getMetadataValue(key) {
+            const result = await Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/${key}`,
+                method: 'GET'
+            })
+            return result.response.responseText ? JSON.parse(result.response.responseText) : null
+        }
+
+        const nameField = new Ext.form.TextField({
+            fieldLabel: 'Name',
+            labelStyle: 'font-weight: 600;',
+            value: _this.apiCollection?.name,
+            name: 'name',
+            allowBlank: false,
+            anchor: '100%',
+            enableKeyEvents: true,
+            keys: [
+                {
+                    key: Ext.EventObject.ENTER,
+                    fn: (a, b, c) => {
+                        let one = a
+                        nameField.getEl().blur()
+                    }
+                }
+            ],
+            listeners: {
+                specialkey: (field, e) => {
+                    if (e.getKey() == e.ENTER) {
+                        field.getEl().blur()
+                    }
+                },
+                change: async (field, newValue, oldValue) => {
+                    if (!newValue?.trim()) { // only spaces
+                        field.setValue(oldValue)
+                        return
+                    }
+                    let response
                     try {
-                        let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                        response = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                             method: 'PATCH',
                             jsonData: {
-                                name: newValue
+                                name: newValue.trim()
                             }
                         })
-                        // let apiCollection = JSON.parse(result.response.responseText)
-                        SM.Dispatcher.fireEvent('collectionchanged', {
-                            collectionId: me.collectionId,
-                            name: newValue
-                        })
-
-                        // alert (result.response.responseText)
+                        SM.Dispatcher.fireEvent('collectionchanged', response)
                     }
                     catch (e) {
-                        alert ("Name update failed")
+                        alert("Name update failed")
                         field.setValue(oldValue)
                     }
                 }
-            }            
-        })
-        let delButton = new Ext.Button({
-            iconCls: 'icon-del',
+            }
+        })          
+        const delButton = new Ext.Button({
+            iconCls: 'sm-trash-icon',
             // cls: 'sm-bare-button',
             width: 25,
             border: false,
             handler: async function () {
                 try {
-                    var confirmStr="Deleting this Collection will <b>permanently remove</b> all data associated with the Collection. This includes all Assets and their associated assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the Collection?";
-                    Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+                    var confirmStr = "Deleting this Collection will <b>permanently remove</b> all data associated with the Collection. This includes all Assets and their associated assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the Collection?";
+                    Ext.Msg.confirm("Confirm", confirmStr, async function (btn, text) {
                         if (btn == 'yes') {
                             let result = await Ext.Ajax.requestPromise({
-                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                                 method: 'DELETE'
                             })
                             let apiCollection = JSON.parse(result.response.responseText)
@@ -718,54 +911,50 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 }
             }
         })
-        let workflowCombo = new SM.WorkflowComboBox({
-            fieldLabel: 'Workflow',
-            name: 'workflow',
-            margins: '0 10 0 0',
-            width: 200,
+        const descriptionField = new Ext.form.TextArea({
+            fieldLabel: 'Description',
+            labelStyle: 'font-weight: 600;',
+            value: _this.apiCollection?.description,
+            name: 'description',
+            anchor: '100% 0',
             listeners: {
-                beforeselect: async (combo, record, index) => {
+                change: async (field, newValue, oldValue) => {
                     try {
-                        if (combo.getValue() !== record.data.value) {
-                            // value has changed
-                            let result = await Ext.Ajax.requestPromise({
-                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
-                                method: 'PATCH',
-                                jsonData: {
-                                    workflow: record.data.value
-                                }
-                            })
-                            SM.Dispatcher.fireEvent('collectionchanged', {
-                                collectionId: me.collectionId,
-                                workflow: record.data.value
-                            })
-                        }
-                        return true
+                        await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
+                            method: 'PATCH',
+                            jsonData: {
+                                description: newValue.trim()
+                            }
+                        })
                     }
                     catch (e) {
-                        alert ("Workflow update failed")
-                        return false
+                        alert("Description update failed")
+                        field.setValue(oldValue)
                     }
                 }
-            }            
+            }
         })
-        let metadataGrid = new SM.MetadataGrid({
-            fieldLabel: 'Metadata',
+        const metadataGrid = new SM.MetadataGrid({
+            title: 'Metadata',
+            iconCls: 'sm-database-save-icon',
             name: 'metadata',
-            anchor: '100%, -56',
+            ignoreKeys: ['fieldSettings', 'statusSettings'],
+            anchor: '100% 0',
+            border: true,
             listeners: {
                 metadatachanged: async grid => {
                     try {
                         let data = grid.getValue()
                         let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}`,
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata`,
                             method: 'PATCH',
-                            jsonData: {
-                                metadata: data
-                            }
+                            jsonData: data
                         })
-                        let collection = JSON.parse(result.response.responseText)
-                        grid.setValue(collection.metadata)
+                        // let collection = JSON.parse(result.response.responseText)
+                        // grid.setValue(collection.metadata)
+                        const sortstate = grid.store.getSortState()
+                        grid.store.sort([sortstate])
                     }
                     catch (e) {
                         alert ('Metadata save failed')
@@ -774,31 +963,120 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
             }
 
         })
+        metadataGrid.setValue(_this.apiCollection.metadata)
+
+        const settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
+            iconCls: 'sm-stig-icon',
+            fieldSettings: JSON.parse(_this.apiCollection?.metadata?.fieldSettings ?? null),
+            border: true,
+            autoHeight: true,
+            onFieldSelect: async function (fieldset) {
+                try {
+                    const fieldSettings = fieldset.serialize()
+                    await putMetadataValue('fieldSettings', JSON.stringify(fieldSettings))
+                    SM.Dispatcher.fireEvent('fieldsettingschanged', _this.apiCollection.collectionId, fieldSettings)
+                }
+                catch (e) {
+                    alert(e.message)
+                    try {
+                        const apiSettings = await getMetadataValue('fieldSettings')
+                        fieldset.setValues(JSON.parse(apiSettings))
+                    }
+                    catch (e) {
+                        alert(e.message)
+                    }
+                }
+            }
+        })
+        const settingsStatusFields = new SM.Collection.StatusSettings.StatusFields({
+            iconCls: 'sm-star-icon-16',
+            statusSettings: JSON.parse(_this.apiCollection?.metadata?.statusSettings ?? null),
+            border: true,
+            autoHeight: true,
+            onFieldsUpdate: async function (fieldset) {
+                try {
+                    const statusSettings = fieldset.serialize()
+                    await putMetadataValue('statusSettings', JSON.stringify(statusSettings))
+                    SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, statusSettings)
+                }
+                catch (e) {
+                    alert(e.message)
+                    try {
+                        const apiSettings = await getMetadataValue('statusSettings')
+                        fieldset.setValues(JSON.parse(apiSettings))
+                    }
+                    catch (e) {
+                        alert(e.message)
+                    }
+                }
+            }
+        })
+
         let firstItem = nameField
         if (this.allowDelete) {
             nameField.flex = 1
             firstItem = {
                 xtype: 'compositefield',
+                labelStyle: 'font-weight: 600;',
                 items: [
                     nameField,
                     delButton
                 ]
             }
         }
+
+        const grantGrid = new SM.UserGrantsGrid({
+			collectionId: _this.apiCollection.collectionId,
+            iconCls: 'sm-users-icon',
+			showAccessBtn: true,
+			url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}`,
+			baseParams: {
+				projection: 'grants'
+			},
+			title: 'Grants',
+			border: true,
+			listeners: {
+				grantschanged: async grid => {
+                    try {
+                        let data = grid.getValue()
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}?projection=grants`,
+                            method: 'PATCH',
+                            jsonData: {
+                                grants: data
+                            }
+                        })
+                        let collection = JSON.parse(result.response.responseText)
+                        grid.setValue(collection.grants)
+                    }
+                    catch (e) {
+                        alert ('Grants save failed')
+                    }
+				}
+			}
+		})
+		grantGrid.getStore().loadData(_this.apiCollection.grants.map( g => ({
+			userId: g.user.userId,
+			username: g.user.username,
+			accessLevel: g.accessLevel
+		})))
+
         let config = {
             title: this.title || 'Collection properties',
             layout: 'form',
+            cls: 'sm-collection-manage-layout sm-round-panel',
             labelWidth: 100,
+            padding: 15,
             getFieldValues: function (dirtyOnly) {
                 // Override Ext.form.FormPanel implementation to check submitValue
                 let o = {}, n, key, val;
-                this.items.each(function(f) {
+                this.items.each(function (f) {
                     if (f.submitValue !== false && !f.disabled && (dirtyOnly !== true || f.isDirty())) {
                         n = f.getName()
                         key = o[n]
-                        val = f.getValue()   
-                        if (Ext.isDefined(key)){
-                            if (Ext.isArray(key)){
+                        val = f.getValue()
+                        if (Ext.isDefined(key)) {
+                            if (Ext.isArray(key)) {
                                 o[n].push(val);
                             } else {
                                 o[n] = [key, val]
@@ -811,14 +1089,429 @@ SM.CollectionPanel = Ext.extend(Ext.form.FormPanel, {
                 return o
             },
             items: [
-                firstItem,
-                workflowCombo,
-                metadataGrid
+                {
+                    layout: 'border',
+                    anchor: '100% 0',
+                    hideLabels: true,
+                    border: false,
+                    baseCls: 'x-plain',
+                    // style: 'background-color: white;',
+                    items: [
+                        {
+                            layoutConfig: {
+                                getLayoutTargetSize : function() {
+                                  var target = this.container.getLayoutTarget(), ret = {};
+                                  if (target) {
+                                      ret = target.getViewSize();
+                          
+                                      // IE in strict mode will return a width of 0 on the 1st pass of getViewSize.
+                                      // Use getStyleSize to verify the 0 width, the adjustment pass will then work properly
+                                      // with getViewSize
+                                      if (Ext.isIE9m && Ext.isStrict && ret.width == 0){
+                                          ret =  target.getStyleSize();
+                                      }
+                                      ret.width -= target.getPadding('lr');
+                                      ret.height -= target.getPadding('tb');
+                                      // change in this override to account for space used by 
+                                      // the Result combo box and the 4px bottom-margin of each textarea
+                                      ret.height -= 30 
+                                  }
+                                  return ret;
+                                }
+                            }, 
+                            // style: 'background-color: white;',
+                            xtype: 'fieldset',
+                            region: 'north',
+                            height: 200,
+                            split: true,
+                            title: 'Information',
+                            items: [ firstItem, descriptionField]
+                        },
+                        {
+                            xtype: 'tabpanel',
+                            style: {
+                                paddingTop: "10px"
+                            },
+                            region: 'center',
+                            deferredRender: false, // needed for RowEditor.stopEditing() unmask
+                            activeTab: 0,
+                            border: false,
+                            items: [ 
+                                {
+                                    xtype: 'panel',
+                                    title: 'Settings',
+                                    layout: 'form',
+                                    iconCls: 'sm-setting-icon',
+                                    border: true,
+                                    padding: 10,
+                                    items: [
+                                        settingsReviewFields,
+                                        settingsStatusFields
+                                    ]
+                                },
+                                grantGrid,
+                                metadataGrid
+                            ]      
+                                
+                        }
+                               
+                    ]
+                }
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.CollectionPanel.superclass.initComponent.call(this);
+        SM.Collection.ManagePanel.superclass.initComponent.call(this);
     }
 })
 
-Ext.reg('sm-collection-panel', SM.CollectionPanel);
+Ext.reg('sm-collection-panel', SM.Collection.ManagePanel);
+
+Ext.ns('SM.Collection.FieldSettings')
+
+SM.Collection.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false
+        }
+        let _this = this
+        let data = [
+            ['always', 'Always'],
+            ['findings', 'Findings only']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.FieldSettings.FieldActiveComboBox.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+Ext.reg('sm-field-active-combo', SM.Collection.FieldSettings.FieldActiveComboBox)
+
+SM.Collection.FieldSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let _this = this
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false
+        }
+        let dataAlways = [
+            ['always', 'Always'],
+            ['findings', 'Findings only'],
+            ['optional', 'Optional']
+        ]
+        let dataFails = [
+            ['findings', 'Findings only'],
+            ['optional', 'Optional']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        this.setListByEnabledValue = function (enabledValue) {
+            const currentValue = _this.value || 'always'
+            if (enabledValue === 'findings') {
+                _this.store.loadData(dataFails)
+                if (currentValue === 'always') {
+                    _this.setValue('findings')
+                }
+                else {
+                    _this.setValue(currentValue)
+                }
+            }
+            else {
+                _this.store.loadData(dataAlways)
+                _this.setValue(currentValue)
+            }
+        }
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.FieldSettings.FieldRequiredComboBox.superclass.initComponent.call(this)
+
+        this.setListByEnabledValue(this.enabledField?.value || 'always')
+
+    }
+})
+Ext.reg('sm-field-required-combo', SM.Collection.FieldSettings.FieldRequiredComboBox)
+
+SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
+    initComponent: function () {
+        const _this = this
+        _this.fieldSettings = _this.fieldSettings ?? {
+            detailEnabled: 'always',
+            detailRequired: 'always',
+            commentEnabled: 'findings',
+            commentRequired: 'findings'
+        }
+        const detailEnabledCombo = new SM.Collection.FieldSettings.FieldActiveComboBox({
+            name: 'detailEnabled',
+            value: _this.fieldSettings.detailEnabled,
+            anchor: '-10',
+            listeners: {
+                select: onSelect
+            }
+        })
+        const detailRequiredCombo = new SM.Collection.FieldSettings.FieldRequiredComboBox({
+            name: 'detailRequired',
+            enabledField: detailEnabledCombo,
+            value: _this.fieldSettings.detailRequired,
+            anchor: '100%',
+            listeners: {
+                select: onSelect
+            }
+        })
+        detailEnabledCombo.requiredField = detailRequiredCombo
+
+        const commentEnabledCombo = new SM.Collection.FieldSettings.FieldActiveComboBox({
+            name: 'commentEnabled',
+            value: _this.fieldSettings.commentEnabled,
+            anchor: '-10',
+            listeners: {
+                select: onSelect
+            }
+        })
+        // commentEnabledCombo.setValue('findings')
+
+        const commentRequiredCombo = new SM.Collection.FieldSettings.FieldRequiredComboBox({
+            name: 'commentRequired',
+            enabledField: commentEnabledCombo,
+            value: _this.fieldSettings.commentRequired,
+            anchor: '100%',
+            listeners: {
+                select: onSelect
+            }
+        })
+        commentEnabledCombo.requiredField = commentRequiredCombo
+
+        _this.serialize = function () {
+            const output = {}
+            const items = [
+                detailEnabledCombo,
+                detailRequiredCombo,
+                commentEnabledCombo,
+                commentRequiredCombo
+            ]
+            for (const item of items) {
+                output[item.name] = item.value
+            }
+            return output
+        }
+
+        _this.setValues = function (values) {
+            detailEnabledCombo.setValue(values.detailEnabled)
+            detailRequiredCombo.setValue(values.detailRequired)
+            commentEnabledCombo.setValue(values.commentEnabled)
+            commentRequiredCombo.setValue(values.commentRequired)
+        }
+
+        function onSelect(item, record, index) {
+            if (item.name === 'detailEnabled' || item.name === 'commentEnabled') {
+                item.requiredField.setListByEnabledValue(item.value)
+            }
+            _this.onFieldSelect && _this.onFieldSelect(_this, item, record, index)
+        }
+
+        let config = {
+            title: _this.title || 'Review fields',
+            labelWidth: 0,
+            hideLabels: true,
+            items: [
+                {
+                    layout: 'column',
+                    baseCls: 'x-plain',
+                    items: [
+                        {
+                            columnWidth: .34,
+                            layout: 'form',
+                            hideLabels: true,
+                            border: false,
+                            items: [
+                                {
+                                    xtype: 'displayfield',
+                                    submitValue: false,
+                                    value: '<span style="font-weight: 600;">Field</span>'
+                                },
+                                {
+                                    xtype: 'displayfield',
+                                    submitValue: false,
+                                    value: 'Detail',
+                                    height: 22
+                                },
+
+                                {
+                                    xtype: 'displayfield',
+                                    submitValue: false,
+                                    value: 'Comment',
+                                    height: 22
+                                }
+                            ]
+                        },
+                        {
+                            columnWidth: .33,
+                            border: false,
+                            hideLabels: true,
+                            layout: 'form',
+                            items: [
+                                {
+                                    xtype: 'displayfield',
+                                    submitValue: false,
+                                    value: '<span style="font-weight: 600;">Enabled</span>'
+                                },
+                                detailEnabledCombo,
+                                commentEnabledCombo
+                            ]
+                        },
+                        {
+                            columnWidth: .33,
+                            layout: 'form',
+                            hideLabels: true,
+                            border: false,
+                            items: [
+                                {
+                                    xtype: 'displayfield',
+                                    submitValue: false,
+                                    value: '<span style="font-weight: 600;">Required to submit</span>'
+                                },
+                                detailRequiredCombo,
+                                commentRequiredCombo,
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.FieldSettings.ReviewFields.superclass.initComponent.call(this);
+    }
+})
+Ext.reg('sm-collection-settings-review-fields', SM.Collection.FieldSettings.ReviewFields)
+
+Ext.ns('SM.Collection.StatusSettings')
+SM.Collection.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            boxLabel: this.boxLabel || 'Accept or Reject reviews'
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.StatusSettings.AcceptCheckbox.superclass.initComponent.call(this)
+    }
+})
+SM.Collection.StatusSettings.GrantComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false
+        }
+        let _this = this
+        let data = [
+            [3, 'Manage or Owner'],
+            [4, 'Owner']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.StatusSettings.GrantComboBox.superclass.initComponent.call(this)
+        this.store.loadData(data)
+    }
+})
+
+SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
+    initComponent: function () {
+        const _this = this
+        _this.statusSettings = _this.statusSettings ?? {
+            canAccept: true,
+            minGrant: 3
+        }
+        const canAcceptCheckbox = new SM.Collection.StatusSettings.AcceptCheckbox({
+            name: 'canAccept',
+            ctCls: 'sm-cb',
+            hideLabel: true,
+            boxLabel: 'Reviews can be Accepted or Rejected',
+            checked: _this.statusSettings.canAccept,
+            listeners: {
+                check: onStatusCheck
+            }
+        })
+        const grantComboBox = new SM.Collection.StatusSettings.GrantComboBox({
+            name: 'minGrant',
+            fieldLabel: '<span style="padding-left: 15px;">Grant required to set Accept or Reject</span>', 
+            disabled: !_this.statusSettings.canAccept,
+            width: 125,
+            value: _this.statusSettings.minGrant || 3,
+            listeners: {
+                select: onGrantSelect
+            }
+        })
+
+        _this.serialize = function () {
+            const output = {}
+            const items = [
+                canAcceptCheckbox,
+                grantComboBox
+            ]
+            for (const item of items) {
+                output[item.name] = item.getValue()
+            }
+            return output
+        }
+
+        _this.setValues = function (values) {
+            canAcceptCheckbox.setValue(values.canAccept || false)
+            grantComboBox.setValue(values.minGrant || 3)
+            grantComboBox.setDisabled(!values.canAccept)
+        }
+
+        function onStatusCheck(item, checked) {
+            grantComboBox.setDisabled(!checked)
+            _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, checked)
+        }
+
+        function onGrantSelect(item, record, index) {
+            _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, record)
+        }
+
+        let config = {
+            title: _this.title || 'Status handling',
+            labelWidth: 220,
+            items: [
+                canAcceptCheckbox,
+                grantComboBox      
+                // {
+                //     xtype: 'compositefield',
+                //     hideLabel: true,
+                //     items: [
+                //         canAcceptCheckbox,
+                //         grantComboBox      
+                //     ]
+                // }
+            ]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.StatusSettings.StatusFields.superclass.initComponent.call(this);
+    }
+})
+

@@ -384,9 +384,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 		const expander = new Ext.ux.grid.RowExpander({
 			tpl: new Ext.XTemplate(
 			  '<b>Reviewer:</b> {username}</p>',
+			  '<tpl if="resultComment">',
 			  '<p><b>Result Comment:</b> {resultComment}</p>',
-			  '<tpl if="action">',
-			  '<p><b>Action:</b> {action}</p>',
 			  '</tpl>',
 			  '<tpl if="actionComment">',
 			  '<p><b>Action Comment:</b> {actionComment}</p>',
@@ -414,12 +413,6 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			// 	sortable: true,
 			// 	hidden: true
 			// },
-            { 
-				header: "Action", 
-				width: 60, 
-				dataIndex: 'action', 
-				sortable: true, 
-			},
 			// { 
 			// 	header: "Status", 
 			// 	width: 50, 
@@ -659,6 +652,7 @@ SM.GeneratePoamButton = Ext.extend(Ext.Button, {
 			/******************************************************/
 			const appwindow = new Ext.Window({
 				title: 'POA&M Defaults',
+				cls: 'sm-dialog-window sm-round-panel',
 				modal: true,
 				hidden: true,
 				width: 230,

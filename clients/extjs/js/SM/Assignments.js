@@ -544,6 +544,7 @@ async function showUserAccess( collectionId, userId, username ) {
       /******************************************************/
       appwindow = new Ext.Window({
         title: 'Access Grants (ID: ' + userId + ')',
+        cls: 'sm-dialog-window sm-round-panel',
         modal: true,
         hidden: true,
         width: 900,

@@ -617,13 +617,14 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
         /******************************************************/
         var appwindow = new Ext.Window({
             title: 'STIG Targets, Collection ID ' + collectionId,
+            cls: 'sm-dialog-window sm-round-panel',
             modal: true,
             hidden: true,
             width: 510,
             height:660,
             layout: 'fit',
             plain:true,
-            bodyStyle:'padding:5px;',
+            bodyStyle:'padding:10px;',
             buttonAlign:'right',
             items: stigPropsFormPanel
         });

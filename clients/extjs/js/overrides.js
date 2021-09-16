@@ -201,7 +201,7 @@ Ext.override(Ext.layout.FormLayout, {
     getTemplateArgs: function(field) {
         var noLabelSep = !field.fieldLabel || field.hideLabel;
         var labelSep = (typeof field.labelSeparator == 'undefined' ? this.labelSeparator : field.labelSeparator);
-        if (!field.allowBlank) labelSep += '<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>';
+        if (field.allowBlank === false) labelSep += '<span style="color: rgb(255, 0, 0); padding-left: 2px;">*</span>';
         return {
             id: field.id,
             label: field.fieldLabel,

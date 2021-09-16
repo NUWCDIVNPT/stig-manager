@@ -225,8 +225,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'sm-import-icon',
                         text: 'Import CKL or SCAP...',
                         handler: function() {
-                            let el = Ext.getCmp(`${me.collectionId}-collection-manager-tab`)
-                            showImportResultFiles( me.collectionId, el.getEl().dom );            
+                            showImportResultFiles( me.collectionId, {fieldSettings: me.apiFieldSettings} );            
                         }
                     },
                     '-',
@@ -928,6 +927,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
         /******************************************************/
         var appwindow = new Ext.Window({
             id: 'assetPropsWindow',
+            cls: 'sm-dialog-window sm-round-panel',
             title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
             modal: true,
             hidden: true,

@@ -1,3 +1,41 @@
+
+.sm-cb .x-form-cb-label {
+	top: 3px;
+}
+.sm-collection-manage-layout .x-border-layout-ct, .sm-collection-manage-layout .x-panel-body, .sm-dialog-window.sm-round-panel
+{
+    background-color: #fdfdfd;
+}
+.sm-collection-manage-layout .x-layout-split {
+    position: absolute;
+    height: 5px;
+    width: 5px;
+    text-align:  center;
+    line-height: 5px;
+    font-size: 10px;
+    color: hsl(0deg 0% 65%);
+    background-color: transparent;
+}
+.sm-collection-manage-layout .x-layout-split:after {
+    content: "===="
+
+
+}
+.x-form-text:focus, .x-form-textarea:focus {
+	border: 1px solid rgb(220, 134, 51);
+	box-shadow: inset rgb(220 134 51 / 20%) 0px 0px 1px 1px;
+}
+.sm-review-auto-sprite {
+	color: #fcfcfc !important;
+	font: bold 9px Open Sans,helvetica, sans-serif;
+	position: relative;
+	top: 3px;
+	background-color: hsl(220deg 60% 50%);
+	padding: 1px 4px 2px 4px !important;
+	border-radius:  3px;
+	/* margin-left: 11px; */
+	user-select: none;
+}
 .x-grid3-hd .sm-question-circle {
 	color: hsl(0deg 0% 60%);
 	margin-left: 3px;
@@ -307,8 +345,10 @@ body {
 .x-fieldset {
     border-radius: 3px;
 }
-.ext-el-mask {
-    background-color: #666;
+.x-body-masked .ext-el-mask {
+    background-color: rgb(0 0 0 / 35%);
+    backdrop-filter: blur(1px) saturate(50%);
+    opacity: unset;
 }
 .sm-round-panel .x-window-header {
 	color: #111;
@@ -354,7 +394,7 @@ body {
 	background-image: none;
 }
 .sm-review-form, .sm-review-footer {
-	background-color: #f0f0f0;
+	background-color: #f7f7f7;
 }
 .x-panel-header {
     color: #111;
@@ -383,7 +423,11 @@ body {
 	background-color:#ddd
 }
 .x-tab-strip-top .x-tab-strip-active .x-tab-right, .x-tab-strip-top .x-tab-strip-active .x-tab-left, .x-tab-strip-top .x-tab-strip-active .x-tab-strip-inner {
-	background-color:#e8e8e8
+	background-color: hsl(0deg 0% 91%);
+	/* border:  1px solid; */
+}
+.x-tab-strip-top .x-tab-strip-active .x-tab-right {
+	border: 1px solid #ccc
 }
 .x-tab-strip-top .x-tab-right, .x-tab-strip-top .x-tab-left, .x-tab-strip-top .x-tab-strip-inner{
 	background-image: none;
@@ -871,6 +915,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
  }
  .sm-setting-icon {
  background-image: url(../img/gear.svg) !important;
+ background-size: 16px 16px;
 }
 .sm-export-icon {
  background-image: url(../img/download.svg);
@@ -911,10 +956,15 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
   background-repeat: no-repeat;
   background-size: 16px 16px;
 }
- .sm-report-icon {
- background-image: url(../img/grid.svg) !important;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
+.sm-report-icon {
+	background-image: url(../img/grid.svg) !important;
+	 background-repeat: no-repeat;
+	 background-size: 16px 16px;
+}
+.sm-trash-icon {
+	background-image: url(../img/trash.svg) !important;
+	background-repeat: no-repeat;
+	background-size: 16px 16px;
 }
 .sm-chat-icon {
  background-image: url(../img/chat-16.png) !important;
@@ -943,10 +993,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-note-icon {
  background-image: url(../img/note-16.png) !important;
 }
-.sm-lock-icon {
- background-image: url(../img/lock-16.png) !important;
-}
-.sm-assign-icon {
+.sm-star-icon {
+	background-image: url(../img/star.svg) !important;
+ }
+.sm-star-icon-16 {
+	background-image: url(../img/star.svg) !important;
+	background-size: 16px;
+ }
+ .sm-assign-icon {
  background-image: url(../img/right-arrow-16.png) !important;
 }
 .sm-unlock-icon {
@@ -961,11 +1015,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-rejected-icon {
  background-image: url(../img/rejected-16.png) !important;
 }
-.x-btn-pressed.sm-lock-icon {
- background-image: url(../img/lock-16.png) !important;
+.x-btn-pressed.sm-star-icon {
+ background-image: url(../img/star.svg) !important;
 }
 .sm-save-icon {
- background-image: url(../img/save-16.png) !important;
+	background-image: url(../img/save-16.png) !important;
+ }
+.sm-disk-icon {
+ background-image: url(../img/disk-16.png) !important;
 }
 .sm-database-save-icon {
  background-image: url(../img/database.svg) !important;
