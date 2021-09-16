@@ -10,9 +10,10 @@ class Classification {
                 this.classificationCls = 'unclassified'
                 this.classificationText = 'UNCLASSIFIED (U)'
                 break
+            case 'CUI':
             case 'FOUO':
-                this.classificationCls = 'unclassified'
-                this.classificationText = 'UNCLASSIFIED / FOR OFFICIAL USE ONLY (U/FOUO)'
+                this.classificationCls = 'cui'
+                this.classificationText = 'CONTROLLED (CUI)'
                 break
             case 'C':
                 this.classificationCls = 'confidential'

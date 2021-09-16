@@ -596,6 +596,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	height: 20px;
 }
 
+.sm-banner-cui {
+	background-color:#502b85;
+	color: #ffffff;
+	height: 20px;
+}
+
 .sm-banner-confidential {
 	background-color:#0033a0;
 	color: #ffffff;
