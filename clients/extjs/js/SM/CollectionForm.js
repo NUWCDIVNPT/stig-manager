@@ -749,6 +749,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                             activeTab: 0,
                             border: false,
                             items: [ 
+                                grantGrid,
                                 {
                                     xtype: 'panel',
                                     title: 'Settings',
@@ -761,7 +762,6 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                                         settingsStatusFields
                                     ]
                                 },
-                                grantGrid,
                                 metadataGrid
                             ]      
                                 
@@ -1137,6 +1137,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                             activeTab: 0,
                             border: false,
                             items: [ 
+                                grantGrid,
                                 {
                                     xtype: 'panel',
                                     title: 'Settings',
@@ -1149,7 +1150,6 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                         settingsStatusFields
                                     ]
                                 },
-                                grantGrid,
                                 metadataGrid
                             ]      
                                 
