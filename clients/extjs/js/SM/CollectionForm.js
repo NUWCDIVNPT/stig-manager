@@ -745,7 +745,6 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                                 paddingTop: "10px"
                             },
                             region: 'center',
-                            deferredRender: false, // needed for RowEditor.stopEditing() unmask
                             activeTab: 0,
                             border: false,
                             items: [ 
@@ -1133,7 +1132,6 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                 paddingTop: "10px"
                             },
                             region: 'center',
-                            deferredRender: false, // needed for RowEditor.stopEditing() unmask
                             activeTab: 0,
                             border: false,
                             items: [ 

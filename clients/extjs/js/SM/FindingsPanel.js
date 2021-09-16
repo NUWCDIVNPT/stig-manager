@@ -385,10 +385,10 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			tpl: new Ext.XTemplate(
 			  '<b>Reviewer:</b> {username}</p>',
 			  '<tpl if="resultComment">',
-			  '<p><b>Result Comment:</b> {resultComment}</p>',
+			  '<p><b>Detail:</b> {resultComment}</p>',
 			  '</tpl>',
 			  '<tpl if="actionComment">',
-			  '<p><b>Action Comment:</b> {actionComment}</p>',
+			  '<p><b>Comment:</b> {actionComment}</p>',
 			  '</tpl>'
 			)
 		  })
