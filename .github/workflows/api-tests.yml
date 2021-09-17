@@ -9,6 +9,7 @@ on:
     - 'clients/extjs/**'
     - 'test/api/**'
     - 'Dockerfile'
+    - '.github/workflows/api-tests.yml'
 
 jobs:
   test_api:
@@ -59,8 +60,7 @@ jobs:
           sudo npm install -g newman-reporter-htmlextra          
       -
         name: Wait for bootstrap
-        run: until $(curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration); do printf '.'; sleep 5; done
-      
+        run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
       -
         name: Run Newman Collection LoadTestData
         id: newman-run-loadTestData
