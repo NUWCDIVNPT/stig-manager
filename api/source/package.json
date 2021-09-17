@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prestart": "npm install",
-    "start": "node index.js",
-    "postinstall": "patch-package"
+    "start": "node index.js"
   },
   "keywords": [
     "swagger"
@@ -31,7 +30,6 @@
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "mysql2": "^2.2.5",
-    "patch-package": "^6.2.2",
     "request": "^2.88.2",
     "semver": "^7.3.4",
     "swagger-ui-dist": "^3.51.2",
