@@ -9,6 +9,7 @@ on:
     - 'clients/extjs/**'
     - 'test/api/**'
     - 'Dockerfile'
+    - '.github/workflows/api-tests.yml'
 
 jobs:
   test_api:
