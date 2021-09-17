@@ -1,6 +1,6 @@
 'use strict';
 
-const packageJson = require("./package.json")
+const packageJson = require("./package.jsonX")
 console.log(`Starting STIG Manager ${packageJson.version}`)
 
 const config = require('./utils/config')
