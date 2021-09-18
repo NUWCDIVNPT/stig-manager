@@ -1116,10 +1116,11 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
 })
 
 class TaskObject {
-    constructor({ apiAssets = [], apiStigs = [], parsedResults = [], collectionId }) {
+    constructor({ apiAssets = [], apiStigs = [], parsedResults = [], collectionId, config  }) {
         // An array of results from the parsers
         this.parsedResults = parsedResults
         this.collectionId = collectionId
+        this.config = config ?? { strictRevisionChecks: false } 
         // An array of assets from the API
         this.apiAssets = apiAssets
         // Create Maps of the assets by assetName and metadata.cklHostName
@@ -1237,13 +1238,12 @@ class TaskObject {
             // Helper functions
             const stigIsInstalled = ({ benchmarkId, revisionStr }) => {
                 const revisionStrs = this.mappedStigs.get(benchmarkId)
-                if (revisionStrs) {
-                    if (revisionStr) return revisionStrs.includes(revisionStr)
-                    return true
-                }
-                else {
+                if ( revisionStrs ) {                  
+                    return revisionStr && this.config.strictRevisionCheck ? revisionStrs.includes( revisionStr ) : true
+                  }
+                  else {
                     return false
-                }
+                  }
             }
             const stigIsAssigned = ({ benchmarkId }) => {
                 return taskAsset.assetProps.stigs.includes(benchmarkId)
