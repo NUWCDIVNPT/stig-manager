@@ -240,7 +240,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					gridBasename: 'Findings',
 					gridSource: me,
 					iconCls: 'sm-export-icon',
-					text: 'Export'
+					text: 'CSV'
 				},
 				{
 					xtype: 'tbseparator'
@@ -464,7 +464,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 					gridBasename: 'Finding Details',
 					gridSource: me,
 					iconCls: 'sm-export-icon',
-					text: 'Export'
+					text: 'CSV'
 				},
 				{
 					xtype: 'tbfill'

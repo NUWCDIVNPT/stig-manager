@@ -236,7 +236,7 @@ function addCollectionAdmin( params ) {
           gridBasename: 'Collection-Info',
           exportType: 'grid',
           iconCls: 'sm-export-icon',
-          text: 'Export'
+          text: 'CSV'
         },
         {
           xtype: 'tbfill'

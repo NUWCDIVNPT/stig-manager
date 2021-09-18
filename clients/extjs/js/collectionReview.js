@@ -397,7 +397,7 @@ async function addCollectionReview ( params ) {
 			exportType: 'grid',
 			gridBasename: `${leaf.benchmarkId}`,
 			iconCls: 'sm-export-icon',
-			text: 'Export'
+			text: 'CSV'
 		})
 
 		var groupGrid = new Ext.grid.GridPanel({
@@ -997,7 +997,7 @@ async function addCollectionReview ( params ) {
 			exportType: 'grid',
 			gridBasename: `${leaf.benchmarkId}-Rule`,
 			iconCls: 'sm-export-icon',
-			text: 'Export'
+			text: 'CSV'
 		})
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({

@@ -321,7 +321,7 @@ function addCompletionStatus( params) {
 				exportType: 'store',
 				storeBasename: collectionName + '-Status',
 				iconCls: 'sm-export-icon',
-				text: 'Export'
+				text: 'CSV'
 			},
 			{
 				xtype: 'tbfill'

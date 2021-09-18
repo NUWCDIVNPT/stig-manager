@@ -781,7 +781,7 @@ function Sm_HistoryData (idAppend) {
 		exportType: 'grid',
 		gridBasename: `Log`,
 		iconCls: 'sm-export-icon',
-		text: 'Export'
+		text: 'CSV'
 	})
 		
 	this.grid = new Ext.grid.GridPanel({
