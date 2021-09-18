@@ -414,6 +414,14 @@ async function addReview( params ) {
   /******************************************************/
   // The group grid
   /******************************************************/
+  const groupExportBtn = new Ext.ux.ExportButton({
+    hasMenu: false,
+    exportType: 'grid',
+    gridBasename: `${leaf.assetName}-${leaf.benchmarkId}`,
+    iconCls: 'sm-export-icon',
+    text: 'Export'
+  })
+
   var groupGrid = new Ext.grid.GridPanel({
     cls: 'sm-round-panel',
     margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
@@ -559,7 +567,7 @@ async function addReview( params ) {
       },
       {
         id: 'result' + idAppend,
-        header: '&#160;', // per docs
+        header: '<span exportvalue="Result">&#160;</span>', // per docs
         menuDisabled: true,
         width: 32,
         fixed: true,
@@ -643,7 +651,12 @@ async function addReview( params ) {
           }
         }, {
           xtype: 'tbseparator'
-        }, {
+        },
+        groupExportBtn,
+				{
+					xtype: 'tbseparator'
+				},
+        {
           xtype: 'tbtext',
           id: 'groupGrid-totalText' + idAppend,
           text: '0 rules',
@@ -867,6 +880,14 @@ async function addReview( params ) {
     )
   });
 
+  const otherExportBtn = new Ext.ux.ExportButton({
+    hasMenu: false,
+    exportType: 'grid',
+    gridBasename: `Other-Reviews`,
+    iconCls: 'sm-export-icon',
+    text: 'Export'
+  })
+
   var otherGrid = new Ext.grid.GridPanel({
     //region: 'center',
     enableDragDrop: true,
@@ -889,6 +910,9 @@ async function addReview( params ) {
     }),
     tbar: new Ext.Toolbar({
       items: []
+    }),
+    bbar: new Ext.Toolbar({
+      items: [otherExportBtn]
     }),
     columns: [
       expander,

@@ -392,6 +392,14 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// The group grid
 		/******************************************************/
+		const groupExportBtn = new Ext.ux.ExportButton({
+			hasMenu: false,
+			exportType: 'grid',
+			gridBasename: `${leaf.benchmarkId}`,
+			iconCls: 'sm-export-icon',
+			text: 'Export'
+		})
+
 		var groupGrid = new Ext.grid.GridPanel({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
@@ -499,7 +507,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'oCnt' + idAppend,
-					header: '<div style="color:red;font-weight:bolder;">O</div>', 
+					header: '<div style="color:red;font-weight:bolder;" exportvalue="O">O</div>', 
 					width: 32,
 					align: 'center',
 					dataIndex: 'oCnt',
@@ -509,7 +517,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'nfCnt' + idAppend,
-					header: '<div style="color:green;font-weight:bolder;">NF</div>', 
+					header: '<div style="color:green;font-weight:bolder;" exportvalue="NF">NF</div>', 
 					width: 32,
 					align: 'center',
 					renderer:renderCounts,
@@ -519,7 +527,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'naCnt' + idAppend,
-					header: '<div style="color:grey;font-weight:bolder;">NA</div>', 
+					header: '<div style="color:grey;font-weight:bolder;" exportvalue="NA">NA</div>', 
 					width: 32,
 					align: 'center',
 					renderer:renderCounts,
@@ -539,7 +547,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'readyCnt' + idAppend,
-					header: "<img src=img/ready-16.png width=12 height=12>", 
+					header: '<img src=img/ready-16.png width=12 height=12 exportvalue="Submitted">', 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -550,7 +558,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'rejectCnt' + idAppend,
-					header: "<img src=img/rejected-16.png width=12 height=12>", 
+					header: '<img src=img/rejected-16.png width=12 height=12 exportvalue="Rejected">', 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -561,7 +569,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'approveCnt' + idAppend,
-					header: "<img src=img/star.svg width=12 height=12>", 
+					header: '<img src=img/star.svg width=12 height=12 exportvalue="Approved">', 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -637,9 +645,15 @@ async function addCollectionReview ( params ) {
 						reviewsGrid.getStore().removeAll(true);
 						reviewsGrid.getView().refresh();
 					}
-				},{
+				},
+				{
 					xtype: 'tbseparator'
-				},{
+				},
+				groupExportBtn,
+				{
+					xtype: 'tbseparator'
+				},
+				{
 					xtype: 'tbtext',
 					id: 'groupGrid-totalText' + idAppend,
 					text: '',
@@ -828,7 +842,7 @@ async function addCollectionReview ( params ) {
 				}
 				,{ 
 					id:'Result' + idAppend,
-					header: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+					header: '<span exportvalue="Result">Result<i class= "fa fa-question-circle sm-question-circle"></i></span>',
 					width: 70,
 					fixed: true,
 					dataIndex: 'result',
@@ -860,6 +874,9 @@ async function addCollectionReview ( params ) {
 					renderer: function (val) {
 						let returnStr
 						switch (val) {
+							case 'informational':
+								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">I</div>';
+								break;
 							case 'fail':
 								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
 								break;
@@ -876,7 +893,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'Detail' + idAppend,
-					header: 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>', 
+					header: '<span exportvalue="Detail">Detail<i class= "fa fa-question-circle sm-question-circle"></i></span>', 
 					width: 100,
 					dataIndex: 'resultComment',
 					renderer: function (v) {
@@ -904,7 +921,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'Comment' + idAppend,
-					header: 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
+					header: '<span exportvalue="Comment">Comment<i class= "fa fa-question-circle sm-question-circle"></i></span>', 
 					width: 100,
 					dataIndex: 'actionComment',
 					renderer: function (v) {
@@ -974,6 +991,14 @@ async function addCollectionReview ( params ) {
 			const settingsCondition = apiStatusSettings.canAccept
 			return grantCondition && settingsCondition 
 		}
+
+		const reviewsExportBtn = new Ext.ux.ExportButton({
+			hasMenu: false,
+			exportType: 'grid',
+			gridBasename: `${leaf.benchmarkId}-Rule`,
+			iconCls: 'sm-export-icon',
+			text: 'Export'
+		})
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-round-panel',
@@ -1197,6 +1222,9 @@ async function addCollectionReview ( params ) {
 					}
 				]
 			}),
+			bbar: new Ext.Toolbar({
+				items: [reviewsExportBtn]
+			}),
 			loadMask: true,
 			emptyText: 'No data to display'
 		});
@@ -1268,6 +1296,7 @@ async function addCollectionReview ( params ) {
 				reviewsGrid.getStore().loadData(colReviews)
 				reviewsGrid.setTitle(`Reviews of ${record.data.ruleId}`)
 				reviewsGrid.currentChecklistRecord = record
+				reviewsExportBtn.gridBasename = `${leaf.benchmarkId}-${record.data.ruleId}`
 			}
 			catch (e) {
 				alert (e.message)

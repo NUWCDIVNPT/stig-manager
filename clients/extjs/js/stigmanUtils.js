@@ -776,7 +776,14 @@ function Sm_HistoryData (idAppend) {
 		)
 	  })
 
-	
+	const historyExportBtn = new Ext.ux.ExportButton({
+		hasMenu: false,
+		exportType: 'grid',
+		gridBasename: `Log`,
+		iconCls: 'sm-export-icon',
+		text: 'Export'
+	})
+		
 	this.grid = new Ext.grid.GridPanel({
 		layout: 'fit',
     enableDragDrop: true,
@@ -790,6 +797,9 @@ function Sm_HistoryData (idAppend) {
 			forceFit:true,
 			emptyText: 'No log to display.',
 			deferEmptyText:false
+		}),
+    bbar: new Ext.Toolbar({
+      items: [historyExportBtn]
 		}),
 		columns: [
 			expander,
@@ -1164,17 +1174,22 @@ function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
+	const exportvalues = [] 
 	switch (record.data.status) {
 		case 'saved':
+			exportvalues.push('Saved')
 			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
 			break;
 		case 'submitted':
+			exportvalues.push('Submitted')
 			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
 			break;
 		case 'rejected':
+			exportvalues.push('Rejected')
 			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected" style="padding-top: 1px;">';
 			break;
 		case 'accepted':
+			exportvalues.push('Accepted')
 			statusIcons += '<img src="img/star.svg" width=12 height=12 ext:qtip="Accepted" style="padding-top: 1px;">';
 			break;
 		default:
@@ -1183,10 +1198,12 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	}
 	statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
 	if (record.data.autoResult) {
+		exportvalues.push('Auto')
 		statusIcons += '<img src="img/bot.svg" width=12 height=12 ext:qtip="Automated evaluation" style="padding-top: 1px;">';
 	} else {
 		statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 	}
+	metaData.attr = `exportvalue="${exportvalues.join(',')}"`
 	return statusIcons;
 }
 
