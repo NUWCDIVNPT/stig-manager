@@ -257,7 +257,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         gridBasename: 'STIGs (grid)',
                         storeBasename: 'STIGs (store)',
                         iconCls: 'sm-export-icon',
-                        text: 'Export'
+                        text: 'CSV'
                     },{
                         xtype: 'tbfill'
                     },{
@@ -454,7 +454,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                         gridBasename: 'Assets (grid)',
                         storeBasename: 'Assets (store)',
                         iconCls: 'sm-export-icon',
-                        text: 'Export'
+                        text: 'CSV'
                     },{
                         xtype: 'tbfill'
                     },{
@@ -629,7 +629,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
             items: stigPropsFormPanel
         });
         
-        appwindow.render(document.body)
+        appwindow.render(Ext.getBody())
         await stigPropsFormPanel.initPanel() // Load asset grid store
 
         let apiStigAssets
@@ -652,7 +652,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
             assets: apiStigAssets
         })
                 
-        Ext.getBody().unmask();
+        // Ext.getBody().unmask();
         appwindow.show(document.body);
     }
     catch (e) {

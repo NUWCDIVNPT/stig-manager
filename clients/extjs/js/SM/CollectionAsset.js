@@ -215,7 +215,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'icon-add',
                         text: 'Create...',
                         handler: function() {
-                            Ext.getBody().mask('Loading form...');
                             showAssetProps( null, me.collectionId);            
                         }
                     },
@@ -363,7 +362,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         gridBasename: 'Assets (grid)',
                         storeBasename: 'Assets (store)',
                         iconCls: 'sm-export-icon',
-                        text: 'Export'
+                        text: 'CSV'
                     },{
                         xtype: 'tbfill'
                     },{
@@ -941,7 +940,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
         });
 
         
-        appwindow.render(document.body)
+        appwindow.render(Ext.getBody())
         // await assetPropsFormPanel.initPanel()
 
         if (assetId) {

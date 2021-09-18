@@ -527,7 +527,6 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
         exportButton
       ]
     })
-    appwindow.render(document.body)
     appwindow.show(document.body)
   }
   catch (e) {

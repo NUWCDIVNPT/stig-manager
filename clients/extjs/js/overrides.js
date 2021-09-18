@@ -1,3 +1,9 @@
+// Replace Ext.getBody() to return the Ext.Element below the
+// classification banner, if one is present
+const origGetBody = Ext.getBody
+Ext.getBody = function () {
+    return SM.contentEl || origGetBody()
+}
 Ext.LoadMask.prototype.onBeforeLoad = function() {
     if(!this.disabled){
         if (!this.store.smMaskDelay) {
