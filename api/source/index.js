@@ -61,7 +61,6 @@ app.use(morgan(':remote-addr :forwarded-for :token-user [:date[clf]] ":method :u
 // compress all responses
 // app.use(compression())
 
-//  2. Install the OpenApiValidator middleware
 const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
 let responseValidationConfig = buildResponseValidationConfig();
 app.use(
@@ -90,20 +89,14 @@ app.use(
     },
     fileUploader: false
   }),
-);
-
+)
 
 app.use((err, req, res, next) => {
-  // 7. Customize errors
   console.error(err); // dump error to console for debug
   res.status(err.status || 500).json(err);
-});
-
-
+})
 
 run()
-
-
 
 async function run() {
   try {
@@ -122,15 +115,16 @@ async function run() {
     else {
       console.log('[DOCS] Documentation is disabled')
     }
+    // Read and modify OpenAPI specification
+    let spec = fs.readFileSync(apiSpecPath, 'utf8')
+    let oasDoc = jsyaml.safeLoad(spec)
+    // Replace with config values
+    oasDoc.info.version = config.version
+    oasDoc.servers[0].url = config.swaggerUi.server
+    oasDoc.components.securitySchemes.oauth.openIdConnectUrl = `${config.client.authority}/.well-known/openid-configuration`
+    config.definition = oasDoc
+
     if (config.swaggerUi.enabled) {
-      // Read and modify OpenAPI specification
-      let spec = fs.readFileSync(path.join(__dirname,'./specification/stig-manager.yaml'), 'utf8')
-      let oasDoc = jsyaml.safeLoad(spec)
-      // Replace with config values
-      oasDoc.info.version = config.version
-      oasDoc.servers[0].url = config.swaggerUi.server
-      oasDoc.components.securitySchemes.oauth.openIdConnectUrl = `${config.client.authority}/.well-known/openid-configuration`
-      
       app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(oasDoc, null, {
         oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl,
         oauth: {
