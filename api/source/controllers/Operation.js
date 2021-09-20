@@ -6,6 +6,7 @@ const Collection = require(`./Collection`)
 const User = require(`./User`)
 const Review = require(`./Review`)
 const JSZip = require("jszip");
+const {JSONPath} = require('jsonpath-plus')
 
 
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
@@ -109,6 +110,21 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
     }
     else {
       throw( {status: 403, message: `User has insufficient privilege to complete this request.`} )
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getDefinition = async function getDefinition (req, res, next) {
+  try {
+    let jsonpath = req.query.jsonpath
+    if (jsonpath) {
+      res.json(JSONPath(jsonpath, config.definition))
+    }
+    else {
+      res.json(config.definition)
     }
   }
   catch (err) {

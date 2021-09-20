@@ -1936,6 +1936,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiConfiguration'
+  /op/definition:
+    get:
+      tags:
+        - Operation
+      summary: Return the API definition
+      operationId: getDefinition
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/JsonPathQuery'
+      responses:
+        '200':
+          description: Configuration response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDefinition'
+      
   /stigs:
     get:
       tags:
@@ -2671,6 +2688,7 @@ components:
             - NONE
             - U
             - FOUO
+            - CUI
             - C
             - S
             - TS
@@ -2688,6 +2706,10 @@ components:
               type: string
         version:
           type: string
+    ApiDefinition:
+      oneOf:
+        - type: object
+        - type: array
     Asset:
       type: object
       properties:
@@ -4192,6 +4214,13 @@ components:
           type: string
           enum:
             - rules
+    JsonPathQuery:
+      name: jsonpath
+      in: query
+      description: A JSONPath expression
+      schema:
+        type: string
+        maxLength: 255
     MetadataKeyPath:
       name: key
       in: path
