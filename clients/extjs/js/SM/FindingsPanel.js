@@ -240,7 +240,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					gridBasename: 'Findings',
 					gridSource: me,
 					iconCls: 'sm-export-icon',
-					text: 'Export'
+					text: 'CSV'
 				},
 				{
 					xtype: 'tbseparator'
@@ -384,12 +384,11 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 		const expander = new Ext.ux.grid.RowExpander({
 			tpl: new Ext.XTemplate(
 			  '<b>Reviewer:</b> {username}</p>',
-			  '<p><b>Result Comment:</b> {resultComment}</p>',
-			  '<tpl if="action">',
-			  '<p><b>Action:</b> {action}</p>',
+			  '<tpl if="resultComment">',
+			  '<p><b>Detail:</b> {resultComment}</p>',
 			  '</tpl>',
 			  '<tpl if="actionComment">',
-			  '<p><b>Action Comment:</b> {actionComment}</p>',
+			  '<p><b>Comment:</b> {actionComment}</p>',
 			  '</tpl>'
 			)
 		  })
@@ -414,12 +413,6 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			// 	sortable: true,
 			// 	hidden: true
 			// },
-            { 
-				header: "Action", 
-				width: 60, 
-				dataIndex: 'action', 
-				sortable: true, 
-			},
 			// { 
 			// 	header: "Status", 
 			// 	width: 50, 
@@ -471,7 +464,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 					gridBasename: 'Finding Details',
 					gridSource: me,
 					iconCls: 'sm-export-icon',
-					text: 'Export'
+					text: 'CSV'
 				},
 				{
 					xtype: 'tbfill'
@@ -659,6 +652,7 @@ SM.GeneratePoamButton = Ext.extend(Ext.Button, {
 			/******************************************************/
 			const appwindow = new Ext.Window({
 				title: 'POA&M Defaults',
+				cls: 'sm-dialog-window sm-round-panel',
 				modal: true,
 				hidden: true,
 				width: 230,

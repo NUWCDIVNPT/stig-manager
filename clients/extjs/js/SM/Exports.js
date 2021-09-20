@@ -497,6 +497,7 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
     /******************************************************/
     appwindow = new Ext.Window({
       title: 'Export CKL archive',
+      cls: 'sm-dialog-window sm-round-panel',
       modal: true,
       hidden: true,
       width: 450,
@@ -526,9 +527,7 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
         exportButton
       ]
     })
-    appwindow.render(document.body)
-    Ext.getBody().unmask();
-    appwindow.show()
+    appwindow.show(document.body)
   }
   catch (e) {
     if (typeof e === 'object') {

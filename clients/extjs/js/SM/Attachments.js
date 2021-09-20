@@ -71,10 +71,10 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
         store.removeAll()
         const artifactValue = await getMetadataValue('artifacts')
         store.loadData(JSON.parse(artifactValue))
+        return true
       }
       catch (e) {
-        me.loadMask.hide()
-        console.log(e)
+        return false
       }
     }
     const getMetadataValue = async function (key) {

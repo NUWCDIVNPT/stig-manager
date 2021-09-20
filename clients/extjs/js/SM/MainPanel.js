@@ -114,11 +114,11 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
           `<div class='sm-home-widget-title'>Documentation</div>`,
           `</div>`,        
 
-          `<div class='sm-home-widget-subtitle'>Project Home</div>`,
-          `<div class='sm-home-widget-text'>What is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager#stig-manager">STIG Manager OSS</a>?</div>`,
+          // `<div class='sm-home-widget-subtitle'>Project Home</div>`,
+          // `<div class='sm-home-widget-text'>What is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager#stig-manager">STIG Manager OSS</a>?</div>`,
 
-          `<div class='sm-home-widget-subtitle'>The Docs</div>`,
-          `<div class='sm-home-widget-text'>Need help? Check out our <a target="_blank" href="docs/index.html">Documentation</a></div>`,
+          `<div class='sm-home-widget-subtitle'>Need help?</div>`,
+          `<div class='sm-home-widget-text'>Check out our <a target="_blank" href="docs/index.html">Documentation</a></div>`,
           
           `<div class='sm-home-widget-subtitle'> Just Geting Started? </div>`,
           `<div class='sm-home-widget-text'>Check out our <a target="_blank" href="docs/user-guide/user-quickstart.html">User Walkthrough</a> or the <a target="_blank" href="docs/user-guide/user-guide.html">User Guide</a></div>`,
@@ -126,8 +126,8 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
           `<div class='sm-home-widget-subtitle'>Common Tasks </div>`,
           `<div class='sm-home-widget-text'>Not sure how to do something in STIG Manager? Check out these links to <a target="_blank" href="docs/features/common-tasks.html">Common Tasks</a></div>`,
 
-          `<div class='sm-home-widget-subtitle'>Issues, Feature Requests, and Contributions</div>`,
-          `<div class='sm-home-widget-text'>Want to report a bug, request a feature, or help out the project? <a target="_blank" href="docs/the-project/contributing.html">Check out our Contribution Guide</a></div>`,
+          // `<div class='sm-home-widget-subtitle'>Issues, Feature Requests, and Contributions</div>`,
+          // `<div class='sm-home-widget-text'>Want to report a bug, request a feature, or help out the project? <a target="_blank" href="docs/the-project/contributing.html">Check out our Contribution Guide</a></div>`,
           
         )
       const config = {
@@ -151,8 +151,9 @@ SM.ResourcesWidget = Ext.extend(Ext.Panel, {
           `<div class='sm-home-widget-title'>Resources</div>`,
           `</div>`,
           `<div class='sm-home-widget-subtitle'>GitHub</div>`,
-          `<div class='sm-home-widget-text'><a target="_blank" href="https://github.com/NUWCDIVNPT">NUWCDIVNPT is on GitHub!</a></div>`,
-          `<div class='sm-home-widget-text'><a target="_blank" href="https://github.com/Code-dot-mil/code.mil">Code.mil</a></div>`,
+          `<div class='sm-home-widget-text'><p><a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">STIG Manager</a></p>`,
+          `<p><a target="_blank" href="https://github.com/NUWCDIVNPT/stigman-watcher">STIG Manager Watcher</a></p>`,
+          `<p><a target="_blank" href="https://github.com/Code-dot-mil/code.mil">Code.mil</a></p></div>`,
           `<div class='sm-home-widget-subtitle'>DISA STIGs</div>`,
           `<div class='sm-home-widget-text'>Get the latest STIGs at <a target="_blank" href="https://public.cyber.mil/stigs/downloads/">cyber.mil</a>.</div>`,
           `<div class='sm-home-widget-subtitle'>RMF Reference</div>`,

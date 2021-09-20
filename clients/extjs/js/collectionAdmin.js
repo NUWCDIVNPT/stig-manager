@@ -236,7 +236,7 @@ function addCollectionAdmin( params ) {
           gridBasename: 'Collection-Info',
           exportType: 'grid',
           iconCls: 'sm-export-icon',
-          text: 'Export'
+          text: 'CSV'
         },
         {
           xtype: 'tbfill'
@@ -253,20 +253,24 @@ function addCollectionAdmin( params ) {
     loadMask: true
   })
 
+  // These handlers reload the entire store and should be revisited
   function onCollectionChanged (apiCollection) {
-    store.loadData(apiCollection, true)
-    const sortState = store.getSortState()
-    store.sort(sortState.field, sortState.direction)
-    collectionGrid.getSelectionModel().selectRow(store.findExact('collectionId',apiCollection.collectionId))
+    store.reload()
+    // store.loadData(apiCollection, true)
+    // const sortState = store.getSortState()
+    // store.sort(sortState.field, sortState.direction)
+    // collectionGrid.getSelectionModel().selectRow(store.findExact('collectionId',apiCollection.collectionId))
   }
   function onCollectionCreated (apiCollection) {
-    store.loadData(apiCollection, true)
-    const sortState = store.getSortState()
-    store.sort(sortState.field, sortState.direction)
-    collectionGrid.getSelectionModel().selectRow(store.findExact('collectionId',apiCollection.collectionId))
+    store.reload()
+    // store.loadData(apiCollection, true)
+    // const sortState = store.getSortState()
+    // store.sort(sortState.field, sortState.direction)
+    // collectionGrid.getSelectionModel().selectRow(store.findExact('collectionId',apiCollection.collectionId))
   }
   function onCollectionDeleted (collectionId) {
-    store.removeAt(store.indexOfId(collectionId))
+    store.reload()
+    // store.removeAt(store.indexOfId(collectionId))
   }
   
   SM.Dispatcher.addListener('collectionchanged', onCollectionChanged)
@@ -297,7 +301,7 @@ function addCollectionAdmin( params ) {
 
 async function showCollectionProps(collectionId) {
   try {
-    let fp = new SM.CollectionForm({
+    let fp = new SM.Collection.CreateForm({
       btnText: collectionId ? 'Update' : 'Create',
       btnHandler: async () => {
         try {
@@ -326,17 +330,19 @@ async function showCollectionProps(collectionId) {
         method: 'GET'
       })
       let apiCollection = JSON.parse(result.response.responseText)
-      fp.getForm().setValues(apiCollection)
+
+      fp.setFieldValues(apiCollection)
     }
     let appwindow = new Ext.Window({
       id: 'window-project-info',
+      cls: 'sm-dialog-window sm-round-panel',
       title: collectionId ? 'Modify Collection' : 'Create Collection',
       modal: true,
       width: 560,
-      height: 550,
+      height: 560,
       layout: 'fit',
       plain: false,
-      bodyStyle: 'padding:5px;',
+      // bodyStyle: 'padding:5px;',
       buttonAlign: 'right',
       items: fp
     })

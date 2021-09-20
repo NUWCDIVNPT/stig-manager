@@ -554,6 +554,7 @@ async function showUserProps( userId ) {
         /******************************************************/
         var appwindow = new Ext.Window({
             title: userId ? 'User Grants, ID ' + userId : 'Pre-register User Grants',
+            cls: 'sm-dialog-window sm-round-panel',
             modal: true,
             hidden: true,
             width: 660,

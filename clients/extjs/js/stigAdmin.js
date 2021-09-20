@@ -160,7 +160,7 @@ function addStigAdmin( params ) {
 				gridBasename: 'Installed-STIGs',
 				exportType: 'grid',
 				iconCls: 'sm-export-icon',
-				text: 'Export'
+				text: 'CSV'
 			},
 			{
 				xtype: 'tbfill'

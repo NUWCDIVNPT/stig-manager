@@ -201,7 +201,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
 
     stopEditing : function(saveChanges){
         this.editing = false;
-        this.grid.getEl().unmask()
+        this.grid.getEl()?.unmask()
         if(!this.isVisible()){
             return;
         }

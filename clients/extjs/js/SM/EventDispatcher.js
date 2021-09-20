@@ -13,5 +13,7 @@ SM.Dispatcher.addEvents(
     'usercreated',
     'userdeleted',
     'userchanged',
-    'stigassetschanged'
+    'stigassetschanged',
+    'fieldsettingschanged',
+    'statussettingschanged'
 )

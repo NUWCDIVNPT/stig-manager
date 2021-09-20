@@ -150,8 +150,9 @@ async function loadApp () {
 		}
 	
 		let classification = new Classification(appConfig.classification)
+		let contentPanel
 		if (classification.showBanner) {
-			let contentPanel = new Ext.Panel({
+			contentPanel = new Ext.Panel({
 				region: 'center',
 				layout: 'border',
 				border: false,
@@ -180,6 +181,7 @@ async function loadApp () {
 		}
 		
 		new Ext.Viewport(viewportConfig)
+		if (contentPanel) SM.contentEl = contentPanel.getEl()
 	
 		Ext.get('loading').remove();
 		Ext.get('loading-mask').fadeOut({duration: 1, remove:true});

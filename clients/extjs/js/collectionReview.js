@@ -16,6 +16,17 @@ async function addCollectionReview ( params ) {
 			method: 'GET',
 		  })
 		let apiCollection = JSON.parse(result.response.responseText)
+		let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
+			detailEnabled: 'always',
+			detailRequired: 'always',
+			commentEnabled: 'findings',
+			commentRequired: 'findings'
+		}
+		let apiStatusSettings = apiCollection.metadata.statusSettings ? JSON.parse(apiCollection.metadata.statusSettings) : {
+			canAccept: true,
+			minGrant: 3
+		}
+	
 		result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
 			method: 'GET',
@@ -223,48 +234,47 @@ async function addCollectionReview ( params ) {
 						]
 					}
 				},
-				{
-					text: 'Reset reviews...',
-					iconCls: 'sm-unlock-icon',
-					handler: function(){
-						//===================================================
-						//UNLOCKS ALL RULE REVIEWS FOR A SPECIFIC STIG
-						//===================================================
-						Ext.Msg.show({
-							title: 'Confirm review reset',
-							msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in this Collection?',
-							buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
-							icon: Ext.MessageBox.QUESTION,
-							closable: false,
-							fn: function(buttonId){
-								if (buttonId == 'yes'){
-									//===============================================
-									//GATHER INFORMATION ACCORDINGLY AND EXECUTE
-									//THE REVIEW RESET.
-									//===============================================
-									var unlockObject = new Object;
-									unlockObject.benchmarkId = leaf.benchmarkId;
-									//unlockObject.stigName = leaf.benchmarkId;
-									unlockObject.assetId = -1;
-									unlockObject.assetName = '';
-									unlockObject.collectionId =leaf.collectionId;
-									// unlockObject.collectionName=apiCollection.name;
-									unlockObject.gridTorefresh = groupGrid;
-									batchReviewUnlock(unlockObject);
-									//===============================================
-									//REFRESH THE INTERFACE
-									//===============================================
-									//groupGrid.getStore().reload();
-									// Ext.getCmp('content-panel' + idAppend).update('')
-									// reviewsGrid.getStore().removeAll(true);
-									// reviewsGrid.getView().refresh();
-								}
-							}
-						});
-					}
+				// {
+				// 	text: 'Reset reviews...',
+				// 	iconCls: 'sm-unlock-icon',
+				// 	handler: function(){
+				// 		//===================================================
+				// 		//UNLOCKS ALL RULE REVIEWS FOR A SPECIFIC STIG
+				// 		//===================================================
+				// 		Ext.Msg.show({
+				// 			title: 'Confirm review reset',
+				// 			msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in this Collection?',
+				// 			buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
+				// 			icon: Ext.MessageBox.QUESTION,
+				// 			closable: false,
+				// 			fn: function(buttonId){
+				// 				if (buttonId == 'yes'){
+				// 					//===============================================
+				// 					//GATHER INFORMATION ACCORDINGLY AND EXECUTE
+				// 					//THE REVIEW RESET.
+				// 					//===============================================
+				// 					var unlockObject = new Object;
+				// 					unlockObject.benchmarkId = leaf.benchmarkId;
+				// 					//unlockObject.stigName = leaf.benchmarkId;
+				// 					unlockObject.assetId = -1;
+				// 					unlockObject.assetName = '';
+				// 					unlockObject.collectionId =leaf.collectionId;
+				// 					// unlockObject.collectionName=apiCollection.name;
+				// 					unlockObject.gridTorefresh = groupGrid;
+				// 					batchReviewUnlock(unlockObject);
+				// 					//===============================================
+				// 					//REFRESH THE INTERFACE
+				// 					//===============================================
+				// 					//groupGrid.getStore().reload();
+				// 					// Ext.getCmp('content-panel' + idAppend).update('')
+				// 					// reviewsGrid.getStore().removeAll(true);
+				// 					// reviewsGrid.getView().refresh();
+				// 				}
+				// 			}
+				// 		});
+				// 	}
 					
-				}
-				,
+				// },
 				'-'
 			]
 		});
@@ -382,6 +392,14 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// The group grid
 		/******************************************************/
+		const groupExportBtn = new Ext.ux.ExportButton({
+			hasMenu: false,
+			exportType: 'grid',
+			gridBasename: `${leaf.benchmarkId}`,
+			iconCls: 'sm-export-icon',
+			text: 'CSV'
+		})
+
 		var groupGrid = new Ext.grid.GridPanel({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
@@ -489,7 +507,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'oCnt' + idAppend,
-					header: '<div style="color:red;font-weight:bolder;">O</div>', 
+					header: '<div style="color:red;font-weight:bolder;" exportvalue="O">O</div>', 
 					width: 32,
 					align: 'center',
 					dataIndex: 'oCnt',
@@ -499,7 +517,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'nfCnt' + idAppend,
-					header: '<div style="color:green;font-weight:bolder;">NF</div>', 
+					header: '<div style="color:green;font-weight:bolder;" exportvalue="NF">NF</div>', 
 					width: 32,
 					align: 'center',
 					renderer:renderCounts,
@@ -509,7 +527,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'naCnt' + idAppend,
-					header: '<div style="color:grey;font-weight:bolder;">NA</div>', 
+					header: '<div style="color:grey;font-weight:bolder;" exportvalue="NA">NA</div>', 
 					width: 32,
 					align: 'center',
 					renderer:renderCounts,
@@ -529,7 +547,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'readyCnt' + idAppend,
-					header: "<img src=img/ready-16.png width=12 height=12>", 
+					header: '<img src=img/ready-16.png width=12 height=12 exportvalue="Submitted">', 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -540,7 +558,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'rejectCnt' + idAppend,
-					header: "<img src=img/rejected-16.png width=12 height=12>", 
+					header: '<img src=img/rejected-16.png width=12 height=12 exportvalue="Rejected">', 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -551,7 +569,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'approveCnt' + idAppend,
-					header: "<img src=img/lock-16.png width=12 height=12>", 
+					header: '<img src=img/star.svg width=12 height=12 exportvalue="Approved">', 
 					width: 32,
 					align: 'center',
 					renderer:renderOpen,
@@ -627,9 +645,15 @@ async function addCollectionReview ( params ) {
 						reviewsGrid.getStore().removeAll(true);
 						reviewsGrid.getView().refresh();
 					}
-				},{
+				},
+				{
 					xtype: 'tbseparator'
-				},{
+				},
+				groupExportBtn,
+				{
+					xtype: 'tbseparator'
+				},
+				{
 					xtype: 'tbtext',
 					id: 'groupGrid-totalText' + idAppend,
 					text: '',
@@ -817,8 +841,8 @@ async function addCollectionReview ( params ) {
 					align: 'left'
 				}
 				,{ 
-					id:'result' + idAppend,
-					header: 'Result<i class= "fa fa-question-circle sm-question-circle"></i>',
+					id:'Result' + idAppend,
+					header: '<span exportvalue="Result">Result<i class= "fa fa-question-circle sm-question-circle"></i></span>',
 					width: 70,
 					fixed: true,
 					dataIndex: 'result',
@@ -837,32 +861,11 @@ async function addCollectionReview ( params ) {
 						monitorValid: false,
 						listeners: {
 							select: function (combo,record,index) {
-								//if (this.gridEditor.gridRecord.result == 4 && record.data.result != 4) { // Open result has been changed 
-								if (combo.startValue == 'fail' && combo.value != 'fail') { // Open result has been changed 
-									if ((combo.gridEditor.gridRecord.data.action != 0 && combo.gridEditor.gridRecord.data.action != undefined) || combo.gridEditor.gridRecord.data.actionComment != '') {
-										combo.suspendEvents(false);
-										var confirmStr="You are closing an Open finding in a review that contains an existing Recommended Action. If you continue, the Action and Action Comment will be permanently deleted from the review.<BR><BR>Do you want to continue closing this finding?";
-										// the default z-index is 11000, which puts it above the mask used by Ext.Msg 
-										combo.gridEditor.el.setStyle('z-index','8000'); 
-										Ext.Msg.confirm("Confirm",confirmStr,function (btn,text) {
-											if (btn == 'yes') {
-												combo.gridEditor.gridRecord.data.action = null;
-												combo.gridEditor.gridRecord.data.actionComment = '';
-												combo.gridEditor.gridRecord.commit(false); // don't fire 'write' event on the store
-												
-												combo.resumeEvents();
-												combo.fireEvent("blur");
-											} else {
-												combo.setValue(combo.startValue);
-												combo.resumeEvents();
-												combo.fireEvent("blur");
-											}
-										});
-									} else {
-										combo.fireEvent("blur");
-									}
-								} else {
+								if (combo.startValue !== combo.value ) { // Open result has been changed 
 									combo.fireEvent("blur");
+								} 
+								else {
+									console.log('No Change')
 								}
 							}
 						},
@@ -871,6 +874,9 @@ async function addCollectionReview ( params ) {
 					renderer: function (val) {
 						let returnStr
 						switch (val) {
+							case 'informational':
+								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">I</div>';
+								break;
 							case 'fail':
 								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
 								break;
@@ -884,10 +890,10 @@ async function addCollectionReview ( params ) {
 						return SM.styledEmptyRenderer(returnStr)
 					},
 					sortable: true
-				}
-				,{ 	
-					id:'resultComment' + idAppend,
-					header: 'Result comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
+				},
+				{ 	
+					id:'Detail' + idAppend,
+					header: '<span exportvalue="Detail">Detail<i class= "fa fa-question-circle sm-question-circle"></i></span>', 
 					width: 100,
 					dataIndex: 'resultComment',
 					renderer: function (v) {
@@ -912,56 +918,10 @@ async function addCollectionReview ( params ) {
 							}
 						}
 					})
-				}
-				,{ 	
-					id:'action' + idAppend,
-					header: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>', 
-					width: 80,
-					fixed: true,
-					dataIndex: 'action',
-					renderer: function (val) {
-						let actions = {
-							remediate: 'Remediate',
-							mitigate: 'Mitigate',
-							exception: 'Exception'
-						}
-						return SM.styledEmptyRenderer(actions[val])
-					},
-					editor: new Ext.form.ComboBox({
-						id: 'reviewsGrid-editor-actionCombo' + idAppend,
-						mode: 'local',
-						tpl: new Ext.XTemplate(
-							'<tpl for=".">',
-								'<tpl if="action == null">',
-								'<div ext:qtip="Delete this action from the database" class="x-combo-list-item" style="color:grey;font-style:italic;">Delete</div>',
-								'</tpl>',
-								'<tpl if="action != null">',
-								'<div class="x-combo-list-item">{actionStr}</div>',
-								'</tpl>',
-							'</tpl>'
-						),
-						valueNotFoundText: null,
-						forceSelection: true,
-						autoSelect: true,
-						editable: false,
-						store: new Ext.data.SimpleStore({
-							fields: ['action', 'actionStr'],
-							data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
-						}),
-						displayField:'actionStr',
-						valueField: 'action',
-						listeners: {
-							select: function () {
-								this.fireEvent("blur");
-							}
-						},
-						triggerAction: 'all'
-					}),
-					sortable: true
-				}
-				,{ 	
-					id:'actionComment' + idAppend,
-					header: 'Action comment<i class= "fa fa-question-circle sm-question-circle"></i>', 
+				},
+				{ 	
+					id:'Comment' + idAppend,
+					header: '<span exportvalue="Comment">Comment<i class= "fa fa-question-circle sm-question-circle"></i></span>', 
 					width: 100,
 					dataIndex: 'actionComment',
 					renderer: function (v) {
@@ -985,15 +945,15 @@ async function addCollectionReview ( params ) {
 						}
 					}),
 					sortable: true
+				},
+				{ 	
+					id:'userName' + idAppend,
+					header: "User", 
+					width: 100,
+					dataIndex: 'username',
+					fixed: 50,
+					sortable: true
 				}
-				// ,{ 	
-					// id:'userName' + idAppend,
-					// header: "User", 
-					// width: 100,
-					// dataIndex: 'userName',
-					// fixed: 50,
-					// sortable: true
-				// }
 			],
 			isCellEditable: function(col, row) {
 				var record = reviewsStore.getAt(row);
@@ -1004,26 +964,41 @@ async function addCollectionReview ( params ) {
 
 				switch (this.getDataIndex(col)) {
 					case 'result':
+						return true
 					case 'resultComment':
-						if (record.data.autoResult == 1) {
-							return false;
-						} else {
+						if (apiFieldSettings.detailEnabled === 'always') {
 							return true;
 						}
-						break;
+						if (apiFieldSettings.detailEnabled === 'findings') {
+							return record.data.result === 'fail'
+						} 
 					case 'action':
 					case 'actionComment':
-						if (record.data.result == 'fail') {
+						if (apiFieldSettings.commentEnabled === 'always') {
 							return true;
-						} else {
-							return false;
 						}
-						break;
+						if (apiFieldSettings.commentEnabled === 'findings') {
+							return record.data.result === 'fail'
+						} 
 				}
 
 				return Ext.grid.ColumnModel.prototype.isCellEditable.call(this, col, row);
 			}
 		});
+
+		function showAcceptBtn () {
+			const grantCondition =  leaf.collectionGrant >= apiStatusSettings.minGrant
+			const settingsCondition = apiStatusSettings.canAccept
+			return grantCondition && settingsCondition 
+		}
+
+		const reviewsExportBtn = new Ext.ux.ExportButton({
+			hasMenu: false,
+			exportType: 'grid',
+			gridBasename: `${leaf.benchmarkId}-Rule`,
+			iconCls: 'sm-export-icon',
+			text: 'CSV'
+		})
 
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-round-panel',
@@ -1086,12 +1061,9 @@ async function addCollectionReview ( params ) {
 				listeners: {
 					rowselect: function(sm,index,record) {
 						if (sm.getCount() == 1) { //single row selected
-							metadataGrid.enable();
 							historyData.grid.enable();
 							loadResources(record);
 						} else {
-							metadataGrid.getStore().removeAll();
-							metadataGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
@@ -1101,12 +1073,9 @@ async function addCollectionReview ( params ) {
 					rowdeselect: function(sm,index,deselectedRecord) {
 						if (sm.getCount() == 1) { //single row selected
 							selectedRecord = sm.getSelected();
-							metadataGrid.enable();
 							historyData.grid.enable();
 							loadResources(selectedRecord);
 						} else {
-							metadataGrid.getStore().removeAll();
-							metadataGrid.disable();
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
@@ -1127,9 +1096,14 @@ async function addCollectionReview ( params ) {
 					try {
 						let jsonData = {}, result
 						if (e.record.data.status) {
-							// review exists, set status to saved
 							jsonData[e.field] = e.value
+							// review exists, set status to saved
 							jsonData.status = 'saved'
+							// unset autoResult if the result has changed
+							if (e.record.data.autoResult && (e.originalValue !== e.value)) {
+								jsonData.autoResult = false
+							}
+
 							result = await Ext.Ajax.requestPromise({
 								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
 								method: 'PATCH',
@@ -1155,7 +1129,11 @@ async function addCollectionReview ( params ) {
 						let apiReview = JSON.parse(result.response.responseText)
 						e.grid.getStore().loadData(apiReview, true)
 						// hack to reselect the record for setReviewsGridButtonStates()
-						e.grid.getSelectionModel().selectRow(e.grid.getStore().indexOfId(apiReview.assetId))
+						e.grid.getSelectionModel().onRefresh()
+						loadResources(e.grid.getStore().getById(apiReview.assetId))
+
+						setReviewsGridButtonStates();
+						// e.grid.getSelectionModel().selectRow(e.grid.getStore().indexOfId(apiReview.assetId))
 						// e.record.commit()
 		
 						e.grid.updateGroupStore(e.grid)
@@ -1190,7 +1168,8 @@ async function addCollectionReview ( params ) {
 									showDelay: 0,
 									dismissDelay: 0,
 									autoWidth: true,
-									html: SM[`${idPrefix}TipText`]
+									tpl: SM[`${idPrefix}TipTpl`],
+									data: apiFieldSettings
 								}) 
 							}
 						}					
@@ -1203,31 +1182,48 @@ async function addCollectionReview ( params ) {
 					{
 						xtype: 'tbbutton',
 						disabled: true,
-						icon: 'img/lock-16.png',
+						iconCls: 'sm-star-icon-16',
 						id: 'reviewsGrid-approveButton' + idAppend,
 						text: 'Accept',
-						hidden: leaf.collectionGrant !== 4,
+						hidden: !showAcceptBtn(),
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'accepted');
 						}
-					}
-					,{
+					},
+					{
 						xtype: 'tbseparator',
-						hidden: leaf.collectionGrant !== 4
-					}
-					,{
+						hidden: !showAcceptBtn()
+					},
+					{
 						xtype: 'tbbutton',
 						disabled: true,
-						icon: 'img/ready-16.png',  // <-- icon
+						icon: 'img/ready-16.png',
 						id: 'reviewsGrid-submitButton' + idAppend,
 						text: 'Submit',
 						handler: function (btn) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'submitted');
 						}
+					},
+					{
+						xtype: 'tbseparator'
+					},
+					{
+						xtype: 'tbbutton',
+						disabled: true,
+						icon: 'img/disk-16.png',
+						id: 'reviewsGrid-unsubmitButton' + idAppend,
+						text: 'Unsubmit',
+						handler: function (btn) {
+							var selModel = reviewsGrid.getSelectionModel();
+							handleStatusChange (reviewsGrid,selModel,'saved');
+						}
 					}
 				]
+			}),
+			bbar: new Ext.Toolbar({
+				items: [reviewsExportBtn]
 			}),
 			loadMask: true,
 			emptyText: 'No data to display'
@@ -1235,6 +1231,21 @@ async function addCollectionReview ( params ) {
 
 		reviewsGrid.on('beforeedit', beforeEdit, this );
 
+		function onFieldSettingsChanged (collectionId, fieldSettings) {
+			if (collectionId === apiCollection.collectionId) {
+				apiFieldSettings = fieldSettings
+				setReviewsGridButtonStates()
+			}
+		}
+		SM.Dispatcher.addListener('statussettingschanged', onStatusSettingsChanged)
+		function onStatusSettingsChanged (collectionId, statusSettings) {
+			if (collectionId === apiCollection.collectionId) {
+				apStatusSettings = statusSettings
+				setReviewsGridButtonStates()
+			}
+		}
+		SM.Dispatcher.addListener('fieldsettingschanged', onFieldSettingsChanged)
+	
 		async function getContent(benchmarkId, revisionStr, ruleId, groupId) {
 			try {
 				// Content panel
@@ -1285,6 +1296,7 @@ async function addCollectionReview ( params ) {
 				reviewsGrid.getStore().loadData(colReviews)
 				reviewsGrid.setTitle(`Reviews of ${record.data.ruleId}`)
 				reviewsGrid.currentChecklistRecord = record
+				reviewsExportBtn.gridBasename = `${leaf.benchmarkId}-${record.data.ruleId}`
 			}
 			catch (e) {
 				alert (e.message)
@@ -1298,22 +1310,38 @@ async function addCollectionReview ( params ) {
 			reviewsGrid.getSelectionModel().clearSelections();
 		}
 
+		function isReviewComplete (result, rcomment, acomment) {
+			if (!result) return false
+      if (apiFieldSettings.detailRequired === 'always' && !rcomment) return false
+      if (apiFieldSettings.detailRequired === 'findings' 
+        && result === 'fail'
+        && !rcomment) return false
+      if (apiFieldSettings.commentRequired === 'always'
+        && (!acomment)) return false
+      if (apiFieldSettings.commentRequired === 'findings'
+        && result === 'fail'
+        && (!acomment)) return false
+      return true
+
+		}
+
 		function setReviewsGridButtonStates() {
 			const sm = reviewsGrid.getSelectionModel();
 			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
 			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
+			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend);
+			const rejectOtherPanel = Ext.getCmp('rejectOtherPanel' + idAppend);
 			const selections = sm.getSelections();
 			const selLength = selections.length;
-			let approveBtnDisabled = false;
-			let submitBtnDisabled = false;
-			let rejectFormDisabled = false;
 			let approveBtnEnabled = true;
 			let submitBtnEnabled = true;
+			let unsubmitBtnEnabled = true;
 			let rejectFormEnabled = true;
 
 			if (selLength === 0) {
 				approveBtnEnabled = false
 				submitBtnEnabled = false
+				unsubmitBtnEnabled = false
 				rejectFormEnabled = false
 			}
 			else if (selLength === 1) {
@@ -1321,6 +1349,7 @@ async function addCollectionReview ( params ) {
 				if (!selection.data.status) { // a review doesn't exist
 					approveBtnEnabled = false
 					submitBtnEnabled = false
+					unsubmitBtnEnabled = false
 					rejectFormEnabled = false
 				}
 				else {
@@ -1331,32 +1360,36 @@ async function addCollectionReview ( params ) {
 							if (isReviewComplete(
 								selection.data.result,
 								selection.data.resultComment,
-								selection.data.action,
 								selection.data.actionComment
 								)) {
 									approveBtnEnabled = false
 									submitBtnEnabled = true
+									unsubmitBtnEnabled = false
 									rejectFormEnabled = false
 				
 							} else {
 								approveBtnEnabled = false
 								submitBtnEnabled = false
+								unsubmitBtnEnabled = false
 								rejectFormEnabled = false
 							}
 							break
 						case 'submitted':
 							approveBtnEnabled = true
 							submitBtnEnabled = false
+							unsubmitBtnEnabled = true
 							rejectFormEnabled = true
 							break
 						case 'rejected':
 							approveBtnEnabled = true
 							submitBtnEnabled = true
+							unsubmitBtnEnabled = true
 							rejectFormEnabled = true
 							break
 						case 'accepted':
 							approveBtnEnabled = false
-							submitBtnEnabled = true
+							submitBtnEnabled = false
+							unsubmitBtnEnabled = true
 							rejectFormEnabled = false
 							break
 					}
@@ -1381,7 +1414,6 @@ async function addCollectionReview ( params ) {
 						if (isReviewComplete(
 							selections[i].data.result,
 							selections[i].data.resultComment,
-							selections[i].data.action,
 							selections[i].data.actionComment
 						)) {
 							counts.savedComplete++
@@ -1396,11 +1428,13 @@ async function addCollectionReview ( params ) {
 				}
 				approveBtnEnabled = (counts.submitted || counts.rejected) && (!counts.unsaved && !counts.saved && !counts.savedComplete)  && (counts.accepted !== selLength)
 				submitBtnEnabled = (counts.savedComplete || counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved) && (counts.submitted !== selLength)
+				unsubmitBtnEnabled = (counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved)
 				rejectFormEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
 		
 			}
 			approveBtn.setDisabled(!approveBtnEnabled);
 			submitBtn.setDisabled(!submitBtnEnabled);
+			unsubmitBtn.setDisabled(!unsubmitBtnEnabled);
 			rejectFormPanel.setDisabled(!rejectFormEnabled);
 		};
 		
@@ -1439,6 +1473,9 @@ async function addCollectionReview ( params ) {
 						selections[i].commit()
 					}
 				}
+				if (selections.length === 1) {
+					loadResources(selections[0])
+				}
 				grid.updateGroupStore(grid)
 				setReviewsGridButtonStates()
 			}
@@ -1456,65 +1493,12 @@ async function addCollectionReview ( params ) {
 				editor.gridRecord = e.record;
 			}
 		};
-
-		function afterEdit(e) {
-		};
 		
 	/******************************************************/
 	// END Reviews Panel
 	/******************************************************/
 
-	let contentTpl = new Ext.XTemplate(
-    '<div class=cs-home-header-top>{ruleId}',
-      '<span class="sm-content-sprite sm-severity-{severity}">',
-        `<tpl if="severity == 'high'">CAT 1</tpl>`,
-        `<tpl if="severity == 'medium'">CAT 2</tpl>`,
-        `<tpl if="severity == 'low'">CAT 3</tpl>`, 
-      '</span>',
-    '</div>',
-    '<div class=cs-home-header-sub>{title}</div>',
-    '<div class=cs-home-body-title>Manual Check',
-    '<div class=cs-home-body-text>',
-    '<tpl for="checks">',
-      '<pre>{[values.content?.trim()]}</pre>',
-    '</tpl>',
-    '</div>',
-    '</div>',
-    '<div class=cs-home-body-title>Fix',
-    '<div class=cs-home-body-text>',
-    '<tpl for="fixes">',
-    '<pre>{[values.text?.trim()]}</pre>',
-    '</tpl>',
-    '</div>',
-    '</div>',
-    '<div class=cs-home-header-sub></div>',
-    '<div class=cs-home-body-title>Other Data',
-    '<tpl if="values.detail.vulnDiscussion">',
-      '<div class=cs-home-body-text><b>Vulnerability Discussion</b><br><br>',
-      '<pre>{[values.detail.vulnDiscussion?.trim()]}</pre>',
-      '</div>',
-    '</tpl>',
-    '<tpl if="values.detail.documentable">',
-    	'<div class=cs-home-body-text><b>Documentable: </b>{values.detail.documentable}</div>',
-		'</tpl>',
-    '<tpl if="values.detail.responsibility">',
-      '<div class=cs-home-body-text><b>Responsibility: </b>{values.detail.responsibility}</div>',
-    '</tpl>',
-    '<tpl if="values.ccis.length === 0">',
-      '<div class=cs-home-body-text><b>Controls: </b>No mapped controls</div>',
-    '</tpl>',
-    '<tpl if="values.ccis.length !== 0">',
-      '<div class=cs-home-body-text><b>Controls: </b><br>',
-      '<table class=cs-home-body-table border="1">',
-      '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
-      '<tpl for="ccis">',
-      '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
-      '</tpl>',
-      '</table>',
-      '</div>',
-    '</tpl>',
-    '</div>'
-	  )
+	let contentTpl = SM.RuleContentTpl
 
 	/******************************************************/
 	// START Resources Panel
@@ -1523,7 +1507,7 @@ async function addCollectionReview ( params ) {
 			let activeTab
 			try {
 				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
-				activeTab.getEl().mask('Loading...')
+				// activeTab.getEl().mask('Loading...')
 				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
 				attachmentsGrid.assetId = record.data.assetId
 				attachmentsGrid.ruleId = record.data.ruleId
@@ -1580,46 +1564,7 @@ async function addCollectionReview ( params ) {
 	// END Resources Panel/History
 	/******************************************************/
 
-	/******************************************************/
-	// START Resources Panel/Metadata
-	/******************************************************/
-
-  const metadataGrid = new SM.MetadataGrid({
-    title: 'Metadata',
-    curReview: {
-      collectionId: leaf.collectionId,
-      assetId: leaf.assetId,
-      ruleId: null
-    },
-    id: 'metadataGrid' + idAppend,
-    anchor: '100%',
-    listeners: {
-        metadatachanged: async grid => {
-            try {
-                let data = grid.getValue()
-                console.log(data)
-                let result = await Ext.Ajax.requestPromise({
-                    url: `${STIGMAN.Env.apiBase}/collections/${grid.curReview.collectionId}/reviews/${grid.curReview.assetId}/${grid.curReview.ruleId}?projection=metadata`,
-                    method: 'PATCH',
-                    jsonData: {
-                        metadata: data
-                    }
-                })
-                let collection = JSON.parse(result.response.responseText)
-                grid.setValue(collection.metadata)
-            }
-            catch (e) {
-                alert ('Metadata save failed')
-            }
-        }
-    }
-  })
-		
-	/******************************************************/
-	// END Resources Panel/Metadata
-	/******************************************************/
-
-	  /******************************************************/
+  /******************************************************/
   // START Attachments Panel
   /******************************************************/
   const attachmentsGrid = new SM.Attachments.Grid({
@@ -1656,6 +1601,7 @@ async function addCollectionReview ( params ) {
 		
 		var rejectFormPanel = new Ext.form.FormPanel({
 			baseCls: 'x-plain',
+			disabled: true,
 			id: 'rejectFormPanel' + idAppend,
 			cls: 'sm-background-blue',
 			labelWidth: 95,
@@ -1675,9 +1621,11 @@ async function addCollectionReview ( params ) {
 			}],
 			buttons: [{
 				text: 'Reject review with this feedback',
+				disabled: true,
 				id: 'rejectSubmitButton' + idAppend,
 				iconCls: 'sm-rejected-icon',
 				reviewsGrid: reviewsGrid,
+				hidden: !showAcceptBtn(),
 				handler: handleRejections
 			}]
 		});
@@ -1805,12 +1753,6 @@ async function addCollectionReview ( params ) {
 							layout: 'fit',
 							items: attachmentsGrid
 						},
-						// {
-						// 	title: 'Metadata',
-						// 	id: 'metadata-panel' + idAppend,
-						// 	layout: 'fit',
-						// 	items: metadataGrid
-						// },
 						{
 							title: 'Log',
 							layout: 'fit',
@@ -1838,6 +1780,10 @@ async function addCollectionReview ( params ) {
 			sm_tabMode: 'ephemeral',
 			sm_treePath: treePath,
 			listeners: {
+				beforedestroy: () => {
+					SM.Dispatcher.removeListener('fieldsettingschanged', onFieldSettingsChanged)
+					SM.Dispatcher.removeListener('statussettingschanged', onStatusSettingsChanged)
+				}
 			}			
 		})
 		colReviewTab.updateTitle = function () {

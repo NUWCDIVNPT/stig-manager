@@ -215,7 +215,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'icon-add',
                         text: 'Create...',
                         handler: function() {
-                            Ext.getBody().mask('Loading form...');
                             showAssetProps( null, me.collectionId);            
                         }
                     },
@@ -225,8 +224,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'sm-import-icon',
                         text: 'Import CKL or SCAP...',
                         handler: function() {
-                            let el = Ext.getCmp(`${me.collectionId}-collection-manager-tab`)
-                            showImportResultFiles( me.collectionId, el.getEl().dom );            
+                            showImportResultFiles( me.collectionId, {fieldSettings: me.apiFieldSettings} );            
                         }
                     },
                     '-',
@@ -364,7 +362,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         gridBasename: 'Assets (grid)',
                         storeBasename: 'Assets (store)',
                         iconCls: 'sm-export-icon',
-                        text: 'Export'
+                        text: 'CSV'
                     },{
                         xtype: 'tbfill'
                     },{
@@ -928,6 +926,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
         /******************************************************/
         var appwindow = new Ext.Window({
             id: 'assetPropsWindow',
+            cls: 'sm-dialog-window sm-round-panel',
             title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
             modal: true,
             hidden: true,
@@ -941,7 +940,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
         });
 
         
-        appwindow.render(document.body)
+        appwindow.render(Ext.getBody())
         // await assetPropsFormPanel.initPanel()
 
         if (assetId) {

@@ -155,6 +155,7 @@ function addAppDataAdmin( params ) {
   
     var appwindow = new Ext.Window({
       title: 'Initialize Application Data',
+      cls: 'sm-dialog-window sm-round-panel',
       modal: true,
       width: 500,
       layout: 'fit',

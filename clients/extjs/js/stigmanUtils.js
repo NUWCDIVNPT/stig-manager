@@ -767,17 +767,23 @@ function Sm_HistoryData (idAppend) {
 
 	expander = new Ext.ux.grid.RowExpander({
 		tpl: new Ext.XTemplate(
-		  '<p><b>Result Comment:</b> {resultComment}</p>',
-		  '<tpl if="action">',
-		  '<p><b>Action:</b> {action}</p>',
+			'<tpl if="resultComment">',
+		  '<p><b>Detail:</b> {resultComment}</p>',
 		  '</tpl>',
 		  '<tpl if="actionComment">',
-		  '<p><b>Action Comment:</b> {actionComment}</p>',
+		  '<p><b>Comment:</b> {actionComment}</p>',
 		  '</tpl>'
 		)
 	  })
 
-	
+	const historyExportBtn = new Ext.ux.ExportButton({
+		hasMenu: false,
+		exportType: 'grid',
+		gridBasename: `Log`,
+		iconCls: 'sm-export-icon',
+		text: 'CSV'
+	})
+		
 	this.grid = new Ext.grid.GridPanel({
 		layout: 'fit',
     enableDragDrop: true,
@@ -791,6 +797,9 @@ function Sm_HistoryData (idAppend) {
 			forceFit:true,
 			emptyText: 'No log to display.',
 			deferEmptyText:false
+		}),
+    bbar: new Ext.Toolbar({
+      items: [historyExportBtn]
 		}),
 		columns: [
 			expander,
@@ -826,37 +835,7 @@ function Sm_HistoryData (idAppend) {
 				width: 50,
 				dataIndex: 'username',
 				sortable: true
-			},
-
-			// { 	
-			// 	header: "Result comment", 
-			// 	width: 100,
-			// 	dataIndex: 'resultComment',
-			// 	renderer: columnWrap,
-			// 	sortable: true
-			// },
-			// { 	
-			// 	header: "Action", 
-			// 	width: 80,
-			// 	fixed: true,
-			// 	dataIndex: 'action',
-			// 	renderer: function (val) {
-			// 		let actions = {
-			// 			remediate: 'Remediate',
-			// 			mitigate: 'Mitigate',
-			// 			exception: 'Exception'
-			// 		}
-			// 		return actions[val];
-			// 	},
-			// 	sortable: true
-			// },
-			// { 	
-			// 	header: "Action comment", 
-			// 	width: 100,
-			// 	dataIndex: 'actionComment',
-			// 	renderer: columnWrap,
-			// 	sortable: true
-			// }
+			}
 		]
 	});
 }
@@ -962,23 +941,6 @@ function getFileIcon (filename) {
 	}
 }
 
-function isReviewComplete (state,resultComment,action,actionComment) {
-	if (state === 'fail') { // Open
-		if (resultComment != '' && undefined != resultComment) {
-			if (action != null && action != '') {
-				if (actionComment != '' && actionComment != null) {
-					return true;
-				}
-			}
-		}
-	} else { // not Open
-		if (resultComment != '' && resultComment != null) {
-			return true;
-		}
-	}			
-	return false;
-}
-
 function duplicateRecords (srcStore,dstStore) {
 	var records = [];
 	srcStore.each(function(r){
@@ -1055,130 +1017,131 @@ function encodeStoreDone(store,field){
 	return Ext.util.JSON.encode(myArray);
 }
 
-async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
-	try {
-		// CONTENT
-		let contentPanel = Ext.getCmp('content-panel' + idAppend)
-		let contentReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
-			method: 'GET',
-			params: {
-				projection: ['detail','ccis','checks','fixes']
-			}
-		})
-		let content = JSON.parse(contentReq.response.responseText)
-		contentPanel.update(content)
-		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
+// async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
+// 	try {
+// 		// return
+// 		// CONTENT
+// 		let contentPanel = Ext.getCmp('content-panel' + idAppend)
+// 		let contentReq = await Ext.Ajax.requestPromise({
+// 			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
+// 			method: 'GET',
+// 			params: {
+// 				projection: ['detail','ccis','checks','fixes']
+// 			}
+// 		})
+// 		let content = JSON.parse(contentReq.response.responseText)
+// 		contentPanel.update(content)
+// 		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
 
-		// REVIEW
-		let reviewsReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
-			method: 'GET',
-			params: {
-				rules: 'all',
-				ruleId: groupGridRecord.data.ruleId
-			}
-		})
-		let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
-		let review = reviews.filter(review => review.assetId == assetId)[0] || {}
-		let otherReviews = reviews.filter(review => review.assetId != assetId)
+// 		// REVIEW
+// 		let reviewsReq = await Ext.Ajax.requestPromise({
+// 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
+// 			method: 'GET',
+// 			params: {
+// 				rules: 'all',
+// 				ruleId: groupGridRecord.data.ruleId
+// 			}
+// 		})
+// 		let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
+// 		let review = reviews.filter(review => review.assetId == assetId)[0] || {}
+// 		let otherReviews = reviews.filter(review => review.assetId != assetId)
 
-		// load review
-		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
-		let form = reviewForm.getForm()
-		form.reset();
-		reviewForm.isLoaded = false
+// 		// load review
+// 		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
+// 		let form = reviewForm.getForm()
+// 		form.reset();
+// 		reviewForm.isLoaded = false
 		
-		// Set the legacy editStr property
-		if (review.ts) {
-			let extDate = new Date(review.ts)
-			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
-		}
+// 		// Set the legacy editStr property
+// 		if (review.ts) {
+// 			let extDate = new Date(review.ts)
+// 			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
+// 		}
 
-		// Display the review
-		form.setValues(review)
+// 		// Display the review
+// 		form.setValues(review)
 
-		reviewForm.groupGridRecord = groupGridRecord
-		reviewForm.isLoaded = true
-		let resultCombo = form.findField('result-combo' + idAppend)
-		let resultComment = form.findField('result-comment' + idAppend)
-		let actionCombo = form.findField('action-combo' + idAppend)
-		let actionComment = form.findField('action-comment' + idAppend)
+// 		reviewForm.groupGridRecord = groupGridRecord
+// 		reviewForm.isLoaded = true
+// 		let resultCombo = form.findField('result-combo' + idAppend)
+// 		let resultComment = form.findField('result-comment' + idAppend)
+// 		let actionCombo = form.findField('action-combo' + idAppend)
+// 		let actionComment = form.findField('action-comment' + idAppend)
 
-		// Initialize the lastSavedData properties
-		if ( resultCombo.value === null ) { resultCombo.value = '' }
-		resultCombo.lastSavedData = resultCombo.value
-		if (review.resultComment === null) {
-			resultComment.lastSavedData = ""
-		} else {
-			resultComment.lastSavedData = resultComment.getValue()
-		}
-		if ( actionCombo.value === null ) { actionCombo.value = '' }
-		actionCombo.lastSavedData = actionCombo.value
-		if (review.actionComment === null) {
-			actionComment.lastSavedData = ""
-		} else {
-			actionComment.lastSavedData = actionComment.getValue()
-		}
+// 		// Initialize the lastSavedData properties
+// 		if ( resultCombo.value === null ) { resultCombo.value = '' }
+// 		resultCombo.lastSavedData = resultCombo.value
+// 		if (review.resultComment === null) {
+// 			resultComment.lastSavedData = ""
+// 		} else {
+// 			resultComment.lastSavedData = resultComment.getValue()
+// 		}
+// 		if ( actionCombo.value === null ) { actionCombo.value = '' }
+// 		actionCombo.lastSavedData = actionCombo.value
+// 		if (review.actionComment === null) {
+// 			actionComment.lastSavedData = ""
+// 		} else {
+// 			actionComment.lastSavedData = actionComment.getValue()
+// 		}
 
 
-		// load others
-		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
+// 		// load others
+// 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
 
-		// Log, Feedback and Metadata
-		const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
-		metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
+// 		// Log, Feedback and Metadata
+// 		const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
+// 		metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
 
-		let historyMetaReq = await Ext.Ajax.requestPromise({
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
-			method: 'GET',
-			params: { 
-				projection: ['history', 'metadata']
-			}
-		})
-		let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
-		if (! reviewProjected) {
-			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
-			Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
-			Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
-		}
-		if (reviewProjected.history) {
-			// append current state of review to history grid
-			let currentReview = {
-				action: reviewProjected.action,
-				actionComment: reviewProjected.actionComment,
-				autoResult: reviewProjected.autoResult,
-				rejectText: reviewProjected.rejectText,
-				result: reviewProjected.result,
-				resultComment: reviewProjected.resultComment,
-				status: reviewProjected.status,
-				ts: reviewProjected.ts,
-				userId: reviewProjected.userId,
-				username: reviewProjected.username
-			}
-			reviewProjected.history.push(currentReview)
-			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
-		}
-		if (reviewProjected.metadata) {
-			metadataGrid.setValue(reviewProjected.metadata)
-		}
-		// Feedback
-		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
+// 		let historyMetaReq = await Ext.Ajax.requestPromise({
+// 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
+// 			method: 'GET',
+// 			params: { 
+// 				projection: ['history', 'metadata']
+// 			}
+// 		})
+// 		let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
+// 		if (! reviewProjected) {
+// 			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
+// 			Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
+// 			Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
+// 		}
+// 		if (reviewProjected.history) {
+// 			// append current state of review to history grid
+// 			let currentReview = {
+// 				action: reviewProjected.action,
+// 				actionComment: reviewProjected.actionComment,
+// 				autoResult: reviewProjected.autoResult,
+// 				rejectText: reviewProjected.rejectText,
+// 				result: reviewProjected.result,
+// 				resultComment: reviewProjected.resultComment,
+// 				status: reviewProjected.status,
+// 				ts: reviewProjected.ts,
+// 				userId: reviewProjected.userId,
+// 				username: reviewProjected.username
+// 			}
+// 			reviewProjected.history.push(currentReview)
+// 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
+// 		}
+// 		if (reviewProjected.metadata) {
+// 			metadataGrid.setValue(reviewProjected.metadata)
+// 		}
+// 		// Feedback
+// 		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
 
-		// Attachments
-		Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
-		Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
-		reviewForm.setReviewFormItemStates(reviewForm)
-	}
-	catch (e) {
-		if (e.response) {
-			alert (e.response.responseText)
-		}
-		else {
-			alert (e)
-		}
-	}	
-}	
+// 		// Attachments
+// 		Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
+// 		Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
+// 		reviewForm.setReviewFormItemStates(reviewForm)
+// 	}
+// 	catch (e) {
+// 		if (e.response) {
+// 			alert (e.response.responseText)
+// 		}
+// 		else {
+// 			alert (e)
+// 		}
+// 	}	
+// }	
 
 function checked(val) {
 	if (val == 'X') {
@@ -1211,29 +1174,36 @@ function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
+	const exportvalues = [] 
 	switch (record.data.status) {
 		case 'saved':
+			exportvalues.push('Saved')
 			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
 			break;
 		case 'submitted':
+			exportvalues.push('Submitted')
 			statusIcons += '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted" style="padding-top: 1px;">';
 			break;
 		case 'rejected':
+			exportvalues.push('Rejected')
 			statusIcons += '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected" style="padding-top: 1px;">';
 			break;
 		case 'accepted':
-			statusIcons += '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted" style="padding-top: 1px;">';
+			exportvalues.push('Accepted')
+			statusIcons += '<img src="img/star.svg" width=12 height=12 ext:qtip="Accepted" style="padding-top: 1px;">';
 			break;
 		default:
 			statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 			break;
 	}
 	statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
-	if (record.data.hasAttach) {
-		statusIcons += '<img src="img/attach-16.png" width=12 height=12 ext:qtip="Has attachments" style="padding-top: 1px;">';
+	if (record.data.autoResult) {
+		exportvalues.push('Auto')
+		statusIcons += '<img src="img/bot.svg" width=12 height=12 ext:qtip="Automated evaluation" style="padding-top: 1px;">';
 	} else {
 		statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 	}
+	metaData.attr = `exportvalue="${exportvalues.join(',')}"`
 	return statusIcons;
 }
 
@@ -1246,7 +1216,7 @@ function renderStatus(val) {
 			return '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
 			break;
 		case 'accepted':
-			return '<img src="img/lock-16.png" width=12 height=12 ext:qtip="Accepted">';
+			return '<img src="img/star.svg" width=12 height=12 ext:qtip="Accepted">';
 			break;
 		default:
 			return '<img src="img/pixel.gif" width=12 height=12>';
@@ -1580,6 +1550,7 @@ function uploadArchive(n) {
 
 	var appwindow = new Ext.Window({
 		title: 'Import ZIP archive of results in CKL or XCCDF format',
+		cls: 'sm-dialog-window sm-round-panel',
 		modal: true,
 		width: 500,
 		//height:140,
@@ -1751,6 +1722,7 @@ function uploadStigs(n) {
 
 	var appwindow = new Ext.Window({
 		title: 'Import STIG ZIP archive or XCCDF file',
+		cls: 'sm-dialog-window sm-round-panel',
 		modal: true,
 		width: 500,
 		//height:140,
