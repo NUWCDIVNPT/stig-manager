@@ -55,12 +55,12 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
           method: 'GET',
           params: {
             collectionId: collectionId,
-            projection: 'adminStats'
+            projection: 'statusStats'
           }
         })
         let apiAssets = JSON.parse(result.response.responseText)
         let content = apiAssets.map(asset => {
-          const badgePercent = Math.round((asset.adminStats.acceptedCount / asset.adminStats.ruleCount) * 100)
+          const badgePercent = Math.round((asset.statusStats.acceptedCount / asset.statusStats.ruleCount) * 100)
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           return {
             id: `${collectionId}-${asset.assetId}-assignment-assets-asset-node`,

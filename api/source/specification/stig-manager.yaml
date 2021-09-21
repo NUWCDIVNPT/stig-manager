@@ -2804,7 +2804,7 @@ components:
         - $ref: '#/components/schemas/Asset'
         - type: object
           properties:
-            adminStats:
+            statusStats:
               type: object
               properties:
                 stigCount:
@@ -2815,8 +2815,16 @@ components:
                   type: integer
                 acceptedCount:
                   type: integer
+                rejectedCount:
+                  type: integer
                 submittedCount:
                   type: integer
+                savedCount:
+                  type: integer
+                minTs:
+                  type: string
+                maxTs:
+                  type: string
             stigs:
               type: array
               description: The benchmarkIds mapped to this Asset
@@ -3303,6 +3311,11 @@ components:
           type: integer
         savedCount:
           type: integer
+        minTs:
+          type: string
+        maxTs:
+          type: string
+
     CollectionUpdate:
       additionalProperties: false
       type: object
@@ -4033,7 +4046,7 @@ components:
         items:
           type: string
           enum:
-            - adminStats
+            - statusStats
             - stigs
             - stigGrants
     BenchmarkIdPath:

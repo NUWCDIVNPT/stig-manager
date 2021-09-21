@@ -1710,7 +1710,7 @@ async function showImportResultFiles(collectionId, options) {
                                 url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                                 method: 'GET',
                                 params: {
-                                    projection: ['stigs', 'adminStats']
+                                    projection: ['stigs', 'statusStats']
                                 },
                                 headers: { 'Content-Type': 'application/json;charset=utf-8' }
                             })
@@ -1772,7 +1772,7 @@ async function showImportResultFiles(collectionId, options) {
                         url: url,
                         method: method,
                         params: {
-                            projection: ['stigs', 'adminStats']
+                            projection: ['stigs', 'statusStats']
                         },
                         headers: { 'Content-Type': 'application/json;charset=utf-8' },
                         jsonData: jsonData

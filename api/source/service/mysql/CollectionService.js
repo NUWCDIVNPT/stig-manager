@@ -888,8 +888,11 @@ exports.getStigsByCollection = async function( collectionId, elevate, userObject
       'cr.ruleCount',
       'COUNT(a.assetId) as assetCount',
       'CAST(SUM(sa.acceptedManual) + SUM(sa.acceptedAuto) AS SIGNED) as acceptedCount',
+      'CAST(SUM(sa.rejectedManual) + SUM(sa.rejectedAuto) AS SIGNED) as rejectedCount',
       'CAST(SUM(sa.submittedManual) + SUM(sa.submittedAuto) AS SIGNED) as submittedCount',
-      'CAST(SUM(sa.savedManual) + SUM(sa.savedAuto) AS SIGNED) as savedCount'
+      'CAST(SUM(sa.savedManual) + SUM(sa.savedAuto) AS SIGNED) as savedCount',
+      `LEAST(MIN(minTs), MIN(maxTs)) as minTs`,
+      `GREATEST(MAX(minTs), MAX(maxTs)) as maxTs`
     ]
 
     let joins = [
