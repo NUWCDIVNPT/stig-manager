@@ -1,16 +1,59 @@
 var statusText;
 
-function renderPct ( v ) {
-	const mercuryCls = v >= 100 ? 'sm-cell-mercury-low' : v >= 50 ? 'sm-cell-mercury-medium' : 'sm-cell-mercury-high'
+function renderPct ( v, m, r ) {
+	const pct = v > 0 && v <= 0.5 ? 1 : v >= 99.5 && v < 100 ? 99 : Math.round(v)
+	const symbol = v > 0 && v < 1 ? '<' : v > 99 && v < 100 ? '>' : ''
+	const mercuryCls = pct >= 100 ? 'sm-cell-mercury-low' : pct >= 50 ? 'sm-cell-mercury-medium' : 'sm-cell-mercury-high'
 	let markup = `
 	<div class="sm-cell-thermometer-text">
-		${v}%
+		${symbol}${pct}%
 	</div>
 	<div class="sm-cell-thermometer-bg">
-		<div class="${mercuryCls}" style="width: ${v}%;">&nbsp;</div>
+		<div class="${mercuryCls}" style="width: ${pct}%;">&nbsp;</div>
 	</div>`
 	return markup
 }
+
+function renderPctAllHigh ( v, m, r, ri, ci, s ) {
+	const pct = v > 0 && v <= 0.5 ? 1 : v >= 99.5 && v < 100 ? 99 : Math.round(v)
+	const symbol = v > 0 && v < 1 ? '<' : v > 99 && v < 100 ? '>' : ''
+	const mercuryCls = 'sm-cell-mercury-high'
+	let markup = `
+	<div class="sm-cell-thermometer-text">
+		${symbol}${pct}%
+	</div>
+	<div class="sm-cell-thermometer-bg">
+		<div class="${mercuryCls}" style="width: ${pct}%;">&nbsp;</div>
+	</div>`
+	return markup
+}
+
+function renderDurationToNow(date, md) {
+	if (!date) {
+		return '-'
+	}
+	let d = Math.abs(date - new Date()) / 1000 // delta
+	const r = {} // result
+	const s = { // structure
+			year: 31536000,
+			// month: 2592000,
+			// week: 604800, // uncomment row to ignore
+			day: 86400,   // feel free to add your own row
+			hour: 3600,
+			minute: 60,
+			second: 1
+	};
+	
+	Object.keys(s).forEach(function(key){
+			r[key] = Math.floor(d / s[key]);
+			d -= r[key] * s[key];
+	})
+	let durationStr = r.year > 0 ? `${r.year}y` : r.day > 0 ? `${r.day}d` : r.hour > 0 ? `${r.hour}h` : r.minute > 0 ? `${r.minute}m` : `now`
+	let dateFormatted = Ext.util.Format.date(date,'Y-m-d H:i T')
+	md.attr = ` ext:qwidth=130 ext:qtip="${dateFormatted}"`;
+	return durationStr 
+}
+
 
 function getUnlockPrompt(unlockLevel, unlockObject, grid){
 	//==========================================================
