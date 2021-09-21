@@ -324,7 +324,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
 module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req, res, next) {
   try {
     let assetId = req.params.assetId
-    let requestedBenchmarkIds = req.params.benchmarkId
+    let requestedBenchmarkIds = req.query.benchmarkId
 
     // If this user has no grants permitting access to the asset, the response will be undefined
     let assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
