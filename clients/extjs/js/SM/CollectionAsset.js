@@ -35,32 +35,42 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 name: 'ruleCount',
                 type: 'integer',
-                mapping: 'adminStats.ruleCount'
+                mapping: 'statusStats.ruleCount'
             },
             {
                 name: 'stigCount',
                 type: 'integer',
-                mapping: 'adminStats.stigCount'
+                mapping: 'statusStats.stigCount'
             },
             {
                 name: 'savedPct',
                 type: 'integer',
-                convert: (v, r) => r.adminStats.ruleCount ? Math.round(((r.adminStats.savedCount + r.adminStats.submittedCount + r.adminStats.acceptedCount)/r.adminStats.ruleCount) * 100) : 0
+                convert: (v, r) => r.statusStats.ruleCount ? Math.round(((r.statusStats.savedCount + r.statusStats.submittedCount + r.statusStats.acceptedCount)/r.statusStats.ruleCount) * 100) : 0
             },
             {
                 name: 'submittedPct',
                 type: 'integer',
-                convert: (v, r) => r.adminStats.ruleCount ? Math.round(((r.adminStats.submittedCount + r.adminStats.acceptedCount)/r.adminStats.ruleCount) * 100) : 0
+                convert: (v, r) => r.statusStats.ruleCount ? Math.round(((r.statusStats.submittedCount + r.statusStats.acceptedCount)/r.statusStats.ruleCount) * 100) : 0
             },
             {
                 name: 'acceptedPct',
                 type: 'integer',
-                convert: (v, r) => r.adminStats.ruleCount ? Math.round((r.adminStats.acceptedCount/r.adminStats.ruleCount) * 100) : 0
+                convert: (v, r) => r.statusStats.ruleCount ? Math.round((r.statusStats.acceptedCount/r.statusStats.ruleCount) * 100) : 0
             },
             {
                 name: 'stigUnassignedCount',
                 type: 'integer',
-                convert: (v, r) => r.adminStats.stigCount - r.adminStats.stigAssignedCount
+                convert: (v, r) => r.statusStats.stigCount - r.statusStats.stigAssignedCount
+            },
+            {
+                name: 'minTs',
+                type: 'date',
+                mapping: 'statusStats.minTs'
+            },
+            {
+                name: 'maxTs',
+                type: 'date',
+                mapping: 'statusStats.maxTs'
             },
             {name: 'metadata'}
         ])
@@ -90,7 +100,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             proxy: this.proxy,
             baseParams: {
                 collectionId: this.collectionId,
-                projection: ['adminStats']
+                projection: ['statusStats']
             },
             root: '',
             fields: fieldsConstructor,
@@ -300,7 +310,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                                           url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
                                           method: 'PATCH',
                                           params: {
-                                              projection: ['stigs', 'adminStats']
+                                              projection: ['stigs', 'statusStats']
                                           },
                                           jsonData: {
                                               collectionId: item.collectionId
@@ -904,7 +914,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
                             url: url,
                             method: method,
                             params: {
-                                projection: ['stigs', 'adminStats']
+                                projection: ['stigs', 'statusStats']
                             },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values

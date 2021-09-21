@@ -581,8 +581,11 @@
 															"    \"lastRevisionStr\",\r",
 															"    \"assetCount\",\r",
 															"    \"acceptedCount\",\r",
+															"    \"rejectedCount\",\r",
 															"    \"submittedCount\",\r",
-															"    \"savedCount\"\r",
+															"    \"savedCount\",\r",
+															"    \"minTs\",\r",
+															"    \"maxTs\"\r",
 															"]\r",
 															"\r",
 															"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
@@ -3300,18 +3303,21 @@
 													"    \"lastRevisionStr\"\r",
 													"]\r",
 													"\r",
-													"let adminStatsKeys = [\r",
+													"let statusStatsKeys = [\r",
 													"    \"acceptedCount\",\r",
+													"    \"rejectedCount\",\r",
 													"    \"submittedCount\",\r",
 													"    \"savedCount\",\r",
 													"    \"ruleCount\",\r",
 													"    \"stigCount\",\r",
-													"    \"stigAssignedCount\"\r",
+													"    \"stigAssignedCount\",\r",
+													"    \"minTs\",\r",
+													"    \"maxTs\"\r",
 													"]\r",
 													"\r",
 													"\r",
-													"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"    assetKeys.push(\"adminStats\")\r",
+													"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"    assetKeys.push(\"statusStats\")\r",
 													"}\r",
 													"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 													"    assetKeys.push(\"stigGrants\")\r",
@@ -3360,8 +3366,8 @@
 													"        }\r",
 													"    }\r",
 													"    \r",
-													"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+													"    if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"            pm.expect(jsonData.statusStats).to.have.all.keys(statusStatsKeys);\r",
 													"    }\r",
 													"\r",
 													"    // };\r",
@@ -3381,7 +3387,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3397,7 +3403,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -3501,18 +3507,21 @@
 													"    \"lastRevisionStr\"\r",
 													"]\r",
 													"\r",
-													"let adminStatsKeys = [\r",
+													"let statusStatsKeys = [\r",
 													"    \"acceptedCount\",\r",
+													"    \"rejectedCount\",\r",
 													"    \"submittedCount\",\r",
 													"    \"savedCount\",\r",
 													"    \"ruleCount\",\r",
 													"    \"stigCount\",\r",
-													"    \"stigAssignedCount\"\r",
+													"    \"stigAssignedCount\",\r",
+													"    \"minTs\",\r",
+													"    \"maxTs\"\r",
 													"]\r",
 													"\r",
 													"\r",
-													"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"    assetKeys.push(\"adminStats\")\r",
+													"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"    assetKeys.push(\"statusStats\")\r",
 													"}\r",
 													"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 													"    assetKeys.push(\"stigGrants\")\r",
@@ -3561,8 +3570,8 @@
 													"        }\r",
 													"    }\r",
 													"    \r",
-													"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+													"    if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"            pm.expect(jsonData.statusStats).to.have.all.keys(statusStatsKeys);\r",
 													"    }\r",
 													"\r",
 													"    // };\r",
@@ -3582,7 +3591,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3598,7 +3607,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -3702,18 +3711,21 @@
 													"    \"lastRevisionStr\"\r",
 													"]\r",
 													"\r",
-													"let adminStatsKeys = [\r",
+													"let statusStatsKeys = [\r",
 													"    \"acceptedCount\",\r",
+													"    \"rejectedCount\",\r",
 													"    \"submittedCount\",\r",
 													"    \"savedCount\",\r",
 													"    \"ruleCount\",\r",
 													"    \"stigCount\",\r",
-													"    \"stigAssignedCount\"\r",
+													"    \"stigAssignedCount\",\r",
+													"    \"minTs\",\r",
+													"    \"maxTs\"\r",
 													"]\r",
 													"\r",
 													"\r",
-													"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"    assetKeys.push(\"adminStats\")\r",
+													"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"    assetKeys.push(\"statusStats\")\r",
 													"}\r",
 													"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 													"    assetKeys.push(\"stigGrants\")\r",
@@ -3759,8 +3771,8 @@
 													"        }\r",
 													"    }\r",
 													"    \r",
-													"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+													"    if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"            pm.expect(jsonData.statusStats).to.have.all.keys(statusStatsKeys);\r",
 													"    }\r",
 													"\r",
 													"    // };\r",
@@ -3780,7 +3792,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3796,7 +3808,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -3901,18 +3913,21 @@
 													"    \"lastRevisionStr\"\r",
 													"]\r",
 													"\r",
-													"let adminStatsKeys = [\r",
+													"let statusStatsKeys = [\r",
 													"    \"acceptedCount\",\r",
+													"    \"rejectedCount\",\r",
 													"    \"submittedCount\",\r",
 													"    \"savedCount\",\r",
 													"    \"ruleCount\",\r",
 													"    \"stigCount\",\r",
-													"    \"stigAssignedCount\"\r",
+													"    \"stigAssignedCount\",\r",
+													"    \"minTs\",\r",
+													"    \"maxTs\"\r",
 													"]\r",
 													"\r",
 													"\r",
-													"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"    assetKeys.push(\"adminStats\")\r",
+													"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"    assetKeys.push(\"statusStats\")\r",
 													"}\r",
 													"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 													"    assetKeys.push(\"stigGrants\")\r",
@@ -3958,8 +3973,8 @@
 													"        }\r",
 													"    }\r",
 													"    \r",
-													"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-													"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+													"    if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+													"            pm.expect(jsonData.statusStats).to.have.all.keys(statusStatsKeys);\r",
 													"    }\r",
 													"\r",
 													"    // };\r",
@@ -3979,7 +3994,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -3995,7 +4010,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -4744,13 +4759,16 @@
 											"    \"users\"\r",
 											"]\r",
 											"\r",
-											"let adminStatsKeys = [\r",
+											"let statusStatsKeys = [\r",
 											"    \"acceptedCount\",\r",
+											"    \"rejectedCount\",\r",
 											"    \"submittedCount\",\r",
 											"    \"savedCount\",\r",
 											"    \"ruleCount\",\r",
 											"    \"stigCount\",\r",
-											"    \"stigAssignedCount\"\r",
+											"    \"stigAssignedCount\",\r",
+											"    \"minTs\",\r",
+											"    \"maxTs\"\r",
 											"]\r",
 											"let userBasicKeys = [\r",
 											"    // \"user\",\r",
@@ -4762,8 +4780,8 @@
 											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
 											"    assetKeys.push(\"stigs\")\r",
 											"}\r",
-											"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"    assetKeys.push(\"adminStats\")\r",
+											"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+											"    assetKeys.push(\"statusStats\")\r",
 											"}\r",
 											"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 											"    assetKeys.push(\"stigGrants\")\r",
@@ -4782,8 +4800,8 @@
 											"        pm.expect(asset.collection).to.have.all.keys(collectionKeys);\r",
 											"\r",
 											"\r",
-											"        if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"            pm.expect(asset.adminStats).to.have.all.keys(adminStatsKeys);\r",
+											"        if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+											"            pm.expect(asset.statusStats).to.have.all.keys(statusStatsKeys);\r",
 											"        }\r",
 											"\r",
 											"        if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
@@ -4861,7 +4879,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -4886,7 +4904,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -4972,13 +4990,16 @@
 											"    \"users\"\r",
 											"]\r",
 											"\r",
-											"let adminStatsKeys = [\r",
+											"let statusStatsKeys = [\r",
 											"    \"acceptedCount\",\r",
+											"    \"rejectedCount\",\r",
 											"    \"submittedCount\",\r",
 											"    \"savedCount\",\r",
 											"    \"ruleCount\",\r",
 											"    \"stigCount\",\r",
-											"    \"stigAssignedCount\"\r",
+											"    \"stigAssignedCount\",\r",
+											"    \"minTs\",\r",
+											"    \"maxTs\"\r",
 											"]\r",
 											"let userBasicKeys = [\r",
 											"    // \"user\",\r",
@@ -4990,8 +5011,8 @@
 											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
 											"    assetKeys.push(\"stigs\")\r",
 											"}\r",
-											"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"    assetKeys.push(\"adminStats\")\r",
+											"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+											"    assetKeys.push(\"statusStats\")\r",
 											"}\r",
 											"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 											"    assetKeys.push(\"stigGrants\")\r",
@@ -5010,8 +5031,8 @@
 											"        pm.expect(asset.collection).to.have.all.keys(collectionKeys);\r",
 											"\r",
 											"\r",
-											"        if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"            pm.expect(asset.adminStats).to.have.all.keys(adminStatsKeys);\r",
+											"        if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+											"            pm.expect(asset.statusStats).to.have.all.keys(statusStatsKeys);\r",
 											"        }\r",
 											"\r",
 											"        if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
@@ -5091,7 +5112,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&elevate={{elevated}}&projection=adminStats&projection=stigs",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&elevate={{elevated}}&projection=statusStats&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -5116,7 +5137,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -5203,13 +5224,16 @@
 											"    \"users\"\r",
 											"]\r",
 											"\r",
-											"let adminStatsKeys = [\r",
+											"let statusStatsKeys = [\r",
 											"    \"acceptedCount\",\r",
+											"    \"rejectedCount\",\r",
 											"    \"submittedCount\",\r",
 											"    \"savedCount\",\r",
 											"    \"ruleCount\",\r",
 											"    \"stigCount\",\r",
-											"    \"stigAssignedCount\"\r",
+											"    \"stigAssignedCount\",\r",
+											"    \"minTs\",\r",
+											"    \"maxTs\"\r",
 											"]\r",
 											"let userBasicKeys = [\r",
 											"    // \"user\",\r",
@@ -5221,8 +5245,8 @@
 											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
 											"    assetKeys.push(\"stigs\")\r",
 											"}\r",
-											"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"    assetKeys.push(\"adminStats\")\r",
+											"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+											"    assetKeys.push(\"statusStats\")\r",
 											"}\r",
 											"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 											"    assetKeys.push(\"stigGrants\")\r",
@@ -5242,8 +5266,8 @@
 											"        pm.expect(asset.collection).to.have.all.keys(collectionKeys);\r",
 											"\r",
 											"\r",
-											"        if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-											"            pm.expect(asset.adminStats).to.have.all.keys(adminStatsKeys);\r",
+											"        if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+											"            pm.expect(asset.statusStats).to.have.all.keys(statusStatsKeys);\r",
 											"        }\r",
 											"\r",
 											"        if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
@@ -5335,7 +5359,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&elevate={{elevated}}&projection=adminStats&projection=stigs",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&elevate={{elevated}}&projection=statusStats&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -5361,7 +5385,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -10145,7 +10169,7 @@
 													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}\n"
 												},
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+													"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -10160,7 +10184,7 @@
 														},
 														{
 															"key": "projection",
-															"value": "adminStats"
+															"value": "statusStats"
 														},
 														{
 															"key": "projection",
@@ -10655,7 +10679,7 @@
 											"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10671,7 +10695,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -10754,7 +10778,7 @@
 											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10770,7 +10794,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -10844,7 +10868,7 @@
 										"method": "DELETE",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -10860,7 +10884,7 @@
 												},
 												{
 													"key": "projection",
-													"value": "adminStats",
+													"value": "statusStats",
 													"description": "Additional properties to include in the response.\n"
 												},
 												{
@@ -10945,7 +10969,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -10960,7 +10984,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -12942,7 +12966,7 @@
 									"raw": "{\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -12958,7 +12982,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -13061,7 +13085,7 @@
 									"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -13077,7 +13101,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -13254,7 +13278,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -13270,7 +13294,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -13370,7 +13394,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=adminStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -13386,7 +13410,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "adminStats",
+											"value": "statusStats",
 											"description": "Additional properties to include in the response.\n"
 										},
 										{
@@ -15338,8 +15362,11 @@
 									"    \"lastRevisionStr\",\r",
 									"    \"assetCount\",\r",
 									"    \"acceptedCount\",\r",
+									"    \"rejectedCount\",\r",
 									"    \"submittedCount\",\r",
-									"    \"savedCount\"\r",
+									"    \"savedCount\",\r",
+									"    \"minTs\",\r",
+									"    \"maxTs\"\r",
 									"]\r",
 									"\r",
 									"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
@@ -15473,18 +15500,21 @@
 									"    \"lastRevisionStr\"\r",
 									"]\r",
 									"\r",
-									"let adminStatsKeys = [\r",
+									"let statusStatsKeys = [\r",
 									"    \"ruleCount\",\r",
 									"    \"stigCount\",\r",
 									"    \"stigAssignedCount\",\r",
 									"    \"savedCount\",\r",
 									"    \"acceptedCount\",\r",
-									"    \"submittedCount\"\r",
-									"]\r",
+									"    \"rejectedCount\",\r",
+									"    \"submittedCount\",\r",
+									"    \"minTs\",\r",
+									"    \"maxTs\"\r",
+							"]\r",
 									"\r",
 									"\r",
-									"if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-									"    assetKeys.push(\"adminStats\")\r",
+									"if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+									"    assetKeys.push(\"statusStats\")\r",
 									"}\r",
 									"if (pm.request.url.getQueryString().match(/projection=stigGrants/)) {\r",
 									"    assetKeys.push(\"stigGrants\")\r",
@@ -15526,15 +15556,15 @@
 									"        }\r",
 									"    }\r",
 									"    \r",
-									"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
-									"            pm.expect(jsonData.adminStats).to.have.all.keys(adminStatsKeys);\r",
+									"    if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
+									"            pm.expect(jsonData.statusStats).to.have.all.keys(statusStatsKeys);\r",
 									"\r",
 									"    }\r",
 									"\r",
-									"    if (pm.request.url.getQueryString().match(/projection=adminStats/)) {\r",
+									"    if (pm.request.url.getQueryString().match(/projection=statusStats/)) {\r",
 									"            //check for proper adminStat counts for lvl1 user\r",
-									"            pm.expect(jsonData.adminStats.ruleCount).to.equal(81);\r",
-									"            pm.expect(jsonData.adminStats.submittedCount).to.equal(5);\r",
+									"            pm.expect(jsonData.statusStats.ruleCount).to.equal(81);\r",
+									"            pm.expect(jsonData.statusStats.submittedCount).to.equal(5);\r",
 									"    }\r",
 									"    // };\r",
 									"\r",
@@ -15553,7 +15583,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/assets/:assetId?projection=adminStats&projection=stigs",
+							"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -15570,7 +15600,7 @@
 								},
 								{
 									"key": "projection",
-									"value": "adminStats",
+									"value": "statusStats",
 									"description": "Additional properties to include in the response.\n"
 								},
 								{
@@ -15627,7 +15657,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/assets/:assetId?projection=adminStats&projection=stigs",
+							"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -15644,7 +15674,7 @@
 								},
 								{
 									"key": "projection",
-									"value": "adminStats",
+									"value": "statusStats",
 									"description": "Additional properties to include in the response.\n"
 								},
 								{
