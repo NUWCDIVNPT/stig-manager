@@ -4411,8 +4411,8 @@
 													"    return;\r",
 													"}\r",
 													"else if (user == \"collectioncreator\" ) {\r",
-													"    pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
-													"        pm.response.to.have.status(204);\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
 													"    });\r",
 													"    return;\r",
 													"}\r",
@@ -4531,7 +4531,7 @@
 									"response": []
 								},
 								{
-									"name": "Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - no specified stigs Copy",
+									"name": "Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - no specified stigs",
 									"event": [
 										{
 											"listen": "test",
@@ -4549,9 +4549,15 @@
 													"    });\r",
 													"    return;\r",
 													"}\r",
-													"else if (user == \"collectioncreator\" ) {\r",
+													"else if (user == \"collectioncreator\"  ) {\r",
 													"    pm.test(\"Status should be is 403 for user collectioncreator\", function () {\r",
 													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if ( user == \"lvl1\" ) {\r",
+													"    pm.test(\"Status should be is 400 for user  lvl1\", function () {\r",
+													"        pm.response.to.have.status(400);\r",
 													"    });\r",
 													"    return;\r",
 													"}\r",
