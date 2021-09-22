@@ -44,18 +44,19 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             {
                 name: 'savedPct',
-                type: 'integer',
-                convert: (v, r) => r.statusStats.ruleCount ? Math.round(((r.statusStats.savedCount + r.statusStats.submittedCount + r.statusStats.acceptedCount)/r.statusStats.ruleCount) * 100) : 0
+                convert: (v, r) => r.statusStats.ruleCount ? ((r.statusStats.savedCount + r.statusStats.submittedCount + r.statusStats.acceptedCount + r.statusStats.rejectedCount)/r.statusStats.ruleCount) * 100 : 0
             },
             {
                 name: 'submittedPct',
-                type: 'integer',
-                convert: (v, r) => r.statusStats.ruleCount ? Math.round(((r.statusStats.submittedCount + r.statusStats.acceptedCount)/r.statusStats.ruleCount) * 100) : 0
+                convert: (v, r) => r.statusStats.ruleCount ?((r.statusStats.submittedCount + r.statusStats.acceptedCount + r.statusStats.rejectedCount)/r.statusStats.ruleCount) * 100 : 0
             },
             {
                 name: 'acceptedPct',
-                type: 'integer',
-                convert: (v, r) => r.statusStats.ruleCount ? Math.round((r.statusStats.acceptedCount/r.statusStats.ruleCount) * 100) : 0
+                convert: (v, r) => r.statusStats.ruleCount ? (r.statusStats.acceptedCount/r.statusStats.ruleCount) * 100 : 0
+            },
+            {
+                name: 'rejectedPct',
+                convert: (v, r) => r.statusStats.ruleCount ? (r.statusStats.rejectedCount/r.statusStats.ruleCount) * 100 : 0
             },
             {
                 name: 'stigUnassignedCount',
@@ -122,45 +123,69 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         let columns = [
             { 	
 				header: "Asset",
-				width: 70,
+				width: 100,
                 dataIndex: 'name',
 				sortable: true
-			},{ 	
+			},
+            { 	
 				header: "FQDN",
 				width: 100,
                 dataIndex: 'fqdn',
 				sortable: true,
                 renderer: SM.styledEmptyRenderer
-			},{ 	
+			},
+            { 	
 				header: "IP",
                 fixed: true,
 				width: 100,
                 dataIndex: 'ip',
 				sortable: true,
                 renderer: SM.styledEmptyRenderer
-			},{ 	
+			},
+            { 	
 				header: "MAC",
                 fixed: true,
 				width: 110,
                 dataIndex: 'mac',
 				sortable: true,
                 renderer: SM.styledEmptyRenderer
-			},{ 	
+			},
+            { 	
 				header: "STIGs",
-				width: 70,
+				width: 50,
                 fixed: true,
 				dataIndex: 'stigCount',
 				align: "center",
 				tooltip:"Total STIGs Assigned",
 				sortable: true
-			},{ 	
+			},
+            { 	
 				header: "Checks",
-				width: 70,
+				width: 50,
                 fixed: true,
 				dataIndex: 'ruleCount',
 				align: "center",
 				sortable: true
-			},{ 	
+			},
+            {
+                header: 'Oldest',
+                width: 50,
+                fixed: true,
+                dataIndex: 'minTs',
+                align: 'center',
+                sortable: true,
+                renderer: renderDurationToNow
+            },
+            {
+                header: 'Newest',
+                width: 50,
+                fixed: true,
+                dataIndex: 'maxTs',
+                align: 'center',
+                sortable: true,
+                renderer: renderDurationToNow
+            },
+            { 	
 				header: "Reviewed",
 				width: 100,
                 fixed: true,
@@ -168,7 +193,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				align: "center",
 				sortable: true,
                 renderer: renderPct
-			},{ 	
+			},
+            { 	
 				header: "Submitted",
 				width: 100,
                 fixed: true,
@@ -176,7 +202,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				align: "center",
 				sortable: true,
                 renderer: renderPct
-			},{ 	
+			},
+            { 	
 				header: "Accepted",
 				width: 100,
                 fixed: true,
@@ -184,6 +211,15 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				align: "center",
 				sortable: true,
                 renderer: renderPct
+			},
+            { 	
+				header: "Rejected",
+				width: 100,
+                fixed: true,
+				dataIndex: 'rejectedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPctAllHigh
 			}
         ]
         let config = {

@@ -13,6 +13,8 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {name: 'lastRevisionDate', type: 'string'},
             {name: 'ruleCount', type: 'integer'},
             {name: 'assetCount', type: 'integer'},
+            {name: 'minTs', type: 'date'},
+            {name: 'maxTs', type: 'date'},
             {
                 name: 'checkCount',
                 type: 'integer',
@@ -21,17 +23,22 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 name: 'acceptedPct',
                 type: 'integer',
-                convert: (v, r) => Math.round((r.acceptedCount/(r.ruleCount * r.assetCount)) * 100)
+                convert: (v, r) => (r.acceptedCount/(r.ruleCount * r.assetCount)) * 100
+            },
+            {
+                name: 'rejectedPct',
+                type: 'integer',
+                convert: (v, r) => (r.rejectedCount/(r.ruleCount * r.assetCount)) * 100
             },
             {
                 name: 'submittedPct',
                 type: 'integer',
-                convert: (v, r) => Math.round(((r.acceptedCount + r.submittedCount)/(r.ruleCount * r.assetCount)) * 100)
+                convert: (v, r) => ((r.rejectedCount + r.acceptedCount + r.submittedCount)/(r.ruleCount * r.assetCount)) * 100
             },
             {
                 name: 'savedPct',
                 type: 'integer',
-                convert: (v, r) => Math.round(((r.acceptedCount + r.submittedCount + r.savedCount)/(r.ruleCount * r.assetCount)) * 100)
+                convert: (v, r) => ((r.rejectedCount + r.acceptedCount + r.submittedCount + r.savedCount)/(r.ruleCount * r.assetCount)) * 100
             }
 
         ])
@@ -112,14 +119,26 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'assetCount',
                 align: "center",
                 sortable: true
-            },{
-                header: 'Checks',
-                width: 70,
+            },
+            {
+                header: 'Oldest',
+                width: 50,
                 fixed: true,
-                dataIndex: 'checkCount',
-                align: "center",
-                sortable: true
-            },{ 	
+                dataIndex: 'minTs',
+                align: 'center',
+                sortable: true,
+                renderer: renderDurationToNow
+            },
+            {
+                header: 'Newest',
+                width: 50,
+                fixed: true,
+                dataIndex: 'maxTs',
+                align: 'center',
+                sortable: true,
+                renderer: renderDurationToNow
+            },
+            { 	
 				header: "Reviewed",
 				width: 100,
                 fixed: true,
@@ -143,6 +162,14 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 				align: "center",
 				sortable: true,
                 renderer: renderPct
+			},{ 	
+				header: "Rejected",
+				width: 100,
+                fixed: true,
+				dataIndex: 'rejectedPct',
+				align: "center",
+				sortable: true,
+                renderer: renderPctAllHigh
 			}
         ]
         let config = {

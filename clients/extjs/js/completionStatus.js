@@ -46,6 +46,8 @@ function addCompletionStatus( params) {
 				{name:'highCount',type:'int', mapping: 'findings.high'},
 				{name:'mediumCount',type:'int', mapping: 'findings.medium'},
 				{name:'lowCount',type:'int', mapping: 'findings.low'},
+				{name:'minTs',type:'date'},
+				{name:'maxTs',type:'date'},
 				{name:'notCheckedTotal',type:'int', convert: function (v, r) { 
 					return r.rules.total - (r.status.saved.total + r.status.submitted.total + r.status.rejected.total + r.status.accepted.total) 
 				} },
@@ -84,6 +86,8 @@ function addCompletionStatus( params) {
 			},
 			{header: "Checks",width:10,dataIndex:'rulesTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "Not Checked",width:10,dataIndex:'notCheckedTotal',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},
+			{header: "Oldest",width:10,dataIndex:'minTs',sortable:true,align:'center',renderer:renderDurationToNow,summaryType: 'min'},
+			{header: "Newest",width:10,dataIndex:'maxTs',sortable:true,align:'center',renderer:renderDurationToNow,summaryType: 'max'},
 			{header: "Saved",width:10,dataIndex:'savedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/ready-16.png width=12 height=12> Submitted",width:10,dataIndex:'submittedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "<img src=img/rejected-16.png width=12 height=12> Rejected",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
