@@ -140,4 +140,6 @@ function loadScripts() {
       });
 }
 
+document.getElementById("loading-text").innerHTML = `Loading ${STIGMAN?.Env?.version}`;
+
 authorizeOidc()

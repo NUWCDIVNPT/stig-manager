@@ -189,7 +189,7 @@ async function loadApp () {
 		if (contentPanel) SM.contentEl = contentPanel.getEl()
 	
 		Ext.get('loading').remove();
-		Ext.get('loading-mask').fadeOut({duration: 1, remove:true});
+		Ext.get('loading-mask').fadeOut({duration: 0.5, remove:true});
 		// Register a quick tip for the version element
 		Ext.QuickTips.register({
 			target: 'sm-home-version-sprite',
