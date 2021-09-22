@@ -58,7 +58,7 @@ async function authorizeOidc() {
         loadScripts()
     }
     catch(errorData) {
-        alert(errorData.error_description);
+        document.getElementById("loading-text").innerHTML = "Authentication Error";
     } 
 }
 
@@ -139,5 +139,7 @@ function loadScripts() {
         document.head.appendChild(script);
       });
 }
+
+document.getElementById("loading-text").innerHTML = `Loading ${STIGMAN?.Env?.version}`;
 
 authorizeOidc()
