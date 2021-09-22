@@ -153,6 +153,10 @@ const STIGMAN = {
   Env: {
     version: "${config.version}",
     apiBase: "${config.client.apiBase}",
+    welcome: {
+      image: "${config.client.welcome.image}",
+      message: "${config.client.welcome.message}"
+    },
     commit: {
         branch: "${config.commit.branch}",
         sha: "${config.commit.sha}",

@@ -305,7 +305,12 @@ body {
 }
 .sm-home-widget-image-text-wrap {
 	float: left;
-	margin-right: 10px;
+	margin-right: 15px;
+	width: 125px;
+	height: 125px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 .sm-home-widget-text {
 	padding-top:10px;
@@ -577,8 +582,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 
 .sm-home-widget-subtitle {
 	padding-top:5px;
-	padding-left:20px;
-	padding-right:20px;
+	/* padding-left:20px; */
+	/* padding-right:20px; */
 	padding-bottom:5px;
 	font: bold 14px Open Sans, helvetica, sans-serif;
 	color:#3366cc;
