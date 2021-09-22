@@ -30,17 +30,22 @@ function myContextMenu (e,t,eOpts) {
 Ext.Ajax.disableCaching = false
 
 async function start () {
+	let timer
 	try {
-		Ext.get( 'indicator' ).dom.innerHTML = "Getting user profile...";
+		timer = setTimeout(() => {
+			Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration..."
+		}, 100)
 		await SM.GetUserObject()
 		if (curUser.username !== undefined) {
+			clearTimeout(timer)
 			loadApp();
 		} else {
-			Ext.get( 'indicator' ).dom.innerHTML =`No account for ${window.oidcProvider.token}`;
+			Ext.get( 'loading-text' ).dom.innerHTML =`No account for ${window.oidcProvider.token}`;
 		}
 	}
 	catch (e) {
-		Ext.get( 'indicator' ).dom.innerHTML = e.message
+		clearTimeout(timer)
+		Ext.get( 'loading-text' ).dom.innerHTML = e.message
 	}
 }
 
@@ -57,7 +62,7 @@ async function loadApp () {
 			trackMouse: false
 		});
 	
-		Ext.get( 'indicator' ).dom.innerHTML = "Getting configuration...";
+		// Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration...";
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/op/configuration`,
 			method: 'GET'

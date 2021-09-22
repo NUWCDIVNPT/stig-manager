@@ -58,7 +58,7 @@ async function authorizeOidc() {
         loadScripts()
     }
     catch(errorData) {
-        alert(errorData.error_description);
+        document.getElementById("loading-text").innerHTML = "Authentication Error";
     } 
 }
 

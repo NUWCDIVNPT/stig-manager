@@ -9,28 +9,23 @@ var curUser, appConfig;
 
 Ext.ns('SM')
 SM.GetUserObject = async function () {
-    try {
-        let result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/user`,
-            method: 'GET'
-        })
-        curUser = JSON.parse(result.response.responseText)
-        curUser.collectionGrants.sort((a, b) => {
-            const nameA = a.collection.name
-            const nameB = b.collection.name
-            if (nameA < nameB) {
-                return -1
-            }
-            if (nameA > nameB) {
-                return 1
-            }
-            return 0
-        })
-        return curUser
-    }
-    catch (e) {
-        alert(e.message)
-    }
+    let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/user`,
+        method: 'GET'
+    })
+    curUser = JSON.parse(result.response.responseText)
+    curUser.collectionGrants.sort((a, b) => {
+        const nameA = a.collection.name
+        const nameB = b.collection.name
+        if (nameA < nameB) {
+            return -1
+        }
+        if (nameA > nameB) {
+            return 1
+        }
+        return 0
+    })
+    return curUser
 }
 
 SM.styledEmptyRenderer = v => v ? v : '<span class="sm-empty-cell" />'
