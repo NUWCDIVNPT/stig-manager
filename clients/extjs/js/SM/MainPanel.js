@@ -88,9 +88,17 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
       const id = Ext.id()
       const tpl = new Ext.XTemplate(
           `<div class=sm-home-widget-header>`,
-          `<div class='sm-home-widget-title'>Welcome</div>`,
+            `<div class='sm-home-widget-title'>Welcome</div>`,
           `</div>`,
-          `<div class='sm-home-widget-text'><img src="img/navy.png" width=125 height=125 class="sm-home-widget-image-text-wrap" /><b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists <a href="https://public.cyber.mil/stigs/downloads/">distributed</a> as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG)</div>`, 
+          `<div class='sm-home-widget-text'>`,
+            `<div class=sm-home-widget-image-text-wrap>`,
+              `<img src="${STIGMAN.Env.welcome.image ? STIGMAN.Env.welcome.image : 'img/navy.svg'}" style="max-width:100%;max-height:100%;"/>`,
+            `</div>`,
+            `<b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States Defense Information Systems Agency (DISA). The software is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">an open source project</a> maintained by the Naval Sea Systems Command (NAVSEA) of the United States Navy.`,
+          `</div>`, 
+          `<div class='sm-home-widget-text'>`,
+            `${STIGMAN.Env.welcome.message}`,
+          `</div>`
 
         )
       const config = {
@@ -117,17 +125,25 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
           // `<div class='sm-home-widget-subtitle'>Project Home</div>`,
           // `<div class='sm-home-widget-text'>What is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager#stig-manager">STIG Manager OSS</a>?</div>`,
 
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'>Need help?</div>`,
-          `<div class='sm-home-widget-text'>Check out our <a target="_blank" href="docs/index.html">Documentation</a></div>`,
+          `Check out our <a target="_blank" href="docs/index.html">Documentation</a>`,
+          `</div>`,
           
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'> Just Geting Started? </div>`,
-          `<div class='sm-home-widget-text'>Check out our <a target="_blank" href="docs/user-guide/user-quickstart.html">User Walkthrough</a> or the <a target="_blank" href="docs/user-guide/user-guide.html">User Guide</a></div>`,
+          `Check out our <a target="_blank" href="docs/user-guide/user-quickstart.html">User Walkthrough</a> or the <a target="_blank" href="docs/user-guide/user-guide.html">User Guide</a>`,
+          `</div>`,
 
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'>Common Tasks </div>`,
-          `<div class='sm-home-widget-text'>Not sure how to do something in STIG Manager? Check out these links to <a target="_blank" href="docs/features/common-tasks.html">Common Tasks</a></div>`,
+          `Not sure how to do something in STIG Manager? Check out these links to <a target="_blank" href="docs/features/common-tasks.html">Common Tasks</a>`,
+          `</div>`,
 
-          // `<div class='sm-home-widget-subtitle'>Issues, Feature Requests, and Contributions</div>`,
-          // `<div class='sm-home-widget-text'>Want to report a bug, request a feature, or help out the project? <a target="_blank" href="docs/the-project/contributing.html">Check out our Contribution Guide</a></div>`,
+          `<div class='sm-home-widget-text'>`,
+          `<div class='sm-home-widget-subtitle'>Issues, Feature Requests, and Contributions</div>`,
+          `Want to report a bug, request a feature, or help out the project? <a target="_blank" href="docs/the-project/contributing.html">Check out our Contribution Guide</a>`,
+          `</div>`,
           
         )
       const config = {
@@ -150,16 +166,24 @@ SM.ResourcesWidget = Ext.extend(Ext.Panel, {
           `<div class=sm-home-widget-header>`,
           `<div class='sm-home-widget-title'>Resources</div>`,
           `</div>`,
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'>GitHub</div>`,
-          `<div class='sm-home-widget-text'><p><a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">STIG Manager</a></p>`,
+          `<p><a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">STIG Manager</a></p>`,
           `<p><a target="_blank" href="https://github.com/NUWCDIVNPT/stigman-watcher">STIG Manager Watcher</a></p>`,
-          `<p><a target="_blank" href="https://github.com/Code-dot-mil/code.mil">Code.mil</a></p></div>`,
+          // `<p><a target="_blank" href="https://github.com/Code-dot-mil/code.mil">Code.mil</a></p>`,
+          `</div>`,
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'>DISA STIGs</div>`,
-          `<div class='sm-home-widget-text'>Get the latest STIGs at <a target="_blank" href="https://public.cyber.mil/stigs/downloads/">cyber.mil</a>.</div>`,
+          `Get the latest STIGs at <a target="_blank" href="https://public.cyber.mil/stigs/downloads/">cyber.mil</a>.`,
+          `</div>`,
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'>RMF Reference</div>`,
-          `<div class='sm-home-widget-text'>STIG Manager assists with STEP 4 of the <a target="_blank" href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-37r2.pdf">Risk Management Framework Process</a>.</div>`,
+          `STIG Manager assists with STEP 4 of the <a target="_blank" href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-37r2.pdf">Risk Management Framework Process</a>.`,
+          `</div>`,
+          `<div class='sm-home-widget-text'>`,
           `<div class='sm-home-widget-subtitle'>DevSecOps</div>`,
-          `<div class='sm-home-widget-text'>STIG Manager is being developed as part of the <a target="_blank" href="https://software.af.mil/dsop/documents/">DoD Enterprise DevSecOps</a> and <a target="_blank" href="https://code.mil">Code.mil Open Source </a> initiatives.</div>`,
+          `STIG Manager is being developed as part of the <a target="_blank" href="https://software.af.mil/dsop/documents/">DoD Enterprise DevSecOps</a> and <a target="_blank" href="https://code.mil">Code.mil Open Source </a> initiatives.`,
+          `</div>`,
 
         )
       const config = {
