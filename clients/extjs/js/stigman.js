@@ -34,7 +34,7 @@ async function start () {
 	try {
 		timer = setTimeout(() => {
 			Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration..."
-		}, 100)
+		}, 250)
 		await SM.GetUserObject()
 		if (curUser.username !== undefined) {
 			clearTimeout(timer)

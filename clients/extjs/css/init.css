@@ -6,6 +6,7 @@
     height:   100%;
     z-index:  20000;
     background-color: #586574;
+    /* box-shadow: inset rgb(0 0 0 / 38%) 0px 0px 200px 200px; */
   }
   
   #loading {
@@ -14,23 +15,29 @@
     padding: 10px;
     left: 50%;
     top: 50%;
-    width: 300px;
+    width: 500px;
     height: 100px;
-    margin-left: -125px;
+    margin-left: -250px;
     margin-top: -50px;
     /* background-color: #fff; */
     z-index: 20001;
+    /* box-shadow: rgb(220 134 51 / 20%) 0px 0px 100px 100px; */
   }
   
   #loading .loading-indicator {
     background: url("../img/loading.svg") no-repeat;
     background-position: center top;
-    background-size: 48px;
+    background-size: 50px;
     color: #d0cec5;
-    font: bold 20px Open Sans,Open Sans,helvetica;
-    padding: 42px 0px;
+    font: bold 32px Open Sans,Open Sans,helvetica;
+    padding: 50px 0px;
     margin:     0;
     text-align: center;
     height:     auto;
+  }
+
+  #loading-text {
+    font: bold 12px Open Sans,Open Sans,helvetica;
+    padding-top: 8px;
   }
   
