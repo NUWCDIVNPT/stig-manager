@@ -346,14 +346,30 @@ The default Settings for Reviews in Collections are:
 
 Attributions
 ~~~~~~~~~~~~~~~
-Modified: The User and Timestamp associated with the last change to this Review.
-Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.
-Last Accepted: (Coming soon!) The last time a Review was set to an "Accepted" status, if it is not "Accepted" now. 
+- Modified: The User and Timestamp associated with the last change to this Review.
+- Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.
+- Last Accepted: (Coming soon!) The last time a Review was set to an "Accepted" status, if it is not "Accepted" now. 
 
 
 Save and Save/Submit Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review.  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
+
+Automated Results
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  Setting this flag is currently only supported for results imported via `STIGMan Watcher. <https://github.com/NUWCDIVNPT/stigman-watcher>`_  This feature will be enhanced with more options in the future. 
+
+
+.. thumbnail:: /assets/images/asset-review-autoresult.png
+      :width: 50% 
+      :show_caption: True
+      :title: Asset Review Workspace with Automated Results indicated.
+
+|
+
+.. ATTENTION:: 
+      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the "Automated" badge with a "Manual" one next to the Result, and the absence of the gear symbol for that rule in the Checklist panel. 
 
 
 ==============================

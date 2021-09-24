@@ -572,13 +572,39 @@ It also provides information about the Controls associated with this Rule, inclu
 </div>
 <div class="section" id="attributions">
 <h4><span class="section-number">2.5.4.2. </span>Attributions<a class="headerlink" href="#attributions" title="Permalink to this headline">¶</a></h4>
-<p>Modified: The User and Timestamp associated with the last change to this Review.
-Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.
-Last Accepted: (Coming soon!) The last time a Review was set to an “Accepted” status, if it is not “Accepted” now.</p>
+<ul class="simple">
+<li><p>Modified: The User and Timestamp associated with the last change to this Review.</p></li>
+<li><p>Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.</p></li>
+<li><p>Last Accepted: (Coming soon!) The last time a Review was set to an “Accepted” status, if it is not “Accepted” now.</p></li>
+</ul>
 </div>
 <div class="section" id="save-and-save-submit-buttons">
 <h4><span class="section-number">2.5.4.3. </span>Save and Save/Submit Buttons<a class="headerlink" href="#save-and-save-submit-buttons" title="Permalink to this headline">¶</a></h4>
 <p>The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review.  In most use cases, the goal for Evaluators will be to get every Review into a “Submitted” state.  Once Submitted, the Collection Owner can set the Review to “Accepted” to indicate they have ok’d it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.</p>
+</div>
+<div class="section" id="automated-results">
+<h4><span class="section-number">2.5.4.4. </span>Automated Results<a class="headerlink" href="#automated-results" title="Permalink to this headline">¶</a></h4>
+<p>If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  Setting this flag is currently only supported for results imported via <a class="reference external" href="https://github.com/NUWCDIVNPT/stigman-watcher">STIGMan Watcher.</a>  This feature will be enhanced with more options in the future.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/asset-review-autoresult1.png"
+               title="Asset Review Workspace with Automated Results indicated."
+               data-title="Asset Review Workspace with Automated Results indicated."
+               
+               ><img src="../_images/asset-review-autoresult1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Asset Review Workspace with Automated Results indicated.</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>If a user modifies the Result of an “Automated” Review, it will lose its Automated status. This is indicated with the replacement of the “Automated” badge with a “Manual” one next to the Result, and the absence of the gear symbol for that rule in the Checklist panel.</p>
+</div>
 <hr class="docutils" />
 </div>
 </div>
