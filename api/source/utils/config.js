@@ -63,7 +63,9 @@ let config = {
         },
         welcome: {
             image: process.env.STIGMAN_CLIENT_WELCOME_IMAGE || "",
-            message: process.env.STIGMAN_CLIENT_WELCOME_MESSAGE || ""
+            message: process.env.STIGMAN_CLIENT_WELCOME_MESSAGE || "",
+            title: process.env.STIGMAN_CLIENT_WELCOME_TITLE || "",
+            link: process.env.STIGMAN_CLIENT_WELCOME_LINK || ""
         }
     },
     docs: {
