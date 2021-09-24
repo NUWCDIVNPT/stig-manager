@@ -135,6 +135,8 @@ function initializeAuth() {
                         if (!openidConfig.jwks_uri) {
                             throw( new Error('[AUTH] No jwks_uri property found') )
                         }
+                        // store tokenEndpoint for use by the CORS proxy
+                        config.oauth.tokenEndpoint = openidConfig.token_endpoint
                         jwksUri = openidConfig.jwks_uri
                         client = jwksClient({
                             jwksUri: jwksUri

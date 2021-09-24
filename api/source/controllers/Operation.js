@@ -7,7 +7,7 @@ const User = require(`./User`)
 const Review = require(`./Review`)
 const JSZip = require("jszip");
 const {JSONPath} = require('jsonpath-plus')
-
+const got = require('got')
 
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
@@ -126,6 +126,52 @@ module.exports.getDefinition = async function getDefinition (req, res, next) {
     else {
       res.json(config.definition)
     }
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getOidcConfiguration = async function getOidcConfiguration (req, res, next) {
+  try {
+    const url = `${config.oauth.authority}/.well-known/openid-configuration`
+    let options = {
+      headers: {
+        "X-Forwarded-For": req.ip
+      }
+    }
+    if (config.oauth.proxyHost) {
+      options.headers.host = config.oauth.proxyHost
+    }
+    const json = await got(url, options).json()
+    const openidConfiguration = {
+      authorization_endpoint: json.authorization_endpoint,
+      end_session_endpoint: json.end_session_endpoint,
+      token_endpoint: `${config.client.apiBase}/op/cors-proxy/oidc/token`
+    }
+    res.json(openidConfiguration)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.postOidcToken = async function postOidcToken (req, res, next) {
+  try {
+    const formData = new URLSearchParams(req.body).toString()
+    let options = {
+      method: 'post',
+      form: req.body,
+      headers: {
+        "X-Forwarded-For": req.ip
+      }
+    }
+    if (config.oauth.proxyHost) {
+      options.headers.host = config.oauth.proxyHost
+    }
+    const response = await got(config.oauth.tokenEndpoint, options).json()
+
+    res.json(response)
   }
   catch (err) {
     next(err)
