@@ -1,3 +1,31 @@
+1.0.0-beta.39
+-----------------------
+This is the last release to have a `beta` designation. Several UI enhancements are introduced, including:
+
+- `New names for the Review commentary fields <https://stig-manager.readthedocs.io/en/latest/user-guide/user-guide.html#review-panel>`_
+- `New settings for Reviews in Collection Management <https://stig-manager.readthedocs.io/en/latest/user-guide/user-guide.html#collection-settings-tab>`_
+- `Ability to display a custom image and text in the Home tab Welcome panel <https://stig-manager.readthedocs.io/en/latest/installation-and-setup/environment-variables.html#id3>`_
+
+There is a database migration included in this release that moves the data in table stats_asset_stig to stig_asset_map.
+
+- feat: Welcome message enhancements (#461)
+- feat: experimental CORS proxy for OIDC (#460)
+- docs: updated screenshots, added care and feeding, autoresult, and CORS sections, updated terminology, many other small fixes. (#462)
+- feat: welcome widget icon/text can be customized (#458)
+- feat: UI support for rejectedCount, minTs, maxTs (#456)
+- feat: updated loading screen for the UI (#457)
+- feat: statusStats with rejectCount, minTs, maxTs (#454)
+- fix: query param inadvertently marked as path param in Asset/getChecklistByAsset (#453)
+- feat: GET /op/definition endpoint with JSONPath (#452)
+- feat: Web app updates (#442)
+- feat: relaxed CKL revision checks by default (#450)
+- deps: remove unused patch-package (#449)
+- test: limit bootstrap wait to 45 seconds (#448)
+- deps: updating jwks-rsa to 2.0.4 removes axios (#446)
+- refactor: move stats to stig_asset_map (#431)
+- refactor: reduce duplicated code for data migrations (#433)
+- feat: adds new review-history endpoints (#417)
+
 1.0.0-beta.38
 -----------------------
 - fix: don't sort for history projection (#419)
