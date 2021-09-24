@@ -15,9 +15,6 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
 
 
 
-.. ATTENTION::
-   STIG Manager OSS is in Beta. Suggested for early adopters intending to pilot or evaluate the tool and provide feedback regarding its utility as part of the RMF Process.
-
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
