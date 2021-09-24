@@ -98,8 +98,8 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
           `</div>`, 
           `<div class='sm-home-widget-text'>`,
             `<div class='sm-home-widget-subtitle'>${STIGMAN.Env.welcome.title ? Ext.util.Format.htmlEncode(STIGMAN.Env.welcome.title) : STIGMAN.Env.welcome.message || STIGMAN.Env.welcome.link ? 'Support' : ''}</div>`,
-            `${Ext.util.Format.htmlEncode(STIGMAN.Env.welcome.message)}`,
-            `${STIGMAN.Env.welcome.link ? '<br><br><a href="' + STIGMAN.Env.welcome.link + '">' + STIGMAN.Env.welcome.link  + '</a>': ''}`,
+            `${Ext.util.Format.htmlEncode(STIGMAN.Env.welcome.message)}${STIGMAN.Env.welcome.message && STIGMAN.Env.welcome.link ? '<br><br>' : ''}`,
+            `${STIGMAN.Env.welcome.link ? '<a href="' + STIGMAN.Env.welcome.link + '">' + STIGMAN.Env.welcome.link  + '</a>': ''}`,
           `</div>`
 
         )
