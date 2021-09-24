@@ -1936,6 +1936,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiConfiguration'
+  "/op/cors-proxy/oidc/.well-known/openid-configuration":
+    get:
+      tags:
+        - Operation
+      summary: Proxy a request to the OIDC provider's openid-configuration endpoint
+      operationId: getOidcConfiguration
+      security: []
+      responses:
+        '200':
+          description: Configuration response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcConfiguration'
+  "/op/cors-proxy/oidc/token":
+    post:
+      tags:
+        - Operation
+      summary: Proxy a request to the OIDC provider's token_endpoint
+      operationId: postOidcToken
+      security: []
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+                type: object
+      responses:
+        '200':
+          description: Token response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcToken'
   /op/definition:
     get:
       tags:
@@ -1947,12 +1982,11 @@ paths:
         - $ref: '#/components/parameters/JsonPathQuery'
       responses:
         '200':
-          description: Configuration response
+          description: Definition response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiDefinition'
-      
   /stigs:
     get:
       tags:
@@ -3475,6 +3509,17 @@ components:
       type: string
     MetadataValue:
       type: string
+    OidcConfiguration:
+      type: object
+      properties:
+        authorization_endpoint:
+          type: string
+        end_session_endpoint:
+          type: string
+        token_endpoint:
+          type: string
+    OidcToken:
+      type: object
     Review:
       type: object
       properties:
