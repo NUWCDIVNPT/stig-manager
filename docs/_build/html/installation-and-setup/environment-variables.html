@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>7. Environment Variables &mdash; STIG Manager  documentation</title>
+  <title>8. Environment Variables &mdash; STIG Manager  documentation</title>
   
 
   
@@ -47,7 +47,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="For Users" href="../user-guide/index.html" />
-    <link rel="prev" title="6. Permissions and Data" href="permissions-model.html" /> 
+    <link rel="prev" title="7. Permissions and Data" href="permissions-model.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -104,8 +104,9 @@
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">7. Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cors.html">6. Cross-Origin Resource Sharing (CORS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">7. Permissions and Data</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">8. Environment Variables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
@@ -119,7 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -176,7 +177,7 @@
         
           <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
         
-      <li><span class="section-number">7. </span>Environment Variables</li>
+      <li><span class="section-number">8. </span>Environment Variables</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -195,7 +196,7 @@
         <a href="../user-guide/index.html" class="btn btn-neutral float-right" title="For Users" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
-        <a href="permissions-model.html" class="btn btn-neutral float-left" title="6. Permissions and Data" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="permissions-model.html" class="btn btn-neutral float-left" title="7. Permissions and Data" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
       
   </div>
   
@@ -205,187 +206,191 @@
            <div itemprop="articleBody">
             
   <div class="section" id="environment-variables">
-<span id="id1"></span><h1><span class="section-number">7. </span>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1><span class="section-number">8. </span>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h1>
 <p>STIG Manager is configured via its Environment Variables:</p>
-<table class="colwidths-given tight-table docutils align-default" id="id2">
-<caption><span class="caption-text">STIG Manager Environment Variables</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given tight-table docutils align-left" id="id2">
+<caption><span class="caption-text">STIG Manager Environment Variables - Functional</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 70%" />
 <col style="width: 10%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<tr class="row-odd"><th class="head stub"><p>Variable</p></th>
 <th class="head"><p>Description</p></th>
 <th class="head"><p>Affects</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>STIGMAN_API_ADDRESS</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_API_ADDRESS</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code> The IP address on which the the API server will listen</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_API_AUTHORITY</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_API_AUTHORITY</p></th>
 <td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code></p></td>
 <td><p>Deprecated</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_API_MAX_JSON_BODY</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_API_MAX_JSON_BODY</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">5242880</span></code>   The maximum size in bytes of the request body when Content-Type is application/json</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_API_MAX_UPLOAD</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_API_MAX_UPLOAD</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">1073741824</span></code> The maximum size in bytes of the file uploaded with Content-Type multipart/form-data</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_API_PORT</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_API_PORT</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">54000</span></code> The TCP port on which the server will listen</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_CLASSIFICATION</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLASSIFICATION</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">U</span></code> Sets the classification banner, if any. Available values: <code class="docutils literal notranslate"><span class="pre">NONE</span></code> <code class="docutils literal notranslate"><span class="pre">U</span></code> <code class="docutils literal notranslate"><span class="pre">FOUO</span></code> <code class="docutils literal notranslate"><span class="pre">C</span></code> <code class="docutils literal notranslate"><span class="pre">S</span></code> <code class="docutils literal notranslate"><span class="pre">TS</span></code> <code class="docutils literal notranslate"><span class="pre">SCI</span></code></p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_CLIENT_API_BASE</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_API_BASE</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">./api</span></code> The base URL for Client requests to the API relative to the sever root at /</p></td>
 <td><p>Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_CLIENT_DIRECTORY</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_DIRECTORY</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">./clients</span></code> The location of the web client files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the client is located at <cite>../../clients</cite> relative to the API directory.</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_CLIENT_DISABLED</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_DISABLED</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to <em>not</em> serve the reference web client</p></td>
 <td><p>Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_CLIENT_EXTRA_SCOPES</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_EXTRA_SCOPES</p></th>
 <td><p><strong>No default</strong> OAuth2 scopes to request in addition to <code class="docutils literal notranslate"><span class="pre">stig-manager:stig</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:stig:read</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:collection</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:user</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:user:read</span></code> <code class="docutils literal notranslate"><span class="pre">stig-manager:op</span></code></p></td>
 <td><p>Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_CLIENT_ID</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_ID</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">stig-manager</span></code> The OIDC clientId of the web client</p></td>
 <td><p>Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_CLIENT_KEYCLOAK_AUTH</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_KEYCLOAK_AUTH</p></th>
 <td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_OIDC_PROVIDER</span></code></p></td>
 <td><p>Deprecated</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_CLIENT_KEYCLOAK_CLIENTID</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_KEYCLOAK_CLIENTID</p></th>
 <td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_ID</span></code></p></td>
 <td><p>Deprecated</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_CLIENT_KEYCLOAK_REALM</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_KEYCLOAK_REALM</p></th>
 <td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_OIDC_PROVIDER</span></code></p></td>
 <td><p>Deprecated</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_CLIENT_OIDC_PROVIDER</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_OIDC_PROVIDER</p></th>
 <td><p><strong>Default</strong> Value of <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code> Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended by the client when fetching metadata.</p></td>
 <td><p>Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_CLIENT_REFRESH_DISABLED</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_REFRESH_DISABLED</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether the web client should expect the OIDC provider to <em>not</em> issue an OAuth2 refresh token</p></td>
 <td><p>Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_DB_HOST</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_DB_HOST</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">localhost</span></code> The database hostname or IP from to the API server</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_DB_MAX_CONNECTIONS</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_DB_MAX_CONNECTIONS</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">25</span></code> The maximum size of the database connection pool</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_DB_PASSWORD</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_DB_PASSWORD</p></th>
 <td><p><strong>No default</strong> The password used to login to the database</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_DB_PORT</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_DB_PORT</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">3306</span></code> The database TCP port relative to the API server</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_DB_SCHEMA</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_DB_SCHEMA</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">stigman</span></code> The schema where the STIG Manager object are found</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_DB_TLS_CA_FILE</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_DB_TLS_CA_FILE</p></th>
 <td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database.</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_DB_TLS_CERT_FILE</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_DB_TLS_CERT_FILE</p></th>
 <td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_CA_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_KEY_FILE</span></code>.</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_DB_TLS_KEY_FILE</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_DB_TLS_KEY_FILE</p></th>
 <td><p><strong>No default</strong> A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionally requires setting values for <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_CA_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_TLS_CERT_FILE</span></code>.</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_DB_TYPE</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_DB_TYPE</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">mysql</span></code> The database type. Valid values are <code class="docutils literal notranslate"><span class="pre">mysql</span></code></p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_DB_USER</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_DB_USER</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">stigman</span></code> The user account used to login to the database</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_DOCS_DIRECTORY</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_DOCS_DIRECTORY</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">./docs</span></code> The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at <cite>../../docs/_build/html</cite> relative to the API directory.</p></td>
 <td><p>API, documentation</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_DOCS_DISABLED</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_DOCS_DISABLED</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to <em>not</em> serve the project Documentation.  NOTE: If you choose to serve the Client from the API container but not the Documentation, the links do the Docs on the home page will not work.</p></td>
 <td><p>Documentation</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_INIT_IMPORT_STIGS</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_INIT_IMPORT_STIGS</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to fetch and import the current DISA STIG Library compilation from public.cyber.mil on initial database migration</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_INIT_IMPORT_SCAP</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_INIT_IMPORT_SCAP</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to fetch and import current DISA SCAP content from public.cyber.mil on initial database migration</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_JWT_EMAIL_CLAIM</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_JWT_EMAIL_CLAIM</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">email</span></code> The access token claim whose value is the user’s email address</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_JWT_NAME_CLAIM</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_JWT_NAME_CLAIM</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">name</span></code> The access token claim whose value is the user’s full name</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_JWT_PRIVILEGES_CLAIM</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_JWT_PRIVILEGES_CLAIM</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code> The access token claim whose value is the user’s privileges</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_JWT_ROLES_CLAIM</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_JWT_ROLES_CLAIM</p></th>
 <td><p><strong>Deprecated</strong> and will be removed soon. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_PRIVILEGES_CLAIM</span></code></p></td>
 <td><p>Deprecated</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_JWT_SERVICENAME_CLAIM</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_JWT_SERVICENAME_CLAIM</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">clientId</span></code> The access token claim whose value is the user’s client</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_JWT_USERNAME_CLAIM</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_JWT_USERNAME_CLAIM</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code> The access token claim whose value is the user’s username</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_OIDC_PROVIDER</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_OIDC_PROXY_HOST</p></th>
+<td><p><strong>No default</strong> The <code class="docutils literal notranslate"><span class="pre">Host:</span></code> header value to be used by the CORS proxy for outbound requests. Some OIDC providers return configuration metadata with endpoint URLs having this value as their base.</p></td>
+<td><p>API, Client</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_OIDC_PROVIDER</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">http://localhost:8080/auth/realms/stigman</span></code>  The base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended when fetching metadata.</p></td>
 <td><p>API, Client</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_SWAGGER_AUTHORITY</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_SWAGGER_AUTHORITY</p></th>
 <td><p><strong>Deprecated</strong> and will be removed soon. Use STIGMAN_SWAGGER_OIDC_PROVIDER</p></td>
 <td><p>Deprecated</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_SWAGGER_ENABLED</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_SWAGGER_ENABLED</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">false</span></code> Whether to enable the SwaggerUI SPA at /api-docs</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_SWAGGER_OIDC_PROVIDER</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_SWAGGER_OIDC_PROVIDER</p></th>
 <td><p><strong>Default</strong> Value of <code class="docutils literal notranslate"><span class="pre">STIGMAN_OIDC_PROVIDER</span></code> SwaggerUI override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string <code class="docutils literal notranslate"><span class="pre">/.well-known/openid-configuration</span></code> will be appended by the SwaggerUI when fetching metadata.</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-even"><td><p>STIGMAN_SWAGGER_REDIRECT</p></td>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_SWAGGER_REDIRECT</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">http://localhost:54000/api-docs/oauth2-redirect.html</span></code> The redirect URL sent by SwaggerUI to the OIDC provider when authorizing</p></td>
 <td><p>API</p></td>
 </tr>
-<tr class="row-odd"><td><p>STIGMAN_SWAGGER_SERVER</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_SWAGGER_SERVER</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">http://localhost:54000/api</span></code> The API server URL relative to the SwaggerUI</p></td>
 <td><p>API</p></td>
 </tr>
@@ -394,24 +399,56 @@
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<table class="colwidths-given tight-table docutils align-default" id="id3">
-<caption><span class="caption-text">Useful Node.js Environment Variables</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given tight-table docutils align-left" id="id3" style="width: 100%">
+<caption><span class="caption-text">STIG Manager Environment Variables - Appearance Customization</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 70%" />
 <col style="width: 10%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<tr class="row-odd"><th class="head stub"><p>Variable</p></th>
 <th class="head"><p>Description</p></th>
 <th class="head"><p>Affects</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>NODE_EXTRA_CA_CERTS</p></td>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_WELCOME_IMAGE</p></th>
+<td><p><strong>No default</strong>  An image URL that will be rendered in the Home tab Welcome widget. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed.</p></td>
+<td><p>Client Appearance</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_WELCOME_TITLE</p></th>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">Support</span></code> The tile that will be displayed for the custom Home tab Welcome message.</p></td>
+<td><p>Client Appearance</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>STIGMAN_CLIENT_WELCOME_MESSAGE</p></th>
+<td><p><strong>No default</strong> Text that will be displayed in the Home tab Welcome widget.</p></td>
+<td><p>Client Appearance</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_CLIENT_WELCOME_LINK</p></th>
+<td><p><strong>No default</strong> Value of an optional link that will follow the Welcome message in the Home tab Welcome widget.</p></td>
+<td><p>Client Appearance</p></td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<table class="colwidths-given tight-table docutils align-left" id="id4">
+<caption><span class="caption-text">Useful Node.js Environment Variables</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 70%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head stub"><p>Variable</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Affects</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><th class="stub"><p>NODE_EXTRA_CA_CERTS</p></th>
 <td><p><strong>[your CA certificate file path]</strong>  Set this Node.js environment variable to direct Node to accept CA certificates you have provided, in addition to its built-in CA certs. In the case of the Iron Bank based image, DoD CA certificates are already located here: <code class="docutils literal notranslate"><span class="pre">/etc/pki/ca-trust/source/anchors/Certificates_PKCS7_v5.7_DoD.pem</span></code></p></td>
 <td><p>Node.js, API</p></td>
 </tr>
@@ -426,7 +463,7 @@
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="../user-guide/index.html" class="btn btn-neutral float-right" title="For Users" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="permissions-model.html" class="btn btn-neutral float-left" title="6. Permissions and Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="permissions-model.html" class="btn btn-neutral float-left" title="7. Permissions and Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

@@ -15,7 +15,6 @@ The tests focus on proper functioning of the API, and verification that appropri
 The tests run in several iterations, simulating Users accessing the system with varying privileges, Access Levels and Assignments, and checks that they can only receive and alter appropriate data.
 
 
-Test Coverage is evaluated with NodeJS c8.  
 
 
 

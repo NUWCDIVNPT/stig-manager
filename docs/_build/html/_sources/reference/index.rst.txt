@@ -5,7 +5,7 @@ Terminology and Concepts
 ===================================
 
 
-This is a glossary with definition terms for thing like :term:`Workflow`:
+This is a glossary with definition terms for thing like :term:`Asset`:
 
 
 .. glossary::
@@ -32,13 +32,10 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
             * - Evaluation Result
               - Status
               - <CHECKLIST><STIGS><iSTIG><VULN> **<STATUS>**
-            * - Evaluation Comment
+            * - Detail
               - Finding Detail 
               - <CHECKLIST><STIGS><iSTIG><VULN> **<FINDING_DETAILS>**
-            * - Recommendation Action
-              - Comments
-              - <CHECKLIST><STIGS><iSTIG><VULN> **<COMMENTS>**  *(Will be prepended to .ckl Comment on export, as .ckls do not have a specific tag for this information. When imported, if the Comments start with an Action, that field will be set accordingly.)*
-            * - Recommendation Comment 
+            * - Comment 
               - Comments
               - <CHECKLIST><STIGS><iSTIG><VULN> **<COMMENTS>**
 
@@ -67,26 +64,19 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
     Package
         An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections. 
 
-    Recommendation 
-        Applicable to "Open" Findings, the additional steps that will be taken to address the Open Finding. Composed of an Action (Remediate, Mitigate, Exception) and an Action Comment.
-
     Review
         A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. A Review has several components:
 		
-        * Evaluation 
+        * Evaluation - Requirements configured via Collection Settings.
 		
             * Result - Not a Finding, Not Applicable, Open
-            * Result Comment - A comment describing the selected Result.
+            * Detail - Details describing the selected Result. Available according to Collection Settings.
+            * Comment - Additional information included in the Review. Available according to Collection Settings. 
 			
-        * Recommendation - Available only if the Result is set to Open.
+        * Status - The current state of the Review in the system. A review can be Saved, Submitted, Accepted, or Rejected, according to its Collection Settings.
 		
-            * Action - Remediate, Mitigate, Exception
-            * Action Comment - A comment describing the selected Action.
-			
-        * Status - The current state of the Review in the Workflow. A review can be Saved, Submitted, Accepted, or Returned, according to its place in its Collections Workflow.
-		
-            * In order to be Submitted, the Evaluation must have a Result and a Result Comment. If the Result is set to Open, then the Recommendation Action and Action Comment are also required. If the Review was Returned, at least one field must be changed in order to Submit it again.
-            * In order to be Returned, the Owner must specify a Return Comment, providing direction to the Evaluator.
+            * In order to be Submitted, the Evaluation must meet the requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
+            * In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.
 
     	Each Review maintains a History, which is available to the User in the Review Resources panel. Metadata such as the User who evaluated the Rule, and a timestamp is also collected.
 
@@ -112,14 +102,14 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
             * - Full
               - Can review any Asset/STIG in the Collection.
             * - Manage
-              - Everything in the "Full" level.  Can Add/Remove Assets, STIGs, and Users.
+              - Everything in the "Full" level.  Can Add/Remove Assets, STIGs, and Users. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
             * - Owner
-              - Everything in the "Manage" level.  Can Delete the Collection.  Responsible for "Accepting" reviews from evaluators.
+              - Everything in the "Manage" level.  Can Delete the Collection.  Responsible for "Accepting"  and "Rejecting" reviews from evaluators.
 
 
         * In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the "Restricted User access list..." button in the Grants panel toolbar.
 
-        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges are administered in Keycloak through the assignment of User Roles:
+        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak) through the assignment of User Roles:
             * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
             * Administrator: Gives the user Administrative access to STIG Manager via the "Administration" node of the Nav Tree. The Administrator Privilege allows the User to:
             
@@ -129,24 +119,6 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
                 * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager (except Review History)
                 * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Administrative interface.
 
-
-    Workflow
-        STIG Manager supports the concept of Workflows, which apply to Collections and alter the available Statuses for the Reviews they contain.
-
-        Currently, only the RMF Package Workflow is implemented. The goal of this workflow is to move evaluations towards an Accepted status that can become part of a POAM. This workflow supports the following statuses:
-		
-        - **Saved** - The initial state for a review. An evaluation or other data is stored, but has not been "submitted" to the Collection Owner for Acceptance. 
-        - **Submitted** - The Evaluator has marked this review as "Submitted," meaning it has been flagged for attention by Collection Owners to either Accept or Reject. The Submitted status has certain requirements:
-
-            - All Evaluations must have both a Result and a Result Comment
-            - All "Open" Evaluations must also have an Action and an Action Comment
-
-        - **Accepted** - A Collection Owner has accepted this review as complete and meeting their process requirements. Further modification of the Review will cause it to lose it's "Accepted" status.  
-        - **Rejected** - A Collection Owner has rejected this review for further work or clarification by the Reviewer. The Reviewer will have to make changes, then set back to "Submitted" to continue the workflow.
-
-            - In order to be Rejected, the Collection Owner must provide a Rejection Comment.
-
-		Each status is called out in the Status Collection Report to help gauge overall Collection progress.
 
     XCCDF
         An XML formatted schema for encoding STIGs and their Evaluations. 
@@ -162,11 +134,9 @@ This is a glossary with definition terms for thing like :term:`Workflow`:
               - XCCDF Tag
             * - Evaluation Result
               - <TestResult><rule-result> **<result>**    
-            * - Evaluation Comment
+            * - Detail
               - <TestResult><rule-result> **<message>**
-            * - Recommendation Action
-              - <TestResult><rule-result> **<metadata action>** 
-            * - Recommendation Comment 
+            * - Comment 
               - <TestResult><rule-result> **<metadata action-comment>** 
 
         .. note::

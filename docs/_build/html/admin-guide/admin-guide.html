@@ -46,7 +46,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="The STIG Manager Project" href="../the-project/index.html" />
+    <link rel="next" title="3. STIG Manager Care and Feeding" href="care-and-feeding.html" />
     <link rel="prev" title="1. STIG Manager Administrator Walkthrough" href="admin-quickstart.html" /> 
 </head>
 
@@ -116,6 +116,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="care-and-feeding.html">3. STIG Manager Care and Feeding</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
@@ -127,7 +128,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -200,7 +201,7 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="../the-project/index.html" class="btn btn-neutral float-right" title="The STIG Manager Project" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="care-and-feeding.html" class="btn btn-neutral float-right" title="3. STIG Manager Care and Feeding" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
         <a href="admin-quickstart.html" class="btn btn-neutral float-left" title="1. STIG Manager Administrator Walkthrough" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
@@ -228,7 +229,7 @@
 <div class="section" id="collections-admin-panel">
 <h3><span class="section-number">2.2.1. </span>Collections Admin Panel<a class="headerlink" href="#collections-admin-panel" title="Permalink to this headline">¶</a></h3>
 <p>This Panel lists every Collection in the STIGMan system, and allows you to create, delete, and alter them with the buttons at the top.
-The columns list the Collection Name, Workflow, Description, Owners, total User members, total Assets, total assigned STIGs, and the date of creation.</p>
+The columns list the Collection Name, Description, Owners, total User members, total Assets, total assigned STIGs, and the date of creation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Be sure to assign a new Collection an Owner, or no one except for Administrators will be able to see it!</p>
@@ -251,8 +252,8 @@ The columns list the Collection Name, Workflow, Description, Owners, total User 
 <div class="section" id="user-grants-admin-panel">
 <h3><span class="section-number">2.2.2. </span>User Grants Admin Panel<a class="headerlink" href="#user-grants-admin-panel" title="Permalink to this headline">¶</a></h3>
 <p>This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, date of first User access, last User access, User’s privileges ( Create Collection or Administrator), and their internal userid.</p>
-<p>STIG Manager’s Users are automatically created when they have successfully used Keycloak to authenticate and are redirected back to the STIGMan application.</p>
-<p>Users can be pre-registered before they have authenticated with Keycloak, but the username must match exactly.</p>
+<p>STIG Manager’s Users are automatically created when they have successfully used your Authentication Provider to authenticate and are redirected back to the STIGMan application.</p>
+<p>Users can be pre-registered before they have authenticated with your Authentication Provider, but the username must match exactly.</p>
 <p>Users can be Unregistered from STIG Manager, which will delete STIGMan’s information about the User. If the User accesses STIG Manager again, they will appear as a new User, with no STIG Assignments or Collection Grants.</p>
 <figure class="">
             <a 
@@ -327,7 +328,7 @@ This same data can also be imported, but be aware that if data is moved to a dif
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../the-project/index.html" class="btn btn-neutral float-right" title="The STIG Manager Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="care-and-feeding.html" class="btn btn-neutral float-right" title="3. STIG Manager Care and Feeding" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="admin-quickstart.html" class="btn btn-neutral float-left" title="1. STIG Manager Administrator Walkthrough" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

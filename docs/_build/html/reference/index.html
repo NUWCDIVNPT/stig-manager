@@ -109,7 +109,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -192,7 +192,7 @@
             
   <div class="section" id="terminology-and-concepts">
 <span id="terminology"></span><h1>Terminology and Concepts<a class="headerlink" href="#terminology-and-concepts" title="Permalink to this headline">¶</a></h1>
-<p>This is a glossary with definition terms for thing like <a class="reference internal" href="#term-Workflow"><span class="xref std std-term">Workflow</span></a>:</p>
+<p>This is a glossary with definition terms for thing like <a class="reference internal" href="#term-Asset"><span class="xref std std-term">Asset</span></a>:</p>
 <dl class="glossary">
 <dt id="term-Asset">Asset<a class="headerlink" href="#term-Asset" title="Permalink to this term">¶</a></dt><dd><p>An Asset is any component to which a STIG may be attached. Assets are created and changed in the Collection Configuration screen. To conform to the Navy RMF Process, an Asset must have a Name, IP Address, MAC Address, and Fully Qualified Domain Name unless it is designated “Non-Computing.” The Asset Properties screen allows you to set all these properties, as well as attach STIGs.</p>
 </dd>
@@ -218,15 +218,11 @@
 <td><p>Status</p></td>
 <td><p>&lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt; <strong>&lt;STATUS&gt;</strong></p></td>
 </tr>
-<tr class="row-odd"><td><p>Evaluation Comment</p></td>
+<tr class="row-odd"><td><p>Detail</p></td>
 <td><p>Finding Detail</p></td>
 <td><p>&lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt; <strong>&lt;FINDING_DETAILS&gt;</strong></p></td>
 </tr>
-<tr class="row-even"><td><p>Recommendation Action</p></td>
-<td><p>Comments</p></td>
-<td><p>&lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt; <strong>&lt;COMMENTS&gt;</strong>  <em>(Will be prepended to .ckl Comment on export, as .ckls do not have a specific tag for this information. When imported, if the Comments start with an Action, that field will be set accordingly.)</em></p></td>
-</tr>
-<tr class="row-odd"><td><p>Recommendation Comment</p></td>
+<tr class="row-even"><td><p>Comment</p></td>
 <td><p>Comments</p></td>
 <td><p>&lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt; <strong>&lt;COMMENTS&gt;</strong></p></td>
 </tr>
@@ -255,31 +251,22 @@
 </dd>
 <dt id="term-Package">Package<a class="headerlink" href="#term-Package" title="Permalink to this term">¶</a></dt><dd><p>An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections.</p>
 </dd>
-<dt id="term-Recommendation">Recommendation<a class="headerlink" href="#term-Recommendation" title="Permalink to this term">¶</a></dt><dd><p>Applicable to “Open” Findings, the additional steps that will be taken to address the Open Finding. Composed of an Action (Remediate, Mitigate, Exception) and an Action Comment.</p>
-</dd>
 <dt id="term-Review">Review<a class="headerlink" href="#term-Review" title="Permalink to this term">¶</a></dt><dd><p>A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. A Review has several components:</p>
 <ul>
-<li><p>Evaluation</p>
+<li><p>Evaluation - Requirements configured via Collection Settings.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Result - Not a Finding, Not Applicable, Open</p></li>
-<li><p>Result Comment - A comment describing the selected Result.</p></li>
+<li><p>Detail - Details describing the selected Result. Available according to Collection Settings.</p></li>
+<li><p>Comment - Additional information included in the Review. Available according to Collection Settings.</p></li>
 </ul>
 </div></blockquote>
 </li>
-<li><p>Recommendation - Available only if the Result is set to Open.</p>
+<li><p>Status - The current state of the Review in the system. A review can be Saved, Submitted, Accepted, or Rejected, according to its Collection Settings.</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Action - Remediate, Mitigate, Exception</p></li>
-<li><p>Action Comment - A comment describing the selected Action.</p></li>
-</ul>
-</div></blockquote>
-</li>
-<li><p>Status - The current state of the Review in the Workflow. A review can be Saved, Submitted, Accepted, or Returned, according to its place in its Collections Workflow.</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>In order to be Submitted, the Evaluation must have a Result and a Result Comment. If the Result is set to Open, then the Recommendation Action and Action Comment are also required. If the Review was Returned, at least one field must be changed in order to Submit it again.</p></li>
-<li><p>In order to be Returned, the Owner must specify a Return Comment, providing direction to the Evaluator.</p></li>
+<li><p>In order to be Submitted, the Evaluation must meet the requirements set for that Collection. Hover over the <code class="docutils literal notranslate"><span class="pre">(?)</span></code> symbol for submission requirements.</p></li>
+<li><p>In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.</p></li>
 </ul>
 </div></blockquote>
 </li>
@@ -312,10 +299,10 @@
 <td><p>Can review any Asset/STIG in the Collection.</p></td>
 </tr>
 <tr class="row-even"><td><p>Manage</p></td>
-<td><p>Everything in the “Full” level.  Can Add/Remove Assets, STIGs, and Users.</p></td>
+<td><p>Everything in the “Full” level.  Can Add/Remove Assets, STIGs, and Users. Optionally responsible for “Accepting” and “Rejecting” reviews from evaluators.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Owner</p></td>
-<td><p>Everything in the “Manage” level.  Can Delete the Collection.  Responsible for “Accepting” reviews from evaluators.</p></td>
+<td><p>Everything in the “Manage” level.  Can Delete the Collection.  Responsible for “Accepting”  and “Rejecting” reviews from evaluators.</p></td>
 </tr>
 </tbody>
 </table>
@@ -323,7 +310,7 @@
 <li><p>In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the “Restricted User access list…” button in the Grants panel toolbar.</p></li>
 </ul>
 <dl>
-<dt>Users can also be given one of 2 <strong>Privileges</strong> on the STIG Manager system. These privileges are administered in Keycloak through the assignment of User Roles:</dt><dd><ul>
+<dt>Users can also be given one of 2 <strong>Privileges</strong> on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak) through the assignment of User Roles:</dt><dd><ul>
 <li><p>Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.</p></li>
 <li><p>Administrator: Gives the user Administrative access to STIG Manager via the “Administration” node of the Nav Tree. The Administrator Privilege allows the User to:</p>
 <blockquote>
@@ -339,32 +326,6 @@
 </ul>
 </dd>
 </dl>
-</dd>
-<dt id="term-Workflow">Workflow<a class="headerlink" href="#term-Workflow" title="Permalink to this term">¶</a></dt><dd><p>STIG Manager supports the concept of Workflows, which apply to Collections and alter the available Statuses for the Reviews they contain.</p>
-<p>Currently, only the RMF Package Workflow is implemented. The goal of this workflow is to move evaluations towards an Accepted status that can become part of a POAM. This workflow supports the following statuses:</p>
-<ul>
-<li><p><strong>Saved</strong> - The initial state for a review. An evaluation or other data is stored, but has not been “submitted” to the Collection Owner for Acceptance.</p></li>
-<li><p><strong>Submitted</strong> - The Evaluator has marked this review as “Submitted,” meaning it has been flagged for attention by Collection Owners to either Accept or Reject. The Submitted status has certain requirements:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>All Evaluations must have both a Result and a Result Comment</p></li>
-<li><p>All “Open” Evaluations must also have an Action and an Action Comment</p></li>
-</ul>
-</div></blockquote>
-</li>
-<li><p><strong>Accepted</strong> - A Collection Owner has accepted this review as complete and meeting their process requirements. Further modification of the Review will cause it to lose it’s “Accepted” status.</p></li>
-<li><p><strong>Rejected</strong> - A Collection Owner has rejected this review for further work or clarification by the Reviewer. The Reviewer will have to make changes, then set back to “Submitted” to continue the workflow.</p>
-<blockquote>
-<div><ul>
-<li><p>In order to be Rejected, the Collection Owner must provide a Rejection Comment.</p>
-<blockquote>
-<div><p>Each status is called out in the Status Collection Report to help gauge overall Collection progress.</p>
-</div></blockquote>
-</li>
-</ul>
-</div></blockquote>
-</li>
-</ul>
 </dd>
 <dt id="term-XCCDF">XCCDF<a class="headerlink" href="#term-XCCDF" title="Permalink to this term">¶</a></dt><dd><p>An XML formatted schema for encoding STIGs and their Evaluations.</p>
 <p>STIG Manager maps its own data fields into and out of XCCDF format as follows:</p>
@@ -383,13 +344,10 @@
 <tr class="row-even"><td><p>Evaluation Result</p></td>
 <td><p>&lt;TestResult&gt;&lt;rule-result&gt; <strong>&lt;result&gt;</strong></p></td>
 </tr>
-<tr class="row-odd"><td><p>Evaluation Comment</p></td>
+<tr class="row-odd"><td><p>Detail</p></td>
 <td><p>&lt;TestResult&gt;&lt;rule-result&gt; <strong>&lt;message&gt;</strong></p></td>
 </tr>
-<tr class="row-even"><td><p>Recommendation Action</p></td>
-<td><p>&lt;TestResult&gt;&lt;rule-result&gt; <strong>&lt;metadata action&gt;</strong></p></td>
-</tr>
-<tr class="row-odd"><td><p>Recommendation Comment</p></td>
+<tr class="row-even"><td><p>Comment</p></td>
 <td><p>&lt;TestResult&gt;&lt;rule-result&gt; <strong>&lt;metadata action-comment&gt;</strong></p></td>
 </tr>
 </tbody>

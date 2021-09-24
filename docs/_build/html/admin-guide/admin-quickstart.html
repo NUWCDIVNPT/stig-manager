@@ -112,6 +112,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="admin-guide.html">2. STIG Manager Admin Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="care-and-feeding.html">3. STIG Manager Care and Feeding</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
@@ -123,7 +124,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -222,7 +223,7 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
 </div></blockquote>
 <div class="admonition attention">
 <p class="admonition-title">Attention</p>
-<p>Being an Administrator in STIG Manager does not give you the ability to <em>create</em> new users or assign them new Roles (Admin, or Collection Creator). Creating users and assigning Roles can only be done from the Keycloak Management Console, and you must have the proper permissions in Keycloak to do this.</p>
+<p>Being an Administrator in STIG Manager does not give you the ability to <em>create</em> new users or assign them new Roles (Admin or Collection Creator). Creating users and assigning Roles can only be done in the Authentication provider (often the Keycloak Management Console), and you must have the proper permissions on your Authentication Provider to do this.</p>
 </div>
 <div class="section" id="administrator-menu">
 <h2><span class="section-number">1.1. </span>Administrator Menu<a class="headerlink" href="#administrator-menu" title="Permalink to this headline">¶</a></h2>
@@ -234,11 +235,11 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
 <figure class="">
             <a 
                data-lightbox="group-default"
-               href="../_images/CollectionAdmin1.png"
+               href="../_images/admin-collections1.png"
                title="Collection Admin"
                data-title="Collection Admin"
                
-               ><img src="../_images/CollectionAdmin1.png"
+               ><img src="../_images/admin-collections1.png"
                      class=""
                      width="50%"
                      height="auto"
@@ -252,15 +253,15 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
 It also includes buttons to pre-register User, unregister User, and modify User Grants.</p>
 <div class="section" id="pre-registering-users">
 <h4><span class="section-number">1.1.2.1. </span>Pre-registering Users<a class="headerlink" href="#pre-registering-users" title="Permalink to this headline">¶</a></h4>
-<p>The pre-register function does not grant access to STIG Manager. User <em>access</em> is solely managed via Keycloak. The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via Keycloak at some later date. In that case, the Username entered when preregistering must match the username received from Keycloak when they finally log in.  A pre-registered user will have <em>No value</em> in the Last Access column of this screen until they actually access STIG Manager.</p>
+<p>The pre-register function does not grant access to STIG Manager. User <em>access</em> is solely managed via your Authentication Provider (Keycloak, F5, etc). The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via the Authentication Provider at some later date. In that case, the Username entered when preregistering must match the username received from the Authentication Provider when they finally log in.  A pre-registered user will have <em>No value</em> in the Last Access column of this screen until they actually access STIG Manager.</p>
 </div>
 <div class="section" id="unregistering-users">
 <h4><span class="section-number">1.1.2.2. </span>Unregistering Users<a class="headerlink" href="#unregistering-users" title="Permalink to this headline">¶</a></h4>
-<p>Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in Keycloak.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role in Keycloak, they may still be able to create a collection or even Administer STIG Manager.</p>
+<p>Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in the Authentication Provider.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role in the Authentication Provider, they may still be able to create a collection or even Administer STIG Manager.</p>
 </div>
 <div class="section" id="modifying-users">
 <h4><span class="section-number">1.1.2.3. </span>Modifying Users<a class="headerlink" href="#modifying-users" title="Permalink to this headline">¶</a></h4>
-<p>The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is derived from information in the access token, which is managed in Keycloak.</p>
+<p>The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is derived from information in the access token, which is managed in the Authentication Provider.</p>
 <figure class="">
             <a 
                data-lightbox="group-default"

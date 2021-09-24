@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>3. STIG Manager Care and Feeding &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
+        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+        <script src="../_static/js/custom.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The STIG Manager Project" href="../the-project/index.html" />
+    <link rel="prev" title="2. STIG Manager Admin Guide" href="admin-guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">For Admins</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="admin-quickstart.html">1. STIG Manager Administrator Walkthrough</a></li>
+<li class="toctree-l2"><a class="reference internal" href="admin-guide.html">2. STIG Manager Admin Guide</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3. STIG Manager Care and Feeding</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#update-stig-and-scap-information">3.1. Update STIG and SCAP Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pre-registering-users">3.2. Pre-Registering Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#review-history-pruning">3.3. Review History Pruning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-a-source-of-automated-evaluations">3.4. Configure a Source of Automated Evaluations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#transfer-assets-to-another-collection">Transfer Assets to Another Collection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">For Admins</a> &raquo;</li>
+        
+      <li><span class="section-number">3. </span>STIG Manager Care and Feeding</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/admin-guide/care-and-feeding.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="../the-project/index.html" class="btn btn-neutral float-right" title="The STIG Manager Project" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+      
+        <a href="admin-guide.html" class="btn btn-neutral float-left" title="2. STIG Manager Admin Guide" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="stig-manager-care-and-feeding">
+<span id="care-and-feeding-doc"></span><h1><span class="section-number">3. </span>STIG Manager Care and Feeding<a class="headerlink" href="#stig-manager-care-and-feeding" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Ongoing tasks</p>
+<p>To keep STIG Manager functioning optimally, certain simple tasks must be performed periodically.</p>
+<p>These tasks, and and other optional support activities, are listed below.</p>
+<div class="section" id="update-stig-and-scap-information">
+<span id="stig-updates"></span><h2><span class="section-number">3.1. </span>Update STIG and SCAP Information<a class="headerlink" href="#update-stig-and-scap-information" title="Permalink to this headline">¶</a></h2>
+<p>DISA releases new versions of many of their STIGs and SCAP files every Quarter.  They also occasionally release them off this schedule. Keep an eye on DISA’s  <a class="reference external" href="https://public.cyber.mil/stigs/">https://public.cyber.mil/stigs/</a> and <a class="reference external" href="https://cyber.mil/stigs/">https://cyber.mil/stigs/</a> sites for updates.</p>
+<p>These updates must be brought into STIG Manager if you wish the updates to be reflected in STIG Manager’s reports and presentation. STIGs must be imported by someone with Administrator privileges in the STIG Manager instance:</p>
+<ol class="arabic simple">
+<li><p>Download the STIGs you want to update from <a class="reference external" href="https://public.cyber.mil/stigs/">DISA.</a></p></li>
+<li><p>Upload the .zip files to STIG Manager via the <code class="docutils literal notranslate"><span class="pre">Administration</span> <span class="pre">-&gt;</span> <span class="pre">STIG</span> <span class="pre">and</span> <span class="pre">SCAP</span> <span class="pre">Benchmarks</span></code> item in the Navigation Tree.</p></li>
+<li><p>If you import SCAP files in XCCDF format as well, the potential automated checks will be highlighted when viewing Checklists.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can import the entire Quarterly Library Compilation at once, or individual STIGs.</p>
+</div>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/admin-stigs-import1.png"
+               title="STIG Imports"
+               data-title="STIG Imports"
+               
+               ><img src="../_images/admin-stigs-import1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>STIG Imports</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>By default, STIG Manager displays Checklists and Reviews according to the latest version of the STIG.  It will also recalculate statistics against the latest version(s) of the STIGs. No other action is needed after an update. Older versions of STIGs can still be selected from the Review Workspace checklist pulldown menu.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/asset-review-stig-revisions1.png"
+               title="STIG Revision Selection"
+               data-title="STIG Revision Selection"
+               
+               ><img src="../_images/asset-review-stig-revisions1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>STIG Revision Selection</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>STIG Manager tracks Reviews by their Rule ID, not STIG ID. In most cases, new STIG revisions will have substantially the same ruleset as previous revisions. This means that most of the time, when you update STIGs in STIG Manager, most Assets will carry most of their existing reviews forward and you will not have to start from scratch.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="pre-registering-users">
+<span id="id1"></span><h2><span class="section-number">3.2. </span>Pre-Registering Users<a class="headerlink" href="#pre-registering-users" title="Permalink to this headline">¶</a></h2>
+<p>Typically, Users must access the system at least once before they can be given Collection Grants.  STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the <code class="docutils literal notranslate"><span class="pre">Administration</span> <span class="pre">-&gt;</span> <span class="pre">User</span> <span class="pre">Grants</span></code> workspace.  Click the Pre-register User button, and enter their username. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/user-admin-prereg-button1.png"
+               title="STIG Revision Selection"
+               data-title="STIG Revision Selection"
+               
+               ><img src="../_images/user-admin-prereg-button1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>STIG Revision Selection</figcaption>
+            </figure><figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/user-admin-prereg-popup1.png"
+               title="STIG Revision Selection"
+               data-title="STIG Revision Selection"
+               
+               ><img src="../_images/user-admin-prereg-popup1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>STIG Revision Selection</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="review-history-pruning">
+<span id="id2"></span><h2><span class="section-number">3.3. </span>Review History Pruning<a class="headerlink" href="#review-history-pruning" title="Permalink to this headline">¶</a></h2>
+<p>STIG Manager keeps a history of every change made to a Review. Eventually, these Review History entries will become irrelevant but will continue to take up space.
+It is suggested that you periodically prune your stored review history (in accordance with your data retention policy) with the Delete Review History endpoint of the API.  Further information on this feature will be provided in the future.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="section" id="configure-a-source-of-automated-evaluations">
+<span id="automated-imports"></span><h2><span class="section-number">3.4. </span>Configure a Source of Automated Evaluations<a class="headerlink" href="#configure-a-source-of-automated-evaluations" title="Permalink to this headline">¶</a></h2>
+<p>There are several tools available that will automatically assess many of your STIGs, and provide output in .ckl or XCCDF output.  Tools such as Evaluate STIG and SCC can be configured to populate file system folders with their evaluation results. If you find yourself with a lot of these .ckl files, you may find the STIGMan Watcher tool useful.</p>
+<p>STIGMan Watcher is a lightweight command line utility that can be configured to monitor a file system folder for .ckl files or XCCDF results, and automatically submit them to a Collection on a STIG Manager instance.  You could potentially have many STIGMan Watchers running, each monitoring a file folder and importing results into particular STIGMan Collections.</p>
+<p>More information can be found along with the source code on <a class="reference external" href="https://github.com/NUWCDIVNPT/stigman-watcher">GitHub</a> and with the <a class="reference external" href="https://www.npmjs.com/package/stigman-watcher">NodeJs package.</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Be sure to give the STIGMan Watcher user permissions on your Collection!</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../the-project/index.html" class="btn btn-neutral float-right" title="The STIG Manager Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="admin-guide.html" class="btn btn-neutral float-left" title="2. STIG Manager Admin Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

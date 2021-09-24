@@ -23,5 +23,6 @@ These pages describe how to deploy STIG Manager.
 	db
 	logging
 	reverse-proxy
+	cors
 	permissions-model
 	environment-variables

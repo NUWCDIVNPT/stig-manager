@@ -104,17 +104,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#stig-evaluation-data-freed-from-ckl-files">STIG Evaluation Data, Freed From .CKL Files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#rmf-package-data-represented-as-collections-assets-stigs-and-reviews">RMF Package data represented as Collections, Assets, STIGs, and Reviews</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-collections-from-your-existing-ckl-files">Create Collections From Your Existing .CKL Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data">Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#workflow-to-track-status-and-make-progress-towards-a-poa-m">Workflow to Track Status and Make Progress Towards a POA&amp;M</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workspaces-for-understanding-and-tracking-your-evaluation-data">Workspaces for Understanding and Tracking Your Evaluation Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizable-review-requirements-to-help-progress-towards-a-poa-m">Customizable Review Requirements to Help Progress Towards a POA&amp;M</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reporting-on-findings-and-evaluation-status">Reporting on Findings and Evaluation Status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#user-access-controls-to-limit-access-to-your-data">User Access Controls to Limit Access to Your Data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stig-manager-is-cci-aware">STIG Manager is CCI-aware</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach">STIG Manager integrates with the RMF Lifecycle approach</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stig-manager-integrates-with-the-continuous-rmf-lifecycle-approach">STIG Manager Integrates with the Continuous RMF Lifecycle approach</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l4"><a class="reference internal" href="common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l4"><a class="reference internal" href="common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -139,7 +139,7 @@
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -265,14 +265,14 @@
 </div>
 </div>
 <hr class="docutils" />
-<div class="section" id="workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data">
-<h3>Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data<a class="headerlink" href="#workspaces-for-common-tasks-and-getting-a-handle-on-your-evaluation-data" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="workspaces-for-understanding-and-tracking-your-evaluation-data">
+<h3>Workspaces for Understanding and Tracking Your Evaluation Data<a class="headerlink" href="#workspaces-for-understanding-and-tracking-your-evaluation-data" title="Permalink to this headline">¶</a></h3>
 <p>The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection.</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 <hr class="docutils" />
-<div class="section" id="workflow-to-track-status-and-make-progress-towards-a-poa-m">
-<h3>Workflow to Track Status and Make Progress Towards a POA&amp;M<a class="headerlink" href="#workflow-to-track-status-and-make-progress-towards-a-poa-m" title="Permalink to this headline">¶</a></h3>
-<p>STIG Manager supports an “RMF Package Workflow” that allows designated Collection Owners to “Reject” Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also “Accept” a Review, locking it from further revision by evaluators while they prepare their POA&amp;M.</p>
+<div class="section" id="customizable-review-requirements-to-help-progress-towards-a-poa-m">
+<h3>Customizable Review Requirements to Help Progress Towards a POA&amp;M<a class="headerlink" href="#customizable-review-requirements-to-help-progress-towards-a-poa-m" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager supports customizable Review Requirements that allow designated Collection Owners to “Reject” Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also “Accept” a Review, potentially marking it as a candidate for their POA&amp;M.</p>
 </div>
 <div class="section" id="reporting-on-findings-and-evaluation-status">
 <h3>Reporting on Findings and Evaluation Status<a class="headerlink" href="#reporting-on-findings-and-evaluation-status" title="Permalink to this headline">¶</a></h3>
@@ -288,9 +288,9 @@
 <p>STIG Manager maintains relationships between STIG Rules and their associated CCIs and Assessment Procedures. Reports can be pivoted to show Open Findings sorted by Rule, CCI, or Group.</p>
 <p>STIG Manager can produce a pre-populated POA&amp;M-like document that lists findings already decomposed into their related CCIs.</p>
 </div>
-<div class="section" id="stig-manager-integrates-with-the-rmf-lifecycle-approach">
-<h3>STIG Manager integrates with the RMF Lifecycle approach<a class="headerlink" href="#stig-manager-integrates-with-the-rmf-lifecycle-approach" title="Permalink to this headline">¶</a></h3>
-<p>STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the implementation of the “Continuous” Workflow, STIG Manager will play a vital part of the RMF lifecycle.  When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.</p>
+<div class="section" id="stig-manager-integrates-with-the-continuous-rmf-lifecycle-approach">
+<h3>STIG Manager Integrates with the Continuous RMF Lifecycle approach<a class="headerlink" href="#stig-manager-integrates-with-the-continuous-rmf-lifecycle-approach" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager is ready to support a life-cycle approach to RMF. Your most current STIG Assessments are always available in STIGManager. When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.</p>
 <hr class="docutils" />
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
@@ -299,7 +299,7 @@
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
