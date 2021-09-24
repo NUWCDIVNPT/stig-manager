@@ -22,7 +22,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional) **default:** ``name``
     * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) **default:** ``email``
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
-    * scope - OIDC standard. Not configurable.
+    * scope - OIDC standard. Use ``STIGMAN_CLIENT_EXTRA_SCOPES`` to specify additional scopes the client should request. 
 
 .. note::
   STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``
@@ -108,7 +108,7 @@ The Roles specified in the JWT map to Privileges in STIG Manager that allow vary
 
 
 .. note::
-  The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your specific organizations Security Policy.
+  The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization's Security Policy.
 
 
 .. _keycloak:

@@ -25,7 +25,7 @@ The administration branch provides access to the following Administration panels
 Collections Admin Panel
 --------------------------------
 This Panel lists every Collection in the STIGMan system, and allows you to create, delete, and alter them with the buttons at the top.
-The columns list the Collection Name, Workflow, Description, Owners, total User members, total Assets, total assigned STIGs, and the date of creation.
+The columns list the Collection Name, Description, Owners, total User members, total Assets, total assigned STIGs, and the date of creation.
 
 
 .. note::
@@ -44,9 +44,9 @@ User Grants Admin Panel
 ---------------------------------
 This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, date of first User access, last User access, User's privileges ( Create Collection or Administrator), and their internal userid.
 
-STIG Manager's Users are automatically created when they have successfully used Keycloak to authenticate and are redirected back to the STIGMan application.
+STIG Manager's Users are automatically created when they have successfully used your Authentication Provider to authenticate and are redirected back to the STIGMan application.
 
-Users can be pre-registered before they have authenticated with Keycloak, but the username must match exactly.
+Users can be pre-registered before they have authenticated with your Authentication Provider, but the username must match exactly.
 
 Users can be Unregistered from STIG Manager, which will delete STIGMan's information about the User. If the User accesses STIG Manager again, they will appear as a new User, with no STIG Assignments or Collection Grants.
 

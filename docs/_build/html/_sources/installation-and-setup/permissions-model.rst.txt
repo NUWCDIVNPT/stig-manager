@@ -23,16 +23,14 @@ Collections are composed of:
 
 
 
-.. todo::
-    Add Organization description to this structure.
+..
+
+  Permissions Model
+  --------------------
 
 
-Permissions Model
---------------------
-
-
-API Endpoints and their Roles
------------------------------------
+  API Endpoints and their Roles
+  -----------------------------------
 
 
 

@@ -9,9 +9,11 @@ STIG Manager is configured via its Environment Variables:
 
 
 
-.. list-table:: STIG Manager Environment Variables
+.. list-table:: STIG Manager Environment Variables - Functional
    :widths: 20 70 10
    :header-rows: 1
+   :stub-columns: 1
+   :align: left
    :class: tight-table
 
    * - Variable
@@ -125,9 +127,12 @@ STIG Manager is configured via its Environment Variables:
    * - STIGMAN_JWT_USERNAME_CLAIM
      - **Default** ``preferred_username`` The access token claim whose value is the user's username
      - API, Client
+   * - STIGMAN_OIDC_PROXY_HOST
+     - **No default** The ``Host:`` header value to be used by the CORS proxy for outbound requests. Some OIDC providers return configuration metadata with endpoint URLs having this value as their base.
+     - API, Client
    * - STIGMAN_OIDC_PROVIDER
      - **Default** ``http://localhost:8080/auth/realms/stigman``  The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.
-     - API, Client
+     - API, Client     
    * - STIGMAN_SWAGGER_AUTHORITY
      - **Deprecated** and will be removed soon. Use STIGMAN_SWAGGER_OIDC_PROVIDER 
      - Deprecated
@@ -147,12 +152,39 @@ STIG Manager is configured via its Environment Variables:
 
 |
 
+.. list-table:: STIG Manager Environment Variables - Appearance Customization
+   :widths: 20 70 10
+   :width: 100%
+   :header-rows: 1
+   :stub-columns: 1
+   :align: left
+   :class: tight-table
+
+   * - Variable
+     - Description
+     - Affects
+   * - STIGMAN_CLIENT_WELCOME_IMAGE 
+     - **No default**  An image URL that will be rendered in the Home tab Welcome widget. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed. 
+     - Client Appearance
+   * - STIGMAN_CLIENT_WELCOME_TITLE 
+     - **Default** ``Support`` The tile that will be displayed for the custom Home tab Welcome message.
+     - Client Appearance
+   * - STIGMAN_CLIENT_WELCOME_MESSAGE 
+     - **No default** Text that will be displayed in the Home tab Welcome widget.
+     - Client Appearance     
+   * - STIGMAN_CLIENT_WELCOME_LINK
+     - **No default** Value of an optional link that will follow the Welcome message in the Home tab Welcome widget. 
+     - Client Appearance     
+
+
 |
 
 
 .. list-table:: Useful Node.js Environment Variables
    :widths: 20 70 10
    :header-rows: 1
+   :stub-columns: 1
+   :align: left
    :class: tight-table
 
    * - Variable

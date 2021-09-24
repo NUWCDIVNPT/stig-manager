@@ -110,7 +110,7 @@
 <li class="toctree-l1"><a class="reference internal" href="#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#add-users">Add Users</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#to-a-collection">To a Collection</a></li>
@@ -208,21 +208,21 @@ From here, select the “Import CKL or SCAP…” button in the Asset Panel, the
 </div>
 <div class="section" id="review-a-stig-on-an-asset">
 <h1>Review a STIG on an Asset<a class="headerlink" href="#review-a-stig-on-an-asset" title="Permalink to this headline">¶</a></h1>
-<p>Many STIGs do not have automated evaluations, and even after automated results are imported, many Rules may still require additional manual Evaluation.  The Asset Review Workspace in STIG Manager provides a comprehensive environment for Users to complete Evaluations of a specific STIG on an an Asset, and start engagement with the RMF Workflow by Submitting their reviews.</p>
+<p>Many STIGs do not have automated evaluations, and even after automated results are imported, many Rules may still require additional manual Evaluation.  The Asset Review Workspace in STIG Manager provides a comprehensive environment for Users to complete Evaluations of a specific STIG on an an Asset, and set statuses that can be used to gauge progress.</p>
 <p>Use the <a class="reference internal" href="../user-guide/user-guide.html#asset-review-workspace"><span class="std std-ref">Asset Review Workspace</span></a> to manually review individual STIG Rules, import results from .ckl or XCCDF files, compare Reviews to other Assets in the Collection, and to see a History of Reviews for that Asset.</p>
 </div>
 <div class="section" id="review-an-entire-collection-at-once">
 <h1>Review an entire Collection at once<a class="headerlink" href="#review-an-entire-collection-at-once" title="Permalink to this headline">¶</a></h1>
-<p>Many Collections will contain Assets that are assigned the same STIG.  The Collection Review Workspace allows Evaluators and Validators to step through each Rule in the STIG and view each Asset’s Review and Status in one place. Restricted Users will only see the Assets they have been assigned, while Users with higher grants to the Collection will see every Asset.  Comments, Evaluations, and Statuses can all be edited via this interface, which also offers bulk actions for Submitting and Accepting Reviews.  This interface also provides an export option that will produce a .zip arvhive of .ckls representing the state of every Asset in the Collection that has this STIG.</p>
+<p>Many Collections will contain Assets that are assigned the same STIG.  The Collection Review Workspace allows Evaluators and Validators to step through each Rule in the STIG and view each Asset’s Review and Status in one place. Restricted Users will only see the Assets they have been assigned, while Users with higher grants to the Collection will see every Asset.  Comments, Evaluations, and Statuses can all be edited via this interface, which also offers bulk actions for Submitting and Accepting Reviews.  This interface also provides an export option that will produce a .zip archive of .ckls representing the state of every Asset in the Collection that has this STIG.</p>
 <p>See the User Guide’s section on the <a class="reference internal" href="../user-guide/user-guide.html#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a> for more information.</p>
 </div>
 <div class="section" id="accept-and-reject-stig-reviews">
 <h1>Accept and Reject STIG Reviews<a class="headerlink" href="#accept-and-reject-stig-reviews" title="Permalink to this headline">¶</a></h1>
-<p>To help advance through the RMF process, Collection Owners (often RMF Validators) can Accept STIG Reviews at the individual <a class="reference internal" href="../user-guide/user-guide.html#asset-review-workspace"><span class="std std-ref">Asset Review</span></a> level as well as in bulk using the <a class="reference internal" href="../user-guide/user-guide.html#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a>.  Collection Owners can also “Reject” Reviews and provide a Feedback comment to the Reviewer, which will require them to make further modification before submitting the Review again.</p>
+<p>To help advance through the RMF process, Collection Owners (often RMF Validators) can Accept STIG Reviews individually or in bulk using the <a class="reference internal" href="../user-guide/user-guide.html#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a>.  Collection Owners can also “Reject” Reviews and provide a Feedback comment to the Reviewer, which will require them to make further modification before submitting the Review again.</p>
 <p>Check out the <a class="reference internal" href="../user-guide/user-guide.html#collection-review-workspace"><span class="std std-ref">Collection Review Workspace</span></a> portion of the User Guide for more information.</p>
 </div>
-<div class="section" id="analyze-findings-and-generate-a-poam">
-<h1>Analyze Findings and Generate a POAM<a class="headerlink" href="#analyze-findings-and-generate-a-poam" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="analyze-findings-and-generate-a-poa-m">
+<h1>Analyze Findings and Generate a POA&amp;M<a class="headerlink" href="#analyze-findings-and-generate-a-poa-m" title="Permalink to this headline">¶</a></h1>
 <p>The Findings Report provides a roll-up of every “Open” Evaluation in a Collection, and allows you to drill down into the contributing Asset Reviews.  A POA&amp;M-style spreadsheet of these Findings can also be exported.</p>
 <p>Check the User Guide for more information about the <a class="reference internal" href="../user-guide/user-guide.html#id8"><span class="std std-ref">Findings Report Workspace</span></a>.</p>
 </div>
@@ -245,7 +245,7 @@ Check ou the <a class="reference internal" href="../user-guide/user-guide.html#g
 </div>
 <div class="section" id="export-accepted-results">
 <h1>Export Accepted Results<a class="headerlink" href="#export-accepted-results" title="Permalink to this headline">¶</a></h1>
-<p>When a Collection has completely advanced through the STIG Manager RMF Workflow, all Reviews in a Collection should be in the Accepted state.
+<p>Your process may vary, but many processes have a goal of getting all Reviews in a Collection into an Accepted status.
 You can quickly check the status of our Collection in the Collection Management screen, and create a .zip Archive of .ckl files for your entire Collection, or some portion of it.  This export will produce one .ckl file per Asset containing each STIG selected. These Multi-STIG .ckl files have been tested to be compatible with both eMASS and STIG Viewer.</p>
 <p>These exports are available organized <a class="reference internal" href="../user-guide/user-guide.html#export-by-asset"><span class="std std-ref">by Asset</span></a> or <a class="reference internal" href="../user-guide/user-guide.html#export-by-stig"><span class="std std-ref">by STIG.</span></a></p>
 </div>
@@ -256,9 +256,9 @@ You can quickly check the status of our Collection in the Collection Management 
 </div>
 <div class="section" id="update-stigs">
 <h1>Update STIGs<a class="headerlink" href="#update-stigs" title="Permalink to this headline">¶</a></h1>
-<p>DISA releases new STIGs every quarter (and often in-btween scheduled releases).  STIG Manager will maintain a history of STIG revisions that have been imported as long as the Benchmark ID in the STIG remains the same.  All STIG Assignments made to Assets will be preserved, and will refer to the latest version of the STIG that was imported (unless otherwise pinned to a specific Revision in the Collection [This feature is not yet fully implemented]).</p>
+<p>DISA releases new STIGs every quarter (and often in-between scheduled releases).  STIG Manager will maintain a history of STIG revisions that have been imported as long as the Benchmark ID in the STIG remains the same.  All STIG Assignments made to Assets will be preserved, and will refer to the latest version of the STIG that was imported (unless otherwise pinned to a specific Revision in the Collection [This feature is not yet fully implemented]).</p>
 <p>Most STIG updates only change a small fraction of the Rules therein. STIG Manager tracks reviews at the Rule ID level, so in most cases a completely reviewed Asset with a new STIG will still have most of the Reviews already populated and in the same state they were in before the update.</p>
-<p>Download the new STIGs from DISA, and upload the STIGs you want to update using the <a class="reference internal" href="../admin-guide/admin-quickstart.html#stig-import"><span class="std std-ref">STIGS Import interface.</span></a></p>
+<p>Download the new STIGs from DISA, and upload the STIGs you want to update using the <a class="reference internal" href="../admin-guide/care-and-feeding.html#stig-updates"><span class="std std-ref">STIGS Import interface.</span></a></p>
 </div>
 <div class="section" id="having-a-problem-let-us-know-and-submit-an-issue-on-github">
 <h1>Having a problem? Let us know and submit an issue on GitHub!<a class="headerlink" href="#having-a-problem-let-us-know-and-submit-an-issue-on-github" title="Permalink to this headline">¶</a></h1>

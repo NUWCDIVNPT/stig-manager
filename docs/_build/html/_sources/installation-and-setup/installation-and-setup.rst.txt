@@ -33,7 +33,7 @@ The STIG Manager Client is using the ExtJS 3.4 application framework under the G
 Setup Options
 ===============
 
-STIG Manager requires Node.js 14+, Keycloak, and a MySQL Database. It is configured using :ref:`Environment Variables`, and can be deployed as a container from the image provided on Docker Hub or directly from source code.  
+STIG Manager requires Node.js 14+, an Authentication Provider (Such as Keycloak), and a MySQL Database. It is configured using :ref:`Environment Variables`, and can be deployed as a container from the image provided on Docker Hub or directly from source code.  
 
 Quick Start Orchestration with Docker Compose
 -------------------------------------------------
@@ -71,7 +71,7 @@ Procedure
       -p 54000:54000 \
       -e STIGMAN_DB_HOST=<DATABASE_IP> \
       -e STIGMAN_DB_PORT=<DATABASE_PORT> \
-      -e STIGMAN_API_AUTHORITY=http://<KEYCLOAK_IP>:<KEYCLOAK_PORT>/auth/realms/stigman \
+      -e STIGMAN_OIDC_PROVIDER=http://<KEYCLOAK_IP>:<KEYCLOAK_PORT>/auth/realms/stigman \
       nuwcdivnpt/stig-manager
 
 
@@ -143,8 +143,8 @@ It is likely you will have to set at least some of these Environment Variables, 
 
   * Authentication-related:
 
-    - STIGMAN_API_AUTHORITY
-    - STIGMAN_CLIENT_KEYCLOAK_AUTH
+    - STIGMAN_OIDC_PROVIDER
+    - STIGMAN_CLIENT_OIDC_PROVIDER
 
   * General Configuration:
     
@@ -183,6 +183,13 @@ Configure Logging
 -----------------------
 :ref:`Store logs according to Organization requirements. <logging>`
 
+Address Possible CORS Issues
+-------------------------------
+
+:ref:`The STIGMan API can act as a proxy for client calls to the Authentication Provider to help avoid issues arising from CORS enforcement settings.<cors>`
+
+
+
 First Steps
 ==============
 
@@ -196,13 +203,13 @@ First Steps
 Configure Users
 --------------------------
 
-Users are not created in the STIG Manager application itself. All users must be present in Keycloak (Or any other supported Authentication Provider) and be assigned the appropriate roles before they can access the sytem. Upon first access after successful Keycloak Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
+Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak) and be assigned the appropriate tokens, scopes, and roles before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
 
-Assign Users the appropriate roles. In Keycloak, this can be done using the "Role Mappings" tab for that user, or you can set these roles as defaults using the Configure->Roles->Default Roles interface.
+User privileges are controlled by the Authentication Provider. This can be done by configuring and assigning Users the appropriate roles. In Keycloak, this can be done using the "Role Mappings" tab for that user, or you can set these roles as defaults using the Configure->Roles->Default Roles interface.  See the :ref:`Authentication and Identity<authentication>` section for more information. 
 
 Assign at least one User the ``admin`` role when setting up STIG Manager for the first time. 
 
-.. list-table:: STIG Manager User Types, STIG Manager Privileges, and the required Roles: 
+.. list-table:: STIG Manager User Types, STIG Manager Privileges, and suggested Roles: 
   :widths: 20 60 20
   :header-rows: 1
   :class: tight-table
@@ -225,7 +232,7 @@ Assign at least one User the ``admin`` role when setting up STIG Manager for the
 
 It is recommended that most users should be "Collection Creator Users"(ie. assigned the "user" and "create_collection" roles). A Restricted User will only have access to grants they have been assigned by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
 
-STIG Manager will automatically create its own user associations for Collection grants once a KeyCloak authenticated user accesses the system. The roles Admin and Collection Creator are visible in the User Grants administrative tab, but must be managed in Keycloak. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
+STIG Manager will automatically create its own user associations for Collection grants once an authenticated user accesses the system. The roles Admin and Collection Creator are visible in the User Grants administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
 
 
 Import STIGs
@@ -235,7 +242,7 @@ Up until this point, the setup has concerned the actual operational deployment o
 
 #. Download the latest `quarterly STIG Library Compilations from DISA <https://public.cyber.mil/stigs/compilations/>`_ and import it into STIG Manager. 
 
-#. Log in to STIG Manager using an Administrator user to import STIGs. For information on how to do this, and other STIG Managager Admin functions, see the :ref:`stig-import` portion of the :ref:`admin-quickstart`. 
+#. Log in to STIG Manager using an Administrator user to import STIGs. For information on how to do this, and other STIG Manager Admin functions, see the :ref:`stig-import` portion of the :ref:`admin-quickstart`. 
 
 
 

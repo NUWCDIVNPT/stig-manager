@@ -67,7 +67,7 @@ Migrating to STIG Manager is easy because it can use your existing artifacts to 
 
 -------------------------
 
-Workspaces for Common Tasks and Getting a Handle on Your Evaluation Data
+Workspaces for Understanding and Tracking Your Evaluation Data
 -------------------------------------------------------------------------------------
 
 The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection. 
@@ -81,10 +81,10 @@ The STIG Manager Client provides efficient workspaces for creating Collections o
 
 
 
-Workflow to Track Status and Make Progress Towards a POA&M
-------------------------------------------------------------------
+Customizable Review Requirements to Help Progress Towards a POA&M
+---------------------------------------------------------------------
 
-STIG Manager supports an "RMF Package Workflow" that allows designated Collection Owners to "Reject" Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also "Accept" a Review, locking it from further revision by evaluators while they prepare their POA&M. 
+STIG Manager supports customizable Review Requirements that allow designated Collection Owners to "Reject" Reviews to evaluators for further revision or clarification, such as when a Finding requires further Detailing. Collection Owners can also "Accept" a Review, potentially marking it as a candidate for their POA&M. 
 
 Reporting on Findings and Evaluation Status
 ---------------------------------------------------
@@ -106,10 +106,10 @@ STIG Manager maintains relationships between STIG Rules and their associated CCI
 STIG Manager can produce a pre-populated POA&M-like document that lists findings already decomposed into their related CCIs. 
 
 
-STIG Manager integrates with the RMF Lifecycle approach
---------------------------------------------------------------
+STIG Manager Integrates with the Continuous RMF Lifecycle approach
+----------------------------------------------------------------------
 
-STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the implementation of the "Continuous" Workflow, STIG Manager will play a vital part of the RMF lifecycle.  When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.
+STIG Manager is ready to support a life-cycle approach to RMF. Your most current STIG Assessments are always available in STIGManager. When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.
 
 
 
@@ -162,7 +162,7 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
   Import SCAP results or .ckl files using STIG Manager's convenient interface to build a Collection of Assets, and get a handle on their current Evaluation Status. 
 
 
-  Manual STIGs, and STIGs with incomplete automation can be completed right in STIG Manager's UI, either individually or as a group. Convenient references, such as Evaluations for other Assets in the Collection and a history of Rule Evaluations are easily accesible. IF applicable, Reviews for other Assets can be dragged and dropped right into another Assets Evaluation. 
+  Manual STIGs, and STIGs with incomplete automation can be completed right in STIG Manager's UI, either individually or as a group. Convenient references, such as Evaluations for other Assets in the Collection and a history of Rule Evaluations are easily accessible. IF applicable, Reviews for other Assets can be dragged and dropped right into another Assets Evaluation. 
 
   Work as a team. Stig Manager can show Evaluations you or your team have provided for other Assets in your Collection. 
 
@@ -191,7 +191,7 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
   * Automatically create a collection of Assets from your existing .ckl files.
   * Review all your assets at once with the Collection Review workspace.
   * Provide a workspace for viewing manual and automated STIG evaluations together.
-  * Enforce a workflow for your Collection.
+  * Enforce a Review Requirements for your Collection.
   * Reports for Findings.
   * Status reports, showing STIG Evaluation completeness
   * Generate POAM from your findings.
@@ -203,16 +203,13 @@ STIG Manager is (almost) ready to support a life-cycle approach to RMF. With the
   Collection Builder
   ----------------------
 
-  Workflow Tracking
-  ----------------------
-
   Reporting
   -----------------
 
 
 
 
----------------------
+########################
 
 
 .. toctree::

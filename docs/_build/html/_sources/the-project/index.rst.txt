@@ -47,12 +47,6 @@ STIG Manager is a modern, containerized application built to take full advantage
 
 
 
-STIG Manager Security
-===========================================
-
-.. todo::
-    Describe STIG Manager's scanning, testing, and adherance go to guidelines here.
-
 
 Support
 ==============

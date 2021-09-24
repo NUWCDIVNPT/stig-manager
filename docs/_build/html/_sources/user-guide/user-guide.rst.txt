@@ -9,7 +9,7 @@ STIG Manager User Guide
 
 .. rubric:: The STIG Manager User Interface
 
-This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privelege.
+This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privilege.
 
 Please see the :ref:`admin-guide-doc` for Administrative functions.
 
@@ -160,7 +160,7 @@ See :ref:`Status Report` for more info.
 
 Collection Review Workspace
 ==============================
-The Collection Review Workspace allows the user to assess all the Assets they have acess to that have been assigned the selected STIG.
+The Collection Review Workspace allows the user to assess all the Assets they have access to that have been assigned the selected STIG.
 
 .. thumbnail:: /assets/images/collection-review.png
       :width: 50% 
@@ -180,6 +180,12 @@ Menu Bar functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 From the Menu, some Options.
 By default, the most current STIG is displayed. The User can also select older revisions of the STIG, if they have been imported into the system by an Admin.
+
+.. thumbnail:: /assets/images/asset-review-stig-revisions.png
+      :width: 50% 
+      :show_caption: True
+      :title: STIG Revision Selection
+
 
 Columns
 ~~~~~~~~~~~~~~
@@ -202,8 +208,7 @@ Accept (for Collection Managers or Owners only) and Submit actions are available
 
 Review Actions
 ~~~~~~~~~~~~~~~~~~~~~~~
-Double-click on any part of the Review Evaluation for an Asset to change them.  Actions and Action Comments can only be changed if the Result is Open.
-
+Double-click on any part of the Review Evaluation for an Asset to change them.  
 
 
 Resources Panel
@@ -251,16 +256,15 @@ Users can also import results from .ckl or XCCDF formats, and export their resul
 
 Checklist Panel
 -------------------
-The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, and :term:`Workflow Status <Workflow>`.  STIGs Rules that are known to STIG Manager to have an automated assessment option are highlighted.
+The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, and :term:`Review Status <Review>`.  STIGs Rules that are known to STIG Manager to have an automated assessment option are highlighted.
 
 From the Checklist menu in the Menu Bar, the User can:
    * Toggle between Rule and Group displays of the Checklist Panel.
    * Export a .ckl representation of this Assets STIG results.
    * Import STIG results for this Asset in .ckl or XCCDF form.
-   * :term:`Submit <Workflow>` all the displayed checks that meet this Collections Workflow requirements.
    * Switch between Revisions of the STIG being displayed.
 
-When a .ckl or XCCDF file is imported, any Reviews that meet the :term:`Workflow` criteria will be set to a Submitted state.
+When a .ckl or XCCDF file is imported, any Reviews that meet the Review Requirement criteria will be set to a Submitted state.
 
 The menu bar also supports a variety of status and Title filters.
 
@@ -280,6 +284,11 @@ Review Resources Panel
 ------------------------
 This Panel provides resources that may be useful in performing the Rule's Evaluation.
 
+
+Other Assets tab
+~~~~~~~~~~~~~~~~~
+The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset's Review Panel below.
+
 Attachments tab
 ~~~~~~~~~~~~~~~~~
 The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
@@ -296,11 +305,6 @@ The Attachments tab allows Reviewers to attach images that support their assessm
 
 |
 
-Other Assets tab
-~~~~~~~~~~~~~~~~~
-The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset's Review Panel below.
-
-
 Feedback tab
 ~~~~~~~~~~~~~~~~~~
 If this Review has been Rejected, Feedback provided by the Collection Owner is displayed here.
@@ -312,31 +316,60 @@ This Log tab displays how this Review has changed over time.
 
 Review Panel
 ----------------------------
-The Review panel contains the Evaluation and any required Recommendation info for this Review.
+The Review panel contains the Evaluation and any required details or commentary for this Review.
 
 Evaluation
 ~~~~~~~~~~~~~~~~~~
-The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Commentary. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA) and Not Reviewed (NR).
+The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA) and Not Reviewed (NR).
 
-When an XCCDF file is imported, the Evaluation Comment will be constructed out of available metadata in the XCCDF file.
+When an XCCDF file is imported, the Details will be constructed out of available metadata in the XCCDF file.
 
-In a .ckl import or export, the equivalent fields are Finding and Finding Details.
+Reviews can be set to Saved or Submitted statuses from this interface. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
+
+The requirements for a Review to be set to "Submitted" status can be configured in the Collection Management Workspace by Collection Owners and Managers. These requirements will be displayed in this interface if you hover over the ``(?)`` icon next to each field label. 
+
+The default Settings for Reviews in Collections are:
+      - Always display the Detail field.
+      - Require text in the Detail field in order to Submit. 
+      - Display the Comment field for "Findings only".
+      - Require text in the Comment field for "Findings only" in order to Submit.
 
 
-Recommendation
-~~~~~~~~~~~~~~~~~~~~~
-Setting an Evaluation Result to "Open" enables the Recommendation section.
-The Recommendation holds the Action and Action Comment describing the steps the Reviewer expects must be taken to address the Open finding.  The Actions supported are: Remediate, Mitigate, and Exception.
-In a .ckl import, the Action Comment is equivalent to the Comment field.
-In a .ckl export, the Action is prepended(in all caps, with a colon ie. REMEDIATE:) to the Action comment, as the Action field is not present in most versions of .ckls.  STIG Manager understands this convention, and will appropriately set the Recommendation Action if it sees one of those terms prepended to the Action Comment.  .ckls produced by the commonly used tool STIG-Viewer will not set this Action unless the Reviewer adds the appropriate keyword to the beginning of their Action Comment themselves.
+.. thumbnail:: /assets/images/review-requirements-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Requirements
 
-Modified
-~~~~~~~~~~~~~
-The User and Timestamp associated with the last change to this Review.
+
+|
+
+
+Attributions
+~~~~~~~~~~~~~~~
+- Modified: The User and Timestamp associated with the last change to this Review.
+- Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.
+- Last Accepted: (Coming soon!) The last time a Review was set to an "Accepted" status, if it is not "Accepted" now. 
+
 
 Save and Save/Submit Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review, which will start its engagement with the :term:`RMF Workflow <Workflow>`.  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to lock it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the 
+The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review.  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
+
+Automated Results
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  Setting this flag is currently only supported for results imported via `STIGMan Watcher. <https://github.com/NUWCDIVNPT/stigman-watcher>`_  This feature will be enhanced with more options in the future. 
+
+
+.. thumbnail:: /assets/images/asset-review-autoresult.png
+      :width: 50% 
+      :show_caption: True
+      :title: Asset Review Workspace with Automated Results indicated.
+
+|
+
+.. ATTENTION:: 
+      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the "Automated" badge with a "Manual" one next to the Result, and the absence of the gear symbol for that rule in the Checklist panel. 
 
 
 ==============================
@@ -375,7 +408,7 @@ At the bottom of this panel are Export and Generate POA&M... buttons.  The Expor
 Individual Findings
 -----------------------
 Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
-Information about the Asset, Rule, Action, Last Modified Date, and applicable STIG or STIGs can be found in the default columns, with addional Review info in the expanding Rows.
+Information about the Asset, Rule, Last Changed Date, and applicable STIG or STIGs can be found in the default columns, with additional Review info in the expanding Rows.
 
 This section of the Report can be exported on its own.
 
@@ -393,9 +426,9 @@ Provides a view of the overall Status and Evaluation progress of the entire Coll
 
 This report can be grouped by Asset or by STIG using the Grouping options at the top of the panel.
 
-This report consists of the total number of Checks associated with each Asset or STIG accross the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Returned, and Accepted as a way to guage overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
+This report consists of the total number of Checks associated with each Asset or STIG across the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Returned, and Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
 
-This report can be exported as a .csv using the Down-Arrow button at the botom of the panel.
+This report can be exported as a .csv using the Down-Arrow button at the bottom of the panel.
 
 
 .. thumbnail:: /assets/images/status-report.png
@@ -416,13 +449,13 @@ Collection Management Workspace
 Allows a Collection Manager or Owner to Manage their Collection.
 From this Workspace, the User can:
 
-   * Alter the Name, Workflow, and Metadata associated with the Collection
+   * Alter the Name, Description, Settings, and Metadata associated with the Collection
+   * Add/Modify/Remove User Grants in the Collection
    * Batch import CKL or XCCDF files to automatically scaffold or add to their Collection
    * Batch export CKL files for external tools such as eMASS
    * Add/Modify/Remove Assets in the Collection 
    * Transfer Assets to another Collection
    * Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)
-   * Add/Modify/Remove User Grants in the Collection
    * Delete the Collection (if Collection Owner)
 
 .. thumbnail:: /assets/images/manage-collection-workspace.png
@@ -436,31 +469,30 @@ From this Workspace, the User can:
 
 Collection Properties Panel
 --------------------------------
-This Panel allows Collection Managers and Owners to change the name of the Asset, its workflow, and any associated Metadata.  Collection Owners can also delete this Collection. 
+This Panel allows Collection Managers and Owners to change the name of the Collection, it's description, settings, grants, and any associated Metadata.  Collection Owners can also delete this Collection. 
 
 .. thumbnail:: /assets/images/collection-properties.png
       :width: 50% 
       :show_caption: True
       :title: Collection Properties
 
-
--------------------------------
-
 .. _grants-panel:
 
 
-Grants Panel
--------------------
-This Panel displays all the Users who have access to some portion of this Collection.
+Grants Tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This Tab displays all the Users who have access to some portion of this Collection.
 
 User Grants can be added or removed using toolbar buttons at the top of this Panel. Double-clicking a Grant will allow you to modify the Grant. When creating or modifying a Grant, typing into the Username field will display a filtered droplist of the available users. 
 
 See :term:`User` for more info about these Access Levels.
 
-.. thumbnail:: /assets/images/user-grants.png
+.. thumbnail:: /assets/images/collection-manage-grants-user-pulldown.png
       :width: 50% 
       :show_caption: True
       :title: The User Grants Panel
+
 
 
 -------------------------------
@@ -472,6 +504,38 @@ When a User with a Restricted Grant is selected, the "User access..." button is 
       :show_caption: True
       :title: The Restricted User Access List
 
+|
+
+
+Collection Settings Tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Settings that affect the behavior of this Collection are available here. 
+
+If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews in this Collection. 
+
+The default Settings for Reviews in Collections are:
+      - Always display the Detail field.
+      - Require text in the Detail field in order to Submit. 
+      - Display the Comment field for "Findings only".
+      - Require text in the Comment field for "Findings only" in order to Submit.
+
+You can also control whether you want to allow certain Users to Accept or Reject reviews. The Grants levels required to do this can also be selected. 
+
+
+.. thumbnail:: /assets/images/collection-manage-review-fields.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Requirements
+
+
+-------------------------------
+
+
+Metadata Tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This Tab allows Users with proper access to record miscellaneous data to associate with this Collection. 
 
 -------------------------------
 

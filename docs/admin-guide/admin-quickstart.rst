@@ -15,7 +15,7 @@ Beyond the permissions granted to normal Users, Administrators have the ability 
 
 
 .. ATTENTION::
-   Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin, or Collection Creator). Creating users and assigning Roles can only be done from the Keycloak Management Console, and you must have the proper permissions in Keycloak to do this.
+   Being an Administrator in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin or Collection Creator). Creating users and assigning Roles can only be done in the Authentication provider (often the Keycloak Management Console), and you must have the proper permissions on your Authentication Provider to do this.
 
 
 Administrator Menu
@@ -29,7 +29,7 @@ This tab presents a list of all Collections in STIG Manager, as well as some sta
 
 In most cases, Collection Owners should be administering their own Collections. However, in cases where the Owner is unavailable, or has accidentally removed all owners from a Collection, this interface allows an Admin to assign new Owner Grants to Collections by double-clicking the Collection or using the "Collection Properties" button. The Admin can also delete Collections if required.
 
-.. thumbnail:: /assets/images/CollectionAdmin.png
+.. thumbnail:: /assets/images/admin-collections.png
    :width: 50% 
    :show_caption: True
    :alt: Collection Admin
@@ -45,16 +45,16 @@ It also includes buttons to pre-register User, unregister User, and modify User 
 
 Pre-registering Users
 ************************
-The pre-register function does not grant access to STIG Manager. User *access* is solely managed via Keycloak. The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via Keycloak at some later date. In that case, the Username entered when preregistering must match the username received from Keycloak when they finally log in.  A pre-registered user will have *No value* in the Last Access column of this screen until they actually access STIG Manager. 
+The pre-register function does not grant access to STIG Manager. User *access* is solely managed via your Authentication Provider (Keycloak, F5, etc). The pre-register function allows an Admin to assign Grants to a user that has not yet accessed the system, presuming that that the user will be authenticated via the Authentication Provider at some later date. In that case, the Username entered when preregistering must match the username received from the Authentication Provider when they finally log in.  A pre-registered user will have *No value* in the Last Access column of this screen until they actually access STIG Manager. 
 
 Unregistering Users
 ************************
-Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in Keycloak.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role in Keycloak, they may still be able to create a collection or even Administer STIG Manager. 
+Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in the Authentication Provider.  However, once un-registered they will not see any Collections when they access STIG Manager. Depending on their Role in the Authentication Provider, they may still be able to create a collection or even Administer STIG Manager. 
 
 Modifying Users
 ************************
 
-The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is derived from information in the access token, which is managed in Keycloak.
+The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is derived from information in the access token, which is managed in the Authentication Provider.
 
 .. thumbnail:: /assets/images/userAdmin.png
    :width: 50% 

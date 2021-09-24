@@ -117,8 +117,9 @@
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cors.html">6. Cross-Origin Resource Sharing (CORS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">7. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">8. Environment Variables</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
@@ -132,7 +133,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poam">Analyze Findings and Generate a POAM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
@@ -234,7 +235,7 @@
 <li><p>User Full Name - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_NAME_CLAIM</span></code> - (optional) <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">name</span></code></p></li>
 <li><p>User Email - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_EMAIL_CLAIM</span></code> - (optional) <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">email</span></code></p></li>
 <li><p>User Privileges - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_PRIVILEGES_CLAIM</span></code> - <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">realm_access.roles</span></code></p></li>
-<li><p>scope - OIDC standard. Not configurable.</p></li>
+<li><p>scope - OIDC standard. Use <code class="docutils literal notranslate"><span class="pre">STIGMAN_CLIENT_EXTRA_SCOPES</span></code> to specify additional scopes the client should request.</p></li>
 </ul>
 </div></blockquote>
 <div class="admonition note">
@@ -308,7 +309,7 @@ These Roles and Scopes can be provided to users in various ways, using Client Ro
 <p>The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the <a class="reference internal" href="installation-and-setup.html#user-roles-privs"><span class="std std-ref">Configure Users</span></a> section of the Setup Guide for more information.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your specific organizations Security Policy.</p>
+<p>The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization’s Security Policy.</p>
 </div>
 </div>
 <div class="section" id="authentication-redhat-keycloak-11">
