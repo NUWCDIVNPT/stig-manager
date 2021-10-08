@@ -58,11 +58,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
-        me.totalTextCmp = new Ext.Toolbar.TextItem ({
-            text: '0 records',
-            width: 80
-        })
-        let stigStore = new Ext.data.JsonStore({
+        let store = new Ext.data.JsonStore({
             grid: this,
             smMaskDelay: 250,
             proxy: this.proxy,
@@ -72,22 +68,18 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             sortInfo: {
                 field: 'benchmarkId',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-            },
-            listeners: {
-                load: function (store,records) {
-                    me.totalTextCmp.setText(records.length + ' records');
-                },
-                remove: function (store,record,index) {
-                    me.totalTextCmp.setText(store.getCount() + ' records');
-                }
             }
+        })
+        me.totalTextCmp = new SM.RowCountTextItem ({
+            store: store
         })
         let columns = [
             { 	
 				header: "BenchmarkId",
 				width: 100,
                 dataIndex: 'benchmarkId',
-				sortable: true
+				sortable: true,
+                filter: {type:'string'}
 			// },{ 	
 			// 	header: "Title",
 			// 	width: 150,
@@ -175,7 +167,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         let config = {
             layout: 'fit',
             loadMask: true,
-            store: stigStore,
+            store: store,
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   
             }),
@@ -188,10 +180,15 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 }
             }),
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true
+                forceFit:true,
+                listeners: {
+                    filterschanged: function (view, item, value) {
+                        store.filter(view.getFilterFns())  
+                    }
+                }		    
             }),
             listeners: {
                 rowdblclick: {
@@ -340,10 +337,6 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
         }
     },
     initComponent: function() {
-        this.totalTextCmp = new Ext.Toolbar.TextItem ({
-            text: '0 records',
-            width: 80
-        })
         let reader = new Ext.data.JsonReader({
             idProperty: 'benchmarkId',
             root: '',
@@ -376,18 +369,11 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             listeners: {
                 load: function (store,records) {
                     store.grid.filterStore.call(store.grid)
-                    store.grid.totalTextCmp.setText(store.getCount() + ' records');
-                },
-                clear: function(){
-                    store.grid.totalTextCmp.setText('0 records');
-                },
-                update: function(store) {
-                    store.grid.totalTextCmp.setText(store.getCount() + ' records');
-                },
-                datachanged: function(store) {
-                    store.grid.totalTextCmp.setText(store.getCount() + ' records');
                 }
             }
+        })
+        const totalTextCmp = new SM.RowCountTextItem ({
+            store: store
         })
         let sm = new Ext.grid.CheckboxSelectionModel({
             checkOnly: true,
@@ -437,7 +423,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             loadMask: true,
             stripeRows: true,
             sm: sm,
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 forceFit: true,
                 emptyText: 'No Assets to display',
                 selectedRowClass: 'x-grid3-row-selected-checkonly',
@@ -487,7 +473,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                     },{
                         xtype: 'tbseparator'
                     },
-                    this.totalTextCmp
+                    totalTextCmp
                 ]
             }),
             getValue: function() {

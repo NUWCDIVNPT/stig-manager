@@ -56,13 +56,9 @@ function addCompletionStatus( params) {
 			idProperty: (v) => {
 				return v.assetId + v.benchmarkId
 			}	
-		}),
-		listeners: {
-			load: function (store,records) {
-				Ext.getCmp('completionGrid-' + collectionId + '-totalText').setText(records.length + ' records');
-			}
-		}
+		})
 	})
+	const totalTextCmp = new SM.RowCountTextItem({store:statusStore})
 
 	var completionGrid = new Ext.grid.GridPanel({
 		id: 'completionGrid-' + collectionId,
@@ -331,12 +327,8 @@ function addCompletionStatus( params) {
 				xtype: 'tbfill'
 			},{
 				xtype: 'tbseparator'
-			},{
-				xtype: 'tbtext',
-				id: 'completionGrid-' + collectionId + '-totalText',
-				text: '0 records',
-				width: 80
-			}]
+			},
+			totalTextCmp]
 		})
 	})
 

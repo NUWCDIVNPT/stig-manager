@@ -440,7 +440,7 @@ SM.AssignmentGrid = Ext.extend(Ext.grid.GridPanel, {
       validate: function() { return true},
       // width: me.width || 400,
       store: assignmentStore,
-      view: new Ext.grid.GridView({
+      view: new SM.ColumnFilters.GridView({
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,

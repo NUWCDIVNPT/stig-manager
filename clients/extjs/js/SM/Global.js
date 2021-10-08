@@ -171,3 +171,35 @@ SM.RuleContentTpl = new Ext.XTemplate(
     '</div>'
   )
 
+  SM.StoreRowCount = function (store) {
+    const rowCount = store.data.length || 0
+    const totalCount = store.snapshot?.length || rowCount
+    return`${rowCount}${store.isFiltered() ? ' of ' + totalCount : ''} row${totalCount === 1 ? '' : 's'}`
+  }
+
+  SM.RowCountTextItem = Ext.extend(Ext.Toolbar.TextItem, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            store: this.store
+        }
+        this.store?.on('load', function (store) {
+            _this.setText(SM.StoreRowCount(store))
+        })
+        this.store?.on('datachanged', function (store) {
+            _this.setText(SM.StoreRowCount(store))
+        })
+        this.store?.on('remove', function (store) {
+            _this.setText(SM.StoreRowCount(store))
+        })
+        this.store?.on('clear', function (store) {
+            _this.setText(SM.StoreRowCount(store))
+        })
+        this.store?.on('add', function (store) {
+            _this.setText(SM.StoreRowCount(store))
+        })
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.RowCountTextItem.superclass.initComponent.call(this)
+    }  
+  })
+

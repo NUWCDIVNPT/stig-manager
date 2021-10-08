@@ -1,3 +1,52 @@
+.sm-text-highlight {
+  background-color: #fad6a2;
+}
+.sm-menuitem-filter-label {
+	background-color: #586574;
+	font-weight: 700;
+	font-size: 9px;
+	color: hsl(0deg 0% 85%)!important;
+	height: 10px;
+	line-height: 10px!important;
+}
+
+.sm-menuitem-filter-icon {
+	background-image: url(../img/filter-solid-reverse.svg);
+	background-size: 8px 8px;
+	background-position: center;
+	background-repeat: no-repeat;
+	top: 0px;
+}
+.sm-menuitem-status-icon {
+	width: 12px;
+	height: 12px;
+	padding-right: 3px;
+	vertical-align: -2px;
+}
+.sm-grid3-col-filtered .x-grid3-hd-btn {
+	background-color: hsl(212deg 14% 40%);
+	background-image: url(../img/filter-solid-reverse.svg
+	);
+	background-size: 10px 14px;
+	background-position: center;
+	display: block;
+	margin-top: 1px;
+	margin-right: 0px;
+}
+
+a.x-grid3-hd-btn:hover {
+	background-position: center
+}
+/* .sm-grid3-col-filtered .x-grid3-hd-btn:hover {
+	background-color: unset;
+	background-image: url(../img/filter-solid.svg);
+    background-position: center;	
+} */
+.x-grid3-hd-btn {
+	background-color: transparent;
+	background-image:none;
+	display: block;
+} 
 
 .sm-cb .x-form-cb-label {
 	top: 3px;
@@ -21,7 +70,7 @@
 
 
 }
-.x-form-text:focus, .x-form-textarea:focus {
+.x-form-search:focus, .x-form-text:focus, .x-form-textarea:focus {
 	border: 1px solid rgb(220, 134, 51);
 	box-shadow: inset rgb(220 134 51 / 20%) 0px 0px 1px 1px;
 }
@@ -444,10 +493,12 @@ body {
 }
 /* End tab styles */
 
-.x-form-text, textarea.x-form-field {
+.x-form-search, .x-form-text, textarea.x-form-field {
     background-color: #fff;
     background-image: none;
     border-color: #C1C1C1;
+    border-style: solid;
+    border-width: 1px;
 }
 .x-tab-panel-header, .x-tab-panel-footer {
     background-color: transparent;

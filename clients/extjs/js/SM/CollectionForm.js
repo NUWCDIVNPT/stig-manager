@@ -179,7 +179,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 }
             }),
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
                 forceFit: true
@@ -534,7 +534,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 }
             }),
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
                 forceFit: true,
