@@ -35,7 +35,7 @@ function renderDurationToNow(date, md) {
 	let d = Math.abs(date - new Date()) / 1000 // delta
 	const r = {} // result
 	const s = { // structure
-			year: 31536000,
+			// year: 31536000,
 			// month: 2592000,
 			// week: 604800, // uncomment row to ignore
 			day: 86400,   // feel free to add your own row
@@ -48,7 +48,7 @@ function renderDurationToNow(date, md) {
 			r[key] = Math.floor(d / s[key]);
 			d -= r[key] * s[key];
 	})
-	let durationStr = r.year > 0 ? `${r.year}y` : r.day > 0 ? `${r.day}d` : r.hour > 0 ? `${r.hour}h` : r.minute > 0 ? `${r.minute}m` : `now`
+	let durationStr = r.day > 0 ? `${r.day} d` : r.hour > 0 ? `${r.hour} h` : r.minute > 0 ? `${r.minute} m` : `now`
 	let dateFormatted = Ext.util.Format.date(date,'Y-m-d H:i T')
 	md.attr = ` ext:qwidth=130 ext:qtip="${dateFormatted}"`;
 	return durationStr 
@@ -757,6 +757,7 @@ function Sm_StigAssetView (conf) {
 }
 
 function Sm_HistoryData (idAppend) {
+	const _this = this
 	this.fields = Ext.data.Record.create([
 		{
 			name:'result',
@@ -817,7 +818,11 @@ function Sm_HistoryData (idAppend) {
 		  '<p><b>Comment:</b> {actionComment}</p>',
 		  '</tpl>'
 		)
-	  })
+	})
+
+	const historyTotalTextCmp = new SM.RowCountTextItem ({
+    store: this.store
+  })
 
 	const historyExportBtn = new Ext.ux.ExportButton({
 		hasMenu: false,
@@ -836,13 +841,22 @@ function Sm_HistoryData (idAppend) {
 		id: 'historyGrid' + idAppend,
 		store: this.store,
 		stripeRows:true,
-		view: new Ext.grid.GridView({
+		view: new SM.ColumnFilters.GridView({
 			forceFit:true,
 			emptyText: 'No log to display.',
-			deferEmptyText:false
+			deferEmptyText:false,
+			listeners: {
+				filterschanged: function (view, item, value) {
+				  _this.store.filter(view.getFilterFns())  
+				}
+			}		
 		}),
     bbar: new Ext.Toolbar({
-      items: [historyExportBtn]
+      items: [
+				historyExportBtn,
+				'->',
+				historyTotalTextCmp
+			]
 		}),
 		columns: [
 			expander,
@@ -862,7 +876,8 @@ function Sm_HistoryData (idAppend) {
 				fixed: true,
 				dataIndex: 'status',
 				sortable: true,
-				renderer: renderStatuses
+				renderer: renderStatuses,
+				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.status}
 			},
 			{ 
 				id:'result' + idAppend,
@@ -871,13 +886,15 @@ function Sm_HistoryData (idAppend) {
 				fixed: true,
 				dataIndex: 'result',
 				renderer: renderResult,
-				sortable: true
+				sortable: true,
+				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.result}
 			},
 			{ 	
 				header: "User", 
 				width: 50,
 				dataIndex: 'username',
-				sortable: true
+				sortable: true,
+				filter: {type:'values'}
 			}
 		]
 	});

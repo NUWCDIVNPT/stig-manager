@@ -91,10 +91,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
-        me.totalTextCmp = new Ext.Toolbar.TextItem ({
-            text: '0 records',
-            width: 80
-        })
         let assetStore = new Ext.data.JsonStore({
             grid: this,
             smMaskDelay: 250,
@@ -109,15 +105,10 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             sortInfo: {
                 field: 'name',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-            },
-            listeners: {
-                load: function (store,records) {
-                    me.totalTextCmp.setText(store.getCount() + ' records');
-                },
-                remove: function (store,record,index) {
-                    me.totalTextCmp.setText(store.getCount() + ' records');
-                }
             }
+        })
+        me.totalTextCmp = new SM.RowCountTextItem ({
+            store: assetStore
         })
 
         let columns = [
@@ -125,14 +116,16 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "Asset",
 				width: 100,
                 dataIndex: 'name',
-				sortable: true
+				sortable: true,
+                filter: {type: 'string'}
 			},
             { 	
 				header: "FQDN",
 				width: 100,
                 dataIndex: 'fqdn',
 				sortable: true,
-                renderer: SM.styledEmptyRenderer
+                renderer: SM.styledEmptyRenderer,
+                filter: {type: 'string'}
 			},
             { 	
 				header: "IP",
@@ -148,7 +141,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 110,
                 dataIndex: 'mac',
 				sortable: true,
-                renderer: SM.styledEmptyRenderer
+                renderer: SM.styledEmptyRenderer,
+                filter: {type: 'string'}
 			},
             { 	
 				header: "STIGs",
@@ -239,10 +233,15 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 }
             }),
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true
+                forceFit:true,
+                listeners: {
+                    filterschanged: function (view, item, value) {
+                      assetStore.filter(view.getFilterFns())  
+                    }
+                }		    
             }),
             listeners: {
                 rowdblclick: function(grid,rowIndex,e) {
@@ -568,11 +567,6 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         ]
         this.newRecordConstructor = Ext.data.Record.create(fields)
-        const totalTextCmp = new Ext.Toolbar.TextItem ({
-            text: '0 records',
-            width: 80
-        })
-
         const stigAssignedStore = new Ext.data.JsonStore({
             grid: this,
             root: '',
@@ -581,16 +575,13 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             sortInfo: {
                 field: 'benchmarkId',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-            },
-            listeners: {
-                load: function (store,records) {
-                    totalTextCmp.setText(records.length + ' records');
-                },
-                remove: function (store,record,index) {
-                    totalTextCmp.setText(store.getCount() + ' records');
-                }
             }
         })
+        // const totalTextCmp = new SM.RowCountTextItem ({
+        //     store: stigAssignedStore
+        // })
+
+
         const stigSelectionField = new SM.StigSelectionField({
             submitValue: false,
             autoLoad: true,
@@ -603,7 +594,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 width: 375,
                 dataIndex: 'benchmarkId',
                 sortable: true,
-                editor: stigSelectionField
+                editor: stigSelectionField,
+                filter: {type:'string'}
             },
             { 	
                 header: "Rules", 
@@ -693,15 +685,21 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 }
             }),
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
                 forceFit:true,
-                markDirty: false
+                markDirty: false,
+                listeners: {
+                    filterschanged: function (view, item, value) {
+                        stigAssignedStore.filter(view.getFilterFns())  
+                    }
+                }		    
             }),
             listeners: {
             },
             tbar: tbar,
+            // bbar: ['->', totalTextCmp],
             getValue: function() {
                 let stigs = []
                 stigAssignedStore.data.items.forEach((i) => {

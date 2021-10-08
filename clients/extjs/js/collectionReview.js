@@ -234,85 +234,10 @@ async function addCollectionReview ( params ) {
 						]
 					}
 				},
-				// {
-				// 	text: 'Reset reviews...',
-				// 	iconCls: 'sm-unlock-icon',
-				// 	handler: function(){
-				// 		//===================================================
-				// 		//UNLOCKS ALL RULE REVIEWS FOR A SPECIFIC STIG
-				// 		//===================================================
-				// 		Ext.Msg.show({
-				// 			title: 'Confirm review reset',
-				// 			msg: 'Do you want to reset ALL approved reviews<br/>for ANY rule associated with<br/>ANY revision of STIG "' + leaf.benchmarkId + '"<br/>for ALL aseets in this Collection?',
-				// 			buttons: {yes: "&nbsp;Reset reviews&nbsp;", no: "Cancel"},
-				// 			icon: Ext.MessageBox.QUESTION,
-				// 			closable: false,
-				// 			fn: function(buttonId){
-				// 				if (buttonId == 'yes'){
-				// 					//===============================================
-				// 					//GATHER INFORMATION ACCORDINGLY AND EXECUTE
-				// 					//THE REVIEW RESET.
-				// 					//===============================================
-				// 					var unlockObject = new Object;
-				// 					unlockObject.benchmarkId = leaf.benchmarkId;
-				// 					//unlockObject.stigName = leaf.benchmarkId;
-				// 					unlockObject.assetId = -1;
-				// 					unlockObject.assetName = '';
-				// 					unlockObject.collectionId =leaf.collectionId;
-				// 					// unlockObject.collectionName=apiCollection.name;
-				// 					unlockObject.gridTorefresh = groupGrid;
-				// 					batchReviewUnlock(unlockObject);
-				// 					//===============================================
-				// 					//REFRESH THE INTERFACE
-				// 					//===============================================
-				// 					//groupGrid.getStore().reload();
-				// 					// Ext.getCmp('content-panel' + idAppend).update('')
-				// 					// reviewsGrid.getStore().removeAll(true);
-				// 					// reviewsGrid.getView().refresh();
-				// 				}
-				// 			}
-				// 		});
-				// 	}
-					
-				// },
 				'-'
 			]
 		});
 		
-		var groupFilterMenu = new Ext.menu.Menu({
-			id: 'groupFilterMenu' + idAppend,
-			items: [
-				{
-					text: 'All checks',
-					checked: true,
-					group: 'checkType' + idAppend,
-					handler: function(item,eventObject){
-						groupGrid.filterState = 'All',
-						filterGroupStore();
-						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('All checks');
-					}
-				},'-',{ 
-					text: 'Manual checks',
-					checked: false,
-					group: 'checkType' + idAppend,
-					handler: function(item,eventObject){
-						groupGrid.filterState = 'Manual',
-						filterGroupStore();
-						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Manual checks');
-					}
-				},{
-					text: 'SCAP checks',
-					checked: false,
-					group: 'checkType' + idAppend,
-					handler: function(item,eventObject){
-						groupGrid.filterState = 'SCAP',
-						filterGroupStore();
-						Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('SCAP checks');
-					}
-				}
-			]
-		});
-
 		async function exportCkls () {
 			try {
 				const zip = new JSZip()
@@ -431,11 +356,12 @@ async function addCollectionReview ( params ) {
 					}
 				}
 			}),
-			view: new Ext.grid.GridView({
+			view: new SM.ColumnFilters.GridView({
 				forceFit:false,
 				emptyText: '',
 				// These listeners keep the grid in the same scroll position after the store is reloaded
 				holdPosition: true, // HACK to be used with override
+				lastHide: new Date(),
 				listeners: {
 					// beforerefresh: function(v) {
 					// v.scrollTop = v.scroller.dom.scrollTop;
@@ -448,6 +374,11 @@ async function addCollectionReview ( params ) {
 					// }
 				},
 				deferEmptyText:false,
+				listeners: {
+					filterschanged: function (view, item, value) {
+						groupStore.filter(view.getFilterFns())  
+					}
+				},		
 				getRowClass: function (record,index) {
 					var autoCheckAvailable = record.get('autoCheckAvailable');
 					if (autoCheckAvailable === true) {
@@ -460,11 +391,16 @@ async function addCollectionReview ( params ) {
 					id:'cat' + idAppend,
 					header: "CAT", 
 					width: 48,
-					align: 'center',
+					align: 'left',
 					dataIndex: 'severity',
 					fixed: true,
 					sortable: true,
-					renderer: renderSeverity
+					renderer: renderSeverity,
+					filter: {
+						type: 'values',
+						comparer: SM.ColumnFilters.CompareFns.severity,
+						renderer: SM.ColumnFilters.Renderers.severity
+					}	
 				},
 				{ 	
 					id:'groupId' + idAppend,
@@ -474,7 +410,10 @@ async function addCollectionReview ( params ) {
 					sortable: true,
 					hidden: true,
 					hideable: false,
-					align: 'left'
+					align: 'left',
+					filter: {
+						type: 'string'
+					}	
 				},
 				{ 	
 					id:'ruleId' + idAppend,
@@ -483,7 +422,10 @@ async function addCollectionReview ( params ) {
 					dataIndex: 'ruleId',
 					sortable: true,
 					hideable: false,
-					align: 'left'
+					align: 'left',
+					filter: {
+						type: 'string'
+					}	
 				},
 				{ 
 					id:'groupTitle' + idAppend,
@@ -494,7 +436,10 @@ async function addCollectionReview ( params ) {
 					renderer: columnWrap,
 					hidden: true,
 					hideable: false,
-					sortable: true
+					sortable: true,
+					filter: {
+						type: 'string'
+					}	
 				},
 				{ 
 					id:'ruleTitle' + idAppend,
@@ -503,7 +448,10 @@ async function addCollectionReview ( params ) {
 					dataIndex: 'ruleTitle',
 					renderer: columnWrap,
 					hideable: false,
-					sortable: true
+					sortable: true,
+					filter: {
+						type: 'string'
+					}	
 				},
 				{ 	
 					id:'oCnt' + idAppend,
@@ -590,36 +538,37 @@ async function addCollectionReview ( params ) {
 						iconCls: 'sm-checklist-icon',  // <-- icon
 						text: 'Checklist',
 						menu: groupChecklistMenu
-					},'-',{
-						xtype: 'tbbutton',
-						id: 'groupGrid-tb-filterButton' + idAppend,
-						iconCls: 'sm-filter-icon',  // <-- icon
-						text: 'All checks',
-						menu: groupFilterMenu
-					}
-					,{
-						xtype: 'trigger',
-						fieldLabel: 'Filter',
-						triggerClass: 'x-form-clear-trigger',
-						onTriggerClick: function() {
-							this.triggerBlur();
-							this.blur();
-							this.setValue('');
-							filterGroupStore();
-						},
-						id: 'groupGrid-filterTitle' + idAppend,
-						width: 140,
-						submitValue: false,
-						disabled: false,
-						enableKeyEvents:true,
-						emptyText:'Title filter...',
-						listeners: {
-							keyup: function (field,e) {
-								filterGroupStore();
-								return false;
-							}
-						}
 					},
+					// '-',{
+					// 	xtype: 'tbbutton',
+					// 	id: 'groupGrid-tb-filterButton' + idAppend,
+					// 	iconCls: 'sm-filter-icon',  // <-- icon
+					// 	text: 'All checks',
+					// 	menu: groupFilterMenu
+					// },
+					// ,{
+					// 	xtype: 'trigger',
+					// 	fieldLabel: 'Filter',
+					// 	triggerClass: 'x-form-clear-trigger',
+					// 	onTriggerClick: function() {
+					// 		this.triggerBlur();
+					// 		this.blur();
+					// 		this.setValue('');
+					// 		filterGroupStore();
+					// 	},
+					// 	id: 'groupGrid-filterTitle' + idAppend,
+					// 	width: 140,
+					// 	submitValue: false,
+					// 	disabled: false,
+					// 	enableKeyEvents:true,
+					// 	emptyText:'Title filter...',
+					// 	listeners: {
+					// 		keyup: function (field,e) {
+					// 			filterGroupStore();
+					// 			return false;
+					// 		}
+					// 	}
+					// },
 					'->',
 					{
 						xtype: 'tbitem',
@@ -722,26 +671,28 @@ async function addCollectionReview ( params ) {
 		};
 			
 		function filterGroupStore () {
-			var filterArray = [];
-			// Filter menu
-			if (groupGrid.filterState === 'SCAP' || groupGrid.filterState === 'Manual') {
-				filterArray.push({
-					property: 'autoCheckAvailable',
-					value: groupGrid.filterState === 'SCAP'
-				});
-			}
-			// Title textfield
-			var titleValue = Ext.getCmp('groupGrid-filterTitle' + idAppend).getValue();
-			if (titleValue.length > 0) {
-				filterArray.push({
-					property: groupGrid.titleColumnDataIndex,
-					value: titleValue,
-					anyMatch: true,
-					caseSensitive: false
-				});
-			}
+			// var filterArray = [];
+			// // Filter menu
+			// if (groupGrid.filterState === 'SCAP' || groupGrid.filterState === 'Manual') {
+			// 	filterArray.push({
+			// 		property: 'autoCheckAvailable',
+			// 		value: groupGrid.filterState === 'SCAP'
+			// 	});
+			// }
+			// // Title textfield
+			// var titleValue = Ext.getCmp('groupGrid-filterTitle' + idAppend).getValue();
+			// if (titleValue.length > 0) {
+			// 	filterArray.push({
+			// 		property: groupGrid.titleColumnDataIndex,
+			// 		value: titleValue,
+			// 		anyMatch: true,
+			// 		caseSensitive: false
+			// 	});
+			// }
 			
-			groupStore.filter(filterArray);
+			// groupStore.filter(filterArray);
+			groupStore.filter(groupGrid.getView().getFilterFns())
+
 
 		}
 	/******************************************************/
@@ -829,7 +780,11 @@ async function addCollectionReview ( params ) {
 					fixed: true,
 					dataIndex: 'status',
 					sortable: true,
-					renderer: renderStatuses
+					renderer: renderStatuses,
+					filter: {
+						type: 'values',
+						renderer: SM.ColumnFilters.Renderers.status
+					} 
 				},
 				{ 	
 					id:'target' + idAppend,
@@ -838,7 +793,10 @@ async function addCollectionReview ( params ) {
 					//fixed: true,
 					dataIndex: 'assetName',
 					sortable: true,
-					align: 'left'
+					align: 'left',
+					filter: {
+						type: 'string'
+					}
 				}
 				,{ 
 					id:'Result' + idAppend,
@@ -889,7 +847,11 @@ async function addCollectionReview ( params ) {
 						}
 						return SM.styledEmptyRenderer(returnStr)
 					},
-					sortable: true
+					sortable: true,
+					filter: {
+						type: 'values',
+						renderer: SM.ColumnFilters.Renderers.result
+					}
 				},
 				{ 	
 					id:'Detail' + idAppend,
@@ -900,6 +862,9 @@ async function addCollectionReview ( params ) {
 						return columnWrap(SM.styledEmptyRenderer(v))
 					},
 					sortable: true,
+					filter: {
+						type: 'string'
+					},
 					editor: new Ext.form.TextArea({
 						id: 'reviewsGrid-editor-resultComment' + idAppend,
 						//height: 150
@@ -927,6 +892,9 @@ async function addCollectionReview ( params ) {
 					renderer: function (v) {
 						return columnWrap(SM.styledEmptyRenderer(v))
 					},
+					filter: {
+						type: 'string'
+					},
 					editor: new Ext.form.TextArea({
 						id: 'reviewsGrid-editor-actionComment' + idAppend,
 						grow: true,
@@ -952,7 +920,10 @@ async function addCollectionReview ( params ) {
 					width: 100,
 					dataIndex: 'username',
 					fixed: 50,
-					sortable: true
+					sortable: true,
+					filter: {
+						type: 'values'
+					}
 				}
 			],
 			isCellEditable: function(col, row) {
@@ -1127,7 +1098,7 @@ async function addCollectionReview ( params ) {
 							})
 						}
 						let apiReview = JSON.parse(result.response.responseText)
-						e.grid.getStore().loadData(apiReview, true)
+						e.record.commit()
 						// hack to reselect the record for setReviewsGridButtonStates()
 						e.grid.getSelectionModel().onRefresh()
 						loadResources(e.grid.getStore().getById(apiReview.assetId))
@@ -1147,13 +1118,16 @@ async function addCollectionReview ( params ) {
 
 				}
 			},
-			view: new Ext.grid.GridView({
+			view: new SM.ColumnFilters.GridView({
 				forceFit:true,
 				holdPosition: true,
 				autoFill:true,
 				emptyText: 'No data to display.',
 				deferEmptyText:false,
 				listeners: {
+					filterschanged: function (view, item, value) {
+						reviewsStore.filter(view.getFilterFns())  
+					},
 					refresh: function (view) {
 						// Setup the tooltips
 						const columns = view.grid.getColumnModel().columns
@@ -1223,7 +1197,11 @@ async function addCollectionReview ( params ) {
 				]
 			}),
 			bbar: new Ext.Toolbar({
-				items: [reviewsExportBtn]
+				items: [
+					reviewsExportBtn,
+					'->',
+					new SM.RowCountTextItem({store:reviewsStore})
+				]
 			}),
 			loadMask: true,
 			emptyText: 'No data to display'
@@ -1754,7 +1732,7 @@ async function addCollectionReview ( params ) {
 							items: attachmentsGrid
 						},
 						{
-							title: 'Log',
+							title: 'History',
 							layout: 'fit',
 							id: 'history-tab' + idAppend,
 							items: historyData.grid

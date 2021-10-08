@@ -53,15 +53,11 @@ function addStigAdmin( params ) {
 		listeners: {
 			load: function (store,records) {
 				store.isLoaded = true,
-				Ext.getCmp('stigGrid-totalText').setText(records.length + ' records');
 				stigGrid.getSelectionModel().selectFirstRow();
-			},
-			remove: function (store,record,index) {
-				Ext.getCmp('stigGrid-totalText').setText(store.getCount() + ' records');
-			}
-		}
+			},		}
 	});
 
+	const totalTextCmp = new SM.RowCountTextItem({store:stigStore})
 	var stigGrid = new Ext.grid.GridPanel({
 		id: 'stigGrid',
 		cls: 'sm-round-panel',
@@ -74,29 +70,32 @@ function addStigAdmin( params ) {
 				header: "Benchmark ID",
 				width: 300,
 				dataIndex: 'benchmarkId',
-				sortable: true
+				sortable: true,
+				filter: {type: 'string'}
 			},{ 	
 				header: "Title",
 				id: 'stigGrid-title-column',
 				width: 350,
 				dataIndex: 'title',
-				sortable: true
+				sortable: true,
+				filter: {type: 'string'}
 			},{ 	
 				header: "Status",
 				width: 150,
-                align: "center",
+        align: "center",
 				dataIndex: 'status',
-				sortable: true
+				sortable: true,
+				filter: {type: 'values'}
 			},{ 	
 				header: "Current revision",
 				width: 150,
-                align: "center",
+        align: "center",
 				dataIndex: 'lastRevisionStr',
 				sortable: true
 			},{ 	
 				header: "Revision date",
 				width: 150,
-                align: "center",
+        align: "center",
 				dataIndex: 'lastRevisionDate',
 				xtype: 'datecolumn',
 				format: 'Y-m-d',
@@ -104,20 +103,20 @@ function addStigAdmin( params ) {
 			},{ 	
 				header: "Rules",
 				width: 150,
-                align: "center",
+        align: "center",
 				dataIndex: 'ruleCount',
 				sortable: true
 			},{ 	
 				header: "SCAP Rules",
 				width: 150,
-                align: "center",
+        align: "center",
 				dataIndex: 'autoCount',
 				sortable: true,
 				renderer: (v) => v ? v : '--'
 			}
 		],
 		autoExpandColumn: 'stigGrid-title-column',
-		view: new Ext.grid.GridView({
+		view: new SM.ColumnFilters.GridView({
 			forceFit:false,
 			// These listeners keep the grid in the same scroll position after the store is reloaded
 			listeners: {
@@ -129,6 +128,9 @@ function addStigAdmin( params ) {
 					setTimeout(function() { 
 						v.scroller.dom.scrollTop = v.scrollTop + (v.scrollTop == 0 ? 0 : v.scroller.dom.scrollHeight - v.scrollHeight);
 					}, 100);
+				},
+				filterschanged: function (view, item, value) {
+					stigStore.filter(view.getFilterFns())  
 				}
 			},
 			deferEmptyText:false
@@ -166,12 +168,8 @@ function addStigAdmin( params ) {
 				xtype: 'tbfill'
 			},{
 				xtype: 'tbseparator'
-			},{
-				xtype: 'tbtext',
-				id: 'stigGrid-totalText',
-				text: '0 records',
-				width: 80
-			}]
+			},
+			totalTextCmp]
 		}),
 		loadMask: true
 	});

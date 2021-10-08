@@ -58,16 +58,13 @@ function addUserAdmin(params ) {
 		listeners: {
 			load: function (store,records) {
 				store.isLoaded = true;
-				Ext.getCmp('userGrid-totalText').setText(records.length + ' records');
 				userGrid.getSelectionModel().selectFirstRow();
-			},
-			remove: function (store,record,index) {
-				Ext.getCmp('userGrid-totalText').setText(store.getCount() + ' records');
 			}
 		}
 	})
 
 	const privilegeGetter = new Function("obj", "return obj?." + STIGMAN.Env.oauth.claims.privileges + " || [];");
+	const totalTextCmp = new SM.RowCountTextItem({store:userStore})
 
 	const userGrid = new Ext.grid.GridPanel({
 		cls: 'sm-round-panel',
@@ -83,13 +80,15 @@ function addUserAdmin(params ) {
 				header: "Username", 
 				width: 150,
 				dataIndex: 'username',
-				sortable: true
+				sortable: true,
+				filter: {type: 'string'}
 			},
 			{ 	
 				header: "Name",
 				width: 150,
 				dataIndex: 'name',
-				sortable: true
+				sortable: true,
+				filter: {type: 'string'}
 			},
 			{ 	
 				header: "Grants",
@@ -136,10 +135,13 @@ function addUserAdmin(params ) {
 				sortable: true
 			}
 		],
-		view: new Ext.grid.GridView({
+		view: new SM.ColumnFilters.GridView({
 			forceFit:true,
 			// These listeners keep the grid in the same scroll position after the store is reloaded
 			listeners: {
+        filterschanged: function (view) {
+          userStore.filter(view.getFilterFns())  
+        },
 				beforerefresh: function(v) {
 				   v.scrollTop = v.scroller.dom.scrollTop;
 				   v.scrollHeight = v.scroller.dom.scrollHeight;
@@ -248,28 +250,13 @@ function addUserAdmin(params ) {
 			},{
 				xtype: 'tbseparator'
 			},
-			// {
-			// 	xtype: 'tbbutton',
-			// 	id: 'userGrid-csvBtn',
-			// 	iconCls: 'sm-export-icon',
-			// 	tooltip: 'Download this table\'s data as Comma Separated Values (CSV)',
-			// 	width: 20,
-			// 	handler: function(btn){
-			// 		var ourStore = userGrid.getStore();
-			// 		var lo = ourStore.lastOptions;
-			// 		window.location=ourStore.url + '?csv=1&xaction=read';
-			// 	}
-			// },
 			{
 				xtype: 'tbfill'
 			},{
 				xtype: 'tbseparator'
-			},{
-				xtype: 'tbtext',
-				id: 'userGrid-totalText',
-				text: '0 records',
-				width: 80
-			}]
+			},
+			totalTextCmp
+		]
 		}),
 		width: '50%',
 		loadMask: true

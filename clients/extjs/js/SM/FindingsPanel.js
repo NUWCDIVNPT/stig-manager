@@ -28,41 +28,37 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
         this.aggValue = this.aggValue || 'groupId'
         this.stigAllValue = '--- All Collection STIGs ---'
         this.stigValue = this.stigValue || this.stigAllValue
-        const totalTextCmp = new Ext.Toolbar.TextItem ({
-            text: '0 records',
-            width: 80
-        })
         const store = new Ext.data.JsonStore({
-			proxy: new Ext.data.HttpProxy({
-				url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/findings`,
-				method: 'GET'
-			}),
-			baseParams: {
-				projection: 'stigs'
-			},
-			sortInfo: {
-				field: 'assetCount',
-				direction: 'DESC'
-			},
-			root: '',
-			fields: [
-				{ name: 'severity', type: 'string', sortType: sortSeverity },
-				{ name: 'assetCount', type: 'int' },
-				{ name: 'stigs' },
-				{ name: 'groupId', type: 'string', sortType: sortGroupId },
-				{ name: 'ruleId', type: 'string' },
-				{ name: 'title', type: 'string' },
-				{ name: 'cci', type: 'string' },
-				{ name: 'definition', type: 'string' },
-				{ name: 'apAcronym', type: 'string' },
-			],
-			listeners: {
-				load: function (store, records) {
-					setColumnStates(me.aggValue)
-					totalTextCmp.setText(records.length + ' records');
-				}
-			}
+					proxy: new Ext.data.HttpProxy({
+						url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/findings`,
+						method: 'GET'
+					}),
+					baseParams: {
+						projection: 'stigs'
+					},
+					sortInfo: {
+						field: 'assetCount',
+						direction: 'DESC'
+					},
+					root: '',
+					fields: [
+						{ name: 'severity', type: 'string', sortType: sortSeverity },
+						{ name: 'assetCount', type: 'int' },
+						{ name: 'stigs' },
+						{ name: 'groupId', type: 'string', sortType: sortGroupId },
+						{ name: 'ruleId', type: 'string' },
+						{ name: 'title', type: 'string' },
+						{ name: 'cci', type: 'string' },
+						{ name: 'definition', type: 'string' },
+						{ name: 'apAcronym', type: 'string' },
+					],
+					listeners: {
+						load: function (store, records) {
+							setColumnStates(me.aggValue)
+						}
+					}
         })
+				const totalTextCmp = new SM.RowCountTextItem({store:store})
         const renderSeverity = (val) => {
             switch (val) {
                 case 'high':
@@ -85,35 +81,44 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 60, 
 				dataIndex: 'severity', 
 				sortable: true, 
-				renderer: renderSeverity
+				renderer: renderSeverity,
+				filter: {
+					type: 'values',
+					comparer: SM.ColumnFilters.CompareFns.severity,
+					renderer: SM.ColumnFilters.Renderers.severity
+				}	
 			},
 			{ 
 				header: "Group", 
 				hidden: false,
 				width: 80, 
 				dataIndex: 'groupId', 
-				sortable: true, 
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			{ 
 				header: "Rule", 
 				hidden: true,
 				width: 80, 
 				dataIndex: 'ruleId', 
-				sortable: true, 
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			{ 
 				header: "CCI", 
 				hidden: true,
 				width: 80, 
 				dataIndex: 'cci', 
-				sortable: true, 
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			{ 
 				header: "AP Acronym", 
 				hidden: true,
 				width: 80, 
 				dataIndex: 'apAcronym', 
-				sortable: true, 
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			{ 
 				header: "Title", 
@@ -121,7 +126,8 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 270, 
 				dataIndex: 'title', 
 				renderer: columnWrap, 
-				sortable: true, 
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			{ 
 				header: "Definition", 
@@ -129,7 +135,8 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 135, 
 				dataIndex: 'definition', 
 				renderer: columnWrap, 
-				sortable: true, 
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			{ 
 				header: "Assets", 
@@ -137,8 +144,8 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 75, 
 				align: 'center', 
 				dataIndex: 'assetCount', 
-				sortable: true 
-			},
+				sortable: true
+		},
 			{ 
 				header: "STIGs",
 				hidden: false,
@@ -150,19 +157,15 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true, 
 			}
         ])
-        const view = new Ext.grid.GridView({
+        const view = new SM.ColumnFilters.GridView({
 			forceFit: true,
 			emptyText: 'No records found.',
-			// getRowClass: function (record, rowIndex, rp, ds) { // rp = rowParams
-			// 	if (record.data.severity == 'high') {
-			// 		return 'sm-grid3-row-red';
-			// 	} else if (record.data.severity == 'medium') {
-			// 		return 'sm-grid3-row-orange';
-			// 	} else {
-			// 		return 'sm-grid3-row-green';
-			// 	}
-			// }
-        })
+			listeners: {
+				filterschanged: function (view) {
+					store.filter(view.getFilterFns())  
+				}
+			},		
+		})
         const sm = new Ext.grid.RowSelectionModel({
 			singleSelect: true,
 			listeners: {
@@ -340,48 +343,40 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
         const me = this
-        const totalTextCmp = new Ext.Toolbar.TextItem ({
-            text: '0 records',
-            width: 80
-        })
         const store = new Ext.data.JsonStore({
-			proxy: new Ext.data.HttpProxy({
-				url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/reviews`,
-				method: 'GET'
-			}),
-			baseParams: {
-				result: 'fail',
-				projection: 'stigs'
-			},
-			sortInfo: {
-				field: 'assetName',
-				direction: 'ASC'
-			},
-			root: '',
-			fields: [
-				{ name: 'assetId', type: 'string' },
-				{ name: 'assetName', type: 'string' },
-				{ name: 'stigs' },
-				{ name: 'ruleId', type: 'string' },
-				{ name: 'severity', type: 'string' },
-				{ name: 'result', type: 'string' },
-				{ name: 'resultComment', type: 'string' },
-				{ name: 'action', type: 'string' },
-				{ name: 'actionComment', type: 'string' },
-				{ name: 'autoResult', type: 'boolean' },
-				{ name: 'status', type: 'string' },
-				{ name: 'userId', type: 'string' },
-				{ name: 'username', type: 'string' },
-				{ name: 'ts', type: 'string' },
-				{ name: 'reviewComplete', type: 'boolean' }
-			],
-			listeners: {
-				load: function (store, records) {
-					totalTextCmp.setText(records.length + ' records');
-				}
-			}
+					proxy: new Ext.data.HttpProxy({
+						url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/reviews`,
+						method: 'GET'
+					}),
+					baseParams: {
+						result: 'fail',
+						projection: 'stigs'
+					},
+					sortInfo: {
+						field: 'assetName',
+						direction: 'ASC'
+					},
+					root: '',
+					fields: [
+						{ name: 'assetId', type: 'string' },
+						{ name: 'assetName', type: 'string' },
+						{ name: 'stigs' },
+						{ name: 'ruleId', type: 'string' },
+						{ name: 'severity', type: 'string' },
+						{ name: 'result', type: 'string' },
+						{ name: 'resultComment', type: 'string' },
+						{ name: 'action', type: 'string' },
+						{ name: 'actionComment', type: 'string' },
+						{ name: 'autoResult', type: 'boolean' },
+						{ name: 'status', type: 'string' },
+						{ name: 'userId', type: 'string' },
+						{ name: 'username', type: 'string' },
+						{ name: 'ts', type: 'string' },
+						{ name: 'reviewComplete', type: 'boolean' }
+					]
         })
-		const expander = new Ext.ux.grid.RowExpander({
+			const totalTextCmp = new SM.RowCountTextItem({store:store})
+			const expander = new Ext.ux.grid.RowExpander({
 			tpl: new Ext.XTemplate(
 			  '<b>Reviewer:</b> {username}</p>',
 			  '<tpl if="resultComment">',
@@ -398,13 +393,15 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "Asset", 
 				width: 80, 
 				dataIndex: 'assetName', 
-				sortable: true
+				sortable: true,
+				filter: {type: 'string'}
 			 },
 			 { 
 				header: "Rule", 
 				width: 80, 
 				dataIndex: 'ruleId', 
 				sortable: true, 
+				filter: {type: 'string'}
 			},
 			// { 
 			// 	header: "Severity", 
@@ -436,10 +433,14 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true, 
 			}
         ]
-        const view = new Ext.grid.GridView({
+        const view = new SM.ColumnFilters.GridView({
 			forceFit: true,
-			emptyText: 'Select a finding to the left.'
-
+			emptyText: 'Select a finding to the left.',
+			listeners: {
+				filterschanged: function (view, item, value) {
+				  store.filter(view.getFilterFns())  
+				}
+			}		
         })
         const sm = new Ext.grid.RowSelectionModel({
 			singleSelect: true

@@ -84,9 +84,13 @@ async function addReview( params ) {
     },
     listeners: {
       load: function (store, records) {
+        // prototype for getting unique vakues fo a filed
+        let severitySet = new Set(records.map( r => r.data.severity ))
+        let resultSet = new Set(records.map( r => r.data.result ))
+
         var ourGrid = Ext.getCmp('groupGrid' + idAppend);
         // Filter the store
-        filterGroupStore();
+        // filterGroupStore();
 
         // XCCDF option in export menu
         // if (store.reader.jsonData.xmlDisabled) {
@@ -158,7 +162,6 @@ async function addReview( params ) {
                 var idWidth = cm.getColumnWidth(ruleIdIndex);
                 cm.setColumnWidth(groupTitleIndex, titleWidth);
                 cm.setColumnWidth(groupIdIndex, idWidth);
-                groupGrid.titleColumnDataIndex = 'groupTitle';
                 filterGroupStore();
                 cm.setHidden(ruleTitleIndex, true);
                 cm.setHidden(ruleIdIndex, true);
@@ -182,7 +185,6 @@ async function addReview( params ) {
                 var idWidth = cm.getColumnWidth(groupIdIndex);
                 cm.setColumnWidth(ruleTitleIndex, titleWidth);
                 cm.setColumnWidth(ruleIdIndex, idWidth);
-                groupGrid.titleColumnDataIndex = 'ruleTitle';
                 filterGroupStore();
                 cm.setHidden(groupTitleIndex, true);
                 cm.setHidden(groupIdIndex, true);
@@ -296,93 +298,6 @@ async function addReview( params ) {
     }
   });
 
-  var groupFilterMenu = new Ext.menu.Menu({
-    id: 'groupFilterMenu' + idAppend,
-    items: [
-      {
-        text: 'All checks',
-
-        checked: true,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'All',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('All checks');
-          filterGroupStore();
-
-        }
-      }, '-', {
-        text: 'Manual',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'Manual',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Manual only');
-          filterGroupStore();
-        }
-      }, {
-        text: 'SCAP',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'SCAP',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('SCAP only');
-          filterGroupStore();
-        }
-      }, '-', {
-        text: 'Incomplete',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'Incomplete',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Incomplete only');
-          filterGroupStore();
-        }
-      }
-      , {
-        text: 'Unsubmitted',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'Unsubmitted',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Unsubmitted only');
-          filterGroupStore();
-        }
-      }
-      , {
-        text: 'Submitted',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'Submitted',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Submitted only');
-          filterGroupStore();
-        }
-      }
-      , {
-        text: 'Returned',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'Rejected',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Returned only');
-          filterGroupStore();
-        }
-      }
-      , {
-        text: 'Approved',
-        checked: false,
-        group: 'checkType' + idAppend,
-        handler: function (item, eventObject) {
-          groupGrid.filterType = 'Accepted',
-            Ext.getCmp('groupGrid-tb-filterButton' + idAppend).setText('Approved only');
-          filterGroupStore();
-        }
-      }
-
-    ]
-  });
-
-
   /******************************************************/
   // Group grid statistics string
   /******************************************************/
@@ -422,6 +337,28 @@ async function addReview( params ) {
     text: 'CSV'
   })
 
+  const groupGridView = new SM.ColumnFilters.GridView({
+    forceFit: false,
+    emptyText: 'No checks to display',
+    // These listeners keep the grid in the same scroll position after the store is reloaded
+    holdPosition: true, // HACK to be used with override
+    listeners: {
+    },
+    deferEmptyText: false,
+    lastHide: new Date(),
+    getRowClass: function (record, index) {
+      var autoCheckAvailable = record.get('autoCheckAvailable');
+      if (autoCheckAvailable === true) {
+        return 'sm-scap-grid-item';
+      } 
+    },
+    listeners: {
+      filterschanged: function (view, item, value) {
+        groupStore.filter(view.getFilterFns())  
+      }
+    }
+  })
+
   var groupGrid = new Ext.grid.GridPanel({
     cls: 'sm-round-panel',
     margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
@@ -433,8 +370,7 @@ async function addReview( params ) {
     width: '35%',
     minWidth: 340,
     hideMode: 'offsets',
-    filterType: 'All', // STIG Manager defined property
-    titleColumnDataIndex: 'ruleTitle', // STIG Manager defined property
+    enableColumnMove: false,
     title: 'Checklist',
     split: true,
     store: groupStore,
@@ -500,34 +436,22 @@ async function addReview( params ) {
         }
       }
     }),
-    view: new Ext.grid.GridView({
-      forceFit: false,
-      emptyText: 'No checks to display',
-      // These listeners keep the grid in the same scroll position after the store is reloaded
-      holdPosition: true, // HACK to be used with override
-      listeners: {
-      },
-      deferEmptyText: false,
-      getRowClass: function (record, index) {
-        var autoCheckAvailable = record.get('autoCheckAvailable');
-        if (autoCheckAvailable === true) {
-          return 'sm-scap-grid-item';
-        } 
-        // else {
-        //   return 'sm-manual-grid-item';
-        // }
-      }
-    }),
+    view: groupGridView,
     columns: [
       {
         id: 'severity' + idAppend,
         header: "CAT",
         fixed: true,
         width: 48,
-        align: 'center',
+        align: 'left',
         dataIndex: 'severity',
-        sortable: true,
-        renderer: renderSeverity
+        sortable: true,        
+        renderer: renderSeverity,
+        filter: {
+          type: 'values',
+          renderer: renderSeverity,
+          comparer: SM.ColumnFilters.CompareFns.severity
+        } 
       },
       {
         id: 'groupId' + idAppend,
@@ -536,7 +460,10 @@ async function addReview( params ) {
         dataIndex: 'groupId',
         sortable: true,
         hidden: true,
-        align: 'left'
+        align: 'left',
+        filter: {
+          type: 'string'
+        }
       },
       {
         id: 'ruleId' + idAppend,
@@ -545,7 +472,10 @@ async function addReview( params ) {
         dataIndex: 'ruleId',
         hidden: false,
         sortable: true,
-        align: 'left'
+        align: 'left',
+        filter: {
+          type: 'string'
+        }
       },
       {
         id: 'groupTitle' + idAppend,
@@ -554,7 +484,10 @@ async function addReview( params ) {
         hidden: true,
         dataIndex: 'groupTitle',
         renderer: columnWrap,
-        sortable: true
+        sortable: true,
+        filter: {
+          type: 'string'
+        }
       },
       {
         id: 'ruleTitle' + idAppend,
@@ -563,17 +496,24 @@ async function addReview( params ) {
         hidden: false,
         dataIndex: 'ruleTitle',
         renderer: columnWrap,
-        sortable: true
+        sortable: true,
+        filter: {
+          type: 'string'
+        }
       },
       {
         id: 'result' + idAppend,
         header: '<span exportvalue="Result">&#160;</span>', // per docs
-        menuDisabled: true,
+        // menuDisabled: true,
         width: 32,
         fixed: true,
         dataIndex: 'result',
         sortable: true,
-        renderer: renderResult
+        renderer: renderResult,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.result
+        } 
       },
       {
         id: 'status' + idAppend,
@@ -583,7 +523,11 @@ async function addReview( params ) {
         align: 'center',
         dataIndex: 'status',
         sortable: true,
-        renderer: renderStatuses
+        renderer: renderStatuses,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.status
+        } 
       }
 
     ],
@@ -596,36 +540,7 @@ async function addReview( params ) {
           iconCls: 'sm-checklist-icon',  // <-- icon
           text: 'Checklist',
           menu: groupChecklistMenu
-        }, '-', {
-          xtype: 'tbbutton',
-          id: 'groupGrid-tb-filterButton' + idAppend,
-          iconCls: 'sm-filter-icon',  // <-- icon
-          text: 'All checks',
-          menu: groupFilterMenu
-        }
-        , {
-          xtype: 'trigger',
-          fieldLabel: 'Filter',
-          triggerClass: 'x-form-clear-trigger',
-          onTriggerClick: function () {
-            this.triggerBlur();
-            this.blur();
-            this.setValue('');
-            filterGroupStore();
-          },
-          id: 'groupGrid-filterTitle' + idAppend,
-          width: 140,
-          submitValue: false,
-          disabled: false,
-          enableKeyEvents: true,
-          emptyText: 'Title filter...',
-          listeners: {
-            keyup: function (field, e) {
-              filterGroupStore();
-              return false;
-            }
-          }
-        },
+        }, 
         '->',
         {
             xtype: 'tbitem',
@@ -726,65 +641,7 @@ async function addReview( params ) {
   };
 
   function filterGroupStore() {
-    var filterArray = [];
-    // Filter menu
-    switch (groupGrid.filterType) {
-      case 'Manual':
-      case 'SCAP':
-        filterArray.push({
-          property: 'autoCheckAvailable',
-          value: groupGrid.filterType === 'SCAP' ? true : false
-        });
-        break;
-      case 'Incomplete':
-        filterArray.push({
-          fn: function (record) {
-            return !record.get('reviewComplete')
-          }
-        });
-        break;
-      case 'Unsubmitted':
-        filterArray.push({
-          fn: function (record) {
-            return (record.get('reviewComplete') && record.get('status') === 'saved');
-          }
-        });
-        break;
-      case 'Submitted':
-        filterArray.push({
-          fn: function (record) {
-            return record.get('status') === 'submitted';
-          }
-        });
-        break;
-      case 'Rejected':
-        filterArray.push({
-          fn: function (record) {
-            return record.get('status') === 'rejected';
-          }
-        });
-        break;
-      case 'Accepted':
-        filterArray.push({
-          fn: function (record) {
-            return record.get('status') === 'accepted';
-          }
-        });
-        break;
-    }
-    // Title textfield
-    var titleValue = Ext.getCmp('groupGrid-filterTitle' + idAppend).getValue();
-    if (titleValue.length > 0) {
-      filterArray.push({
-        property: groupGrid.titleColumnDataIndex,
-        value: titleValue,
-        anyMatch: true,
-        caseSensitive: false
-      });
-    }
-
-    groupStore.filter(filterArray);
-
+    groupStore.filter(groupGridView.getFilterFns())
   }
 
 
@@ -846,6 +703,12 @@ async function addReview( params ) {
       direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
     },
     listeners: {
+      // load: function (store, records) {
+      //   otherTotalTextCmp.setText(records.length + ' rows');
+      // },
+      // datachanged: function (store) {
+      //   otherTotalTextCmp.setText(`${store.getCount()}${store.isFiltered() ? ' of ' + store.getTotalCount() : ''} rows`);
+      // },
       exception: function (misc) {
         var ourView = otherGrid.getView();
         var response = misc.events.exception.listeners[1].fn.arguments[4];
@@ -862,12 +725,6 @@ async function addReview( params ) {
     },
     idProperty: 'reviewId'
   });
-
-  // var otherStore = new Ext.data.ArrayStore({
-  // id: 'otherStore' + idAppend,
-  // fields: otherFields,
-  // idProperty: 'reviewId'
-  // });
 
   var expander = new Ext.ux.grid.RowExpander({
     tpl: new Ext.XTemplate(
@@ -888,6 +745,9 @@ async function addReview( params ) {
     text: 'CSV'
   })
 
+  const otherTotalTextCmp = new Ext.Toolbar.TextItem ()
+
+
   var otherGrid = new Ext.grid.GridPanel({
     //region: 'center',
     enableDragDrop: true,
@@ -903,16 +763,25 @@ async function addReview( params ) {
     sm: new Ext.grid.RowSelectionModel({
       singleSelect: true
     }),
-    view: new Ext.grid.GridView({
+    view: new SM.ColumnFilters.GridView({
       forceFit: true,
       emptyText: 'No other assets to display.',
-      deferEmptyText: false
+      deferEmptyText: false,
+      listeners: {
+        filterschanged: function (view, item, value) {
+          otherStore.filter(view.getFilterFns())  
+        }
+      }  
     }),
     tbar: new Ext.Toolbar({
       items: []
     }),
     bbar: new Ext.Toolbar({
-      items: [otherExportBtn]
+      items: [
+        otherExportBtn,
+        '->',
+        new SM.RowCountTextItem({store:otherStore})
+      ]
     }),
     columns: [
       expander,
@@ -926,6 +795,9 @@ async function addReview( params ) {
         renderer: function (value, metaData, record, rowIndex, colIndex, store) {
           metaData.css += ' sm-cell-asset';
           return value;
+        },
+        filter: {
+          type: 'string'
         }
       },
 			{ 	
@@ -936,6 +808,10 @@ async function addReview( params ) {
 				sortable: true,
 				renderer: function (val, metaData, record, rowIndex, colIndex, store) {
           return renderStatuses(val, metaData, record, rowIndex, colIndex, store)
+        },
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.status
         }
 			},
       {
@@ -945,24 +821,26 @@ async function addReview( params ) {
 				fixed: true,
         dataIndex: 'result',
         sortable: true,
-        renderer: renderResult
+        renderer: renderResult,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.result
+        }
       },
 			{ 	
 				header: "User", 
 				width: 50,
 				dataIndex: 'username',
-				sortable: true
+				sortable: true,
+        filter: {
+          type: 'values'         
+        }
 			}
     ],
     // width: 300,
     loadMask: true,
     autoExpandColumn: 'target' + idAppend,
-    emptyText: 'No other assets to display',
-    listeners: {
-      render: function () {
-        var one = 1;
-      }
-    }
+    emptyText: 'No other assets to display'
   });
 
   /******************************************************/
@@ -1025,7 +903,7 @@ async function addReview( params ) {
           autoScroll: true
         },
         {
-          title: 'Log',
+          title: 'History',
           layout: 'fit',
           id: 'history-tab' + idAppend,
           items: historyData.grid

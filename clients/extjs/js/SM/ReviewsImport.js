@@ -75,10 +75,6 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             'taskAsset',
             'checklist'
         ]
-        const totalTextCmp = new Ext.Toolbar.TextItem({
-            text: '0 records',
-            width: 80
-        })
         const store = new Ext.data.GroupingStore({
             grid: this,
             root: '',
@@ -90,18 +86,10 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             sortInfo: {
                 field: 'assetName',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-            },
-            listeners: {
-                load: function (store) {
-                    totalTextCmp.setText(store.getCount() + ' records')
-                },
-                datachanged: function (store) {
-                    totalTextCmp.setText(store.getCount() + ' records')
-                },
-                remove: function (store) {
-                    totalTextCmp.setText(store.getCount() + ' records')
-                }
             }
+        })
+        const totalTextCmp = new SM.RowCountTextItem({
+            store: store
         })
         const columns = [
             {
@@ -374,10 +362,6 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 type: 'string'
             }
         ])
-        const totalTextCmp = new Ext.Toolbar.TextItem({
-            text: '0 records',
-            width: 80
-        })
         const store = new Ext.data.JsonStore({
             grid: this,
             root: '',
@@ -395,6 +379,9 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                     totalTextCmp.setText(store.getCount() + ' records')
                 }
             }
+        })
+        const totalTextCmp = new SM.RowCountTextItem({
+            store: store
         })
         const columns = [
             {
@@ -505,7 +492,7 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
             loadMask: true,
             store: store,
             columns: columns,
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
                 forceFit: true
@@ -600,7 +587,7 @@ SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
             sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true
             }),
-            view: new Ext.grid.GridView({
+            view: new SM.ColumnFilters.GridView({
                 forceFit: true,
                 emptyText: 'No records to display'
             }),

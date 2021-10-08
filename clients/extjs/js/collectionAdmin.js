@@ -16,10 +16,6 @@ function addCollectionAdmin( params ) {
       type: 'string'
     },
     {
-      name: 'workflow',
-      type: 'string'
-    },
-    {
       name: 'description',
       type: 'string'
     },
@@ -70,14 +66,12 @@ function addCollectionAdmin( params ) {
     listeners: {
       load: function (store, records) {
         store.isLoaded = true;
-        Ext.getCmp('collectionGrid-totalText').setText(records.length + ' records');
         collectionGrid.getSelectionModel().selectFirstRow();
-      },
-      remove: function (store, record, index) {
-        Ext.getCmp('collectionGrid-totalText').setText(store.getCount() + ' records');
       }
     }
   })
+
+  const totalTextCmp = new SM.RowCountTextItem({store:store})
 
   const collectionGrid = new Ext.grid.GridPanel({
     cls: 'sm-round-panel',
@@ -93,19 +87,15 @@ function addCollectionAdmin( params ) {
         header: "Name",
         width: 150,
         dataIndex: 'name',
-        sortable: true
-      },
-      {
-        header: "Workflow",
-        width: 150,
-        dataIndex: 'workflow',
-        sortable: true
+        sortable: true,
+        filter: {type: 'string'}
       },
       {
         header: "Description",
-        width: 150,
+        width: 300,
         dataIndex: 'description',
-        sortable: true
+        sortable: true,
+        filter: {type: 'string'}
       },
       {
         header: "Owners",
@@ -150,10 +140,13 @@ function addCollectionAdmin( params ) {
       }
 
     ],
-    view: new Ext.grid.GridView({
+    view: new SM.ColumnFilters.GridView({
       forceFit: false,
       // These listeners keep the grid in the same scroll position after the store is reloaded
       listeners: {
+        filterschanged: function (view, item, value) {
+          store.filter(view.getFilterFns())  
+        },
         beforerefresh: function (v) {
           v.scrollTop = v.scroller.dom.scrollTop;
           v.scrollHeight = v.scroller.dom.scrollHeight;
@@ -227,7 +220,8 @@ function addCollectionAdmin( params ) {
           handler: function (btn) {
             collectionGrid.getStore().reload();
           }
-        }, {
+        },
+        {
           xtype: 'tbseparator'
         }, 
         {
@@ -240,14 +234,12 @@ function addCollectionAdmin( params ) {
         },
         {
           xtype: 'tbfill'
-        }, {
+        },
+        {
           xtype: 'tbseparator'
-        }, {
-          xtype: 'tbtext',
-          id: 'collectionGrid-totalText',
-          text: '0 records',
-          width: 80
-        }]
+        },
+        totalTextCmp
+      ]
     }),
     width: '50%',
     loadMask: true

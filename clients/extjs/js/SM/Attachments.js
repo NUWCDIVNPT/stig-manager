@@ -17,16 +17,15 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
         dateFormat: 'c'
       }
     ]
-    const totalTextCmp = new Ext.Toolbar.TextItem ({
-      text: '0 records',
-      width: 80
-    })
     const store = new Ext.data.JsonStore({
       grid: this,
       root: '',
       fields: fields,
       idProperty: 'digest'
     })
+    // const totalTextCmp = new SM.RowCountTextItem ({
+    //   store: store
+    // })
     const columns = [
       {
         header: "Artifact",
@@ -234,7 +233,7 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       store: store,
       columns: columns,
       stripeRows: true,
-      view: new Ext.grid.GridView({
+      view: new SM.ColumnFilters.GridView({
         forceFit: true,
         emptyText: 'No attachments to display.',
         deferEmptyText: false
