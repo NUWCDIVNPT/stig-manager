@@ -974,30 +974,23 @@ function getFileIcon (filename) {
 		case 'doc':
 		case 'docx':
 			return 'img/page_word.png';
-			break;
 		case 'pdf':
 			return 'img/page_white_acrobat.png';
-			break;
 		case 'jpg':
 		case 'png':
 		case 'gif':
 		case 'bmp':
 			return 'img/page_white_camera.png';
-			break;
 		case 'xls':
 		case 'xlsx':
 			return 'img/page_excel.png';
-			break;
 		case 'ppt':
 		case 'pptx':
 			return 'img/page_white_powerpoint.png';
-			break;
 		case 'zip':
 			return 'img/page_white_compressed.png';
-			break;
 		default:
 			return 'img/page.png';
-			break;
 	}
 }
 

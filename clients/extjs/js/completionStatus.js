@@ -1,7 +1,3 @@
-/*
-$Id: completionStatus.js 807 2017-07-27 13:04:19Z csmig $
-*/
-
 function addCompletionStatus( params) {
 	const { collectionId, collectionName, treePath } = params
 
@@ -65,7 +61,6 @@ function addCompletionStatus( params) {
 		cls: 'sm-round-panel',
 		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
         plugins: summary,
-		//title: 'Checklist Status (' + collectionName + ')',
 		region:'center',
 		layout:'fit',
 		store: statusStore,
@@ -93,11 +88,6 @@ function addCompletionStatus( params) {
 			{header: "Cat 3",width:10,dataIndex:'lowCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}
 			
 		],
-		//autoExpandColumn:'completionGrid-'+ collectionId + 'becnhmarkId',
-		//border: false,
-		//style: {
-		//	borderBottomWidth: "1px"
-		//},
 		loadMask: true,
 		stripeRows: true,
 		view: new Ext.grid.GroupingView({
@@ -110,13 +100,6 @@ function addCompletionStatus( params) {
 				if (record.data.stigTitle == '!! NO STIG ASSIGNMENTS !!') {
 					return 'sm-grid3-row-black';
 				}
-				// if(record.data.noreviewCount == '0'){
-					// return 'sm-grid3-row-green';
-				// } else if (record.data.noreviewCount != record.data.checkCount) {
-					// return 'sm-grid3-row-orange';
-				// } else {
-					// return 'sm-grid3-row-red';
-				// }
 			}
 		}),
 		sm: new Ext.grid.RowSelectionModel ({
@@ -138,7 +121,6 @@ function addCompletionStatus( params) {
 						n.attributes = attributes;
 						reviewsTreeClick(n);
 					}
-					//Ext.getCmp('groupGrid').getStore().load({params:{assetId:assetId, revId:revId}});
 				}
 			}
 		},
@@ -161,7 +143,6 @@ function addCompletionStatus( params) {
 							if (btn.pressed) {
 								Ext.getCmp('completionGrid-expandButton' + collectionId).enable();
 								Ext.getCmp('completionGrid-collapseButton' + collectionId).enable();
-								completionGrid.getView().group
 								completionGrid.getStore().groupBy('benchmarkId');
 							} else {
 								Ext.getCmp('completionGrid-expandButton' + collectionId).disable();
@@ -193,7 +174,6 @@ function addCompletionStatus( params) {
 						xtype: 'tbseparator'
 					},{
 						xtype: 'tbbutton',
-						//icon: 'img/chevron.png',
 						icon: 'img/minus-grey.png',
 						id: 'completionGrid-collapseButton' + collectionId,
 						tooltip: 'Collapse all groups',
@@ -203,7 +183,6 @@ function addCompletionStatus( params) {
 						}
 					},{
 						xtype: 'tbbutton',
-						//icon: 'img/chevron_expand.png',
 						icon: 'img/plus-grey.png',
 						id: 'completionGrid-expandButton' + collectionId,
 						tooltip: 'Expand all groups',
@@ -214,91 +193,6 @@ function addCompletionStatus( params) {
 					}]
 				// END Grouping control
 				}
-				// ,{
-				// // START Filter control
-					// xtype: 'buttongroup',
-					// title: 'Filtering',
-					// items: [
-					// {
-						// xtype: 'tbbutton',
-						// icon: 'img/security_firewall_on.png',
-						// tooltip: 'Filter by STIG id',
-						// toggleGroup: 'completionGrid-filterBy' + collectionId,
-						// enableToggle:true,
-						// allowDepress: true,
-						// pressed: false,
-						// width: 20,
-						// handler: function(btn){
-							// var filterField = Ext.getCmp('completionGrid-filterField' + collectionId);
-							// if (btn.pressed) {
-								// filterField.enable();
-								// completionGrid.getStore().filterField = 'benchmarkId';
-								// if (filterField.getRawValue() == '') {
-									// filterField.emptyText = 'Enter a STIG filter...';
-									// filterField.setRawValue(filterField.emptyText);
-								// } else {
-									// filterField.emptyText = 'Enter a STIG filter...';
-								// }
-								// filterStatusChangesStore();
-							// } else {
-								// filterField.disable();
-								// //filterField.setValue('');
-								// filterStatusChangesStore();
-							// }
-						// }
-					// },{
-						// xtype: 'tbbutton',
-						// icon: 'img/mycomputer1-16.png',
-						// tooltip: 'Filter by asset name',
-						// toggleGroup: 'completionGrid-filterBy' + collectionId,
-						// enableToggle:true,
-						// allowDepress: true,
-						// width: 20,
-						// handler: function(btn){
-							// var filterField = Ext.getCmp('completionGrid-filterField' + collectionId);
-							// if (btn.pressed) {
-								// filterField.enable();
-								// completionGrid.getStore().filterField = 'assetName';
-								// if (filterField.getRawValue() == '') {
-									// filterField.emptyText = 'Enter an asset filter...';
-									// filterField.setRawValue(filterField.emptyText);
-								// } else {
-									// filterField.emptyText = 'Enter an asset filter...';
-								// }
-								// filterStatusChangesStore();
-							// } else {
-								// filterField.disable();
-								// //filterField.setValue('');
-								// filterStatusChangesStore();
-							// }
-						// }
-					// },{
-						// xtype: 'tbseparator'
-					// },{
-						// xtype: 'trigger',
-						// fieldLabel: 'Filter',
-						// triggerClass: 'x-form-clear-trigger',
-						// onTriggerClick: function() {
-							// this.triggerBlur();
-							// this.blur();
-							// this.setValue('');
-							// filterStatusChangesStore();
-						// },
-						// id: 'completionGrid-filterField' + collectionId,
-						// width: 140,
-						// submitValue: false,
-						// disabled: true,
-						// enableKeyEvents:true,
-						// emptyText:'Filter string...',
-						// listeners: {
-							// keyup: function (field,e) {
-								// filterStatusChangesStore();
-								// return false;
-							// }
-						// }
-					// }
-					// ]
-				// }
 			]
 		}),
 		bbar: new Ext.Toolbar({
@@ -317,7 +211,6 @@ function addCompletionStatus( params) {
 			,{
 				xtype: 'exportbutton',
 				hasMenu: false,
-				// gridBasename: collectionName + '-Completion-Status',
 				exportType: 'store',
 				storeBasename: collectionName + '-Status',
 				iconCls: 'sm-export-icon',

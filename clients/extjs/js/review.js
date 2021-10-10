@@ -342,8 +342,6 @@ async function addReview( params ) {
     emptyText: 'No checks to display',
     // These listeners keep the grid in the same scroll position after the store is reloaded
     holdPosition: true, // HACK to be used with override
-    listeners: {
-    },
     deferEmptyText: false,
     lastHide: new Date(),
     getRowClass: function (record, index) {
