@@ -158,7 +158,6 @@ module.exports.getOidcConfiguration = async function getOidcConfiguration (req, 
 
 module.exports.postOidcToken = async function postOidcToken (req, res, next) {
   try {
-    const formData = new URLSearchParams(req.body).toString()
     let options = {
       method: 'post',
       form: req.body,
