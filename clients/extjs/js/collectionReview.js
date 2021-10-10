@@ -362,17 +362,6 @@ async function addCollectionReview ( params ) {
 				// These listeners keep the grid in the same scroll position after the store is reloaded
 				holdPosition: true, // HACK to be used with override
 				lastHide: new Date(),
-				listeners: {
-					// beforerefresh: function(v) {
-					// v.scrollTop = v.scroller.dom.scrollTop;
-					// v.scrollHeight = v.scroller.dom.scrollHeight;
-					// },
-					// refresh: function(v) {
-						// setTimeout(function() { 
-							// v.scroller.dom.scrollTop = v.scrollTop + (v.scrollTop == 0 ? 0 : v.scroller.dom.scrollHeight - v.scrollHeight);
-						// }, 100);
-					// }
-				},
 				deferEmptyText:false,
 				listeners: {
 					filterschanged: function (view, item, value) {
@@ -431,7 +420,6 @@ async function addCollectionReview ( params ) {
 					id:'groupTitle' + idAppend,
 					header: "Group Title",
 					width: 80,
-					hidden: false,
 					dataIndex: 'groupTitle',
 					renderer: columnWrap,
 					hidden: true,
@@ -498,7 +486,6 @@ async function addCollectionReview ( params ) {
 					header: '<img src=img/ready-16.png width=12 height=12 exportvalue="Submitted">', 
 					width: 32,
 					align: 'center',
-					renderer:renderOpen,
 					dataIndex: 'readyCnt',
 					fixed: true,
 					renderer:renderStatusCounts,
@@ -509,7 +496,6 @@ async function addCollectionReview ( params ) {
 					header: '<img src=img/rejected-16.png width=12 height=12 exportvalue="Rejected">', 
 					width: 32,
 					align: 'center',
-					renderer:renderOpen,
 					dataIndex: 'rejectCnt',
 					fixed: true,
 					renderer:renderStatusCounts,
@@ -520,7 +506,6 @@ async function addCollectionReview ( params ) {
 					header: '<img src=img/star.svg width=12 height=12 exportvalue="Approved">', 
 					width: 32,
 					align: 'center',
-					renderer:renderOpen,
 					dataIndex: 'approveCnt',
 					fixed: true,
 					renderer:renderStatusCounts,
@@ -671,26 +656,6 @@ async function addCollectionReview ( params ) {
 		};
 			
 		function filterGroupStore () {
-			// var filterArray = [];
-			// // Filter menu
-			// if (groupGrid.filterState === 'SCAP' || groupGrid.filterState === 'Manual') {
-			// 	filterArray.push({
-			// 		property: 'autoCheckAvailable',
-			// 		value: groupGrid.filterState === 'SCAP'
-			// 	});
-			// }
-			// // Title textfield
-			// var titleValue = Ext.getCmp('groupGrid-filterTitle' + idAppend).getValue();
-			// if (titleValue.length > 0) {
-			// 	filterArray.push({
-			// 		property: groupGrid.titleColumnDataIndex,
-			// 		value: titleValue,
-			// 		anyMatch: true,
-			// 		caseSensitive: false
-			// 	});
-			// }
-			
-			// groupStore.filter(filterArray);
 			groupStore.filter(groupGrid.getView().getFilterFns())
 
 
@@ -755,7 +720,7 @@ async function addCollectionReview ( params ) {
 			listeners: {
 				save: function ( store, batch, data ) {
 					var ourGrid = Ext.getCmp('reviewsGrid' + idAppend);
-					setReviewsGridButtonStates(ourGrid.getSelectionModel());
+					setReviewsGridButtonStates()
 					Ext.getBody().unmask();
 				}
 			},
@@ -1039,7 +1004,7 @@ async function addCollectionReview ( params ) {
 							historyData.grid.disable();
 							setRejectButtonState();
 						}
-						setReviewsGridButtonStates(sm);
+						setReviewsGridButtonStates()
 					},
 					rowdeselect: function(sm,index,deselectedRecord) {
 						if (sm.getCount() == 1) { //single row selected
@@ -1051,7 +1016,7 @@ async function addCollectionReview ( params ) {
 							historyData.grid.disable();
 							setRejectButtonState();
 						}
-						setReviewsGridButtonStates(sm);
+						setReviewsGridButtonStates()
 					}
 				}
 			}),
@@ -1103,12 +1068,9 @@ async function addCollectionReview ( params ) {
 						e.grid.getSelectionModel().onRefresh()
 						loadResources(e.grid.getStore().getById(apiReview.assetId))
 
-						setReviewsGridButtonStates();
-						// e.grid.getSelectionModel().selectRow(e.grid.getStore().indexOfId(apiReview.assetId))
-						// e.record.commit()
+						setReviewsGridButtonStates()
 		
 						e.grid.updateGroupStore(e.grid)
-						// setReviewsGridButtonStates();
 	
 					}
 					catch(e) {
@@ -1382,7 +1344,7 @@ async function addCollectionReview ( params ) {
 					rejected:0,
 					accepted:0
 				}
-				for (i=0; i<selLength; i++) {
+				for (i=0; i < selections.length; i++) {
 					if (!selections[i].data.status) { // a review doesn't exist
 						counts.unsaved++
 						break

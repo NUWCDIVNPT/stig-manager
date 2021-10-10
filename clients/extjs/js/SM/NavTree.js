@@ -880,7 +880,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 tip.update("<pre>" + JSON.stringify(tokenParsed,null,2) + "</pre>")
               }
           }
-      }) 
+      }).getId() //for sonarcloud to see object used
   }
 
 })

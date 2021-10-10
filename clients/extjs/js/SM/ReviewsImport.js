@@ -497,8 +497,6 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 deferEmptyText: false,
                 forceFit: true
             }),
-            listeners: {
-            },
             tbar: tbar,
             bbar: new Ext.Toolbar({
                 items: [
@@ -1904,14 +1902,9 @@ async function showImportResultFile(params) {
     }
 
     async function onFileSelected(uploadField) {
-        try {
-            let input = uploadField.fileInput.dom
-            const files = [...input.files]
-            showParseFile(files[0])
-        }
-        catch (e) {
-            throw e
-        }
+        let input = uploadField.fileInput.dom
+        const files = [...input.files]
+        await showParseFile(files[0])
     }
 
     async function showParseFile(file) {

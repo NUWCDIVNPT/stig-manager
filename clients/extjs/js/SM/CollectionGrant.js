@@ -270,10 +270,8 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         const config = {
-            //title: this.title || 'Parent',
             isFormField: true,
             submitValue: true,
-            allowBlank: false,
             forceSelection: true,
             allowBlank: true,
             layout: 'fit',

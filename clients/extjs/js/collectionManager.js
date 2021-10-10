@@ -39,8 +39,6 @@ async function addCollectionManager( params ) {
 			region: 'west',
 			width: '30%',
 			minWidth: 330,
-			split: true,
-			border: false,
 			padding: '10px 10px 10px 10px',
 			border: false,
 			split: true,
