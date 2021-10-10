@@ -624,7 +624,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-Assets node
-          match = node.match(/(\d+)-assets-node/)
+          match = node.match(/^(\d+)-assets-node$/)
           if (match) {
             let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
@@ -640,7 +640,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-Assets-STIG node
-          match = node.match(/(\d+)-(\d+)-assets-asset-node/)
+          match = node.match(/^(\d+)-(\d+)-assets-asset-node$/)
           if (match) {
             let collectionId = match[1]
             let assetId = match[2]
@@ -658,7 +658,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
       
           // Collection-STIGs node
-          match = node.match(/(\d+)-stigs-node/)
+          match = node.match(/^(\d+)-stigs-node$/)
           if (match) {
             let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
@@ -674,7 +674,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-STIGs-Asset node
-          match = node.match(/(\d+)-(.*)-stigs-stig-node/)
+          match = node.match(/^(\d+)-(.*)-stigs-stig-node$/)
           if (match) {
             let collectionId = match[1]
             let benchmarkId = match[2]
@@ -880,7 +880,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 tip.update("<pre>" + JSON.stringify(tokenParsed,null,2) + "</pre>")
               }
           }
-      }) 
+      }).getId() //for sonarcloud to see object used
   }
 
 })

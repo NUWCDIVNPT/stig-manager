@@ -52,9 +52,10 @@ function addStigAdmin( params ) {
 		},
 		listeners: {
 			load: function (store,records) {
-				store.isLoaded = true,
+				store.isLoaded = true
 				stigGrid.getSelectionModel().selectFirstRow();
-			},		}
+			}
+		}
 	});
 
 	const totalTextCmp = new SM.RowCountTextItem({store:stigStore})

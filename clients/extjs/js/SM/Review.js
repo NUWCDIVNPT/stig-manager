@@ -32,7 +32,7 @@ SM.Review.Form.ResultCombo = Ext.extend(Ext.form.ComboBox, {
             dismissDelay: 0,
             autoWidth: true,
             html: SM.ResultTipText
-          })
+          }).getId() // for sonarcloud
         }
       }
     }
@@ -105,7 +105,7 @@ SM.Review.Form.ActionCombo = Ext.extend(Ext.form.ComboBox, {
             dismissDelay: 0,
             autoWidth: true,
             html: SM.actionTipText
-          })
+          }).getId() // for sonarcloud to consider object is used
         }
       }
     }

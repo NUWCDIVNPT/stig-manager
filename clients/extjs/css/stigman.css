@@ -149,20 +149,20 @@ a.x-grid3-hd-btn:hover {
 
 .sm-dialog-panel-text {
 	padding-bottom: 10px;
-	font: 10px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 10px Open Sans, helvetica, sans-serif;
 	color: #000000;
 	word-wrap: break-word;
 }
 .sm-dialog-panel-content {
 	padding-bottom: 10px;
-	font: 11px/13px sans-serif;
+	font: 11px/13px Open Sans, helvetica, sans-serif;
 	color: #000000;
 	word-wrap: break-word;
 }
 .sm-dialog-panel-callout {
 	margin-top: 20px;
 	padding: 10px;
-	font: 11px/13px sans-serif;
+	font: 11px/13px Open Sans, helvetica, sans-serif;
 	background-color: #e6e6e6;
 	color: #000000;
 	word-wrap: break-word;
@@ -265,7 +265,7 @@ a.x-grid3-hd-btn:hover {
 }
 
 body {
-    font:normal 11px Open Sans,Open Sans,verdana,helvetica;
+    font:normal 11px Open Sans,verdana,helvetica,sans-serif;
 }
 
 .sm-grid-result-sprite {
@@ -275,7 +275,6 @@ body {
 	background-color: hsla(0, 10%, 96%, 1);
 	border: 1px solid hsla(0, 0%, 76%, 1);
 	border-radius: 3px;
-	margin-left: 0px;
 	user-select: none;
 	max-width: 20px;
 	margin:  0 auto;
@@ -317,7 +316,7 @@ body {
 	top: -3px;
 	background-color: #6f93db;
 	padding: 1px 4px 1px 4px;
-	border:  1px solid hsla(0, 0%, 76%, 1);;
+	border:  1px solid hsla(0, 0%, 76%, 1);
 	border-radius: 3px;
 	margin-left: 12px;
 	user-select: none;
@@ -366,7 +365,7 @@ body {
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: 12px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 12px Open Sans, helvetica, sans-serif;
 	color:#000000;
 	word-wrap: break-word;
 }
@@ -378,7 +377,7 @@ body {
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 11px Open Sans, helvetica, sans-serif;
 	color:#000000;
 	word-wrap: break-word;
 }
@@ -408,7 +407,7 @@ body {
 	color: #111;
     font-weight: bold;
     font-size: 11px;
-    font-family: Open Sans,Open Sans,verdana,sans-serif;
+    font-family: Open Sans,verdana,sans-serif;
    	background-color: #ccc;
     background-image: none;
     padding: 6px 8px 5px 8px;
@@ -761,24 +760,24 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
 
 .cs-home-header-top {
-	font: bold 24px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 24px Open Sans, helvetica, sans-serif;
 }
 .sm-rule-content-header-top {
-	font: bold 24px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 24px Open Sans, helvetica, sans-serif;
 }
 
 .cs-home-header-reviews {
 	background-image: url(../img/security_firewall_on_48.png);
 	background-position: left top;
 	background-repeat: no-repeat;
-	font: bold 28px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 28px Open Sans, helvetica, sans-serif;
 	padding-bottom:40px;
 	padding-left: 56px;
 	padding-top: 8px;
 }
 
 .cs-section-five-o-eight {
-	font: 9px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 9px Open Sans, helvetica, sans-serif;
 	text-decoration: underline;
 	cursor: pointer;
 }
@@ -787,7 +786,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	background-image: url(../img/windows_table_48.png);
 	background-position: left top;
 	background-repeat: no-repeat;
-	font: bold 28px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 28px Open Sans, helvetica, sans-serif;
 	padding-bottom:40px;
 	padding-left: 56px;
 	padding-top: 8px;
@@ -797,7 +796,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	background-image: url(../img/Settings-icon-48.png);
 	background-position: left top;
 	background-repeat: no-repeat;
-	font: bold 28px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 28px Open Sans, helvetica, sans-serif;
 	padding-bottom:40px;
 	padding-left: 56px;
 	padding-top: 8px;
@@ -806,11 +805,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 
 .cs-home-version {
 	padding:10px;
-	font: 10px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 10px Open Sans, helvetica, sans-serif;
 }
 .cs-home-header-sub {
 	padding:20px;
-	font: bold 14px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 14px Open Sans, helvetica, sans-serif;
 }
 
 .cs-home-body-title {
@@ -818,7 +817,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: bold 14px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 14px Open Sans, helvetica, sans-serif;
 	background-color: #eee;
 	border-radius: 6px;
 	color:#3366cc;
@@ -829,13 +828,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-right:20px;
 	padding-bottom:10px;
 	/* background-color:#DDD; */
-	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 11px Open Sans, helvetica, sans-serif;
 	color:#000000;
 	word-wrap: break-word;
 }
 .cs-home-body-text pre {
 	white-space: pre-wrap;
-	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 11px Open Sans, helvetica, sans-serif;
 }
 .cs-home-body-table {
 	width:100%;
@@ -849,7 +848,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: bold 14px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 14px Open Sans, helvetica, sans-serif;
 	color:#3366cc;
 }
 .sm-reviews-home-body-text {
@@ -857,7 +856,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 11px Open Sans, helvetica, sans-serif;
 	color:#000000;
 	word-wrap: break-word;
 }
@@ -885,7 +884,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: bold 14px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 14px Open Sans, helvetica, sans-serif;
 	color:#3366cc;
 }
 .sm-feedback-body-text {
@@ -893,7 +892,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	padding-left:20px;
 	padding-right:20px;
 	padding-bottom:10px;
-	font: 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: 11px Open Sans, helvetica, sans-serif;
 	color:#000000;
 	word-wrap: break-word;
 }
@@ -907,11 +906,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
   
 .x-form-item {
-	font: normal 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: normal 11px Open Sans, helvetica, sans-serif;
 }
 
 .x-form-field {
-	font: normal 11px Open Sans, Open Sans, helvetica, sans-serif;
+	font: normal 11px Open Sans, helvetica, sans-serif;
 }
 
 .sm-manual-grid-item {
@@ -1243,8 +1242,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 
 
 .sm-cell-status {
-    background-color:#CCCCFF;
-	border-left: 1px solid white;
+	background-color:#CCCCFF;
 	border-left: 1px solid white;
 }
 .x-grid3-row-selected .sm-cell-status {
@@ -1399,7 +1397,7 @@ input[readonly] { color:blue; }*
 	background-image: url(../img/nessus_48.png);
 	background-position: left top;
 	background-repeat: no-repeat;
-	font: bold 28px Open Sans, Open Sans, helvetica, sans-serif;
+	font: bold 28px Open Sans, helvetica, sans-serif;
 	padding-bottom:40px;
 	padding-left: 56px;
 	padding-top: 8px;
@@ -1444,7 +1442,7 @@ input[readonly] { color:blue; }*
 
 .sm-progress-textarea {
    font-size: 8pt;
-   font-family: Consolas,Courier;
+   font-family: Consolas,Courier,monospace;
 }
 
 

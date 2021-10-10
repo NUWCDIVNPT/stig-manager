@@ -23,9 +23,6 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       fields: fields,
       idProperty: 'digest'
     })
-    // const totalTextCmp = new SM.RowCountTextItem ({
-    //   store: store
-    // })
     const columns = [
       {
         header: "Artifact",
@@ -97,27 +94,27 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
     }
 
     const putArtifact = async function (file) {
-      let fields
+      let md
       try {
-        fields = await getMetadataFromFile(file)
-        await putMetadataValue(fields.attachment.digest, fields.data)
+        md = await getMetadataFromFile(file)
+        await putMetadataValue(md.attachment.digest, md.data)
       }
       catch (e) {
         Ext.Msg.alert("Error", `Failed to save file data: ${e.message}`)
         return
       }
       try {
-        store.loadData([fields.attachment], true) // append
+        store.loadData([md.attachment], true) // append
         const data = store.getRange().map( record => record.data )
         await putMetadataValue('artifacts', JSON.stringify(data))
       }
       catch (e) {
         try {
-          await deleteMetadataKey(fields.attachment.digest)
+          await deleteMetadataKey(md.attachment.digest)
         }
-        catch (e) {
-          console.log(e)
-          Ext.Msg.alert("Error", `Failed to save metadata: ${e.message}`)
+        catch (e2) {
+          console.log(e2)
+          Ext.Msg.alert("Error", `Failed to save metadata: ${e2.message}`)
         }
       }
     }
@@ -164,7 +161,7 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
         }
         try {
           store.remove(record)
-          const data = store.getRange().map( record => record.data)
+          const data = store.getRange().map( r => r.data)
           await putMetadataValue('artifacts', JSON.stringify(data))  
         }
         catch (e) {

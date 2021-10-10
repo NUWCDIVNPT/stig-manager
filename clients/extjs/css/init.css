@@ -29,7 +29,7 @@
     background-position: center top;
     background-size: 50px;
     color: #d0cec5;
-    font: bold 32px Open Sans,Open Sans,helvetica;
+    font: bold 32px Open Sans,helvetica,sans-serif ;
     padding: 50px 0px;
     margin:     0;
     text-align: center;
@@ -37,7 +37,7 @@
   }
 
   #loading-text {
-    font: bold 12px Open Sans,Open Sans,helvetica;
+    font: bold 12px Open Sans,helvetica,sans-serif;
     padding-top: 8px;
   }
   

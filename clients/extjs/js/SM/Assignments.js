@@ -33,9 +33,9 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
     },
     loadTree: async function (node, cb) {
         try {
-          let match, collectionGrant
+          let match
           // Root node
-          match = node.match(/(\d+)-assignment-root/)
+          match = node.match(/^(\d+)-assignment-root$/)
           if (match) {
             let collectionId = match[1]
             let content = []
@@ -57,7 +57,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-Assets node
-          match = node.match(/(\d+)-assignment-assets-node/)
+          match = node.match(/^(\d+)-assignment-assets-node$/)
           if (match) {
             let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
@@ -81,7 +81,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-Assets-STIG node
-          match = node.match(/(\d+)-(\d+)-assignment-assets-asset-node/)
+          match = node.match(/^(\d+)-(\d+)-assignment-assets-asset-node$/)
           if (match) {
             let collectionId = match[1]
             let assetId = match[2]
@@ -111,7 +111,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
       
           // Collection-STIGs node
-          match = node.match(/(\d+)-assignment-stigs-node/)
+          match = node.match(/^(\d+)-assignment-stigs-node$/)
           if (match) {
             let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
@@ -135,7 +135,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-STIGs-Asset node
-          match = node.match(/(\d+)-(.*)-assignment-stigs-stig-node/)
+          match = node.match(/^(\d+)-(.*)-assignment-stigs-stig-node$/)
           if (match) {
             let collectionId = match[1]
             let benchmarkId = match[2]
@@ -212,13 +212,13 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
       }
       
-      async function assignAsset(theNode, grid){
+      async function assignAsset(theNode){
         //=======================================================
         // Assigns all of the STIGS of a specific Asset (in a)
         // specific collection to a user.
         //=======================================================
         try {
-          let assetIdMatches = theNode.id.match(/\d+-(\d+)-assignment-assets-asset-node/);
+          let assetIdMatches = theNode.id.match(/^\d+-(\d+)-assignment-assets-asset-node$/);
           let assetId = assetIdMatches[1];
           let result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
@@ -229,19 +229,18 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             }
           })
           let asset = Ext.util.JSON.decode(result.response.responseText)
-          let assignments = asset.stigs.map(stig => ({
+          return asset.stigs.map(stig => ({
             benchmarkId: stig.benchmarkId,
             assetName: asset.name,
             assetId: assetId
           }))
-          return assignments	
         }
         catch(e) {
           alert(e.message)
         }
       }	
       
-      async function assignStig(theNode, grid){
+      async function assignStig(theNode){
         //=======================================================
         // Assigns all of the ASSETS associated to this STIG IN a
         // specific collection to a user.
@@ -308,7 +307,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
   
 SM.AssignmentAddBtn = Ext.extend(Ext.Button, {
   initComponent: function () {
-    let me = this
     let tree = this.tree
     let grid = this.grid
     let config = {
@@ -333,8 +331,6 @@ SM.AssignmentAddBtn = Ext.extend(Ext.Button, {
   
 SM.AssignmentRemoveBtn = Ext.extend(Ext.Button, {
   initComponent: function () {
-    let me = this
-    let tree = this.tree
     let grid = this.grid
     let config = {
       disabled: true,
@@ -432,8 +428,8 @@ SM.AssignmentGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         return stigReviews
       },
-      markInvalid: function() {},
-      clearInvalid: function() {},
+      markInvalid: Ext.emptyFn,
+      clearInvalid: Ext.emptyFn,
       isValid: function() { return true},
       disabled: false,
       getName: function() {return this.name},
@@ -473,7 +469,6 @@ SM.AssignmentGrid = Ext.extend(Ext.grid.GridPanel, {
 SM.AssignmentPanel = Ext.extend(Ext.Panel, {
   // config: {collectionId, userId}
   initComponent: function() {
-    let me = this
     const navTree = new SM.AssignmentNavTree({
       panel: this,
       title: 'Collection Resources',
@@ -531,7 +526,7 @@ SM.AssignmentPanel = Ext.extend(Ext.Panel, {
   }
 })
 
-async function showUserAccess( collectionId, userId, username ) {
+async function showUserAccess( collectionId, userId ) {
   try {
     let appwindow 
     let assignmentPanel = new SM.AssignmentPanel({
@@ -571,14 +566,12 @@ async function showUserAccess( collectionId, userId, username ) {
                 let url, method
                 url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/grants/${userId}/access`
                 method = 'PUT'
-                let result = await Ext.Ajax.requestPromise({
+                await Ext.Ajax.requestPromise({
                   url: url,
                   method: method,
                   headers: { 'Content-Type': 'application/json;charset=utf-8' },
                   jsonData: values
-                })
-                userAccess = JSON.parse(result.response.responseText)
-      
+                })      
               }
               catch (e) {
                 alert(e.message)
@@ -608,7 +601,6 @@ async function showUserAccess( collectionId, userId, username ) {
             e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
           }
           else {
-            // payload = JSON.stringify(payload, null, 2);
             e = JSON.stringify(e);
           }
         }        

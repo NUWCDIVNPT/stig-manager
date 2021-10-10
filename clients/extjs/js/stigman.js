@@ -175,8 +175,7 @@ async function loadApp () {
 				data: {
 					classificationCls: classification.classificationCls,
 					classificationText: classification.classificationText,
-				},
-				border: false
+				}
 			})
 	
 			viewportConfig.items.push( classificationBanner, contentPanel)

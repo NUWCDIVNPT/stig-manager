@@ -974,30 +974,23 @@ function getFileIcon (filename) {
 		case 'doc':
 		case 'docx':
 			return 'img/page_word.png';
-			break;
 		case 'pdf':
 			return 'img/page_white_acrobat.png';
-			break;
 		case 'jpg':
 		case 'png':
 		case 'gif':
 		case 'bmp':
 			return 'img/page_white_camera.png';
-			break;
 		case 'xls':
 		case 'xlsx':
 			return 'img/page_excel.png';
-			break;
 		case 'ppt':
 		case 'pptx':
 			return 'img/page_white_powerpoint.png';
-			break;
 		case 'zip':
 			return 'img/page_white_compressed.png';
-			break;
 		default:
 			return 'img/page.png';
-			break;
 	}
 }
 
@@ -1077,132 +1070,6 @@ function encodeStoreDone(store,field){
 	return Ext.util.JSON.encode(myArray);
 }
 
-// async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
-// 	try {
-// 		// return
-// 		// CONTENT
-// 		let contentPanel = Ext.getCmp('content-panel' + idAppend)
-// 		let contentReq = await Ext.Ajax.requestPromise({
-// 			url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
-// 			method: 'GET',
-// 			params: {
-// 				projection: ['detail','ccis','checks','fixes']
-// 			}
-// 		})
-// 		let content = JSON.parse(contentReq.response.responseText)
-// 		contentPanel.update(content)
-// 		contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
-
-// 		// REVIEW
-// 		let reviewsReq = await Ext.Ajax.requestPromise({
-// 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
-// 			method: 'GET',
-// 			params: {
-// 				rules: 'all',
-// 				ruleId: groupGridRecord.data.ruleId
-// 			}
-// 		})
-// 		let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
-// 		let review = reviews.filter(review => review.assetId == assetId)[0] || {}
-// 		let otherReviews = reviews.filter(review => review.assetId != assetId)
-
-// 		// load review
-// 		let reviewForm = Ext.getCmp('reviewForm' + idAppend)
-// 		let form = reviewForm.getForm()
-// 		form.reset();
-// 		reviewForm.isLoaded = false
-		
-// 		// Set the legacy editStr property
-// 		if (review.ts) {
-// 			let extDate = new Date(review.ts)
-// 			review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
-// 		}
-
-// 		// Display the review
-// 		form.setValues(review)
-
-// 		reviewForm.groupGridRecord = groupGridRecord
-// 		reviewForm.isLoaded = true
-// 		let resultCombo = form.findField('result-combo' + idAppend)
-// 		let resultComment = form.findField('result-comment' + idAppend)
-// 		let actionCombo = form.findField('action-combo' + idAppend)
-// 		let actionComment = form.findField('action-comment' + idAppend)
-
-// 		// Initialize the lastSavedData properties
-// 		if ( resultCombo.value === null ) { resultCombo.value = '' }
-// 		resultCombo.lastSavedData = resultCombo.value
-// 		if (review.resultComment === null) {
-// 			resultComment.lastSavedData = ""
-// 		} else {
-// 			resultComment.lastSavedData = resultComment.getValue()
-// 		}
-// 		if ( actionCombo.value === null ) { actionCombo.value = '' }
-// 		actionCombo.lastSavedData = actionCombo.value
-// 		if (review.actionComment === null) {
-// 			actionComment.lastSavedData = ""
-// 		} else {
-// 			actionComment.lastSavedData = actionComment.getValue()
-// 		}
-
-
-// 		// load others
-// 		Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
-
-// 		// Log, Feedback and Metadata
-// 		const metadataGrid = Ext.getCmp('metadataGrid' + idAppend)
-// 		metadataGrid.curReview.ruleId = groupGridRecord.data.ruleId
-
-// 		let historyMetaReq = await Ext.Ajax.requestPromise({
-// 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
-// 			method: 'GET',
-// 			params: { 
-// 				projection: ['history', 'metadata']
-// 			}
-// 		})
-// 		let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
-// 		if (! reviewProjected) {
-// 			Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
-// 			Ext.getCmp('metadataGrid' + idAppend).getStore().removeAll()
-// 			Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
-// 		}
-// 		if (reviewProjected.history) {
-// 			// append current state of review to history grid
-// 			let currentReview = {
-// 				action: reviewProjected.action,
-// 				actionComment: reviewProjected.actionComment,
-// 				autoResult: reviewProjected.autoResult,
-// 				rejectText: reviewProjected.rejectText,
-// 				result: reviewProjected.result,
-// 				resultComment: reviewProjected.resultComment,
-// 				status: reviewProjected.status,
-// 				ts: reviewProjected.ts,
-// 				userId: reviewProjected.userId,
-// 				username: reviewProjected.username
-// 			}
-// 			reviewProjected.history.push(currentReview)
-// 			Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
-// 		}
-// 		if (reviewProjected.metadata) {
-// 			metadataGrid.setValue(reviewProjected.metadata)
-// 		}
-// 		// Feedback
-// 		Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
-
-// 		// Attachments
-// 		Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
-// 		Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
-// 		reviewForm.setReviewFormItemStates(reviewForm)
-// 	}
-// 	catch (e) {
-// 		if (e.response) {
-// 			alert (e.response.responseText)
-// 		}
-// 		else {
-// 			alert (e)
-// 		}
-// 	}	
-// }	
-
 function checked(val) {
 	if (val == 'X') {
 		return '<img src="img/greencheckt.gif">';
@@ -1212,20 +1079,6 @@ function checked(val) {
 		return '';
 	}
 }
-
-// function renderResult(val, metaData, record, rowIndex, colIndex, store) {
-// 	if (val == 'pass') {
-// 		return '<div style="color:green;font-weight:bolder;text-align:center;">NF</div>';
-// 	} else if (val == 'fail'){
-// 		return '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
-// 	} else if (val == 'notapplicable'){
-// 		return '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
-// 	} else {
-// 		return '';
-// 	}
-// }
-
-
 
 function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 	if (!val) return ''
@@ -1271,33 +1124,14 @@ function renderStatus(val) {
 	switch (val) {
 		case 'submitted':
 			return '<img src="img/ready-16.png" width=12 height=12 ext:qtip="Submitted">';
-			break;
 		case 'rejected':
 			return '<img src="img/rejected-16.png" width=12 height=12 ext:qtip="Rejected">';
-			break;
 		case 'accepted':
 			return '<img src="img/star.svg" width=12 height=12 ext:qtip="Accepted">';
-			break;
 		default:
 			return '<img src="img/pixel.gif" width=12 height=12>';
-			break;
 	}
 }
-
-// function renderSeverity(val) {
-// 	switch (val) {
-// 		case 'high':
-// 			return '1';
-// 		case 'medium':
-// 			return '2';
-// 		case 'low':
-// 			return '3';
-// 		case 'mixed':
-// 			return 'M';
-// 		default:
-// 			return 'U';
-// 	}
-// }
 
 const renderSeverity = (val) => {
 	switch (val) {
@@ -1806,101 +1640,4 @@ async function fetchStigs() {
 	})
 	let body = await r.text()
 	let one = 1
-}
-
-//=================================================
-//TAKES IN APPROPRIATE TREE NODE AND PULLS THE 
-//PACKAGE ID, STIG ID AND ASSET ID.  THE VALUES
-//ARE RETURNED IN THE RESET OBJECT THAT IS PASSED
-//IN BY REFERENCE.
-//=================================================
-function getUnlockInfo(n, unlockObject){
-	
-	if (n.attributes.node== 'collection'){
-		//=============================================
-		//THIS IS A PACKAGE-LEVEL RESET
-		//=============================================
-		unlockObject.collectionId = n.attributes.collectionId;
-		unlockObject.collectionName = n.attributes.collectionName;
-		unlockObject.assetId = -1;
-		unlockObject.assetName = '';
-		unlockObject.benchmarkId = '';
-		//unlockObject.stigName = '';
-	}
-	else {
-		//=============================================
-		//THIS IS A EITHER A STIG OR ASSET-LEVEL RESET
-		//=============================================
-		if (n.attributes.report == 'stig'){
-			//========================================
-			//STIG-LEVEL NODE. GET STIG ID
-			//========================================
-			unlockObject.collectionId = n.attributes.collectionId;
-			unlockObject.collectionName = '';
-			unlockObject.benchmarkId = n.attributes.benchmarkId;
-			//unlockObject.stigName = n.attributes.text;
-			unlockObject.assetId = -1;
-			unlockObject.assetName = '';
-			}
-		else if (n.attributes.report == 'asset'){
-			//=========================================
-			//ASSET-LEVEL NODE. GET ASSET ID
-			//=========================================
-			unlockObject.collectionId = n.attributes.collectionId;
-			unlockObject.collectionName = '';
-			unlockObject.assetId = n.attributes.assetId;
-			unlockObject.assetName = n.attributes.text;
-			unlockObject.benchmarkId = '';
-			//unlockObject.stigName = '';
-		}
-	}
-	//================================================
-	//REGARDLESS OF THE RESET TYPE, THE RESET Depth
-	//will determine whether the reset should be 
-	//for only submitted reviews or submitted and 
-	//approved reviews.
-	//================================================
-	unlockObject.unlockDepth = '';
-}
-
-//===================================================
-//TAKES AN RESET OBJECT AND RESETS THE REVIEWS From
-//A PACKAGE, ASSET IN THE PACKAGE, OR STIG IN THE 
-//PACKAGE BASED ON THE VALUES IN THE reset OBJECT.
-//===================================================
-function batchReviewUnlock(unlockObject){
-	Ext.getBody().mask('Unlocking reviews...');
-	Ext.Ajax.request({
-		url:'pl/batchReviewUnlock.pl',
-		params:{
-			collectionId: unlockObject.collectionId,
-			collectionName: unlockObject.collectionName,
-			assetId: unlockObject.assetId,
-			assetName: unlockObject.assetName,
-			benchmarkId: unlockObject.benchmarkId,
-			unlockDepth: unlockObject.unlockDepth
-			//stigName: unlockObject.stigName
-		},
-		success:function(response, request){
-			Ext.getBody().unmask();
-			//========================================
-			//IF A GRID WAS SPECIFIED, REFRESH IT
-			//========================================
-			if (unlockObject.gridTorefresh){
-				unlockObject.gridTorefresh.getStore().reload();
-			}
-			//========================================
-			//RESPOND TO THE USER OF SUCCESSFUL RESET
-			//========================================
-			var responseObj = Ext.util.JSON.decode(response.responseText);
-			Ext.Msg.alert(responseObj.responseTitle, responseObj.responseMsg);
-		}, 
-		failure: function (response,request){
-			Ext.getBody().unmask();
-			//========================================
-			//INFORM USER OF FAILED reset
-			//========================================
-			Ext.Msg.alert('Batch Review Reset Failed!', 'Problems Encountered During Batch Reset.<br/>Please Contact an Administrator.');
-		}
-	});
 }
