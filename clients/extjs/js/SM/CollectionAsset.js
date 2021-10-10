@@ -7,18 +7,11 @@ Ext.ns('SM')
 @cfg url
 */
 SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
-    onAssetChanged: function (apiAsset) {
+    onAssetChangedOrCreated: function (apiAsset) {
         if (apiAsset.collection.collectionId === this.collectionId) {
             this.store.loadData(apiAsset, true) // append with replace
             const sortState = this.store.getSortState()
             this.store.sort(sortState.field, sortState.direction)    
-        }
-    },
-    onAssetCreated: function (apiAsset) {
-        if (apiAsset.collection.collectionId === this.collectionId) {
-            this.store.loadData(apiAsset, true) // append with replace
-            const sortState = this.store.getSortState()
-            this.store.sort(sortState.field, sortState.direction)
         }
     },
     initComponent: function() {
@@ -250,8 +243,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     showAssetProps(r.get('assetId'), me.collectionId);
                 },
                 beforedestroy: function(grid) {
-                    SM.Dispatcher.removeListener('assetchanged', me.onAssetChanged, me)
-                    SM.Dispatcher.removeListener('assetcreated', me.onAssetCreated, me)
+                    SM.Dispatcher.removeListener('assetchanged', me.onAssetChangedOrCreated, me)
+                    SM.Dispatcher.removeListener('assetcreated', me.onAssetChangedOrCreated, me)
                 }
             },
             tbar: new Ext.Toolbar({
@@ -420,8 +413,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.CollectionAssetGrid.superclass.initComponent.call(this)
 
-        SM.Dispatcher.addListener('assetchanged', this.onAssetChanged, this)
-        SM.Dispatcher.addListener('assetcreated', this.onAssetCreated, this)
+        SM.Dispatcher.addListener('assetchanged', this.onAssetChangedOrCreated, this)
+        SM.Dispatcher.addListener('assetcreated', this.onAssetChangedOrCreated, this)
     }   
 })
 Ext.reg('sm-collection-asset-grid', SM.CollectionAssetGrid)
@@ -543,10 +536,10 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             },
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
-                if (me.grid && me.grid.editor && me.grid.editor.editing == false) {
+                if (me.grid && me.grid.editor && !me.grid.editor.editing) {
                     return true
                 }
-                if (v === "") { return "Blank values no allowed" }
+                if (v === "") { return "Blank values not allowed" }
             }     
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -557,7 +550,6 @@ Ext.reg('sm-stig-selection-field', SM.StigSelectionField)
 
 SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {
-        const me = this
         const fields = [
             {	name:'benchmarkId',
                 type: 'string'
@@ -577,11 +569,6 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             }
         })
-        // const totalTextCmp = new SM.RowCountTextItem ({
-        //     store: stigAssignedStore
-        // })
-
-
         const stigSelectionField = new SM.StigSelectionField({
             submitValue: false,
             autoLoad: true,
@@ -611,7 +598,7 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             stigSelectionField: stigSelectionField,
             clicksToEdit: 2,
-            onRowDblClick: function () {}, // do nothing
+            onRowDblClick: Ext.emptyFn, // do nothing
             errorSummary: false, // don't display errors during validation monitoring
             listeners: {
                 canceledit: function (editor,forced) {
@@ -714,8 +701,8 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 }))
                 stigAssignedStore.loadData(data)
             },
-            markInvalid: function() {},
-            clearInvalid: function() {},
+            markInvalid: Ext.emptyFn,
+            clearInvalid: Ext.emptyFn,
             isValid: () => true,
             getName: () => this.name,
             validate: () => true
@@ -728,18 +715,15 @@ Ext.reg('sm-asset-stigs-grid', SM.AssetStigsGrid)
 
 SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
-        let me = this
-        let idAppend = Ext.id()
         this.stigGrid = new SM.AssetStigsGrid({
             name: 'stigs'
         })
         if (! this.initialCollectionId) {
-            throw ('missing property initialCollectionId')
+            throw (new Error('missing property initialCollectionId'))
         }
  
         let config = {
             baseCls: 'x-plain',
-            // height: 400,
             region: 'south',
             labelWidth: 70,
             monitorValid: true,
@@ -879,16 +863,12 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
             buttons: [{
                 text: this.btnText || 'Save',
                 formBind: true,
-                handler: this.btnHandler || function () {}
+                handler: this.btnHandler || Ext.emptyFn
             }]
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.AssetProperties.superclass.initComponent.call(this)
-
-        this.getForm().addListener('beforeadd', (fp, c, i) => {
-            let one = c
-        })
 
         this.getForm().getFieldValues = function(dirtyOnly, getDisabled){
             // Override to support submitValue boolean
@@ -918,15 +898,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
         }
     
 
-    },
-    // initPanel: async function () {
-    //     try {
-    //         await this.stigGrid.store.loadPromise()
-    //     }
-    //     catch (e) {
-    //         alert (e)
-    //     }
-    // }
+    }
 })
 
 
