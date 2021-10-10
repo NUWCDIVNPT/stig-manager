@@ -30,7 +30,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
     try {
       let match, collectionGrant
       // Root node
-      match = node.match(/(\d+)-assignment-root/)
+      match = node.match(/^(\d+)-assignment-root$/)
       if (match) {
         let collectionId = match[1]
         let content = [
@@ -47,7 +47,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
         return
       }
       // Collection-Assets node
-      match = node.match(/(\d+)-assignment-assets-node/)
+      match = node.match(/^(\d+)-assignment-assets-node$/)
       if (match) {
         let collectionId = match[1]
         let result = await Ext.Ajax.requestPromise({
@@ -80,7 +80,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
         return
       }
       // Collection-Assets-STIG node
-      match = node.match(/(\d+)-(\d+)-assignment-assets-asset-node/)
+      match = node.match(/^(\d+)-(\d+)-assignment-assets-asset-node$/)
       if (match) {
         let collectionId = match[1]
         let assetId = match[2]
@@ -228,7 +228,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
     try {
       let match, collectionGrant
       // Root node
-      match = node.match(/(\d+)-assignment-root/)
+      match = node.match(/^(\d+)-assignment-root$/)
       if (match) {
         let collectionId = match[1]
         let content = [
@@ -246,7 +246,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
       }
 
       // Collection-STIGs node
-      match = node.match(/(\d+)-assignment-stigs-node/)
+      match = node.match(/^(\d+)-assignment-stigs-node$/)
       if (match) {
         let collectionId = match[1]
         let result = await Ext.Ajax.requestPromise({

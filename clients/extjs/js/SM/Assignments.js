@@ -35,7 +35,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
         try {
           let match, collectionGrant
           // Root node
-          match = node.match(/(\d+)-assignment-root/)
+          match = node.match(/^(\d+)-assignment-root$/)
           if (match) {
             let collectionId = match[1]
             let content = []
@@ -57,7 +57,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-Assets node
-          match = node.match(/(\d+)-assignment-assets-node/)
+          match = node.match(/^(\d+)-assignment-assets-node$/)
           if (match) {
             let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
@@ -81,7 +81,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-Assets-STIG node
-          match = node.match(/(\d+)-(\d+)-assignment-assets-asset-node/)
+          match = node.match(/^(\d+)-(\d+)-assignment-assets-asset-node$/)
           if (match) {
             let collectionId = match[1]
             let assetId = match[2]
@@ -111,7 +111,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
       
           // Collection-STIGs node
-          match = node.match(/(\d+)-assignment-stigs-node/)
+          match = node.match(/^(\d+)-assignment-stigs-node$/)
           if (match) {
             let collectionId = match[1]
             let result = await Ext.Ajax.requestPromise({
@@ -135,7 +135,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           // Collection-STIGs-Asset node
-          match = node.match(/(\d+)-(.*)-assignment-stigs-stig-node/)
+          match = node.match(/^(\d+)-(.*)-assignment-stigs-stig-node$/)
           if (match) {
             let collectionId = match[1]
             let benchmarkId = match[2]
@@ -218,7 +218,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
         // specific collection to a user.
         //=======================================================
         try {
-          let assetIdMatches = theNode.id.match(/\d+-(\d+)-assignment-assets-asset-node/);
+          let assetIdMatches = theNode.id.match(/^\d+-(\d+)-assignment-assets-asset-node$/);
           let assetId = assetIdMatches[1];
           let result = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
