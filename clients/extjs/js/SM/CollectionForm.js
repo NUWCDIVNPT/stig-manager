@@ -868,16 +868,16 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         field.setValue(oldValue)
                         return
                     }
-                    let response
                     try {
-                        response = await Ext.Ajax.requestPromise({
+                        let result = await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                             method: 'PATCH',
                             jsonData: {
                                 name: newValue.trim()
                             }
                         })
-                        SM.Dispatcher.fireEvent('collectionchanged', response)
+                        let apiCollection = JSON.parse(result.response.responseText)
+                        SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                     }
                     catch (e) {
                         alert("Name update failed")

@@ -410,7 +410,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
 
     // private
     postEditValue : function(value, originalValue, r, field){
-        return this.autoEncode && typeof value == 'string' ? Ext.util.Format.htmlEncode(value) : value;
+        return this.autoEncode && typeof value == 'string' ? SM.he(value) : value;
     },
 
     doFocus: function(pt){

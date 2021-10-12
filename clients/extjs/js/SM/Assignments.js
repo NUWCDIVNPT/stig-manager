@@ -70,12 +70,13 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             let apiAssets = JSON.parse(result.response.responseText)
             let content = apiAssets.map(asset => ({
               id: `${collectionId}-${asset.assetId}-assignment-assets-asset-node`,
-              text: asset.name,
+              text: SM.he(asset.name),
+              name: asset.name,
               node: 'asset',
               collectionId: collectionId,
               assetId: asset.assetId,
               iconCls: 'sm-asset-icon',
-              qtip: asset.name
+              qtip: SM.he(asset.name)
             }))
             cb(content, { status: true })
             return
@@ -95,7 +96,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             let apiAsset = JSON.parse(result.response.responseText)
             let content = apiAsset.stigs.map(stig => ({
               id: `${collectionId}-${assetId}-${stig.benchmarkId}-assignment-leaf`,
-              text: stig.benchmarkId,
+              text: SM.he(stig.benchmarkId),
               leaf: true,
               node: 'asset-stig',
               iconCls: 'sm-stig-icon',
@@ -104,7 +105,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               assetId: apiAsset.assetId,
               collectionId: collectionId,
               benchmarkId: stig.benchmarkId,
-              qtip: stig.title
+              qtip: SM.he(stig.title)
             }))
             cb(content, { status: true })
             return
@@ -124,12 +125,12 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             let apiCollection = JSON.parse(result.response.responseText)
             let content = apiCollection.stigs.map( stig => ({
               collectionId: collectionId,
-              text: stig.benchmarkId,
+              text: SM.he(stig.benchmarkId),
               node: 'stig',
               iconCls: 'sm-stig-icon',
               id: `${collectionId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
               benchmarkId: stig.benchmarkId,
-              qtip: stig.title
+              qtip: SM.he(stig.title)
             }) )
             cb( content, { status: true } )
             return
@@ -146,7 +147,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             let apiAssets = JSON.parse(result.response.responseText)
             let content = apiAssets.map(asset => ({
               id: `${collectionId}-${benchmarkId}-${asset.assetId}-assignment-leaf`,
-              text: asset.name,
+              text: SM.he(asset.name),
               leaf: true,
               node: 'stig-asset',
               iconCls: 'sm-asset-icon',
@@ -155,7 +156,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               assetId: asset.assetId,
               collectionId: collectionId,
               benchmarkId: benchmarkId,
-              qtip: asset.name
+              qtip: SM.he(asset.name)
             }))
             cb(content, { status: true })
             return

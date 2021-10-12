@@ -42,9 +42,9 @@ SM.CollectionNodeConfig = function (collection) {
             // The STIG is mapped to this Asset
             if (stigAssetNode) {
               // The Asset node exists
-              if (stigAssetNode.attributes.text !== apiAsset.name) {
+              if (stigAssetNode.attributes.text !== SM.he(apiAsset.name)) {
                 // Update the node text if necessary
-                stigAssetNode.setText(apiAsset.name)
+                stigAssetNode.setText(SM.he(apiAsset.name))
                 stigNode.sort(SM.NodeSorter)
               }
             }
@@ -178,7 +178,7 @@ SM.CollectionNodeConfig = function (collection) {
   let node = {
     id: `${collection.collectionId}-collection-node`,
     node: 'collection',
-    text: collection.name,
+    text: SM.he(collection.name),
     collectionId: collection.collectionId,
     collectionName: collection.name,
     iconCls: 'sm-collection-icon',
@@ -190,8 +190,8 @@ SM.CollectionNodeConfig = function (collection) {
 SM.AssetNodeConfig = function (collectionId, asset) {
   const onAssetChanged = (node, apiAsset) => {
     let apiAssetBenchmarkIds = apiAsset.stigs.map( stig => stig.benchmarkId )
-    if (node.attributes.text !== apiAsset.name) {
-      node.setText(apiAsset.name)
+    if (node.attributes.text !== SM.he(apiAsset.name)) {
+      node.setText(SM.he(apiAsset.name))
       node.parentNode.sort(SM.NodeSorter)  
     }
     if (node.isExpanded()) {
@@ -221,12 +221,13 @@ SM.AssetNodeConfig = function (collectionId, asset) {
   }
   return {
     id: `${collectionId}-${asset.assetId}-assets-asset-node`,
-    text: asset.name,
+    text: SM.he(asset.name),
+    name: asset.name,
     report: 'asset',
     collectionId: collectionId,
     assetId: asset.assetId,
     iconCls: 'sm-asset-icon',
-    qtip: asset.name,
+    qtip: SM.he(asset.name),
     onAssetChanged: onAssetChanged
   }
 }
@@ -234,38 +235,37 @@ SM.AssetNodeConfig = function (collectionId, asset) {
 SM.AssetStigNodeConfig = function (asset, stig) {
   return {
     id: `${asset.collection.collectionId}-${asset.assetId}-${stig.benchmarkId}-leaf`,
-    text: stig.benchmarkId,
+    text: SM.he(stig.benchmarkId),
     leaf: true,
     report: 'review',
     iconCls: 'sm-stig-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
-    // stigRevStr: stig.lastRevisionStr,
     assetId: asset.assetId,
     collectionId: asset.collection.collectionId,
     workflow: asset.collection.workflow,
     benchmarkId: stig.benchmarkId,
-    qtip: stig.title
+    qtip: SM.he(stig.title)
   }
 }
 
 SM.StigNodeConfig = function (collectionId, stig) {
   return {
     collectionId: collectionId,
-    text: stig.benchmarkId,
+    text: SM.he(stig.benchmarkId),
     report: 'stig',
     iconCls: 'sm-stig-icon',
     // stigRevStr: stig.lastRevisionStr,
     id: `${collectionId}-${stig.benchmarkId}-stigs-stig-node`,
     benchmarkId: stig.benchmarkId,
-    qtip: stig.title
+    qtip: SM.he(stig.title)
   }
 }
 
 SM.StigAssetNodeConfig = function (stig, asset) {
   return {
     id: `${asset.collectionId}-${stig.benchmarkId}-${asset.assetId}-leaf`,
-    text: asset.name,
+    text: SM.he(asset.name),
     leaf: true,
     report: 'review',
     iconCls: 'sm-asset-icon',
@@ -275,7 +275,7 @@ SM.StigAssetNodeConfig = function (stig, asset) {
     assetId: asset.assetId,
     collectionId: asset.collectionId,
     benchmarkId: stig.benchmarkId,
-    qtip: asset.name
+    qtip: SM.he(asset.name)
   }
 }
 
@@ -303,7 +303,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           autoScroll: true,
           split: true,
           collapsible: true,
-          title: '<span onclick="window.oidcProvider.logout()">' + curUser.display + ' - Logout</span>',
+          title: '<span onclick="window.oidcProvider.logout()">' + SM.he(curUser.display) + ' - Logout</span>',
           bodyStyle: 'padding:5px;',
           width: me.width || 300,
           minSize: 220,
@@ -401,7 +401,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           let collectionRoot = me.getNodeById('collections-root')
           let collectionNode = collectionRoot.findChild('id', `${changes.collectionId}-collection-node`, true)
           if (collectionNode) {
-            collectionNode.setText(changes.name)
+            collectionNode.setText(SM.he(changes.name))
             collectionNode.collectionName = changes.name
             collectionNode.eachChild( child => {
               if (child.attributes.collectionName) {
@@ -455,7 +455,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                       collectionId: assetNode.attributes.collectionId
                     },
                     assetId: assetNode.attributes.assetId,
-                    name: assetNode.attributes.text
+                    name: assetNode.attributes.name
                   },
                   stig ) )
                   assetNode.sort(SM.NodeSorter)
@@ -739,9 +739,6 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               treePath: n.getPath()
             })
           }
-        }
-        if (n.attributes.action == 'import') {
-          uploadArchive(n);
         }
         if (n.attributes.action == 'findings') {
           tab = Ext.getCmp('main-tab-panel').getItem('findingsTab-' + n.attributes.collectionId)

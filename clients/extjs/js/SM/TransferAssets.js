@@ -14,7 +14,7 @@ SM.TransferAssets.TransferBtn = Ext.extend(Ext.Button, {
       for (const destCollectionGrant of destCollectionGrants) {
         menu.addMenuItem({
           iconCls: 'sm-collection-icon',
-          text: destCollectionGrant.collection.name,
+          text: SM.he(destCollectionGrant.collection.name),
           collectionId: destCollectionGrant.collection.collectionId
         })
       }
@@ -30,7 +30,7 @@ SM.TransferAssets.TransferBtn = Ext.extend(Ext.Button, {
         beforeshow: function (menu) {
           setMenuItems(menu)
         },
-        itemClick: me.onItemClick
+        itemClick: me.onItemClick || Ext.emptyFn
       }
     })
 

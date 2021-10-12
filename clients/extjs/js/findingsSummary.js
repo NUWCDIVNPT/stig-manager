@@ -26,7 +26,7 @@ function addFindingsSummary( params ) {
 	})
 
 	findingsTab.updateTitle = function () {
-		findingsTab.setTitle(`${findingsTab.sm_tabMode === 'ephemeral' ? '<i>':''}${findingsTab.collectionName} / Findings${findingsTab.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+		findingsTab.setTitle(`${findingsTab.sm_tabMode === 'ephemeral' ? '<i>':''}${SM.he(findingsTab.collectionName)} / Findings${findingsTab.sm_tabMode === 'ephemeral' ? '</i>':''}`)
 	}
 	findingsTab.makePermanent = function () {
 		findingsTab.sm_tabMode = 'permanent'

@@ -97,8 +97,8 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
             `<b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States Defense Information Systems Agency (DISA). The software is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">an open source project</a> maintained by the Naval Sea Systems Command (NAVSEA) of the United States Navy.`,
           `</div>`, 
           `<div class='sm-home-widget-text'>`,
-            `<div class='sm-home-widget-subtitle'>${STIGMAN.Env.welcome.title ? Ext.util.Format.htmlEncode(STIGMAN.Env.welcome.title) : STIGMAN.Env.welcome.message || STIGMAN.Env.welcome.link ? 'Support' : ''}</div>`,
-            `${Ext.util.Format.htmlEncode(STIGMAN.Env.welcome.message)}${STIGMAN.Env.welcome.message && STIGMAN.Env.welcome.link ? '<br><br>' : ''}`,
+            `<div class='sm-home-widget-subtitle'>${STIGMAN.Env.welcome.title ? SM.he(STIGMAN.Env.welcome.title) : STIGMAN.Env.welcome.message || STIGMAN.Env.welcome.link ? 'Support' : ''}</div>`,
+            `${SM.he(STIGMAN.Env.welcome.message)}${STIGMAN.Env.welcome.message && STIGMAN.Env.welcome.link ? '<br><br>' : ''}`,
             `${STIGMAN.Env.welcome.link ? '<a href="' + STIGMAN.Env.welcome.link + '">' + STIGMAN.Env.welcome.link  + '</a>': ''}`,
           `</div>`
 
