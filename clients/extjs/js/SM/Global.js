@@ -8,6 +8,9 @@ var licenseStr = "This program is free software: you can redistribute it and/or 
 var curUser, appConfig;
 
 Ext.ns('SM')
+
+SM.he = Ext.util.Format.htmlEncode
+SM.hd = Ext.util.Format.htmlDecode
 SM.GetUserObject = async function () {
     let result = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/user`,
@@ -127,18 +130,18 @@ SM.RuleContentTpl = new Ext.XTemplate(
         `<tpl if="severity == 'low'">CAT 3</tpl>`, 
       '</span>',
     '</div>',
-    '<div class=cs-home-header-sub>{title}</div>',
+    '<div class=cs-home-header-sub>{[SM.he(values.title)]}</div>',
     '<div class=cs-home-body-title>Manual Check',
     '<div class=cs-home-body-text>',
     '<tpl for="checks">',
-      '<pre>{[Ext.util.Format.htmlEncode(values.content?.trim())]}</pre>',
+      '<pre>{[SM.he(values.content?.trim())]}</pre>',
     '</tpl>',
     '</div>',
     '</div>',
     '<div class=cs-home-body-title>Fix',
     '<div class=cs-home-body-text>',
     '<tpl for="fixes">',
-    '<pre>{[Ext.util.Format.htmlEncode(values.text?.trim())]}</pre>',
+    '<pre>{[SM.he(values.text?.trim())]}</pre>',
     '</tpl>',
     '</div>',
     '</div>',
@@ -146,14 +149,14 @@ SM.RuleContentTpl = new Ext.XTemplate(
     '<div class=cs-home-body-title>Other Data',
     '<tpl if="values.detail.vulnDiscussion">',
       '<div class=cs-home-body-text><b>Vulnerability Discussion</b><br><br>',
-      '<pre>{[Ext.util.Format.htmlEncode(values.detail.vulnDiscussion?.trim())]}</pre>',
+      '<pre>{[SM.he(values.detail.vulnDiscussion?.trim())]}</pre>',
       '</div>',
     '</tpl>',
     '<tpl if="values.detail.documentable">',
-    	'<div class=cs-home-body-text><b>Documentable: </b>{values.detail.documentable}</div>',
+    	'<div class=cs-home-body-text><b>Documentable: </b>{[SM.he(values.detail.documentable)]}</div>',
 		'</tpl>',
     '<tpl if="values.detail.responsibility">',
-      '<div class=cs-home-body-text><b>Responsibility: </b>{values.detail.responsibility}</div>',
+      '<div class=cs-home-body-text><b>Responsibility: </b>{[SM.he(values.detail.responsibility)]}</div>',
     '</tpl>',
     '<tpl if="values.ccis.length === 0">',
       '<div class=cs-home-body-text><b>Controls: </b>No mapped controls</div>',
@@ -163,7 +166,7 @@ SM.RuleContentTpl = new Ext.XTemplate(
       '<table class=cs-home-body-table border="1">',
       '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
       '<tpl for="ccis">',
-      '<tr><td>{cci}</td><td>{apAcronym}</td><td>{control}</td></tr>',
+      '<tr><td>{cci}</td><td>{[SM.he(values.apAcronym)]}</td><td>{[SM.he(values.control)]}</td></tr>',
       '</tpl>',
       '</table>',
       '</div>',

@@ -647,7 +647,8 @@ SM.TabEnhancements = function(){
     }
 }
 
-// GridView rendered without href="#", which supresses Chrome status bar
+// GridView masterTpl: rendered without href="#", which suppresses Chrome status bar
+// doRender, refreshRow: htmlEncode of record.data
 // Source: Carl Smigielski
 Ext.override(Ext.grid.GridView,{
     masterTpl: new Ext.Template(
@@ -667,7 +668,149 @@ Ext.override(Ext.grid.GridView,{
             '<div class="x-grid3-resize-marker">&#160;</div>',
             '<div class="x-grid3-resize-proxy">&#160;</div>',
         '</div>'
-    )
+    ),
+    doRender : function(columns, records, store, startRow, colCount, stripe) {
+        var templates = this.templates,
+            cellTemplate = templates.cell,
+            rowTemplate = templates.row,
+            last = colCount - 1,
+            tstyle = 'width:' + this.getTotalWidth() + ';',
+            // buffers
+            rowBuffer = [],
+            colBuffer = [],
+            rowParams = {tstyle: tstyle},
+            meta = {},
+            len  = records.length,
+            alt,
+            column,
+            record, i, j, rowIndex;
+    
+        //build up each row's HTML
+        for (j = 0; j < len; j++) {
+            record    = records[j];
+            colBuffer = [];
+    
+            rowIndex = j + startRow;
+    
+            //build up each column's HTML
+            for (i = 0; i < colCount; i++) {
+                column = columns[i];
+                
+                meta.id    = column.id;
+                meta.css   = i === 0 ? 'x-grid3-cell-first ' : (i == last ? 'x-grid3-cell-last ' : '');
+                meta.attr  = meta.cellAttr = '';
+                meta.style = column.style;
+                meta.value = column.renderer.call(column.scope, typeof record.data[column.name] === 'string' ? SM.he(record.data[column.name]) : record.data[column.name], meta, record, rowIndex, i, store);
+    
+                if (Ext.isEmpty(meta.value)) {
+                    meta.value = '&#160;';
+                }
+    
+                if (this.markDirty && record.dirty && typeof record.modified[column.name] != 'undefined') {
+                    meta.css += ' x-grid3-dirty-cell';
+                }
+    
+                colBuffer[colBuffer.length] = cellTemplate.apply(meta);
+            }
+    
+            alt = [];
+            //set up row striping and row dirtiness CSS classes
+            if (stripe && ((rowIndex + 1) % 2 === 0)) {
+                alt[0] = 'x-grid3-row-alt';
+            }
+    
+            if (record.dirty) {
+                alt[1] = ' x-grid3-dirty-row';
+            }
+    
+            rowParams.cols = colCount;
+    
+            if (this.getRowClass) {
+                alt[2] = this.getRowClass(record, rowIndex, rowParams, store);
+            }
+    
+            rowParams.alt   = alt.join(' ');
+            rowParams.cells = colBuffer.join('');
+    
+            rowBuffer[rowBuffer.length] = rowTemplate.apply(rowParams);
+        }
+    
+        return rowBuffer.join('');
+    },
+    refreshRow: function(record) {
+        var store     = this.ds,
+            colCount  = this.cm.getColumnCount(),
+            columns   = this.getColumnData(),
+            last      = colCount - 1,
+            cls       = ['x-grid3-row'],
+            rowParams = {
+                tstyle: String.format("width: {0};", this.getTotalWidth())
+            },
+            colBuffer = [],
+            cellTpl   = this.templates.cell,
+            rowIndex, row, column, meta, css, i;
+        
+        if (Ext.isNumber(record)) {
+            rowIndex = record;
+            record   = store.getAt(rowIndex);
+        } else {
+            rowIndex = store.indexOf(record);
+        }
+        
+        //the record could not be found
+        if (!record || rowIndex < 0) {
+            return;
+        }
+        
+        //builds each column in this row
+        for (i = 0; i < colCount; i++) {
+            column = columns[i];
+            
+            if (i == 0) {
+                css = 'x-grid3-cell-first';
+            } else {
+                css = (i == last) ? 'x-grid3-cell-last ' : '';
+            }
+            
+            meta = {
+                id      : column.id,
+                style   : column.style,
+                css     : css,
+                attr    : "",
+                cellAttr: ""
+            };
+            // Need to set this after, because we pass meta to the renderer
+            meta.value = column.renderer.call(column.scope, typeof record.data[column.name] === 'string' ? SM.he(record.data[column.name]) : record.data[column.name], meta, record, rowIndex, i, store);
+            
+            if (Ext.isEmpty(meta.value)) {
+                meta.value = '&#160;';
+            }
+            
+            if (this.markDirty && record.dirty && typeof record.modified[column.name] != 'undefined') {
+                meta.css += ' x-grid3-dirty-cell';
+            }
+            
+            colBuffer[i] = cellTpl.apply(meta);
+        }
+        
+        row = this.getRow(rowIndex);
+        row.className = '';
+        
+        if (this.grid.stripeRows && ((rowIndex + 1) % 2 === 0)) {
+            cls.push('x-grid3-row-alt');
+        }
+        
+        if (this.getRowClass) {
+            rowParams.cols = colCount;
+            cls.push(this.getRowClass(record, rowIndex, rowParams, store));
+        }
+        
+        this.fly(row).addClass(cls).setStyle(rowParams.tstyle);
+        rowParams.cells = colBuffer.join("");
+        row.innerHTML = this.templates.rowInner.apply(rowParams);
+        
+        this.fireEvent('rowupdated', this, rowIndex, record);
+    }
 })
 
 // TreeNodeUI rendered without href="#", which supresses Chrome status bar
@@ -686,7 +829,7 @@ Ext.override(Ext.tree.TreeNodeUI,{
             '<img alt="" src="', a.icon || this.emptyIcon, '" class="x-tree-node-icon',(a.icon ? " x-tree-node-inline-icon" : ""),(a.iconCls ? " "+a.iconCls : ""),'" unselectable="on" />',
             cb ? ('<input class="x-tree-node-cb" type="checkbox" ' + (a.checked ? 'checked="checked" />' : '/>')) : '',
             '<a hidefocus="on" class="x-tree-node-anchor" tabIndex="1" ',
-             a.hrefTarget ? ' target="'+a.hrefTarget+'"' : "", '><span unselectable="on">',n.text,"</span></a></div>",
+            a.hrefTarget ? ' target="'+a.hrefTarget+'"' : "", '><span unselectable="on">',n.text,"</span></a></div>",
             '<ul class="x-tree-node-ct" style="display:none;"></ul>',
             "</li>"].join('');
 

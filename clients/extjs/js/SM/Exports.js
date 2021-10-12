@@ -64,15 +64,14 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           return {
             id: `${collectionId}-${asset.assetId}-assignment-assets-asset-node`,
-            text: `${asset.name} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
-            // text: `${asset.name} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
+            text: `${SM.he(asset.name)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
             node: 'asset',
             collectionId: collectionId,
             assetId: asset.assetId,
             assetName: asset.name,
             iconCls: 'sm-asset-icon',
             checked: this.ui.checkbox.checked,
-            qtip: asset.name
+            qtip: SM.he(asset.name)
           }
         })
         this.getOwnerTree().assetsNode = this
@@ -97,7 +96,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           return {
             id: `${collectionId}-${assetId}-${status.benchmarkId}-assignment-leaf`,
-            text: `${status.benchmarkId} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
+            text: `${SM.he(status.benchmarkId)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
             leaf: true,
             node: 'asset-stig',
             iconCls: 'sm-stig-icon',
@@ -279,7 +278,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
             benchmarkId: stig.benchmarkId,
             iconCls: 'sm-stig-icon',
             checked: this.ui.checkbox.checked,
-            qtip: stig.title
+            qtip: SM.he(stig.title)
           }
           let assetNodes = []
           for (const status of benchmarkStatus[stig.benchmarkId]) {
@@ -287,7 +286,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
             const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
             assetNodes.push({
               id: `${collectionId}-${status.benchmarkId}-${status.assetId}-assignment-leaf`,
-              text: `${status.assetName} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
+              text: `${SM.he(status.assetName)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
               leaf: true,
               node: 'stig-asset',
               iconCls: 'sm-asset-icon',

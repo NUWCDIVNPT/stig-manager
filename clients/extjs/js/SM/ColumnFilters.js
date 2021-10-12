@@ -425,7 +425,7 @@ SM.ColumnFilters.Renderers = {
   },
   highlighterShim: function (v, m, r, ri, ci, s) {
     if (this.filter?.type === 'string' && this.filter?.value) {
-      const re = new RegExp(this.filter.value,'gi')
+      const re = new RegExp(SM.he(this.filter.value),'gi')
       v = v.replace(re,'<span class="sm-text-highlight">$&</span>')
     }
     return this.configRenderer ? this.configRenderer.call(this, v, m, r, ri, ci, s) : v

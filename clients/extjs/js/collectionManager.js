@@ -90,21 +90,6 @@ async function addCollectionManager( params ) {
 				}
 			},
 			items: [
-				// {
-				// 	region: 'west',
-				// 	width: '30%',
-				// 	minWidth: 330,
-				// 	split: true,
-				// 	border: false,
-				// 	layout: 'border',
-				// 	layoutConfig: {
-				// 		targetCls: 'sm-border-layout-ct'
-				// 	},
-				// 	items: [
-				// 		collectionPanel,
-				// 		grantGrid 
-				// 	]
-				// },
 				collectionPanel,
 				{
 					region: 'center',
@@ -134,7 +119,7 @@ async function addCollectionManager( params ) {
 			}
 		}
 		managerTab.updateTitle = function () {
-			managerTab.setTitle(`${managerTab.sm_tabMode === 'ephemeral' ? '<i>':''}${managerTab.collectionName} / Manage${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+			managerTab.setTitle(`${managerTab.sm_tabMode === 'ephemeral' ? '<i>':''}${SM.he(managerTab.collectionName)} / Manage${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
 		}
 
 		managerTab.makePermanent = function () {
@@ -155,11 +140,6 @@ async function addCollectionManager( params ) {
 		thisTab.updateTitle.call(thisTab)
 		thisTab.show();
 		
-		// grantGrid.getStore().loadData(apiCollection.grants.map( g => ({
-		// 	userId: g.user.userId,
-		// 	username: g.user.username,
-		// 	accessLevel: g.accessLevel
-		// })))
 		assetGrid.getStore().load()
 		stigGrid.getStore().load()
 		SM.Dispatcher.addListener('assetchanged', onAssetEvent)

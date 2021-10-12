@@ -126,7 +126,7 @@ SM.RowEditorDelBtn = Ext.extend(Ext.Button, {
             title: `Delete ${this.itemString}?`,
             store: this.grid.store,
             record: r[0],
-            msg: `You are about to delete ${this.itemString} "${deleteItem}". Do you wish to continue?`,
+            msg: `You are about to delete ${this.itemString} "${SM.he(deleteItem)}". Do you wish to continue?`,
             buttons: Ext.Msg.YESNO,
             fn: function (buttonId, text, options) {
                 if (buttonId === 'ok' || buttonId === 'yes') {

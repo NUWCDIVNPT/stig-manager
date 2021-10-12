@@ -71,7 +71,6 @@ async function addReview( params ) {
   var groupStore = new Ext.data.JsonStore({
     proxy: new Ext.data.HttpProxy({
       url: `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/latest`,
-      // url: `pl/getCurrentGroups.pl`,
       method: 'GET'
     }),
     root: '',
@@ -263,39 +262,8 @@ async function addReview( params ) {
         handler: function () {
           showImportResultFile( {...leaf, revisionStr: groupGrid.sm_revisionStr, store: groupStore, fieldSettings: apiFieldSettings} );            
         }
-      },
-      '-',
-      // {
-      //   text: 'Submit All...',
-      //   iconCls: 'sm-ready-icon',
-      //   hideOnClick: true,
-      //   handler: bulkSubmit
-      // },
-      {
-        text: 'Reset reviews...',
-        id: 'unlockMenuItem' + idAppend,
-        iconCls: 'sm-unlock-icon',
-        handler: function () {
-          //====================================================
-          //UNLOCK ALL REVIEWS FOR STIG ASSOCIATED TO ASSET
-          //====================================================
-          unlockStigReviewsForAsset();
-        }
-      },
-      '-'
-    ],
-    listeners: {
-      added: function (menu, ownerCt, index) {
-        var test = 1;
-      },
-      render: function () {
-        if (curUser.accessLevel !== 3) {
-          Ext.getCmp('unlockMenuItem' + idAppend).hide();
-        } else {
-          Ext.getCmp('unlockMenuItem' + idAppend).show();
-        }
       }
-    }
+    ]
   });
 
   /******************************************************/
@@ -619,7 +587,7 @@ async function addReview( params ) {
       let benchmarkDateJs = new Date(r.benchmarkDate)
       let item = {
         id: `revision-submenu${r.benchmarkId}-${r.version}-${r.release}${idAppend}`,
-        text: `Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`,
+        text: SM.he(`Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`),
         // revId: `${r.benchmarkId}-${r.version}-${r.release}`,
         revisionStr: r.revisionStr,
         group: 'revision-submenu-group' + idAppend,
@@ -727,10 +695,10 @@ async function addReview( params ) {
   var expander = new Ext.ux.grid.RowExpander({
     tpl: new Ext.XTemplate(
       '<tpl if="resultComment">',
-		  '<p><b>Detail:</b> {resultComment}</p>',
+		  '<p><b>Detail:</b> {[SM.he(values.resultComment)]}</p>',
       '</tpl>',
 		  '<tpl if="actionComment">',
-		  '<p><b>Comment:</b> {actionComment}</p>',
+		  '<p><b>Comment:</b> {[SM.he(values.actionComment)]}</p>',
 		  '</tpl>'
     )
   });
@@ -927,7 +895,7 @@ async function addReview( params ) {
     height: '65%',
     minHeight: 320,
     id: 'reviewForm' + idAppend,
-    title: 'Review on ' + leaf.assetName,
+    title: 'Review on ' + SM.he(leaf.assetName),
     padding: 10,
     labelWidth: 54,
     fieldSettings: apiFieldSettings,
@@ -952,7 +920,6 @@ async function addReview( params ) {
 
   async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
     try {
-      // return
       // CONTENT
       let contentPanel = Ext.getCmp('content-panel' + idAppend)
       let contentReq = await Ext.Ajax.requestPromise({
@@ -1058,7 +1025,6 @@ async function addReview( params ) {
       margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
       border: false,
       region: 'center',
-      //disabled: true,
       xtype: 'panel',
       split: true,
       collapsible: false,
@@ -1120,8 +1086,6 @@ async function addReview( params ) {
                   });
                   break;
                 case 'no':
-                  // Ext.getCmp('result-combo' + idAppend).changed = false;
-                  // Ext.getCmp('action-combo' + idAppend).changed = false;
                   Ext.getCmp('main-tab-panel').remove('reviewTab' + idAppend);
                   break;
                 case 'cancel':
@@ -1293,66 +1257,5 @@ async function addReview( params ) {
 
       // Ext.getBody().unmask()
     }
-  } //end saveReview();
-
-  function unlockStigReviewsForAsset() {
-    //===================================================
-    //RESETS ALL RULE REVIEWS FOR A SPECIFIC STIG
-    //AND SPECIFIC ASSET.
-    //===================================================
-    var unlockObject = new Object;
-    unlockObject.benchmarkId = leaf.benchmarkId;
-    unlockObject.stigName = leaf.stigName;
-    unlockObject.assetId = leaf.assetId;
-    unlockObject.assetName = leaf.assetName;
-    unlockObject.collectionId = -1;
-    unlockObject.collectionName = -1;
-    unlockObject.gridTorefresh = groupGrid;
-    unlockObject.unlockDepth = "STIG-ASSET";
-    getUnlockPrompt("STIG-ASSET", unlockObject, groupGrid);
-  };
-
-  function bulkSubmit(all) {
-    let completedRecords = groupStore.getRange().filter( record => record.data.reviewComplete && record.data.status !== 'submitted')
-    if (completedRecords.length) {
-      const confirmStr = `Eligible reviews: ${completedRecords.length}<br><br>Continue with submitting?`
-      Ext.Msg.confirm("Confirm", confirmStr, async function (btn) {
-        if (btn == 'yes') {
-          const results = []
-          let i, l
-          for (i = 0, l = completedRecords.length; i < l; i++) {
-            const record = completedRecords[i]
-            Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
-            try {
-              const result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
-                method: 'PATCH',
-                jsonData: {
-                  status: 'submitted'
-                }
-              })
-              results.push({
-                success: true,
-                result: result
-              })
-            }
-            catch (e) {
-              results.push({
-                success: false,
-                result: e
-              })
-            }
-          }
-          groupStore.reload()
-          Ext.getBody().unmask()    
-        }
-      })
-    } else {
-      Ext.Msg.alert('No eligible Reviews', `There are no Reviews eligible for submission`)
-    }
-
-
-
-  }; //end bulkSubmit;
-
-}; //end addReview();
+  } 
+};

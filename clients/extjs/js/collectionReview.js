@@ -637,7 +637,7 @@ async function addCollectionReview ( params ) {
 			let benchmarkDateJs = new Date(r.benchmarkDate)
 			let item = {
 				id: `revision-submenu${r.benchmarkId}-${r.version}-${r.release}${idAppend}`,
-				text: `Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`,
+				text: SM.he(`Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`),
 				// revId: `${r.benchmarkId}-${r.version}-${r.release}`,
 				revisionStr: r.revisionStr,
 				group: 'revision-submenu-group' + idAppend,
@@ -1545,7 +1545,6 @@ async function addCollectionReview ( params ) {
 			id: 'rejectFormPanel' + idAppend,
 			cls: 'sm-background-blue',
 			labelWidth: 95,
-			url:'pl/setReviewRejection.pl',
 			monitorValid: false,
 			items: [
 			{

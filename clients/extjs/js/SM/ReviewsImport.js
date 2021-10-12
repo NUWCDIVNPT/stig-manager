@@ -1721,7 +1721,7 @@ async function showImportResultFiles(collectionId, options) {
             }
 
             function updateProgress(value, text) {
-                progressPanel.pb.updateProgress(value, Ext.util.Format.htmlEncode(text))
+                progressPanel.pb.updateProgress(value, SM.he(text))
             }
 
             function updateStatusText(text, noNL, replace) {
@@ -1818,7 +1818,7 @@ async function showImportResultFile(params) {
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
         fpwindow = new Ext.Window({
-            title: `Import results (${params.benchmarkId} on ${params.assetName})`,
+            title: `Import results (${SM.he(params.benchmarkId)} on ${SM.he(params.assetName)})`,
             modal: true,
             resizable: false,
             // renderTo: el,
@@ -2072,7 +2072,7 @@ async function showImportResultFile(params) {
         }
 
         function updateProgress(value, text) {
-            progressPanel.pb.updateProgress(value, Ext.util.Format.htmlEncode(text))
+            progressPanel.pb.updateProgress(value, SM.he(text))
         }
 
         function updateStatusText(text, noNL, replace) {
