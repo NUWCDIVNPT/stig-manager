@@ -292,7 +292,7 @@ Ext.Msg.show({
             opt = options;
             var d = this.getDialog(opt.title || "&#160;");
 
-            d.setTitle(opt.title || "&#160;");
+            d.setTitle(SM.he(opt.title) || "&#160;");
             var allowClose = (opt.closable !== false && opt.progress !== true && opt.wait !== true);
             d.tools.close.setDisplayed(allowClose);
             activeTextEl = textboxEl;

@@ -565,7 +565,7 @@ async function addReview( params ) {
       if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
         Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
       }
-      groupGrid.setTitle(revisionObject.activeRevisionLabel);
+      groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel));
     }
     catch (e) {
       alert(e.message)
@@ -931,7 +931,7 @@ async function addReview( params ) {
       })
       let content = JSON.parse(contentReq.response.responseText)
       contentPanel.update(content)
-      contentPanel.setTitle('Rule for Group ' + groupGridRecord.data.groupId)
+      contentPanel.setTitle('Rule for Group ' + SM.he(groupGridRecord.data.groupId))
   
       // REVIEW
       let reviewsReq = await Ext.Ajax.requestPromise({
@@ -1102,7 +1102,7 @@ async function addReview( params ) {
     }
   })
   reviewTab.updateTitle = function () {
-    reviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${this.collectionName} / ${this.assetName} / ${this.stigName}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+    reviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${SM.he(this.collectionName)} / ${SM.he(this.assetName)} / ${SM.he(this.stigName)}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
   }
   reviewTab.makePermanent = function () {
     reviewTab.sm_tabMode = 'permanent'

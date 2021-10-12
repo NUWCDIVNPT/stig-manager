@@ -131,7 +131,7 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 		let columns = grid.getColumnModel().getColumnsBy(function(c) {return true} );
 		
 		// headerArray[] will hold data for the CSV header row
-		let headerArray = [];
+		let headerArray = ['Marking'];
 		// ci[] will hold the column indexes for which we will later get row data
 		let ci = [];
 		for (let x=0; x < columns.length; x++){
@@ -163,7 +163,7 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 			// rowCells[] is an array of <td> children of the first <tr> element of a row
 			let rowCells = view.getRow(x).getElementsByTagName('tr')[0].cells;
 			// rowArray[] will hold data for a single CSV row
-			let rowArray = [];
+			let rowArray = [`(${appConfig.classification})`];
 			// Iterate across the included column indexes 
 			for (let x=0; x < ci.length; x++){
 				// Try to find the first child element with an 'exportvalue' attribute

@@ -615,7 +615,7 @@ async function addCollectionReview ( params ) {
 			if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
 				Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
 			}
-			groupGrid.setTitle(revisionObject.activeRevisionLabel);
+			groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel));
 			}
 			catch (e) {
 			alert(e.message)
@@ -1199,7 +1199,7 @@ async function addCollectionReview ( params ) {
 				})
 				let content = JSON.parse(contentReq.response.responseText)
 				contentPanel.update(content)
-				contentPanel.setTitle('Rule for Group ' + groupId);
+				contentPanel.setTitle('Rule for Group ' + SM.he(groupId));
 			}
 			catch (e) {
 				alert(e.message)
@@ -1234,7 +1234,7 @@ async function addCollectionReview ( params ) {
 				})
 			
 				reviewsGrid.getStore().loadData(colReviews)
-				reviewsGrid.setTitle(`Reviews of ${record.data.ruleId}`)
+				reviewsGrid.setTitle(`Reviews of ${SM.he(record.data.ruleId)}`)
 				reviewsGrid.currentChecklistRecord = record
 				reviewsExportBtn.gridBasename = `${leaf.benchmarkId}-${record.data.ruleId}`
 			}
@@ -1726,7 +1726,7 @@ async function addCollectionReview ( params ) {
 			}			
 		})
 		colReviewTab.updateTitle = function () {
-			colReviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${this.collectionName} / ${this.stigName}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+			colReviewTab.setTitle(`${this.sm_tabMode === 'ephemeral' ? '<i>':''}${SM.he(this.collectionName)} / ${SM.he(this.stigName)}${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
 		}
 		colReviewTab.makePermanent = function () {
 			colReviewTab.sm_tabMode = 'permanent'

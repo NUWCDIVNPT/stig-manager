@@ -239,7 +239,7 @@ function addCompletionStatus( params) {
 	})
 
 	statusTab.updateTitle = function () {
-		statusTab.setTitle(`${statusTab.sm_tabMode === 'ephemeral' ? '<i>':''}${statusTab.collectionName} / Status${statusTab.sm_tabMode === 'ephemeral' ? '</i>':''}`)
+		statusTab.setTitle(`${statusTab.sm_tabMode === 'ephemeral' ? '<i>':''}${SM.he(statusTab.collectionName)} / Status${statusTab.sm_tabMode === 'ephemeral' ? '</i>':''}`)
 	}
 	statusTab.makePermanent = function () {
 		statusTab.sm_tabMode = 'permanent'
