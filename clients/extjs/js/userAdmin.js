@@ -232,7 +232,7 @@ function addUserAdmin(params ) {
 				text: 'Modify User',
 				handler: function() {
 					var r = userGrid.getSelectionModel().getSelected();
-					Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+					Ext.getBody().mask('Getting properties...');
 					showUserProps(r.get('userId'));
 				}
 			}

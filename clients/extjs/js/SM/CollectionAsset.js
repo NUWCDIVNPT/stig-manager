@@ -239,7 +239,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             listeners: {
                 rowdblclick: function(grid,rowIndex,e) {
                     var r = grid.getStore().getAt(rowIndex);
-                    Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+                    Ext.getBody().mask('Getting properties...');
                     showAssetProps(r.get('assetId'), me.collectionId);
                 },
                 beforedestroy: function(grid) {
@@ -372,7 +372,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         text: 'Properties...',
                         handler: function() {
                             var r = me.getSelectionModel().getSelected();
-                            Ext.getBody().mask('Getting properties of ' + r.get('name') + '...');
+                            Ext.getBody().mask('Getting properties...');
                             showAssetProps(r.get('assetId'), me.collectionId);
                         }
                     }
