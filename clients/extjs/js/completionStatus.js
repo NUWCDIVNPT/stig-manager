@@ -1,14 +1,6 @@
 function addCompletionStatus( params) {
 	const { collectionId, collectionName, treePath } = params
 
-	var groupRow = [
-		{header: ' ', colspan: 2, align: 'center'},
-		{header: 'Total', colspan: 2, align: 'center'},
-		{header: 'Manual', colspan: 2, align: 'center'},
-		{header: 'SCAP', colspan: 2, align: 'center'},
-		{header: 'Findings', colspan: 3, align: 'center'}
-	];
-
 	var summary = new Ext.ux.grid.GroupSummary();
 
 	const statusStore = new Ext.data.GroupingStore ({
@@ -95,7 +87,7 @@ function addCompletionStatus( params) {
 			hideGroupedColumn: true,
 			forceFit:true,
 			emptyText: 'No records found.',
-			groupTextTpl: '{text} ({[values.rs.length]} {[values.text.split(":")[0] == "Asset" ? "checklist" : "asset"]}{[values.rs.length > 1 ? "s assigned" : " assigned"]})',
+			groupTextTpl: '{[SM.he(values.text)]} ({[values.rs.length]} {[values.text.split(":")[0] == "Asset" ? "checklist" : "asset"]}{[values.rs.length > 1 ? "s assigned" : " assigned"]})',
 			getRowClass: function(record, rowIndex, rp, ds){ // rp = rowParams
 				if (record.data.stigTitle == '!! NO STIG ASSIGNMENTS !!') {
 					return 'sm-grid3-row-black';

@@ -216,7 +216,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 hideGroupedColumn: true,
                 forceFit: true,
                 emptyText: 'No records to display',
-                groupTextTpl: '{text} ({[values.rs.length]} {[values.text.split(":")[0] == "Asset" ? "checklist" : "asset"]}{[values.rs.length > 1 ? "s assigned" : " assigned"]})',
+                groupTextTpl: '{[SM.he(values.text)]} ({[values.rs.length]} {[values.text.split(":")[0] == "Asset" ? "checklist" : "asset"]}{[values.rs.length > 1 ? "s assigned" : " assigned"]})',
             }),
             bbar: new Ext.Toolbar({
                 items: [
