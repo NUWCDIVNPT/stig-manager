@@ -479,9 +479,9 @@ body {
 	background-color: hsl(0deg 0% 91%);
 	/* border:  1px solid; */
 }
-.x-tab-strip-top .x-tab-strip-active .x-tab-right {
+/* .x-tab-strip-top .x-tab-strip-active .x-tab-right {
 	border: 1px solid #ccc
-}
+} */
 .x-tab-strip-top .x-tab-right, .x-tab-strip-top .x-tab-left, .x-tab-strip-top .x-tab-strip-inner{
 	background-image: none;
 	background-color: #ccc;
@@ -994,12 +994,22 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .sm-template-icon {
  background-image: url(../img/template.png) !important;
 }
-.sm-collection-icon {
- background-image: url(../img/collection.svg) !important;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
+.sm-library-icon {
+	background-image: url(../img/library.svg) !important;
+	 background-repeat: no-repeat;
+	 background-size: 16px 16px;
 }
-.sm-collection-tab-icon {
+.sm-folder-icon {
+	background-image: url(../img/folder.svg) !important;
+	 background-repeat: no-repeat;
+	 background-size: 16px 16px;
+}
+.sm-collection-icon {
+	background-image: url(../img/collection.svg) !important;
+	 background-repeat: no-repeat;
+	 background-size: 16px 16px;
+}
+ .sm-collection-tab-icon {
   background-image: url(../img/collection.svg) !important;
   background-repeat: no-repeat;
   background-size: 16px 16px;

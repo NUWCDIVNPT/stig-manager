@@ -23,6 +23,9 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       fields: fields,
       idProperty: 'digest'
     })
+    // const totalTextCmp = new SM.RowCountTextItem ({
+    //   store: store
+    // })
     const columns = [
       {
         header: "Artifact",

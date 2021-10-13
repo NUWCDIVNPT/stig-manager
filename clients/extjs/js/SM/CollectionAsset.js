@@ -569,6 +569,11 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             }
         })
+        // const totalTextCmp = new SM.RowCountTextItem ({
+        //     store: stigAssignedStore
+        // })
+
+
         const stigSelectionField = new SM.StigSelectionField({
             submitValue: false,
             autoLoad: true,

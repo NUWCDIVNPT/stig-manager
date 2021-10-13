@@ -295,6 +295,54 @@ SM.StigBatchNodeConfig = function (benchmarkId, collectionId) {
   }
 }
 
+SM.LibraryStigNodeConfig = function (stig) {
+  return {
+    id: `library-${stig.benchmarkId}-leaf`,
+    text: SM.he(stig.benchmarkId),
+    leaf: true,
+    report: 'library',
+    iconCls: 'sm-stig-icon',
+    benchmarkId: stig.benchmarkId,
+    lastRevisionStr: stig.lastRevisionStr,
+    stigTitle: stig.title,
+    qtip: SM.he(stig.title)
+  }
+}
+
+SM.LibraryNodesConfig = function (stigs) {
+  const aeRegEx = /^[a-e]/i
+  const fmRegEx = /^[f-m]/i
+  const nvRegEx = /^[n-v]/i
+  const wzRegEx = /^[w-z]/i
+  const children = [
+    {
+      id: `library-a-e-folder`,
+      text: 'A-E',
+      iconCls: 'sm-folder-icon',
+      children: stigs.filter( stig => aeRegEx.test(stig.benchmarkId)).map( stig => SM.LibraryStigNodeConfig(stig))
+    },
+    {
+      id: `library-f-m-folder`,
+      text: 'F-M',
+      iconCls: 'sm-folder-icon',
+      children: stigs.filter( stig => fmRegEx.test(stig.benchmarkId)).map( stig => SM.LibraryStigNodeConfig(stig))
+    },
+    {
+      id: `library-n-v-folder`,
+      text: 'N-V',
+      iconCls: 'sm-folder-icon',
+      children: stigs.filter( stig => nvRegEx.test(stig.benchmarkId)).map( stig => SM.LibraryStigNodeConfig(stig))
+    },
+    {
+      id: `library-w-z-folder`,
+      text: 'W-Z',
+      iconCls: 'sm-folder-icon',
+      children: stigs.filter( stig => wzRegEx.test(stig.benchmarkId)).map( stig => SM.LibraryStigNodeConfig(stig))
+    }
+  ]
+  return children
+  // return stigs.map( stig => SM.LibraryStigNodeConfig(stig))
+}
 
 SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     initComponent: function() {
@@ -303,7 +351,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           autoScroll: true,
           split: true,
           collapsible: true,
-          title: '<span onclick="window.oidcProvider.logout()">' + SM.he(curUser.display) + ' - Logout</span>',
+          title: `<span onclick="window.oidcProvider.logout()">${curUser.display === 'USER' ? SM.he(curUser.username) : SM.he(curUser.display)} - Logout</span>`,
           bodyStyle: 'padding:5px;',
           width: me.width || 300,
           minSize: 220,
@@ -599,6 +647,25 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 expanded: true
               }
             )
+            content.push(
+              {
+                id: `library-root`,
+                node: 'library',
+                text: 'STIG Library',
+                iconCls: 'sm-library-icon',
+                expanded: false
+              }
+            )
+            cb(content, { status: true })
+            return
+          }
+          if (node === 'library-root') {
+            let result = await Ext.Ajax.requestPromise({
+              url: `${STIGMAN.Env.apiBase}/stigs`,
+              method: 'GET'
+            })
+            let apiStigs = JSON.parse(result.response.responseText)
+            let content = SM.LibraryNodesConfig(apiStigs)
             cb(content, { status: true })
             return
           }
@@ -708,6 +775,14 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           return
         }
         console.log(`in treeClick() with ${e.type}`)
+        if (n.attributes.report == 'library') {
+          addLibraryStig({
+            benchmarkId: n.attributes.benchmarkId,
+            revisionStr: n.attributes.lastRevisionStr,
+            stigTitle: n.attributes.stigTitle,
+            treePath: n.getPath()
+          })
+        }
         if (n.attributes.report == 'review') {
           idAppend = '-' + n.attributes.assetId + '-' + n.attributes.benchmarkId.replace(".", "_");
           tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
