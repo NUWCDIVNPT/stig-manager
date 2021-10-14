@@ -16,7 +16,6 @@ const fs = require('fs')
 const multer  = require('multer')
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
-const compression = require('compression')
 const smFetch = require('./utils/fetchStigs')
 const {
   middleware: openApiMiddleware,
