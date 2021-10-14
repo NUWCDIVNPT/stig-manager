@@ -11,12 +11,15 @@ STIG Manager is an API and Web client for managing the assessment of Information
 ## Supported tags
 - From the `node:lts-alpine` base image (the default if no tag is provided)
   - `latest`, `latest-alpine`
-- From the [Iron Bank Node.js 14 base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/)
+- From the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/)
   - `latest-ironbank`
 
-In addition, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.0-beta.14` or `1.0.0-beta.14-ironbank`
+In addition, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.40` or `1.0.40-ironbank`
 
 ## Quick Start Orchestration
+
+**IMPORTANT: The Quick Start orchestration is not a production-ready deployment. It is offered as a basic example showing how the API can be configured to integrate with a MySQL instance and an OAuth2 Provider. It is offered for demonstration purposes only and is missing key features such as, but not limited to: CAC authentication, Active Directory integration, persistent data storage, MTLS database connections, logfile archiving, etc.**
+
 *The Quick Start steps require the [official MySQL 8 image](https://hub.docker.com/_/mysql) and a [custom Keycloak image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth).*
 
 ### docker-compose.yml

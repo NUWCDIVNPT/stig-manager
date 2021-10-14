@@ -1,3 +1,16 @@
+1.0.40
+------
+fix: allowReserved for office query param (#474)
+deps: rm connect,compression, request; update xlsx-template (#473)
+feat: STIG Library feature introduced (#472)
+refactor: ui rendering (#471)
+refactor: reduce web client smells (#470)
+feat: column filters (#469)
+chore: fictionalize appdata city (#468)
+chore: remove unused client dockerfile (#467)
+fix: encode office query param (#466)
+feat: userObject.display tries username or servicename (#463)
+
 1.0.0-beta.39
 -----------------------
 This is the last release to have a `beta` designation. Several UI enhancements are introduced, including:
