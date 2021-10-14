@@ -1,5 +1,6 @@
 1.0.40
 ------
+fix: allowReserved for office query param
 deps: rm connect,compression, request; update xlsx-template
 feat: STIG Library feature introduced (#472)
 refactor: ui rendering (#471)
