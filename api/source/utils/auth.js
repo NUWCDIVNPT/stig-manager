@@ -1,13 +1,14 @@
 let config = require('./config');
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
-const request = require('request')
+const got = require('got')
+const retry = require('async-retry')
 const _ = require('lodash')
 const {promisify} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
 
-var jwksUri
-var client
+let jwksUri
+let client
 
 const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
 
@@ -80,7 +81,6 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
 
 }
 
-
 const verifyAndDecodeToken = promisify(jwt.verify)
 
 const getBearerToken = req => {
@@ -100,59 +100,31 @@ function getKey(header, callback){
     })
 }
 
-function initializeAuth() {
-    return new Promise ((resolve, reject) => {
-        getJwks()
-
-        function getJwks() {
-            let wellKnown = config.oauth.authority + "/.well-known/openid-configuration"
-            console.info("[AUTH] Trying OIDC discovery at " + wellKnown)
-            request(wellKnown, function(err, res, body) {
-                if (err) {
-                    function replaceErrors(key, value) {
-                        if (value instanceof Error) {
-                            var error = {}
-                    
-                            Object.getOwnPropertyNames(value).forEach(function (propName) {
-                                error[propName] = value[propName]
-                            })
-                    
-                            return error
-                        }
-                    
-                        return value
-                    }
-                    console.info(`[AUTH] ERROR ${JSON.stringify(err, replaceErrors)}`)
-                    console.info(`[AUTH] Couldn't connect. Trying again in 5 seconds...`)
-                    setTimeout(getJwks, 5000)
-                    return
-                } else {
-                    try {
-                        if ( res.statusCode !== 200 ) {
-                            throw( new Error('[AUTH] Response other than 200 status code') )
-                        }
-                        let openidConfig = JSON.parse(body)
-                        if (!openidConfig.jwks_uri) {
-                            throw( new Error('[AUTH] No jwks_uri property found') )
-                        }
-                        // store tokenEndpoint for use by the CORS proxy
-                        config.oauth.tokenEndpoint = openidConfig.token_endpoint
-                        jwksUri = openidConfig.jwks_uri
-                        client = jwksClient({
-                            jwksUri: jwksUri
-                        })
-                        console.info("[AUTH] Received OIDC signing keys")
-                        resolve()
-                    }
-                    catch (e) {
-                        reject(e)
-                    }
-                }
-            })
-        }       
+async function initializeAuth() {
+    async function getJwks() {
+        const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
+        console.info("[AUTH] Trying OIDC discovery at " + wellKnown)
+        const openidConfig = await got(wellKnown).json()   
+        if (!openidConfig.jwks_uri) {
+            throw( new Error('No jwks_uri property found') )
+        }
+        // store tokenEndpoint for use by the CORS proxy
+        config.oauth.tokenEndpoint = openidConfig.token_endpoint
+        jwksUri = openidConfig.jwks_uri
+        client = jwksClient({
+            jwksUri: jwksUri
+        })
+    }
+    await retry ( getJwks, {
+        retries: 24,
+        factor: 1,
+        minTimeout: 5 * 1000,
+        maxTimeout: 5 * 1000,
+        onRetry: (error) => {
+          console.log(`[AUTH] ${error.message}`)
+        }
     })
+    console.info("[AUTH] Received OIDC signing keys")     
 }
-
-// OpenID Connect Discovery
 
 module.exports = {verifyRequest, initializeAuth}

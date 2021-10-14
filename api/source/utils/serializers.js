@@ -36,13 +36,9 @@ module.exports.poamObjectFromFindings = function ( findings, defaults = {} ) {
 }
 
 module.exports.xlsxFromPoamObject = async function ( po ) {
-    try {
-        const templateData = await fs.readFile(path.join(__dirname,'poam-template.xlsx'))
-        const template = new XlsxTemplate(templateData)
-        template.substitute( 1, po )
-        return template.generate({type: 'nodebuffer'})
-    }
-    catch (e) {
-        throw (e)
-    }
+    const templateData = await fs.readFile(path.join(__dirname,'poam-template.xlsx'))
+    const template = new XlsxTemplate()
+    await template.loadTemplate(templateData)
+    await template.substitute( 1, po )
+    return await template.generate({type: 'nodebuffer'})
 }
