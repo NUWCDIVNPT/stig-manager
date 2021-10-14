@@ -1063,6 +1063,7 @@ paths:
           in: query
           schema:
             type: string
+          allowReserved: true
         - name: status
           description: Value for column Status
           in: query
