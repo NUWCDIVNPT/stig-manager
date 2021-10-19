@@ -404,13 +404,13 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
       predicates.statements.push('c.collectionId = ?')
       predicates.binds.push( inPredicates.collectionId )
     }
-    if ( inPredicates.benchmarkId ) {
-      predicates.statements.push('sa.benchmarkId = ?')
-      predicates.binds.push( inPredicates.benchmarkId )
+    if ( inPredicates.benchmarkIds ) {
+      predicates.statements.push('sa.benchmarkId IN ?')
+      predicates.binds.push( [inPredicates.benchmarkIds] )
     }
-    if ( inPredicates.assetId ) {
-      predicates.statements.push('sa.assetId = ?')
-      predicates.binds.push( inPredicates.assetId )
+    if ( inPredicates.assetIds ) {
+      predicates.statements.push('sa.assetId IN ?')
+      predicates.binds.push( [inPredicates.assetIds] )
     }
     if (context == dbUtils.CONTEXT_USER) {
       predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -842,12 +842,12 @@ exports.getFindingsByCollection = async function( collectionId, aggregator, benc
 
 }
 
-exports.getStatusByCollection = async function( collectionId, assetId, benchmarkId, userObject ) {
+exports.getStatusByCollection = async function( collectionId, assetIds, benchmarkIds, userObject ) {
   try {
     let rows = await _this.queryStatus({ 
-      collectionId: collectionId,
-      benchmarkId: benchmarkId,
-      assetId: assetId
+      collectionId,
+      benchmarkIds,
+      assetIds
      }, userObject)
     return (rows)
   }

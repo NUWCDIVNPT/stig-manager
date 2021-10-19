@@ -1737,8 +1737,8 @@ paths:
   '/collections/{collectionId}/status':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdQuery'
-      - $ref: '#/components/parameters/AssetIdQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
     get:
       tags:
         - Collection
@@ -4067,6 +4067,14 @@ components:
           items:
             $ref: '#/components/schemas/CollectionGrant'
   parameters:
+    AssetIdArrayQuery:
+      name: assetId
+      in: query
+      description: A query parameter that identifies an Asset
+      schema:
+        type: array
+        items:
+          type: string
     AssetIdPath:
       name: assetId
       in: path
@@ -4095,6 +4103,14 @@ components:
             - statusStats
             - stigs
             - stigGrants
+    BenchmarkIdArrayQuery:
+      name: benchmarkId
+      in: query
+      description: A query parameter that identifies a STIG
+      schema:
+        type: array
+        items:
+          type: string
     BenchmarkIdPath:
       name: benchmarkId
       in: path

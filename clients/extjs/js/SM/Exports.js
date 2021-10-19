@@ -28,7 +28,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
   },
   loadTree: async function (node, cb) {
     try {
-      let match, collectionGrant
+      let match
       // Root node
       match = node.match(/^(\d+)-assignment-root$/)
       if (match) {
@@ -38,7 +38,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
             id: `${collectionId}-assignment-assets-node`,
             node: 'assets',
             text: '<span style="font-weight: 600;">All Assets</span>',
-            checked: false,
+            checked: true,
             expanded: true,
             iconCls: 'sm-asset-icon'
           }
@@ -50,17 +50,18 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
       match = node.match(/^(\d+)-assignment-assets-node$/)
       if (match) {
         let collectionId = match[1]
-        let result = await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/assets`,
-          method: 'GET',
-          params: {
-            collectionId: collectionId,
-            projection: 'statusStats'
-          }
-        })
-        let apiAssets = JSON.parse(result.response.responseText)
-        let content = apiAssets.map(asset => {
-          const badgePercent = Math.round((asset.statusStats.acceptedCount / asset.statusStats.ruleCount) * 100)
+        // let result = await Ext.Ajax.requestPromise({
+        //   url: `${STIGMAN.Env.apiBase}/assets`,
+        //   method: 'GET',
+        //   params: {
+        //     collectionId: collectionId,
+        //     projection: 'statusStats'
+        //   }
+        // })
+        // let apiAssets = JSON.parse(result.response.responseText)
+        const gridAssets = this.ownerTree.data
+        let content = gridAssets.map(asset => {
+          const badgePercent = Math.round(asset.acceptedPct)
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           return {
             id: `${collectionId}-${asset.assetId}-assignment-assets-asset-node`,
@@ -69,6 +70,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
             collectionId: collectionId,
             assetId: asset.assetId,
             assetName: asset.name,
+            stigCount: asset.stigCount,
             iconCls: 'sm-asset-icon',
             checked: this.ui.checkbox.checked,
             qtip: SM.he(asset.name)
@@ -235,7 +237,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
             id: `${collectionId}-assignment-stigs-node`,
             node: 'stigs',
             text: '<span style="font-weight: 600;">All STIGs</span>',
-            checked: false,
+            checked: true,
             expanded: true,
             iconCls: 'sm-stig-icon'
           }
@@ -248,14 +250,18 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
       match = node.match(/^(\d+)-assignment-stigs-node$/)
       if (match) {
         let collectionId = match[1]
-        let result = await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
-          method: 'GET'
-        })
-        let apiStigs = JSON.parse(result.response.responseText)
-        result = await Ext.Ajax.requestPromise({
+        // let result = await Ext.Ajax.requestPromise({
+        //   url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
+        //   method: 'GET'
+        // })
+        // let apiStigs = JSON.parse(result.response.responseText)
+        const gridStigs = this.getOwnerTree().data
+        const result = await Ext.Ajax.requestPromise({
           url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/status`,
-          method: 'GET'
+          method: 'GET',
+          params: {
+            benchmarkId: gridStigs.map( r => r.benchmarkId )
+          }
         })
         let apiStatus = JSON.parse(result.response.responseText)
         let benchmarkStatus = {}
@@ -267,8 +273,9 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
         }
 
         let stigNodes = []
-        for (const stig of apiStigs) {
-          const badgePercent = Math.round((stig.acceptedCount / (stig.ruleCount * stig.assetCount)) * 100)
+        for (const stig of gridStigs) {
+          // const badgePercent = Math.round((stig.acceptedCount / (stig.ruleCount * stig.assetCount)) * 100)
+          const badgePercent = Math.round(stig.acceptedPct)
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           let stigNode = {
             id: `${collectionId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
@@ -303,9 +310,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
         }
         this.getOwnerTree().stigsNode = this
         cb(stigNodes, { status: true })
-        const renderChildren = function () {
-          this.renderChildren()
-        }
+
         const doPreload = function () {
           this.getOwnerTree().loader.doPreload(this)
           this.renderChildren()
@@ -399,97 +404,39 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
   }
 })
 
-SM.ExportsPanel = Ext.extend(Ext.Panel, {
-  // config: {collectionId, userId}
-  initComponent: function () {
-    let me = this
-    const navTree = new SM.ExportsAssetTree({
-      panel: this,
-      title: 'Collection Resources',
-      width: 400,
-      collectionId: this.collectionId
-    })
-
-
-    const config = {
-      bodyStyle: 'background:transparent;border:none',
-      exportsTree: navTree,
-      layout: 'hbox',
-      anchor: '100% -130',
-      layoutConfig: {
-        align: 'stretch'
-      },
-      items: [
-        navTree
-      ]
-    }
-
-    Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.ExportsPanel.superclass.initComponent.call(this)
-  }
-})
-
-async function showExportCklFiles(collectionId, collectionName, treebase = 'asset') {
+async function showExportCklFiles(collectionId, collectionName, treebase = 'asset', data) {
   try {
     let appwindow
 
     const exportButton = new Ext.Button({
       text: 'Export',
       iconCls: 'sm-export-icon',
-      disabled: true,
+      disabled: false,
       handler: function () {
         let checklists = navTree.getChecked()
+        let multickl = cb.checked
         appwindow.close()
-        exportCklArchive( collectionName, checklists, true)
+        exportCklArchive( collectionName, checklists, multickl)
       }
     })
 
-    let navTree
-    if (treebase === 'asset') {
-      navTree = new SM.ExportsAssetTree({
-        panel: this,
-        // title: 'Collection Resources',
-        width: 400,
-        flex: 1,
-        collectionId: collectionId,
-        listeners: {
-          checkstateschanged: () => {
-            let assetCount = Object.keys(navTree.getChecked()).length
-            if (assetCount > 0) {
-              exportButton.setDisabled(false)
-              exportButton.setText(`Export ${assetCount} CKL file${assetCount > 1 ? 's' : ''}`)
-            }
-            else {
-              exportButton.setDisabled( assetCount === 0)
-              exportButton.setText('Export')
-            }
-          }
-        }
-      })
+    function checkStateHandler() {
+      const assetCount = Object.keys(navTree.getChecked()).length
+      exportButton.setDisabled( assetCount === 0)
     }
-    else {
-      navTree = new SM.ExportsStigTree({
-        panel: this,
-        // title: 'Collection Resources',
-        width: 400,
-        flex: 1,
-        collectionId: collectionId,
-        listeners: {
-          checkstateschanged: () => {
-            let assetCount = Object.keys(navTree.getChecked()).length
-            if (assetCount > 0) {
-              exportButton.setDisabled(false)
-              exportButton.setText(`Export ${assetCount} CKL file${assetCount > 1 ? 's' : ''}`)
-            }
-            else {
-              exportButton.setDisabled( assetCount === 0)
-              exportButton.setText('Export')
-            }
-          }
-        }
-      })
+    const treeConfig = {
+      panel: this,
+      // title: 'Collection Resources',
+      width: 400,
+      flex: 1,
+      collectionId,
+      data,
+      listeners: {
+        checkstateschanged: checkStateHandler
+      }
     }
-
+    
+    const navTree = treebase === 'asset' ? new SM.ExportsAssetTree(treeConfig) : new SM.ExportsStigTree(treeConfig)
 
     /******************************************************/
     // Form window
@@ -509,11 +456,10 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
       },
       plain: true,
       bodyStyle: 'padding:5px 5px 0 5px;',
-      buttonAlign: 'right',
+      buttonAlign: 'left',
       items: [
         {
           html: `<div class="sm-dialog-panel-title">Select ZIP members</div>
-          <div class="sm-dialog-panel-text">One CKL file will be created for each unique Asset selected.</div>
           <div class="sm-dialog-panel-text">Badges: 
             <span class="sm-export-sprite sm-export-sprite-high">Accepted: &lt; 100%</span>
             <span class="sm-export-sprite sm-export-sprite-low">Accepted: 100%</span>
@@ -522,11 +468,27 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
         },
         navTree
       ],
-      buttons: [
+      fbar: [
+        { 
+          xtype: 'panel',
+          border: false,
+          html: `<div class="sm-dialog-panel-text" style="padding:12px;">
+          <input type="checkbox" name="multi-ckl" id="multi-ckl" style="vertical-align: -2px;"/>
+          <label for="multi-ckl">Export multi-STIG CKLs (one file per Asset).</label>
+          </div>`
+        },
+        '->',
         exportButton
-      ]
+      ],
+      // fbar: [{
+      //   text: 'fbar Left'
+      // },'->',{
+      //     text: 'fbar Right'
+      // }]
+
     })
     appwindow.show(document.body)
+    const cb = appwindow.getEl().dom.querySelector('#multi-ckl')
   }
   catch (e) {
     if (typeof e === 'object') {
@@ -542,24 +504,59 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
   }
 }
 
-
 async function exportCklArchive(collectionName, checklists, multiStig) {
-  try {
-    const zip = new JSZip()
-    initProgress("Exporting checklists", "Initializing...")
-    if (multiStig) {
-      const entries = Object.entries(checklists)
-      const cklCount = entries.length
-      let fetched = 0
-      for (const [assetId, { assetName, benchmarkIds }] of entries) {
-        let queryParams=""
-        if (benchmarkIds.length !== 0) {
-          queryParams = `?${benchmarkIds.map( b => 'benchmarkId=' + b).join('&')}`
-        }
-        updateProgress(fetched / cklCount, `Fetching CKL for ${assetName}`)
-        updateStatusText(`Fetching checklist for ${assetName}: `, true)
+
+  async function getMultiStigCkls(checklists, zip) {
+    const entries = Object.entries(checklists)
+    let fetched = 0
+    let cklCount = entries.length
+    for (const [assetId, { assetName, benchmarkIds }] of entries) {
+      let queryParams = ''
+      if (benchmarkIds.length !== 0) {
+        queryParams = `?${benchmarkIds.map( b => 'benchmarkId=' + b).join('&')}`
+      }
+      updateProgress(fetched / cklCount, `Fetching CKL for ${assetName}`)
+      updateStatusText(`Fetching checklist for ${assetName}: `, true)
+      await window.oidcProvider.updateToken(10)
+      const url = `${STIGMAN.Env.apiBase}/assets/${assetId}/checklists${queryParams}`
+      let response = await fetch(url, {
+        method: 'GET',
+        headers: new Headers({
+          'Authorization': `Bearer ${window.oidcProvider.token}`
+        })
+      })
+      const contentDispo = response.headers.get("content-disposition")
+      //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+      const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+      console.log(filename)
+      const blob = await response.blob()
+      updateStatusText(`[OK]`)
+      fetched++
+      zip.file(filename, blob)
+    }
+  }
+
+  async function getMonoStigCkls(checklists, zip) {
+    const entries = Object.entries(checklists)
+    let fetched = 0
+    let cklCount = entries.length
+    for (const [assetId, { assetName, benchmarkIds = [] }] of entries) {
+      if (benchmarkIds.length === 0) {
+        const result = await Ext.Ajax.requestPromise({
+          url: `${STIGMAN.Env.apiBase}/assets/${assetId}/stigs`,
+          method: 'GET'
+        })
+        const apiAssetStigs = JSON.parse(result.response.responseText)
+        benchmarkIds.push(...apiAssetStigs.map( assetStig => assetStig.benchmarkId))
+      }
+      cklCount += benchmarkIds.length
+    }
+    for (const [assetId, { assetName, benchmarkIds = [] }] of entries) {
+      for (const benchmarkId of benchmarkIds) {
+        updateProgress(fetched / cklCount, `Fetching CKL for ${assetName}/${benchmarkId}`)
+        updateStatusText(`Fetching checklist for ${assetName}/${benchmarkId}: `, true)
         await window.oidcProvider.updateToken(10)
-        const url = `${STIGMAN.Env.apiBase}/assets/${assetId}/checklists${queryParams}`
+        const url = `${STIGMAN.Env.apiBase}/assets/${assetId}/checklists/${benchmarkId}/latest?format=ckl`
         let response = await fetch(url, {
           method: 'GET',
           headers: new Headers({
@@ -567,15 +564,29 @@ async function exportCklArchive(collectionName, checklists, multiStig) {
           })
         })
         const contentDispo = response.headers.get("content-disposition")
-        //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
-        const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
-        console.log(filename)
-        const blob = await response.blob()
-        updateStatusText(`Fetched ${filename}`)
-        fetched++
-        zip.file(filename, blob)
+        if (contentDispo) {
+          //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+          const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+          console.log(filename)
+          const blob = await response.blob()
+          updateStatusText(`[OK]`)
+          fetched++
+          zip.file(filename, blob)
+        }
+        else {
+          updateStatusText(`Error: missing 'Content-Disposition'`)
+        }
       }
     }
+  }
+
+  try {
+    const zip = new JSZip()
+    initProgress("Exporting checklists", "Initializing...")
+
+    const getCkls = multiStig ? getMultiStigCkls : getMonoStigCkls
+    await getCkls(checklists, zip)
+
     updateProgress(1, 'Generating Zip archive...')
     updateStatusText('Generating Zip archive...')
     const blob = await zip.generateAsync({
@@ -589,6 +600,7 @@ async function exportCklArchive(collectionName, checklists, multiStig) {
     })
     updateProgress(1, 'Done')
     updateStatusText('Done')
+
     saveAs(blob, `${collectionName}.zip`)
   }
   catch (e) {

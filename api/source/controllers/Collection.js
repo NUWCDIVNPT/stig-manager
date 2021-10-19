@@ -201,11 +201,11 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
 module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
   try {
     const collectionId = req.params.collectionId
-    const benchmarkId = req.query.benchmarkId
-    const assetId = req.query.assetId
+    const benchmarkIds = req.query.benchmarkId
+    const assetIds = req.query.assetId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
-      const response = await Collection.getStatusByCollection( collectionId, assetId, benchmarkId, req.userObject )
+      const response = await Collection.getStatusByCollection( collectionId, assetIds, benchmarkIds, req.userObject )
       res.json(response)
     }
     else {
