@@ -4,8 +4,6 @@
 Permissions and Data
 =========================
 
-STIG Manager
-
 
 Data Model
 --------------------
