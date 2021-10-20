@@ -15,9 +15,9 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         }
     },
     initComponent: function() {
-        let me = this
+        const me = this
         const id = Ext.id()
-        let fieldsConstructor = Ext.data.Record.create([
+        const fieldsConstructor = Ext.data.Record.create([
             {name: 'assetId', type: 'string'},
             {name: 'name', type: 'string'},
             {name: 'fqdn', type: 'string'},
@@ -84,7 +84,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
         })
-        let assetStore = new Ext.data.JsonStore({
+        const assetStore = new Ext.data.JsonStore({
             grid: this,
             smMaskDelay: 250,
             proxy: this.proxy,
@@ -104,7 +104,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             store: assetStore
         })
 
-        let columns = [
+        const columns = [
             { 	
 				header: "Asset",
 				width: 100,
@@ -209,7 +209,108 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderPctAllHigh
 			}
         ]
-        let config = {
+        const exportCklBtn = new Ext.Button({
+            iconCls: 'sm-export-icon',
+            text: 'Export CKLs...',
+            disabled: true,
+            handler: function() {
+                showExportCklFiles( me.collectionId, me.collectionName, 'asset', me.getSelectionModel().getSelections().map( r => r.data ) )            
+            }
+        })
+        const deleteBtn = new Ext.Button(                    {
+            iconCls: 'icon-del',
+            text: 'Delete...',
+            disabled: true,
+            handler: async function () {
+                try {
+                    let assetRecords = me.getSelectionModel().getSelections()
+                    const multiDelete = assetRecords.length > 1
+                    var confirmStr=`Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>permanently remove</b> all data associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to continue?`;
+                    let btn = await SM.confirmPromise("Confirm Delete", confirmStr)
+                    if (btn == 'yes') {
+                        const l = assetRecords.length
+                        for (let i=0; i < l; i++) {
+                            Ext.getBody().mask(`Deleting ${i+1}/${l} Assets`)
+                            // Edge case to handle when the selected record was changed (e.g., stats updated) 
+                            // while still selected, then is deleted
+                            const thisRecord = me.store.getById(assetRecords[i].id)
+                            let result = await Ext.Ajax.requestPromise({
+                                url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
+                                method: 'DELETE'
+                            })
+                            let apiAsset = JSON.parse(result.response.responseText)
+                            me.store.remove(thisRecord)
+                            SM.Dispatcher.fireEvent('assetdeleted', apiAsset)
+                        }
+                    }
+                }
+                catch (e) {
+                    alert(e.stack)
+                }
+                finally {
+                    Ext.getBody().unmask()
+                }
+            }
+        })
+        const transferBtn = new SM.TransferAssets.TransferBtn(                    {
+            iconCls: 'sm-collection-icon',
+            disabled: true,
+            srcCollectionId: me.collectionId,
+            text: 'Transfer To',
+            onItemClick: async function (item) {
+                try {
+                    const srcAssets = item.parentMenu.srcAssets
+                    const isMulti = srcAssets?.length > 1
+                    var confirmStr=`Transfering ${isMulti ? 'these assets' : 'this asset'} to ${item.text} will <b>transfer all data</b> associated with the asset${isMulti ? 's' : ''}. This includes all the corresponding STIG assessments.<br><br>Do you wish to continue?`
+                    const btn = await SM.confirmPromise('Confirm transfer', confirmStr)
+                    if (btn == 'yes') {
+                      const l = srcAssets?.length || 0
+                      for (let i=0; i < l; i++) {
+                          Ext.getBody().mask(`Transferring ${i+1}/${l} Assets`)
+                          // Edge case to handle when the selected record was changed (e.g., stats updated) 
+                          // while still selected, then is transferred
+                          const thisRecord = me.store.getById(srcAssets[i].assetId)
+                          let result = await Ext.Ajax.requestPromise({
+                              url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
+                              method: 'PATCH',
+                              params: {
+                                  projection: ['stigs', 'statusStats']
+                              },
+                              jsonData: {
+                                  collectionId: item.collectionId
+                              }
+                          })
+                          let apiAsset = JSON.parse(result.response.responseText)
+                          me.store.remove(thisRecord)
+                          SM.Dispatcher.fireEvent('assetdeleted', {...apiAsset, ...{collection: {collectionId: me.collectionId}}})
+                          SM.Dispatcher.fireEvent('assetcreated', apiAsset)
+                      }
+                    }
+                  }
+                  catch (e) {
+                      alert(e.stack)
+                  }
+                  finally {
+                      Ext.getBody().unmask()
+                  }
+        
+            },
+            handler: function(btn) {
+                const assetRecords = me.getSelectionModel().getSelections()
+                btn.setSrcAssets(assetRecords.map( r => r.data))
+            }
+        })
+        const modifyBtn = new Ext.Button(                    {
+            iconCls: 'sm-asset-icon',
+            disabled: true,
+            text: 'Properties...',
+            handler: function() {
+                var r = me.getSelectionModel().getSelected();
+                Ext.getBody().mask('Getting properties...');
+                showAssetProps(r.get('assetId'), me.collectionId);
+            }
+        })
+        const config = {
             layout: 'fit',
             loadMask: true,
             store: assetStore,
@@ -220,9 +321,11 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 singleSelect: false,
                 listeners: {
                     selectionchange: function (sm) {
-                        Ext.getCmp(`assetGrid-${id}-modifyBtn`).setDisabled(sm.getCount() !== 1)
-                        Ext.getCmp(`assetGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection())
-                        Ext.getCmp(`assetGrid-${id}-transferBtn`).setDisabled(!sm.hasSelection())
+                        modifyBtn.setDisabled(sm.getCount() !== 1)
+                        const hasSelection = sm.hasSelection()
+                        for (const btn of [deleteBtn, transferBtn, exportCklBtn]) {
+                            btn.setDisabled(!hasSelection)
+                        }
                     }
                 }
             }),
@@ -266,116 +369,13 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         }
                     },
                     '-',
-                    {
-                        iconCls: 'sm-export-icon',
-                        id: `assetGrid-${id}-exportBtn`,
-                        text: 'Export CKLs...',
-                        disabled: false,
-                        handler: function() {
-                            showExportCklFiles( me.collectionId, me.collectionName );            
-                        }
-                    },
+                    exportCklBtn,
                     '-',
-                    {
-                        ref: '../removeBtn',
-                        iconCls: 'icon-del',
-                        id: `assetGrid-${id}-deleteBtn`,
-                        text: 'Delete...',
-                        disabled: true,
-                        handler: async function () {
-                            try {
-                                let assetRecords = me.getSelectionModel().getSelections()
-                                const multiDelete = assetRecords.length > 1
-                                var confirmStr=`Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>permanently remove</b> all data associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to continue?`;
-                                let btn = await SM.confirmPromise("Confirm Delete", confirmStr)
-                                if (btn == 'yes') {
-                                    const l = assetRecords.length
-                                    for (let i=0; i < l; i++) {
-                                        Ext.getBody().mask(`Deleting ${i+1}/${l} Assets`)
-                                        // Edge case to handle when the selected record was changed (e.g., stats updated) 
-                                        // while still selected, then is deleted
-                                        const thisRecord = me.store.getById(assetRecords[i].id)
-                                        let result = await Ext.Ajax.requestPromise({
-                                            url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
-                                            method: 'DELETE'
-                                        })
-                                        let apiAsset = JSON.parse(result.response.responseText)
-                                        me.store.remove(thisRecord)
-                                        SM.Dispatcher.fireEvent('assetdeleted', apiAsset)
-                                    }
-                                }
-                            }
-                            catch (e) {
-                                alert(e.stack)
-                            }
-                            finally {
-                                Ext.getBody().unmask()
-                            }
-                        }
-                    },
+                    deleteBtn,
                     '-',
-                    {
-                        iconCls: 'sm-collection-icon',
-                        xtype: 'sm-transferassets-btn',
-                        disabled: true,
-                        srcCollectionId: me.collectionId,
-                        id: `assetGrid-${id}-transferBtn`,
-                        text: 'Transfer To',
-                        onItemClick: async function (item) {
-                            try {
-                                const srcAssets = item.parentMenu.srcAssets
-                                const isMulti = srcAssets?.length > 1
-                                var confirmStr=`Transfering ${isMulti ? 'these assets' : 'this asset'} to ${item.text} will <b>transfer all data</b> associated with the asset${isMulti ? 's' : ''}. This includes all the corresponding STIG assessments.<br><br>Do you wish to continue?`
-                                const btn = await SM.confirmPromise('Confirm transfer', confirmStr)
-                                if (btn == 'yes') {
-                                  const l = srcAssets?.length || 0
-                                  for (let i=0; i < l; i++) {
-                                      Ext.getBody().mask(`Transferring ${i+1}/${l} Assets`)
-                                      // Edge case to handle when the selected record was changed (e.g., stats updated) 
-                                      // while still selected, then is transferred
-                                      const thisRecord = me.store.getById(srcAssets[i].assetId)
-                                      let result = await Ext.Ajax.requestPromise({
-                                          url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
-                                          method: 'PATCH',
-                                          params: {
-                                              projection: ['stigs', 'statusStats']
-                                          },
-                                          jsonData: {
-                                              collectionId: item.collectionId
-                                          }
-                                      })
-                                      let apiAsset = JSON.parse(result.response.responseText)
-                                      me.store.remove(thisRecord)
-                                      SM.Dispatcher.fireEvent('assetdeleted', {...apiAsset, ...{collection: {collectionId: me.collectionId}}})
-                                      SM.Dispatcher.fireEvent('assetcreated', apiAsset)
-                                  }
-                                }
-                              }
-                              catch (e) {
-                                  alert(e.stack)
-                              }
-                              finally {
-                                  Ext.getBody().unmask()
-                              }
-                    
-                        },
-                        handler: function(btn) {
-                            const assetRecords = me.getSelectionModel().getSelections()
-                            btn.setSrcAssets(assetRecords.map( r => r.data))
-                        }
-                    },
+                    transferBtn,
                     '-',
-                    {
-                        iconCls: 'sm-asset-icon',
-                        disabled: true,
-                        id: `assetGrid-${id}-modifyBtn`,
-                        text: 'Properties...',
-                        handler: function() {
-                            var r = me.getSelectionModel().getSelected();
-                            Ext.getBody().mask('Getting properties...');
-                            showAssetProps(r.get('assetId'), me.collectionId);
-                        }
-                    }
+                    modifyBtn
                 ]
             }),
             bbar: new Ext.Toolbar({

@@ -164,6 +164,48 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderPctAllHigh
 			}
         ]
+        const exportCklBtn = new Ext.Button({
+            iconCls: 'sm-export-icon',
+            text: 'Export CKLs...',
+            disabled: true,
+            handler: function() {
+                showExportCklFiles( me.collectionId, me.collectionName, 'stig', me.getSelectionModel().getSelections().map( r => r.data )  );            
+            }
+        })
+        const modifyBtn = new Ext.Button({
+            iconCls: 'sm-asset-icon',
+            disabled: true,
+            text: 'Change STIG targets...',
+            handler: function() {
+                var r = me.getSelectionModel().getSelected();
+                showCollectionStigProps(r.get('benchmarkId'), me);
+            }
+        })
+        const deleteBtn = new Ext.Button({
+            iconCls: 'icon-del',
+            text: 'Unassign STIG',
+            disabled: true,
+            handler: function() {
+                try {
+                    var confirmStr="Removing this STIG will remove all related Asset assignments. If the STIG is added in the future, the assignments will need to be established again.";
+                    Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
+                        if (btn == 'yes') {
+                            let stigRecord = me.getSelectionModel().getSelected()
+                            await Ext.Ajax.requestPromise({
+                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/stigs/${stigRecord.data.benchmarkId}/assets`,
+                                method: 'PUT',
+                                jsonData: []
+                            })
+                            me.store.remove(stigRecord)
+                            SM.Dispatcher.fireEvent('stigassetschanged', me.collectionId, stigRecord.data.benchmarkId, [] )
+                        }
+                    })
+                }
+                catch (e) {
+                    alert('Error removing STIG mapping')
+                }
+            }
+        })
         let config = {
             layout: 'fit',
             loadMask: true,
@@ -172,11 +214,12 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 columns: columns   
             }),
             sm: new Ext.grid.RowSelectionModel({
-                singleSelect: true,
+                singleSelect: false,
                 listeners: {
                     selectionchange: function (sm) {
-                        Ext.getCmp(`stigGrid-${id}-modifyBtn`).setDisabled(!sm.hasSelection());
-                        Ext.getCmp(`stigGrid-${id}-deleteBtn`).setDisabled(!sm.hasSelection());
+                        modifyBtn.setDisabled(sm.getCount() !== 1)
+                        deleteBtn.setDisabled(sm.getCount() !== 1)
+                        exportCklBtn.setDisabled(!sm.hasSelection())
                     }
                 }
             }),
@@ -207,56 +250,13 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         handler: function(btn) {
                             showCollectionStigProps( null, btn.grid );            
                         }
-                    }
-                    ,'-'
-                    ,{
-                        iconCls: 'sm-export-icon',
-                        id: `stigGrid-${id}-exportBtn`,
-                        text: 'Export CKLs...',
-                        disabled: false,
-                        handler: function() {
-                            showExportCklFiles( me.collectionId, me.collectionName, 'stig' );            
-                        }
-                    }
-                    ,'-'
-                    , {
-                        ref: '../removeBtn',
-                        iconCls: 'icon-del',
-                        id: `stigGrid-${id}-deleteBtn`,
-                        text: 'Unassign STIG',
-                        disabled: true,
-                        handler: function() {
-                            try {
-                                var confirmStr="Removing this STIG will remove all related Asset assignments. If the STIG is added in the future, the assignments will need to be established again.";
-                                Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
-                                    if (btn == 'yes') {
-                                        let stigRecord = me.getSelectionModel().getSelected()
-                                        let result = await Ext.Ajax.requestPromise({
-                                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/stigs/${stigRecord.data.benchmarkId}/assets`,
-                                            method: 'PUT',
-                                            jsonData: []
-                                        })
-                                        me.store.remove(stigRecord)
-                                        SM.Dispatcher.fireEvent('stigassetschanged', me.collectionId, stigRecord.data.benchmarkId, [] )
-                                    }
-                                })
-                            }
-                            catch (e) {
-                                alert(e.stack)
-                            }
-                        }
-                    }
-                    ,'-'
-                    ,{
-                        iconCls: 'sm-asset-icon',
-                        disabled: true,
-                        id: `stigGrid-${id}-modifyBtn`,
-                        text: 'Change STIG targets...',
-                        handler: function() {
-                            var r = me.getSelectionModel().getSelected();
-                            showCollectionStigProps(r.get('benchmarkId'), me);
-                        }
-                    }                    
+                    },
+                    '-',
+                    exportCklBtn,
+                    '-',
+                    deleteBtn,
+                    '-',
+                    modifyBtn                    
                 ]
             }),
             bbar: new Ext.Toolbar({
