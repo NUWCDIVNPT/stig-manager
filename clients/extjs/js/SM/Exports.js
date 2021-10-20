@@ -72,7 +72,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
             assetName: asset.name,
             stigCount: asset.stigCount,
             iconCls: 'sm-asset-icon',
-            checked: this.ui.checkbox.checked,
+            checked: !!this.ui.checkbox.checked,
             qtip: SM.he(asset.name)
           }
         })
@@ -107,7 +107,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
             assetId: status.assetId,
             collectionId: collectionId,
             benchmarkId: status.benchmarkId,
-            checked: this.ui.checkbox.checked
+            checked: !!this.ui.checkbox.checked
           }
         })
         cb(content, { status: true })
@@ -284,7 +284,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
             collectionId: collectionId,
             benchmarkId: stig.benchmarkId,
             iconCls: 'sm-stig-icon',
-            checked: this.ui.checkbox.checked,
+            checked: !!this.ui.checkbox.checked,
             qtip: SM.he(stig.title)
           }
           let assetNodes = []
@@ -302,7 +302,7 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
               assetId: status.assetId,
               collectionId: collectionId,
               benchmarkId: status.benchmarkId,
-              checked: this.ui.checkbox.checked
+              checked: !!this.ui.checkbox.checked,
             })
           }
           stigNode.children = assetNodes
