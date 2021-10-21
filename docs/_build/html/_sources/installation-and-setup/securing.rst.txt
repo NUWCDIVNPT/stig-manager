@@ -49,7 +49,7 @@ Validating Image Signatures
 The Project signs each image we publish to Docker Hub using Docker Content Trust (DCT).
 
 .. note::
-  For secure DCT image verification, you should understand trust-pinning. The default "Trust On First Use" (TOFU) behavior of the docker CE client may not be appropriate for your security requirements. Our root.json file will be helpful if you wish to pin trust on our signing key.
+  For secure DCT image verification, you should understand trust-pinning. The default "Trust On First Use" (TOFU) behavior of the docker CE client may not be appropriate for your security requirements. Our `root.json <https://github.com/NUWCDIVNPT/stig-manager/blob/main/root.json>`_ file will be helpful if you wish to pin trust on our signing key.
 
 
 Data Flow
@@ -135,7 +135,7 @@ Assessing Your Deployment
 
 The documentation and artifacts provided here are intended to help teams that are deploying STIG Manager in an environment that is subject to the Application Security and Development STIG.  Below, you can find a summary and STIG information, `including a .ckl <https://github.com/NUWCDIVNPT/stig-manager/blob/main/docs/STIG-Manager-OSS.ckl>`_, relevant to this effort. 
 
-Where applicable, we have self-evaluated portions of the ASD **as if** were developer members of a deployed application's team. For most deployments, though, we are NOT part of your team and therefore the checks covering development practices might be properly evaluated as not applicable. Even in this case, however, we hope our self-evaluation provides useful insight into how the Project integrates security into our practice.
+Where applicable, we have self-evaluated portions of the ASD **as if** we were developer members of a deployed application's team. For most deployments, though, we are NOT part of your team and therefore the checks covering development practices might be properly evaluated as not applicable. Even in this case, however, we hope our self-evaluation provides useful insight into how the Project integrates security into our practice.
 
 API and Web Client
 ------------------

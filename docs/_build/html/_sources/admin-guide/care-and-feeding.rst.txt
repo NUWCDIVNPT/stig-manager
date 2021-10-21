@@ -51,6 +51,21 @@ By default, STIG Manager displays Checklists and Reviews according to the latest
 
 STIG Manager tracks Reviews by their Rule ID, not STIG ID. In most cases, new STIG revisions will have substantially the same ruleset as previous revisions. This means that most of the time, when you update STIGs in STIG Manager, most Assets will carry most of their existing reviews forward and you will not have to start from scratch.
 
+
+.. _stig-delete:
+
+Delete Stigs or Revisions
+========================================================
+
+Many STIGs are released quarterly, and old STIGs quickly lose their relevance.  To keep a handle on Database growth and simplify the user experience, you may want to delete old STIG revisions. We have found it is not especially useful to keep STIGs greater than 1 revision away from the current one around, as they are no longer valid for most purposes. 
+
+You might also delete a STIG revision if you have updated STIGs but would prefer to revert to an older one as the default (hopefully not for long!).  In this case, you might want to delete the current STIG revision.  
+
+.. warning:
+      When you delete a STIG or a specific STIG revision, Reviews for rules **that only appear in that revision** will be deleted. If the rules in that STIG are found in other STIGs or revisions, the reviews will 
+
+
+
 |
 
 .. _pre-registering-users:
@@ -72,6 +87,20 @@ Typically, Users must access the system at least once before they can be given C
       :title: STIG Revision Selection
 
 |
+
+.. _deregistering-users:
+.. _delete-user:
+
+
+Deregistering Users
+==================================================
+
+Overall access to STIG Manager is controlled by your deployment's OIDC Provider (ie. Keycloak).  If you want to prevent a specific user from accessing any information in STIG Manager besides the STIG Library, you can deregister them from the same User Grants Administration workspace referenced above. To do this, select the User, and click the "Unregister User" button. The selected user will have all their Collection Grants removed.  The User's other info will remain, so that any reviews or other actions they have performed will continue to have attribution. 
+
+.. note::
+      If you want to prevent a user from having any access at all to STIG Manager, you must contact your OIDC Provider POC and ask that they perform this action. This can be accomplished in different ways that will depend on your specific deployment. 
+
+
 
 .. _review-history-pruning:
 

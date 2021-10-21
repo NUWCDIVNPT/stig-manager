@@ -101,7 +101,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">2. Authentication and Identity</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#json-web-token-requirements">2.1. JSON Web Token Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#json-web-token-jwt-requirements">2.1. JSON Web Token (JWT) Requirements</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#cross-origin-resource-sharing-cors">2.1.1. Cross-Origin Resource Sharing (CORS)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#service-account-client-setup">2.1.2. Service Account Client Setup</a></li>
 </ul>
@@ -226,8 +226,8 @@
 <p class="admonition-title">Note</p>
 <p>If you are using the demonstration Keycloak container from the Project’s Docker Hub page, you may not need to change any settings or variables described in this section.</p>
 </div>
-<div class="section" id="json-web-token-requirements">
-<h2><span class="section-number">2.1. </span>JSON Web Token Requirements<a class="headerlink" href="#json-web-token-requirements" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="json-web-token-jwt-requirements">
+<h2><span class="section-number">2.1. </span>JSON Web Token (JWT) Requirements<a class="headerlink" href="#json-web-token-jwt-requirements" title="Permalink to this headline">¶</a></h2>
 <p>The JWT produced by the Identity Provider should provide the claims specified below. Some of them may have different names in your configuration, and can be specified in STIGMan’s environment variables if they differ from the default values:</p>
 <blockquote>
 <div><ul class="simple">
@@ -302,11 +302,12 @@
 </div>
 </div>
 <div class="section" id="scopes-and-privileges">
-<h2><span class="section-number">2.2. </span>Scopes, and Privileges<a class="headerlink" href="#scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
+<span id="oidc-scopes"></span><h2><span class="section-number">2.2. </span>Scopes, and Privileges<a class="headerlink" href="#scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
 <p>The STIG Manager API restricts endpoint access using the “scope” claims in the JWT. See the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml">API specification</a> for details.</p>
 <p>The guide provided below maps scopes to various Realm Roles that are then assigned to Users.
 These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the <a class="reference external" href="https://www.keycloak.org/documentation">Keycloak Documentation</a> for more information.</p>
-<p>The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the <a class="reference internal" href="installation-and-setup.html#user-roles-privs"><span class="std std-ref">Configure Users</span></a> section of the Setup Guide for more information.</p>
+<p>The <strong>Roles</strong> specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the <a class="reference internal" href="installation-and-setup.html#user-roles-privs"><span class="std std-ref">Configure Users</span></a> section of the Setup Guide for more information.</p>
+<p>The <strong>Scopes</strong> specified in the JWT control access to API endpoints as specified in the OpenAPI spec.  See the <a class="reference internal" href="#oidc-scopes-table"><span class="std std-ref">STIG Manager Client Scopes and Roles</span></a> table below for a suggestion on how to allocate these scopes using OIDC roles, and more information.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization’s Security Policy.</p>
@@ -318,7 +319,7 @@ These Roles and Scopes can be provided to users in various ways, using Client Ro
 Keycloak is readily available, actively maintained by a major OSS vendor, supports Identity Brokering and User Federation, and is used by major DoD projects such as Air Force Iron Bank.
 Keycloak supports many External Identity Providers, but has only been tested using its own authentication.
 <a class="reference external" href="https://www.keycloak.org/documentation">More information about RedHat Keycloak.</a></p>
-<p>A sample Keycloak Realm import file, configured as specified below and containing no users, can be found <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/tree/main/docker/keycloak">in our github repo.</a></p>
+<p>A sample Docker-compose orchestration, using a Keycloak image configured as specified below and containing Demo users, can be found <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager">on our Docker Hub page.</a></p>
 <div class="section" id="keycloak-configuration">
 <h3><span class="section-number">2.3.1. </span>Keycloak Configuration<a class="headerlink" href="#keycloak-configuration" title="Permalink to this headline">¶</a></h3>
 <p>The following items in the Keycloak installation must be created and configured appropriately, and their values passed to STIG Manager in the appropriate Environment Variable:</p>
@@ -340,10 +341,12 @@ Keycloak supports many External Identity Providers, but has only been tested usi
 <p class="admonition-title">Note</p>
 <p>These roles can also be set up at the Client level, rather than the Realm level. Make adjustments accordingly.</p>
 </div>
-<ul>
+<ul class="simple">
 <li><p>Configure-&gt;Roles-&gt;Default Roles - Recommended: set “user” and “create_collection” as default roles.</p></li>
-<li><p>Configure-&gt;Client Scopes - Create the following scopes, and assign them the specified roles in that scope’s “Scope” tab:</p>
-<table class="colwidths-given tight-table docutils align-default" id="id1">
+<li><p>Configure-&gt;Client Scopes - Create the following scopes, and assign them the specified roles in that scope’s “Scope” tab:</p></li>
+</ul>
+<blockquote id="oidc-scopes-table">
+<div><table class="colwidths-given tight-table docutils align-default" id="id1">
 <caption><span class="caption-text">STIG Manager Client Scopes and Roles:</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 22%" />
@@ -381,9 +384,10 @@ Keycloak supports many External Identity Providers, but has only been tested usi
 </tr>
 </tbody>
 </table>
-</li>
-<li><p>Configure-&gt;Clients-&gt;stig-manager:</p>
+</div></blockquote>
 <ul class="simple">
+<li><p>Configure-&gt;Clients-&gt;stig-manager:</p>
+<ul>
 <li><p>Settings:</p>
 <ul>
 <li><p>Enable Authorization Code Flow with PKCE (Called “Standard Flow” in Keycloak)</p></li>

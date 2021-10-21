@@ -5,10 +5,10 @@
     <ROLE>None</ROLE>
     <ASSET_TYPE>Non-Computing</ASSET_TYPE>
     <HOST_NAME>STIG-Manager-OSS</HOST_NAME>
-    <HOST_IP></HOST_IP>
-    <HOST_MAC></HOST_MAC>
+    <HOST_IP/>
+    <HOST_MAC/>
     <HOST_GUID/>
-    <HOST_FQDN></HOST_FQDN>
+    <HOST_FQDN/>
     <TECH_AREA/>
     <TARGET_KEY>2777</TARGET_KEY>
     <WEB_OR_DATABASE>false</WEB_OR_DATABASE>
@@ -663,8 +663,10 @@ If the application does not provide an explicit logoff message indicating the us
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-002364</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>The SPA does not display an explicit &#x27;logged out&#x27; screen, it immediately redirects to the login screen of the configured OIDC Provider. </FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>The SPA does not display an explicit &#x27;logged out&#x27; screen, it immediately redirects to the login screen of the configured OIDC Provider.
+
+Addressed by Issue #485</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -3875,7 +3877,7 @@ If the application data protection requirements are not documented, this is a fi
           <ATTRIBUTE_DATA>CCI-002346</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>The project provides documentation describing its data structures and protection methods, including RBAC and other access controls. These concepts are also expressed and enforced by its use of an appropriate OAS definition.  All app data is persisted in a deployment-provided database that must be configured in accordance with organization requirements. </FINDING_DETAILS>
+        <FINDING_DETAILS>The project provides documentation describing its data structures and protection methods, including RBAC and other access controls. These concepts are also expressed and enforced by its use of an appropriate OAS definition.  All app data is persisted in a deployment-provided database that must be configured in accordance with organization requirements.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -3990,7 +3992,7 @@ If the application requirements specify protections for data mining and the appl
           <ATTRIBUTE_DATA>CCI-002347</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Data mining detection and prevention are to be implemented at the Log Analysis layer, Ingress controller, or elsewhere.  No data mining protection requirements apply to application itself. </FINDING_DETAILS>
+        <FINDING_DETAILS>Data mining detection and prevention are to be implemented at the Log Analysis layer, Ingress controller, or elsewhere.  No data mining protection requirements apply to application itself.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -5574,8 +5576,7 @@ If the application is required to provide non-repudiation services and does not,
           <ATTRIBUTE_DATA>CCI-000166</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>STIG Manager does not have any non-repudiation requirements as part of its design. 
-</FINDING_DETAILS>
+        <FINDING_DETAILS>STIG Manager does not have any non-repudiation requirements as part of its design.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -5682,7 +5683,7 @@ If the log dates and times do not correlate when the logs are aggregated, this i
           <ATTRIBUTE_DATA>CCI-000174</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>STIG Manager does not offer log aggregation services. This is expected to be implemented by specific deployments at the Log Analysis level. </FINDING_DETAILS>
+        <FINDING_DETAILS>STIG Manager does not offer log aggregation services. This is expected to be implemented by specific deployments at the Log Analysis level.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -6448,8 +6449,8 @@ If HTTP headers are not logged, this is a finding.</ATTRIBUTE_DATA>
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000169</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Will be addressed by #179, must include all headers in audit record.</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Addressed by Issue #179, allowing different log levels and configuration to affect headers included in audit record.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -6550,8 +6551,7 @@ If the IP addresses of the systems that connect to the application are not recor
           <ATTRIBUTE_DATA>CCI-000169</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>When logging endpoint requests, the API emits audit records that include the original source IP address.
-</FINDING_DETAILS>
+        <FINDING_DETAILS>When logging endpoint requests, the API emits audit records that include the original source IP address.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -6754,8 +6754,8 @@ If the application does not log when successful and unsuccessful attempts to gra
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Will be addressed by #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Addressed by Issue #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -7181,8 +7181,8 @@ If the application does not log when successful and unsuccessful attempts to mod
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Will be addressed by #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Addressed by Issue #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -7612,8 +7612,8 @@ If the application does not log when successful and unsuccessful attempts to del
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Will be addressed by #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Addressed by Issue #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -8452,7 +8452,7 @@ If the application does not log all direct access to the system, this is a findi
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The application does not provide direct access to the underlying information system. </FINDING_DETAILS>
+        <FINDING_DETAILS>The application does not provide direct access to the underlying information system.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -8774,11 +8774,10 @@ If the application is not recording application shutdown events in either the ap
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000130</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown.
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown. Addressed by Issue #484
 
-Your local definition of &#x27;application shutdown&#x27; may include other components (i.e, OIDC Provider, database, reverse proxies, log servers, etc.) whose compliance with this check must be individually evaluated.
-</FINDING_DETAILS>
+Your local definition of &#x27;application shutdown&#x27; may include other components (i.e, OIDC Provider, database, reverse proxies, log servers, etc.) whose compliance with this check must be individually evaluated.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -9300,10 +9299,9 @@ If the audit logs do not contain enough data in the logs to establish which comp
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000132</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>The API emits audit records that include a component property. (In the form of the API endpoint that was accessed)
-
-Will be improved in #179</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>The API emits audit records that include a component property. 
+</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -9409,10 +9407,8 @@ If the application name and the hosts or client names are not identified, this i
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000133</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>The API emits audit records that include an instance property.
-
-Implement in #179</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>The API emits audit records that include an instance property.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -9723,10 +9719,10 @@ If the application does not log the full text recording of privileged commands o
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000135</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
+        <STATUS>NotAFinding</STATUS>
         <FINDING_DETAILS>When logging endpoint requests, if the request includes parameter &#x27;elevate&#x27; == true, the API emits audit records that include the JSON POST content and the JSON reply
 
-Will be addressed by #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+Addressed by Issue #179</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -9926,7 +9922,7 @@ If the application does not provide the ability to centrally manage the content 
           <ATTRIBUTE_DATA>CCI-001844</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10033,7 +10029,7 @@ If the logs are not automatically moved off the system as per approved schedule,
           <ATTRIBUTE_DATA>CCI-001851</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10134,7 +10130,7 @@ If the system is not configured to write the application logs to the centralized
           <ATTRIBUTE_DATA>CCI-001851</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10239,7 +10235,7 @@ If the application is not configured to send an alarm when storage volume exceed
           <ATTRIBUTE_DATA>CCI-001855</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10346,7 +10342,7 @@ Configure the log alerts to be immediately sent to the application admin/SA and 
           <ATTRIBUTE_DATA>CCI-001858</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10455,7 +10451,7 @@ If the application is not configured to alarm on alerts that indicate the audit 
           <ATTRIBUTE_DATA>CCI-000139</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10667,7 +10663,7 @@ If all of the application logs are not reviewable from a central location, this 
           <ATTRIBUTE_DATA>CCI-000154</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10781,7 +10777,7 @@ If the application does not provide the ability to filter audit events, this is 
           <ATTRIBUTE_DATA>CCI-000158</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10899,7 +10895,7 @@ If the application does not provide on demand reports based on the filtered audi
           <ATTRIBUTE_DATA>CCI-001876</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11017,7 +11013,7 @@ If the application does not provide an audit reduction capability that supports 
           <ATTRIBUTE_DATA>CCI-001875</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11130,7 +11126,7 @@ If the application does not provide an audit reduction (event filtering) capabil
           <ATTRIBUTE_DATA>CCI-001877</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11239,7 +11235,7 @@ If the application does not provide an immediate, ad-hoc audit review and analys
           <ATTRIBUTE_DATA>CCI-001878</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11346,7 +11342,7 @@ If the application does not provide customizable, immediate, ad-hoc audit log re
           <ATTRIBUTE_DATA>CCI-001879</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11453,7 +11449,7 @@ If the application does not have a report generation capability that supports af
           <ATTRIBUTE_DATA>CCI-001880</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11566,7 +11562,7 @@ If the application of event filters modifies the original log records, this is a
           <ATTRIBUTE_DATA>CCI-001881</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -11679,7 +11675,7 @@ If the application of event filters modifies the original log records, this is a
           <ATTRIBUTE_DATA>CCI-001882</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12101,7 +12097,7 @@ If a non-privileged user account is allowed to access the audit data or the audi
           <ATTRIBUTE_DATA>CCI-000162</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12216,7 +12212,7 @@ If a non-privileged user account is allowed to modify the audit data or the audi
           <ATTRIBUTE_DATA>CCI-000163</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12331,7 +12327,7 @@ If a non-privileged user account is allowed to delete the audit data or the audi
           <ATTRIBUTE_DATA>CCI-000164</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12442,7 +12438,7 @@ If a non-privileged user account is allowed to access the audit data or the audi
           <ATTRIBUTE_DATA>CCI-001493</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12551,7 +12547,7 @@ If file permissions are configured so as to allow unapproved modifications to th
           <ATTRIBUTE_DATA>CCI-001494</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12660,7 +12656,7 @@ If file permissions are configured to allow unapproved deletions of the audit to
           <ATTRIBUTE_DATA>CCI-001495</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12763,7 +12759,7 @@ If the application backup settings are not configured to backup application audi
           <ATTRIBUTE_DATA>CCI-001348</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -12868,7 +12864,7 @@ If an integrity check is not created to protect the integrity of the audit infor
           <ATTRIBUTE_DATA>CCI-001350</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -13306,7 +13302,7 @@ If access permissions to configuration files are not restricted to application a
           <ATTRIBUTE_DATA>CCI-001813</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The application cannot configure itself, and does not offer any configuration mechanisms that are affected by users or config files. </FINDING_DETAILS>
+        <FINDING_DETAILS>The application cannot configure itself, and does not offer any configuration mechanisms that are affected by users or config files.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -13747,7 +13743,7 @@ If the high risk issues identified in the report have not been fixed or mitigate
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Deployments must be scanned according to individual or organizational policies. Developers scan the codebase regularly in a test environment, but this is only one component of a functioning production deployment. </FINDING_DETAILS>
+        <FINDING_DETAILS>Deployments must be scanned according to individual or organizational policies. Developers scan the codebase regularly in a test environment, but this is only one component of a functioning production deployment.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -14060,7 +14056,7 @@ If the application is operating with extraneous capabilities that have not been 
           <ATTRIBUTE_DATA>CCI-000381</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>The application runs only essential services needed for operation.  Container images are based on either the Alpine Linux distribution or the Iron Bank Universal Base Image (UBI). </FINDING_DETAILS>
+        <FINDING_DETAILS>The application runs only essential services needed for operation.  Container images are based on either the Alpine Linux distribution or the Iron Bank Universal Base Image (UBI).</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -14517,7 +14513,7 @@ If the application does not uniquely identify and authenticate users, this is a 
           <ATTRIBUTE_DATA>CCI-000764</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -14629,7 +14625,7 @@ If the application allows administrative access to the application without requi
           <ATTRIBUTE_DATA>CCI-000765</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -14730,7 +14726,7 @@ If the application allows access without requiring a CAC, this is a finding.</AT
           <ATTRIBUTE_DATA>CCI-001953</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -14950,7 +14946,7 @@ If the application allows access without requiring a CAC or Alt. Token, this is 
           <ATTRIBUTE_DATA>CCI-000766</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -15064,7 +15060,7 @@ If the application allows administrative access to the application without requi
           <ATTRIBUTE_DATA>CCI-000767</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -15178,7 +15174,7 @@ If the application allows access without requiring a CAC or Alt. Token, this is 
           <ATTRIBUTE_DATA>CCI-000768</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16116,7 +16112,7 @@ If a password shorter than 15 characters can be created, this is a finding.</ATT
           <ATTRIBUTE_DATA>CCI-000205</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16229,7 +16225,7 @@ If a password without at least one upper-case character can be created, this is 
           <ATTRIBUTE_DATA>CCI-000192</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16342,7 +16338,7 @@ If a password without at least one lower-case character can be created, this is 
           <ATTRIBUTE_DATA>CCI-000193</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16455,7 +16451,7 @@ If a password without at least one numeric character can be created, this is a f
           <ATTRIBUTE_DATA>CCI-000194</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16568,7 +16564,7 @@ If a password without at least one special character can be created, this is a f
           <ATTRIBUTE_DATA>CCI-001619</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16681,7 +16677,7 @@ If less than 8 characters of the password are changed, this is a finding.</ATTRI
           <ATTRIBUTE_DATA>CCI-000195</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16815,7 +16811,7 @@ Ensure strong access control permissions on data files containing authentication
           <ATTRIBUTE_DATA>CCI-000196</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -16932,7 +16928,7 @@ If the passwords are not encrypted when being transmitted, this is a finding.</A
           <ATTRIBUTE_DATA>CCI-000197</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17045,7 +17041,7 @@ If a password can be changed more than once within 24 hours, the minimum lifetim
           <ATTRIBUTE_DATA>CCI-000198</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17160,7 +17156,7 @@ If user passwords are not configured to expire after 60 days, or if the applicat
           <ATTRIBUTE_DATA>CCI-000199</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17275,7 +17271,7 @@ If the application does not prevent users from reusing their previous 5 password
           <ATTRIBUTE_DATA>CCI-000200</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17388,7 +17384,7 @@ If the application can not specify a password as temporary and force the user to
           <ATTRIBUTE_DATA>CCI-002041</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17509,7 +17505,7 @@ Ensure users are only allowed to change their own passwords.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17719,7 +17715,7 @@ If the application does not construct a certificate path to an accepted trust an
           <ATTRIBUTE_DATA>CCI-000185</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17830,7 +17826,7 @@ If unauthorized access is granted to the private key(s), this is a finding.</ATT
           <ATTRIBUTE_DATA>CCI-000186</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -17929,7 +17925,7 @@ If the application does not map the certificate data to an individual user or gr
           <ATTRIBUTE_DATA>CCI-000187</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18034,7 +18030,7 @@ If the application is not configured to implement a CRL, this is a finding.</ATT
           <ATTRIBUTE_DATA>CCI-001991</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18143,7 +18139,7 @@ Design the application so obfuscated passwords cannot be copied and then pasted 
           <ATTRIBUTE_DATA>CCI-000206</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18248,7 +18244,7 @@ If the cryptographic module that requires authentication is not on the FIPS-appr
           <ATTRIBUTE_DATA>CCI-000803</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18353,7 +18349,7 @@ If the application does not identify and authenticate non-organizational users a
           <ATTRIBUTE_DATA>CCI-000804</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18456,7 +18452,7 @@ If the application is required to provide authenticated access to Federal agenci
           <ATTRIBUTE_DATA>CCI-002009</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18559,7 +18555,7 @@ If the application is required to provide authenticated access to Federal agenci
           <ATTRIBUTE_DATA>CCI-002010</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -18667,7 +18663,7 @@ If the application does not accept FICAM approved credentials when accepting thi
           <ATTRIBUTE_DATA>CCI-002011</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Authentication services are provided by an external (OIDC) OpenID Connect Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20137,7 +20133,7 @@ If the application is using cryptographic modules that are not FIPS-validated to
           <ATTRIBUTE_DATA>CCI-002450</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Conformant data protection techniques should be implemented by the Data Storage service, and/or by Ingress configuration of the Container Platform. </FINDING_DETAILS>
+        <FINDING_DETAILS>Conformant data protection techniques should be implemented by the Data Storage service, and/or by Ingress configuration of the Container Platform.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20341,7 +20337,7 @@ If the application user interface and the application management interface are s
           <ATTRIBUTE_DATA>CCI-001082</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Web application is logically separated from data storage layer.  Authorization for privileged access determined by the OIDC Provider, also logically separated. Web application offers no application configuration functionality in the application itself. </FINDING_DETAILS>
+        <FINDING_DETAILS>Web application is logically separated from data storage layer.  Authorization for privileged access determined by the OIDC Provider, also logically separated. Web application offers no application configuration functionality in the application itself.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20462,7 +20458,7 @@ If the application does not set the HTTPOnly flag on session cookies or if the a
           <ATTRIBUTE_DATA>CCI-001184</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20574,7 +20570,7 @@ If the &#x22;secure&#x22; flag is not set on the session cookie, or if the vulne
           <ATTRIBUTE_DATA>CCI-001184</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20683,7 +20679,7 @@ If the session IDs are unencrypted across network segments, this is a finding.</
           <ATTRIBUTE_DATA>CCI-001184</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20786,7 +20782,7 @@ If the session IDs and associated cookies are not destroyed on logoff or browser
           <ATTRIBUTE_DATA>CCI-001185</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20893,7 +20889,7 @@ If the session testing results indicate application session IDs are re-used afte
           <ATTRIBUTE_DATA>CCI-001664</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -20990,7 +20986,7 @@ If the application is not configured to validate user session identifiers, this 
           <ATTRIBUTE_DATA>CCI-001664</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -21095,7 +21091,7 @@ If the framework or the application is configured to transmit cookies within the
           <ATTRIBUTE_DATA>CCI-001664</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -21204,7 +21200,7 @@ If the session testing results indicate application session IDs are re-used afte
           <ATTRIBUTE_DATA>CCI-001664</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately. </FINDING_DETAILS>
+        <FINDING_DETAILS>The web application does not set session cookies. OIDC Provider must be configured appropriately.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -21543,7 +21539,7 @@ If the application fails in such a way that the application security controls ar
           <ATTRIBUTE_DATA>CCI-001190</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The project expects fail-safe procedures to be implemented by the Container Platform (i.e, k8s).  The web application is provided as a stateless container that caches no data and will not respond with data to requests when components are inoperable or inaccessible. </FINDING_DETAILS>
+        <FINDING_DETAILS>The project expects fail-safe procedures to be implemented by the Container Platform (i.e, k8s).  The web application is provided as a stateless container that caches no data and will not respond with data to requests when components are inoperable or inaccessible.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -21642,7 +21638,7 @@ If the application does not log the data required to determine root cause of app
           <ATTRIBUTE_DATA>CCI-001665</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The project expects fail-safe procedures to be implemented by the Container Platform (i.e, k8s).  The web application is provided as a stateless container that caches no data and will not respond with data to requests when components are inoperable or inaccessible. </FINDING_DETAILS>
+        <FINDING_DETAILS>The project expects fail-safe procedures to be implemented by the Container Platform (i.e, k8s).  The web application is provided as a stateless container that caches no data and will not respond with data to requests when components are inoperable or inaccessible.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23147,8 +23143,8 @@ If the application displays any application technical data such as database vers
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-002420</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Double-check that all error messages are sanitized. </FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Error messages addressed by Issue #483</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23252,7 +23248,7 @@ Encrypt sensitive information stored in hidden fields using DoD-approved encrypt
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
         <FINDING_DETAILS>No sensitive authentication or session data is stored in hidden fields. 
-SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23378,7 +23374,7 @@ Develop your application using a web template system or a web application develo
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23487,7 +23483,7 @@ If application scan results show an unremediated CSRF vulnerability, or if no sc
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23612,7 +23608,7 @@ If testing results are not provided demonstrating the vulnerability does not exi
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23739,7 +23735,7 @@ Security checks should be carried out after decoding is completed. Moreover, it 
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23858,7 +23854,7 @@ If test results include input validation errors, or if no test results exist, th
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>API input is validated against the OAS definition. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>API input is validated against the OAS definition. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23979,7 +23975,7 @@ If the application is vulnerable to SQL injection attack, contains SQL injection
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>All SQL queries that process user input are parameterized. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>All SQL queries that process user input are parameterized. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24096,7 +24092,7 @@ Patch the application components when vulnerabilities are discovered.</ATTRIBUTE
           <ATTRIBUTE_DATA>CCI-001310</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>SonarCloud scans are run regularly to identify XML vulnerabilities. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans are run regularly to identify XML vulnerabilities. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24231,7 +24227,7 @@ Remediate identified vulnerabilities and obtain documented risk acceptance for t
           <ATTRIBUTE_DATA>CCI-002754</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>All user input is validated on both the client and the server. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>All user input is validated on both the client and the server. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24335,8 +24331,8 @@ Use generic error messages.</ATTRIBUTE_DATA>
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-001312</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Check error messages</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Error messages addressed by Issue #483</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24444,8 +24440,8 @@ Use generic error messages for non-privileged users.</ATTRIBUTE_DATA>
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-001314</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Check error messages</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>Error messages addressed by Issue #483</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24562,7 +24558,7 @@ Patch applications when overflows are identified in vendor products.</ATTRIBUTE_
           <ATTRIBUTE_DATA>CCI-002824</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24659,7 +24655,7 @@ If old versions of the application or components are still installed on the syst
           <ATTRIBUTE_DATA>CCI-002617</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Dependabot services provided by GitHub to identify vulnerable software components. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependabot services provided by GitHub to identify vulnerable software components. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24762,7 +24758,7 @@ If application updates are not checked on at least on a weekly basis and applied
           <ATTRIBUTE_DATA>CCI-002605</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Dependabot services provided by GitHub to identify vulnerable software components. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependabot services provided by GitHub to identify vulnerable software components. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -24970,7 +24966,7 @@ If the application is designed to perform security function testing and does not
           <ATTRIBUTE_DATA>CCI-002699</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Applicable</STATUS>
-        <FINDING_DETAILS>The application is not designed or intended to perform security function testing. </FINDING_DETAILS>
+        <FINDING_DETAILS>The application is not designed or intended to perform security function testing.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25079,7 +25075,7 @@ If the application is designed to perform security function testing and does not
           <ATTRIBUTE_DATA>CCI-001294</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Applicable</STATUS>
-        <FINDING_DETAILS>The application is not designed or intended to perform security function testing. </FINDING_DETAILS>
+        <FINDING_DETAILS>The application is not designed or intended to perform security function testing.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25295,7 +25291,7 @@ If a documented account management process does not exist or unauthorized users 
           <ATTRIBUTE_DATA>CCI-002121</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Account management services are provided by the external OpenID Connect (OIDC) Provider. </FINDING_DETAILS>
+        <FINDING_DETAILS>Account management services are provided by the external OpenID Connect (OIDC) Provider.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25427,7 +25423,7 @@ If the application is tiered and the network infrastructure hosting the applicat
           <ATTRIBUTE_DATA>CCI-002225</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Determined by deployment configuration. </FINDING_DETAILS>
+        <FINDING_DETAILS>Determined by deployment configuration.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25524,7 +25520,7 @@ If audit logs have not been retained for one year or five years for SAMI data, t
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25623,7 +25619,7 @@ Maintain a log or records of dates and times audit logs are reviewed.</ATTRIBUTE
           <ATTRIBUTE_DATA>CCI-001872</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance.  Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.  Application log entries are written to the container&#x27;s STDOUT, to be captured by the deployment&#x27;s preferred and compliant logging solution.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25720,7 +25716,7 @@ If there is no policy for reporting IA violations, this is a finding.</ATTRIBUTE
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25845,7 +25841,7 @@ Address discovered vulnerabilities.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25958,7 +25954,7 @@ If deadlock issues are not being addressed via documented web service configurat
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>By design, the application web service is not subject to deadlocking as it does not call the client.  </FINDING_DETAILS>
+        <FINDING_DETAILS>By design, the application web service is not subject to deadlocking as it does not call the client.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26063,7 +26059,7 @@ If the application user data is located in the same directory as the application
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Application is provided as a stateless container. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application is provided as a stateless container.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26175,7 +26171,7 @@ or vendor literature and lock down guides, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance.  Deployment and security guidance available in project documentation. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.  Deployment and security guidance available in project documentation.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26292,7 +26288,7 @@ Verify that all ports, protocols, and services are used in accordance with the D
           <ATTRIBUTE_DATA>CCI-000388</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26389,7 +26385,7 @@ If the application requires registration, and is not registered or all ports use
           <ATTRIBUTE_DATA>CCI-000388</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26498,7 +26494,7 @@ If CM repository is not at the latest security patch level and is not operating 
           <ATTRIBUTE_DATA>CCI-001795</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Configuration management dependent on organizational compliance and processes.  Application code hosted on GitHub according to Code.mil guidance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Configuration management dependent on organizational compliance and processes.  Application code hosted on GitHub according to Code.mil guidance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26853,7 +26849,7 @@ If the CMR does not audit for modifications, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-001795</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Configuration management dependent on organizational compliance and processes.  All project artifacts are publicly available on the GitHub site, in accordance with Code.mil guidance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Configuration management dependent on organizational compliance and processes.  All project artifacts are publicly available on the GitHub site, in accordance with Code.mil guidance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -26964,7 +26960,7 @@ If there is no evidence of CCB activity or meetings prior to the last release cy
           <ATTRIBUTE_DATA>CCI-001795</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Configuration management dependent on organizational compliance and processes.  All project artifacts are publicly available on the GitHub site, in accordance with Code.mil guidance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Configuration management dependent on organizational compliance and processes.  All project artifacts are publicly available on the GitHub site, in accordance with Code.mil guidance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27160,7 +27156,7 @@ If a mission critical application is deployed onto the same server as non-missio
           <ATTRIBUTE_DATA>CCI-002828</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27263,7 +27259,7 @@ If the disaster recovery/continuity plan does not exist or does not meet the sev
           <ATTRIBUTE_DATA>CCI-000445</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27366,7 +27362,7 @@ If the application is not part of the site&#x2019;s disaster recovery plan, or i
           <ATTRIBUTE_DATA>CCI-000448</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27491,7 +27487,7 @@ If any of the requirements above for the associated risk level of the applicatio
           <ATTRIBUTE_DATA>CCI-000537</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27598,7 +27594,7 @@ If back-up copies of the application software or source code are not stored in a
           <ATTRIBUTE_DATA>CCI-000540</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Application codebase is stored in a GitHub repository (offsite). </FINDING_DETAILS>
+        <FINDING_DETAILS>Application codebase is stored in a GitHub repository (offsite).</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27697,7 +27693,7 @@ If backup and restoration devices are not included in the recovery procedures, t
           <ATTRIBUTE_DATA>CCI-000540</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27798,7 +27794,7 @@ If the application does not implement encryption for key exchange, this is a fin
           <ATTRIBUTE_DATA>CCI-000366</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The project expects other layers to provide appropriate data protection via compliant cryptography. </FINDING_DETAILS>
+        <FINDING_DETAILS>The project expects other layers to provide appropriate data protection via compliant cryptography.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -27897,7 +27893,7 @@ The finding details should note specifically where the offending credentials or 
           <ATTRIBUTE_DATA>CCI-002367</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>No passwords, certificates, or sensitive data are included in the source code. </FINDING_DETAILS>
+        <FINDING_DETAILS>No passwords, certificates, or sensitive data are included in the source code.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28011,8 +28007,8 @@ After completing the test, destroy all printed output using the site&#x2019;s pr
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-001010</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>Open</STATUS>
-        <FINDING_DETAILS>Add classification to CSV</FINDING_DETAILS>
+        <STATUS>NotAFinding</STATUS>
+        <FINDING_DETAILS>The application interface indicates its configured classification, and all exports are marked with the configured classification.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28113,7 +28109,7 @@ If test plans, procedures, and results do not exist, or are not updated for each
           <ATTRIBUTE_DATA>CCI-003004</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Github workflows test functionality and access controls before release. </FINDING_DETAILS>
+        <FINDING_DETAILS>Github workflows test functionality and access controls before release.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28337,7 +28333,7 @@ If the organization has not designated personnel to conduct security testing, th
           <ATTRIBUTE_DATA>CCI-003182</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Automated feature and access control tests are run against every commit to the release branch. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information. </FINDING_DETAILS>
+        <FINDING_DETAILS>Automated feature and access control tests are run against every commit to the release branch. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28440,7 +28436,7 @@ If annual testing procedures do not exist, or if administrators are unable to pr
           <ATTRIBUTE_DATA>CCI-003182</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28577,7 +28573,7 @@ If the organization does not conduct code reviews on the application that attemp
           <ATTRIBUTE_DATA>CCI-003187</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests and code reviews, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information.  Application source code is publicly available, and may be scanned at any time by any organization. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests and code reviews, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information.  Application source code is publicly available, and may be scanned at any time by any organization.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28688,7 +28684,7 @@ If these code coverage statistics do not exist, this is a finding.</ATTRIBUTE_DA
           <ATTRIBUTE_DATA>CCI-003188</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Code coverage assessed for development using Node.js c8 and newman tests. Reports available upon request. </FINDING_DETAILS>
+        <FINDING_DETAILS>Code coverage assessed for development using Node.js c8 and newman tests. Reports available upon request.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28791,7 +28787,7 @@ If there is no configuration management repository or the code review flaws are 
           <ATTRIBUTE_DATA>CCI-003197</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>All known code defects are tracked as Issues on the project&#x27;s GitHub site, or developer&#x27;s SonarCloud management page. </FINDING_DETAILS>
+        <FINDING_DETAILS>All known code defects are tracked as Issues on the project&#x27;s GitHub site, or developer&#x27;s SonarCloud management page.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28892,7 +28888,7 @@ If IA impact analysis is not performed, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-003173</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -28997,7 +28993,7 @@ If security flaws are not addressed in the project plan or there is no process t
           <ATTRIBUTE_DATA>CCI-003178</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy page on GitHub for more info. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy page on GitHub for more info.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29115,7 +29111,7 @@ Include programming best practices based on the languages being used for applica
           <ATTRIBUTE_DATA>CCI-003233</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, and tests for coding standards, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy page on GitHub for more info. </FINDING_DETAILS>
+        <FINDING_DETAILS>SonarCloud scans, including OWASP tests, and tests for coding standards, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy page on GitHub for more info.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29242,7 +29238,7 @@ If the design document is incomplete, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-003233</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Requires organizational compliance, project documentation, and project Security Policy. </FINDING_DETAILS>
+        <FINDING_DETAILS>Requires organizational compliance, project documentation, and project Security Policy.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29373,7 +29369,7 @@ If the described threat model documentation does not exist, this is a finding.</
           <ATTRIBUTE_DATA>CCI-003256</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Requires organizational compliance, project documentation, and project Security Policy. </FINDING_DETAILS>
+        <FINDING_DETAILS>Requires organizational compliance, project documentation, and project Security Policy.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29480,7 +29476,7 @@ If no test results are available for review, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-003272</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Automated feature and access control tests are run against every commit to the release branch. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information. </FINDING_DETAILS>
+        <FINDING_DETAILS>Automated feature and access control tests are run against every commit to the release branch. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29708,7 +29704,7 @@ If any of the software components are not supported by a COTS vendor or a GOTS o
           <ATTRIBUTE_DATA>CCI-003376</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Application is currently being actively maintained and supported. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application is currently being actively maintained and supported.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29807,7 +29803,7 @@ If the application or any of the application components are not being maintained
           <ATTRIBUTE_DATA>CCI-003376</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Application is currently being actively maintained and supported. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application is currently being actively maintained and supported.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -29906,7 +29902,7 @@ If provisions are not in place to notify users when an application is decommissi
           <ATTRIBUTE_DATA>CCI-003374</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30013,7 +30009,7 @@ If these accounts are not necessary to run the application, or if the accounts a
           <ATTRIBUTE_DATA>CCI-003109</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Application has no built-in user accounts. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application has no built-in user accounts.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30112,7 +30108,7 @@ If authentication is successful, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-003109</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Application has no default passwords. </FINDING_DETAILS>
+        <FINDING_DETAILS>Application has no default passwords.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30263,7 +30259,7 @@ Verify the application configuration guide is distributed along  with the applic
           <ATTRIBUTE_DATA>CCI-003124</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Project Documentation is provided. </FINDING_DETAILS>
+        <FINDING_DETAILS>Project Documentation is provided.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30384,7 +30380,7 @@ If the security classification guide does not exist, or does not contain applica
           <ATTRIBUTE_DATA>CCI-003124</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30620,7 +30616,7 @@ If any database exports include sensitive data and that data is not sanitized or
           <ATTRIBUTE_DATA>CCI-002478</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30723,7 +30719,7 @@ If mitigations for DoS attacks are identified in the threat model but are not im
           <ATTRIBUTE_DATA>CCI-002386</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Threat model dependent on organizational requirements. The project expects to be deployed in a Container Platform that resists DoS attacks.  DoS mitigations expected to be implemented at Container Platform Ingress layer or otherwise fulfilled by specific deployment configurations. </FINDING_DETAILS>
+        <FINDING_DETAILS>Threat model dependent on organizational requirements. The project expects to be deployed in a Container Platform that resists DoS attacks.  DoS mitigations expected to be implemented at Container Platform Ingress layer or otherwise fulfilled by specific deployment configurations.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30822,7 +30818,7 @@ If this monitoring capability does not exist, this is a finding.</ATTRIBUTE_DATA
           <ATTRIBUTE_DATA>CCI-001274</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>The project expects to be deployed in a Container Platform that monitors resource conditions. </FINDING_DETAILS>
+        <FINDING_DETAILS>The project expects to be deployed in a Container Platform that monitors resource conditions.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -30923,7 +30919,7 @@ If no deployment personnel are registered to receive the alerts, this is a findi
           <ATTRIBUTE_DATA>CCI-001285</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organization compliance.  Update notifications are available by subscription on GitHub project page. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organization compliance.  Update notifications are available by subscription on GitHub project page.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -31034,7 +31030,7 @@ Include a description of the issue, a summary of risk as well as potential mitig
           <ATTRIBUTE_DATA>CCI-001286</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Update notifications are available by subscription on GitHub project page. </FINDING_DETAILS>
+        <FINDING_DETAILS>Update notifications are available by subscription on GitHub project page.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -31131,7 +31127,7 @@ If the application is publicly accessible and traffic is not being routed throug
           <ATTRIBUTE_DATA>CCI-001119</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>Not_Reviewed</STATUS>
-        <FINDING_DETAILS>Dependent on organizational compliance. </FINDING_DETAILS>
+        <FINDING_DETAILS>Dependent on organizational compliance.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -31350,7 +31346,7 @@ If there is no evidence of security training, this is a finding.</ATTRIBUTE_DATA
           <ATTRIBUTE_DATA>CCI-002052</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>The current developers are subject to annual security training requirements. </FINDING_DETAILS>
+        <FINDING_DETAILS>The current developers are subject to annual security training requirements.</FINDING_DETAILS>
         <COMMENTS/>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>

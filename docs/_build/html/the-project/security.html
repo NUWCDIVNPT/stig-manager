@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Security Efforts &mdash; STIG Manager  documentation</title>
+  <title>STIG Manager Security &mdash; STIG Manager  documentation</title>
   
 
   
@@ -102,8 +102,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">The STIG Manager Project</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Security Efforts</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#stigman-is-open-source-maintained-by-nuwcdivnpt">STIGMan is Open Source, Maintained by NUWCDIVNPT</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">STIG Manager Security</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stig-manager-s-security-promises">STIG Manager’s Security Promises</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#security-is-a-holistic-endeavor">Security Is a Holistic Endeavor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#container-images-on-docker-hub">Container Images on Docker Hub</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="contributing.html">STIG Manager Contribution Guide</a></li>
@@ -183,7 +185,7 @@
         
           <li><a href="index.html">The STIG Manager Project</a> &raquo;</li>
         
-      <li>Security Efforts</li>
+      <li>STIG Manager Security</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -211,11 +213,61 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="security-efforts">
-<span id="security-doc"></span><h1>Security Efforts<a class="headerlink" href="#security-efforts" title="Permalink to this headline">¶</a></h1>
-<p>Test this</p>
-<div class="section" id="stigman-is-open-source-maintained-by-nuwcdivnpt">
-<h2>STIGMan is Open Source, Maintained by NUWCDIVNPT<a class="headerlink" href="#stigman-is-open-source-maintained-by-nuwcdivnpt" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="stig-manager-security">
+<span id="security-promises"></span><h1>STIG Manager Security<a class="headerlink" href="#stig-manager-security" title="Permalink to this headline">¶</a></h1>
+<p>The STIG Manager Team takes security very seriously, and have developed the application in accordance with known best practices and guidelines.</p>
+<div class="section" id="stig-manager-s-security-promises">
+<h2>STIG Manager’s Security Promises<a class="headerlink" href="#stig-manager-s-security-promises" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>STIG Manager offers the following Security Promises:</dt><dd><ul>
+<li><p>User access to endpoints that return managed data require a valid OIDC token provided by the configured Authentication Provider. That token must express the proper scopes and privileges required for the endpoint they are attempting to access.</p></li>
+<li><p>Users only get access to the data they should: Once granted access to STIG Manager, Users will only get access to data in accordance with their Collection Access Levels.</p></li>
+<li><p>A large battery of tests are run against every code submission to the repository. These tests check for both basic functionality and that User data access controls are functioning as expected. Tests actively attempt to cross User Access Level boundaries and flag any failure of access control.</p></li>
+<li><p>Requests that use elevated access (aka “admins/application managers” requesting it) get logged (as do all endpoint requests), and their new access level is indicated in the application along with other users:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Logs will show an admin made an elevated request to grant themselves access to a Collection. They do not <em>acccess</em> the data via elevation, they grant themselves an appropriate level of access, then access the data as a normal user with that grant. This is logged. All current users with access to a Collection are indicated as part of the Collection Management interface.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Dependency vulnerabilities and notifications provided by automated Dependabot scans.</p></li>
+<li><p>Periodic SonarCloud scans. And Snyk scans, apparently.</p></li>
+<li><p>Every container image delivery is checked to ensure it builds successfully with the Iron Bank hardened NodeJs base image.</p></li>
+<li><p>A Healthcheck endpoint is provided.</p></li>
+<li><p>Ingress is via one configurable port.</p></li>
+<li><p>Optional one-time egress to access public.cyber.mil for initial STIG Library load.</p></li>
+<li><p>Optional TLS connections to the database.</p></li>
+<li><p>STIG Manager is offered as a stateless container (and/or application). No data is stored on the application system or container except the application itself. All data managed is stored in the external database.</p></li>
+<li><p>The application is actively maintained.</p></li>
+<li><p>Write access to the codebase is restricted via GitHub account permissions.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="security-is-a-holistic-endeavor">
+<h2>Security Is a Holistic Endeavor<a class="headerlink" href="#security-is-a-holistic-endeavor" title="Permalink to this headline">¶</a></h2>
+<p>STIG Manager is only as secure as the environment it runs in. Those deploying the tool are responsible for making sure their deployment conforms with their organization’s Security and Data Retention Policies.</p>
+<dl>
+<dt>Specific, but not necessarily exclusive, areas that remain the responsibility of those making use of the software:</dt><dd><ul>
+<li><p>Run Scans of the software or containers. The STIGMan Team runs their own scans, but your organization may have special requirements in this area.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>If you see something, say something. If your scans indicate a security flaw that you think should be addressed in the application, create an issue on the GitHub repo informing us of it.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Use an Authentication Provider configured in accordance with your policies, that can provide an OIDC token in conformance with STIGMan requirements (see <a class="reference internal" href="../installation-and-setup/authentication.html#authentication"><span class="std std-ref">Authentication and Identity</span></a>).</p></li>
+<li><p>Secure your database in accordance with your organization’s policies, and STIGMan’s requirements (see <a class="reference internal" href="../installation-and-setup/db.html#db"><span class="std std-ref">Database</span></a>).</p></li>
+<li><p>Provide a TLS proxy for secure connections  (see <a class="reference internal" href="../installation-and-setup/reverse-proxy.html#reverse-proxy"><span class="std std-ref">STIG Manager TLS</span></a>).</p></li>
+<li><p>Retain the logs that STIGMan produces (available on stdout) in accordance with your organization’s policies (see <a class="reference internal" href="../installation-and-setup/logging.html#logging"><span class="std std-ref">STIG Manager Logging</span></a>).</p></li>
+<li><p>Provide a secure runtime environment. A properly configured kubernetes deployment, or a server with NodeJS, for example (see <a class="reference internal" href="../installation-and-setup/installation-and-setup.html#installation-and-setup"><span class="std std-ref">STIG Manager OSS Setup and Technical Information</span></a>). If you are building your own container images, ensure the base images meet your security criteria.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="container-images-on-docker-hub">
+<h2>Container Images on Docker Hub<a class="headerlink" href="#container-images-on-docker-hub" title="Permalink to this headline">¶</a></h2>
+<p>The container images available on Docker Hub have been created in accordance with guidance provided by the DoD Container Image Creation and Deployment Guide.</p>
 </div>
 </div>
 

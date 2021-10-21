@@ -102,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">The STIG Manager Project</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="security.html">Security Efforts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="security.html">STIG Manager Security</a></li>
 <li class="toctree-l2"><a class="reference internal" href="contributing.html">STIG Manager Contribution Guide</a></li>
 <li class="toctree-l2"><a class="reference internal" href="testing.html">STIG Manager Testing Guide</a></li>
 <li class="toctree-l2"><a class="reference internal" href="documentation.html">STIG Manager Documentation</a></li>
@@ -238,16 +238,17 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">latest</span></code>, <code class="docutils literal notranslate"><span class="pre">latest-alpine</span></code></p></li>
 </ul>
 </li>
-<li><p>From the <a class="reference external" href="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/">Iron Bank Node.js 14 base image</a></p>
+<li><p>From the <a class="reference external" href="https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/">Iron Bank Node.js base image</a></p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">latest-ironbank</span></code></p></li>
 </ul>
 </li>
 </ul>
-<p>In addition, we provide a limited selection of releases tagged as <em><code class="docutils literal notranslate"><span class="pre">release</span></code></em><code class="docutils literal notranslate"><span class="pre">[-</span></code><em><code class="docutils literal notranslate"><span class="pre">distro</span></code></em><code class="docutils literal notranslate"><span class="pre">]</span></code>, where <code class="docutils literal notranslate"><span class="pre">distro</span></code> defauts to <code class="docutils literal notranslate"><span class="pre">alpine</span></code>. For example, <code class="docutils literal notranslate"><span class="pre">1.0.0-beta.14</span></code> or <code class="docutils literal notranslate"><span class="pre">1.0.0-beta.14-ironbank</span></code></p>
+<p>In addition, we provide a limited selection of releases tagged as <em><code class="docutils literal notranslate"><span class="pre">release</span></code></em><code class="docutils literal notranslate"><span class="pre">[-</span></code><em><code class="docutils literal notranslate"><span class="pre">distro</span></code></em><code class="docutils literal notranslate"><span class="pre">]</span></code>, where <code class="docutils literal notranslate"><span class="pre">distro</span></code> defauts to <code class="docutils literal notranslate"><span class="pre">alpine</span></code>. For example, <code class="docutils literal notranslate"><span class="pre">1.0.40</span></code> or <code class="docutils literal notranslate"><span class="pre">1.0.40-ironbank</span></code></p>
 </div>
 <div class="section" id="quick-start-orchestration">
 <h2>Quick Start Orchestration<a class="headerlink" href="#quick-start-orchestration" title="Permalink to this headline">¶</a></h2>
+<p><strong>IMPORTANT: The Quick Start orchestration is not a production-ready deployment. It is offered as a basic example showing how the API can be configured to integrate with a MySQL instance and an OAuth2 Provider. It is offered for demonstration purposes only and is missing key features such as, but not limited to: CAC authentication, Active Directory integration, persistent data storage, MTLS database connections, logfile archiving, etc.</strong></p>
 <p><em>The Quick Start steps require the <a class="reference external" href="https://hub.docker.com/_/mysql">official MySQL 8 image</a> and a <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth">custom Keycloak image</a>.</em></p>
 <div class="section" id="docker-compose-yml">
 <h3>docker-compose.yml<a class="headerlink" href="#docker-compose-yml" title="Permalink to this headline">¶</a></h3>
