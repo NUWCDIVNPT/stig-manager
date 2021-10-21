@@ -258,7 +258,7 @@
 <p>The Project signs each image we publish to Docker Hub using Docker Content Trust (DCT).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For secure DCT image verification, you should understand trust-pinning. The default “Trust On First Use” (TOFU) behavior of the docker CE client may not be appropriate for your security requirements. Our root.json file will be helpful if you wish to pin trust on our signing key.</p>
+<p>For secure DCT image verification, you should understand trust-pinning. The default “Trust On First Use” (TOFU) behavior of the docker CE client may not be appropriate for your security requirements. Our <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/root.json">root.json</a> file will be helpful if you wish to pin trust on our signing key.</p>
 </div>
 </div>
 </div>
@@ -340,7 +340,7 @@
 <div class="section" id="assessing-your-deployment">
 <h2><span class="section-number">8.2. </span>Assessing Your Deployment<a class="headerlink" href="#assessing-your-deployment" title="Permalink to this headline">¶</a></h2>
 <p>The documentation and artifacts provided here are intended to help teams that are deploying STIG Manager in an environment that is subject to the Application Security and Development STIG.  Below, you can find a summary and STIG information, <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/docs/STIG-Manager-OSS.ckl">including a .ckl</a>, relevant to this effort.</p>
-<p>Where applicable, we have self-evaluated portions of the ASD <strong>as if</strong> were developer members of a deployed application’s team. For most deployments, though, we are NOT part of your team and therefore the checks covering development practices might be properly evaluated as not applicable. Even in this case, however, we hope our self-evaluation provides useful insight into how the Project integrates security into our practice.</p>
+<p>Where applicable, we have self-evaluated portions of the ASD <strong>as if</strong> we were developer members of a deployed application’s team. For most deployments, though, we are NOT part of your team and therefore the checks covering development practices might be properly evaluated as not applicable. Even in this case, however, we hope our self-evaluation provides useful insight into how the Project integrates security into our practice.</p>
 <div class="section" id="api-and-web-client">
 <h3><span class="section-number">8.2.1. </span>API and Web Client<a class="headerlink" href="#api-and-web-client" title="Permalink to this headline">¶</a></h3>
 <p>About a third of the checks in the ASD assess application components provided by this Project - the API and Web Client. These checks assess both their behavior and how they are developed. All other checks are dependent on specific deployment configurations, but we have provided some guidance where we can.</p>
@@ -369,7 +369,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <thead>
 <tr class="row-odd"><th class="head stub"><p>Vuln</p></th>
 <th class="head"><p>Title</p></th>
-<th class="head"><p>Result</p></th>
+<th class="head"><p>result</p></th>
 <th class="head"><p>Detail</p></th>
 </tr>
 </thead>
@@ -381,7 +381,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222388</p></th>
 <td><p>The application must clear temporary storage and cookies when the session is terminated.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The Web Client does not persist storage of any user information, including OAuth2 tokens.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222389</p></th>
@@ -396,27 +396,29 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222391</p></th>
 <td><p>Applications requiring user access authentication must provide a logoff capability for user initiated communication session.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The Web Client requests logoff service from the OIDC Provider after user interaction with a DOM element whose innerText = ‘Logout’</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222392</p></th>
 <td><p>The application must display an explicit logoff message to users indicating the reliable termination of authenticated communications sessions.</p></td>
-<td><p>Open</p></td>
-<td><p>The SPA does not display an explicit ‘logged out’ screen, it immediately redirects to the login screen of the configured OIDC Provider.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>The SPA does not display an explicit ‘logged out’ screen, it immediately redirects to the login screen of the configured OIDC Provider.</p>
+<p>Addressed by Issue #485</p>
+</td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222393</p></th>
 <td><p>The application must associate organization-defined types of security attributes having organization-defined security attribute values with information in storage.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API scaffolds each new database instance with the classification specified by the environment variable STIGMAN_CLASSIFICATION. This value is stored in the ‘configuration’ table and represents the default classification for all data that is stored by the database instance, served by the API, and received by the Web Client.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222394</p></th>
 <td><p>The application must associate organization-defined types of security attributes having organization-defined security attribute values with information in process.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Individual objects do not contain data markings. An API endpoint returns the data marking for all data served by the API. The Web Client displays a banner that represents the data marking for all data received by the Client. Processing the data does not alter this banner in any circumstances.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222395</p></th>
 <td><p>The application must associate organization-defined types of security attributes having organization-defined security attribute values with information in transmission.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Individual objects do not contain data markings. An API endpoint returns the data marking for all data served by the API. The Web Client displays a banner that represents the data marking for all data received by the Client. Data transmission does not alter this banner in any circumstances.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222396</p></th>
@@ -556,7 +558,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222423</p></th>
 <td><p>Application data protection requirements must be identified and documented.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project provides documentation describing its data structures and protection methods, including RBAC and other access controls. These concepts are also expressed and enforced by its use of an appropriate OAS definition.  All app data is persisted in a deployment-provided database that must be configured in accordance with organization requirements.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222424</p></th>
@@ -566,12 +568,12 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222425</p></th>
 <td><p>The application must enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API ensures proper access to application resources in accordance with Role-Based Access Control (RBAC) and Discretionary Access Control (DAC) mechanisms at the application and Collection levels. No direct database access is provided by the application. See documentation.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222426</p></th>
 <td><p>The application must enforce organization-defined discretionary access control policies over defined subjects and objects.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API ensures proper access to application resources in accordance with Role-Based Access Control (RBAC) and Discretionary Access Control (DAC) mechanisms at the application and Collection levels. No direct database access is provided by the application. See documentation.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222427</p></th>
@@ -586,17 +588,17 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222429</p></th>
 <td><p>The application must prevent non-privileged users from executing privileged functions to include disabling, circumventing, or altering implemented security safeguards/countermeasures.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The Project publishes container images configured to execute the API as the unprivileged user, ‘node’ whose userId is not 0.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222430</p></th>
 <td><p>The application must execute without excessive account permissions.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project supplied container images are configured to run by the limited, unprivileged user, ‘node’.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222431</p></th>
 <td><p>The application must audit the execution of privileged functions.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records for privileged functions that document the specific endpoint invoked, the date and time, and all path and query parameters.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222432</p></th>
@@ -656,7 +658,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222444</p></th>
 <td><p>The application must not write sensitive data into the application logs.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API does not emit audit records with sensitive data, including session Ids (not used), encryption keys, or passwords (not used).</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222445</p></th>
@@ -666,82 +668,82 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222446</p></th>
 <td><p>The application must record a time stamp indicating when the event occurred.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records that are time stamped.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222447</p></th>
 <td><p>The application must provide audit record generation capability for HTTP headers including User-Agent, Referer, GET, and POST.</p></td>
-<td><p>Open</p></td>
-<td><p>Will be addressed by #179, must include all headers in audit record.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Addressed by Issue #179, allowing different log levels and configuration to affect headers included in audit record.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222448</p></th>
 <td><p>The application must provide audit record generation capability for connecting system IP addresses.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records that include the original source IP address.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222449</p></th>
 <td><p>The application must record the username or user ID of the user associated with the event.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records that include the OAuth2 token claim configured as representing the requesting entity’s username.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222450</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to grant privileges occur.</p></td>
-<td><p>Open</p></td>
-<td><p>Will be addressed by #179, must include POST content and JSON reply in audit record.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Addressed by Issue #179, must include POST content and JSON reply in audit record.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222451</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to access security objects occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to access security objects (i.e., Collections, Assets, Reviews).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222452</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to access security levels occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to access security levels (i.e., Collection Grants).</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222453</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to access categories of information (e.g., classification levels) occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to access all categories of information.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222454</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to modify privileges occur.</p></td>
-<td><p>Open</p></td>
-<td><p>Will be addressed by #179, must include POST content and JSON reply in audit record.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Addressed by Issue #179, must include POST content and JSON reply in audit record.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222455</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to modify security objects occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to modify security objects (i.e, Collections, Assets, Reviews and Users).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222456</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to modify security levels occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to modify security levels (i.e, Collection Grants).</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222457</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to modify categories of information (e.g., classification levels) occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to modify categories of information (i.e, Collection Grants, Restricted User Access).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222458</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to delete privileges occur.</p></td>
-<td><p>Open</p></td>
-<td><p>Will be addressed by #179, must include POST content and JSON reply in audit record.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Addressed by Issue #179, must include POST content and JSON reply in audit record.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222459</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to delete security levels occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to delete security levels  (i.e, Collection Grants, Restricted User Access).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222460</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to delete application database security objects occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API does not implement functionality that manipulates database security objects, including deletions.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222461</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to delete categories of information (e.g., classification levels) occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to delete categories of information (i.e, Collection Grants, Restricted User Access).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222462</p></th>
@@ -761,7 +763,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222465</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful accesses to objects occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for successful and unsuccessful attempts to access to application objects (i.e, Collections, Assets, Reviews, Users).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222466</p></th>
@@ -776,67 +778,63 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222468</p></th>
 <td><p>The application must initiate session auditing upon startup.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records immediately upon the start of its bootstrapping process.</p>
 <p>Your local definition of ‘application startup’ may include other components (i.e, OIDC Provider, database, reverse proxies, log servers, etc.) whose compliance with this check must be individually evaluated.</p>
 </td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222469</p></th>
 <td><p>The application must log application shutdown events.</p></td>
-<td><p>Open</p></td>
-<td><p>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown.</p>
+<td><p>Not a Finding</p></td>
+<td><p>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown. Addressed by Issue #484</p>
 <p>Your local definition of ‘application shutdown’ may include other components (i.e, OIDC Provider, database, reverse proxies, log servers, etc.) whose compliance with this check must be individually evaluated.</p>
 </td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222470</p></th>
 <td><p>The application must log destination IP addresses.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records containing the destination IP when retrieving token signing keys from the OIDC Provider or when optionally downloading STIG compilations during  the initial database bootstrap.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222471</p></th>
 <td><p>The application must log user actions involving access to data.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for user actions involving access to data (i.e, Collections, Assets, Reviews, Users).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222472</p></th>
 <td><p>The application must log user actions involving changes to data.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records for user actions involving changes to data (i.e, Collections, Assets, Reviews, Users).</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222473</p></th>
 <td><p>The application must produce audit records containing information to establish when (date and time) the events occurred.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records that are time stamped.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222474</p></th>
 <td><p>The application must produce audit records containing enough information to establish which component, feature or function of the application triggered the audit event.</p></td>
-<td><p>Open</p></td>
-<td><p>The API emits audit records that include a component property. (In the form of the API endpoint that was accessed)</p>
-<p>Will be improved in #179</p>
-</td>
+<td><p>Not a Finding</p></td>
+<td><p>The API emits audit records that include a component property.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222475</p></th>
 <td><p>When using centralized logging; the application must include a unique identifier in order to distinguish itself from other application logs.</p></td>
-<td><p>Open</p></td>
-<td><p>The API emits audit records that include an instance property.</p>
-<p>Implement in #179</p>
-</td>
+<td><p>Not a Finding</p></td>
+<td><p>The API emits audit records that include an instance property.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222476</p></th>
 <td><p>The application must produce audit records that contain information to establish the outcome of the events.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records that contain the response status code.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222477</p></th>
 <td><p>The application must generate audit records containing information that establishes the identity of any individual or process associated with the event.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records that include the OAuth2 token claim configured as representing the requesting entity’s username.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222478</p></th>
 <td><p>The application must generate audit records containing the full-text recording of privileged commands or the individual identities of group account users.</p></td>
-<td><p>Open</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, if the request includes parameter ‘elevate’ == true, the API emits audit records that include the JSON POST content and the JSON reply</p>
-<p>Will be addressed by #179, must include POST content and JSON reply in audit record.</p>
+<p>Addressed by Issue #179</p>
 </td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222479</p></th>
@@ -931,17 +929,17 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222497</p></th>
 <td><p>The applications must use internal system clocks to generate time stamps for audit records.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records with a time stamp generated from the system clock.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222498</p></th>
 <td><p>The application must record time stamps for audit records that can be mapped to Coordinated Universal Time (UTC) or Greenwich Mean Time (GMT).</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records with the time stamp represented as an ISO-8601 string, including time zone.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222499</p></th>
 <td><p>The application must record time stamps for audit records that meet a granularity of one second for a minimum degree of precision.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API emits audit records with millisecond time stamp precision.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222500</p></th>
@@ -1016,7 +1014,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222514</p></th>
 <td><p>The applications must limit privileges to change the software resident within software libraries.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The API is designed to be stateless and runnable in a read-only  container.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222515</p></th>
@@ -1036,7 +1034,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222518</p></th>
 <td><p>The application must be configured to disable non-essential capabilities.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The application runs only essential services needed for operation.  Container images are based on either the Alpine Linux distribution or the Iron Bank Universal Base Image (UBI).</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222519</p></th>
@@ -1111,7 +1109,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222533</p></th>
 <td><p>The application must authenticate all network connected endpoint devices before establishing any connection.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>All API endpoint access requires a valid OAuth2 token issued by the application OIDC Provider.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222534</p></th>
@@ -1246,7 +1244,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222560</p></th>
 <td><p>The application must conform to FICAM-issued profiles.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project conforms to OpenID Connect, a FICAM issued profile.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222561</p></th>
@@ -1281,12 +1279,12 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222567</p></th>
 <td><p>The application must not be vulnerable to race conditions.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Code review by SonarCloud tests reveal no race conditions.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222568</p></th>
 <td><p>The application must terminate all network connections associated with a communications session at the end of the session.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The application relies on the underlying OS to control the network connection aspect of the application which is perfectly acceptable.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222569</p></th>
@@ -1296,12 +1294,12 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222570</p></th>
 <td><p>The application must utilize FIPS-validated cryptographic modules when signing application components.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Container images are signed via Docker Content Trust, which uses SHA256 digests.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222571</p></th>
 <td><p>The application must utilize FIPS-validated cryptographic modules when generating cryptographic hashes.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Container images are signed via Docker Content Trust, which uses SHA256 digests.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222572</p></th>
@@ -1316,7 +1314,7 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222574</p></th>
 <td><p>The application user interface must be either physically or logically separated from data storage and management interfaces.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Web application is logically separated from data storage layer.  Authorization for privileged access determined by the OIDC Provider, also logically separated. Web application offers no application configuration functionality in the application itself.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222575</p></th>
@@ -1396,22 +1394,22 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222590</p></th>
 <td><p>The application must isolate security functions from non-security functions.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project RBAC is described in the documentation.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222591</p></th>
 <td><p>The application must maintain a separate execution domain for each executing process.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project should be deployed as an immutable, stateless container that runs in a single, isolated execution domain.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222592</p></th>
 <td><p>Applications must prevent unauthorized and unintended information transfer via shared system resources.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project should be deployed as an immutable, stateless container that is isolated from other host processes (i.e, k8s)</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222593</p></th>
 <td><p>XML-based applications must mitigate DoS attacks by using XML filters, parser options, or gateways.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The project uses the library ‘fast-xml-parser’ a maintained library whose development pipeline tests itself against XML based attacks.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222594</p></th>
@@ -1446,78 +1444,78 @@ The provided assessments may not apply to the way you have configured your deplo
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222600</p></th>
 <td><p>The application must not disclose unnecessary information to users.</p></td>
-<td><p>Open</p></td>
-<td><p>Double-check that all error messages are sanitized.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Error messages addressed by Issue #483</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222601</p></th>
 <td><p>The application must not store sensitive information in hidden fields.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>No sensitive authentication or session data is stored in hidden fields. 
 SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222602</p></th>
 <td><p>The application must protect from Cross-Site Scripting (XSS) vulnerabilities.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222603</p></th>
 <td><p>The application must protect from Cross-Site Request Forgery (CSRF) vulnerabilities.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222604</p></th>
 <td><p>The application must protect from command injection.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222605</p></th>
 <td><p>The application must protect from canonical representation vulnerabilities.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222606</p></th>
 <td><p>The application must validate all input.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>API input is validated against the OAS definition. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222607</p></th>
 <td><p>The application must not be vulnerable to SQL Injection.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>All SQL queries that process user input are parameterized. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222608</p></th>
 <td><p>The application must not be vulnerable to XML-oriented attacks.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>SonarCloud scans are run regularly to identify XML vulnerabilities. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222609</p></th>
 <td><p>The application must not be subject to input handling vulnerabilities.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>All user input is validated on both the client and the server. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222610</p></th>
 <td><p>The application must generate error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.</p></td>
-<td><p>Open</p></td>
-<td><p>Check error messages</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Error messages addressed by Issue #483</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222611</p></th>
 <td><p>The application must reveal error messages only to the ISSO, ISSM, or SA.</p></td>
-<td><p>Open</p></td>
-<td><p>Check error messages</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>Error messages addressed by Issue #483</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222612</p></th>
 <td><p>The application must not be vulnerable to overflow attacks.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222613</p></th>
 <td><p>The application must remove organization-defined software components after updated versions have been installed.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Dependabot services provided by GitHub to identify vulnerable software components. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222614</p></th>
 <td><p>Security-relevant software updates and patches must be kept up to date.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Dependabot services provided by GitHub to identify vulnerable software components. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Advisories page on GitHub for any known vulnerabilities.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222615</p></th>
@@ -1572,12 +1570,12 @@ SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabi
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222625</p></th>
 <td><p>Execution flow diagrams and design documents must be created to show how deadlock and recursion issues in web services are being mitigated.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>By design, the application web service is not subject to deadlocking as it does not call the client.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222626</p></th>
 <td><p>The designer must ensure the application does not store configuration and control files in the same directory as user data.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application is provided as a stateless container.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222627</p></th>
@@ -1642,7 +1640,7 @@ SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabi
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222639</p></th>
 <td><p>Back-up copies of the application software or source code must be stored in a fire-rated container or stored separately (offsite).</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application codebase is stored in a GitHub repository (offsite).</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222640</p></th>
@@ -1657,28 +1655,27 @@ SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabi
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222642</p></th>
 <td><p>The application must not contain embedded authentication data.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>No passwords, certificates, or sensitive data are included in the source code.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222643</p></th>
 <td><p>The application must have the capability to mark sensitive/classified output when required.</p></td>
-<td><p>Open</p></td>
-<td><p>Where possible, all application output contains the configured classification markings. 
-The .ckl file format contains no Classification element. These files are produced with suggested filenames that have the abbreviation for the configured classification prepended to it.</p></td>
+<td><p>Not a Finding</p></td>
+<td><p>The application interface indicates its configured classification, and all exports are marked with the configured classification.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222644</p></th>
 <td><p>Prior to each release of the application, updates to system, or applying patches; tests plans and procedures must be created and executed.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Github workflows test functionality and access controls before release.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222645</p></th>
 <td><p>Application files must be cryptographically hashed prior to deploying to DoD operational networks.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The application is offered as containerized API/Web Client builds that are signed using Docker Content Trust.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222646</p></th>
 <td><p>At least one tester must be designated to test for security flaws in addition to functional testing.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Automated feature and access control tests are run against every commit to the release branch. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222647</p></th>
@@ -1728,22 +1725,22 @@ The .ckl file format contains no Classification element. These files are produce
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222656</p></th>
 <td><p>The application must not be subject to error handling vulnerabilities.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Automated feature and access control tests are run against every commit to the release branch. SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabilities.  Manual testing also performed. See project Security Policy for more information.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222657</p></th>
 <td><p>The application development team must provide an application incident response plan.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>See project documentation and Security Policy.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222658</p></th>
 <td><p>All products must be supported by the vendor or the development team.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application is currently being actively maintained and supported.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222659</p></th>
 <td><p>The application must be decommissioned when maintenance or support is no longer available.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application is currently being actively maintained and supported.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222660</p></th>
@@ -1753,17 +1750,17 @@ The .ckl file format contains no Classification element. These files are produce
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222661</p></th>
 <td><p>Unnecessary built-in application accounts must be disabled.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application has no built-in user accounts.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222662</p></th>
 <td><p>Default passwords must be changed.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application has no default passwords.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222663</p></th>
 <td><p>An Application Configuration Guide must be created and included with the application.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Project Documentation is provided.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222664</p></th>
@@ -1773,7 +1770,7 @@ The .ckl file format contains no Classification element. These files are produce
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222665</p></th>
 <td><p>The designer must ensure uncategorized or emerging mobile code is not used in applications.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Application uses only Category 3 mobile code. (Javascript that runs client side in a web browser)</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222666</p></th>
@@ -1798,7 +1795,7 @@ The .ckl file format contains no Classification element. These files are produce
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222670</p></th>
 <td><p>The application must provide notifications or alerts when product update and security related patches are available.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>Update notifications are available by subscription on GitHub project page.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222671</p></th>
@@ -1808,12 +1805,12 @@ The .ckl file format contains no Classification element. These files are produce
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222672</p></th>
 <td><p>The application must generate audit records when concurrent logons from different workstations occur.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>When logging endpoint requests, the API emits audit records that include the original source IP address.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222673</p></th>
 <td><p>The Program Manager must verify all levels of program management, designers, developers, and testers receive annual security training pertaining to their job function.</p></td>
-<td><p>Not A Finding</p></td>
+<td><p>Not a Finding</p></td>
 <td><p>The current developers are subject to annual security training requirements.</p></td>
 </tr>
 </tbody>

@@ -105,9 +105,11 @@
 <li class="toctree-l2"><a class="reference internal" href="admin-guide.html">2. STIG Manager Admin Guide</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">3. STIG Manager Care and Feeding</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#update-stig-and-scap-information">3.1. Update STIG and SCAP Information</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#pre-registering-users">3.2. Pre-Registering Users</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#review-history-pruning">3.3. Review History Pruning</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#configure-a-source-of-automated-evaluations">3.4. Configure a Source of Automated Evaluations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete-stigs-or-revisions">3.2. Delete Stigs or Revisions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pre-registering-users">3.3. Pre-Registering Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete-user">3.4. Deregistering Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#review-history-pruning">3.5. Review History Pruning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-a-source-of-automated-evaluations">3.6. Configure a Source of Automated Evaluations</a></li>
 </ul>
 </li>
 </ul>
@@ -258,12 +260,17 @@
 <div class="line"><br /></div>
 </div>
 <p>STIG Manager tracks Reviews by their Rule ID, not STIG ID. In most cases, new STIG revisions will have substantially the same ruleset as previous revisions. This means that most of the time, when you update STIGs in STIG Manager, most Assets will carry most of their existing reviews forward and you will not have to start from scratch.</p>
+</div>
+<div class="section" id="delete-stigs-or-revisions">
+<span id="stig-delete"></span><h2><span class="section-number">3.2. </span>Delete Stigs or Revisions<a class="headerlink" href="#delete-stigs-or-revisions" title="Permalink to this headline">¶</a></h2>
+<p>Many STIGs are released quarterly, and old STIGs quickly lose their relevance.  To keep a handle on Database growth and simplify the user experience, you may want to delete old STIG revisions. We have found it is not especially useful to keep STIGs greater than 1 revision away from the current one around, as they are no longer valid for most purposes.</p>
+<p>You might also delete a STIG revision if you have updated STIGs but would prefer to revert to an older one as the default (hopefully not for long!).  In this case, you might want to delete the current STIG revision.</p>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
 </div>
 <div class="section" id="pre-registering-users">
-<span id="id1"></span><h2><span class="section-number">3.2. </span>Pre-Registering Users<a class="headerlink" href="#pre-registering-users" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><span class="section-number">3.3. </span>Pre-Registering Users<a class="headerlink" href="#pre-registering-users" title="Permalink to this headline">¶</a></h2>
 <p>Typically, Users must access the system at least once before they can be given Collection Grants.  STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the <code class="docutils literal notranslate"><span class="pre">Administration</span> <span class="pre">-&gt;</span> <span class="pre">User</span> <span class="pre">Grants</span></code> workspace.  Click the Pre-register User button, and enter their username. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up.</p>
 <figure class="">
             <a 
@@ -295,8 +302,16 @@
 <div class="line"><br /></div>
 </div>
 </div>
+<div class="section" id="delete-user">
+<span id="deregistering-users"></span><span id="id2"></span><h2><span class="section-number">3.4. </span>Deregistering Users<a class="headerlink" href="#delete-user" title="Permalink to this headline">¶</a></h2>
+<p>Overall access to STIG Manager is controlled by your deployment’s OIDC Provider (ie. Keycloak).  If you want to prevent a specific user from accessing any information in STIG Manager besides the STIG Library, you can deregister them from the same User Grants Administration workspace referenced above. To do this, select the User, and click the “Unregister User” button. The selected user will have all their Collection Grants removed.  The User’s other info will remain, so that any reviews or other actions they have performed will continue to have attribution.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to prevent a user from having any access at all to STIG Manager, you must contact your OIDC Provider POC and ask that they perform this action. This can be accomplished in different ways that will depend on your specific deployment.</p>
+</div>
+</div>
 <div class="section" id="review-history-pruning">
-<span id="id2"></span><h2><span class="section-number">3.3. </span>Review History Pruning<a class="headerlink" href="#review-history-pruning" title="Permalink to this headline">¶</a></h2>
+<span id="id3"></span><h2><span class="section-number">3.5. </span>Review History Pruning<a class="headerlink" href="#review-history-pruning" title="Permalink to this headline">¶</a></h2>
 <p>STIG Manager keeps a history of every change made to a Review. Eventually, these Review History entries will become irrelevant but will continue to take up space.
 It is suggested that you periodically prune your stored review history (in accordance with your data retention policy) with the Delete Review History endpoint of the API.  Further information on this feature will be provided in the future.</p>
 <div class="line-block">
@@ -304,7 +319,7 @@ It is suggested that you periodically prune your stored review history (in accor
 </div>
 </div>
 <div class="section" id="configure-a-source-of-automated-evaluations">
-<span id="automated-imports"></span><h2><span class="section-number">3.4. </span>Configure a Source of Automated Evaluations<a class="headerlink" href="#configure-a-source-of-automated-evaluations" title="Permalink to this headline">¶</a></h2>
+<span id="automated-imports"></span><h2><span class="section-number">3.6. </span>Configure a Source of Automated Evaluations<a class="headerlink" href="#configure-a-source-of-automated-evaluations" title="Permalink to this headline">¶</a></h2>
 <p>There are several tools available that will automatically assess many of your STIGs, and provide output in .ckl or XCCDF output.  Tools such as Evaluate STIG and SCC can be configured to populate file system folders with their evaluation results. If you find yourself with a lot of these .ckl files, you may find the STIGMan Watcher tool useful.</p>
 <p>STIGMan Watcher is a lightweight command line utility that can be configured to monitor a file system folder for .ckl files or XCCDF results, and automatically submit them to a Collection on a STIG Manager instance.  You could potentially have many STIGMan Watchers running, each monitoring a file folder and importing results into particular STIGMan Collections.</p>
 <p>More information can be found along with the source code on <a class="reference external" href="https://github.com/NUWCDIVNPT/stigman-watcher">GitHub</a> and with the <a class="reference external" href="https://www.npmjs.com/package/stigman-watcher">NodeJs package.</a></p>

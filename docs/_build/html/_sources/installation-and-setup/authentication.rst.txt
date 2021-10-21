@@ -13,7 +13,7 @@ STIG Manager OSS has been tested to work with Keycloak and Okta as OIDC provider
   If you are using the demonstration Keycloak container from the Project's Docker Hub page, you may not need to change any settings or variables described in this section. 
 
 
-JSON Web Token Requirements
+JSON Web Token (JWT) Requirements
 ----------------------------------
 
 The JWT produced by the Identity Provider should provide the claims specified below. Some of them may have different names in your configuration, and can be specified in STIGMan's environment variables if they differ from the default values:
@@ -96,6 +96,8 @@ Service Account Client Setup
 If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other Keycloak configuration required. 
 
 
+.. _oidc-scopes:
+
 Scopes, and Privileges
 ---------------------------------
 
@@ -104,7 +106,10 @@ The STIG Manager API restricts endpoint access using the "scope" claims in the J
 The guide provided below maps scopes to various Realm Roles that are then assigned to Users. 
 These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the `Keycloak Documentation <https://www.keycloak.org/documentation>`_ for more information. 
 
-The Roles specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the :ref:`user-roles-privs` section of the Setup Guide for more information. 
+The **Roles** specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the :ref:`user-roles-privs` section of the Setup Guide for more information. 
+
+The **Scopes** specified in the JWT control access to API endpoints as specified in the OpenAPI spec.  See the :ref:`STIG Manager Client Scopes and Roles <oidc-scopes-table>` table below for a suggestion on how to allocate these scopes using OIDC roles, and more information. 
+
 
 
 .. note::
@@ -121,7 +126,7 @@ Keycloak is readily available, actively maintained by a major OSS vendor, suppor
 Keycloak supports many External Identity Providers, but has only been tested using its own authentication. 
 `More information about RedHat Keycloak. <https://www.keycloak.org/documentation>`_
 
-A sample Keycloak Realm import file, configured as specified below and containing no users, can be found `in our github repo. <https://github.com/NUWCDIVNPT/stig-manager/tree/main/docker/keycloak>`_
+A sample Docker-compose orchestration, using a Keycloak image configured as specified below and containing Demo users, can be found `on our Docker Hub page. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
 Keycloak Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,6 +149,9 @@ Required Keycloak settings for the "stigman" realm:
 
 * Configure->Roles->Default Roles - Recommended: set "user" and "create_collection" as default roles.   
 * Configure->Client Scopes - Create the following scopes, and assign them the specified roles in that scope's "Scope" tab: 
+
+.. _oidc-scopes-table:
+
 
   .. list-table:: STIG Manager Client Scopes and Roles: 
    :widths: 20 70

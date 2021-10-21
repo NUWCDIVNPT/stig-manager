@@ -63,7 +63,7 @@ STIG and SCAP Benchmarks Admin Panel
 This panel lists every STIG that has been loaded into STIG Manager and allows Admins to import new STIGs into STIG Manager.
 The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.
 
-Use the button at the top to Add new STIGs. STIGs can be imported individually, or as a .zip library of many STIGs.
+Use the buttons at the top to add new STIGS, delete entire STIGs or specific revisions. STIGs can be imported individually, or as a .zip library of many STIGs.
 
 
 .. thumbnail:: /assets/images/admin-stigs.png
