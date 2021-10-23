@@ -4,8 +4,13 @@ async function authorizeOidc() {
         clientId: STIGMAN.Env.oauth.clientId, //'0oa15s1xbhJtGfytI5d7'
         refreshDisabled: STIGMAN.Env.oauth.refreshToken.disabled
     });
-    oidcProvider.refreshExpWarnCallback = function (expTs) {
-        window.oidcProvider.updateToken(-1)
+    oidcProvider.refreshExpWarnCallback = async function (expTs) {
+        try {
+            await window.oidcProvider.updateToken(-1)
+        }
+        catch (e) {
+            console.log('[OIDCPROVIDER] Error in refreshExpWarnCallback')
+        } 
     }
     oidcProvider.onTokenExpired = function() {
         console.info('[OIDCPROVIDER] Token expired at ' + new Date(oidcProvider.tokenParsed['exp']*1000));
@@ -46,7 +51,7 @@ async function authorizeOidc() {
             scopes.push(...STIGMAN.Env.oauth.extraScopes.split(" "))
         }
         window.oidcProvider = oidcProvider
-        let response = await oidcProvider.init({ 
+        await oidcProvider.init({ 
             onLoad: 'login-required',
             checkLoginIframe: false,
             pkceMethod: 'S256',

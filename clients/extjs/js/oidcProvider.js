@@ -371,10 +371,10 @@
                 .catch(function() {
                     promise.setError();
                 });
-            });
-            configPromise.catch(function() {
+            }).catch(function(a) {
                 promise.setError();
             });
+            // Red Hat code incorrectly separated the catch block
 
             return promise.promise;
         }
