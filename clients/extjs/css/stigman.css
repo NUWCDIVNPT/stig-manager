@@ -1,3 +1,58 @@
+.x-grid3-row-selected {
+    background-color: hsl(212deg 14% 85%) !important;
+    background-image: none;
+    border-color: #ACACAC;
+}
+
+.x-grid3-row-checker,.x-grid3-hd-checker {
+    background-image: url(../img/checkboxes.svg)
+}
+.x-grid3-body .x-grid3-td-checker {
+    background: unset;
+}
+.x-grid3-body .x-grid3-row-selected .x-grid3-td-checker {
+	background-image: unset;
+}
+.x-grid3-row-checker,.x-grid3-hd-checker {
+    width: 100%;
+    height: 18px;
+    background-position: 1px 2px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+.x-grid3-row .x-grid3-row-checker {
+    background-position: 1px 2px
+}
+
+.x-grid3-row-selected .x-grid3-row-checker,.x-grid3-hd-checker-on .x-grid3-hd-checker,.x-grid3-row-checked .x-grid3-row-checker {
+    background-position: -24px 2px
+}
+
+.x-grid3-hd-checker {
+    background-position: 1px 1px
+}
+
+.ext-border-box .x-grid3-hd-checker {
+    background-position: 1px 3px
+}
+
+.x-grid3-hd-checker-on .x-grid3-hd-checker {
+    background-position: -24px 1px
+}
+
+.x-grid3-hd-checker-ind .x-grid3-hd-checker {
+    background-position: -50px 1px
+}
+
+/* Adjust position of the grid checkbox */
+/* Required by SM.SelectingGridToolbar */
+.x-grid3-row-selected-checkonly .x-grid3-row-checker {
+	background-position: -24px 2px;
+}
+
+
+
 input.x-tree-node-cb {
 	margin-right: 2px;	
 }
@@ -49,6 +104,7 @@ a.x-grid3-hd-btn:hover {
 	background-color: transparent;
 	background-image:none;
 	display: block;
+	cursor: default;	
 } 
 
 .sm-cb .x-form-cb-label {
@@ -401,7 +457,7 @@ body {
 .x-fieldset {
     border-radius: 3px;
 }
-.x-body-masked .ext-el-mask {
+.x-body-masked .ext-el-mask, .x-masked .ext-el-mask {
     background-color: rgb(0 0 0 / 35%);
     backdrop-filter: blur(1px) saturate(50%);
     opacity: unset;
@@ -560,13 +616,13 @@ td.x-grid3-hd-over, td.sort-desc, td.sort-asc, td.x-grid3-hd-menu-open {
     border-left-color: #eee;
     border-right-color: #d0d0d0;
 }
-.x-grid3-row {
+/* .x-grid3-row {
     cursor: default;
     border-width: 1px 1px 1px 0px;
     border-style: solid;
 	width: 100%;
 }
-
+ */
 td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-asc .x-grid3-hd-inner, td.x-grid3-hd-menu-open .x-grid3-hd-inner {
     background-color:#f0f0f0;
     background-image:none;
@@ -690,11 +746,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
 
 
-/* Adjust position of the grid checkbox */
-/* Required by SM.SelectingGridToolbar */
-.x-grid3-row-selected-checkonly .x-grid3-row-checker {
-	background-position: -22px 3px;
-}
   
 .sm-tree-node-create {
 	font-style: italic

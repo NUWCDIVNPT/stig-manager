@@ -119,6 +119,7 @@ function loadScripts() {
         "js/SM/ReviewsImport.js",
         "js/SM/TransferAssets.js",
         "js/SM/Library.js",
+        "js/SM/StigRevision.js",
         "js/library.js",
         "js/stigmanUtils.js",
         "js/userAdmin.js",

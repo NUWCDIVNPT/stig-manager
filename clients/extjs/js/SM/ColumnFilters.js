@@ -67,6 +67,10 @@ SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
   },
   handleHdDown: function (e, target) {
     // Modifies superclass method to support lastHide
+
+    if (target.className == 'x-grid3-hd-checker') {
+      return
+    }
     e.stopEvent()
     if (!this.lastHide || this.lastHide.getElapsed() > 100) {
       var colModel  = this.cm,
@@ -110,7 +114,8 @@ SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
     const colCount = this.cm.getColumnCount()
     for (let i = 0; i < colCount; i++) {
       const td = this.getHeaderCell(i)
-      td.getElementsByTagName("a")[0].style.height = (td.firstChild.offsetHeight - 1) + 'px'
+      // td.getElementsByTagName("a")[0].style.height = (td.firstChild.offsetHeight - 1) + 'px'
+      td.getElementsByTagName("a")[0].style.height = 0
       if (this.cm.config[i].filtered) {
         td.classList.add('sm-grid3-col-filtered')
       }
