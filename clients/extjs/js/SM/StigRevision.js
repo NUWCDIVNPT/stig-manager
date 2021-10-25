@@ -341,7 +341,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
 
     const removeRevisionBtn = new Ext.Button({
       iconCls: 'icon-del',
-      text: 'Remove',
+      text: 'Remove Revision',
       hidden: true,
       menu: revisionMenu
     })
