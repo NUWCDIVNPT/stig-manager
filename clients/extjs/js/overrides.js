@@ -1,3 +1,49 @@
+Ext.override(Ext.grid.CheckboxSelectionModel, {
+    onMouseDown : function(e, t){
+        if(e.button === 0 && t.className == 'x-grid3-row-checker'){ // Only fire if left-click
+            e.stopEvent();
+            var row = e.getTarget('.x-grid3-row');
+            if(row){
+                var index = row.rowIndex;
+                if(this.isSelected(index)){
+                    this.deselectRow(index);
+                }else{
+                    this.selectRow(index, true);
+                    this.grid.getView().focusRow(index);
+                }
+            }
+            const hd = this.grid.view.innerHd.querySelector('.x-grid3-hd-row .x-grid3-td-checker .x-grid3-hd-checker')
+
+            if (hd) {
+                const hdState = this.selections.length === 0 ? null : this.grid.store.getCount() === this.selections.length ? 'on' : 'ind'
+                hd.classList.remove('x-grid3-hd-checker-on')
+                hd.classList.remove('x-grid3-hd-checker-ind')
+                if (hdState) {
+                    hd.classList.add(`x-grid3-hd-checker-${hdState}`)
+                }
+            }
+        }
+    },
+    onHdMouseDown : function(e, t) {
+        if(t.className == 'x-grid3-hd-checker'){
+            e.stopEvent();
+            var hd = Ext.fly(t.parentNode);
+            var isChecked = hd.hasClass('x-grid3-hd-checker-on');
+            var isIndeterminate = hd.hasClass('x-grid3-hd-checker-ind');
+            if (isChecked || isIndeterminate) {
+                hd.removeClass('x-grid3-hd-checker-on');
+                hd.removeClass('x-grid3-hd-checker-ind');
+                this.clearSelections();
+            }
+            else {
+                hd.addClass('x-grid3-hd-checker-on');
+                this.selectAll();
+            }
+        }
+    }
+})
+
+
 // Replace Ext.getBody() to return the Ext.Element below the
 // classification banner, if one is present
 const origGetBody = Ext.getBody
