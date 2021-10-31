@@ -332,7 +332,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                 ]);
             } else {
-                this.store.filter({property:'title',value:value,anyMatch:true,caseSensitive:false});
+                this.store.filter({property:'name',value:value,anyMatch:true,caseSensitive:false});
             }
         }
     },
