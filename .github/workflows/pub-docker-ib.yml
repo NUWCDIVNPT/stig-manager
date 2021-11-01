@@ -52,14 +52,14 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs14:latest
+            BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs16:latest
             COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
             COMMIT_SHA=${{ github.sha }}
             COMMIT_TAG=${{ steps.prep.outputs.tag }}
             COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
-            stig-manager.last-migration.mysql=1.0.0-beta.35
+            stig-manager.last-migration.mysql=1.0.0-beta.39
             org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
             org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
             org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}

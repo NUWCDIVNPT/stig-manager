@@ -1,3 +1,13 @@
+1.0.41
+------
+fix: filter grid on asset name (#498)
+feat: UI support for STIG/revision delete (#491)
+refactor: unhandled rejections (#490)
+doc: Additional documentation updates, links. (#489)
+doc: Added project security policy, security docs, docker trust public key, stigman sample .ckl (#486)
+feat: choice to export mono- or multi-STIG CKLs (#480)
+refactor: await _migrations table (#476)
+
 1.0.40
 ------
 fix: allowReserved for office query param (#474)
