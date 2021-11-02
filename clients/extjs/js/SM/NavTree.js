@@ -2,10 +2,10 @@ Ext.ns('SM')
 let doWoWindow
 
 SM.NodeSorter = (a, b) => {
-  if (a.sortToTop) {
+  if (a.attributes.sortToTop) {
     return -1
   }
-  if (b.sortToTop) {
+  if (b.attributes.sortToTop) {
     return 1
   }
   return a.text.toUpperCase() < b.text.toUpperCase() ? -1 : 1
@@ -271,9 +271,8 @@ SM.StigAssetNodeConfig = function (stig, asset) {
     iconCls: 'sm-asset-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
-    // stigRevStr: stig.lastRevisionStr,
     assetId: asset.assetId,
-    collectionId: asset.collectionId,
+    collectionId: asset.collectionId ?? asset.collection?.collectionId,
     benchmarkId: stig.benchmarkId,
     qtip: SM.he(asset.name)
   }
