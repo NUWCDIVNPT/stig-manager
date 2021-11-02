@@ -3068,7 +3068,7 @@ components:
       type: array
       items:
         type: object
-        # additionalProperties: false  ##FORNOW##
+        additionalProperties: false  
         properties:
           ruleId:
             type: string
@@ -3278,7 +3278,7 @@ components:
         - description
         - workflow
         - metadata
-        # - created     ##FORNOW##
+        - created   
       additionalProperties: false
       properties:
         collectionId:
@@ -3361,7 +3361,7 @@ components:
         - description
         - workflow
         - metadata
-        # - created     ##FORNOW##
+        - created    
       additionalProperties: false
       properties:
         collectionId:
@@ -3406,7 +3406,7 @@ components:
         - description
         - workflow
         - metadata
-        # - created     ##FORNOW##
+        - created     
       additionalProperties: false
       properties:
         collectionId:
@@ -3709,8 +3709,6 @@ components:
         - ts
       additionalProperties: false
       properties:
-        reviewComplete:
-          type: integer  ##FORNOW##
         assetId:
           type: string
         assetName:
@@ -3796,7 +3794,7 @@ components:
       required:
         - result
         - resultComment
-        - autoResult
+        # - autoResult  ##FORNOW##
         - action
         - actionComment
         - status
@@ -4019,8 +4017,6 @@ components:
         - ts
       additionalProperties: false
       properties:
-        reviewComplete:
-          type: integer  ##FORNOW##
         assetId:
           type: string
         assetName:
@@ -4085,8 +4081,6 @@ components:
         - ts
       additionalProperties: false
       properties:
-        reviewComplete:
-          type: integer  ##FORNOW##
         assetId:
           type: string
         assetName:
@@ -4248,7 +4242,7 @@ components:
         - severity
         - groupId
         - groupTitle
-      # additionalProperties: false  ##FORNOW##
+      additionalProperties: false
       properties:
         ruleId:
           type: string
@@ -4264,7 +4258,7 @@ components:
           type: string
         detail:
           type: object
-          # additionalProperties: false ##FORNOW##
+          additionalProperties: false 
           properties:
             weight:
               type: string
@@ -4428,7 +4422,7 @@ components:
         - userId
         - username
         - displayName
-        # - email  ##FORNOW##
+        - email  
       additionalProperties: false
       properties:
         userId:
@@ -4448,7 +4442,7 @@ components:
         - userId
         - username
         - displayName
-        # - email  ##FORNOW##
+        - email  
       additionalProperties: false
       properties:
         userId:
