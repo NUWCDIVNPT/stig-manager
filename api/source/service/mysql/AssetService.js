@@ -846,7 +846,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
           STIG_DATA: [],
           STATUS: r.result || 'Not_Reviewed',
           FINDING_DETAILS: r.resultComment,
-          COMMENTS: r.action ? `${r.action}: ${r.actionComment}` : null,
+          COMMENTS: r.actionComment,
           SEVERITY_OVERRIDE: null,
           SEVERITY_JUSTIFICATION: null
         }
