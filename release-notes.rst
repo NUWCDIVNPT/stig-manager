@@ -1,3 +1,9 @@
+1.0.42
+------
+fix: CKL comments restored (#505)
+oas: Various OAS changes to enable better response validation (#500)
+fix: always sort Collection Review to top (#501)
+
 1.0.41
 ------
 fix: filter grid on asset name (#498)
