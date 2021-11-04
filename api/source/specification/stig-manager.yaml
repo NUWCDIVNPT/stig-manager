@@ -37,7 +37,7 @@ paths:
             type: string
       responses:
         '200':
-          description: AssetProjected response
+          description: AssetProjected array response
           content:
             application/json:
               schema:
@@ -475,11 +475,13 @@ paths:
       operationId: getStigsByAsset
       responses:
         '200':
-          description: STIGs response
+          description: STIG array response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/STIGs'
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
         default:
           description: unexpected error
           content:
@@ -505,11 +507,11 @@ paths:
     #             type: string
     #   responses:
     #     '200':
-    #       description: AssetProjected response
+    #       description: Asset response
     #       content:
     #         application/json:
     #           schema:
-    #             $ref: '#/components/schemas/AssetProjected'
+    #             $ref: '#/components/schemas/Asset'
     #     default:
     #       description: unexpected error
     #       content:
@@ -526,11 +528,13 @@ paths:
       operationId: removeStigsFromAsset
       responses:
         '200':
-          description: AssetStigs response
+          description: STIG array response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/STIGs'
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
         default:
           description: unexpected error
           content:
@@ -552,11 +556,13 @@ paths:
       operationId: attachStigToAsset
       responses:
         '200':
-          description: STIGs response
+          description: STIG array response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/STIGs'
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
         default:
           description: unexpected error
           content:
@@ -573,11 +579,13 @@ paths:
       operationId: removeStigFromAsset
       responses:
         '200':
-          description: AssetProjected response
+          description: STIG array response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/STIGs'
+                type: array
+                items:
+                  $ref: '#/components/schemas/STIG'
         default:
           description: unexpected error
           content:
@@ -626,7 +634,7 @@ paths:
     #   operationId: setAssetStigGrants
     #   responses:
     #     '200':
-    #       description: AssetProjected response
+    #       description: Asset response
     #       content:
     #         application/json:
     #           schema:
@@ -654,7 +662,7 @@ paths:
     #   operationId: deleteAssetStigGrants
     #   responses:
     #     '200':
-    #       description: AssetProjected response
+    #       description: Asset response
     #       content:
     #         application/json:
     #           schema:
@@ -685,7 +693,7 @@ paths:
     #   operationId: setAssetStigGrant
     #   responses:
     #     '200':
-    #       description: AssetProjected response
+    #       description: Asset response
     #       content:
     #         application/json:
     #           schema:
@@ -710,7 +718,7 @@ paths:
     #   operationId: deleteAssetStigGrant
     #   responses:
     #     '200':
-    #       description: AssetProjected response
+    #       description: Asset response
     #       content:
     #         application/json:
     #           schema:
@@ -926,7 +934,7 @@ paths:
       operationId: getChecklistByCollectionStig
       responses:
         '200':
-          description: CollectionProjected response
+          description: ChecklistCollectionStig response
           content:
             application/json:
               schema:
@@ -988,7 +996,7 @@ paths:
       operationId: getStigAssetsByCollectionUser
       responses:
         '200':
-          description: CollectionGrant response
+          description: Collection STIGAssetProjected array response
           content:
             application/json:
               schema:
@@ -1021,7 +1029,7 @@ paths:
                 $ref: '#/components/schemas/StigAsset'
       responses:
         '200':
-          description: CollectionProjected response
+          description: StigAssetProjected array response
           content:
             application/json:
               schema:
@@ -1109,7 +1117,7 @@ paths:
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
-          description: ReviewsProjected response
+          description: Reviews array response
           content:
             application/json:
               schema:
@@ -1143,7 +1151,7 @@ paths:
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
-          description: ReviewsProjected response
+          description: Reviews Array response
           content:
             application/json:
               schema:
@@ -1178,11 +1186,11 @@ paths:
                 $ref: '#/components/schemas/ReviewPut'
       responses:
         '200':
-          description: ReviewsProjected response
+          description: ReviewsPost response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewsProjected'
+                $ref: '#/components/schemas/ReviewsPostResponse'
         default:
           description: unexpected error
           content:
@@ -1205,7 +1213,7 @@ paths:
       operationId: getReviewByAssetRule
       responses:
         '200':
-          description: ReviewsProjected response
+          description: Review Projected response
           content:
             application/json:
               schema:
@@ -1233,7 +1241,7 @@ paths:
               $ref: '#/components/schemas/ReviewAssetRulePatch'
       responses:
         '200':
-          description: ReviewsProjected response
+          description: ReviewProjected response
           content:
             application/json:
               schema:
@@ -1263,7 +1271,7 @@ paths:
               $ref: '#/components/schemas/ReviewAssetRulePut'
       responses:
         '200':
-          description: ReviewsProjected response
+          description: ReviewProjected response
           content:
             application/json:
               schema:
@@ -1286,7 +1294,7 @@ paths:
         - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
-          description: ReviewsProjected response
+          description: ReviewProjected response
           content:
             application/json:
               schema:
@@ -1772,7 +1780,7 @@ paths:
       operationId: getStigsByCollection
       responses:
         '200':
-          description: CollectionFinding response
+          description: Collection STIGs array response
           content:
             application/json:
               schema:
@@ -1803,20 +1811,13 @@ paths:
       operationId: getAssetsByStig
       responses:
         '200':
-          description: Revision response
+          description: AssetBasicProjected response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - $ref: '#/components/schemas/AssetBasic'
-                    - type: object
-                      properties:
-                        restrictedUserAccess:
-                          type: array
-                          items:
-                            $ref: '#/components/schemas/UserBasic'
+                  $ref: '#/components/schemas/AssetBasicProjected'
         default:
           description: unexpected error
           content:
@@ -1844,13 +1845,13 @@ paths:
                 type: string
       responses:
         '200':
-          description: Revision response
+          description: AssetBasicProjected response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssetBasic'
+                  $ref: '#/components/schemas/AssetBasicProjected'
         default:
           description: unexpected error
           content:
@@ -2070,8 +2071,6 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
                   $ref: '#/components/schemas/Cci'
         default:
           description: unexpected error
@@ -2506,12 +2505,10 @@ paths:
             type: string
       responses:
         '200':
-          description: Rule response
+          description: RuleProjected response
           content:
             application/json:
               schema:
-                type: array
-                items:
                   $ref: '#/components/schemas/RuleProjected'
         default:
           description: unexpected error
@@ -2558,7 +2555,7 @@ paths:
       - $ref: '#/components/parameters/UsernameMatchQuery'
       responses:
         '200':
-          description: UserProjected response
+          description: UserProjected array response
           content:
             application/json:
               schema:
@@ -2591,8 +2588,6 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
                   $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
@@ -2673,8 +2668,6 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
                   $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
@@ -2696,9 +2689,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserProjected'
+                $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
           content:
@@ -2716,6 +2707,7 @@ components:
       maximum: 3
     ApiConfiguration:
       type: object
+      additionalProperties: false
       properties:
         classification:
           type: string
@@ -2747,6 +2739,17 @@ components:
         - type: array
     Asset:
       type: object
+      required:
+        - assetId
+        - name
+        - fqdn
+        - collection
+        - description
+        - ip
+        - mac
+        - noncomputing
+        # - metadata
+      additionalProperties: false
       properties:
         assetId:
           readOnly: true
@@ -2776,15 +2779,36 @@ components:
         noncomputing:
           type: boolean
         metadata:
-          $ref: '#/components/schemas/Metadata'
+          $ref: '#/components/schemas/Metadata'    
     AssetBasic:
       type: object
+      required:
+        - assetId
+        - name
+      additionalProperties: false
       properties:
         assetId:
           type: string
         name:
           type: string
+    AssetBasicProjected:
+      type: object
+      required:
+        - assetId
+        - name
+        - restrictedUserAccess
+      additionalProperties: false
+      properties:
+        assetId:
+          type: string
+        name:
+          type: string
+        restrictedUserAccess:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBasic'
     AssetCreateOrReplace:
+      type: object
       required:
         - name
         - collectionId
@@ -2829,47 +2853,97 @@ components:
             type: string
     AssetForCollection:
       type: object
+      additionalProperties: false
       properties:
         assetId:
           type: string
         name:
           type: string
     AssetProjected:
-      allOf:
-        - $ref: '#/components/schemas/Asset'
-        - type: object
+      type: object
+      required:
+        - assetId
+        - name
+        - fqdn
+        - collection
+        - description
+        - ip
+        - mac
+        - noncomputing
+        # - metadata
+      additionalProperties: false
+      properties:
+        assetId:
+          readOnly: true
+          type: string
+        name:
+          type: string
+          nullable: false
+          maxLength: 255
+        fqdn:
+          type: string
+          nullable: true
+          maxLength: 255
+        collection:
+          $ref: '#/components/schemas/CollectionBasic'
+        description:
+          type: string
+          nullable: true
+          maxLength: 255
+        ip:
+          type: string
+          nullable: true
+          maxLength: 255
+        mac:
+          type: string
+          nullable: true
+          maxLength: 255
+        noncomputing:
+          type: boolean
+        metadata:
+          $ref: '#/components/schemas/Metadata'    
+        statusStats:
+          type: object
+          additionalProperties: false
           properties:
-            statusStats:
-              type: object
-              properties:
-                stigCount:
-                  type: integer
-                stigAssignedCount:
-                  type: integer
-                ruleCount:
-                  type: integer
-                acceptedCount:
-                  type: integer
-                rejectedCount:
-                  type: integer
-                submittedCount:
-                  type: integer
-                savedCount:
-                  type: integer
-                minTs:
-                  type: string
-                maxTs:
-                  type: string
-            stigs:
-              type: array
-              description: The benchmarkIds mapped to this Asset
-              items:
-                $ref: '#/components/schemas/STIG'
-            stigGrants:
-              type: array
-              items:
-                $ref: '#/components/schemas/StigGrantProjected'
+            stigCount:
+              type: integer
+            stigAssignedCount:
+              type: integer
+            ruleCount:
+              type: integer
+              nullable: true
+            acceptedCount:
+              type: integer
+              nullable: true
+            rejectedCount:
+              type: integer
+              nullable: true
+            submittedCount:
+              type: integer
+              nullable: true
+            savedCount:
+              type: integer
+              nullable: true
+            minTs:
+              type: string
+              format: date-time
+              nullable: true
+            maxTs:
+              type: string
+              format: date-time
+              nullable: true
+        stigs:
+          type: array
+          description: The benchmarkIds mapped to this Asset
+          items:
+            $ref: '#/components/schemas/STIG'
+        stigGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/StigGrantProjected'          
     AssetUpdate:
+      additionalProperties: false
       properties:
         name:
           type: string
@@ -2905,6 +2979,7 @@ components:
             type: string
     Cci:
       type: object
+      additionalProperties: false
       properties:
         cci:
           type: string
@@ -2912,15 +2987,15 @@ components:
           type: string
         publishdate:
           type: string
+          format: date-time
         contributor:
           type: string
         type:
           type: string
-        defintion:
+        definition:
           type: string
         emassAp:
           $ref: '#/components/schemas/EmassAp'
-          nullable: true
         references:
           type: array
           items:
@@ -2931,6 +3006,7 @@ components:
             $ref: '#/components/schemas/RevisionBasic'
     CciBasic:
       type: object
+      additionalProperties: false
       properties:
         cci:
           type: string
@@ -2942,6 +3018,7 @@ components:
             $ref: '#/components/schemas/CciReferenceRev4'
     CciListItem:
       type: object
+      additionalProperties: false
       properties:
         cci:
           type: string
@@ -2953,6 +3030,7 @@ components:
             $ref: '#/components/schemas/CciReferenceItem'
     CciReferenceItem:
       type: object
+      additionalProperties: false
       properties:
         creator:
           type: string
@@ -2970,6 +3048,7 @@ components:
           type: string
     CciReferenceRev4:
       type: object
+      additionalProperties: false
       properties:
         indexDisa:
           type: string
@@ -2979,6 +3058,7 @@ components:
           type: string
     Check:
       type: object
+      additionalProperties: false
       properties:
         checkId:
           type: string
@@ -2988,6 +3068,7 @@ components:
       type: array
       items:
         type: object
+        additionalProperties: false  
         properties:
           ruleId:
             type: string
@@ -3007,25 +3088,25 @@ components:
             type: boolean
           status:
             $ref: '#/components/schemas/ChecklistStatus'
-          reviewComplete:
-            type: boolean
-    ChecklistAssetStigs:
-      type: object
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          type: string
-        checklist:
-          $ref: '#/components/schemas/ChecklistAssetStig'
+    # ChecklistAssetStigs:
+    #   type: object
+    #   properties:
+    #     benchmarkId:
+    #       type: string
+    #     revisionStr:
+    #       type: string
+    #     checklist:
+    #       $ref: '#/components/schemas/ChecklistAssetStig'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
       xml:
         name: CHECKLIST
+      additionalProperties: false
       properties:
         ASSET:
           type: object
+          additionalProperties: false
           properties:
             ASSET_TYPE:
               type: string
@@ -3045,6 +3126,7 @@ components:
               type: string
         STIGS:
           type: object
+          additionalProperties: false
           properties:
             iSTIG:
               type: array
@@ -3067,6 +3149,7 @@ components:
                     type: array
                     items:
                       type: object
+                      additionalProperties: false
                       properties:
                         STIG_DATA:
                           type: array
@@ -3094,6 +3177,7 @@ components:
                           type: string
     ChecklistCollectionStig:
       type: object
+      additionalProperties: false
       properties:
         ruleId:
           type: string
@@ -3109,6 +3193,7 @@ components:
           type: boolean
         counts:
           type: object
+          additionalProperties: false
           properties:
             results:
               type: object
@@ -3123,6 +3208,7 @@ components:
                   type: integer
             statuses:
               type: object
+              additionalProperties: false
               properties:
                 saved:
                   type: integer
@@ -3158,6 +3244,7 @@ components:
         - null
     ClientErrorDuplicateAsset:
       type: object
+      additionalProperties: false
       properties:
         code:
           type: integer
@@ -3168,9 +3255,10 @@ components:
           enum:
             - 'Duplicate name'
         data:
-          $ref: '#/components/schemas/AssetProjected'
+          $ref: '#/components/schemas/Asset'
     ClientErrorDuplicateCollection:
       type: object
+      additionalProperties: false
       properties:
         code:
           type: integer
@@ -3181,9 +3269,17 @@ components:
           enum:
             - 'Duplicate name'
         data:
-          $ref: '#/components/schemas/CollectionProjected'
+          $ref: '#/components/schemas/Collection'
     Collection:
       type: object
+      required:
+        - collectionId
+        - name
+        - description
+        - workflow
+        - metadata
+        - created   
+      additionalProperties: false
       properties:
         collectionId:
           readOnly: true
@@ -3200,8 +3296,10 @@ components:
           $ref: '#/components/schemas/Metadata'
         created:
           type: string
+          format: date-time    
     CollectionBasic:
       type: object
+      additionalProperties: false
       properties:
         collectionId:
           type: string
@@ -3210,13 +3308,13 @@ components:
         workflow:
           $ref: '#/components/schemas/CollectionWorkflow'
     CollectionCreateOrReplace:
+      type: object
       required:
         - name
         - workflow
         - metadata
         - grants
       additionalProperties: false
-      type: object
       properties:
         name:
           type: string
@@ -3256,35 +3354,86 @@ components:
         accessLevel:
           type: integer
     CollectionProjected:
-      allOf:
-        - $ref: '#/components/schemas/Collection'
-        - type: object
-          properties:
-            assets:
-              type: array
-              items:
-                $ref: '#/components/schemas/AssetForCollection'
-            stigs:
-              type: array
-              items:
-                $ref: '#/components/schemas/STIG'
-            grants:
-              type: array
-              items:
-                $ref: '#/components/schemas/UserGrantProjected'
+      type: object
+      required:
+        - collectionId
+        - name
+        - description
+        - workflow
+        - metadata
+        - created    
+      additionalProperties: false
+      properties:
+        collectionId:
+          readOnly: true
+          type: string
+          nullable: false
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        workflow:
+          $ref: '#/components/schemas/CollectionWorkflow'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        created:
+          type: string
+          format: date-time    
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetForCollection'
+        stigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/STIG'
+        grants:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGrantProjected'     
+        owners:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        statistics:
+          type: object     
     CollectionsProjected:
-      allOf:
-        - $ref: '#/components/schemas/Collection'
-        - type: object
-          properties:
-            owners:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-            statistics:
-              type: object
+      type: object
+      required:
+        - collectionId
+        - name
+        - description
+        - workflow
+        - metadata
+        - created     
+      additionalProperties: false
+      properties:
+        collectionId:
+          readOnly: true
+          type: string
+          nullable: false
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        workflow:
+          $ref: '#/components/schemas/CollectionWorkflow'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        created:
+          type: string
+          format: date-time    
+        owners:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        statistics:
+          type: object               
     CollectionStatus:
       type: object
+      additionalProperties: false
       properties:
         assetId:
           type: string
@@ -3294,8 +3443,12 @@ components:
           type: string
         minTs:
           type: string
+          format: date-time
+          nullable: true
         maxTs:
           type: string
+          format: date-time
+          nullable: true
         rules:
           $ref: '#/components/schemas/CollectionStatusCount'
         findings:
@@ -3320,6 +3473,7 @@ components:
               $ref: '#/components/schemas/CollectionStatusCount'
     CollectionStatusCount:
       type: object
+      additionalProperties: false
       properties:
         total:
           type: integer
@@ -3327,6 +3481,7 @@ components:
           type: integer
     CollectionStig:
       type: object
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3336,11 +3491,15 @@ components:
           type: string
         lastRevisionDate:
           type: string
+          format: date
+          nullable: true
         ruleCount:
           type: integer
         assetCount:
           type: integer
         acceptedCount:
+          type: integer
+        rejectedCount:
           type: integer
         submittedCount:
           type: integer
@@ -3348,12 +3507,15 @@ components:
           type: integer
         minTs:
           type: string
+          format: date-time
+          nullable: true
         maxTs:
           type: string
-
+          format: date-time
+          nullable: true
     CollectionUpdate:
-      additionalProperties: false
       type: object
+      additionalProperties: false
       properties:
         name:
           type: string
@@ -3380,9 +3542,12 @@ components:
         - emass
     Date:
       type: string
-      pattern: '^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$'        
+      format: date
+      # pattern: '^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$'        
     EmassAp:
       type: object
+      nullable: true
+      additionalProperties: false
       properties:
         apAcronym:
           type: string
@@ -3390,68 +3555,70 @@ components:
           type: string
         assessmentProcedure:
           type: string
-    EmassPoamRarRecord:
-      type: object
-      properties:
-        status:
-          $ref: '#/components/schemas/EmassPoamRarStatus'
-        control:
-          type: string
-        residualRisk:
-          $ref: '#/components/schemas/RuleSeverity'
-        mitigations:
-          type: string
-        completionDate:
-          type: string
-        milestone:
-          type: string
-        rarLikelihood:
-          type: string
-        rarRecommendedCorrectiveAction:
-          type: string
-        rarRemediationDescription:
-          type: string
-        rarComment:
-          type: string
-    EmassPoamRarRecordUpdate:
-      type: object
-      required:
-        - status
-        - control
-        - residualRisk
-        - mitigations
-        - completionDate
-        - milestone
-        - rarLikelihood
-        - rarRecommendedCorrectiveAction
-        - rarRemediationDescription
-        - rarComment
-      properties:
-        status:
-          $ref: '#/components/schemas/EmassPoamRarStatus'
-        control:
-          type: string
-        residualRisk:
-          $ref: '#/components/schemas/RuleSeverity'
-        mitigations:
-          type: string
-        completionDate:
-          type: string
-        milestone:
-          type: string
-        rarLikelihood:
-          type: string
-        rarRecommendedCorrectiveAction:
-          type: string
-        rarRemediationDescription:
-          type: string
-        rarComment:
-          type: string
-    EmassPoamRarStatus:
-      type: string
-      enum:
-        - ongoing
-        - completed
+    # EmassPoamRarRecord:
+    #   type: object
+    #   properties:
+    #     status:
+    #       $ref: '#/components/schemas/EmassPoamRarStatus'
+    #     control:
+    #       type: string
+    #     residualRisk:
+    #       $ref: '#/components/schemas/RuleSeverity'
+    #     mitigations:
+    #       type: string
+    #     completionDate:
+    #       type: string
+    #       format: date
+    #     milestone:
+    #       type: string
+    #     rarLikelihood:
+    #       type: string
+    #     rarRecommendedCorrectiveAction:
+    #       type: string
+    #     rarRemediationDescription:
+    #       type: string
+    #     rarComment:
+    #       type: string
+    # EmassPoamRarRecordUpdate:
+    #   type: object
+    #   required:
+    #     - status
+    #     - control
+    #     - residualRisk
+    #     - mitigations
+    #     - completionDate
+    #     - milestone
+    #     - rarLikelihood
+    #     - rarRecommendedCorrectiveAction
+    #     - rarRemediationDescription
+    #     - rarComment
+    #   properties:
+    #     status:
+    #       $ref: '#/components/schemas/EmassPoamRarStatus'
+    #     control:
+    #       type: string
+    #     residualRisk:
+    #       $ref: '#/components/schemas/RuleSeverity'
+    #     mitigations:
+    #       type: string
+    #     completionDate:
+    #       type: string
+    #       format: date
+    #     milestone:
+    #       type: string
+    #     rarLikelihood:
+    #       type: string
+    #     rarRecommendedCorrectiveAction:
+    #       type: string
+    #     rarRemediationDescription:
+    #       type: string
+    #     rarComment:
+    #       type: string
+    # EmassPoamRarStatus:
+    #   type: string
+    #   enum:
+    #     - ongoing
+    #     - completed
     Error:
       required:
         - message
@@ -3461,6 +3628,7 @@ components:
           type: string
     FindingProjected:
       type: object
+      additionalProperties: false
       properties:
         ruleId:
           type: string
@@ -3486,6 +3654,7 @@ components:
             $ref: '#/components/schemas/AssetBasic'
     Fix:
       type: object
+      additionalProperties: false
       properties:
         fixId:
           type: string
@@ -3493,6 +3662,7 @@ components:
           type: string
     GroupProjected:
       type: object
+      additionalProperties: false
       properties:
         groupId:
           type: string
@@ -3512,6 +3682,7 @@ components:
       type: string
     OidcConfiguration:
       type: object
+      additionalProperties: false
       properties:
         authorization_endpoint:
           type: string
@@ -3523,6 +3694,20 @@ components:
       type: object
     Review:
       type: object
+      required:
+        - assetId
+        - assetName
+        - ruleId
+        - result
+        - resultComment
+        - autoResult
+        - action
+        - actionComment
+        - status
+        - userId
+        - username
+        - ts
+      additionalProperties: false
       properties:
         assetId:
           type: string
@@ -3534,14 +3719,14 @@ components:
           $ref: '#/components/schemas/ReviewResult'
         resultComment:
           type: string
+          nullable: true
         autoResult:
           type: boolean
         action:
           $ref: '#/components/schemas/ReviewAction'
         actionComment:
           type: string
-        metadata:
-          $ref: '#/components/schemas/Metadata'
+          nullable: true
         status:
           $ref: '#/components/schemas/ReviewStatus'
         userId:
@@ -3550,14 +3735,27 @@ components:
           type: string
         ts:
           type: string
+          format: date-time
           readOnly: true
         rejectText:
           type: string
+          nullable: true
         rejectUserId:
           type: string
           readOnly: true
-        reviewComplete:
-          type: boolean
+          nullable: true
+        # metadata:
+        #   $ref: '#/components/schemas/Metadata'
+        # rule:
+        #   $ref: '#/components/schemas/RuleAbbr'       
+        # stigs:
+        #   type: array
+        #   items:
+        #     type: string
+        # history:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/ReviewHistory'
     ReviewAction:
       type: string
       nullable: true
@@ -3568,6 +3766,7 @@ components:
         - null
     ReviewAssetRulePatch:
       type: object
+      additionalProperties: false
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
@@ -3583,16 +3782,23 @@ components:
           type: boolean
         rejectText:
           type: string
+        rejectUserId:
+          type: string
+          nullable: true             
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
-          $ref: '#/components/schemas/ReviewStatus'
+          $ref: '#/components/schemas/ReviewStatus'       
     ReviewAssetRulePut:
       type: object
       required:
         - result
         - resultComment
+        # - autoResult  ##FORNOW##
+        - action
+        - actionComment
         - status
+      additionalProperties: false
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
@@ -3606,46 +3812,22 @@ components:
           nullable: true
         autoResult:
           type: boolean
+        rejectText:
+          type: string
+        rejectUserId:
+          type: string
+          nullable: true                    
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatus'
-    ReviewCheckType:
+    ReviewCheckType:   
       type: string
       enum:
         - scap
         - manual
     ReviewHistory:
       type: object
-      properties:
-        ruleId:
-          type: string        
-        ts:
-          type: string
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        autoResult:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-        userId:
-          type: string
-        username:
-          type: string
-        rejectText:
-          type: string
-          nullable: true
-        rejectUserId:
-          type: string
-          nullable: true
       required: 
         - ts      
         - result
@@ -3657,8 +3839,43 @@ components:
         - userId         
         - username
         - rejectText
+      additionalProperties: false
+      properties:
+        ruleId:
+          type: string        
+        ts:
+          type: string
+          format: date-time
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultComment:
+          type: string
+          nullable: true
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        autoResult:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
+        userId:
+          type: string
+        username:
+          type: string
+        rejectText:
+          type: string
+          nullable: true
+        rejectUserId:
+          type: string
+          nullable: true
     ReviewHistoryAsset:
       type: object
+      required: 
+        - assetId
+        - history
+      additionalProperties: false
       properties:
         assetId:
           type: string
@@ -3666,28 +3883,31 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReviewHistory'   
-      required: 
-        - assetId
-        - history
     ReviewHistoryDeleted:     
       type: object
+      additionalProperties: false
       properties:
         HistoryEntriesDeleted: 
           type: integer   
     ReviewHistoryStat:
       type: object
+      additionalProperties: false
       properties:
         historyEntryCount: 
           type: integer
         oldestHistoryEntryDate: 
           type: string
+          format: date
+          nullable: true
     ReviewHistoryStats:
       type: object
+      additionalProperties: false
       properties:
         collectionHistoryEntryCount: 
           type: integer
         oldestHistoryEntryDate: 
           type: string
+          format: date
           nullable: true
         assetHistoryEntryCounts:
           type: array
@@ -3698,6 +3918,11 @@ components:
         - oldestHistoryEntryDate
     ReviewHistoryStatsAssetProjected:
       type: object
+      required: 
+        - assetId
+        - historyEntryCount
+        - oldestHistoryEntry
+      additionalProperties: false
       properties:
         assetId:
           type: string
@@ -3710,12 +3935,13 @@ components:
         #   type: array
         #   items:
         #     $ref: '#/components/schemas/ReviewHistoryStatsAssetRuleProjected'
-      required: 
-        - assetId
-        - historyEntryCount
-        - oldestHistoryEntry
     ReviewHistoryStatsAssetRuleProjected:
       type: object
+      required: 
+        - ruleId
+        - historyEntryCount
+        - oldestHistoryEntry
+      additionalProperties: false
       properties:
         ruleId:
           type: string
@@ -3724,10 +3950,180 @@ components:
         oldestHistoryEntry:
           type: string
           nullable: true
-      required: 
+    ReviewsPostResponse:
+      type: object
+      required:
+        - permitted
+        - rejected
+        - errors
+      additionalProperties: false
+      properties:
+        permitted:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewPostResponseItem'
+        rejected:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewPostResponseItem'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewPostResponseItem'
+    ReviewPostResponseItem:
+      type: object
+      required:
         - ruleId
-        - historyEntryCount
-        - oldestHistoryEntry
+        - result
+        - resultComment
+        - autoResult
+        - action
+        - actionComment
+        - status
+      additionalProperties: false
+      properties:
+        assetName:
+          type: string
+        ruleId:
+          type: string
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultComment:
+          type: string
+          nullable: true
+        autoResult:
+          type: boolean
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
+    ReviewProjected:
+      type: object
+      required:
+        - assetId
+        - assetName
+        - ruleId
+        - result
+        - resultComment
+        - autoResult
+        - action
+        - actionComment
+        - status
+        - userId
+        - username
+        - ts
+      additionalProperties: false
+      properties:
+        assetId:
+          type: string
+        assetName:
+          type: string
+        ruleId:
+          type: string
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultComment:
+          type: string
+          nullable: true
+        autoResult:
+          type: boolean
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
+        userId:
+          type: string
+        username:
+          type: string
+        ts:
+          type: string
+          format: date-time
+          readOnly: true
+        rejectText:
+          type: string
+          nullable: true
+        rejectUserId:
+          type: string
+          readOnly: true
+          nullable: true
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'           
+        stigs:
+          type: array
+          items:
+            type: string
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistory'
+    ReviewsProjected:
+      type: object
+      required:
+        - assetId
+        - assetName
+        - ruleId
+        - result
+        - resultComment
+        - autoResult
+        - action
+        - actionComment
+        - status
+        - userId
+        - username
+        - ts
+      additionalProperties: false
+      properties:
+        assetId:
+          type: string
+        assetName:
+          type: string
+        ruleId:
+          type: string
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultComment:
+          type: string
+          nullable: true
+        autoResult:
+          type: boolean
+        action:
+          $ref: '#/components/schemas/ReviewAction'
+        actionComment:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ReviewStatus'
+        userId:
+          type: string
+        username:
+          type: string
+        ts:
+          type: string
+          format: date-time
+          readOnly: true
+        rejectText:
+          type: string
+          nullable: true
+        rejectUserId:
+          type: string
+          readOnly: true
+          nullable: true
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'                  
+        stigs:
+          type: array
+          items:
+            type: string
     ReviewPut:
       type: object
       required:
@@ -3735,6 +4131,7 @@ components:
         - result
         - resultComment
         - status
+      additionalProperties: false        
       properties:
         ruleId:
           type: string
@@ -3775,38 +4172,18 @@ components:
         - submitted
         - accepted
         - rejected
-    ReviewProjected:
-      allOf:
-        - $ref: '#/components/schemas/Review'
-        - type: object
-          properties:
-            history:
-              type: array
-              items:
-                $ref: '#/components/schemas/ReviewHistory'
-            stigs:
-              type: array
-              items:
-                type: string
-            rule:
-              $ref: '#/components/schemas/RuleAbbr'
-            metadata:
-              $ref: '#/components/schemas/Metadata'
-    ReviewsProjected:
-      allOf:
-        - $ref: '#/components/schemas/Review'
-        - type: object
-          properties:
-            stigs:
-              type: array
-              items:
-                type: string
-            rule:
-              $ref: '#/components/schemas/RuleAbbr'
-            metadata:
-              $ref: '#/components/schemas/Metadata'
     Revision:
       type: object
+      required:
+        - benchmarkId
+        - revisionStr
+        - version
+        - release
+        - benchmarkDate
+        - status
+        - statusDate
+        - description
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3818,14 +4195,22 @@ components:
           type: string
         benchmarkDate:
           type: string
+          format: date
+          nullable: true
         status:
           type: string
+          nullable: true
         statusDate:
           type: string
+          format: date
         description:
           type: string
     RevisionBasic:
       type: object
+      required:
+        - benchmarkId
+        - revisionStr      
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3833,6 +4218,12 @@ components:
           type: string
     RuleAbbr:
       type: object
+      required:
+        - ruleId
+        - version
+        - title
+        - severity      
+      additionalProperties: false
       properties:
         ruleId:
           type: string
@@ -3851,6 +4242,7 @@ components:
         - severity
         - groupId
         - groupTitle
+      additionalProperties: false
       properties:
         ruleId:
           type: string
@@ -3866,6 +4258,7 @@ components:
           type: string
         detail:
           type: object
+          additionalProperties: false 
           properties:
             weight:
               type: string
@@ -3873,22 +4266,30 @@ components:
               type: string
             falsePositives:
               type: string
+              nullable: true
             falseNegatives:
               type: string
+              nullable: true
             documentable:
               type: string
             mitigations:
               type: string
+              nullable: true
             securityOverrideGuidance:
               type: string
+              nullable: true
             potentialImpacts:
               type: string
+              nullable: true
             thirdPartyTools:
               type: string
+              nullable: true
             mitigationControl:
               type: string
+              nullable: true
             responsibility:
-              type: string              
+              type: string   
+              nullable: true           
         ccis:
           type: array
           items:
@@ -3909,6 +4310,7 @@ components:
         - low
     SCAPMap:
       type: object
+      additionalProperties: false
       properties:
         scapBenchmarkId:
           type: string
@@ -3916,6 +4318,13 @@ components:
           type: string
     STIG:
       type: object
+      required:
+        - benchmarkId
+        - title
+        - lastRevisionStr
+        - lastRevisionDate
+        - ruleCount
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3923,10 +4332,13 @@ components:
           type: string
         status:
           type: string
+          nullable: true
         lastRevisionStr:
           type: string
         lastRevisionDate:
           type: string
+          format: date
+          nullable: true
         ruleCount:
           type: integer
         autoCount:
@@ -3935,12 +4347,13 @@ components:
           type: array
           items:
            type: string
-           pattern: ^V\d+R\d+(\.\d+)?$
+           pattern: ^V\d+R\d+(\.\d+)?$     
     StigAsset:
       type: object
       required:
         - benchmarkId
         - assetId
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3948,6 +4361,10 @@ components:
           type: string
     StigAssetProjected:
       type: object
+      required:
+        - benchmarkId
+        - asset
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3955,6 +4372,10 @@ components:
           $ref: '#/components/schemas/AssetBasic'
     StigGrantProjected:
       type: object
+      required:
+        - benchmarkId
+        - users
+      additionalProperties: false
       properties:
         benchmarkId:
           type: string
@@ -3962,13 +4383,47 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserBasic'
-    STIGs:
-      description: List of STIG
-      type: array
-      items:
-        $ref: '#/components/schemas/STIG'
+    # STIGs:
+    #   description: List of STIGs
+    #   type: array
+    #   items:
+    #     $ref: '#/components/schemas/STIG'
+    String255:
+      type: string
+      maxLength: 255
+    String255Nullable:
+      type: string
+      maxLength: 255
+      nullable: true
+    StringDateTime:
+      type: string
+      format: date-time
+    StringDateTimeNullable:
+      type: string
+      format: date-time
+      nullable: true
+    StringMax:
+      type: string
+      maxLength: 16777215
+    StringMaxNullable:
+      type: string
+      maxLength: 16777215
+      nullable: true
+    StringUuid:
+      type: string
+      maxLength: 36
+    StringUuidNullable:
+      type: string
+      maxLength: 36
+      nullable: true    
     User:
       type: object
+      required:
+        - userId
+        - username
+        - displayName
+        - email  
+      additionalProperties: false
       properties:
         userId:
           type: string
@@ -3977,10 +4432,44 @@ components:
           type: string
         displayName:
           type: string
+          nullable: true
         email:
           type: string
+          nullable: true
+    UserProjected:
+      type: object
+      required:
+        - userId
+        - username
+        - displayName
+        - email  
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+          readOnly: true
+        username:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        privileges: 
+            $ref: '#/components/schemas/UserPrivileges'
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrantProjected'
+        statistics:
+          $ref: '#/components/schemas/UserStatistics'          
     UserBasic:
       type: object
+      required: 
+        - userId
+        - username
+      additionalProperties: false
       properties:
         userId:
           type: string
@@ -3992,6 +4481,7 @@ components:
         - username
         - collectionGrants
       type: object
+      additionalProperties: false
       properties:
         username:
           type: string
@@ -4014,6 +4504,9 @@ components:
           maximum: 4
     UserGrantProjected:
       type: object
+      required:
+        - user          
+        - accessLevel
       additionalProperties: false
       properties:
         user:
@@ -4030,35 +4523,36 @@ components:
           type: integer
           minimum: 1
           maximum: 4
-      required:
-        - user          
-        - accessLevel
-    UserProjected:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            collectionGrants:
-              type: array
-              items:
-                $ref: '#/components/schemas/CollectionGrantProjected'
-        - type: object
-          properties:
-            statistics:
-              $ref: '#/components/schemas/UserStatistics'
+    UserPrivileges: 
+      type: object
+      additionalProperties: false
+      properties:
+        canCreateCollection:
+          type: boolean
+        canAdmin:
+          type: boolean          
     UserStatistics:
       type: object
+      required: 
+        - created
+        - collectionGrantCount
+        - lastAccess
+        - lastClaims
+      additionalProperties: false
       properties:
         created:
           type: string
+          format: date-time
         collectionGrantCount:
           type: integer
         lastAccess:
           type: integer
+          nullable: true
         lastClaims:
           type: object
     UserUpdate:
       type: object
+      additionalProperties: false
       properties:
         username:
           type: string
