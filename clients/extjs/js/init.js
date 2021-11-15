@@ -90,6 +90,7 @@ function loadScripts() {
         'ext/ext-all-debug-w-comments.js',
         "ext/ux/GroupSummary.js",
         'js/SM/Global.js',
+        'js/SM/TipContent.js',
         'js/SM/Ajax.js',
         'js/SM/Warnings.js',
         'js/SM/Classification.js',

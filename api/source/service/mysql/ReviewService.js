@@ -3,234 +3,418 @@ const dbUtils = require('./utils')
 
 let _this = this
 
+const writeQueries = {
+  dropIncoming: 'DROP TEMPORARY TABLE IF EXISTS incoming',
+  createIncomingForPatch: `
+  CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
+    ruleId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    resultId int,
+    detail mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    comment mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    autoResult json,
+    statusId int,
+    statusText varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    PRIMARY KEY (ruleId)
+  ) 
+  SELECT
+    review.ruleId as ruleId,
+    coalesce(jtresult.resultId, review.resultId) as resultId,
+    coalesce(jt.detail, review.detail) as detail,
+    coalesce(jt.comment, review.comment) as comment,
+    case when jt.autoResult is not null 
+      then jt.autoResult 
+            else case when review.autoResult = 1 
+        then cast(true as json) 
+                else cast(false as json) 
+      end
+    end as autoResult, 
+    coalesce(jtstatus.statusId, review.statusId) as statusId,
+    coalesce(jt.statusText, review.statusText) as statusText
+  FROM
+    JSON_TABLE(
+      ?,
+      "$[*]"
+      COLUMNS(
+        assetId INT PATH "$.assetId",
+        ruleId VARCHAR(255) PATH "$.ruleId",
+        result VARCHAR(255) PATH "$.result",
+        detail MEDIUMTEXT PATH "$.detail" NULL ON EMPTY,
+        comment MEDIUMTEXT PATH "$.comment",
+        autoResult JSON PATH "$.autoResult",
+        statusLabel VARCHAR(255) PATH "$.status.label",
+        statusText VARCHAR(255) PATH "$.status.text"
+      )
+    ) as jt
+    inner join review on (review.assetId = jt.assetId and review.ruleId COLLATE utf8mb4_0900_ai_ci = jt.ruleId COLLATE utf8mb4_0900_ai_ci)
+    left join result jtresult on (jtresult.api COLLATE utf8mb4_unicode_ci = jt.result COLLATE utf8mb4_unicode_ci)
+    left join status jtstatus on (jtstatus.api COLLATE utf8mb4_unicode_ci = jt.statusLabel COLLATE utf8mb4_unicode_ci)                  
+  `,
+  createIncomingForPost: `
+  CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
+    ruleId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    resultId int,
+    detail mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    comment mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    autoResult json,
+    statusId int,
+    statusText varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    PRIMARY KEY (ruleId)
+  ) 
+    SELECT
+      jt.ruleId,
+      jtresult.resultId,
+      jt.detail,
+      jt.comment,
+      jt.autoResult,
+      jtstatus.statusId,
+      jt.statusText
+    FROM
+      JSON_TABLE(
+        ?,
+        "$[*]"
+        COLUMNS(
+          ruleId VARCHAR(255) PATH "$.ruleId",
+          result VARCHAR(255) PATH "$.result",
+          detail MEDIUMTEXT PATH "$.detail" NULL ON EMPTY,
+          comment MEDIUMTEXT PATH "$.comment",
+          autoResult JSON PATH "$.autoResult",
+          statusLabel VARCHAR(255) PATH "$.status.label",
+          statusText VARCHAR(255) PATH "$.status.text"
+        )
+      ) as jt
+      left join result jtresult on (jtresult.api COLLATE utf8mb4_unicode_ci = jt.result COLLATE utf8mb4_unicode_ci)
+      left join status jtstatus on (jtstatus.api COLLATE utf8mb4_unicode_ci = jt.statusLabel COLLATE utf8mb4_unicode_ci)
+  `,
+  insertReviews: `
+  insert into review (
+    assetId,
+      ruleId,
+      resultId,
+      detail,
+      comment,
+      autoResult,
+      ts,
+      userId,
+      statusId,
+      statusText,
+      statusUserId,
+      statusTs
+  )
+  select
+    :assetId,
+    i.ruleId,
+    i.resultId,
+    i.detail,
+    i.comment,
+    CASE WHEN i.autoResult THEN 1 ELSE 0 END,
+    UTC_TIMESTAMP(),
+    :userId,
+    CASE WHEN i.statusId is not null THEN i.statusId ELSE 0 END,
+    i.statusText,
+    :userId,
+    UTC_TIMESTAMP()
+    from
+      incoming i
+      left join review r on (r.assetId = :assetId and r.ruleId = i.ruleId)
+    where
+      r.ruleId is null  
+  `,
+  updateReviews: (resetCriteria = 'result') => `
+  update 
+    incoming i
+    inner join review r on (r.assetId = :assetId and r.ruleId = i.ruleId)
+    left join review rChanged on (
+      rChanged.assetId = :assetId 
+      and rChanged.ruleId = i.ruleId 
+      and rChanged.statusId != 0 
+      and (
+        rChanged.resultId != i.resultId
+        ${resetCriteria === 'any' ? 'or rChanged.detail != i.detail or rChanged.comment != i.comment' : ''}
+      )
+    )
+  SET
+    r.assetId = :assetId,
+
+    r.ruleId = i.ruleId,
+
+    r.resultId = COALESCE(i.resultId, r.resultId),
+
+    r.detail = COALESCE(i.detail, r.detail),
+
+    r.comment = COALESCE(i.comment, r.comment),
+
+    r.autoResult = CASE WHEN i.autoResult IS NOT NULL
+      THEN CASE WHEN i.autoResult THEN 1 ELSE 0 END
+      ELSE r.autoResult
+    END,
+
+    r.ts = CASE WHEN i.resultId IS NOT NULL 
+    OR i.detail IS NOT NULL 
+    OR i.comment IS NOT NULL
+    OR i.autoResult IS NOT NULL
+      THEN UTC_TIMESTAMP()
+      ELSE r.ts
+    END,
+
+    r.userId = CASE WHEN i.resultId IS NOT NULL 
+    OR i.detail IS NOT NULL 
+    OR i.comment IS NOT NULL
+    OR i.autoResult IS NOT NULL
+      THEN :userId
+      ELSE r.userId
+    END,
+
+    r.statusId = CASE WHEN i.statusId IS NOT NULL 
+      THEN i.statusId 
+      ELSE CASE WHEN rChanged.reviewId IS NOT NULL
+        THEN 0
+        ELSE r.statusId
+      END
+    END,
+
+    r.statusText = CASE WHEN i.statusId IS NOT NULL 
+      THEN i.statusText 
+        ELSE CASE WHEN rChanged.reviewId IS NOT NULL
+          THEN 'Review change triggered status update'
+          ELSE CASE WHEN r.statusId = 0
+            THEN NULL
+            ELSE r.statusText
+        END
+      END
+    END,
+
+    r.statusUserId = CASE WHEN i.statusId IS NOT NULL
+    OR rChanged.reviewId IS NOT NULL
+    OR r.statusId = 0
+      THEN :userId 
+      ELSE r.statusUserId
+    END,
+
+    r.statusTs = CASE WHEN i.statusId IS NOT NULL 
+    OR rChanged.reviewId IS NOT NULL
+    OR r.statusId = 0
+      THEN UTC_TIMESTAMP()
+      ELSE r.statusTs
+    END
+  `
+}
+
 /**
 Generalized queries for review(s).
 **/
 exports.getReviews = async function (inProjection = [], inPredicates = {}, userObject) {
-  let connection
-  try {
-    const context = userObject.privileges.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
-    const columns = [
-      'CAST(r.assetId as char) as assetId',
-      'asset.name as "assetName"',
-      'r.ruleId',
-      'result.api as "result"',
-      'r.resultComment',
-      'r.autoResult',
-      'action.api as "action"',
-      'r.actionComment',
-      'status.api as "status"',
-      'CAST(r.userId as char) as userId',
-      'ud.username',
-      'r.ts',
-      'r.rejectText',
-      'CAST(r.rejectUserId as char) as rejectUserId',
-      `CASE
-        WHEN r.ruleId is null
-        THEN 0
-        ELSE
-          CASE WHEN r.resultId != 4
-          THEN
-            CASE WHEN r.resultComment != ' ' and r.resultComment is not null
-              THEN 1
-              ELSE 0 END
-          ELSE
-            CASE WHEN r.actionId is not null and r.actionComment is not null and r.actionComment != ' '
-              THEN 1
-              ELSE 0 END
-          END
-      END as "reviewComplete"`
-    ]
-    const groupBy = [
-      'r.assetId',
-      'asset.name',
-      'r.ruleId',
-      'rule.severity',
-      'r.resultId',
-      'result.api',
-      'r.resultComment',
-      'r.autoResult',
-      'r.actionId',
-      'action.api',
-      'r.actionComment',
-      'status.api',
-      'r.userId',
-      'ud.username',
-      'r.ts',
-      'r.rejectText',
-      'r.rejectUserId',
-      'r.reviewId'
-    ]
-    const joins = [
-      'review r',
-      'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
-      'left join rev_group_map rg on rgr.rgId = rg.rgId',
-      'left join revision on rg.revId = revision.revId',
-      'left join current_rev on rg.revId = current_rev.revId',
-      'left join rule on r.ruleId = rule.ruleId',
-      'left join result on r.resultId = result.resultId',
-      'left join status on r.statusId = status.statusId',
-      'left join action on r.actionId = action.actionId',
-      'left join user_data ud on r.userId = ud.userId',
-      'left join asset on r.assetId = asset.assetId',
-      'left join collection c on asset.collectionId = c.collectionId',
-      'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
-      'left join user_stig_asset_map usa on sa.saId = usa.saId'
-    ]
+  const context = userObject.privileges.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+  const columns = [
+    'CAST(r.assetId as char) as assetId',
+    'asset.name as "assetName"',
+    'r.ruleId',
+    'result.api as "result"',
+    'r.detail',
+    'r.autoResult',
+    'r.comment',
+    'CAST(r.userId as char) as userId',
+    'ud.username',
+    'r.ts',
+    'r.touchTs',
+    `JSON_OBJECT(
+      'label', status.api,
+      'text', r.statusText,
+      'user', JSON_OBJECT(
+        'userId', CAST(r.statusUserId as char),
+        'username', udStatus.username
+      ),
+      'ts', DATE_FORMAT(r.statusTs, '%Y-%m-%dT%TZ')
+    ) as status`
+  ]
+  const groupBy = [
+    'r.assetId',
+    'asset.name',
+    'r.ruleId',
+    'rule.severity',
+    'r.resultId',
+    'result.api',
+    'r.detail',
+    'r.autoResult',
+    'r.comment',
+    'status.api',
+    'r.userId',
+    'ud.username',
+    'udStatus.username',
+    'r.ts',
+    'r.statusText',
+    'r.statusUserId',
+    'r.statusTs',
+    'r.reviewId'
+  ]
+  const joins = [
+    'review r',
+    'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
+    'left join rev_group_map rg on rgr.rgId = rg.rgId',
+    'left join revision on rg.revId = revision.revId',
+    'left join current_rev on rg.revId = current_rev.revId',
+    'left join rule on r.ruleId = rule.ruleId',
+    'left join result on r.resultId = result.resultId',
+    'left join status on r.statusId = status.statusId',
+    'left join user_data ud on r.userId = ud.userId',
+    'left join user_data udStatus on r.statusUserId = udStatus.userId',
+    'left join asset on r.assetId = asset.assetId',
+    'left join collection c on asset.collectionId = c.collectionId',
+    'left join collection_grant cg on c.collectionId = cg.collectionId',
+    'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
+    'left join user_stig_asset_map usa on sa.saId = usa.saId'
+  ]
 
-    // PROJECTIONS
-    if (inProjection.includes('metadata')) {
-      columns.push(`r.metadata`)
-      groupBy.push(`r.metadata`)
-    }
-    if (inProjection.includes('stigs')) {
-      columns.push(`json_arrayagg(sa.benchmarkId) as "stigs"`)
-    }
-    if (inProjection.includes('rule')) {
-      columns.push(`json_object(
-          'ruleId' , rule.ruleId,
-          'title' , rule.title,
-          'version' , rule.version,
-          'severity' , rule.severity) as "rule"`
-      )
-    }
-    if (inProjection.includes('history')) {
-      // OVER clauses and subquery needed to order the json_arrayagg
-      columns.push(`
-      (select
-        coalesce(
-          (select json_arrayagg(
-                json_object(
-                  'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
-                  'result', result.api,
-                  'resultComment', rh.resultComment,
-                  'action', action.api,
-                  'actionComment', rh.actionComment,
-                  'autoResult', cast(rh.autoResult is true as json),
-                  'userId', CAST(rh.userId as char),
-                  'username', ud.username,
-                  'rejectText', rh.rejectText,
-                  'status', status.api
-                )
+  // PROJECTIONS
+  if (inProjection.includes('metadata')) {
+    columns.push(`r.metadata`)
+    groupBy.push(`r.metadata`)
+  }
+  if (inProjection.includes('stigs')) {
+    columns.push(`json_arrayagg(sa.benchmarkId) as "stigs"`)
+  }
+  if (inProjection.includes('rule')) {
+    columns.push(`json_object(
+        'ruleId' , rule.ruleId,
+        'title' , rule.title,
+        'version' , rule.version,
+        'severity' , rule.severity) as "rule"`
+    )
+  }
+  if (inProjection.includes('history')) {
+    // OVER clauses and subquery needed to order the json_arrayagg
+    columns.push(`
+    (select
+      coalesce(
+        (select json_arrayagg(
+              json_object(
+                'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
+                'result', result.api,
+                'detail', rh.detail,
+                'comment', rh.comment,
+                'autoResult', cast(rh.autoResult is true as json),
+                'userId', CAST(rh.userId as char),
+                'username', ud.username,
+                'status', JSON_OBJECT(
+                  'label', status.api,
+                  'text', rh.statusText,
+                  'user', JSON_OBJECT(
+                    'userId', CAST(rh.statusUserId as char),
+                    'username', udStatus.username
+                  ),
+                  'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
+                ),
+                'touchTs', DATE_FORMAT(rh.touchTs, '%Y-%m-%dT%TZ')
               )
-            FROM
-              review_history rh
-              left join result on rh.resultId = result.resultId 
-              left join status on rh.statusId = status.statusId 
-              left join action on rh.actionId = action.actionId 
-              left join user_data ud on ud.userId=rh.userId
-            where
-              rh.reviewId = r.reviewId),
-          json_array()
-        )
-      ) as "history"`)
-    }
-
-    // PREDICATES
-    let predicates = {
-      statements: [],
-      binds: []
-    }
-    
-    // Role/Assignment based access control 
-    if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('cg.userId = ?')
-      predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN (usa.userId = cg.userId AND sa.benchmarkId = revision.benchmarkId) ELSE TRUE END')
-      predicates.binds.push(userObject.userId)
-    }
-
-    switch (inPredicates.rules) {
-      case 'current-mapped':
-        predicates.statements.push(`current_rev.revId IS NOT NULL`)
-        predicates.statements.push(`sa.saId IS NOT NULL`)
-        break
-      case 'current':
-        predicates.statements.push(`current_rev.revId IS NOT NULL`)
-        break
-      case 'not-current-mapped':
-        predicates.statements.push(`current_rev.revId IS NULL`)
-        predicates.statements.push(`sa.saId IS NULL`)
-        break
-      case 'not-current':
-        predicates.statements.push(`current_rev.revId IS NULL`)
-        break
-    }
-
-      // COMMON
-    if (inPredicates.collectionId) {
-      predicates.statements.push('asset.collectionId = ?')
-      predicates.binds.push(inPredicates.collectionId)
-    }
-    if (inPredicates.result) {
-      predicates.statements.push('result.api = ?')
-      predicates.binds.push(inPredicates.result)
-    }
-    if (inPredicates.action) {
-      predicates.statements.push('action.api = ?')
-      predicates.binds.push(inPredicates.action)
-    }
-    if (inPredicates.status) {
-      predicates.statements.push('status.api = ?')
-      predicates.binds.push(inPredicates.status)
-    }
-    if (inPredicates.ruleId) {
-      predicates.statements.push('r.ruleId = ?')
-      predicates.binds.push(inPredicates.ruleId)
-    }
-    if (inPredicates.groupId) {
-      predicates.statements.push(`rg.groupId = ?`)
-      predicates.binds.push(inPredicates.groupId)
-    }
-    if (inPredicates.cci) {
-      predicates.statements.push(`r.ruleId IN (
-        SELECT
-          ruleId
-        FROM
-          rule_cci_map
-        WHERE
-          cci = ?
-        )` )
-        predicates.binds.push(inPredicates.cci)
-    }
-    if (inPredicates.userId) {
-      predicates.statements.push('r.userId = ?')
-      predicates.binds.push(inPredicates.userId)
-    }
-    if (inPredicates.assetId) {
-      predicates.statements.push('r.assetId = ?')
-      predicates.binds.push(inPredicates.assetId)
-    }
-    if (inPredicates.benchmarkId) {
-        predicates.statements.push(`revision.benchmarkId = ?`)
-        predicates.binds.push(inPredicates.benchmarkId)
-    }
-    if ( inPredicates.metadata ) {
-      for (const pair of inPredicates.metadata) {
-        const [key, value] = pair.split(':')
-        predicates.statements.push('JSON_CONTAINS(r.metadata, ?, ?)')
-        predicates.binds.push( `"${value}"`,  `$.${key}`)
-      }
-    }
-
-
-    // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += ' FROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
-    }
-    sql += ` GROUP BY ${groupBy.join(', ')}`
-
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-
-    return (rows)
+            )
+          FROM
+            review_history rh
+            left join result on rh.resultId = result.resultId 
+            left join status on rh.statusId = status.statusId 
+            left join user_data ud on ud.userId=rh.userId
+            left join user_data udStatus on udStatus.userId=rh.statusUserId
+          where
+            rh.reviewId = r.reviewId),
+        json_array()
+      )
+    ) as "history"`)
   }
-  catch (err) {
-    throw err
+
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: []
   }
+  
+  // Role/Assignment based access control 
+  if (context == dbUtils.CONTEXT_USER) {
+    predicates.statements.push('cg.userId = ?')
+    predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN (usa.userId = cg.userId AND sa.benchmarkId = revision.benchmarkId) ELSE TRUE END')
+    predicates.binds.push(userObject.userId)
+  }
+
+  switch (inPredicates.rules) {
+    case 'current-mapped':
+      predicates.statements.push(`current_rev.revId IS NOT NULL`)
+      predicates.statements.push(`sa.saId IS NOT NULL`)
+      break
+    case 'current':
+      predicates.statements.push(`current_rev.revId IS NOT NULL`)
+      break
+    case 'not-current-mapped':
+      predicates.statements.push(`current_rev.revId IS NULL`)
+      predicates.statements.push(`sa.saId IS NULL`)
+      break
+    case 'not-current':
+      predicates.statements.push(`current_rev.revId IS NULL`)
+      break
+  }
+
+    // COMMON
+  if (inPredicates.collectionId) {
+    predicates.statements.push('asset.collectionId = ?')
+    predicates.binds.push(inPredicates.collectionId)
+  }
+  if (inPredicates.result) {
+    predicates.statements.push('result.api = ?')
+    predicates.binds.push(inPredicates.result)
+  }
+  if (inPredicates.status) {
+    predicates.statements.push('status.api = ?')
+    predicates.binds.push(inPredicates.status)
+  }
+  if (inPredicates.ruleId) {
+    predicates.statements.push('r.ruleId = ?')
+    predicates.binds.push(inPredicates.ruleId)
+  }
+  if (inPredicates.groupId) {
+    predicates.statements.push(`rg.groupId = ?`)
+    predicates.binds.push(inPredicates.groupId)
+  }
+  if (inPredicates.cci) {
+    predicates.statements.push(`r.ruleId IN (
+      SELECT
+        ruleId
+      FROM
+        rule_cci_map
+      WHERE
+        cci = ?
+      )` )
+      predicates.binds.push(inPredicates.cci)
+  }
+  if (inPredicates.userId) {
+    predicates.statements.push('r.userId = ?')
+    predicates.binds.push(inPredicates.userId)
+  }
+  if (inPredicates.assetId) {
+    predicates.statements.push('r.assetId = ?')
+    predicates.binds.push(inPredicates.assetId)
+  }
+  if (inPredicates.benchmarkId) {
+      predicates.statements.push(`revision.benchmarkId = ?`)
+      predicates.binds.push(inPredicates.benchmarkId)
+  }
+  if ( inPredicates.metadata ) {
+    for (const pair of inPredicates.metadata) {
+      const [key, value] = pair.split(':')
+      predicates.statements.push('JSON_CONTAINS(r.metadata, ?, ?)')
+      predicates.binds.push( `"${value}"`,  `$.${key}`)
+    }
+  }
+
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += ` GROUP BY ${groupBy.join(', ')}`
+
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+
+  return (rows)
 }
 
 
@@ -274,182 +458,49 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
     }
   }
 
-};
+}
 
-/**
- * Create or update a complete Review
- *
- * projection List Additional properties to include in the response.  (optional)
- * ruleId String Selects Reviews of a Rule (optional)
- * assetId String Selects Reviews mapped to an Asset (optional)
- * body Object The Review content (required)
- * returns Review
- **/
-exports.putReviewByAssetRule = async function(projection, assetId, ruleId, body, userObject) {
-  let connection
-  try {
-    let sqlHistory = `
-    INSERT INTO review_history (
-      reviewId,
-      resultId,
-      resultComment,
-      autoResult,
-      actionId,
-      actionComment,
-      ts,
-      userId,
-      rejectText,
-      rejectUserId,
-      statusId
-    ) SELECT 
-        reviewId,
-        resultId,
-        resultComment,
-        autoResult,
-        actionId,
-        actionComment,
-        ts,
-        userId,
-        rejectText,
-        rejectUserId,
-        statusId
-      FROM
-        review 
-      WHERE
-        assetId = :assetId
-        and ruleId = :ruleId
-        and reviewId IS NOT NULL
-      FOR UPDATE
-    `    
-
-    let values = {
-      userId: userObject.userId,
-      resultId: dbUtils.REVIEW_RESULT_API[body.result],
-      resultComment: body.resultComment,
-      actionId: body.action ? dbUtils.REVIEW_ACTION_API[body.action] : null,
-      actionComment: body.actionComment || null,
-      statusId: body.status ? dbUtils.REVIEW_STATUS_API[body.status] : null,
-      autoResult: body.autoResult? 1 : 0,
-      metadata: body.metadata ? JSON.stringify(body.metadata) : '{}'
-    }
-
-    let binds = {
-      assetId: assetId,
-      ruleId: ruleId,
-      values: values
-    }
-    let sqlUpdate = `
-      UPDATE
-        review
-      SET
-        :values
-      WHERE
-        assetId = :assetId and ruleId = :ruleId`
-    
-    connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION')
-
-    // History
-    await connection.query(sqlHistory, binds)
-    let [result] = await connection.query(sqlUpdate, binds)
-    let status = 'updated'
-    if (result.affectedRows == 0) {
-      binds = {
-        assetId: assetId,
-        ruleId: ruleId,
-        ...values
-      }
-      let sqlInsert = `
-        INSERT INTO review
-        (assetId, ruleId, resultId, resultComment, actionId, actionComment, statusId, userId, autoResult, metadata)
-        VALUES
-        (:assetId, :ruleId, :resultId, :resultComment, :actionId, :actionComment, :statusId, :userId, :autoResult, :metadata)
-      `
-      ;[result] = await connection.query(sqlInsert, binds)
-      status = 'created'
-    }
-    await dbUtils.updateStatsAssetStig( connection, {
-      assetId: assetId,
-      rules: [ruleId]
-    })
-    await connection.commit()
-
-    let rows = await _this.getReviews(projection, {
-      assetId: assetId,
-      ruleId: ruleId
-    }, userObject)
-    return ({
-      row: rows[0],
-      status: status
-    })
-  }
-  catch(err) {
-    if (typeof connection !== 'undefined') {
-      await connection.rollback()
-    }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
-  finally {
-    if (typeof connection !== 'undefined') {
-      await connection.release()
-    }
-  }
+exports.putReviewByAssetRule = async function(assetId, ruleId, review, userObject, resetCriteria) {
+  review.ruleId = ruleId
+  const affected = await _this.putReviewsByAsset(assetId, [review], userObject, resetCriteria)
+  return affected.inserted ? 'created' : affected.updated ? 'updated' : 'error'
 }
 
 
-exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
+exports.putReviewsByAsset = async function( assetId, reviews, userObject, resetCriteria, tryInsert = true) {
   let connection
   try {
-    let sqlMerge = `
-    INSERT INTO review (
-      assetId,
-      ruleId,
-      resultId,
-      resultComment,
-      autoResult,
-      actionId,
-      actionComment,
-      statusId,
-      userId,
-      metadata
-    ) VALUES ? ON DUPLICATE KEY UPDATE 
-      assetId = VALUES(assetId),
-      ruleId = VALUES(ruleId),
-      resultId = VALUES(resultId),
-      resultComment = VALUES(resultComment),
-      autoResult = VALUES(autoResult),
-      actionId = VALUES(actionId),
-      actionComment = VALUES(actionComment),
-      statusId = VALUES(statusId),
-      userId = VALUES(userId),
-      metadata = VALUES(metadata),
-      ts = UTC_TIMESTAMP()`
-    let sqlHistory = `
+    const affected = {
+      updated: 0,
+      inserted: 0
+    }
+    const sqlHistory = `
     INSERT INTO review_history (
       reviewId,
       resultId,
-      resultComment,
+      detail,
+      comment,
       autoResult,
-      actionId,
-      actionComment,
       ts,
       userId,
-      rejectText,
-      rejectUserId,
-      statusId
+      statusText,
+      statusUserId,
+      statusTs,
+      statusId,
+      touchTs
     ) SELECT 
         reviewId,
         resultId,
-        resultComment,
+        detail,
+        comment,
         autoResult,
-        actionId,
-        actionComment,
         ts,
         userId,
-        rejectText,
-        rejectUserId,
-        statusId
+        statusText,
+        statusUserId,
+        statusTs,
+        statusId,
+        touchTs
       FROM
         review 
       WHERE
@@ -458,176 +509,37 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject) {
         and reviewId IS NOT NULL
       FOR UPDATE    
     `
-    let mergeBinds = []
-    let historyRules = []
-    for (const review of reviews) {
-      mergeBinds.push([
-        assetId,
-        review.ruleId,
-        dbUtils.REVIEW_RESULT_API[review.result],
-        review.resultComment,
-        review.autoResult? 1 : 0,
-        review.action ? dbUtils.REVIEW_ACTION_API[review.action] : null,
-        review.actionComment || null,
-        review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0,
-        userObject.userId,
-        review.metadata ? JSON.stringify(review.metadata) : '{}'
-      ])
-      historyRules.push(review.ruleId) 
-    }
-
     connection = await dbUtils.pool.getConnection()
+    await connection.query(writeQueries.dropIncoming)
+    await connection.query(writeQueries.createIncomingForPost, [ JSON.stringify(reviews) ])
     await connection.query('START TRANSACTION')
+    const historyRules = reviews.map( r => r.ruleId )
     await connection.query(sqlHistory, [ assetId, [historyRules] ])
-    let [result] = await connection.query(sqlMerge, [mergeBinds])
-    let errors = []
+    const [resultUpdate] = await connection.query(writeQueries.updateReviews(resetCriteria), {userId: userObject.userId, assetId})
+    affected.updated = resultUpdate.affectedRows
+    if (tryInsert) {
+      const [resultInsert] = await connection.query(writeQueries.insertReviews, {userId: userObject.userId, assetId})
+      affected.inserted = resultInsert.affectedRows
+    }
     await dbUtils.updateStatsAssetStig(connection, {
       assetId: assetId,
       rules: historyRules
     })
     await connection.commit()
-    return (errors)
+    return (affected)
   }
   catch(err) {
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    if (err.code === 'ER_DUP_ENTRY') {
+      throw({status: 400, message: err.message})
+    }
+    throw ( err )
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.release()
-    }
-  }
-}
-
-
-/**
- * Merge update a Review, if it exists
- *
- * projection List Additional properties to include in the response.  (optional)
- * ruleId String Selects Reviews of a Rule (optional)
- * assetId String Selects Reviews mapped to an Asset (optional)
- * body Object The Review content (required)
- * returns Review
- **/
-exports.patchReviewByAssetRule = async function(projection, assetId, ruleId, body, userObject) {
-  let connection
-  try {
-    let values = {
-      userId: userObject.userId
-    }
-    if (body.result !== undefined) {
-      values.resultId = dbUtils.REVIEW_RESULT_API[body.result]
-    }
-    if (body.resultComment !== undefined) {
-      values.resultComment = body.resultComment
-    }
-    if (body.action !== undefined) {
-      values.actionId = dbUtils.REVIEW_ACTION_API[body.action]
-    }
-    if (body.actionComment !== undefined) {
-      values.actionComment = body.actionComment
-    }
-    if (body.status !== undefined) {
-      values.statusId = dbUtils.REVIEW_STATUS_API[body.status]
-    }
-    if (body.autoResult !== undefined) {
-      values.autoResult = body.autoResult ? 1 : 0
-    }
-    if (body.rejectText !== undefined) {
-      values.rejectText = body.rejectText
-    }
-    if (body.rejectUserId != undefined) {
-      values.rejectUserId = body.rejectUserId
-    }
-    if (body.metadata != undefined) {
-      values.metadata = JSON.stringify(body.metadata)
-    }
-
-
-    let binds = {
-      assetId: assetId,
-      ruleId: ruleId,
-      values: values
-    }
-    let sqlHistory = `
-    INSERT INTO review_history (
-      reviewId,
-      resultId,
-      resultComment,
-      autoResult,
-      actionId,
-      actionComment,
-      ts,
-      userId,
-      rejectText,
-      rejectUserId,
-      statusId
-    ) SELECT 
-        reviewId,
-        resultId,
-        resultComment,
-        autoResult,
-        actionId,
-        actionComment,
-        ts,
-        userId,
-        rejectText,
-        rejectUserId,
-        statusId
-      FROM
-        review 
-      WHERE
-        assetId = :assetId
-        and ruleId = :ruleId
-        and reviewId IS NOT NULL`    
-
-    let sqlUpdate = `
-      UPDATE
-        review
-      SET
-        :values
-      WHERE
-        assetId = :assetId and ruleId = :ruleId`
-
-    connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION')
-
-    // History
-    await connection.query(sqlHistory, binds)
-
-    let [result] = await connection.query(sqlUpdate, binds)
-
-    if (result.affectedRows == 0) {
-      throw ({message: "Review must exist to be patched."})
-    }
-    await dbUtils.updateStatsAssetStig(connection, {
-      assetId: assetId,
-      rules: [ruleId]
-    })
-
-    await connection.commit()
-    let rows = await _this.getReviews(projection, {
-      assetId: assetId,
-      ruleId: ruleId
-    }, userObject)
-    return (rows[0])
-  }
-  catch(err) {
-    if (typeof connection !== 'undefined') {
-      await connection.rollback()
-    }
-    if (err.code == 400) {
-      throw(err)
-    }
-    else {
-      throw ( {status: 500, message: err.message, stack: err.stack} )
-    }
-  }
-  finally {
-    if (typeof connection !== 'undefined') {
+      await connection.query(writeQueries.dropIncoming)
       await connection.release()
     }
   }

@@ -677,7 +677,10 @@ SM.TabEnhancements = function(){
             // close tab on middle-click
             if (isMiddleButtonPressed) {
                 if (t.item.closable) {
-                    tabs.remove(t.item)
+                    if (t.item.fireEvent('beforeclose', t.item) !== false) {
+                        t.item.fireEvent('close', t.item)
+                        tabs.remove(t.item)
+                    }
                 } else {
                     e.stopPropagation()
                 }

@@ -55,11 +55,8 @@ SM.DetailTipTpl = new Ext.XTemplate(
     `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;FINDING_DETAILS&gt;<br><b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;message&gt;`
 )
 
-SM.actionTipText = `<b>Recommended Action</b><br>For failed results (i.e., Open), the type of action recommended by the evaluator.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
-<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata action&gt;`
-
 SM.CommentTipText = `<b>Comment</b><br>Additional comment by the evaluator or evaluation tool.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
-<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata action-comment&gt;`
+<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata comment&gt;`
 
 SM.CommentTipTpl = new Ext.XTemplate(
     '<b>Comment</b><br>Additional comment by the evaluator or evaluation tool.<br><br>',
@@ -71,7 +68,7 @@ SM.CommentTipTpl = new Ext.XTemplate(
     `<tpl if="commentRequired == 'findings'">required to submit a finding.<br></tpl>`,
     `<tpl if="commentRequired == 'optional'">optional.<br></tpl>`,
     `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
-    <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata action-comment&gt;`
+    <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata comment&gt;`
 )
 
 SM.RenderResult = {

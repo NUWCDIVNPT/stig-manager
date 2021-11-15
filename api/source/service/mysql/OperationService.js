@@ -144,15 +144,15 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           assetId,
           ruleId,
           resultId,
-          resultComment,
-          actionId,
-          actionComment,
+          detail,
+          comment,
           userId,
           autoResult,
           ts,
-          rejectText,
-          rejectUserId,
+          statusText,
+          statusUserId,
           statusId,
+          statusTs,
           metadata
         ) VALUES ?`,
         insertBinds: []
@@ -236,15 +236,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         parseInt(review.assetId) || null,
         review.ruleId,
         dbUtils.REVIEW_RESULT_API[review.result],
-        review.resultComment,
-        review.action ? dbUtils.REVIEW_ACTION_API[review.action] : null,
-        review.actionComment,
+        review.detail,
+        review.comment,
         parseInt(review.userId) || null,
         review.autoState ? 1 : 0,
         new Date(review.ts),
-        review.rejectText,
-        parseInt(review.rejectUserId) || null,
-        review.status ? dbUtils.REVIEW_STATUS_API[review.status] : 0,
+
+        review.status?.text,
+        parseInt(review.status?.user?.userId),
+        dbUtils.REVIEW_STATUS_API[review.status?.label],
+        new Date(review.status?.ts),
         JSON.stringify(review.metadata || {})
       ])
     }

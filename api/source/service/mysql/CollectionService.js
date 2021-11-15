@@ -1142,15 +1142,14 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
             'ruleId', rv.ruleId,
             'ts', rh.ts, 
             'result', result.api,
-            'resultComment', rh.resultComment,
-            'action', action.api,
-            'actionComment', rh.actionComment,
+            'detail', rh.detail,
+            'comment', rh.comment,
             'autoResult', rh.autoResult = 1,
             'status', status.api,
             'userId', rh.userId,
             'username', ud.username,
-            'rejectText', rh.rejectText,
-            'rejectUserId', rh.rejectUserId
+            'statusText', rh.statusText,
+            'statusUserId', rh.statusUserId
             )
           )
           FROM review_history rh
@@ -1158,7 +1157,6 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
             INNER JOIN user_data ud on rh.userId = ud.userId
             INNER JOIN result on rh.resultId = result.resultId
             INNER JOIN status on rh.statusId = status.statusId
-            INNER JOIN action on rh.actionId = action.actionId
           WHERE rv.assetId = a.assetId`
 
   if (startDate) {

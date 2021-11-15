@@ -364,9 +364,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 						{ name: 'ruleId', type: 'string' },
 						{ name: 'severity', type: 'string' },
 						{ name: 'result', type: 'string' },
-						{ name: 'resultComment', type: 'string' },
-						{ name: 'action', type: 'string' },
-						{ name: 'actionComment', type: 'string' },
+						{ name: 'detail', type: 'string' },
+						{ name: 'comment', type: 'string' },
 						{ name: 'autoResult', type: 'boolean' },
 						{ name: 'status', type: 'string' },
 						{ name: 'userId', type: 'string' },
@@ -379,11 +378,11 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			const expander = new Ext.ux.grid.RowExpander({
 			tpl: new Ext.XTemplate(
 			  '<b>Reviewer:</b> {username}</p>',
-			  '<tpl if="resultComment">',
-				'<p><b>Detail:</b> {[SM.he(values.resultComment)]}</p>',
+			  '<tpl if="detail">',
+				'<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
 			  '</tpl>',
-			  '<tpl if="actionComment">',
-				'<p><b>Comment:</b> {[SM.he(values.actionComment)]}</p>',
+			  '<tpl if="comment">',
+				'<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
 			  '</tpl>'
 			)
 		  })

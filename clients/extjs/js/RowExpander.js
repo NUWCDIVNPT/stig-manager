@@ -102,9 +102,7 @@ Ext.ux.grid.RowExpander = Ext.extend(Ext.util.Observable, {
         if(!content && !this.lazyRender){
             content = this.getBodyContent(record, rowIndex);
         }
-        if(content){
-            p.body = content;
-        }
+        p.body = content // resolves bug where an empty content did not replace previous body
         return this.state[record.id] ? 'x-grid3-row-expanded' : 'x-grid3-row-collapsed';
     },
 

@@ -866,7 +866,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             cls: 'sm-dialog-window sm-round-panel',
             title: 'Create Collection',
             modal: true,
-            width: 560,
+            width: 460,
             height:560,
             layout: 'fit',
             plain: false,
