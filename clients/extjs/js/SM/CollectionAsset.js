@@ -323,9 +323,15 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     selectionchange: function (sm) {
                         modifyBtn.setDisabled(sm.getCount() !== 1)
                         const hasSelection = sm.hasSelection()
-                        for (const btn of [deleteBtn, transferBtn, exportCklBtn]) {
+                        let someSelectionsHaveStigs = false
+                        if (hasSelection) {
+                            const selectedRecords = sm.getSelections()
+                            someSelectionsHaveStigs = selectedRecords.some( i => i.data.stigCount > 0)
+                        }
+                        for (const btn of [deleteBtn, transferBtn]) {
                             btn.setDisabled(!hasSelection)
                         }
+                        exportCklBtn.setDisabled(!(hasSelection && someSelectionsHaveStigs))
                     }
                 }
             }),

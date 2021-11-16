@@ -114,8 +114,7 @@ SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
     const colCount = this.cm.getColumnCount()
     for (let i = 0; i < colCount; i++) {
       const td = this.getHeaderCell(i)
-      // td.getElementsByTagName("a")[0].style.height = (td.firstChild.offsetHeight - 1) + 'px'
-      td.getElementsByTagName("a")[0].style.height = 0
+      td.getElementsByTagName("a")[0].style.height = td.classList.contains('x-grid3-td-checker') ? 0 : (td.firstChild.offsetHeight - 1) + 'px'
       if (this.cm.config[i].filtered) {
         td.classList.add('sm-grid3-col-filtered')
       }

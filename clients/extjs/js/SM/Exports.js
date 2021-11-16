@@ -50,16 +50,7 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
       match = node.match(/^(\d+)-assignment-assets-node$/)
       if (match) {
         let collectionId = match[1]
-        // let result = await Ext.Ajax.requestPromise({
-        //   url: `${STIGMAN.Env.apiBase}/assets`,
-        //   method: 'GET',
-        //   params: {
-        //     collectionId: collectionId,
-        //     projection: 'statusStats'
-        //   }
-        // })
-        // let apiAssets = JSON.parse(result.response.responseText)
-        const gridAssets = this.ownerTree.data
+        const gridAssets = this.ownerTree.data.filter( asset => asset.stigCount > 0 )
         let content = gridAssets.map(asset => {
           const badgePercent = Math.round(asset.acceptedPct)
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'

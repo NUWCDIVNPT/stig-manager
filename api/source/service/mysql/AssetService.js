@@ -451,22 +451,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       `cast(COUNT(scap.ruleId) > 0 as json) as "autoCheckAvailable"`,
       `result.api as "result"`,
       `cast(review.autoResult is true as json) as "autoResult"`,
-      `status.api as "status"`,
-      `cast(CASE
-        WHEN review.ruleId is null
-        THEN 0
-        ELSE
-          CASE WHEN review.resultId != 4
-          THEN
-            CASE WHEN review.resultComment != ' ' and review.resultComment is not null
-              THEN 1
-              ELSE 0 END
-          ELSE
-            CASE WHEN review.actionId is not null and review.actionComment is not null and review.actionComment != ' '
-              THEN 1
-              ELSE 0 END
-          END
-      END is true as json) as "reviewComplete"`
+      `status.api as "status"`
     ]
     let joins = [
       'current_rev rev',
@@ -518,9 +503,8 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       status.api,
       review.ruleId,
       review.resultId,
-      review.actionId,
-      review.resultComment,
-      review.actionComment
+      review.detail,
+      review.comment
     `
     sql += `\norder by substring(g.groupId from 3) + 0`
   
@@ -667,9 +651,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       r.responsibility,
       r.severityOverrideGuidance,
       result.ckl as "result",
-      review.resultComment,
-      action.en as "action",
-      review.actionComment,
+      review.detail,
+      review.comment,
       MAX(c.content) as "checkContent",
       MAX(fix.text) as "fixText",
       group_concat(rcc.cci ORDER BY rcc.cci) as "ccis"
@@ -693,7 +676,6 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       left join review on r.ruleId = review.ruleId and review.assetId = ?
       left join result on review.resultId = result.resultId 
       left join status on review.statusId = status.statusId 
-      left join action on review.actionId = action.actionId                                     
 
     WHERE
       rev.revId = ?
@@ -717,9 +699,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       r.responsibility,
       r.severityOverrideGuidance,
       result.ckl,
-      review.resultComment,
-      action.en,
-      review.actionComment
+      review.detail,
+      review.comment
     order by
       substring(g.groupId from 3) + 0 asc
     `
@@ -845,8 +826,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
         let vulnObj = {
           STIG_DATA: [],
           STATUS: r.result || 'Not_Reviewed',
-          FINDING_DETAILS: r.resultComment,
-          COMMENTS: r.actionComment,
+          FINDING_DETAILS: r.detail,
+          COMMENTS: r.comment,
           SEVERITY_OVERRIDE: null,
           SEVERITY_JUSTIFICATION: null
         }

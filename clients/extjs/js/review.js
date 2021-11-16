@@ -83,44 +83,29 @@ async function addReview( params ) {
     },
     listeners: {
       load: function (store, records) {
-        // prototype for getting unique vakues fo a filed
-        let severitySet = new Set(records.map( r => r.data.severity ))
-        let resultSet = new Set(records.map( r => r.data.result ))
-
-        var ourGrid = Ext.getCmp('groupGrid' + idAppend);
-        // Filter the store
-        // filterGroupStore();
-
-        // XCCDF option in export menu
-        // if (store.reader.jsonData.xmlDisabled) {
-        // Ext.getCmp('groupFileMenu-export-xccdfItem' + idAppend).disable();
-        // } else {
-        // Ext.getCmp('groupFileMenu-export-xccdfItem' + idAppend).enable();
-        // }
-
         // Were we passed a specific rule to select?
         if ('undefined' !== typeof selectedRule) {
           var index = ourGrid.getStore().find('ruleId', selectedRule);
-          ourGrid.getSelectionModel().selectRow(index);
+          groupGrid.getSelectionModel().selectRow(index);
 
           var rowEl = ourGrid.getView().getRow(index);
           //rowEl.scrollIntoView(ourGrid.getGridEl(), false);
           rowEl.scrollIntoView();
           //ourGrid.getView().focusRow(index+5);
         } else {
-          ourGrid.getSelectionModel().selectFirstRow();
+          groupGrid.getSelectionModel().selectFirstRow();
         }
 
-        Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
+        groupGrid.totalText.setText(getStatsString(store))
       },
       clear: function () {
-        Ext.getCmp('groupGrid-totalText' + idAppend).setText('0 rules');
+        groupGrid.totalText.setText('0 rules');
       },
       update: function (store) {
-        Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
+        groupGrid.totalText.setText(getStatsString(store));
       },
       datachanged: function (store) {
-        Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
+        groupGrid.totalText.setText(getStatsString(store));
       },
       exception: function (misc) {
         var ourView = groupGrid.getView();
@@ -519,35 +504,35 @@ async function addReview( params ) {
         }
       ]
     }),
-    bbar: new Ext.Toolbar({
-      items: [
-        {
-          xtype: 'tbbutton',
-          iconCls: 'icon-refresh',
-          tooltip: 'Reload this grid',
-          width: 20,
-          handler: function (btn) {
-            groupGrid.getStore().reload();
-            //hostGrid.getStore().removeAll();
-          }
-        }, {
-          xtype: 'tbseparator'
-        },
-        groupExportBtn,
-				{
-					xtype: 'tbseparator'
-				},
-        {
-          xtype: 'tbtext',
-          id: 'groupGrid-totalText' + idAppend,
-          text: '0 rules',
-          width: 80
-        }]
-    })
+    bbar: [
+      {
+        xtype: 'tbbutton',
+        iconCls: 'icon-refresh',
+        tooltip: 'Reload this grid',
+        width: 20,
+        handler: function (btn) {
+          groupGrid.getStore().reload();
+          //hostGrid.getStore().removeAll();
+        }
+      }, {
+        xtype: 'tbseparator'
+      },
+      groupExportBtn,
+      {
+        xtype: 'tbseparator'
+      },
+      {
+        xtype: 'tbtext',
+        ref: '../totalText',
+        id: 'groupGrid-totalText' + idAppend,
+        text: '0 rules',
+        width: 80
+      }
+    ]
   });
 
   var handleRevisionMenu = function (item, eventObject) {
-    let store = Ext.getCmp('groupGrid' + idAppend).getStore()
+    let store = groupGrid.getStore()
     store.proxy.setUrl(`${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
     store.load();
     loadRevisionMenu(leaf.benchmarkId, item.revisionStr, idAppend)
@@ -562,8 +547,8 @@ async function addReview( params ) {
       })
       let revisions = JSON.parse(result.response.responseText)
       let revisionObject = getRevisionObj(revisions, activeRevisionStr, idAppend)
-      if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
-        Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
+      if (groupChecklistMenu.revisionMenuItem === undefined) {
+        groupChecklistMenu.addItem(revisionObject.menu);
       }
       groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel));
     }
@@ -576,6 +561,7 @@ async function addReview( params ) {
     let returnObject = {}
     var menu = {
       id: 'revision-menuItem' + idAppend,
+      ref: 'revisionMenuItem',
       text: 'Revisions',
       hideOnClick: false,
       menu: {
@@ -631,27 +617,22 @@ async function addReview( params ) {
       type: 'string'
     }, {
       name: 'status',
-      type: 'string'
+      type: 'string',
+      mapping: 'status.label'
     }, {
       name: 'result',
-      type: 'string'
-    }, {
-      name: 'action',
       type: 'string'
     }, {
       name: 'autoResult',
       type: 'boolean'
     }, {
-      name: 'action',
-      type: 'string'
-    }, {
       name: 'username',
       type: 'string'
     }, {
-      name: 'resultComment',
+      name: 'detail',
       type: 'string'
     }, {
-      name: 'actionComment',
+      name: 'comment',
       type: 'string'
     }, {
       name: 'reviewId',
@@ -694,11 +675,11 @@ async function addReview( params ) {
 
   var expander = new Ext.ux.grid.RowExpander({
     tpl: new Ext.XTemplate(
-      '<tpl if="resultComment">',
-		  '<p><b>Detail:</b> {[SM.he(values.resultComment)]}</p>',
+      '<tpl if="detail">',
+		  '<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
       '</tpl>',
-		  '<tpl if="actionComment">',
-		  '<p><b>Comment:</b> {[SM.he(values.actionComment)]}</p>',
+		  '<tpl if="comment">',
+		  '<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
 		  '</tpl>'
     )
   });
@@ -710,9 +691,6 @@ async function addReview( params ) {
     iconCls: 'sm-export-icon',
     text: 'CSV'
   })
-
-  const otherTotalTextCmp = new Ext.Toolbar.TextItem ()
-
 
   var otherGrid = new Ext.grid.GridPanel({
     //region: 'center',
@@ -862,9 +840,8 @@ async function addReview( params ) {
         },
         attachmentsGrid,
         {
-          title: 'Feedback',
-          //layout: 'fit',
-          id: 'feedback-tab' + idAppend,
+          title: 'Status Text',
+          ref: '../statusTextPanel',
           padding: 10,
           autoScroll: true
         },
@@ -921,7 +898,6 @@ async function addReview( params ) {
   async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
     try {
       // CONTENT
-      let contentPanel = Ext.getCmp('content-panel' + idAppend)
       let contentReq = await Ext.Ajax.requestPromise({
         url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
         method: 'GET',
@@ -930,8 +906,8 @@ async function addReview( params ) {
         }
       })
       let content = JSON.parse(contentReq.response.responseText)
-      contentPanel.update(content)
-      contentPanel.setTitle('Rule for Group ' + SM.he(groupGridRecord.data.groupId))
+      reviewTab.contentPanel.update(content)
+      reviewTab.contentPanel.setTitle('Rule for Group ' + SM.he(groupGridRecord.data.groupId))
   
       // REVIEW
       let reviewsReq = await Ext.Ajax.requestPromise({
@@ -947,24 +923,17 @@ async function addReview( params ) {
       let otherReviews = reviews.filter(review => review.assetId != assetId)
   
       // load review
-      // let reviewForm = Ext.getCmp('reviewForm' + idAppend)
       let form = reviewForm.getForm()
       form.reset();
       reviewForm.isLoaded = false
-      
-      // // Set the legacy editStr property
-      // if (review.ts) {
-      //   let extDate = new Date(review.ts)
-      //   review.editStr = `${extDate.format('Y-m-d H:i T')} by ${review.username}`
-      // }
-  
+        
       // Display the review
       reviewForm.groupGridRecord = groupGridRecord
       reviewForm.loadValues(review)
       reviewForm.isLoaded = true 
   
       // load others
-      Ext.getCmp('otherGrid' + idAppend).getStore().loadData(otherReviews);
+      otherGrid.getStore().loadData(otherReviews);
   
       // Log, Feedback 
   
@@ -977,32 +946,32 @@ async function addReview( params ) {
       })
       let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
       if (! reviewProjected) {
-        Ext.getCmp('historyGrid' + idAppend).getStore().removeAll()
-        Ext.getCmp('attachmentsGrid' + idAppend).getStore().removeAll()
+        historyData.store.removeAll()
+        attachmentsGrid.getStore().removeAll()
       }
       if (reviewProjected.history) {
         // append current state of review to history grid
         let currentReview = {
-          action: reviewProjected.action,
-          actionComment: reviewProjected.actionComment,
+          comment: reviewProjected.comment,
           autoResult: reviewProjected.autoResult,
           rejectText: reviewProjected.rejectText,
           result: reviewProjected.result,
-          resultComment: reviewProjected.resultComment,
+          detail: reviewProjected.detail,
           status: reviewProjected.status,
           ts: reviewProjected.ts,
+          touchTs: reviewProjected.touchTs,
           userId: reviewProjected.userId,
           username: reviewProjected.username
         }
         reviewProjected.history.push(currentReview)
-        Ext.getCmp('historyGrid' + idAppend).getStore().loadData(reviewProjected.history)
+        historyData.store.loadData(reviewProjected.history)
       }
       // Feedback
-      Ext.getCmp(`feedback-tab${idAppend}`).update(reviewProjected.rejectText)
+      resourcesPanel.statusTextPanel.update(reviewProjected.status?.text)
   
       // Attachments
-      Ext.getCmp('attachmentsGrid' + idAppend).ruleId = groupGridRecord.data.ruleId
-      Ext.getCmp('attachmentsGrid' + idAppend).loadArtifacts()
+      attachmentsGrid.ruleId = groupGridRecord.data.ruleId
+      attachmentsGrid.loadArtifacts()
       reviewForm.setReviewFormItemStates()
     }
     catch (e) {
@@ -1031,6 +1000,7 @@ async function addReview( params ) {
       padding: 20,
       autoScroll: true,
       id: 'content-panel' + idAppend,
+      ref: 'contentPanel',
       title: 'Rule',
       tpl: contentTpl
     }
@@ -1086,7 +1056,7 @@ async function addReview( params ) {
                   });
                   break;
                 case 'no':
-                  Ext.getCmp('main-tab-panel').remove('reviewTab' + idAppend);
+                  p.ownerCt.remove(p)
                   break;
                 case 'cancel':
                   break;
@@ -1144,9 +1114,8 @@ async function addReview( params ) {
       let fvalues = fp.getForm().getFieldValues(false, false) // dirtyOnly=false, getDisabled=true
       let jsonData = {
         result: fvalues.result,
-        resultComment: fvalues.resultComment || null,
-        action: fvalues.action || null,
-        actionComment: fvalues.actionComment || null,
+        detail: fvalues.detail || null,
+        comment: fvalues.comment || null,
         autoResult: fvalues.autoResult
       }
       let result, reviewFromApi
@@ -1209,7 +1178,7 @@ async function addReview( params ) {
       // Update group grid
       fp.groupGridRecord.data.result = reviewFromApi.result
       fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
-      fp.groupGridRecord.data.status = reviewFromApi.status
+      fp.groupGridRecord.data.status = reviewFromApi.status.label
       fp.groupGridRecord.data.autoResult = reviewFromApi.autoResult
       fp.groupGridRecord.commit()
       filterGroupStore()
@@ -1217,20 +1186,20 @@ async function addReview( params ) {
       // Update reviewForm
       reviewForm.loadValues(reviewFromApi)
 
-      // let extDate = new Date(reviewFromApi.ts)
-      // Ext.getCmp('editor' + idAppend).setValue(`${extDate.format('Y-m-d H:i')} by ${reviewFromApi.username}`)
+      // Update statusText
+      resourcesPanel.statusTextPanel.update(reviewFromApi.status?.text)
 
       // Update history
       // append current state of review to history grid
       let currentReview = {
-        action: reviewFromApi.action,
-        actionComment: reviewFromApi.actionComment,
+        comment: reviewFromApi.comment,
         autoResult: reviewFromApi.autoResult,
         rejectText: reviewFromApi.rejectText,
         result: reviewFromApi.result,
-        resultComment: reviewFromApi.resultComment,
+        detail: reviewFromApi.detail,
         status: reviewFromApi.status,
         ts: reviewFromApi.ts,
+        touchTs: reviewFromApi.touchTs,
         userId: reviewFromApi.userId,
         username: reviewFromApi.username
       }

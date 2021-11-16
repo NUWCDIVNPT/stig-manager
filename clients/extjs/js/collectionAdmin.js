@@ -330,7 +330,7 @@ async function showCollectionProps(collectionId) {
       cls: 'sm-dialog-window sm-round-panel',
       title: collectionId ? 'Modify Collection' : 'Create Collection',
       modal: true,
-      width: 560,
+      width: 460,
       height: 560,
       layout: 'fit',
       plain: false,

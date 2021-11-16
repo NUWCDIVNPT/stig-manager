@@ -3,6 +3,104 @@
 const Parsers = require('../utils/parsers.js')
 const config = require('../utils/config')
 const Review = require(`../service/${config.database.type}/ReviewService`)
+const Collection = require(`../service/${config.database.type}/CollectionService`)
+
+const _this = this
+
+function isReviewSubmittable ( fieldSettings, review ) {
+  if (fieldSettings.detailRequired === 'always' 
+    && !review.detail) return false
+
+  if (fieldSettings.detailRequired === 'findings' 
+    && review.result === 'fail'
+    && !review.detail) return false
+
+  if (fieldSettings.commentRequired === 'always'
+    && (!review.comment)) return false
+
+  if (fieldSettings.commentRequired === 'findings'
+    && review.result === 'fail'
+    && (!review.comment)) return false
+
+  return true
+}
+
+function normalizeReview ( review ) {
+  if (typeof review.status === 'string') {
+    review.status = {
+      label: review.status,
+      text: null
+    }
+  }
+  return review
+}
+
+async function getFieldSettings ( collectionId ) {
+  const response = await Collection.getCollectionMetadataValue(collectionId, 'fieldSettings')
+  return response ? JSON.parse(response) : {
+    detailEnabled: 'always',
+    detailRequired: 'always',
+    commentEnabled: 'findings',
+    commentRequired: 'findings'
+  }
+}
+
+async function getStatusSettings(collectionId) {
+  const response = await Collection.getCollectionMetadataValue(collectionId, 'statusSettings')
+  return response ? JSON.parse(response) : {
+    canAccept: true,
+    minGrant: 3,
+    resetCriteria: 'result'
+  }
+}
+
+async function normalizeAndValidateReviews( reviews, collectionId, assetId, userObject ) {
+  const userRules = await Review.getRulesByAssetUser( assetId, userObject )
+  const fieldSettings = await getFieldSettings(collectionId)
+  const statusSettings = await getStatusSettings(collectionId)
+  const collectionGrant = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+  const permitted = [], rejected = []
+  for (const review of reviews) {
+    if (userRules.has(review.ruleId)) {
+      normalizeReview(review)
+      if (!review.status || review.status.label === 'saved') {
+        permitted.push(review)
+      }
+      else {
+        if (isReviewSubmittable(fieldSettings, review)) {
+          if (review.status.label !== 'submitted') {
+            if (statusSettings.canAccept === true && collectionGrant.accessLevel >= statusSettings.minGrant) {
+              permitted.push(review)
+            }
+            else {
+              rejected.push({
+                ruleId: review.ruleId,
+                reason: `Requested status is not permitted by Collection Review status settings`
+              })
+            }
+          }
+          else {
+            permitted.push(review)
+          }
+        }
+        else {
+          rejected.push({
+            ruleId: review.ruleId,
+            reason: 'Requested status is not consistent with Collection Review field settings'
+          })
+        }
+
+      }
+    }
+    else {
+      rejected.push({
+        ruleId: review.ruleId,
+        reason: 'Cannot post reviews for this ruleId'
+      })
+    }
+  }
+  return [permitted, rejected, statusSettings, fieldSettings]
+}
 
 module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res, next) {
   try {
@@ -11,26 +109,15 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
     let reviewsRequested = req.body
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
-      //Check each reviewed rule against grants and stig assignments
-      const userRules = await Review.getRulesByAssetUser( assetId, req.userObject )
-      const permitted = [], rejected = []
-      let errors
-      for (const review of reviewsRequested) {
-        if (userRules.has(review.ruleId)) {
-          permitted.push(review)
-        }
-        else {
-          rejected.push(review)
-        }
-      }
+    if ( collectionGrant ) {
+      const [permitted, rejected, statusSettings] = await normalizeAndValidateReviews(reviewsRequested, collectionId, assetId, req.userObject)
+      let affected = { updated: 0, inserted: 0 }
       if (permitted.length > 0) {
-         errors = await Review.putReviewsByAsset(assetId, permitted, req.userObject)
+        affected = await Review.putReviewsByAsset(assetId, permitted, req.userObject, statusSettings.resetCriteria)
       }
       res.json({
-        permitted,
         rejected,
-        errors
+        affected
       })
     }
     else {
@@ -113,7 +200,6 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
       let response = await Review.getReviews( projection, {
         collectionId: collectionId,
         result: req.query.result,
-        action: req.query.action,
         status: req.query.status,
         rules: req.query.rules || 'current-mapped',
         ruleId: req.query.ruleId,
@@ -147,7 +233,6 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
         assetId: assetId,
         rules: req.query.rules || 'current-mapped',
         result: req.query.result,
-        action: req.query.action,
         status: req.query.status,
         benchmarkId: req.query.benchmarkId,
         metadata: req.query.metadata
@@ -168,21 +253,28 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
     let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
-    let body = req.body
+    let review = req.body
     let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
-      const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        let response = await Review.putReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
-        if (response.status === 'created') {
-          res.status(201).json(response.row)
+    if ( collectionGrant ) {
+      review.assetId = assetId
+      review.ruleId = ruleId
+      const [permitted, rejected, statusSettings] = await normalizeAndValidateReviews([review], collectionId, assetId, req.userObject)
+      if (permitted.length > 0) {
+        const affected = await Review.putReviewsByAsset( assetId, permitted, req.userObject, statusSettings.resetCriteria)
+        const rows =  await Review.getReviews(projection, {
+          assetId: assetId,
+          ruleId: ruleId
+        }, req.userObject)
+        
+        if (affected.inserted > 0) {
+          res.status(201).json(rows[0])
         } else {
-          res.json(response.row)
+          res.json(rows[0])
         }
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to put a review of this rule."} )
+        throw ( {status: 403, message: rejected[0].reason} )
       }
     }
     else {
@@ -196,20 +288,27 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
 
 module.exports.patchReviewByAssetRule = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
-    let assetId = req.params.assetId
-    let ruleId = req.params.ruleId
-    let body = req.body
-    let projection = req.query.projection
+    const collectionId = req.params.collectionId
+    const assetId = req.params.assetId
+    const ruleId = req.params.ruleId
+    const incomingReview = {...req.body, ruleId}
+    const projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
-      const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        let response = await Review.patchReviewByAssetRule( projection, assetId, ruleId, body, req.userObject)
-        res.json(response)
+    if ( collectionGrant) {
+      const currentReviews =  await Review.getReviews([], { assetId, ruleId }, req.userObject)
+      if (currentReviews.length === 0) {
+        throw( {status: 404, message: 'Review must exist to be patched'})
+      }
+      normalizeReview(incomingReview)
+      const review = { ...currentReviews[0], ...incomingReview }
+      const [permitted, rejected, statusSettings] = await normalizeAndValidateReviews([review], collectionId, assetId, req.userObject)
+      if (permitted.length > 0) {
+        await Review.putReviewsByAsset( assetId, [incomingReview], req.userObject, statusSettings.resetCriteria, false)
+        const rows =  await Review.getReviews(projection, { assetId, ruleId }, req.userObject)
+        res.json(rows[0])
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."} )
+        throw ( {status: 403, message: rejected[0].reason} )
       }
     }
     else {

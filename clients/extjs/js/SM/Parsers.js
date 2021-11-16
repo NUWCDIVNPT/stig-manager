@@ -17,9 +17,8 @@
 //         {
 //           ruleId: '',
 //           result: '',
-//           resultComment: '',
-//           action: '' || null,
-//           actionComment: '' || null,
+//           detail: '',
+//           comment: '' || null,
 //           autoResult: false,
 //           status: ''
 //         }
@@ -38,7 +37,7 @@
 //     }
 //   ]
 // }
-const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}) {
+const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}, fieldSettings) {
   function tagValueProcessor(html) {
     var txt = document.createElement("textarea");
     txt.innerHTML = html;
@@ -50,8 +49,8 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}) {
     ignoreAttributes: false,
     ignoreNameSpace: true,
     allowBooleanAttributes: false,
-    parseNodeValue: true,
-    parseAttributeValue: true,
+    parseNodeValue: false,
+    parseAttributeValue: false,
     trimValues: true,
     cdataTagName: "__cdata", //default is 'false'
     cdataPositionChar: "\\c",
@@ -93,7 +92,7 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}) {
     if (assetElement.TECH_AREA) {
       metadata.cklTechArea = assetElement.TECH_AREA
     }
-    if (assetElement.WEB_OR_DATABASE) {
+    if (assetElement.WEB_OR_DATABASE === 'true') {
       metadata.cklWebOrDatabase = 'true'
       metadata.cklHostName = assetElement.HOST_NAME
       if (assetElement.WEB_DB_SITE) {
@@ -163,9 +162,9 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}) {
     vulnElements?.forEach(vuln => {
       let result = resultMap[vuln.STATUS]
       if (result) {
-        if (result === 'notchecked' && options.ignoreNr) return
-        if (result === 'notchecked' && vuln.FINDING_DETAILS) result = 'informational'
+        if (result === 'notchecked' && (vuln.FINDING_DETAILS || vuln.COMMENTS)) result = 'informational'
         resultStats[result]++
+        if (result === 'notchecked' && options.ignoreNr) return
         let ruleId
         vuln.STIG_DATA.some(stigDatum => {
           if (stigDatum.VULN_ATTRIBUTE == "Rule_ID") {
@@ -174,16 +173,14 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}) {
           }
         })
         if (!ruleId) return
-        let action = null
-        let status = bestStatusForVuln(result, vuln.FINDING_DETAILS, vuln.COMMENTS, options.fieldSettings)
+        let status = bestStatusForVuln(result, vuln.FINDING_DETAILS, vuln.COMMENTS, fieldSettings)
         vulnArray.push({
           ruleId: ruleId,
           result: result,
-          resultComment: vuln.FINDING_DETAILS.trim() ?? null,
-          action: action,
-          actionComment: vuln.COMMENTS.trim() ?? null,
+          detail: options.replaceText ? vuln.FINDING_DETAILS : vuln.FINDING_DETAILS || null,
+          comment: options.replaceText ? vuln.COMMENTS : vuln.COMMENTS || null,
           autoResult: false,
-          status: status
+          // status: status
         })    
       }
     })
@@ -301,7 +298,7 @@ const reviewsFromScc = function (sccFileContent, options = {}) {
         reviews.push({
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
           result: ruleResult.result,
-          resultComment: `SCC Reviewed at ${ruleResult.time}`,
+          detail: `SCC Reviewed at ${ruleResult.time}`,
           autoResult: true,
           status: 'saved'
         })  

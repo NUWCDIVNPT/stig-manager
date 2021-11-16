@@ -1,3 +1,61 @@
+.sm-review-sprite {
+	color: #161128 !important;
+	font: 600 10px Open Sans,helvetica, sans-serif;
+	position: relative;
+	top: 0px;
+	background-color: hsl(0deg 0% 100%);
+	padding: 1px 4px 2px 17px !important;
+	border-radius:  3px;
+	user-select: none;
+	background-size: 12px 12px;
+	background-repeat: no-repeat;
+	background-position: 2px 2px;
+	border-color: #cccccc;
+	border-width: 1px;
+	border-style:  solid;
+	display: inline-block;
+	margin-left: 7px;
+}
+.sm-review-sprite-user {
+	background-image: url(../img/user-60.svg);
+	width: auto;
+}
+.sm-review-sprite-date {
+	background-image: url(../img/clock.svg);
+	width: auto;
+}
+.sm-review-sprite-reviewed {
+	background-image: url(../img/shield-green-check.svg)
+}
+.sm-review-sprite-reviewed::after {
+	content: "Reviewed";
+}
+.sm-review-sprite-saved {
+	background-image: url(../img/disk-16.png);
+}
+.sm-review-sprite-submitted {
+	background-image: url(../img/ready-16.png);
+}
+.sm-review-sprite-rejected {
+	background-image: url(../img/rejected-16.png);
+}
+.sm-review-sprite-accepted {
+	background-image: url(../img/star.svg);
+}
+.sm-review-sprite-saved::after {
+	content: "Saved";
+}
+.sm-review-sprite-submitted::after {
+	content: "Submitted";
+}
+.sm-review-sprite-rejected::after {
+	content: "Rejected";
+}
+.sm-review-sprite-accepted::after {
+	content: "Accepted";
+}
+
+
 .x-grid3-row-selected {
     background-color: hsl(212deg 14% 85%) !important;
     background-image: none;
@@ -149,7 +207,7 @@ a.x-grid3-hd-btn:hover {
 	margin-left: 3px;
 	font-size: 13px;
 }
-.x-form-item-label .sm-question-circle {
+.x-form-cb-label .sm-question-circle, .x-form-item-label .sm-question-circle {
 	color: hsl(0deg 0% 60%);
 	margin-left: 3px;
 	font-size: 13px;
