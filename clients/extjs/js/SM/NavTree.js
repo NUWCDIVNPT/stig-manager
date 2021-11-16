@@ -605,7 +605,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 {
                   id: `admin-root`,
                   node: 'admin',
-                  text: 'Administration',
+                  text: 'Application Management',
                   iconCls: 'sm-setting-icon',
                   expanded: true,
                   children: [
