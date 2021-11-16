@@ -307,7 +307,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
         }
         const j2x = new J2X(defaultOptions)
-        let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += j2x.parse(response.cklJs)
         writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${revisionStr}.ckl`, 'application/xml')
       }

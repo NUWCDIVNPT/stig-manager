@@ -37,9 +37,8 @@ async function addCollectionReview ( params ) {
 			assetId: colAsset.assetId,
 			assetName: colAsset.name,
 			result: null,
-			resultComment: null,
-			action: null,
-			actionComment: null,
+			detail: null,
+			comment: null,
 			autoResult: null,
 			userId: null,
 			username: null,
@@ -681,13 +680,10 @@ async function addCollectionReview ( params ) {
 				name:'result',
 				type: 'string'
 			},{
-				name:'resultComment',
+				name:'detail',
 				type:'string'
 			},{
-				name:'action',
-				type:'string'
-			},{
-				name:'actionComment',
+				name:'comment',
 				type:'string'
 			},,{
 				name:'autoResult',
@@ -704,7 +700,8 @@ async function addCollectionReview ( params ) {
 				dateFormat: 'Y-m-d H:i:s'
 			},{
 				name:'status',
-				type:'string'
+				type:'string',
+				mapping: 'status?.label'
 			}
 		]);
 		
@@ -822,7 +819,7 @@ async function addCollectionReview ( params ) {
 					id:'Detail' + idAppend,
 					header: '<span exportvalue="Detail">Detail<i class= "fa fa-question-circle sm-question-circle"></i></span>', 
 					width: 100,
-					dataIndex: 'resultComment',
+					dataIndex: 'detail',
 					renderer: function (v) {
 						return columnWrap(SM.styledEmptyRenderer(v))
 					},
@@ -831,7 +828,7 @@ async function addCollectionReview ( params ) {
 						type: 'string'
 					},
 					editor: new Ext.form.TextArea({
-						id: 'reviewsGrid-editor-resultComment' + idAppend,
+						id: 'reviewsGrid-editor-detail' + idAppend,
 						//height: 150
 						grow: true,
 						listeners: {
@@ -853,7 +850,7 @@ async function addCollectionReview ( params ) {
 					id:'Comment' + idAppend,
 					header: '<span exportvalue="Comment">Comment<i class= "fa fa-question-circle sm-question-circle"></i></span>', 
 					width: 100,
-					dataIndex: 'actionComment',
+					dataIndex: 'comment',
 					renderer: function (v) {
 						return columnWrap(SM.styledEmptyRenderer(v))
 					},
@@ -861,7 +858,7 @@ async function addCollectionReview ( params ) {
 						type: 'string'
 					},
 					editor: new Ext.form.TextArea({
-						id: 'reviewsGrid-editor-actionComment' + idAppend,
+						id: 'reviewsGrid-editor-comment' + idAppend,
 						grow: true,
 						listeners: {
 							// focus and blur handlers enable/disable IE workaround
@@ -901,15 +898,14 @@ async function addCollectionReview ( params ) {
 				switch (this.getDataIndex(col)) {
 					case 'result':
 						return true
-					case 'resultComment':
+					case 'detail':
 						if (apiFieldSettings.detailEnabled === 'always') {
 							return true;
 						}
 						if (apiFieldSettings.detailEnabled === 'findings') {
 							return record.data.result === 'fail'
 						} 
-					case 'action':
-					case 'actionComment':
+					case 'comment':
 						if (apiFieldSettings.commentEnabled === 'always') {
 							return true;
 						}
@@ -1033,8 +1029,6 @@ async function addCollectionReview ( params ) {
 						let jsonData = {}, result
 						if (e.record.data.status) {
 							jsonData[e.field] = e.value
-							// review exists, set status to saved
-							jsonData.status = 'saved'
 							// unset autoResult if the result has changed
 							if (e.record.data.autoResult && (e.originalValue !== e.value)) {
 								jsonData.autoResult = false
@@ -1050,9 +1044,8 @@ async function addCollectionReview ( params ) {
 							// new review
 							jsonData = {
 								result: e.record.data.result,
-								resultComment: null,
-								action: null,
-								actionComment: null,
+								detail: null,
+								comment: null,
 								autoResult: false,
 								status: 'saved'
 							}
@@ -1063,7 +1056,15 @@ async function addCollectionReview ( params ) {
 							})
 						}
 						let apiReview = JSON.parse(result.response.responseText)
+
+						// e.grid.getStore().loadData(apiReview, true)
+						const f = e.grid.store.reader.recordType.prototype.fields
+						const fi = f.items
+						const fl = f.length
+						const newData = e.grid.store.reader.extractValues(apiReview, fi, fl)
+						e.record.data = newData
 						e.record.commit()
+
 						// hack to reselect the record for setReviewsGridButtonStates()
 						e.grid.getSelectionModel().onRefresh()
 						loadResources(e.grid.getStore().getById(apiReview.assetId))
@@ -1098,7 +1099,7 @@ async function addCollectionReview ( params ) {
 							const tipEl = view.getHeaderCell(x).getElementsByClassName('fa')[0]
 							if ( tipEl ) {
 								const idPrefix = columns[x].id.split('-')[0]
-								// idPrefix should be 'result', 'resultComment', 'action' or 'actionCommnt'
+								// idPrefix should be 'result', 'detail', or 'comment'
 								new Ext.ToolTip({
 									target: tipEl,
 									showDelay: 0,
@@ -1270,7 +1271,9 @@ async function addCollectionReview ( params ) {
 			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
 			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
 			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend);
-			const rejectOtherPanel = Ext.getCmp('rejectOtherPanel' + idAppend);
+			const feedbackPanel = Ext.getCmp('feedback-panel' + idAppend);
+			const resourcesTabPanel = Ext.getCmp('resources-tab-panel' + idAppend);
+
 			const selections = sm.getSelections();
 			const selLength = selections.length;
 			let approveBtnEnabled = true;
@@ -1299,8 +1302,8 @@ async function addCollectionReview ( params ) {
 							approveBtnDisabled = true;
 							if (isReviewComplete(
 								selection.data.result,
-								selection.data.resultComment,
-								selection.data.actionComment
+								selection.data.detail,
+								selection.data.comment
 								)) {
 									approveBtnEnabled = false
 									submitBtnEnabled = true
@@ -1353,8 +1356,8 @@ async function addCollectionReview ( params ) {
 					if (status === 'saved') {
 						if (isReviewComplete(
 							selections[i].data.result,
-							selections[i].data.resultComment,
-							selections[i].data.actionComment
+							selections[i].data.detail,
+							selections[i].data.comment
 						)) {
 							counts.savedComplete++
 						} 
@@ -1375,7 +1378,11 @@ async function addCollectionReview ( params ) {
 			approveBtn.setDisabled(!approveBtnEnabled);
 			submitBtn.setDisabled(!submitBtnEnabled);
 			unsubmitBtn.setDisabled(!unsubmitBtnEnabled);
-			rejectFormPanel.setDisabled(!rejectFormEnabled);
+			feedbackPanel.setDisabled(!rejectFormEnabled);
+			const tab = resourcesTabPanel.getActiveTab()
+			if (!rejectFormEnabled && tab.itemId === 'reject') {
+				resourcesTabPanel.setActiveTab('history')
+			}
 		};
 		
 		async function handleStatusChange (grid,sm,status) {
@@ -1464,14 +1471,14 @@ async function addCollectionReview ( params ) {
 					//TODO: Set the history (does not set history on handleGroupSelectionForCollection)
 					//append the current state of the review to history
 					let currentReview = {
-						action: apiReview.action,
-						actionComment: apiReview.actionComment,
+						comment: apiReview.comment,
 						autoResult: apiReview.autoResult,
 						rejectText: apiReview.rejectText,
 						result: apiReview.result,
-						resultComment: apiReview.resultComment,
+						detail: apiReview.detail,
 						status: apiReview.status,
 						ts: apiReview.ts,
+						touchTs: apiReview.touchTs,
 						userId: apiReview.userId,
 						username: apiReview.username
 					  }
@@ -1541,7 +1548,6 @@ async function addCollectionReview ( params ) {
 		
 		var rejectFormPanel = new Ext.form.FormPanel({
 			baseCls: 'x-plain',
-			disabled: true,
 			id: 'rejectFormPanel' + idAppend,
 			cls: 'sm-background-blue',
 			labelWidth: 95,
@@ -1582,9 +1588,10 @@ async function addCollectionReview ( params ) {
 							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 							method: 'PATCH',
 							jsonData: {
-								status: status,
-								rejectText: values.rejectText,
-								rejectUserId: curUser.userId
+								status: {
+									label: status,
+									text: values.rejectText
+								}
 							}
 						})
 					)
@@ -1618,7 +1625,7 @@ async function addCollectionReview ( params ) {
 			} else {
 				btn.setText("Reject review with this feedback");
 			}
-			if (text.getValue() == '') {
+			if (!text.getValue()) {
 				btn.disable();
 			} else {
 				btn.enable();
@@ -1679,12 +1686,14 @@ async function addCollectionReview ( params ) {
 						height: '33%',
 						split:true,
 						collapsible: false,
-						activeTab: 'feedback-panel' + idAppend,
-						items: [{
-							title: 'Feedback',
-							id: 'feedback-panel' + idAppend,
+						activeTab: 'history',
+						items: [
+						{
+							title: 'History',
+							itemId: 'history',
 							layout: 'fit',
-							items: rejectFormPanel
+							id: 'history-tab' + idAppend,
+							items: historyData.grid
 						},
 						{
 							title: 'Attachments',
@@ -1693,10 +1702,13 @@ async function addCollectionReview ( params ) {
 							items: attachmentsGrid
 						},
 						{
-							title: 'History',
+							title: 'Reject',
+							itemId: 'reject',
+							iconCls: 'sm-rejected-icon',
+							disabled: true,
+							id: 'feedback-panel' + idAppend,
 							layout: 'fit',
-							id: 'history-tab' + idAppend,
-							items: historyData.grid
+							items: rejectFormPanel
 						}]
 					}
 				]

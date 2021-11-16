@@ -54,7 +54,7 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
       fieldLabel: 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
-      name: 'resultComment',
+      name: 'detail',
       enableKeyEvents: true,
       listeners: {
         render: function (ta) {
@@ -75,45 +75,6 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
   }
 })
 
-SM.Review.Form.ActionCombo = Ext.extend(Ext.form.ComboBox, {
-  initComponent: function () {
-    const _this = this
-    const config = {
-      triggerClass: 'sm-review-trigger',
-      disabledClass: 'sm-review-item-disabled',
-      width: 100,
-      lastSavedData: "",
-      cls: 'sm-review-combo-input',
-      fieldLabel: 'Action<i class= "fa fa-question-circle sm-question-circle"></i>',
-      labelSeparator: '',
-      name: 'action',
-      hiddenName: 'action',
-      mode: 'local',
-      triggerAction: 'all',
-      editable: false,
-      store: new Ext.data.SimpleStore({
-        fields: ['action', 'actionStr'],
-        data: [['remediate', 'Remediate'], ['mitigate', 'Mitigate'], ['exception', 'Exception']]
-      }),
-      displayField: 'actionStr',
-      valueField: 'action',
-      listeners: {
-        render: function (combo) {
-          new Ext.ToolTip({
-            target: combo.label.dom.getElementsByClassName('fa')[0],
-            showDelay: 0,
-            dismissDelay: 0,
-            autoWidth: true,
-            html: SM.actionTipText
-          }).getId() // for sonarcloud to consider object is used
-        }
-      }
-    }
-    Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.Review.Form.ActionCombo.superclass.initComponent.call(this)
-  }
-})
-
 SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
   initComponent: function () {
     const _this = this
@@ -124,7 +85,7 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
       fieldLabel: 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
-      name: 'actionComment',
+      name: 'comment',
       listeners: {
         'render': function (ta) {
           ta.mon( ta.el, 'input', _this.onInput)
@@ -151,14 +112,14 @@ SM.Review.Form.AutoSprite = Ext.extend(Ext.form.DisplayField, {
   },
   setRawValue : function(v){
     let displayValue = v ? 'Automated' : 'Manual'
-    this.value = v
+    this.value = !!v
     if (this.rendered) {
       this.el.dom.innerHTML = displayValue
     }
-    return this.value
+    return !!this.value
   },
   getRawValue : function(){
-    return this.value
+    return !!this.value
   },
   initComponent: function () {
     const _this = this
@@ -239,10 +200,27 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       }
     })
     const mdf = new Ext.form.DisplayField({
-      anchor: '100% 2%',
-      fieldLabel: 'Modified',
+      // anchor: '100% 2%',
+      fieldLabel: 'Reviewed',
+      hideLabel: true,
       allowBlank: true,
-      name: 'editStr'
+      name: 'editStr',
+      formatValue: function (v) {
+        this.setValue(`<span class="sm-review-sprite sm-review-sprite-reviewed"></span>
+        <span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
+        <span class="sm-review-sprite sm-review-sprite-user">${v.username}</span>`)
+      }
+    })
+    const sdf = new Ext.form.DisplayField({
+      fieldLabel: 'Status',
+      hideLabel: true,
+      allowBlank: true,
+      name: 'status',
+      formatValue: function (v) {
+        this.setValue(`<span class="sm-review-sprite sm-review-sprite-${v.label}"></span>
+        <span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
+        <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}<span>`)
+      }
     })
     const btn1 = new SM.Review.Form.Button({
       handler: _this.btnHandler
@@ -251,7 +229,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       handler: _this.btnHandler
     })
 
-    let status = ''
+    let statusLabel = ''
 
     function reviewChanged () {
       return (
@@ -265,12 +243,20 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     function loadValues (values) {
       const form = _this.getForm()
       form.setValues.call(form, values)
-      status = values.status ?? ''
-      if (values.ts) {
-        mdf.setValue(`${new Date(values.ts).format('Y-m-d H:i T')} by ${values.username}`) 
+      statusLabel = values.status?.label ?? ''
+      if (values.ts && values.username) {
+        mdf.formatValue(values)
+      }
+      else {
+        mdf.setValue('--')
+      }
+      if (values.status) {
+        sdf.formatValue(values.status)
+      }
+      else {
+        sdf.setValue('--')
       }
       initLastSavedData()
-      // setReviewFormItemStates()
     }
 
     function initLastSavedData () {
@@ -320,7 +306,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       const fieldSettings = _this.fieldSettings
 
       // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
-      const editable = (status === '' || status === 'saved' || status === 'rejected')
+      const editable = (statusLabel === '' || statusLabel === 'saved' || statusLabel === 'rejected')
       resultCombo.setDisabled(!editable) // disable if not editable
       detailTextArea.setDisabled(!editable)
       commentTextArea.setDisabled(!editable)
@@ -381,7 +367,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       if (isReviewSubmittable()) {
         if (fp.reviewChanged()) {
           // review has been changed (is dirty)
-          switch (status) {
+          switch (statusLabel) {
             case '':
             case 'saved':
               // button 1
@@ -419,7 +405,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         } 
         else {
           // review has not been changed (is in last saved state)
-          switch (status) {
+          switch (statusLabel) {
             case '':
             case 'saved': // in progress
               // button 1
@@ -500,7 +486,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         else {
           // review has not been changed (as loaded)
           // button 1
-          if (status === 'submitted') {
+          if (statusLabel === 'submitted') {
             button1.enable();
             button1.setText('Unsubmit');
             button1.setIconClass('sm-disk-icon');
@@ -571,7 +557,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               return ret;
             } 
           },
-          anchor: '100%, -60',
+          anchor: '100%, -90',
           title: 'Evaluation',
           items: [
             {
@@ -594,7 +580,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         {
           xtype: 'fieldset',
           title: 'Attributions',
-          items: [mdf]
+          items: [mdf, sdf]
         }
       ],
       buttons: [btn1, btn2],
@@ -606,8 +592,8 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
             ddGroup: 'gridDDGroup',
             notifyEnter: function (ddSource, e, data) {
               const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
-              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
-              if (editableDest && copyableSrc) { // accept drop of manual reviews or Open SCAP reviews with actions
+              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true));
+              if (editableDest && copyableSrc) { // accept drop of manual reviews
                 // no action
               } else {
                 return (reviewFormPanelDropTarget.dropNotAllowed);
@@ -615,8 +601,8 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
             },
             notifyOver: function (ddSource, e, data) {
               const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
-              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
-              if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
+              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true));
+              if (editableDest && copyableSrc) { // accept drop of manual reviews
                 return (reviewFormPanelDropTarget.dropAllowed);
               } else {
                 return (reviewFormPanelDropTarget.dropNotAllowed);
@@ -624,22 +610,22 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
             },
             notifyDrop: function (ddSource, e, data) {
               const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
-              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true && data.selections[0].data.action !== ''));
-              if (editableDest && copyableSrc) { // accept drop of manual reviews or SCAP reviews with actions
+              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true));
+              if (editableDest && copyableSrc) { // accept drop of manual reviews
                 // Reference the record (single selection) for readability
                 const selectedRecord = data.selections[0];
                 // Load the record into the form
                 if (!rcb.disabled && selectedRecord.data.autoResult == false) {
                   rcb.setValue(selectedRecord.data.result);
                 }
-                dta.setValue(selectedRecord.data.resultComment);
+                dta.setValue(selectedRecord.data.detail);
                 if (rcb.getValue() === 'fail') {
                   cta.enable();
                 } else {
                   cta.disable();
                 }
                 if (!cta.disabled) {
-                  cta.setValue(selectedRecord.data.actionComment);
+                  cta.setValue(selectedRecord.data.comment);
                 }
                 _this.setReviewFormItemStates()
               }

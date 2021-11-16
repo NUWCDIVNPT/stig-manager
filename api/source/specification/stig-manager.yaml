@@ -1105,7 +1105,6 @@ paths:
         - $ref: '#/components/parameters/CollectionIdPath'
         - $ref: '#/components/parameters/ReviewRulesQuery'
         - $ref: '#/components/parameters/ReviewResultQuery'
-        - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - $ref: '#/components/parameters/RuleIdQuery'
         - $ref: '#/components/parameters/GroupIdQuery'
@@ -1117,13 +1116,13 @@ paths:
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
-          description: Reviews array response
+          description: Review response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewsProjected'
+                  $ref: '#/components/schemas/ReviewRead'
         default:
           description: unexpected error
           content:
@@ -1144,20 +1143,19 @@ paths:
         - $ref: '#/components/parameters/AssetIdPath'
         - $ref: '#/components/parameters/ReviewRulesQuery'
         - $ref: '#/components/parameters/ReviewResultQuery'
-        - $ref: '#/components/parameters/ReviewActionQuery'
         - $ref: '#/components/parameters/ReviewStatusQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
         - $ref: '#/components/parameters/MetadataQuery'
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:
         '200':
-          description: Reviews Array response
+          description: ReviewAssetProjected response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ReviewsProjected'
+                  $ref: '#/components/schemas/ReviewAsset'
         default:
           description: unexpected error
           content:
@@ -1183,14 +1181,14 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/ReviewPut'
+                $ref: '#/components/schemas/ReviewAssetWrite'
       responses:
         '200':
-          description: ReviewsPost response
+          description: ReviewPostResponse response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewsPostResponse'
+                $ref: '#/components/schemas/ReviewPostResponse'
         default:
           description: unexpected error
           content:
@@ -1213,11 +1211,11 @@ paths:
       operationId: getReviewByAssetRule
       responses:
         '200':
-          description: Review Projected response
+          description: ReviewAssetRuleRead response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewAssetRuleRead'
         default:
           description: unexpected error
           content:
@@ -1245,7 +1243,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewAssetRuleRead'
         default:
           description: unexpected error
           content:
@@ -1275,7 +1273,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewAssetRuleRead'
         default:
           description: unexpected error
           content:
@@ -1298,7 +1296,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReviewProjected'
+                $ref: '#/components/schemas/ReviewAssetRuleRead'
         default:
           description: unexpected error
           content:
@@ -1483,6 +1481,41 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  
+  # '/collections/{collectionId}/reviews/{assetId}/{ruleId}/status':
+  #   parameters:
+  #     - $ref: '#/components/parameters/CollectionIdPath'
+  #     - $ref: '#/components/parameters/AssetIdPath'
+  #     - $ref: '#/components/parameters/RuleIdPath'
+  #   put:
+  #     tags:
+  #       - Review
+  #     summary: Set the value of the provided Collection metadata key to the provided string
+  #     operationId: putAssetRuleReviewStatus
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/ReviewStatusPut'
+  #     responses:
+  #       '200':
+  #         description: ReviewProjected response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/ReviewAssetRule'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:collection'
+
+        
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -3692,187 +3725,194 @@ components:
           type: string
     OidcToken:
       type: object
-    Review:
+    ReviewAsset:
       type: object
       required:
-        - assetId
-        - assetName
         - ruleId
         - result
-        - resultComment
+        - detail
+        - comment
         - autoResult
-        - action
-        - actionComment
         - status
         - userId
         - username
         - ts
-      additionalProperties: false
+        - touchTs
       properties:
-        assetId:
-          type: string
-        assetName:
-          type: string
         ruleId:
-          type: string
+          $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
+        detail:
+          $ref: '#/components/schemas/StringMaxNullable'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
         autoResult:
           type: boolean
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
         status:
-          $ref: '#/components/schemas/ReviewStatus'
+          $ref: '#/components/schemas/ReviewStatusRead'
         userId:
-          type: string
+          $ref: '#/components/schemas/StringUuid'
         username:
-          type: string
+          $ref: '#/components/schemas/String255'
         ts:
-          type: string
-          format: date-time
-          readOnly: true
-        rejectText:
-          type: string
-          nullable: true
-        rejectUserId:
-          type: string
-          readOnly: true
-          nullable: true
-        # metadata:
-        #   $ref: '#/components/schemas/Metadata'
-        # rule:
-        #   $ref: '#/components/schemas/RuleAbbr'       
-        # stigs:
-        #   type: array
-        #   items:
-        #     type: string
-        # history:
-        #   type: array
-        #   items:
-        #     $ref: '#/components/schemas/ReviewHistory'
-    ReviewAction:
-      type: string
-      nullable: true
-      enum:
-        - remediate
-        - mitigate
-        - exception
-        - null
+          $ref: '#/components/schemas/StringDateTime'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistory'
+        stigs:
+          type: array
+          items:
+            type: string
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'
     ReviewAssetRulePatch:
       type: object
       additionalProperties: false
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
+        detail:
+          $ref: '#/components/schemas/StringMax'
+        comment:
+          $ref: '#/components/schemas/StringMax'
         autoResult:
           type: boolean
-        rejectText:
-          type: string
-        rejectUserId:
-          type: string
-          nullable: true             
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
-          $ref: '#/components/schemas/ReviewStatus'       
+          $ref: '#/components/schemas/ReviewStatusWrite'
     ReviewAssetRulePut:
       type: object
       required:
         - result
-        - resultComment
-        # - autoResult  ##FORNOW##
-        - action
-        - actionComment
-        - status
+        - detail
+        - comment
+        - autoResult
       additionalProperties: false
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
+        detail:
+          $ref: '#/components/schemas/StringMax'
+        comment:
+          $ref: '#/components/schemas/StringMax'
         autoResult:
           type: boolean
-        rejectText:
-          type: string
-        rejectUserId:
-          type: string
-          nullable: true                    
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
-          $ref: '#/components/schemas/ReviewStatus'
-    ReviewCheckType:   
-      type: string
-      enum:
-        - scap
-        - manual
-    ReviewHistory:
+          $ref: '#/components/schemas/ReviewStatusWrite'
+    ReviewAssetRuleRead:
       type: object
-      required: 
-        - ts      
+      required:
         - result
-        - resultComment
-        - action
-        - actionComment 
+        - detail
+        - comment
         - autoResult
-        - status
-        - userId         
+        - userId
         - username
-        - rejectText
+        - ts
+        - status
+        - touchTs
+      properties:
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/StringMaxNullable'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
+        autoResult:
+          type: boolean
+        userId:
+          $ref: '#/components/schemas/StringUuid'
+        username:
+          $ref: '#/components/schemas/String255'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRead'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistory'
+        stigs:
+          type: array
+          items:
+            type: string
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'
+    ReviewAssetWrite:
+      type: object
+      required:
+        - ruleId
+        - result
+        - detail
+        - comment
+        - autoResult
       additionalProperties: false
       properties:
         ruleId:
-          type: string        
-        ts:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
+        detail:
+          $ref: '#/components/schemas/StringMaxNullable'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
         autoResult:
           type: boolean
+        metadata:
+          $ref: '#/components/schemas/Metadata'
         status:
-          $ref: '#/components/schemas/ReviewStatus'
+          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
+    ReviewHistory:
+      type: object
+      required:
+        - result
+        - detail
+        - comment
+        - autoResult
+        - metadata
+        - status
+        - userId
+        - username
+        - ts
+        - touchTs
+      additionalProperties: false
+      properties:
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/StringMaxNullable'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
+        autoResult:
+          type: boolean
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRead'
         userId:
-          type: string
+          $ref: '#/components/schemas/StringUuid'
         username:
-          type: string
-        rejectText:
-          type: string
-          nullable: true
-        rejectUserId:
-          type: string
-          nullable: true
+          $ref: '#/components/schemas/String255'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
     ReviewHistoryAsset:
       type: object
-      required: 
+      required:
         - assetId
         - history
       additionalProperties: false
@@ -3885,41 +3925,31 @@ components:
             $ref: '#/components/schemas/ReviewHistory'   
     ReviewHistoryDeleted:     
       type: object
+      required:
+        - HistoryEntriesDeleted
       additionalProperties: false
       properties:
         HistoryEntriesDeleted: 
           type: integer   
-    ReviewHistoryStat:
-      type: object
-      additionalProperties: false
-      properties:
-        historyEntryCount: 
-          type: integer
-        oldestHistoryEntryDate: 
-          type: string
-          format: date
-          nullable: true
     ReviewHistoryStats:
       type: object
+      required:
+        - collectionHistoryEntryCount
+        - oldestHistoryEntryDate
       additionalProperties: false
       properties:
         collectionHistoryEntryCount: 
           type: integer
         oldestHistoryEntryDate: 
-          type: string
-          format: date
-          nullable: true
+          $ref: '#/components/schemas/StringDateTime'
         assetHistoryEntryCounts:
           type: array
           items:
-            $ref: '#/components/schemas/ReviewHistoryStatsAssetProjected'
-      required:
-        - collectionHistoryEntryCount
-        - oldestHistoryEntryDate
-    ReviewHistoryStatsAssetProjected:
+            $ref: '#/components/schemas/ReviewHistoryStatsAsset'
+    ReviewHistoryStatsAsset:
       type: object
       required: 
-        - assetId
+        - ruleId
         - historyEntryCount
         - oldestHistoryEntry
       additionalProperties: false
@@ -3931,229 +3961,7 @@ components:
         oldestHistoryEntry:
           type: string
           nullable: true
-        # ruleHistoryStats:
-        #   type: array
-        #   items:
-        #     $ref: '#/components/schemas/ReviewHistoryStatsAssetRuleProjected'
-    ReviewHistoryStatsAssetRuleProjected:
-      type: object
-      required: 
-        - ruleId
-        - historyEntryCount
-        - oldestHistoryEntry
-      additionalProperties: false
-      properties:
-        ruleId:
-          type: string
-        historyEntryCount:
-          type: integer
-        oldestHistoryEntry:
-          type: string
-          nullable: true
-    ReviewsPostResponse:
-      type: object
-      required:
-        - permitted
-        - rejected
-        - errors
-      additionalProperties: false
-      properties:
-        permitted:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewPostResponseItem'
-        rejected:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewPostResponseItem'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewPostResponseItem'
-    ReviewPostResponseItem:
-      type: object
-      required:
-        - ruleId
-        - result
-        - resultComment
-        - autoResult
-        - action
-        - actionComment
-        - status
-      additionalProperties: false
-      properties:
-        assetName:
-          type: string
-        ruleId:
-          type: string
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        autoResult:
-          type: boolean
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-    ReviewProjected:
-      type: object
-      required:
-        - assetId
-        - assetName
-        - ruleId
-        - result
-        - resultComment
-        - autoResult
-        - action
-        - actionComment
-        - status
-        - userId
-        - username
-        - ts
-      additionalProperties: false
-      properties:
-        assetId:
-          type: string
-        assetName:
-          type: string
-        ruleId:
-          type: string
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        autoResult:
-          type: boolean
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-        userId:
-          type: string
-        username:
-          type: string
-        ts:
-          type: string
-          format: date-time
-          readOnly: true
-        rejectText:
-          type: string
-          nullable: true
-        rejectUserId:
-          type: string
-          readOnly: true
-          nullable: true
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        rule:
-          $ref: '#/components/schemas/RuleAbbr'           
-        stigs:
-          type: array
-          items:
-            type: string
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewHistory'
-    ReviewsProjected:
-      type: object
-      required:
-        - assetId
-        - assetName
-        - ruleId
-        - result
-        - resultComment
-        - autoResult
-        - action
-        - actionComment
-        - status
-        - userId
-        - username
-        - ts
-      additionalProperties: false
-      properties:
-        assetId:
-          type: string
-        assetName:
-          type: string
-        ruleId:
-          type: string
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        autoResult:
-          type: boolean
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-        userId:
-          type: string
-        username:
-          type: string
-        ts:
-          type: string
-          format: date-time
-          readOnly: true
-        rejectText:
-          type: string
-          nullable: true
-        rejectUserId:
-          type: string
-          readOnly: true
-          nullable: true
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        rule:
-          $ref: '#/components/schemas/RuleAbbr'                  
-        stigs:
-          type: array
-          items:
-            type: string
-    ReviewPut:
-      type: object
-      required:
-        - ruleId
-        - result
-        - resultComment
-        - status
-      additionalProperties: false        
-      properties:
-        ruleId:
-          type: string
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultComment:
-          type: string
-          nullable: true
-        action:
-          $ref: '#/components/schemas/ReviewAction'
-        actionComment:
-          type: string
-          nullable: true
-        autoResult:
-          type: boolean
-          nullable: true
-        status:
-          $ref: '#/components/schemas/ReviewStatus'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
     ReviewResult:
-      description: The Review result
       type: string
       enum:
         - fail
@@ -4165,13 +3973,133 @@ components:
         - notselected
         - informational
         - fixed
-    ReviewStatus:
+    ReviewStatusLabel:
       type: string
       enum:
         - saved
         - submitted
         - accepted
         - rejected
+    ReviewStatusLabelRestricted:
+      type: string
+      enum:
+        - saved
+        - submitted
+    ReviewStatusWrite:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewStatusLabel'
+        - type: object
+          required:
+            - label
+            - text
+          additionalProperties: false
+          properties:
+            label:
+              $ref: '#/components/schemas/ReviewStatusLabel'
+            text:
+              $ref: '#/components/schemas/String255Nullable'
+    ReviewStatusRestrictedWrite:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
+        - type: object
+          required:
+            - label
+            - text
+          additionalProperties: false
+          properties:
+            label:
+              $ref: '#/components/schemas/ReviewStatusLabelRestricted'
+            text:
+              $ref: '#/components/schemas/String255Nullable'
+    ReviewStatusRead:
+      type: object
+      required:
+        - label
+        - text
+        - user
+        - ts
+      additionalProperties: false
+      properties:
+        label:
+          $ref: '#/components/schemas/ReviewStatusLabel'
+        text:
+          $ref: '#/components/schemas/StringMaxNullable'
+        user:
+          $ref: '#/components/schemas/UserBasic'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+    ReviewPostResponse:
+      type: object
+      required:
+        - rejected
+        - affected
+      additionalProperties: false
+      properties:
+        rejected:
+          type: array
+          items:
+            type: object
+            properties:
+              ruleId:
+                $ref: '#/components/schemas/String255'
+              reason:
+                $ref: '#/components/schemas/String255'
+        affected:
+          type: object
+          properties:
+            updated:
+              type: number
+            inserted:
+              type: number
+    ReviewRead:
+      type: object
+      required:
+        - assetId
+        - assetName
+        - ruleId
+        - result
+        - detail
+        - comment
+        - autoResult
+        - userId
+        - username
+        - ts
+        - touchTs
+        - status
+      additionalProperties: false
+      properties:
+        assetId:
+          $ref: '#/components/schemas/StringUuid'
+        assetName:
+          $ref: '#/components/schemas/String255'
+        ruleId:
+          $ref: '#/components/schemas/String255'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/StringMaxNullable'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
+        autoResult:
+          type: boolean
+        userId:
+          $ref: '#/components/schemas/StringUuid'
+        username:
+          $ref: '#/components/schemas/String255'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRead'
+        stigs:
+          type: array
+          items:
+            type: string
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'
     Revision:
       type: object
       required:
@@ -4383,11 +4311,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserBasic'
-    # STIGs:
-    #   description: List of STIGs
-    #   type: array
-    #   items:
-    #     $ref: '#/components/schemas/STIG'
+    STIGs:
+      description: List of STIG
+      type: array
+      items:
+        $ref: '#/components/schemas/STIG'
     String255:
       type: string
       maxLength: 255
@@ -4415,7 +4343,7 @@ components:
     StringUuidNullable:
       type: string
       maxLength: 36
-      nullable: true    
+      nullable: true
     User:
       type: object
       required:
@@ -4845,11 +4773,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/Date'
-    ReviewActionQuery:
-      name: action
-      in: query
-      schema:
-        $ref: '#/components/schemas/ReviewAction'
     ReviewProjectionQuery:
       name: projection
       in: query
@@ -4915,7 +4838,7 @@ components:
       name: status
       in: query
       schema:
-        $ref: '#/components/schemas/ReviewStatus'
+        $ref: '#/components/schemas/ReviewStatusLabel'
     RevisionStrPath:
       name: revisionStr
       in: path

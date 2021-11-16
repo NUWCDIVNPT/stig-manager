@@ -342,18 +342,13 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 type: 'string'
             },
             {
-                name: 'resultComment',
-                mapping: 'new.resultComment',
+                name: 'detail',
+                mapping: 'new.detail',
                 type: 'string'
             },
             {
-                name: 'action',
-                mapping: 'new.action',
-                type: 'string'
-            },
-            {
-                name: 'actionComment',
-                mapping: 'new.actionComment',
+                name: 'comment',
+                mapping: 'new.comment',
                 type: 'string'
             },
             {
@@ -439,23 +434,23 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderResult
             },
             {
-                header: 'Comment', // per docs
+                header: 'Detail', // per docs
                 menuDisabled: true,
                 width: 220,
                 // fixed: true,
-                dataIndex: 'resultComment',
+                dataIndex: 'detail',
                 renderer: columnWrap,
                 sortable: false
             },
-            {
-                header: "Status",
-                fixed: true,
-                width: 44,
-                align: 'center',
-                dataIndex: 'status',
-                sortable: false,
-                renderer: renderStatuses
-            }
+            // {
+            //     header: "Status",
+            //     fixed: true,
+            //     width: 44,
+            //     align: 'center',
+            //     dataIndex: 'status',
+            //     sortable: false,
+            //     renderer: renderStatuses
+            // }
         ]
         const tbar = new Ext.Toolbar({
             items: [
@@ -678,13 +673,12 @@ SM.ReviewsImport.WarningPanel = Ext.extend(Ext.Panel, {
 SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
 
-        let me = this
+        const _this = this
 
         function handleDragover(e) {
             e.stopPropagation()
             e.preventDefault()
             e.dataTransfer.dropEffect = 'copy'
-            // e.target.style.border = "2px dashed red"
             this.style.border = "2px dashed red"
         }
 
@@ -692,11 +686,49 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
             e.stopPropagation()
             e.preventDefault()
             e.dataTransfer.dropEffect = 'copy'
-            // e.target.style.border = ""
             this.style.border = ""
         }
 
-        let config = {
+        const cklTextCb = new Ext.form.Checkbox({
+            boxLabel: `Remove existing text when &lt;FINDING_DETAILS&gt; or &lt;COMMENTS&gt; is empty<i class= "fa fa-question-circle sm-question-circle"></i>`,
+            hideLabel: true,
+            listeners: {
+                render: function (ta) {
+                  _this.sonarCloudInsists = new Ext.ToolTip({
+                    target: ta.wrap.dom.getElementsByClassName('fa')[0],
+                    showDelay: 0,
+                    dismissDelay: 0,
+                    width: 300,
+                    html: SM.TipContent.CklParseOptions.Text
+                  }) 
+                }
+            }
+        
+        })
+        const cklRevisionCb = new Ext.form.Checkbox({
+            boxLabel: `Do not import if STIG Revision does not match<i class= "fa fa-question-circle sm-question-circle"></i>`,
+            hideLabel: true,
+            listeners: {
+                render: function (ta) {
+                  _this.sonarCloudInsists = new Ext.ToolTip({
+                    target: ta.wrap.dom.getElementsByClassName('fa')[0],
+                    showDelay: 0,
+                    dismissDelay: 0,
+                    width: 300,
+                    html: SM.TipContent.CklParseOptions.Revision
+                  }) 
+                }
+            }
+        })
+        const cklParseOptions = new Ext.form.FieldSet({
+            title: 'CKL parse options',
+            items: [
+                cklTextCb,
+                cklRevisionCb,
+            ]
+        })
+
+        const config = {
             layout: 'vbox',
             layoutConfig: {
                 align: 'stretch',
@@ -705,12 +737,16 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
             },
             items: [
                 {
-                    html: `<div class="sm-dialog-panel-title">Select or drop file${me.initialConfig.multifile ? 's' : ''}</div>`,
+                    html: `<div class="sm-dialog-panel-title">Select or drop file${_this.initialConfig.multifile ? 's' : ''}</div>`,
                     width: 500,
                     border: false
                 },
                 {
-                    html: `<div id="droptarget">Drop ${me.initialConfig.multifile ? 'one or more CKL/XCCDF result files' : 'a CKL or XCCDF result file'} here</div>`,
+                    xtype: 'displayfield',
+                    html: "<p>&nbsp;</p>",
+                },
+                {
+                    html: `<div id="droptarget">Drop ${_this.initialConfig.multifile ? 'one or more CKL/XCCDF result files' : 'a CKL or XCCDF result file'} here</div>`,
                     // border: false,
                     baseCls: 'sm-drop',
                     flex: 1,
@@ -720,7 +756,12 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                             panelEl.addEventListener('dragenter', handleDragover, false)
                             panelEl.addEventListener('dragover', handleDragover, false)
                             panelEl.addEventListener('dragleave', handleDragleave, false)
-                            panelEl.addEventListener('drop', me.onFileDropped, false)
+                            panelEl.addEventListener('drop', function (e) {
+                                _this.onFileDropped(e, this, {
+                                    replaceText: cklTextCb.value,
+                                    strictRevisionCheck: cklRevisionCb.value
+                                })
+                            }, false)
                         }
                     }
                 },
@@ -728,22 +769,34 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                     xtype: 'displayfield',
                     html: "<p>&nbsp;</p>",
                 },
+                cklParseOptions,
+                {
+                    xtype: 'displayfield',
+                    html: "<p>&nbsp;</p>",
+                },
                 {
                     xtype: 'fileuploadfield',
                     buttonOnly: true,
-                    name: 'importFile',
+                    na_this: 'importFile',
                     accept: '.xml,.ckl',
                     webkitdirectory: false,
-                    multiple: me.initialConfig.multifile,
+                    multiple: _this.initialConfig.multifile,
                     style: 'width: 95px;',
-                    buttonText: `Select file${me.initialConfig.multifile ? 's' : ''}...`,
+                    buttonText: `Select file${_this.initialConfig.multifile ? 's' : ''}...`,
                     buttonCfg: {
                         icon: "img/disc_drive.png"
                     },
                     listeners: {
-                        fileselected: this.onFileSelected
+                        fileselected: (uploadField) => {
+                            _this.onFileSelected(uploadField, {
+                                replaceText: cklTextCb.checked,
+                                strictRevisionCheck: cklRevisionCb.checked
+                            })
+                        }
                     }
-                }
+                },
+
+
             ],
             listeners: {
             }
@@ -967,8 +1020,6 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
         const items = [
             {
                 html: `<div class="sm-dialog-panel-title">Reviews matched against ${me.benchmarkId} ${me.revisionStr}</div>`,
-                // html: `<div class="sm-dialog-panel-title">Reviews matched</div>`,
-                // width: 500,
                 border: false
             },
             matchingGrid
@@ -1105,7 +1156,10 @@ class TaskObject {
         // An array of results from the parsers
         this.parsedResults = parsedResults
         this.collectionId = collectionId
-        this.config = config ?? { strictRevisionChecks: false } 
+        this.config = config ?? { 
+            strictRevisionChecks: false,
+            createObjects: true
+         } 
         // An array of assets from the API
         this.apiAssets = apiAssets
         // Create Maps of the assets by assetName and metadata.cklHostName
@@ -1154,16 +1208,20 @@ class TaskObject {
     }
 
     _createTaskAssets() {
-        // taskAssets is a Map() keyed by mapKey, the values are
+        // taskAssets is a Map() keyed by lowercase asset name (or CKL metadata), the value is an object:
         // {
-        //   newAsset: false, // does the asset need to be created?
-        //   assetProps: parseResult.target, // asset properties from the parsed results
-        //   hasNewBenchmarkIds: false, //  are there new STIG assignments?
-        //   stigsIgnored: [], // benchmarkIds ignored because no updates allowed
-        //   reviews: [] // the reviews to be posted
+            // knownAsset: false, // does the asset need to be created
+            // assetProps: null, // an Asset object suitable for put/post to the API 
+            // hasNewAssignment: false, //  are there new STIG assignments?
+            // newAssignments: [], // any new assignments
+            // checklists: new Map(), // the vetted result checklists, a Map() keyed by benchmarkId
+            // checklistsIgnored: [], // the ignored checklists
+            // reviews: [] // the vetted reviews
         // }
 
+
         const taskAssets = new Map()
+
         for (const parsedResult of this.parsedResults) {
             // Generate mapping key
             let mapKey, tMeta = parsedResult.target.metadata
@@ -1171,15 +1229,12 @@ class TaskObject {
                 mapKey = parsedResult.target.name.toLowerCase()
             }
             else {
-                const appends = [tMeta.cklHostName]
-                appends.push(tMeta.cklWebDbSite ?? 'NA')
-                appends.push(tMeta.cklWebDbInstance ?? 'NA')
-                mapKey = appends.join('-')
+                mapKey = `${tMeta.cklHostName}-${tMeta.cklWebDbSite ?? 'NA'}-${tMeta.cklWebDbInstance ?? 'NA'}`
             }
 
             // Try to find the asset in the API response
             const apiAsset = this._findAssetFromParsedTarget(parsedResult.target)
-            if (!apiAsset && ! true) {
+            if (!apiAsset && !this.config.createObjects) {
                 // Bail if the asset doesn't exist and we won't create it
                 this.errors.push({
                     file: parsedResult.file,
@@ -1198,7 +1253,7 @@ class TaskObject {
                     assetProps: null, // an object suitable for put/post to the API 
                     hasNewAssignment: false,
                     newAssignments: [],
-                    checklists: [], // the vetted result checklists
+                    checklists: new Map(), // the vetted result checklists
                     checklistsIgnored: [], // the ignored checklists
                     reviews: [] // the vetted reviews
                 }
@@ -1242,26 +1297,36 @@ class TaskObject {
             }
             const stigIsNewlyAssigned = (benchmarkId) => taskAsset.newAssignments.includes(benchmarkId)
 
+            const addToTaskAssetChecklistMapArray = (taskAsset, checklist) => {
+                let checklistArray = taskAsset.checklists.get(checklist.benchmarkId)
+                if (checklistArray) {
+                    checklistArray.push(checklist)
+                }
+                else {
+                    taskAsset.checklists.set(checklist.benchmarkId, [checklist])
+                }
+            }   
+
             // Vet the checklists in this parseResult 
             for (const checklist of parsedResult.checklists) {
                 checklist.file = parsedResult.file
                 if (stigIsInstalled(checklist)) {
                     if (stigIsAssigned(checklist)) {
                         checklist.newAssignment = stigIsNewlyAssigned(checklist.benchmarkId)
-                        taskAsset.checklists.push(checklist)
+                        addToTaskAssetChecklistMapArray(taskAsset, checklist)
                     }
-                    else if (true) {
+                    else if (this.config.createObjects) {
                         assignStig(checklist.benchmarkId)
                         checklist.newAssignment = true
-                        taskAsset.checklists.push(checklist)
+                        addToTaskAssetChecklistMapArray(taskAsset, checklist)
                     }
                     else {
-                        checklist.ignored = `STIG is not assigned`
+                        checklist.ignored = `Not mapped to Asset`
                         taskAsset.checklistsIgnored.push(checklist)
                     }
                 }
                 else {
-                    checklist.ignored = `STIG is not installed`
+                    checklist.ignored = `Not installed`
                     taskAsset.checklistsIgnored.push(checklist)
                 }
             }
@@ -1271,8 +1336,15 @@ class TaskObject {
     }
 }
 
-async function showImportResultFiles(collectionId, options) {
+async function showImportResultFiles(collectionId, fieldSettings) {
     try {
+        const cklParseOptions = {
+            ignoreNr: true
+        }
+        const scapParseOptions = {
+            ignoreNotChecked: true
+        }
+
         const fp = new SM.ReviewsImport.SelectFilesPanel({
             border: false,
             autoScroll: true,
@@ -1302,12 +1374,12 @@ async function showImportResultFiles(collectionId, options) {
         })
         fpwindow.show(document.body)
 
-        async function onFileDropped(e) {
+        async function onFileDropped(e, panel, cklOptions) {
             try {
                 e.currentTarget.innerText = `Searching for result files...`
                 e.stopPropagation()
                 e.preventDefault()
-                this.style.border = ""
+                panel.style.border = ""
                 let entries = []
                 let files = []
                 if (!e.dataTransfer) {
@@ -1318,6 +1390,7 @@ async function showImportResultFiles(collectionId, options) {
                     files.push(await entryFilePromise(entry))
                 }
                 files.sort((a, b) => a.lastModified - b.lastModified)
+                Object.assign(cklParseOptions, cklOptions)
                 warnOnExcessFiles(files)    
             }
             catch (e) {
@@ -1400,17 +1473,13 @@ async function showImportResultFiles(collectionId, options) {
             }
         }
 
-        async function onFileSelected(uploadField) {
-            try {
-                let input = uploadField.fileInput.dom
-                const files = [...input.files]
-                // Sort files oldest to newest
-                files.sort((a, b) => a.lastModified - b.lastModified)
-                warnOnExcessFiles(files)
-            }
-            catch (e) {
-                throw e
-            }
+        async function onFileSelected(uploadField, cklOptions) {
+            let input = uploadField.fileInput.dom
+            const files = [...input.files]
+            // Sort files oldest to newest
+            files.sort((a, b) => a.lastModified - b.lastModified)
+            Object.assign(cklParseOptions, cklOptions)
+            warnOnExcessFiles(files)
         }
 
         function warnOnExcessFiles(files) {
@@ -1483,26 +1552,6 @@ async function showImportResultFiles(collectionId, options) {
                 const results = await parseFiles(files, pb)
                 task.cancel()
 
-                let dupedRows
-
-                // TEMPORARY: keep only the latest member of each duplicate set from parseResults.rows
-                // Permananet solution should invoke a UI for duplicate handling
-                if (results.hasDuplicates) {
-                    let indexes = []
-                    for (const i of Object.values(results.pairs)) {
-                        if (i.length > 1) {
-                            // Don't incude the last item (the latest file timestamp)
-                            // Assumes the items of results.rows are sorted by file timestamp ascending
-                            indexes.push(i.slice(0, -1))
-                        }
-                    }
-                    // Use a Set because .has is O(1)
-                    let indexSet = new Set(indexes.flat())
-                    let dedupedRows = results.rows.filter((v, i) => !indexSet.has(i))
-                    results.dupedRows = results.rows.filter((v, i) => indexSet.has(i))
-                    results.rows = dedupedRows
-                }
-
                 if (results.errors.length > 0 || results.hasDuplicates) {
                     showErrors(results)
                 } else {
@@ -1548,7 +1597,7 @@ async function showImportResultFiles(collectionId, options) {
                     let data = await readTextFileAsync(file)
                     if (extension === 'ckl') {
                         try {
-                            const r = reviewsFromCkl(data, { ignoreNr: true, fieldSettings: options.fieldSettings })
+                            const r = reviewsFromCkl(data, cklParseOptions, fieldSettings)
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -1561,7 +1610,10 @@ async function showImportResultFiles(collectionId, options) {
                     }
                     if (extension === 'xml') {
                         try {
-                            const r = reviewsFromScc(data, { ignoreNotChecked: false, scapBenchmarkMap })
+                            const r = reviewsFromScc(data, { 
+                                ignoreNotChecked: false,
+                                scapBenchmarkMap
+                            })
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -1582,41 +1634,39 @@ async function showImportResultFiles(collectionId, options) {
                 apiStigsResult = await apiStigsResult
                 const apiStigs = JSON.parse(apiStigsResult.response.responseText)
 
-                const tasks = new TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, collectionId })
+                const taskConfig = {
+                    createObjects: true,
+                    strictRevisionCheck: cklParseOptions.strictRevisionCheck
+                } 
+                const tasks = new TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, collectionId, config: taskConfig })
                 // Transform into data for SM.ReviewsImport.Grid
                 const results = {
                     taskAssets: tasks.taskAssets,
                     rows: [],
-                    errors: parseResults.fail
+                    dupedRows: [],
+                    errors: parseResults.fail,
+                    hasDuplicates: false
                 }
+                // Collate multiple checklists into duplicates and the single checklist for POSTing.
+                // Since the parsed files were sorted by ascending date order, the last
+                // item in each checklists array is from the most recently dated file and we will choose this item.
                 for (const taskAsset of tasks.taskAssets.values()) {
-                    for (const checklist of taskAsset.checklists) {
-                        const data = {
-                            checklist: checklist,
-                            taskAsset: taskAsset
+                    for (const assetStigChecklists of taskAsset.checklists.values()) {
+                        if (assetStigChecklists.length > 1) {
+                            results.hasDuplicates = true
+                            const dupedChecklists = assetStigChecklists.slice(0, -1)
+                            const rowsToPush = dupedChecklists.map( checklist => ({ taskAsset, checklist }))
+                            results.dupedRows.push(...rowsToPush)
                         }
-                        results.rows.push(data)
+                        results.rows.push({ taskAsset, checklist: assetStigChecklists.slice(-1)[0]})
                     }
                     for (const ignoredChecklist of taskAsset.checklistsIgnored) {
                         results.errors.push({
                             file: ignoredChecklist.file,
-                            error: `Ignoring ${ignoredChecklist.benchmarkId}, ${ignoredChecklist.ignored}`
+                            error: `Ignoring ${ignoredChecklist.benchmarkId} ${ignoredChecklist.revisionStr}. ${ignoredChecklist.ignored}`
                         })
                     }
                 }
-
-                let assetStigPairs = results.rows.reduce((a, v, i) => {
-                    const key = `${v.taskAsset.assetProps.name.toUpperCase()}-${v.checklist.benchmarkId}`
-                    if (a[key]) {
-                        a[key].push(i)
-                    }
-                    else {
-                        a[key] = [i]
-                    }
-                    return a
-                }, {})
-                results.hasDuplicates = Object.keys(assetStigPairs).some(key => assetStigPairs[key].length > 1)
-                results.pairs = assetStigPairs
                 return results
             }
             catch (e) {
@@ -1682,8 +1732,8 @@ async function showImportResultFiles(collectionId, options) {
                         }
                         if (importReviews) {
                             let reviewsArray = []
-                            for (let checklist of taskAsset.checklists) {
-                                reviewsArray = reviewsArray.concat(checklist.reviews)
+                            for (const benchmarkId of taskAsset.checklists.keys()) {
+                                reviewsArray = reviewsArray.concat(taskAsset.checklists.get(benchmarkId).slice(-1)[0].reviews)
                             }
                             await importReviewArray(collectionId, assetId, reviewsArray)
                             updateStatusText(' OK')
@@ -1803,14 +1853,16 @@ async function showImportResultFiles(collectionId, options) {
 }
 
 async function showImportResultFile(params) {
-    let fpWindow
+    const cklParseOptions = {
+        ignoreNr: true
+    }
     try {
         const fp = new SM.ReviewsImport.SelectFilesPanel({
             border: false,
             autoScroll: true,
             multifile: false,
-            onFileSelected: onFileSelected,
-            onFileDropped: onFileDropped
+            onFileSelected,
+            onFileDropped
         })
 
         const vpSize = Ext.getBody().getViewSize()
@@ -1848,10 +1900,11 @@ async function showImportResultFile(params) {
         Ext.getBody().unmask()
 
     }
-    async function onFileDropped(e) {
+
+    async function onFileDropped(e, panel, cklOptions) {
         e.stopPropagation()
         e.preventDefault()
-        this.style.border = ""
+        panel.style.border = ""
         let entries = []
         let files = []
         for (let i = 0; i < e.dataTransfer.items.length; i++) {
@@ -1862,6 +1915,7 @@ async function showImportResultFile(params) {
             const entryContent = await readEntryContentAsync(entry)
             files.push(...entryContent)
         }
+        Object.assign(cklParseOptions, cklOptions)
         showParseFile(files[0])
 
         function readEntryContentAsync(entry) {
@@ -1901,10 +1955,11 @@ async function showImportResultFile(params) {
         }
     }
 
-    async function onFileSelected(uploadField) {
+    async function onFileSelected(uploadField, cklOptions) {
         let input = uploadField.fileInput.dom
         const files = [...input.files]
-        await showParseFile(files[0])
+        Object.assign(cklParseOptions, cklOptions)
+        await showParseFile(files[0], cklParseOptions)
     }
 
     async function showParseFile(file) {
@@ -1981,7 +2036,7 @@ async function showImportResultFile(params) {
                 throw (new Error(`The file does not include reviews for STIG: <b>${params.benchmarkId}</b><br>The file includes reviews for: ${r.checklists[0].benchmarkId}</p>`))
             }
             // Note: Only the CKL parser returns the revisionStr property
-            if (checklistFromFile.revisionStr && checklistFromFile.revisionStr !== params.revisionStr) {
+            if (cklParseOptions.strictRevisionCheck && checklistFromFile.revisionStr && checklistFromFile.revisionStr !== params.revisionStr) {
                 throw (new Error(`The file does not include reviews for STIG: <b>${params.benchmarkId}, revision ${params.revisionStr}</b><br>The file includes reviews for revision: ${checklistFromFile.revisionStr}</p>`))
             }
             const apiResult = await Ext.Ajax.requestPromise({
@@ -1999,22 +2054,20 @@ async function showImportResultFile(params) {
     }
 
     async function parseFile(file, pb) {
-        try {
-            let extension = file.name.substring(file.name.lastIndexOf(".") + 1)
-            let data = await readTextFileAsync(file)
-            let r
-            if (extension === 'ckl') {
-                r = reviewsFromCkl(data, { ignoreNr: false, fieldSettings: params.fieldSettings })
-            }
-            if (extension === 'xml') {
-                r = reviewsFromScc(data, { ignoreNotChecked: false })
-            }
-            r.file = file
-            return r
+        let extension = file.name.substring(file.name.lastIndexOf(".") + 1)
+        let data = await readTextFileAsync(file)
+        let r
+        if (extension === 'ckl') {
+            r = reviewsFromCkl(data, cklParseOptions, params.fieldSettings)
         }
-        catch (e) {
-            throw (e)
+        else if (extension === 'xml') {
+            r = reviewsFromScc(data, { ignoreNotChecked: false })
         }
+        else {
+            throw (new Error('Unknown file extension'))
+        }
+        r.file = file
+        return r
     }
 
     function showError(e) {

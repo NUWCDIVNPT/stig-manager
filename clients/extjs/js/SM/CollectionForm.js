@@ -729,7 +729,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                             // style: 'background-color: white;',
                             xtype: 'fieldset',
                             region: 'north',
-                            height: 200,
+                            height: 180,
                             split: false,
                             title: 'Information',
                             items: [ nameField, descriptionField]
@@ -802,7 +802,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
     serializeStatusSettings: function (o) {
         const statusFields = [
             'canAccept',
-            'minGrant'
+            'minGrant',
+            'resetCriteria'
         ]
         const statusSettings = {}
         for (const field of statusFields) {
@@ -1410,6 +1411,7 @@ SM.Collection.StatusSettings.AcceptCheckbox = Ext.extend(Ext.form.Checkbox, {
         SM.Collection.StatusSettings.AcceptCheckbox.superclass.initComponent.call(this)
     }
 })
+
 SM.Collection.StatusSettings.GrantComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         let config = {
@@ -1437,12 +1439,40 @@ SM.Collection.StatusSettings.GrantComboBox = Ext.extend(Ext.form.ComboBox, {
     }
 })
 
+SM.Collection.StatusSettings.CriteriaComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false
+        }
+        let _this = this
+        let data = [
+            ['result', 'Review result'],
+            ['any', 'any Review field']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.StatusSettings.CriteriaComboBox.superclass.initComponent.call(this)
+        this.store.loadData(data)
+    }
+})
+
 SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.statusSettings = _this.statusSettings ?? {
             canAccept: true,
-            minGrant: 3
+            minGrant: 3,
+            resetCriteria: 'result'
         }
         const canAcceptCheckbox = new SM.Collection.StatusSettings.AcceptCheckbox({
             name: 'canAccept',
@@ -1456,18 +1486,29 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         })
         const grantComboBox = new SM.Collection.StatusSettings.GrantComboBox({
             name: 'minGrant',
-            fieldLabel: '<span style="padding-left: 15px;">Grant required to set Accept or Reject</span>', 
+            fieldLabel: '<span style="padding-left: 18px;">Grant required to set Accept or Reject</span>', 
             disabled: !_this.statusSettings.canAccept,
             width: 125,
             value: _this.statusSettings.minGrant || 3,
             listeners: {
-                select: onGrantSelect
+                select: onComboSelect
+            }
+        })
+
+        const criteriaComboBox = new SM.Collection.StatusSettings.CriteriaComboBox({
+            name: 'resetCriteria',
+            fieldLabel: 'Reset to <img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding: 1px 3px 0px 0px;vertical-align:text-top;"/>Saved upon change to', 
+            width: 125,
+            value: _this.statusSettings.resetCriteria || 'result',
+            listeners: {
+                select: onComboSelect
             }
         })
 
         _this.serialize = function () {
             const output = {}
             const items = [
+                criteriaComboBox,
                 canAcceptCheckbox,
                 grantComboBox
             ]
@@ -1478,6 +1519,7 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         }
 
         _this.setValues = function (values) {
+            criteriaComboBox.setValue(values.resetCriteria || 'result')
             canAcceptCheckbox.setValue(values.canAccept || false)
             grantComboBox.setValue(values.minGrant || 3)
             grantComboBox.setDisabled(!values.canAccept)
@@ -1488,24 +1530,17 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
             _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, checked)
         }
 
-        function onGrantSelect(item, record, index) {
+        function onComboSelect(item, record, index) {
             _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, record)
         }
 
         let config = {
-            title: _this.title || 'Status handling',
+            title: _this.title || 'Review status',
             labelWidth: 220,
             items: [
+                criteriaComboBox,
                 canAcceptCheckbox,
                 grantComboBox      
-                // {
-                //     xtype: 'compositefield',
-                //     hideLabel: true,
-                //     items: [
-                //         canAcceptCheckbox,
-                //         grantComboBox      
-                //     ]
-                // }
             ]
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))

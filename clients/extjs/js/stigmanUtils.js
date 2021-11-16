@@ -178,14 +178,11 @@ function Sm_HistoryData (idAppend) {
 			type: 'string'
 		},
 		{
-			name:'resultComment',
+			name:'detail',
 			type:'string'
 		},
 		{
-			name:'action',
-			type:'string'
-		},{
-			name:'actionComment',
+			name:'comment',
 			type:'string'
 		},
 		{
@@ -200,14 +197,16 @@ function Sm_HistoryData (idAppend) {
 			type:'string'
 		},
 		{
-			name:'ts',
+			name:'touchTs',
 			type:'date',
 			dateFormat: 'c'
 		},
 		{
-			name:'status',
-			type:'string'
-		}	
+			name:'statusLabel',
+			type:'string',
+			mapping: 'status.label'
+		},
+		'status'
 	]);
 
 	this.store = new Ext.data.JsonStore({
@@ -215,21 +214,24 @@ function Sm_HistoryData (idAppend) {
 		storeId: 'historyStore' + idAppend,
 		fields: this.fields,
 		sortInfo: {
-			field: 'ts',
+			field: 'touchTs',
 			direction: 'DESC' // or 'DESC' (case sensitive for local sorting)
 		},
 		idProperty: (v) => {
-			return v.ts + v.status
+			return v.touchTs
 		}
 	});
 
 	expander = new Ext.ux.grid.RowExpander({
 		tpl: new Ext.XTemplate(
-			'<tpl if="resultComment">',
-		  '<p><b>Detail:</b> {[SM.he(values.resultComment)]}</p>',
+			'<tpl if="detail">',
+		  '<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
 		  '</tpl>',
-		  '<tpl if="actionComment">',
-		  '<p><b>Comment:</b> {[SM.he(values.actionComment)]}</p>',
+		  '<tpl if="comment">',
+		  '<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
+		  '</tpl>',
+		  '<tpl if="status">',
+		  '<p><b>Status text:</b> {[SM.he(values.status.text)]}</p>',
 		  '</tpl>'
 		)
 	})
@@ -278,7 +280,7 @@ function Sm_HistoryData (idAppend) {
 				header: "Timestamp",
 				width: 120,
 				resizeable: false,
-				dataIndex: 'ts',
+				dataIndex: 'touchTs',
 				sortable: true,
 				align: 'left',
 				xtype: 'datecolumn',
@@ -288,7 +290,7 @@ function Sm_HistoryData (idAppend) {
 				header: "Status", 
 				width: 50,
 				fixed: true,
-				dataIndex: 'status',
+				dataIndex: 'statusLabel',
 				sortable: true,
 				renderer: renderStatuses,
 				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.status}
@@ -396,7 +398,7 @@ function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	var statusIcons = '';
 	const exportvalues = [] 
-	switch (record.data.status) {
+	switch (val) {
 		case 'saved':
 			exportvalues.push('Saved')
 			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
