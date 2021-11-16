@@ -1,8 +1,8 @@
 .. _admin-quickstart:
 
 
-STIG Manager Administrator Walkthrough
-########################################
+STIG Manager Application Manager (Administrator) Walkthrough
+########################################################################
 
 
 This Admin Walkthrough will walk you through typical responsibilities for a STIG Manager User with the Administrator role. This Walkthrough assumes you are familiar with the terms and features specified in the :ref:`user-guide-doc`.
@@ -22,6 +22,42 @@ Administrator Menu
 =======================
 
 Administrators in STIG Manager have access to 4 additional Administration tabs that other users do not, accessible from the Navigation Tree.
+
+
+.. _stig-import:
+
+STIG and SCAP Benchmarks
+---------------------------------
+
+This tab shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their rule count and revision date. This interface also allows you to import new STIGs. This can be done individually, or as a .zip file of multiple STIGs (such as the `quarterly STIG Library Compilations from DISA <https://public.cyber.mil/stigs/compilations/>`_).
+
+.. thumbnail:: /assets/images/StigAdmin.png
+   :width: 50% 
+   :show_caption: True
+   :alt: STIG Admin
+   :title: STIG Admin
+
+|
+
+.. ATTENTION::
+   **STIG Manager OSS will not be able to function as intended if you have not imported STIGs into the system.** The STIGs you import should be the ones published by DISA, as they will be used as the reference STIG for almost all STIG Manager functions.  STIGs must be imported before any Asset-STIG assignments can be made, manual evaluations performed, or .ckl files can be imported. All statistics are calculated against the latest (default) version of the STIG.
+
+
+
+.. rubric:: Import a STIG Library into STIG Manager
+   :class: rubric2
+
+#. Download the latest `quarterly STIG Library Compilations from DISA <https://public.cyber.mil/stigs/compilations/>`_ from the DISA STIG site. 
+#. From the STIGMan OSS NavTree, select the STIG and SCAP Benchmarks workspace.
+#. Click the "Import STIGs" button to be prompted to select a file for import. 
+#. Select the compilation library you downloaded. 
+#. Click "Import."  The import may run for several minutes.
+#. When finished, the workspace will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to users to assign to their Assets and for evaluations.
+
+
+--------------------------------------------------
+   
+STIG Manager uses the latest set of STIG and SCAP benchmarks as the defaults. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. However, when viewing an individual Asset older revisions of STIGs, if present, can be selected.
 
 Collections Tab
 ---------------------------
@@ -64,32 +100,6 @@ The only changes that can be made to Users in the STIG Manager interface is thei
 
 
 -------------------------------
-
-
-.. _stig-import:
-
-
-STIG and SCAP Benchmarks
----------------------------------
-
-This tab shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their rule count and revision date. This interface also allows you to import new STIGs. This can be done individually, or as a .zip file of multiple STIGs (such as the `quarterly STIG Library Compilations from DISA <cyber.mil/stigs/compilations/>`_).
-
-.. thumbnail:: /assets/images/StigAdmin.png
-   :width: 50% 
-   :show_caption: True
-   :alt: STIG Admin
-   :title: STIG Admin
-
-
-|
-
-Click the "Import STIGs" button to be prompted to select a file for import. 
-
-
-
---------------------------------------------------
-   
-STIG Manager uses one set of STIG and SCAP benchmarks. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. However, when viewing an individual Asset older revisions of STIGs, if present, can be selected.
 
 
 Application Data
