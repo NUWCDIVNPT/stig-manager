@@ -515,10 +515,10 @@ body {
 .x-fieldset {
     border-radius: 3px;
 }
-.x-body-masked .ext-el-mask, .x-masked .ext-el-mask {
+.x-body-masked .ext-el-mask {
     background-color: rgb(0 0 0 / 35%);
     backdrop-filter: blur(1px) saturate(50%);
-    opacity: unset;
+    opacity: 1;
 }
 .sm-round-panel .x-window-header {
 	color: #111;
@@ -702,7 +702,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	background-color: #fcfcfc;
 }
 .x-border-layout-ct {
-	background-color: hsla(213, 14%, 40%, 1);
+	background-color: #586574;
 }
 
 
