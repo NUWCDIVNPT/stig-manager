@@ -251,27 +251,33 @@
 </dd>
 <dt id="term-Package">Package<a class="headerlink" href="#term-Package" title="Permalink to this term">¶</a></dt><dd><p>An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections.</p>
 </dd>
-<dt id="term-Review">Review<a class="headerlink" href="#term-Review" title="Permalink to this term">¶</a></dt><dd><p>A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. A Review has several components:</p>
+<dt id="term-Review">Review<a class="headerlink" href="#term-Review" title="Permalink to this term">¶</a></dt><dd><p>A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. These Reviews are composed of Review Evaluation Content and Status properties.  Each of these pieces carry an “Attribution” that includes the User that set that Content or Status and a timestamp indicating when they did so.</p>
 <ul>
-<li><p>Evaluation - Requirements configured via Collection Settings.</p>
-<blockquote>
-<div><ul class="simple">
+<li><dl class="simple">
+<dt>Review Evaluation Content - Requirements configured via Collection Settings.</dt><dd><ul class="simple">
 <li><p>Result - Not a Finding, Not Applicable, Open</p></li>
 <li><p>Detail - Details describing the selected Result. Available according to Collection Settings.</p></li>
 <li><p>Comment - Additional information included in the Review. Available according to Collection Settings.</p></li>
+<li><p>Autoresult - Indicates result originated from an automated SCAP scan or manual source</p></li>
 </ul>
-</div></blockquote>
+</dd>
+</dl>
 </li>
-<li><p>Status - The current state of the Review in the system. A review can be Saved, Submitted, Accepted, or Rejected, according to its Collection Settings.</p>
-<blockquote>
-<div><ul class="simple">
+<li><dl class="simple">
+<dt>Status - The current state of the Review in the system. Configured via Collection Settings.</dt><dd><ul class="simple">
+<li><p>Status Label - Saved, Submitted, Accepted, or Rejected (Depends on Collection Settings.)</p></li>
+<li><p>Status Text - Contextual text describing status change. Most often used when a Review is “Rejected” and requires further work by the original Evaluator.</p></li>
+</ul>
+</dd>
+</dl>
+<ul class="simple">
 <li><p>In order to be Submitted, the Evaluation must meet the requirements set for that Collection. Hover over the <code class="docutils literal notranslate"><span class="pre">(?)</span></code> symbol for submission requirements.</p></li>
 <li><p>In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.</p></li>
 </ul>
-</div></blockquote>
 </li>
 </ul>
-<p>Each Review maintains a History, which is available to the User in the Review Resources panel. Metadata such as the User who evaluated the Rule, and a timestamp is also collected.</p>
+<p>Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Rule, the user who set the Status of a Review, and timestamps for those actions are also collected.</p>
+<p>e use of Review Status fields is <strong>optional</strong>, but many users find it handy to “Save” Reviews in progress, and then mark them “Submitted” when they consider it complete.  Collection Owners then have the option to set an “Accepted” Status for Reviews they might submit as part of an RMF package, or “Reject” Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.</p>
 </dd>
 <dt id="term-STIG">STIG<a class="headerlink" href="#term-STIG" title="Permalink to this term">¶</a></dt><dd><p>Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated SCAP results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager.</p>
 </dd>

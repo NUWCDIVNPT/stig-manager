@@ -20,5 +20,4 @@ These pages describes the Admin-level functions of STIG Manager.
 
 	admin-quickstart
 	admin-guide
-	care-and-feeding
 	

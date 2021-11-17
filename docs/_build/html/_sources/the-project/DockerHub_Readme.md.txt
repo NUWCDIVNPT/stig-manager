@@ -9,9 +9,9 @@ STIG Manager is an API and Web client for managing the assessment of Information
 **Source:** [https://github.com/NUWCDIVNPT/stig-manager](https://github.com/NUWCDIVNPT/stig-manager)
 
 ## Supported tags
-- From the latest `node:lts-alpine` base image (the default if no tag is provided)
+- From the `node:lts-alpine` base image (the default if no tag is provided)
   - `latest`, `latest-alpine`
-- From the latest [Iron Bank Node.js LTS base image](https://repo1.dso.mil/dsop/opensource/nodejs/)
+- From the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/)
   - `latest-ironbank`
 
 In addition, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.40` or `1.0.40-ironbank`

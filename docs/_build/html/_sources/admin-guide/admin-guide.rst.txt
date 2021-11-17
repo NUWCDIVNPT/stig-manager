@@ -1,26 +1,26 @@
 .. _admin-guide-doc:
 
 
-STIG Manager Admin Guide 
+STIGMan Application Management Guide 
 ###############################################
 
-STIG Manager Admin Guide
-=========================
+STIGMan App Manager Guide
+==================================
 
-Lists functionality available to Administrators in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see :ref:`installation-and-setup-index`.
+Lists functionality available to App Managers (often called "admins" for short) in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see :ref:`installation-and-setup-index`.
 
 Navigation Tree
 --------------------
-Administrators will see the Administration branch in the Navigation tree, as well as the Collections branch available to all users.
+App Managers will see the Application Management branch in the Navigation tree, as well as the Collections branch available to all users.
 
 .. index::
    single: Administration Branch
 
 .. _Administration Branch:
 
-Administration Branch
-============================
-The administration branch provides access to the following Administration panels. 
+Application Management Branch
+==================================
+The Application Management branch provides access to the following Application Management panels. 
 
 Collections Admin Panel
 --------------------------------
@@ -29,7 +29,7 @@ The columns list the Collection Name, Description, Owners, total User members, t
 
 
 .. note::
-   Be sure to assign a new Collection an Owner, or no one except for Administrators will be able to see it!
+   Be sure to assign a new Collection an Owner, or no one except for App Managers will be able to see it!
 
 
 .. thumbnail:: /assets/images/admin-collections.png
@@ -60,7 +60,7 @@ Users can be Unregistered from STIG Manager, which will delete STIGMan's informa
 
 STIG and SCAP Benchmarks Admin Panel
 -----------------------------------------
-This panel lists every STIG that has been loaded into STIG Manager and allows Admins to import new STIGs into STIG Manager.
+This panel lists every STIG that has been loaded into STIG Manager and allows App Managers to import new STIGs into STIG Manager.
 The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.
 
 Use the buttons at the top to add new STIGS, delete entire STIGs or specific revisions. STIGs can be imported individually, or as a .zip library of many STIGs.
@@ -73,7 +73,7 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 
 .. note::
-   STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by Admins, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist->Revisions menu item in the Asset Review workspace for that STIG.
+   STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by App Managers, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist->Revisions menu item in the Asset Review workspace for that STIG.
 
 
 
@@ -83,7 +83,7 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 Application Data Panel
 ------------------------------------
-This panel allows Administrators to download a representation of all data STIGMan manages, minus the Review History and STIGs.
+This panel allows App Managers to download a representation of all data STIGMan manages, minus the Review History and STIGs.
 This same data can also be imported, but be aware that if data is moved to a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.
 
 .. warning::

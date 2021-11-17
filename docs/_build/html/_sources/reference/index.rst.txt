@@ -65,20 +65,24 @@ This is a glossary with definition terms for thing like :term:`Asset`:
         An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections. 
 
     Review
-        A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. A Review has several components:
+        A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. These Reviews are composed of Review Evaluation Content and Status properties.  Each of these pieces carry an "Attribution" that includes the User that set that Content or Status and a timestamp indicating when they did so.  
 		
-        * Evaluation - Requirements configured via Collection Settings.
-		
+        * Review Evaluation Content - Requirements configured via Collection Settings.
             * Result - Not a Finding, Not Applicable, Open
             * Detail - Details describing the selected Result. Available according to Collection Settings.
             * Comment - Additional information included in the Review. Available according to Collection Settings. 
+            * Autoresult - Indicates result originated from an automated SCAP scan or manual source
 			
-        * Status - The current state of the Review in the system. A review can be Saved, Submitted, Accepted, or Rejected, according to its Collection Settings.
+        * Status - The current state of the Review in the system. Configured via Collection Settings.
+            * Status Label - Saved, Submitted, Accepted, or Rejected (Depends on Collection Settings.)
+            * Status Text - Contextual text describing status change. Most often used when a Review is "Rejected" and requires further work by the original Evaluator.
 		
-            * In order to be Submitted, the Evaluation must meet the requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
-            * In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.
+          * In order to be Submitted, the Evaluation must meet the requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
+          * In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.
 
-    	Each Review maintains a History, which is available to the User in the Review Resources panel. Metadata such as the User who evaluated the Rule, and a timestamp is also collected.
+    	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Rule, the user who set the Status of a Review, and timestamps for those actions are also collected.
+
+      The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
 
     STIG
         Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated SCAP results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
