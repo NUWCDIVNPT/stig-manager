@@ -107,7 +107,7 @@ function addCollectionAdmin( params ) {
         }
       },
       {
-        header: "Members",
+        header: "Grants",
         width: 150,
         dataIndex: 'grants',
         sortable: true
