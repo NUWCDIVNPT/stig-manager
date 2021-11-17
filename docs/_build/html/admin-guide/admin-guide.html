@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>2. STIG Manager Admin Guide &mdash; STIG Manager  documentation</title>
+  <title>2. STIGMan Application Management Guide &mdash; STIG Manager  documentation</title>
   
 
   
@@ -46,8 +46,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="3. STIG Manager Care and Feeding" href="care-and-feeding.html" />
-    <link rel="prev" title="1. STIG Manager Application Manager (Administrator) Walkthrough" href="admin-quickstart.html" /> 
+    <link rel="next" title="The STIG Manager Project" href="../the-project/index.html" />
+    <link rel="prev" title="1. STIGMan Application Manager (Administrator) Walkthrough" href="admin-quickstart.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -101,13 +101,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation-and-setup/index.html">Install, Setup, and Run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">For Admins</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="admin-quickstart.html">1. STIG Manager Application Manager (Administrator) Walkthrough</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">2. STIG Manager Admin Guide</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">2.1. STIG Manager Admin Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="admin-quickstart.html">1. STIGMan Application Manager (Administrator) Walkthrough</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">2. STIGMan Application Management Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stigman-app-manager-guide">2.1. STIGMan App Manager Guide</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#navigation-tree">2.1.1. Navigation Tree</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#administration-branch">2.2. Administration Branch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#application-management-branch">2.2. Application Management Branch</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#collections-admin-panel">2.2.1. Collections Admin Panel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#user-grants-admin-panel">2.2.2. User Grants Admin Panel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#stig-and-scap-benchmarks-admin-panel">2.2.3. STIG and SCAP Benchmarks Admin Panel</a></li>
@@ -116,7 +116,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="care-and-feeding.html">3. STIG Manager Care and Feeding</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
@@ -185,7 +184,7 @@
         
           <li><a href="index.html">For Admins</a> &raquo;</li>
         
-      <li><span class="section-number">2. </span>STIG Manager Admin Guide</li>
+      <li><span class="section-number">2. </span>STIGMan Application Management Guide</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -201,10 +200,10 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="care-and-feeding.html" class="btn btn-neutral float-right" title="3. STIG Manager Care and Feeding" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../the-project/index.html" class="btn btn-neutral float-right" title="The STIG Manager Project" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
-        <a href="admin-quickstart.html" class="btn btn-neutral float-left" title="1. STIG Manager Application Manager (Administrator) Walkthrough" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="admin-quickstart.html" class="btn btn-neutral float-left" title="1. STIGMan Application Manager (Administrator) Walkthrough" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
       
   </div>
   
@@ -213,26 +212,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="stig-manager-admin-guide">
-<span id="admin-guide-doc"></span><h1><span class="section-number">2. </span>STIG Manager Admin Guide<a class="headerlink" href="#stig-manager-admin-guide" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id1">
-<h2><span class="section-number">2.1. </span>STIG Manager Admin Guide<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>Lists functionality available to Administrators in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see <a class="reference internal" href="../installation-and-setup/index.html#installation-and-setup-index"><span class="std std-ref">Install, Setup, and Run</span></a>.</p>
+  <div class="section" id="stigman-application-management-guide">
+<span id="admin-guide-doc"></span><h1><span class="section-number">2. </span>STIGMan Application Management Guide<a class="headerlink" href="#stigman-application-management-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stigman-app-manager-guide">
+<h2><span class="section-number">2.1. </span>STIGMan App Manager Guide<a class="headerlink" href="#stigman-app-manager-guide" title="Permalink to this headline">¶</a></h2>
+<p>Lists functionality available to App Managers (often called “admins” for short) in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see <a class="reference internal" href="../installation-and-setup/index.html#installation-and-setup-index"><span class="std std-ref">Install, Setup, and Run</span></a>.</p>
 <div class="section" id="navigation-tree">
 <h3><span class="section-number">2.1.1. </span>Navigation Tree<a class="headerlink" href="#navigation-tree" title="Permalink to this headline">¶</a></h3>
-<p>Administrators will see the Administration branch in the Navigation tree, as well as the Collections branch available to all users.</p>
+<p>App Managers will see the Application Management branch in the Navigation tree, as well as the Collections branch available to all users.</p>
 </div>
 </div>
-<div class="section" id="administration-branch">
-<span id="index-0"></span><span id="id2"></span><h2><span class="section-number">2.2. </span>Administration Branch<a class="headerlink" href="#administration-branch" title="Permalink to this headline">¶</a></h2>
-<p>The administration branch provides access to the following Administration panels.</p>
+<div class="section" id="application-management-branch">
+<span id="administration-branch"></span><span id="index-0"></span><h2><span class="section-number">2.2. </span>Application Management Branch<a class="headerlink" href="#application-management-branch" title="Permalink to this headline">¶</a></h2>
+<p>The Application Management branch provides access to the following Application Management panels.</p>
 <div class="section" id="collections-admin-panel">
 <h3><span class="section-number">2.2.1. </span>Collections Admin Panel<a class="headerlink" href="#collections-admin-panel" title="Permalink to this headline">¶</a></h3>
 <p>This Panel lists every Collection in the STIGMan system, and allows you to create, delete, and alter them with the buttons at the top.
 The columns list the Collection Name, Description, Owners, total User members, total Assets, total assigned STIGs, and the date of creation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Be sure to assign a new Collection an Owner, or no one except for Administrators will be able to see it!</p>
+<p>Be sure to assign a new Collection an Owner, or no one except for App Managers will be able to see it!</p>
 </div>
 <figure class="">
             <a 
@@ -272,7 +271,7 @@ The columns list the Collection Name, Description, Owners, total User members, t
 <hr class="docutils" />
 <div class="section" id="stig-and-scap-benchmarks-admin-panel">
 <h3><span class="section-number">2.2.3. </span>STIG and SCAP Benchmarks Admin Panel<a class="headerlink" href="#stig-and-scap-benchmarks-admin-panel" title="Permalink to this headline">¶</a></h3>
-<p>This panel lists every STIG that has been loaded into STIG Manager and allows Admins to import new STIGs into STIG Manager.
+<p>This panel lists every STIG that has been loaded into STIG Manager and allows App Managers to import new STIGs into STIG Manager.
 The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.</p>
 <p>Use the buttons at the top to add new STIGS, delete entire STIGs or specific revisions. STIGs can be imported individually, or as a .zip library of many STIGs.</p>
 <figure class="">
@@ -290,13 +289,13 @@ The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revi
                 </a><figcaption>STIGs Administration</figcaption>
             </figure><div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by Admins, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist-&gt;Revisions menu item in the Asset Review workspace for that STIG.</p>
+<p>STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by App Managers, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist-&gt;Revisions menu item in the Asset Review workspace for that STIG.</p>
 </div>
 <hr class="docutils" />
 </div>
 <div class="section" id="application-data-panel">
 <span id="app-data"></span><h3><span class="section-number">2.2.4. </span>Application Data Panel<a class="headerlink" href="#application-data-panel" title="Permalink to this headline">¶</a></h3>
-<p>This panel allows Administrators to download a representation of all data STIGMan manages, minus the Review History and STIGs.
+<p>This panel allows App Managers to download a representation of all data STIGMan manages, minus the Review History and STIGs.
 This same data can also be imported, but be aware that if data is moved to a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -328,8 +327,8 @@ This same data can also be imported, but be aware that if data is moved to a dif
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="care-and-feeding.html" class="btn btn-neutral float-right" title="3. STIG Manager Care and Feeding" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="admin-quickstart.html" class="btn btn-neutral float-left" title="1. STIG Manager Application Manager (Administrator) Walkthrough" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../the-project/index.html" class="btn btn-neutral float-right" title="The STIG Manager Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="admin-quickstart.html" class="btn btn-neutral float-left" title="1. STIGMan Application Manager (Administrator) Walkthrough" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

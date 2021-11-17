@@ -238,7 +238,7 @@
 <span id="user-guide-doc"></span><h1><span class="section-number">2. </span>STIG Manager User Guide<a class="headerlink" href="#stig-manager-user-guide" title="Permalink to this headline">¶</a></h1>
 <p class="rubric">The STIG Manager User Interface</p>
 <p>This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privilege.</p>
-<p>Please see the <a class="reference internal" href="../admin-guide/admin-guide.html#admin-guide-doc"><span class="std std-ref">STIG Manager Admin Guide</span></a> for Administrative functions.</p>
+<p>Please see the <a class="reference internal" href="../admin-guide/admin-guide.html#admin-guide-doc"><span class="std std-ref">STIGMan Application Management Guide</span></a> for Administrative functions.</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/wv_Gdbl_LrU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><hr class="docutils" />
 <iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><p>When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right.</p>
 <p class="rubric3 rubric">Overall Organization</p>
@@ -573,11 +573,23 @@ It also provides information about the Controls associated with this Rule, inclu
 <div class="section" id="attributions">
 <h4><span class="section-number">2.5.4.2. </span>Attributions<a class="headerlink" href="#attributions" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li><p>Modified: The User and Timestamp associated with the last change to this Review.</p></li>
-<li><p>Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.</p></li>
-<li><p>Last Accepted: (Coming soon!) The last time a Review was set to an “Accepted” status, if it is not “Accepted” now.</p></li>
+<li><p>Reviewed: The User and Timestamp associated with the last change to this Reviews content.</p></li>
+<li><p>Last Status Change: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected) are tracked separately and displayed here.</p></li>
 </ul>
-</div>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/review-eval-panel1.png"
+               title="Review Evaluation Panel with Attributions"
+               data-title="Review Evaluation Panel with Attributions"
+               
+               ><img src="../_images/review-eval-panel1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Review Evaluation Panel with Attributions</figcaption>
+            </figure></div>
 <div class="section" id="save-and-save-submit-buttons">
 <h4><span class="section-number">2.5.4.3. </span>Save and Save/Submit Buttons<a class="headerlink" href="#save-and-save-submit-buttons" title="Permalink to this headline">¶</a></h4>
 <p>The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review.  In most use cases, the goal for Evaluators will be to get every Review into a “Submitted” state.  Once Submitted, the Collection Owner can set the Review to “Accepted” to indicate they have ok’d it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.</p>
@@ -752,10 +764,11 @@ From this Workspace, the User can:</p>
 </div>
 <div class="section" id="collection-settings-tab">
 <h4><span class="section-number">2.8.1.2. </span>Collection Settings Tab<a class="headerlink" href="#collection-settings-tab" title="Permalink to this headline">¶</a></h4>
-<p>Settings that affect the behavior of this Collection are available here.</p>
-<p>If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews in this Collection.</p>
+<p>If you have the proper Grant to a Collection, you can modify settings that affect the behavior of this Collection and its Reviews.</p>
+<p class="rubric">Review Fields Settings</p>
+<p>If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews to be Submitted in this Collection.</p>
 <dl class="simple">
-<dt>The default Settings for Reviews in Collections are:</dt><dd><ul class="simple">
+<dt>The default Settings for Review Submission in Collections are:</dt><dd><ul class="simple">
 <li><p>Always display the Detail field.</p></li>
 <li><p>Require text in the Detail field in order to Submit.</p></li>
 <li><p>Display the Comment field for “Findings only”.</p></li>
@@ -763,7 +776,19 @@ From this Workspace, the User can:</p>
 </ul>
 </dd>
 </dl>
-<p>You can also control whether you want to allow certain Users to Accept or Reject reviews. The Grants levels required to do this can also be selected.</p>
+<p class="rubric">Review Status Settings</p>
+<p>Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject reviews. The Grant levels required to do this can also be selected.</p>
+<dl class="simple">
+<dt>The default Settings for Review Status are:</dt><dd><ul class="simple">
+<li><p>Reset Status to “Saved” when Review Result changes (As opposed to ANY Review field change, the other option).</p></li>
+<li><p>Enable Reviews to be set to either Accepted or Rejected Status</p>
+<ul>
+<li><p>User must have “Manage or Owner” Grants to “Accept or Reject” Reviews (As opposed to just Owners)</p></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 <figure class="">
             <a 
                data-lightbox="group-default"

@@ -19,7 +19,6 @@ These pages describe the STIG Manager project.
 	:maxdepth: 1
 	:caption: Contents:
 
-	security
 	contributing
 	testing
 	documentation
@@ -48,11 +47,6 @@ STIG Manager is a modern, containerized application built to take full advantage
 
 
 
-
-Support
-==============
-
-The STIG Manager team is usually available on the Flank Speed instance of Microsoft Teams
 
 |
 

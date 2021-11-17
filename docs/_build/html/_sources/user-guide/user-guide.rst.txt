@@ -346,9 +346,14 @@ The default Settings for Reviews in Collections are:
 
 Attributions
 ~~~~~~~~~~~~~~~
-- Modified: The User and Timestamp associated with the last change to this Review.
-- Last Status Change: (Coming soon!)  Changes to the status of a review (Saved, Submitted, Accepted, or Rejected) will be tracked separately and displayed here.
-- Last Accepted: (Coming soon!) The last time a Review was set to an "Accepted" status, if it is not "Accepted" now. 
+- Reviewed: The User and Timestamp associated with the last change to this Reviews content.
+- Last Status Change: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected) are tracked separately and displayed here.
+
+.. thumbnail:: /assets/images/review-eval-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Evaluation Panel with Attributions
+
 
 
 Save and Save/Submit Buttons
@@ -510,23 +515,41 @@ When a User with a Restricted Grant is selected, the "User access..." button is 
 Collection Settings Tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Settings that affect the behavior of this Collection are available here. 
+If you have the proper Grant to a Collection, you can modify settings that affect the behavior of this Collection and its Reviews. 
 
-If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews in this Collection. 
 
-The default Settings for Reviews in Collections are:
+.. rubric:: Review Fields Settings
+   :class: rubric
+
+
+If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews to be Submitted in this Collection. 
+
+The default Settings for Review Submission in Collections are:
       - Always display the Detail field.
       - Require text in the Detail field in order to Submit. 
       - Display the Comment field for "Findings only".
       - Require text in the Comment field for "Findings only" in order to Submit.
 
-You can also control whether you want to allow certain Users to Accept or Reject reviews. The Grants levels required to do this can also be selected. 
+.. rubric:: Review Status Settings
+   :class: rubric
+
+
+Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject reviews. The Grant levels required to do this can also be selected. 
+
+The default Settings for Review Status are: 
+      - Reset Status to "Saved" when Review Result changes (As opposed to ANY Review field change, the other option).
+      - Enable Reviews to be set to either Accepted or Rejected Status 
+
+        * User must have "Manage or Owner" Grants to "Accept or Reject" Reviews (As opposed to just Owners)
+
 
 
 .. thumbnail:: /assets/images/collection-manage-review-fields.png
       :width: 50% 
       :show_caption: True
       :title: Review Requirements
+
+
 
 
 -------------------------------
