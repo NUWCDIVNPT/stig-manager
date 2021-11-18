@@ -38,13 +38,12 @@ async function addCollectionManager( params ) {
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			region: 'west',
 			width: '30%',
-			minWidth: 330,
+			minWidth:430,
 			padding: '10px 10px 10px 10px',
 			border: false,
 			split: true,
 			layout: 'fit',
-			allowDelete: collectionGrant.accessLevel === 4,
-			height: 420
+			allowDelete: collectionGrant.accessLevel === 4
 		})
 		let assetGrid = new SM.CollectionAssetGrid({
 			collectionId: collectionId,
