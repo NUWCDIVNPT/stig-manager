@@ -1,31 +1,54 @@
+1.1.0
+-----
+Commits:
+
+- ui: styling tweaks (#517)
+- docs: consolidated some redundant docs, added info about collection settings, updated screenshots (#514)
+- feat: update UI labels (#513)
+- feat: review status handling (#511)
+
+Includes breaking changes to the OpenAPI definition that affect clients such as `STIG Manager Watcher <https://github.com/NUWCDIVNPT/stigman-watcher>`_. Some properties of the schemas for ``Review...`` and ``ReviewHistory...`` have been changed, renamed or removed:
+
+- ``resultComment`` is renamed to ``detail``
+- ``actionComment`` is renamed to ``comment``
+- ``action`` is removed
+- ``status`` value can be either a string or an object. See the definition for details.
+
+Includes a MySQL migration that changes the schema for tables ``review`` and ``reviewHistory``. 
+
+- The running time of the migration depends on the number of records in those tables. 
+- The migration also drops the small, static table ``action``.
+- We recommend backing up the database before updating to any release with a database migration. 
+
+  
 1.0.42
 ------
-fix: CKL comments restored (#505)
-oas: Various OAS changes to enable better response validation (#500)
-fix: always sort Collection Review to top (#501)
+- fix: CKL comments restored (#505)
+- oas: Various OAS changes to enable better response validation (#500)
+- fix: always sort Collection Review to top (#501)
 
 1.0.41
 ------
-fix: filter grid on asset name (#498)
-feat: UI support for STIG/revision delete (#491)
-refactor: unhandled rejections (#490)
-doc: Additional documentation updates, links. (#489)
-doc: Added project security policy, security docs, docker trust public key, stigman sample .ckl (#486)
-feat: choice to export mono- or multi-STIG CKLs (#480)
-refactor: await _migrations table (#476)
+- fix: filter grid on asset name (#498)
+- feat: UI support for STIG/revision delete (#491)
+- refactor: unhandled rejections (#490)
+- doc: Additional documentation updates, links. (#489)
+- doc: Added project security policy, security docs, docker trust public key, stigman sample .ckl (#486)
+- feat: choice to export mono- or multi-STIG CKLs (#480)
+- refactor: await _migrations table (#476)
 
 1.0.40
 ------
-fix: allowReserved for office query param (#474)
-deps: rm connect,compression, request; update xlsx-template (#473)
-feat: STIG Library feature introduced (#472)
-refactor: ui rendering (#471)
-refactor: reduce web client smells (#470)
-feat: column filters (#469)
-chore: fictionalize appdata city (#468)
-chore: remove unused client dockerfile (#467)
-fix: encode office query param (#466)
-feat: userObject.display tries username or servicename (#463)
+- fix: allowReserved for office query param (#474)
+- deps: rm connect,compression, request; update xlsx-template (#473)
+- feat: STIG Library feature introduced (#472)
+- refactor: ui rendering (#471)
+- refactor: reduce web client smells (#470)
+- feat: column filters (#469)
+- chore: fictionalize appdata city (#468)
+- chore: remove unused client dockerfile (#467)
+- fix: encode office query param (#466)
+- feat: userObject.display tries username or servicename (#463)
 
 1.0.0-beta.39
 -----------------------
