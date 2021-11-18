@@ -437,6 +437,7 @@ body {
 	border-radius: 3px;
 	margin-left: 12px;
 	user-select: none;
+	display: inline-block;
 }
 
 .sm-navtree-sprite {
@@ -872,10 +873,10 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 }
 
 .cs-home-header-top {
-	font: bold 24px Open Sans, helvetica, sans-serif;
+	font: bold 22px Open Sans, helvetica, sans-serif;
 }
 .sm-rule-content-header-top {
-	font: bold 24px Open Sans, helvetica, sans-serif;
+	font: bold 22px Open Sans, helvetica, sans-serif;
 }
 
 .cs-home-header-reviews {

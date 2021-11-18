@@ -117,6 +117,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 100,
                 dataIndex: 'fqdn',
 				sortable: true,
+                hidden: true,
                 renderer: SM.styledEmptyRenderer,
                 filter: {type: 'string'}
 			},
@@ -130,6 +131,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
             { 	
 				header: "MAC",
+                hidden: true,
                 fixed: true,
 				width: 110,
                 dataIndex: 'mac',

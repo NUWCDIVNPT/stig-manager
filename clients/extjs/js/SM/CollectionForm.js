@@ -655,7 +655,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
         let config = {
             baseCls: 'x-plain',
             cls: 'sm-collection-manage-layout sm-round-panel',
-            bodyStyle: 'padding:10px 10px 10px 10px;',
+            bodyStyle: 'padding: 9px;',
             border: false,
             labelWidth: 100,
             monitorValid: true,
@@ -891,6 +891,12 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             iconCls: 'sm-trash-icon',
             // cls: 'sm-bare-button',
             width: 25,
+            template: new Ext.Template(
+                '<table id="{4}" cellspacing="0" class="x-btn {3}"><tbody class="{1}">',
+                '<tr><td class="x-btn-tl" style="background-image:none;"><i>&#160;</i></td><td class="x-btn-tc" style="background-image:none;"></td><td class="x-btn-tr" style="background-image:none;"><i>&#160;</i></td></tr>',
+                '<tr><td class="x-btn-ml" style="background-image:none;"><i>&#160;</i></td><td class="x-btn-mc" style="background-image:none;"><em class="{2} x-unselectable" unselectable="on"><button type="{0}"></button></em></td><td class="x-btn-mr" style="background-image:none;"><i>&#160;</i></td></tr>',
+                '<tr><td class="x-btn-bl" style="background-image:none;"><i>&#160;</i></td><td class="x-btn-bc" style="background-image:none;"></td><td class="x-btn-br" style="background-image:none;"><i>&#160;</i></td></tr>',
+                '</tbody></table>'),
             border: false,
             handler: async function () {
                 try {

@@ -231,6 +231,9 @@ function Sm_HistoryData (idAppend) {
 		  '<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
 		  '</tpl>',
 		  '<tpl if="status">',
+		  '<p><b>Status user:</b> {[SM.he(values.status.user.username)]}</p>',
+		  '</tpl>',
+		  '<tpl if="status">',
 		  '<p><b>Status text:</b> {[SM.he(values.status.text)]}</p>',
 		  '</tpl>'
 		)
