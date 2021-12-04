@@ -1,7 +1,7 @@
 .. _logging:
 
 
-STIG Manager Logging 
+Logging 
 ########################################
 
 

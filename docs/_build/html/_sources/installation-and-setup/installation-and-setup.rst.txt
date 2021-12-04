@@ -4,15 +4,25 @@
 STIG Manager OSS Setup and Technical Information
 ########################################################## 
 
-The STIG Manager open-source project provides an API and Web Client which are designed for deployment in a containerized service that is part of a fully orchestrated STIG Manager application. A STIG Manager application includes at least two other mandatory services:
+The STIG Manager open-source project provides an API and Web Client. The project is ideal for deployment as containerized service components that are part of a fully orchestrated individual or enterprise STIG Manager web application, but can also be run from source code in a Node.js runtime environment. 
 
-#. An OpenID Connect (OIDC) Provider
-#. A MySQL database
+Several deployment approaches are described in this document:
+
+- :ref:`Deploy our sample Docker Compose orchestration<deploy-docker-compose>`
+- :ref:`Deploy with Individual Containers <deploy-container>`
+- :ref:`Deploy from Source Code in Node.js runtime environment <deploy-from-source>`
+
+A STIG Manager deployment requires at least two other mandatory services, which are freely available but must be provided and configured by the those deploying the STIG Manager instance:
+  - An OpenID Connect (OIDC) Provider
+  - A MySQL database
+
+A sample orchestration, which includes the STIGMan API, Web Client, a Keycloak container, and a MySQL container, is available on our Docker Hub page. Follow the `Quick Start Orchestration instructions on Docker Hub. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
 The STIG Manager application is often deployed at the enterprise level with orchestration platforms such as Kubernetes or OpenShift. However, containerization allows STIG Manager deployments to be readily scaled up or down and it can be orchestrated on a single laptop with tools such as docker-compose.
 
 .. note::
   Containerized deployments of STIG manager are highly recommended because they offer improved security, scalability, portability, and maintenance. If absolutely necessary, it is possible to deploy the STIG Manager API in legacy environments from source code, but this is not recommended for secure deployments and is not fully documented. 
+
 
 
 Common Components 
@@ -26,6 +36,7 @@ Common Components
 
 -------------------------------
 
+The required and optional components of a STIG Manager OSS deployment are described below. 
 
 API (Always Required)
 -----------------------------------
@@ -63,25 +74,37 @@ Log Analysis (Recommended)
 A centralized log aggregation, analysis and reporting capability. Examples include Splunk, Solar Winds Security Event Manager, Elasticsearch, etc.
 
 
-Deployment Scenarios for Product Evaluation
+Deployment Scenarios
 ===============================================
 
+
+.. _deploy-docker-compose:
 
 Quick Start Orchestration with Docker Compose
 -------------------------------------------------
 
+Requirements
+~~~~~~~~~~~~~~
+
+- `Docker <https://www.docker.com/get-started>`_
+
 To quickly establish a demonstration instance of STIG Manager, follow the `Quick Start Orchestration instructions on Docker Hub. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
 
-Container Deployment with Docker Desktop
+.. _deploy-container:
+
+Container Deployment with Docker
 -------------------------------------------------
 
-Using the STIG Manager container image is the recommended way to deploy the app. These instructions specify a Docker Desktop deployment, but the app will run just as well in a Kubernetes or other orchestration environment. Using this deployment approach satisfies the application's NodeJS requirement.
+Using the STIG Manager container image is the recommended way to deploy the app. These instructions specify a Docker deployment, but the app will run just as well in a Kubernetes or other orchestration environment. Using this deployment approach satisfies the application's NodeJS requirement.
 
 Requirements
 ~~~~~~~~~~~~~~
 
-`Docker <https://www.docker.com/get-started>`_
+- `Docker <https://www.docker.com/get-started>`_
+- :ref:`OIDC Authentication Provider <keycloak>`
+- :ref:`mySQL`
+
 
 Procedure
 ~~~~~~~~~~~~~~~~~~~~~
@@ -95,11 +118,11 @@ Procedure
    *Make note of the address and ports these servers are using (as well as any other values that differ from the defaults). Set the appropriate* :ref:`Environment Variables` *to these values so STIG Manager will be able to reach them*
 
 #. Pull the latest image from Docker Hub. This command will grab the image based on the Iron Bank NodeJS hardened image:  ``docker pull nuwcdivnpt/stig-manager:latest-ironbank``
-#. Run the STIG Manager image. Specify Environment Variables if the defaults in the :ref:`Environment Variables` reference do not work for your environment. Set the Environment Variables using ``-e <Variable Name>=<value>`` parameters. A sample docker run command, exposing port 54000, and creating a container named "stig-manager" is shown here:
+#. Run the STIG Manager image using the ``docker run`` command. Specify Environment Variables if the defaults in the :ref:`Environment Variables` reference do not work for your environment. Set the Environment Variables using ``-e <Variable Name>=<value>`` parameters. A sample docker run command, exposing port 54000, and creating a container named "stig-manager" is shown here:
 
    .. code-block:: bash
 
-      docker run --name stig-manager \
+      docker run --name stig-manager -d \
       -p 54000:54000 \
       -e STIGMAN_DB_HOST=<DATABASE_IP> \
       -e STIGMAN_DB_PORT=<DATABASE_PORT> \
@@ -118,18 +141,20 @@ Procedure
       [START] Client is available at /
 
 
-
+.. _deploy-from-source:
 
 Deployment from Source Code
 -------------------------------
 
-STIG Manager can be deployed from source if the proper Node.js runtime is provided. These instructions relate to a Windows deployment, but the app will run just as well wherever Node.JS is available. 
+STIG Manager can be deployed from source if the proper Node.js runtime is provided. These instructions relate to a Windows deployment, but the app will run just as well wherever Node.js is available. 
 
 
 Requirements
 ~~~~~~~~~~~~~~
 
-- `Node.js 14.15+ <https://nodejs.org/en/>`_
+- `Node.js 16.13+ <https://nodejs.org/en/>`_
+- :ref:`OIDC Authentication Provider <keycloak>`
+- :ref:`mySQL`
 - `git <https://git-scm.com/downloads>`_ *(recommended)*
 
 
