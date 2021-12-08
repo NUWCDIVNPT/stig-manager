@@ -100,16 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Setup and Deployment</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">1. STIG Manager OSS Setup and Technical Information</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#common-components">1.1. Common Components</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#api-always-required">1.1.1. API (Always Required)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#web-client-recommended-for-interactive-access">1.1.2. Web Client (Recommended for Interactive Access)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#oidc-provider-always-required">1.1.3. OIDC Provider (Always Required)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#mysql-database-always-required">1.1.4. MySQL Database (Always Required)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#reverse-proxy-recommended">1.1.5. Reverse Proxy (Recommended)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#log-collector-recommended">1.1.6. Log Collector (Recommended)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#log-analysis-recommended">1.1.7. Log Analysis (Recommended)</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#common-components">1.1. Common Components</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deployment-scenarios">1.2. Deployment Scenarios</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#quick-start-orchestration-with-docker-compose">1.2.1. Quick Start Orchestration with Docker Compose</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#container-deployment-with-docker">1.2.2. Container Deployment with Docker</a></li>
@@ -273,36 +264,19 @@
                      alt=""/>
                 </a><figcaption>Component Diagram</figcaption>
             </figure><hr class="docutils" />
-<p>The required and optional components of a STIG Manager OSS deployment are described below.</p>
-<div class="section" id="api-always-required">
-<h3><span class="section-number">1.1.1. </span>API (Always Required)<a class="headerlink" href="#api-always-required" title="Permalink to this headline">¶</a></h3>
-<p>A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.</p>
+<p>The required and optional components of a STIG Manager OSS deployment:</p>
+<dl class="simple">
+<dt><strong>API</strong> (Always Required)</dt><dd><p>A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.</p>
+</dd>
+<dt><strong>Web Client</strong> (Recommended for Interactive Access)</dt><dd><p>A Single Page Application (SPA) using the ExtJS 3.4 JavaScript framework. The Web Client is often enabled as static content from the API container which does not require a separate container.</p>
+</dd>
+<dt><strong>OIDC Provider</strong>  (Always Required)</dt><dd><p>An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.</p>
+</dd>
+<dt><strong>MySQL Database</strong>  (Always Required)</dt><dd><p>A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.</p>
+</dd>
+</dl>
 </div>
-<div class="section" id="web-client-recommended-for-interactive-access">
-<h3><span class="section-number">1.1.2. </span>Web Client (Recommended for Interactive Access)<a class="headerlink" href="#web-client-recommended-for-interactive-access" title="Permalink to this headline">¶</a></h3>
-<p>A Single Page Application (SPA) using the ExtJS 3.4 JavaScript framework. The Web Client is often enabled as static content from the API container which does not require a separate container.</p>
-</div>
-<div class="section" id="oidc-provider-always-required">
-<h3><span class="section-number">1.1.3. </span>OIDC Provider (Always Required)<a class="headerlink" href="#oidc-provider-always-required" title="Permalink to this headline">¶</a></h3>
-<p>An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.</p>
-</div>
-<div class="section" id="mysql-database-always-required">
-<h3><span class="section-number">1.1.4. </span>MySQL Database (Always Required)<a class="headerlink" href="#mysql-database-always-required" title="Permalink to this headline">¶</a></h3>
-<p>A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.</p>
-</div>
-<div class="section" id="reverse-proxy-recommended">
-<h3><span class="section-number">1.1.5. </span>Reverse Proxy (Recommended)<a class="headerlink" href="#reverse-proxy-recommended" title="Permalink to this headline">¶</a></h3>
-<p>An endpoint management capability that can provide mutual TLS authentication, including DoD Common Access Card (CAC), and TLS encryption for the API, Web Client, and OIDC Provider (if required).</p>
-</div>
-<div class="section" id="log-collector-recommended">
-<h3><span class="section-number">1.1.6. </span>Log Collector (Recommended)<a class="headerlink" href="#log-collector-recommended" title="Permalink to this headline">¶</a></h3>
-<p>A centralized logging capability that collects log records from all orchestration components. Most orchestration platforms provide some form of log collection.</p>
-</div>
-<div class="section" id="log-analysis-recommended">
-<h3><span class="section-number">1.1.7. </span>Log Analysis (Recommended)<a class="headerlink" href="#log-analysis-recommended" title="Permalink to this headline">¶</a></h3>
-<p>A centralized log aggregation, analysis and reporting capability. Examples include Splunk, Solar Winds Security Event Manager, Elasticsearch, etc.</p>
-</div>
-</div>
+<hr class="docutils" />
 <div class="section" id="deployment-scenarios">
 <h2><span class="section-number">1.2. </span>Deployment Scenarios<a class="headerlink" href="#deployment-scenarios" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="quick-start-orchestration-with-docker-compose">

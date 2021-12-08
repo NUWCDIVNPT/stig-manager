@@ -34,44 +34,21 @@ Common Components
   :title: Component Diagram
 
 
+
 -------------------------------
 
-The required and optional components of a STIG Manager OSS deployment are described below. 
+The required and optional components of a STIG Manager OSS deployment:
 
-API (Always Required)
------------------------------------
+**API** (Always Required)
+  A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.
+**Web Client** (Recommended for Interactive Access)
+  A Single Page Application (SPA) using the ExtJS 3.4 JavaScript framework. The Web Client is often enabled as static content from the API container which does not require a separate container.
+**OIDC Provider**  (Always Required)
+  An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.
+**MySQL Database**  (Always Required)
+  A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.
 
-A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.
-
-Web Client (Recommended for Interactive Access)
--------------------------------------------------------------------------------
-
-A Single Page Application (SPA) using the ExtJS 3.4 JavaScript framework. The Web Client is often enabled as static content from the API container which does not require a separate container.
-
-OIDC Provider (Always Required)
-------------------------------------------------
-
-An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.
-
-MySQL Database (Always Required)
--------------------------------------------------
-
-A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.
-
-Reverse Proxy (Recommended)
---------------------------------------------------------------
-
-An endpoint management capability that can provide mutual TLS authentication, including DoD Common Access Card (CAC), and TLS encryption for the API, Web Client, and OIDC Provider (if required).
-
-Log Collector (Recommended)
---------------------------------------------------------------
-
-A centralized logging capability that collects log records from all orchestration components. Most orchestration platforms provide some form of log collection.
-
-Log Analysis (Recommended)
-------------------------------------------------------
-
-A centralized log aggregation, analysis and reporting capability. Examples include Splunk, Solar Winds Security Event Manager, Elasticsearch, etc.
+-------------------------------
 
 
 Deployment Scenarios
