@@ -207,16 +207,34 @@
             
   <div class="section" id="logging">
 <span id="id1"></span><h1><span class="section-number">4. </span>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h1>
-<p>STIG Manager writes all log entries to STDOUT. Use the <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">logs</span></code> or equivalent container engine command to view them.</p>
-<p>How you capture and persist these log entries will depend on your Organizational requirements.</p>
+<p>STIG Manager writes all log entries to STDOUT.  How you capture and persist these log entries will depend on your Organizational requirements.</p>
 <p class="rubric">Log format</p>
-<p>HTTP transactions handled by the API are logged to STDOUT following the Apache Common Log Format. Fields are in this order:</p>
-<p><code class="docutils literal notranslate"><span class="pre">:remote-addr</span> <span class="pre">:forwarded-for</span> <span class="pre">:token-user</span> <span class="pre">[:date[clf]]</span> <span class="pre">&quot;:method</span> <span class="pre">:url</span> <span class="pre">HTTP/:http-version&quot;</span> <span class="pre">:status</span> <span class="pre">:res[content-length]</span></code></p>
-<p>At startup log entries may be preceded by labels such <code class="docutils literal notranslate"><span class="pre">[AUTH]</span></code> or <code class="docutils literal notranslate"><span class="pre">[DB]</span></code> indicating the portion of the API that is attempting to establish itself.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The logging conventions currently implemented are candidates for future development.</p>
+<p>The API implements a structured logging format in JSON, and supports several logging levels and modes.</p>
+<p>Log entries will conform to the following JSON schema:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="nt">properties</span><span class="p">:</span>
+    <span class="nt">date</span><span class="p">:</span>
+        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+    <span class="nt">level</span><span class="p">:</span>
+        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+    <span class="nt">component</span><span class="p">:</span>
+        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+    <span class="nt">type</span><span class="p">:</span>
+        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+    <span class="nt">data</span><span class="p">:</span>
+        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="nt">required</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">date</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">level</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">component</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span>
+<span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">data</span>
+</pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> object is extensible and will contain structured details concerning the event.</p>
+<p>The contents of the logs can be controlled with the following <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a>:</p>
+<p><strong>STIGMAN_LOG_LEVEL</strong> Default: <code class="docutils literal notranslate"><span class="pre">3</span></code>  Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs.</p>
+<p><strong>STIGMAN_LOG_MODE</strong> Default: <code class="docutils literal notranslate"><span class="pre">combined</span></code>  Controls whether the API will create one “combined” log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry.  Any value other than “combined” will produce separate log entries.</p>
 </div>
 
 

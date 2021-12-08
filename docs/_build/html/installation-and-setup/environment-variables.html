@@ -366,6 +366,14 @@
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code> The access token claim whose value is the user’s username</p></td>
 <td><p>API, Client</p></td>
 </tr>
+<tr class="row-even"><th class="stub"><p>STIGMAN_LOG_LEVEL</p></th>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">3</span></code> Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs.</p></td>
+<td><p>API</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_LOG_MODE</p></th>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">combined</span></code> Controls whether the logs will create one “combined” log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry.</p></td>
+<td><p>API</p></td>
+</tr>
 <tr class="row-even"><th class="stub"><p>STIGMAN_OIDC_PROXY_HOST</p></th>
 <td><p><strong>No default</strong> The <code class="docutils literal notranslate"><span class="pre">Host:</span></code> header value to be used by the CORS proxy for outbound requests. Some OIDC providers return configuration metadata with endpoint URLs having this value as their base.</p></td>
 <td><p>API, Client</p></td>
