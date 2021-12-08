@@ -56,6 +56,13 @@ Users can be Unregistered from STIG Manager, which will delete STIGMan's informa
       :title: User Grants Administration
 
 
+User Properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Last Claims
+
+
 ------------------------------
 
 STIG and SCAP Benchmarks Admin Panel

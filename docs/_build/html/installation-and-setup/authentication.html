@@ -98,7 +98,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Setup and Deployment</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">2. Authentication and Identity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#json-web-token-jwt-requirements">2.1. JSON Web Token (JWT) Requirements</a><ul>
@@ -115,8 +115,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="securing.html">8. Securing and Assessing STIG Manager Deployments</a></li>
@@ -188,7 +188,7 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
+          <li><a href="index.html">Setup and Deployment</a> &raquo;</li>
         
       <li><span class="section-number">2. </span>Authentication and Identity</li>
     
@@ -220,7 +220,7 @@
             
   <div class="section" id="authentication-and-identity">
 <span id="authentication"></span><h1><span class="section-number">2. </span>Authentication and Identity<a class="headerlink" href="#authentication-and-identity" title="Permalink to this headline">¶</a></h1>
-<p>The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access.  The STIG Manager OSS Project suggests the use of the Authorization Code Flow with Proof Key for Code Exchange (PKCE)​ flavor of OAuth 2.0​.</p>
+<p>The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access. The STIG Manager OSS Project suggests the use of the <strong>Authorization Code Flow with Proof Key for Code Exchange</strong> (PKCE)​ flavor of OAuth 2.0​.</p>
 <p>STIG Manager OSS has been tested to work with Keycloak and Okta as OIDC providers.  It is expected to work with other OIDC providers if they can be configured to provide a token that meets the requirements specified below. Please create an Issue with details on our GitHub project if you experience issues with other providers.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

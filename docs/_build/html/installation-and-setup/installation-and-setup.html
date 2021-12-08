@@ -47,7 +47,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="2. Authentication and Identity" href="authentication.html" />
-    <link rel="prev" title="Install, Setup, and Run" href="index.html" /> 
+    <link rel="prev" title="Setup and Deployment" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -98,21 +98,12 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Setup and Deployment</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">1. STIG Manager OSS Setup and Technical Information</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#common-components">1.1. Common Components</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#api-always-required">1.1.1. API (Always Required)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#web-client-recommended-for-interactive-access">1.1.2. Web Client (Recommended for Interactive Access)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#oidc-provider-always-required">1.1.3. OIDC Provider (Always Required)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#mysql-database-always-required">1.1.4. MySQL Database (Always Required)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#reverse-proxy-recommended">1.1.5. Reverse Proxy (Recommended)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#log-collector-recommended">1.1.6. Log Collector (Recommended)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#log-analysis-recommended">1.1.7. Log Analysis (Recommended)</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#deployment-scenarios-for-product-evaluation">1.2. Deployment Scenarios for Product Evaluation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-components">1.1. Common Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deployment-scenarios">1.2. Deployment Scenarios</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#quick-start-orchestration-with-docker-compose">1.2.1. Quick Start Orchestration with Docker Compose</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#container-deployment-with-docker-desktop">1.2.2. Container Deployment with Docker Desktop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#container-deployment-with-docker">1.2.2. Container Deployment with Docker</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deployment-from-source-code">1.2.3. Deployment from Source Code</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#common-configuration-variables">1.2.4. Common Configuration Variables</a></li>
 </ul>
@@ -132,8 +123,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="authentication.html">2. Authentication and Identity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="securing.html">8. Securing and Assessing STIG Manager Deployments</a></li>
@@ -205,7 +196,7 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
+          <li><a href="index.html">Setup and Deployment</a> &raquo;</li>
         
       <li><span class="section-number">1. </span>STIG Manager OSS Setup and Technical Information</li>
     
@@ -226,7 +217,7 @@
         <a href="authentication.html" class="btn btn-neutral float-right" title="2. Authentication and Identity" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Install, Setup, and Run" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Setup and Deployment" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
       
   </div>
   
@@ -237,11 +228,21 @@
             
   <div class="section" id="stig-manager-oss-setup-and-technical-information">
 <span id="installation-and-setup"></span><h1><span class="section-number">1. </span>STIG Manager OSS Setup and Technical Information<a class="headerlink" href="#stig-manager-oss-setup-and-technical-information" title="Permalink to this headline">¶</a></h1>
-<p>The STIG Manager open-source project provides an API and Web Client which are designed for deployment in a containerized service that is part of a fully orchestrated STIG Manager application. A STIG Manager application includes at least two other mandatory services:</p>
-<ol class="arabic simple">
+<p>The STIG Manager open-source project provides an API and Web Client. The project is ideal for deployment as containerized service components that are part of a fully orchestrated individual or enterprise STIG Manager web application, but can also be run from source code in a Node.js runtime environment.</p>
+<p>Several deployment approaches are described in this document:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#deploy-docker-compose"><span class="std std-ref">Deploy our sample Docker Compose orchestration</span></a></p></li>
+<li><p><a class="reference internal" href="#deploy-container"><span class="std std-ref">Deploy with Individual Containers</span></a></p></li>
+<li><p><a class="reference internal" href="#deploy-from-source"><span class="std std-ref">Deploy from Source Code in Node.js runtime environment</span></a></p></li>
+</ul>
+<dl class="simple">
+<dt>A STIG Manager deployment requires at least two other mandatory services, which are freely available but must be provided and configured by the those deploying the STIG Manager instance:</dt><dd><ul class="simple">
 <li><p>An OpenID Connect (OIDC) Provider</p></li>
 <li><p>A MySQL database</p></li>
-</ol>
+</ul>
+</dd>
+</dl>
+<p>A sample orchestration, which includes the STIGMan API, Web Client, a Keycloak container, and a MySQL container, is available on our Docker Hub page. Follow the <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager">Quick Start Orchestration instructions on Docker Hub.</a></p>
 <p>The STIG Manager application is often deployed at the enterprise level with orchestration platforms such as Kubernetes or OpenShift. However, containerization allows STIG Manager deployments to be readily scaled up or down and it can be orchestrated on a single laptop with tools such as docker-compose.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -263,47 +264,41 @@
                      alt=""/>
                 </a><figcaption>Component Diagram</figcaption>
             </figure><hr class="docutils" />
-<div class="section" id="api-always-required">
-<h3><span class="section-number">1.1.1. </span>API (Always Required)<a class="headerlink" href="#api-always-required" title="Permalink to this headline">¶</a></h3>
-<p>A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.</p>
+<p>The required and optional components of a STIG Manager OSS deployment:</p>
+<dl class="simple">
+<dt><strong>API</strong> (Always Required)</dt><dd><p>A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.</p>
+</dd>
+<dt><strong>Web Client</strong> (Recommended for Interactive Access)</dt><dd><p>A Single Page Application (SPA) using the ExtJS 3.4 JavaScript framework. The Web Client is often enabled as static content from the API container which does not require a separate container.</p>
+</dd>
+<dt><strong>OIDC Provider</strong>  (Always Required)</dt><dd><p>An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.</p>
+</dd>
+<dt><strong>MySQL Database</strong>  (Always Required)</dt><dd><p>A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.</p>
+</dd>
+</dl>
 </div>
-<div class="section" id="web-client-recommended-for-interactive-access">
-<h3><span class="section-number">1.1.2. </span>Web Client (Recommended for Interactive Access)<a class="headerlink" href="#web-client-recommended-for-interactive-access" title="Permalink to this headline">¶</a></h3>
-<p>A Single Page Application (SPA) using the ExtJS 3.4 JavaScript framework. The Web Client is often enabled as static content from the API container which does not require a separate container.</p>
-</div>
-<div class="section" id="oidc-provider-always-required">
-<h3><span class="section-number">1.1.3. </span>OIDC Provider (Always Required)<a class="headerlink" href="#oidc-provider-always-required" title="Permalink to this headline">¶</a></h3>
-<p>An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.</p>
-</div>
-<div class="section" id="mysql-database-always-required">
-<h3><span class="section-number">1.1.4. </span>MySQL Database (Always Required)<a class="headerlink" href="#mysql-database-always-required" title="Permalink to this headline">¶</a></h3>
-<p>A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.</p>
-</div>
-<div class="section" id="reverse-proxy-recommended">
-<h3><span class="section-number">1.1.5. </span>Reverse Proxy (Recommended)<a class="headerlink" href="#reverse-proxy-recommended" title="Permalink to this headline">¶</a></h3>
-<p>An endpoint management capability that can provide mutual TLS authentication, including DoD Common Access Card (CAC), and TLS encryption for the API, Web Client, and OIDC Provider (if required).</p>
-</div>
-<div class="section" id="log-collector-recommended">
-<h3><span class="section-number">1.1.6. </span>Log Collector (Recommended)<a class="headerlink" href="#log-collector-recommended" title="Permalink to this headline">¶</a></h3>
-<p>A centralized logging capability that collects log records from all orchestration components. Most orchestration platforms provide some form of log collection.</p>
-</div>
-<div class="section" id="log-analysis-recommended">
-<h3><span class="section-number">1.1.7. </span>Log Analysis (Recommended)<a class="headerlink" href="#log-analysis-recommended" title="Permalink to this headline">¶</a></h3>
-<p>A centralized log aggregation, analysis and reporting capability. Examples include Splunk, Solar Winds Security Event Manager, Elasticsearch, etc.</p>
-</div>
-</div>
-<div class="section" id="deployment-scenarios-for-product-evaluation">
-<h2><span class="section-number">1.2. </span>Deployment Scenarios for Product Evaluation<a class="headerlink" href="#deployment-scenarios-for-product-evaluation" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
+<div class="section" id="deployment-scenarios">
+<h2><span class="section-number">1.2. </span>Deployment Scenarios<a class="headerlink" href="#deployment-scenarios" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="quick-start-orchestration-with-docker-compose">
-<h3><span class="section-number">1.2.1. </span>Quick Start Orchestration with Docker Compose<a class="headerlink" href="#quick-start-orchestration-with-docker-compose" title="Permalink to this headline">¶</a></h3>
+<span id="deploy-docker-compose"></span><h3><span class="section-number">1.2.1. </span>Quick Start Orchestration with Docker Compose<a class="headerlink" href="#quick-start-orchestration-with-docker-compose" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="requirements">
+<h4><span class="section-number">1.2.1.1. </span>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.docker.com/get-started">Docker</a></p></li>
+</ul>
 <p>To quickly establish a demonstration instance of STIG Manager, follow the <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager">Quick Start Orchestration instructions on Docker Hub.</a></p>
 </div>
-<div class="section" id="container-deployment-with-docker-desktop">
-<h3><span class="section-number">1.2.2. </span>Container Deployment with Docker Desktop<a class="headerlink" href="#container-deployment-with-docker-desktop" title="Permalink to this headline">¶</a></h3>
-<p>Using the STIG Manager container image is the recommended way to deploy the app. These instructions specify a Docker Desktop deployment, but the app will run just as well in a Kubernetes or other orchestration environment. Using this deployment approach satisfies the application’s NodeJS requirement.</p>
-<div class="section" id="requirements">
-<h4><span class="section-number">1.2.2.1. </span>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://www.docker.com/get-started">Docker</a></p>
+</div>
+<div class="section" id="container-deployment-with-docker">
+<span id="deploy-container"></span><h3><span class="section-number">1.2.2. </span>Container Deployment with Docker<a class="headerlink" href="#container-deployment-with-docker" title="Permalink to this headline">¶</a></h3>
+<p>Using the STIG Manager container image is the recommended way to deploy the app. These instructions specify a Docker deployment, but the app will run just as well in a Kubernetes or other orchestration environment. Using this deployment approach satisfies the application’s NodeJS requirement.</p>
+<div class="section" id="id2">
+<h4><span class="section-number">1.2.2.1. </span>Requirements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.docker.com/get-started">Docker</a></p></li>
+<li><p><a class="reference internal" href="authentication.html#keycloak"><span class="std std-ref">OIDC Authentication Provider</span></a></p></li>
+<li><p><a class="reference internal" href="db.html#mysql"><span class="std std-ref">Database - MySQL 8.0.14+</span></a></p></li>
+</ul>
 </div>
 <div class="section" id="procedure">
 <h4><span class="section-number">1.2.2.2. </span>Procedure<a class="headerlink" href="#procedure" title="Permalink to this headline">¶</a></h4>
@@ -317,8 +312,8 @@
 <p><em>Make note of the address and ports these servers are using (as well as any other values that differ from the defaults). Set the appropriate</em> <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> <em>to these values so STIG Manager will be able to reach them</em></p>
 </li>
 <li><p>Pull the latest image from Docker Hub. This command will grab the image based on the Iron Bank NodeJS hardened image:  <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">nuwcdivnpt/stig-manager:latest-ironbank</span></code></p></li>
-<li><p>Run the STIG Manager image. Specify Environment Variables if the defaults in the <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> reference do not work for your environment. Set the Environment Variables using <code class="docutils literal notranslate"><span class="pre">-e</span> <span class="pre">&lt;Variable</span> <span class="pre">Name&gt;=&lt;value&gt;</span></code> parameters. A sample docker run command, exposing port 54000, and creating a container named “stig-manager” is shown here:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run --name stig-manager <span class="se">\</span>
+<li><p>Run the STIG Manager image using the <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code> command. Specify Environment Variables if the defaults in the <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> reference do not work for your environment. Set the Environment Variables using <code class="docutils literal notranslate"><span class="pre">-e</span> <span class="pre">&lt;Variable</span> <span class="pre">Name&gt;=&lt;value&gt;</span></code> parameters. A sample docker run command, exposing port 54000, and creating a container named “stig-manager” is shown here:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run --name stig-manager -d <span class="se">\</span>
 -p <span class="m">54000</span>:54000 <span class="se">\</span>
 -e <span class="nv">STIGMAN_DB_HOST</span><span class="o">=</span>&lt;DATABASE_IP&gt; <span class="se">\</span>
 -e <span class="nv">STIGMAN_DB_PORT</span><span class="o">=</span>&lt;DATABASE_PORT&gt; <span class="se">\</span>
@@ -327,7 +322,7 @@ nuwcdivnpt/stig-manager
 </pre></div>
 </div>
 </li>
-<li><p>Check the logs by running <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">logs</span></code> to verify successful startup.  Sample log entries showing the end of a successful startup are shown below.  Check the <a class="reference internal" href="logging.html#logging"><span class="std std-ref">STIG Manager Logging</span></a> reference for more detailed information.</p></li>
+<li><p>Check the logs by running <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">logs</span></code> to verify successful startup.  Sample log entries showing the end of a successful startup are shown below.  Check the <a class="reference internal" href="logging.html#logging"><span class="std std-ref">Logging</span></a> reference for more detailed information.</p></li>
 </ol>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>START<span class="o">]</span> Checking classification...
@@ -341,17 +336,19 @@ nuwcdivnpt/stig-manager
 </div>
 </div>
 <div class="section" id="deployment-from-source-code">
-<h3><span class="section-number">1.2.3. </span>Deployment from Source Code<a class="headerlink" href="#deployment-from-source-code" title="Permalink to this headline">¶</a></h3>
-<p>STIG Manager can be deployed from source if the proper Node.js runtime is provided. These instructions relate to a Windows deployment, but the app will run just as well wherever Node.JS is available.</p>
-<div class="section" id="id1">
-<h4><span class="section-number">1.2.3.1. </span>Requirements<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<span id="deploy-from-source"></span><h3><span class="section-number">1.2.3. </span>Deployment from Source Code<a class="headerlink" href="#deployment-from-source-code" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager can be deployed from source if the proper Node.js runtime is provided. These instructions relate to a Windows deployment, but the app will run just as well wherever Node.js is available.</p>
+<div class="section" id="id4">
+<h4><span class="section-number">1.2.3.1. </span>Requirements<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li><p><a class="reference external" href="https://nodejs.org/en/">Node.js 14.15+</a></p></li>
+<li><p><a class="reference external" href="https://nodejs.org/en/">Node.js 16.13+</a></p></li>
+<li><p><a class="reference internal" href="authentication.html#keycloak"><span class="std std-ref">OIDC Authentication Provider</span></a></p></li>
+<li><p><a class="reference internal" href="db.html#mysql"><span class="std std-ref">Database - MySQL 8.0.14+</span></a></p></li>
 <li><p><a class="reference external" href="https://git-scm.com/downloads">git</a> <em>(recommended)</em></p></li>
 </ul>
 </div>
-<div class="section" id="id2">
-<h4><span class="section-number">1.2.3.2. </span>Procedure<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id5">
+<h4><span class="section-number">1.2.3.2. </span>Procedure<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic">
 <li><p>Install Node.js</p></li>
 <li><p>Install and configure the Authentication and Database requirements. Sample configuration instructions for these requirements can be found here:</p>
@@ -448,8 +445,8 @@ nuwcdivnpt/stig-manager
 <p>Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak) and be assigned the appropriate tokens, scopes, and roles before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments.</p>
 <p>User privileges are controlled by the Authentication Provider. This can be done by configuring and assigning Users the appropriate roles. In Keycloak, this can be done using the “Role Mappings” tab for that user, or you can set these roles as defaults using the Configure-&gt;Roles-&gt;Default Roles interface.  See the <a class="reference internal" href="authentication.html#authentication"><span class="std std-ref">Authentication and Identity</span></a> section for more information.</p>
 <p>Assign at least one User the <code class="docutils literal notranslate"><span class="pre">admin</span></code> role when setting up STIG Manager for the first time.</p>
-<table class="colwidths-given tight-table docutils align-default" id="id3">
-<caption><span class="caption-text">STIG Manager User Types, STIG Manager Privileges, and suggested Roles:</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given tight-table docutils align-default" id="id6">
+<caption><span class="caption-text">STIG Manager User Types, STIG Manager Privileges, and suggested Roles:</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 60%" />
@@ -501,7 +498,7 @@ nuwcdivnpt/stig-manager
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="authentication.html" class="btn btn-neutral float-right" title="2. Authentication and Identity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="index.html" class="btn btn-neutral float-left" title="Install, Setup, and Run" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Setup and Deployment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

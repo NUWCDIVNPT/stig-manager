@@ -1,7 +1,7 @@
 .. _reverse-proxy:
 
 
-STIG Manager TLS 
+Deploy with TLS 
 ########################################
 
 

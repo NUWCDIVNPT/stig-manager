@@ -1,7 +1,7 @@
 
 .. _installation-and-setup-index:
 
-Install, Setup, and Run
+Setup and Deployment
 ===============================
 
 .. meta::

@@ -127,6 +127,12 @@ STIG Manager is configured via its Environment Variables:
    * - STIGMAN_JWT_USERNAME_CLAIM
      - **Default** ``preferred_username`` The access token claim whose value is the user's username
      - API, Client
+   * - STIGMAN_LOG_LEVEL
+     - **Default** ``3`` Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs. 
+     - API
+   * - STIGMAN_LOG_MODE
+     - **Default** ``combined`` Controls whether the logs will create one "combined" log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry. 
+     - API          
    * - STIGMAN_OIDC_PROXY_HOST
      - **No default** The ``Host:`` header value to be used by the CORS proxy for outbound requests. Some OIDC providers return configuration metadata with endpoint URLs having this value as their base.
      - API, Client

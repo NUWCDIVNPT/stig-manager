@@ -98,12 +98,12 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Install, Setup, and Run</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Setup and Deployment</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="authentication.html">2. Authentication and Identity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html">4. STIG Manager Logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. STIG Manager TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">7. Environment Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="securing.html">8. Securing and Assessing STIG Manager Deployments</a></li>
@@ -175,7 +175,7 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="index.html">Install, Setup, and Run</a> &raquo;</li>
+          <li><a href="index.html">Setup and Deployment</a> &raquo;</li>
         
       <li><span class="section-number">7. </span>Environment Variables</li>
     
@@ -365,6 +365,14 @@
 <tr class="row-odd"><th class="stub"><p>STIGMAN_JWT_USERNAME_CLAIM</p></th>
 <td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code> The access token claim whose value is the user’s username</p></td>
 <td><p>API, Client</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>STIGMAN_LOG_LEVEL</p></th>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">3</span></code> Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs.</p></td>
+<td><p>API</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>STIGMAN_LOG_MODE</p></th>
+<td><p><strong>Default</strong> <code class="docutils literal notranslate"><span class="pre">combined</span></code> Controls whether the logs will create one “combined” log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry.</p></td>
+<td><p>API</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>STIGMAN_OIDC_PROXY_HOST</p></th>
 <td><p><strong>No default</strong> The <code class="docutils literal notranslate"><span class="pre">Host:</span></code> header value to be used by the CORS proxy for outbound requests. Some OIDC providers return configuration metadata with endpoint URLs having this value as their base.</p></td>
