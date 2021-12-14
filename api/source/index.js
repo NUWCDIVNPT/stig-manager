@@ -129,7 +129,27 @@ async function run() {
         oauth2RedirectUrl: config.swaggerUi.oauth2RedirectUrl,
         oauth: {
           usePkceWithAuthorizationCodeGrant: true
-        }
+        },
+        //Disable URL Params to address GitHub advisory GHSA-qrmm-w75w-3wpx (Server side request forgery in SwaggerUI): 
+        plugins: [function UrlParamDisablePlugin() {  
+          return {
+            statePlugins: {
+              spec: {
+                wrapActions: {
+                  // Remove the ?url parameter from loading an external OpenAPI definition.
+                  updateUrl: (oriAction) => (payload) => {
+                    const url = new URL(window.location.href)
+                    if (url.searchParams.has('url')) {
+                      url.searchParams.delete('url')
+                      window.location.replace(url.toString())
+                    }
+                    return oriAction(payload)
+                  }
+                }
+              }
+            }
+          }
+        }],        
       }))
       app.get(['/swagger.json','/openapi.json'], function(req, res) {
         res.json(oasDoc);
