@@ -4,6 +4,7 @@ const Parsers = require('../utils/parsers.js')
 const config = require('../utils/config')
 const Review = require(`../service/${config.database.type}/ReviewService`)
 const Collection = require(`../service/${config.database.type}/CollectionService`)
+const SmError = require('../utils/error')
 
 const _this = this
 
@@ -121,7 +122,7 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
       })
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch(err) {
@@ -143,11 +144,11 @@ try {
         res.json(response)
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to delete the review of this rule."} )
+        throw new SmError.PrivilegeError()
       }
-      }
+    }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch(err) {
@@ -156,12 +157,7 @@ try {
 }
 
 module.exports.exportReviews = async function exportReviews (projection, userObject) {
-  try {
-    return await Review.getReviews(projection, {}, userObject )
-  }
-  catch (err) {
-    throw (err)
-  }
+  return await Review.getReviews(projection, {}, userObject )
 } 
 
 module.exports.getReviewByAssetRule = async function (req, res, next) {
@@ -183,7 +179,7 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
 
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch(err) {
@@ -213,7 +209,7 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch(err) {
@@ -240,7 +236,7 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch(err) {
@@ -274,11 +270,11 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
         }
       }
       else {
-        throw ( {status: 403, message: rejected[0].reason} )
+        throw new SmError.PrivilegeError(rejected[0].reason)
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -297,7 +293,7 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
     if ( collectionGrant) {
       const currentReviews =  await Review.getReviews([], { assetId, ruleId }, req.userObject)
       if (currentReviews.length === 0) {
-        throw( {status: 404, message: 'Review must exist to be patched'})
+        throw new SmError.NotFoundError('Review must exist to be patched')
       }
       normalizeReview(incomingReview)
       const review = { ...currentReviews[0], ...incomingReview }
@@ -308,11 +304,11 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
         res.json(rows[0])
       }
       else {
-        throw ( {status: 403, message: rejected[0].reason} )
+        throw new SmError.PrivilegeError(rejected[0].reason)
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -333,11 +329,11 @@ module.exports.getReviewMetadata = async function (req, res, next) {
         res.json(response)
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."} )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -360,11 +356,11 @@ module.exports.patchReviewMetadata = async function (req, res, next) {
         res.json(response)
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -387,11 +383,12 @@ module.exports.putReviewMetadata = async function (req, res, next) {
         res.json(response)
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+        
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -409,15 +406,17 @@ module.exports.getReviewMetadataKeys = async function (req, res, next) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.getReviewMetadataKeys( assetId, ruleId, req.userObject)
-        if (!response)  throw ( {status: 404, message: `metadata keys not found`} )
+        if (!response) {
+          throw new SmError.NotFoundError('metadata keys not found')
+        }
         res.json(response)
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -436,15 +435,17 @@ module.exports.getReviewMetadataValue = async function (req, res, next) {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.getReviewMetadataValue( assetId, ruleId, key, req.userObject)
-        if (!response)  throw ( {status: 404, message: `metadata key not found`} )
+        if (!response) {
+          throw new SmError.NotFoundError('metadata key not found')
+        }
         res.json(response)
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -467,11 +468,11 @@ module.exports.putReviewMetadataValue = async function (req, res, next) {
         res.status(204).send()
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -494,11 +495,11 @@ module.exports.deleteReviewMetadataKey = async function (req, res, next) {
         res.status(204).send()
       }
       else {
-        throw ( {status: 403, message: "User has insufficient privilege to patch the review of this rule."}  )
+        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {

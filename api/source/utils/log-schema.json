@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "http://yourdomain.com/schemas/myschema.json",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "component": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "date",
+    "level",
+    "component",
+    "type",
+    "data"
+  ],
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "$ref": "#/$defs/componentIndex"
+    },
+    {
+      "$ref": "#/$defs/componentOidc"
+    }
+  ],
+  "$defs": {
+    "componentIndex": {
+      "properties": {
+        "component": {
+          "type": "string",
+          "const": "index"
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/typeStarting"
+        },
+        {
+          "$ref": "#/$defs/typeConfiguration"
+        },
+        {
+          "$ref": "#/$defs/typeStarted"
+        }
+      ]
+    },
+    "typeStarting": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "starting"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "typeConfiguration": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "configuration"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "commit": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "branch": {
+                  "type": "string"
+                },
+                "sha": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "describe": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "settings": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "setClassification": {
+                  "type": "string"
+                },
+                "lastAccessResolution": {
+                  "type": "integer"
+                },
+                "responseValidation": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "client": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "clientId": {
+                  "type": "string"
+                },
+                "authority": {
+                  "type": "string"
+                },
+                "apiBase": {
+                  "type": "string"
+                },
+                "disabled": {
+                  "type": "boolean"
+                },
+                "directory": {
+                  "type": "string"
+                },
+                "refreshToken": {
+                  "type": "object",
+                  "required": [],
+                  "properties": {
+                    "disabled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "welcome": {
+                  "type": "object",
+                  "required": [],
+                  "properties": {
+                    "image": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "link": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "docs": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "disabled": {
+                  "type": "boolean"
+                },
+                "docsDirectory": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "http": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "string"
+                },
+                "maxJsonBody": {
+                  "type": "string"
+                },
+                "maxUpload": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "database": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "host": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "string"
+                },
+                "schema": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                },
+                "maxConnections": {
+                  "type": "string"
+                },
+                "tls": {
+                  "type": "object",
+                  "required": [],
+                  "additionalProperties": false
+                },
+                "revert": {
+                  "type": "boolean"
+                },
+                "password": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "init": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "importStigs": {
+                  "type": "boolean"
+                },
+                "importScap": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "swaggerUi": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "authority": {
+                  "type": "string"
+                },
+                "server": {
+                  "type": "string"
+                },
+                "oauth2RedirectUrl": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "oauth": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "authority": {
+                  "type": "string"
+                },
+                "claims": {
+                  "type": "object",
+                  "required": [],
+                  "properties": {
+                    "scope": {
+                      "type": "string"
+                    },
+                    "scopeFormat": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "servicename": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "privileges": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "log": {
+              "type": "object",
+              "required": [],
+              "properties": {
+                "level": {
+                  "type": "integer"
+                },
+                "mode": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "typeStarted": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "started"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "durationS": {
+              "type": "number"
+            },
+            "port": {
+              "type": "string"
+            },
+            "api": {
+              "type": "string"
+            },
+            "client": {
+              "type": "string"
+            },
+            "documentation": {
+              "type": "string"
+            },
+            "swagger": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "componentOidc": {
+      "properties": {
+        "component": {
+          "type": "string",
+          "const": "oidc"
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/typeDiscovery"
+        }
+      ]
+    },
+    "typeDiscovery": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "discovery"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

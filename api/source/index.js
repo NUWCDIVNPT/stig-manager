@@ -1,9 +1,20 @@
 'use strict';
 
+const startTime = process.hrtime.bigint()
+const logger = require('./utils/logger')
+const smErrors = require('./utils/error')
+const {serializeError} = require('./utils/serializeError')
+
+// Start logging as early as we can
 const packageJson = require("./package.json")
-console.log(`Starting STIG Manager ${packageJson.version}`)
+logger.writeInfo('index', 'starting', {
+  version: packageJson.version,
+  env: logger.serializeEnvironment()
+})
 
 const config = require('./utils/config')
+logger.writeInfo('index','configuration', config)
+
 const path = require('path')
 const http = require('http')
 const express = require('express')
@@ -17,16 +28,22 @@ const multer  = require('multer')
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
 const smFetch = require('./utils/fetchStigs')
-const {
-  middleware: openApiMiddleware,
-  resolvers,
-} = require('express-openapi-validator');
+const { middleware: openApiMiddleware, resolvers } = require('express-openapi-validator')
+
+// express-openapi-validator does not expose HttpError in their index.js. 
+// We can get it from framework.types.js
+const eovPath = path.dirname(require.resolve('express-openapi-validator'))
+const eovErrors = require(path.join(eovPath, 'framework', 'types.js'))
 
 
 //Catch unhandled errors. 
 process.on('uncaughtException', (err, origin) => {
-  console.log(`Uncaught ${err} from ${origin}`)
+  logger.writeError('app','uncaught', serializeError(err))
 })
+process.on('unhandledRejection', (reason, promise) => {
+  logger.writeError('app','unhandled', {reason, promise})
+})
+
 
 // Express config
 const app = express();
@@ -36,64 +53,55 @@ const upload = multer({
   limits: {
     fileSize: parseInt(config.http.maxUpload)
   }
- })
+})
 app.use(upload.single('importFile'))
 app.use(express.urlencoded( {extended: true}))
 app.use(express.json({
-    strict: false, // allow root to be any JSON value, per https://datatracker.ietf.org/doc/html/rfc7159#section-2
+  strict: false, // allow root to be any JSON value, per https://datatracker.ietf.org/doc/html/rfc7159#section-2
   limit: parseInt(config.http.maxJsonBody)
 })) //Handle JSON request body
 app.use(cors())
-morgan.token('token-user', (req, res) => {
-  if (req.access_token) {
-    return req.access_token[config.oauth.claims.username] || req.access_token[config.oauth.claims.servicename]
-  }
-})
-morgan.token('forwarded-for', (req, res) => {
-  if (req.headers['x-forwarded-for']) {
-    return req.headers['x-forwarded-for']
-  }
-})
 
-// Log format
-app.use(morgan(':remote-addr :forwarded-for :token-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]', {stream: process.stdout}))
+app.use( logger.requestLogger )
 
 // compress all responses
 // app.use(compression())
 
 const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
-let responseValidationConfig = buildResponseValidationConfig();
-app.use(
-  openApiMiddleware({
-    apiSpec: apiSpecPath,
-    validateRequests: {
-      coerceTypes: true,
-      allowUnknownQueryParameters: false,
-    },
-    validateResponses: responseValidationConfig,
-    validateApiSpec: true,
-    $refParser: {
-      mode: 'dereference',
-    },
-    operationHandlers: {
-      // 3. Provide the path to the controllers directory
-      basePath: path.join(__dirname, 'controllers'),
-      // 4. Provide a function responsible for resolving an Express RequestHandler
-      //    function from the current OpenAPI Route object.
-      resolver: modulePathResolver,
-    },
-    validateSecurity: {
-      handlers:{
-        oauth: auth.verifyRequest 
-      }
-    },
-    fileUploader: false
-  }),
-)
+app.use( openApiMiddleware ({
+  apiSpec: apiSpecPath,
+  validateRequests: {
+    coerceTypes: true,
+    allowUnknownQueryParameters: false,
+  },
+  validateResponses: buildResponseValidationConfig(),
+  validateApiSpec: true,
+  $refParser: {
+    mode: 'dereference',
+  },
+  operationHandlers: {
+    basePath: path.join(__dirname, 'controllers'),
+    resolver: modulePathResolver,
+  },
+  validateSecurity: {
+    handlers:{
+      oauth: auth.verifyRequest 
+    }
+  },
+  fileUploader: false
+}))
 
+// Express error handler
 app.use((err, req, res, next) => {
-  console.error(err); // dump error to console for debug
-  res.status(err.status || 500).json(err);
+  if (!(err instanceof smErrors.SmError) && !(err instanceof eovErrors.HttpError)) {
+    logger.writeError('rest', 'error', {
+      request: logger.serializeRequest(req),
+      error: serializeError(err)
+    })
+  }
+  // Our logger will expose res.errorBody when logging the response
+  res.errorBody = { error: err.message, detail: err.detail }
+  res.status(err.status || 500).header(err.headers).json(res.errorBody)
 })
 
 run()
@@ -102,18 +110,18 @@ async function run() {
   try {
     if (!config.client.disabled) {
       await setupClient(app, config.client.directory)
+      logger.writeDebug('index', 'client', {message: 'suceeded setting up client'})
     }
     else {
-      console.log('[CLIENT] Client is disabled')
+      logger.writeDebug('index', 'client', {message: 'client disabled'})
     }
     if (!config.docs.disabled) {
       // setup documentation route
-      console.log('[DOCS] Setting up STIG Manager Documentation')
       app.use('/docs', express.static(path.join(__dirname, config.docs.docsDirectory)))
-
+      logger.writeDebug('index', 'client', {message: 'suceeded setting up documentation'})
     }
     else {
-      console.log('[DOCS] Documentation is disabled')
+      logger.writeDebug('index', 'client', {message: 'documentation disabled'})
     }
     // Read and modify OpenAPI specification
     let spec = fs.readFileSync(apiSpecPath, 'utf8')
@@ -134,19 +142,18 @@ async function run() {
       app.get(['/swagger.json','/openapi.json'], function(req, res) {
         res.json(oasDoc);
       })
+      logger.writeDebug('index', 'client', {message: 'suceeded setting up swagger-ui'})
     }
     startServer(app)
   }
   catch (err) {
-    console.error(err.message);
+    logger.writeError(err.message);
     process.exit(1);
   }
- }
-
+}
 
 async function setupClient(app, directory) {
   try {
-    console.log(`[CLIENT] Setting up STIG Manager client...`)
     const envJS = 
 `
 const STIGMAN = {
@@ -188,60 +195,69 @@ const STIGMAN = {
     app.get('/js/Env.js', function (req, res) {
       writer.writeWithContentType(res, {payload: envJS, contentType: "application/javascript"})
     })
-    app.use('/', express.static(path.join(__dirname, directory)))
+    const expressStatic = express.static(path.join(__dirname, directory))
+    app.use('/', (req, res, next) => {
+      req.component = 'static'
+      expressStatic(req, res, next)
+    })
   }
   catch (err) {
-    console.error(err.message)
+    logger.writeError('index', 'client', {message: err.message, stack: err.stack})
   }
 }
 
 async function startServer(app) {
-  try {
-    // Initialize database connection pool
     let db = require(`./service/${config.database.type}/utils`)
-    const inits = await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
-
-    if (config.init.importStigs && inits[1]) {
-      console.log(`[INIT] Importing STIGs...`)
-      // await smFetch.readCompilation()
-      await smFetch.fetchCompilation()
+    let isNewDb
+    try {
+      let authReturn
+      ;[authReturn, isNewDb] = await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
     }
-    if (config.init.importScap && inits[1]) {
-      console.log(`[INIT] Importing SCAP...`)
-      await smFetch.fetchScap()
+    catch (e) {
+      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies'});
+      process.exit(1);  
+    }
+
+    if (config.init.importStigs && isNewDb) {
+      try {
+        logger.writeInfo('index', 'starting', {message:'begin to import STIGs'});
+        await smFetch.fetchCompilation()
+      }
+      catch (e) {
+        logger.writeError('index', 'starting', {message:'failed to import STIGs'});
+      }
+    }
+
+    if (config.init.importScap && isNewDb) {
+      try {
+        logger.writeInfo('index', 'starting', {message: 'begin to import SCAP benchmarks'})
+        await smFetch.fetchScap()
+      }
+      catch (e) {
+        logger.writeError('index', 'starting', {message:'failed to import SCAP benchmarks'});
+      }
     }
 
     // Set/change classification if indicated
-    console.log(`[START] Checking classification...`)
     if (config.settings.setClassification) {
-      console.log(`[START] Setting classification to ${config.settings.setClassification}`)
       await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
     }
 
     // Start the server
-    http.createServer(app).listen(config.http.port, function () {
-      console.log('[START] Server is listening on port %d', config.http.port)
-      console.log('[START] API is available at /api')
-      if (config.swaggerUi.enabled) {
-        console.log('[START] API documentation is available at /api-docs')
-      }
-      if (!config.client.disabled) {
-        console.log('[START] Client is available at /')
-      }
+    const server = http.createServer(app).listen(config.http.port, function () {
+      const endTime = process.hrtime.bigint()
+      logger.writeInfo('index', 'started', {
+        durationS: Number(endTime - startTime) / 1e9, 
+        port: config.http.port,
+        api: '/api',
+        client: config.client.disabled ? undefined : '/',
+        documentation: config.docs.disabled ? undefined : '/docs',
+        swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
+      })
     })
-  } catch(err) {
-    console.error(err.message);
-    process.exit(1);
-  }
 }
 
-
-function modulePathResolver(
-  handlersPath,
-  route,
-  apiDoc
-)
-{
+function modulePathResolver( handlersPath, route, apiDoc ) {
   const pathKey = route.openApiRoute.substring(route.basePath.length);
   const schema = apiDoc.paths[pathKey][route.method.toLowerCase()];
   // const [controller, method] = schema['operationId'].split('.');
@@ -257,13 +273,15 @@ function modulePathResolver(
   return handler[method];
 }
 
-function buildResponseValidationConfig(){
+function buildResponseValidationConfig() {
   if ( config.settings.responseValidation == "logOnly" ){
     return {
         onError: (error, body, req) => {
-          console.log(`Response body fails validation: `, error);
-          console.log(`Response body emitted from:`, req.originalUrl);
-          console.debug(`Response body:`, body);
+          logger.writeError('rest', 'responseValidation', {
+            error,
+            request: logger.serializeRequest(req),
+            body
+          })
         }
       }
   }

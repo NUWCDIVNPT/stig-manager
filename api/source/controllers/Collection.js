@@ -5,6 +5,7 @@ var config = require('../utils/config')
 var Collection = require(`../service/${config.database.type}/CollectionService`)
 var Serialize = require(`../utils/serializers`)
 var Security = require('../utils/accessLevels')
+const SmError = require('../utils/error')
 
 module.exports.createCollection = async function createCollection (req, res, next) {
   try {
@@ -19,16 +20,7 @@ module.exports.createCollection = async function createCollection (req, res, nex
       catch (err) {
         // This is MySQL specific, should abstract
         if (err.code === 'ER_DUP_ENTRY') {
-          // try {
-            let response = await Collection.getCollections({
-              name: body.name
-            }, projection, elevate, req.userObject )
-            throw ({
-              status: 400,
-              message: `Duplicate name`,
-              data: response[0] ?? null
-            })
-          // } finally {}
+          throw new SmError.UnprocessableError('Duplicate name exists.')
         }
         else {
           throw err
@@ -36,7 +28,7 @@ module.exports.createCollection = async function createCollection (req, res, nex
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -55,7 +47,7 @@ module.exports.deleteCollection = async function deleteCollection (req, res, nex
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -83,7 +75,7 @@ module.exports.getChecklistByCollectionStig = async function getChecklistByColle
       res.json(response)
     }
     else {
-      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -103,7 +95,7 @@ module.exports.getCollection = async function getCollection (req, res, next) {
       res.status(typeof response === 'undefined' ? 204 : 200).json(response)
     }
     else {
-      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -146,7 +138,7 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -190,7 +182,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       writer.writeInlineFile( res, xlsx, `POAM-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -209,7 +201,7 @@ module.exports.getStatusByCollection = async function getStatusByCollection (req
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -228,7 +220,7 @@ module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCol
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -245,7 +237,7 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -265,7 +257,7 @@ module.exports.replaceCollection = async function updateCollection (req, res, ne
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }    
   }
   catch (err) {
@@ -288,11 +280,11 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
         res.json(getResponse)    
       }
       else {
-        throw( {status: 404, message: "User not found in this Collection with accessLevel === 1."})
+        throw new SmError.NotFoundError('User not found in this Collection with accessLevel === 1.')
       }
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -312,7 +304,7 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }    
   }
   catch (err) {
@@ -326,7 +318,7 @@ async function getCollectionIdAndCheckPermission(request, minimumAccessLevel = S
   const elevate = request.query.elevate
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
   if (!( (allowElevate && elevate) || (collectionGrant && collectionGrant.accessLevel >= minimumAccessLevel) )) {
-    throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+    throw new SmError.PrivilegeError()
   }
   return collectionId
 }
@@ -372,8 +364,9 @@ module.exports.getCollectionMetadataKeys = async function (req, res, next) {
   try {
     let collectionId = await getCollectionIdAndCheckPermission(req)
     let result = await Collection.getCollectionMetadataKeys(collectionId, req.userObject)
-    if (!result)  
-      throw ( {status: 404, message: "metadata keys not found"} )
+    if (!result) {
+      throw new SmError.NotFoundError('metadata keys not found')
+    } 
     res.json(result)
   }
   catch (err) {
@@ -387,7 +380,7 @@ module.exports.getCollectionMetadataValue = async function (req, res, next) {
     let key = req.params.key
     let result = await Collection.getCollectionMetadataValue(collectionId, key, req.userObject)
     if (!result) {
-      throw ( {status: 404, message: "metadata key not found"} )
+      throw new SmError.NotFoundError('metadata key not found')
     }
     res.json(result)
   }

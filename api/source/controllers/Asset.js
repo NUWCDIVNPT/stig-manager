@@ -7,6 +7,7 @@ const Collection = require(`../service/${config.database.type}/CollectionService
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const J2X = require("fast-xml-parser").j2xParser
 const he = require('he')
+const SmError = require('../utils/error')
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -23,14 +24,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
       catch (err) {
         // This is MySQL specific, should abstract
         if (err.code === 'ER_DUP_ENTRY') {
-          // try {
-            let response = await Asset.getAssets(body.collectionId, body.name, 'exact', null, null, projection, elevate, req.userObject )
-            throw ({
-              status: 400,
-              message: `Duplicate name`,
-              data: response[0] ?? null
-            })
-          // } finally {}
+          throw new SmError.UnprocessableError('Duplicate name exists.')
         }
         else {
           throw err
@@ -39,7 +33,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     }
     else {
       // Not elevated or having collectionGrant
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -57,7 +51,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
@@ -66,7 +60,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
       res.json(assetToAffect)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -84,7 +78,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
     let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
@@ -93,7 +87,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -110,7 +104,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
     let assetToAffect = await Asset.getAsset(assetId, undefined, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
@@ -119,7 +113,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -138,7 +132,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
 //     let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
 //     // can the user fetch this Asset?
 //     if (!assetToAffect) {
-//       throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+//       throw new SmError.PrivilegeError()
 //     }
 //     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
 //     // is the granted accessLevel high enough?
@@ -147,7 +141,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
 //       res.json(response)
 //       }
 //     else {
-//       throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+//       throw new SmError.PrivilegeError()
 //     }
 //   }
 //   catch (err) {
@@ -165,7 +159,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
     let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
@@ -174,7 +168,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -183,13 +177,8 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
 }
 
 module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
-  try {
-    let assets =  await Asset.getAssets(null, null, null, null, null, projection, elevate, userObject )
-    return assets
-  }
-  catch (err) {
-    throw (err)
-  }
+  let assets =  await Asset.getAssets(null, null, null, null, null, projection, elevate, userObject )
+  return assets
 } 
 
 module.exports.getAsset = async function getAsset (req, res, next) {
@@ -201,7 +190,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     // If this user has no grants permitting access to the asset, the response will be undefined
     let response = await Asset.getAsset(assetId, projection, elevate, req.userObject )
     if (!response) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     
     // If there is a response, check if the request included the stigGrants projection
@@ -210,7 +199,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
       if (!elevate) {
         const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === response.collection.collectionId )
         if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
-          throw ({status:403, message: `User has insufficient privilege to request projection 'stigGrants'.`})
+          throw new SmError.PrivilegeError(`User has insufficient privilege to request projection 'stigGrants'.`)
         }
       }
     }
@@ -238,7 +227,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
         // Check if the stigGrants projection is forbidden
         if (!elevate) {
           if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
-            throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
+            throw new SmError.PrivilegeError()
           }
         }
       }
@@ -246,7 +235,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -329,7 +318,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
     // If this user has no grants permitting access to the asset, the response will be undefined
     let assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
     if (!assetResponse) {
-      throw ( {status: 403, message: 'User has insufficient access to complete this request.'} )
+      throw new SmError.PrivilegeError()
     }
     const availableBenchmarkIds = assetResponse.stigs.map( r => r.benchmarkId )
     if (availableBenchmarkIds.length === 0) {
@@ -340,7 +329,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
       requestedBenchmarkIds = availableBenchmarkIds
     }
     else if (!requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))) {
-      throw ( {status: 400, message: 'Asset is not mapped to all requested benchmarkIds'} )
+      throw new SmError.ClientError('Asset is not mapped to all requested benchmarkIds')
     }
 
     let cklObject = await Asset.getChecklistByAsset(assetId, requestedBenchmarkIds, 'ckl', false, req.userObject )
@@ -382,7 +371,7 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
         res.json(response)
     }
     else {
-      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})    
+      throw new SmError.PrivilegeError()    
     }
   }
   catch (err) {
@@ -400,12 +389,12 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
     // If this user has no grants permitting access to the asset, the response will be undefined
     const currentAsset = await Asset.getAsset(assetId, projection, elevate, req.userObject )
     if (!currentAsset) {
-      throw( {status: 403, message: "User has insufficient privilege to modify this asset."} )
+      throw new SmError.PrivilegeError('User has insufficient privilege to modify this asset.')
     }
     // Check if the user has an appropriate grant to the asset's collection
     const currentCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === currentAsset.collection.collectionId )
     if ( !currentCollectionGrant || currentCollectionGrant.accessLevel < 3 ) {
-      throw( {status: 403, message: `User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`} )
+      throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`)
     }
     // Check if the asset is being transferred
     const transferring = currentAsset.collection.collectionId !== body.collectionId
@@ -413,7 +402,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
       // If so, Check if the user has an appropriate grant to the asset's updated collection
       const updatedCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
       if ( !updatedCollectionGrant || updatedCollectionGrant.accessLevel < 3 ) {
-        throw( {status: 403, message: `User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`} )
+        throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`)
       }
     }
     const response = await Asset.updateAsset(
@@ -448,11 +437,11 @@ module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res,
         res.json(response)
       }
       else {
-        throw({status: 403, message: `One or more assetId is not a Collection member.`})
+        throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
       }
     }
     else {
-      throw({status: 403, message: 'User has insufficient privilege to complete this request.'})    
+      throw new SmError.PrivilegeError()    
     }
   }
   catch (err) {
@@ -470,7 +459,7 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
     let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
@@ -479,7 +468,7 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -497,7 +486,7 @@ module.exports.attachStigsToAsset = async function attachStigsToAsset (req, res,
     let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
@@ -506,7 +495,7 @@ module.exports.attachStigsToAsset = async function attachStigsToAsset (req, res,
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -525,7 +514,7 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
     let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const requesterCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the requester's granted accessLevel high enough?
@@ -539,13 +528,13 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
       const allowed = collectionUserIds.includes(userId)
       if (! allowed) {
         // Can only map Users with an existing grant
-        throw ( {status: 400, message: `The user has an incompatible or missing grant in collectionId ${body.collectionId}.`})
+        throw new SmError.ClientError(`The user has an incompatible or missing grant in collectionId ${body.collectionId}.`)
       }
       let response = await Asset.setAssetStigGrant(assetId, benchmarkId, userId, elevate, req.userObject )
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -564,7 +553,7 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
     let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     const requesterCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the requester's granted accessLevel high enough?
@@ -580,14 +569,14 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
         const allowed = userIdsFromRequest.every(i => collectionUserIds.includes(i))
         if (! allowed) {
           // Can only map Users with an existing grant
-          throw ( {status: 400, message: `One or more users have incompatible or missing grants in collectionId ${body.collectionId}.`} )
+          throw new SmError.ClientError(`One or more users have incompatible or missing grants in collectionId ${body.collectionId}.`)
         }
       }
       let response = await Asset.setAssetStigGrants(assetId, benchmarkId, body, elevate, req.userObject )
       res.json(response)
       }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -605,12 +594,12 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
     // If this user has no grants permitting access to the asset, the response will be undefined
     const currentAsset = await Asset.getAsset(assetId, projection, elevate, req.userObject )
     if (!currentAsset) {
-      throw( {status: 403, message: "User has insufficient privilege to modify this asset."} )
+      throw new SmError.PrivilegeError('User has insufficient privilege to modify this asset.')
     }
     // Check if the user has an appropriate grant to the asset's collection
     const currentCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === currentAsset.collection.collectionId )
     if ( !currentCollectionGrant || currentCollectionGrant.accessLevel < 3 ) {
-      throw( {status: 403, message: `User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`} )
+      throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`)
     }
     // Check if the asset's collectionId is being changed
     const transferring = body.collectionId && currentAsset.collection.collectionId !== body.collectionId
@@ -618,7 +607,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
       // If so, Check if the user has an appropriate grant to the asset's updated collection
       const updatedCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
       if ( !updatedCollectionGrant || updatedCollectionGrant.accessLevel < 3 ) {
-        throw( {status: 403, message: `User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`} )
+        throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`)
       }
     }
     const response = await Asset.updateAsset(
@@ -644,12 +633,12 @@ async function getAssetIdAndCheckPermission(request) {
   let assetToAffect = await Asset.getAsset(assetId, [], elevate, request.userObject)
   // can the user fetch this Asset?
   if (!assetToAffect) {
-    throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+    throw new SmError.PrivilegeError()
   }
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
   // is the granted accessLevel high enough?
   if (!( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) )) {
-    throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+    throw new SmError.PrivilegeError()
   }
   return assetId
 }
@@ -697,7 +686,7 @@ module.exports.getAssetMetadataKeys = async function (req, res, next) {
     let assetId = await getAssetIdAndCheckPermission(req)
     let result = await Asset.getAssetMetadataKeys(assetId, req.userObject)
     if (!result) {
-      throw ( {status: 404, message: "metadata keys not found"} )
+      throw new SmError.NotFoundError('metadata keys not found')
     }
     res.json(result)
   }
@@ -712,7 +701,7 @@ module.exports.getAssetMetadataValue = async function (req, res, next) {
     let key = req.params.key
     let result = await Asset.getAssetMetadataValue(assetId, key, req.userObject)
     if (!result) { 
-      throw ( {status: 404, message: "metadata key not found"} )
+      throw new SmError.NotFoundError('metadata key not found')
     }
     res.json(result)
   }

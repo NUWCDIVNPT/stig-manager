@@ -271,15 +271,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     connection = await dbUtils.pool.getConnection()
     await connection.query('SET FOREIGN_KEY_CHECKS=0')
 
-    // // Preload
-    // hrstart = process.hrtime() 
-    // for (const sql of dml.preload) {
-    //   console.log(sql)
-    //   ;[result] = await connection.execute(sql)
-    // }
-    // hrend = process.hrtime(hrstart)
-    // stats.preload = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
     // Deletes
     tableOrder = [
       'reviewHistory',
@@ -320,7 +311,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 
         let i, j, bindchunk, chunk = 5000;
         for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
-          console.log(`table: ${table} chunk: ${i}\n`)
           res.write(`Inserting: ${table} chunk: ${i}\n`)
           bindchunk = dml[table].insertBinds.slice(i,i+chunk);
           ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])

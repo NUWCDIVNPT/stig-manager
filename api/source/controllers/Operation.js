@@ -8,6 +8,7 @@ const Review = require(`./Review`)
 const JSZip = require("jszip");
 const {JSONPath} = require('jsonpath-plus')
 const got = require('got')
+const SmError = require('../utils/error.js')
 
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
@@ -75,7 +76,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
       writer.writeInlineFile(res, buffer, 'stig-manager-appdata.json.zip', 'application/zip')
     }
     else {
-      throw( {status: 403, message: `User has insufficient privilege to complete this request.`} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {
@@ -95,7 +96,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
           let contents = await zipIn.loadAsync(data)
           let fns = Object.keys(contents.files)
           if (fns.length > 1) {
-            throw( {status: 400, message: `ZIP archive has too many files.`} )
+            throw new SmError.UnprocessableError('ZIP archive has too many files.')
           }
           let fn = fns[0]
           data = await contents.files[fn].async("nodebuffer")
@@ -109,7 +110,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
       let response = await Operation.replaceAppData(options, appdata, req.userObject, res )
     }
     else {
-      throw( {status: 403, message: `User has insufficient privilege to complete this request.`} )
+      throw new SmError.PrivilegeError()
     }
   }
   catch (err) {

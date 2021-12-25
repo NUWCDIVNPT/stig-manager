@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
 const config = require('../../utils/config')
+const logger = require('../../utils/logger')
 const retry = require('async-retry')
 const Umzug = require('umzug')
 const path = require('path')
@@ -9,17 +10,19 @@ const semverLt = require('semver/functions/lt')
 const minMySqlVersion = '8.0.14'
 let _this = this
 
-module.exports.version = '0.6'
 module.exports.testConnection = async function () {
-  try {
-    let [result] = await _this.pool.query('SELECT VERSION() as version')
-    return result[0].version
-  }
-  catch (err) {
-    // console.log(err.message)
-    throw (err)
-  }
+  let [result] = await _this.pool.query('SELECT VERSION() as version')
+  return result[0].version
 }
+
+function sanitizePoolConfig () {
+  let {password, ...props} = this
+  if (password !== undefined) {
+    props.password = true
+  }
+  return props
+}
+
 
 function getPoolConfig() {
   const poolConfig = {
@@ -56,56 +59,56 @@ function getPoolConfig() {
   return poolConfig
 }
 
+let initAttempt = 0
 module.exports.initializeDatabase = async function () {
   try {
-    console.log('[DB] Initializing MySQL.')
-
     // Create the connection pool
     const poolConfig = getPoolConfig()
+    logger.writeDebug('mysql', 'poolConfig', { ...poolConfig })
     _this.pool = mysql.createPool(poolConfig)
     // Set common session variables
     _this.pool.on('connection', function (connection) {
       connection.query('SET SESSION group_concat_max_len=10000000')
-      // connection.query('SET SESSION sql_mode=’NO_AUTO_VALUE_ON_ZERO')
     })
 
     // Call the pool destruction methods on SIGTERM and SEGINT
-    async function closePoolAndExit() {
-      console.log('\nTerminating');
+    async function closePoolAndExit(signal) {
+      logger.writeInfo('app', 'shutdown', { signal })
       try {
         await _this.pool.end()
-        console.log('[DB] Pool closed');
+        logger.writeInfo('mysql', 'close', { success: true })
         process.exit(0);
       } catch(err) {
-        console.error(err.message);
+        logger.writeError('mysql', 'close', { success: false, message: err.message })
         process.exit(1);
       }
     }   
+    process.on('SIGPIPE', closePoolAndExit)
+    process.on('SIGHUP', closePoolAndExit)
     process.on('SIGTERM', closePoolAndExit)
     process.on('SIGINT', closePoolAndExit)
 
     // Preflight the pool every 5 seconds
-    console.log('[DB] Attempting preflight connection.')
+    logger.writeDebug('mysql', 'preflight', { attempt: ++initAttempt })
     const detectedMySqlVersion = await retry(_this.testConnection, {
       retries: 24,
       factor: 1,
       minTimeout: 5 * 1000,
       maxTimeout: 5 * 1000,
       onRetry: (error) => {
-        console.log(`[DB] ${error.message}`)
+        logger.writeError('mysql', 'preflight', { success: false, message: error.message })
       }
     })
-    console.log('[DB] Preflight connection succeeded.')
     if ( semverLt(detectedMySqlVersion, minMySqlVersion) ) {
-      console.log(`[DB] MySQL release ${detectedMySqlVersion} is too old. Update to release ${minMySqlVersion} or later.`)
-      console.log("Terminating")
+      logger.writeError('mysql', 'preflight', { success: false, message: `MySQL release ${detectedMySqlVersion} is too old. Update to release ${minMySqlVersion} or later.` })
       process.exit(1)
     } else {
-      console.log(`[DB] MySQL release ${detectedMySqlVersion} is supported.`)
+      logger.writeInfo('mysql', 'preflight', { 
+        success: true,
+        version: detectedMySqlVersion
+       })
+
     }
-
-
-    // console.log(result)
 
     // Perform migrations
     const umzug = new Umzug({
@@ -122,23 +125,24 @@ module.exports.initializeDatabase = async function () {
     if (config.database.revert) {
       const migrations = await umzug.executed()
       if (migrations.length) {
-        console.log(`[DB] MySQL schema will revert the last migration and terminate.`)
+        logger.writeInfo('mysql', 'migration', { message: 'MySQL schema will revert the last migration and terminate' })
         await umzug.down()
       } else {
-        console.log('[DB] MySQL schema has no migrations to revert.')
+        logger.writeInfo('mysql', 'migration', { message: 'MySQL schema has no migrations to revert' })
       }
-      console.log("Terminating")
+      logger.writeInfo('mysql', 'migration', { message: 'MySQL revert migration has completed' })
       process.exit(1)
     }
     const migrations = await umzug.pending()
     if (migrations.length > 0) {
-      console.log(`[DB] MySQL schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}.`)
+      logger.writeInfo('mysql', 'migration', { message: `MySQL schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}` })
       await umzug.up()
-      console.log('[DB] All migrations performed successfully')
+      logger.writeInfo('mysql', 'migration', { message: `All migrations performed successfully` })
     }
     else {
-      console.log(`[DB] MySQL schema is up to date.`)
+      logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
     }
+    // return true if the database migrations include the initial scaffolding
     return migrations.length > 0 && migrations[0].file === '0000.js'
 
   }

@@ -1,11 +1,13 @@
-let config = require('./config');
+const config = require('./config')
+const logger = require('./logger')
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
 const got = require('got')
 const retry = require('async-retry')
 const _ = require('lodash')
-const {promisify} = require('util')
+const {promisify, getSystemErrorMap} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
+const SmError = require('./error')
 
 let jwksUri
 let client
@@ -16,6 +18,7 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         let token = getBearerToken(req)
         if (!token) {
             throw({status: 401, message: 'OIDC bearer token must be provided'})
+            // throw new SmError.TokenMissingError()
 
         }
         let options = {
@@ -100,10 +103,12 @@ function getKey(header, callback){
     })
 }
 
+let initAttempt = 0
 async function initializeAuth() {
+    const retries = 24
+    const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
     async function getJwks() {
-        const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
-        console.info("[AUTH] Trying OIDC discovery at " + wellKnown)
+        logger.writeDebug('oidc', 'discovery', { url: wellKnown, attempt: ++initAttempt })
         const openidConfig = await got(wellKnown).json()   
         if (!openidConfig.jwks_uri) {
             throw( new Error('No jwks_uri property found') )
@@ -116,15 +121,15 @@ async function initializeAuth() {
         })
     }
     await retry ( getJwks, {
-        retries: 24,
+        retries,
         factor: 1,
         minTimeout: 5 * 1000,
         maxTimeout: 5 * 1000,
         onRetry: (error) => {
-          console.log(`[AUTH] ${error.message}`)
+            logger.writeError('oidc', 'discovery', { url: wellKnown, success: false, message: error.message })
         }
     })
-    console.info("[AUTH] Received OIDC signing keys")     
+    logger.writeInfo('oidc', 'discovery', { success: true, url: wellKnown  })
 }
 
 module.exports = {verifyRequest, initializeAuth}

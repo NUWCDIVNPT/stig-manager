@@ -33,6 +33,7 @@
     "swagger-ui-dist": "^3.51.2",
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
+    "uuid": "^8.3.2",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
 }

@@ -99,9 +99,6 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     let [rows] = await connection.query(sql, predicates.binds)
     return (rows)
   }
-  catch (err) {
-    throw err
-  }
   finally {
     if (typeof connection !== 'undefined') {
       await connection.release()
@@ -321,43 +318,33 @@ exports.updateUser = async function( userId, body, projection, elevate, userObje
 }
 
 exports.setLastAccess = async function (userId, timestamp) {
-  try {
     let sqlUpdate = `UPDATE user_data SET lastAccess = ? where userId = ?`
     await dbUtils.pool.execute(sqlUpdate, [timestamp, userId])
     return true
-  }
-  catch (err) {
-    console.log(`ERROR: [setLastAccess] ${err.stack}`)
-  }
 }
 
 exports.setUserData = async function (userObject, fields) {
-  try {
-    let insertColumns = ['username']
-    // Apparently the standard MySQL practice to ensure insertId is valid even on non-updating updates
-    // See: https://chrisguitarguy.com/2020/01/26/mysql-last-insert-id-on-duplicate-key-update/
-    let updateColumns = ['userId = LAST_INSERT_ID(userId)']
-    // let updateColumns = []
-    let binds = [userObject.username]
-    if (fields.lastAccess) {
-      insertColumns.push('lastAccess')
-      updateColumns.push('lastAccess = VALUES(lastAccess)')
-      binds.push(fields.lastAccess)
-    }
-    if (fields.lastClaims) {
-      insertColumns.push('lastClaims')
-      updateColumns.push('lastClaims = VALUES(lastClaims)')
-      binds.push(JSON.stringify(fields.lastClaims))
-    }
-    let sqlUpsert = `INSERT INTO user_data (
-      ${insertColumns.join(',\n')}
-    ) VALUES ? ON DUPLICATE KEY UPDATE 
-      ${updateColumns.join(',\n')}`
-    let [result] = await dbUtils.pool.query(sqlUpsert, [[binds]])
-    return result.insertId
+  let insertColumns = ['username']
+  // Apparently the standard MySQL practice to ensure insertId is valid even on non-updating updates
+  // See: https://chrisguitarguy.com/2020/01/26/mysql-last-insert-id-on-duplicate-key-update/
+  let updateColumns = ['userId = LAST_INSERT_ID(userId)']
+  // let updateColumns = []
+  let binds = [userObject.username]
+  if (fields.lastAccess) {
+    insertColumns.push('lastAccess')
+    updateColumns.push('lastAccess = VALUES(lastAccess)')
+    binds.push(fields.lastAccess)
   }
-  catch (err) {
-    console.log(`ERROR: [refreshUserData] ${err.stack}`)
+  if (fields.lastClaims) {
+    insertColumns.push('lastClaims')
+    updateColumns.push('lastClaims = VALUES(lastClaims)')
+    binds.push(JSON.stringify(fields.lastClaims))
   }
+  let sqlUpsert = `INSERT INTO user_data (
+    ${insertColumns.join(',\n')}
+  ) VALUES ? ON DUPLICATE KEY UPDATE 
+    ${updateColumns.join(',\n')}`
+  let [result] = await dbUtils.pool.query(sqlUpsert, [[binds]])
+  return result.insertId
 }
 

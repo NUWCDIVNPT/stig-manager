@@ -34,8 +34,8 @@ extensions = [
     'sphinx_rtd_theme',
     'sphinxcontrib.images',
     'sphinx.ext.todo',
-    'recommonmark'
-
+    'recommonmark',
+    'sphinx_tabs.tabs'
     # ,
     # 'sphinx_markdown_tables',
 ]

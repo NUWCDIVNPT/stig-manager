@@ -1,6 +1,7 @@
 'use strict';
 
-const config = require('../utils/config')
+const config = require('../utils/config');
+const { SmError } = require('../utils/error');
 const parsers = require('../utils/parsers.js')
 const STIG = require(`../service/${config.database.type}/STIGService`)
 
@@ -8,7 +9,8 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
   try {
     let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
     if (extension.toLowerCase() != 'xml') {
-      throw ( {status: 400, message: `File extension .${extension} not supported`} )
+      throw new SmError.ClientError(`File extension .${extension} not supported`)
+
     }
     let xmlData = req.file.buffer
     let benchmark
@@ -16,7 +18,7 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
       benchmark = await parsers.benchmarkFromXccdf(xmlData)
     }
     catch(err){
-      throw ( {status: 400, message: err.message} )
+      throw new SmError.ClientError(err.message)
     }
     let response
     if (benchmark.scap) {
@@ -39,7 +41,8 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
   try {
     let response = await STIG.getRevisionByString(benchmarkId, revisionStr, req.userObject)
     if(response == undefined) {
-      throw ({status: 404, message: "No matching revision found."} )
+      throw new SmError.NotFoundError('No matching revision found.')
+
     }
     else {
       await STIG.deleteRevisionByString(benchmarkId, revisionStr, req.userObject)
@@ -63,7 +66,7 @@ module.exports.deleteStigById = async function deleteStigById (req, res, next) {
     }
   }
   else {
-    throw( {status: 403, message: "User has insufficient privilege to complete this request."})
+    throw new SmError.PrivilegeError()
   } 
 }
 
