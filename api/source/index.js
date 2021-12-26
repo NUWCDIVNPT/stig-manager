@@ -19,7 +19,6 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const cors = require('cors');
-const morgan = require('morgan')
 const auth = require('./utils/auth')
 const swaggerUi = require('swagger-ui-express')
 const jsyaml = require('js-yaml');
@@ -30,8 +29,9 @@ const OperationSvc = require(`./service/${config.database.type}/OperationService
 const smFetch = require('./utils/fetchStigs')
 const { middleware: openApiMiddleware, resolvers } = require('express-openapi-validator')
 
-// express-openapi-validator does not expose HttpError in their index.js. 
+// express-openapi-validator does not expose top-level HttpError in their index.js. 
 // We can get it from framework.types.js
+// CAUTION: We break here if express-openapi-validator changes this 
 const eovPath = path.dirname(require.resolve('express-openapi-validator'))
 const eovErrors = require(path.join(eovPath, 'framework', 'types.js'))
 
