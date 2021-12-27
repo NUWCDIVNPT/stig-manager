@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 const got = require('got')
 const retry = require('async-retry')
 const _ = require('lodash')
-const {promisify, getSystemErrorMap} = require('util')
+const {promisify} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
 const SmError = require('./error')
 
@@ -18,8 +18,6 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         let token = getBearerToken(req)
         if (!token) {
             throw({status: 401, message: 'OIDC bearer token must be provided'})
-            // throw new SmError.TokenMissingError()
-
         }
         let options = {
             algorithms: ['RS256']
