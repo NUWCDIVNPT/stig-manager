@@ -44,13 +44,17 @@ async function write (level, component, type, data) {
 // Base64 decoding
 const atob = (data) => Buffer.from(data, 'base64').toString('ascii')
 
+const serializeUserObject = ({username, display, privileges}) => ({username, fullname:display, privileges})
+
 function sanitizeHeaders () {
   let {authorization, ...headers} = this
   if (authorization !== undefined) {
     headers.authorization = true
-    const payload = authorization.match(/^Bearer [[A-Za-z0-9-_=]+\.([[A-Za-z0-9-_=]+?)\./)?.[1]
-    if (payload) {
-      headers.jwtPayload = JSON.parse(atob(payload))      
+    if (config.log.mode !== 'combined') {
+      const payload = authorization.match(/^Bearer [[A-Za-z0-9-_=]+\.([[A-Za-z0-9-_=]+?)\./)?.[1]
+      if (payload) {
+        headers.accessToken = JSON.parse(atob(payload))
+      } 
     }
   }
   else {
@@ -61,10 +65,14 @@ function sanitizeHeaders () {
 
 function serializeRequest (req) {
   req.headers.toJSON = sanitizeHeaders
+  if (config.log.mode === 'combined') {
+    req.headers.accessToken = req.access_token
+  }
   return {
     requestId: req.requestId,
     date: req._startTime,
     source: req.ip,
+    // claims: req.userObject ? serializeUserObject(req.userObject) : undefined,
     method: req.method,
     url: req.originalUrl,
     headers: req.headers,

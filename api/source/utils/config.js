@@ -82,7 +82,7 @@ let config = {
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
-            privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || process.env.STIGMAN_JWT_ROLES_CLAIM || "realm_access.roles"),
+            privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
         },
         proxyHost: process.env.STIGMAN_OIDC_PROXY_HOST

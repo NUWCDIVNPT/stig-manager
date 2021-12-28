@@ -27,10 +27,10 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         req.bearer = token
         req.userObject = {
             username: decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'null',
-            display: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER',
+            display: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER'
         }
 
-        let grantedScopes = decoded.scope.split(' ')
+        let grantedScopes = decoded[config.oauth.claims.scope]?.split(' ')
         let commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
             if (gs === rs) return gs
             let gsTokens = gs.split(":").filter(i => i.length)
