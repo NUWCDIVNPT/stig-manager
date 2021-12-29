@@ -22,7 +22,7 @@ let config = {
         authority: process.env.STIGMAN_CLIENT_OIDC_PROVIDER || process.env.STIGMAN_OIDC_PROVIDER || "http://localhost:8080/auth/realms/stigman",
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
-        directory: process.env.STIGMAN_CLIENT_DIRECTORY || "../../clients/extjs",
+        directory: process.env.STIGMAN_CLIENT_DIRECTORY || "./client",
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
         refreshToken: {
             disabled: process.env.STIGMAN_CLIENT_REFRESH_DISABLED ? process.env.STIGMAN_CLIENT_REFRESH_DISABLED === "true" : false,
