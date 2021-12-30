@@ -10,7 +10,9 @@ const semverLt = require('semver/functions/lt')
 const minMySqlVersion = '8.0.14'
 let _this = this
 
+let initAttempt = 0
 module.exports.testConnection = async function () {
+  logger.writeDebug('mysql', 'preflight', { attempt: ++initAttempt })
   let [result] = await _this.pool.query('SELECT VERSION() as version')
   return result[0].version
 }
@@ -50,7 +52,6 @@ function getPoolConfig() {
   return poolConfig
 }
 
-let initAttempt = 0
 module.exports.initializeDatabase = async function () {
   // Create the connection pool
   const poolConfig = getPoolConfig()
@@ -79,7 +80,6 @@ module.exports.initializeDatabase = async function () {
   process.on('SIGINT', closePoolAndExit)
 
   // Preflight the pool every 5 seconds
-  logger.writeDebug('mysql', 'preflight', { attempt: ++initAttempt })
   const detectedMySqlVersion = await retry(_this.testConnection, {
     retries: 24,
     factor: 1,

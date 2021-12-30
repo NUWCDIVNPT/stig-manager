@@ -106,8 +106,9 @@ async function initializeAuth() {
     const retries = 24
     const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
     async function getJwks() {
-        logger.writeDebug('oidc', 'discovery', { url: wellKnown, attempt: ++initAttempt })
-        const openidConfig = await got(wellKnown).json()   
+        logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, attempt: ++initAttempt })
+        const openidConfig = await got(wellKnown).json()
+        logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, metadata: openidConfig})
         if (!openidConfig.jwks_uri) {
             throw( new Error('No jwks_uri property found') )
         }
@@ -124,10 +125,10 @@ async function initializeAuth() {
         minTimeout: 5 * 1000,
         maxTimeout: 5 * 1000,
         onRetry: (error) => {
-            logger.writeError('oidc', 'discovery', { url: wellKnown, success: false, message: error.message })
+            logger.writeError('oidc', 'discovery', { success: false, metadataUri: wellKnown, message: error.message })
         }
     })
-    logger.writeInfo('oidc', 'discovery', { success: true, url: wellKnown  })
+    logger.writeInfo('oidc', 'discovery', { success: true, metadataUri: wellKnown, jwksUri: jwksUri })
 }
 
 module.exports = {verifyRequest, initializeAuth}
