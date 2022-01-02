@@ -1,4 +1,5 @@
-let config = require('./config');
+const config = require('./config')
+const logger = require('./logger')
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
 const got = require('got')
@@ -6,6 +7,7 @@ const retry = require('async-retry')
 const _ = require('lodash')
 const {promisify} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
+const SmError = require('./error')
 
 let jwksUri
 let client
@@ -16,7 +18,6 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         let token = getBearerToken(req)
         if (!token) {
             throw({status: 401, message: 'OIDC bearer token must be provided'})
-
         }
         let options = {
             algorithms: ['RS256']
@@ -26,10 +27,10 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         req.bearer = token
         req.userObject = {
             username: decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'null',
-            display: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER',
+            display: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER'
         }
 
-        let grantedScopes = decoded.scope.split(' ')
+        let grantedScopes = decoded[config.oauth.claims.scope]?.split(' ')
         let commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
             if (gs === rs) return gs
             let gsTokens = gs.split(":").filter(i => i.length)
@@ -100,11 +101,14 @@ function getKey(header, callback){
     })
 }
 
+let initAttempt = 0
 async function initializeAuth() {
+    const retries = 24
+    const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
     async function getJwks() {
-        const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
-        console.info("[AUTH] Trying OIDC discovery at " + wellKnown)
-        const openidConfig = await got(wellKnown).json()   
+        logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, attempt: ++initAttempt })
+        const openidConfig = await got(wellKnown).json()
+        logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, metadata: openidConfig})
         if (!openidConfig.jwks_uri) {
             throw( new Error('No jwks_uri property found') )
         }
@@ -116,15 +120,15 @@ async function initializeAuth() {
         })
     }
     await retry ( getJwks, {
-        retries: 24,
+        retries,
         factor: 1,
         minTimeout: 5 * 1000,
         maxTimeout: 5 * 1000,
         onRetry: (error) => {
-          console.log(`[AUTH] ${error.message}`)
+            logger.writeError('oidc', 'discovery', { success: false, metadataUri: wellKnown, message: error.message })
         }
     })
-    console.info("[AUTH] Received OIDC signing keys")     
+    logger.writeInfo('oidc', 'discovery', { success: true, metadataUri: wellKnown, jwksUri: jwksUri })
 }
 
 module.exports = {verifyRequest, initializeAuth}

@@ -4,6 +4,7 @@ const config = require('../utils/config')
 const User = require(`../service/${config.database.type}/UserService`)
 const Asset = require(`../service/${config.database.type}/AssetService`)
 const Collection = require(`../service/${config.database.type}/CollectionService`)
+const SmError = require('../utils/error')
 
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -18,7 +19,7 @@ module.exports.createUser = async function createUser (req, res, next) {
         let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw( {status: 400, message: `One or more collectionIds are invalid.`} )
+          throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
         }
       }
       try {
@@ -28,14 +29,7 @@ module.exports.createUser = async function createUser (req, res, next) {
       catch (err) {
         // This is MySQL specific, should abstract
         if (err.code === 'ER_DUP_ENTRY') {
-          // try {
-            let response = await User.getUsers(body.username, body.usernameMatch, projection, elevate, req.userObject)
-            throw ({
-              status: 400, 
-              message: `Duplicate name`,
-              data: response[0]
-            })
-          // } finally {}
+          throw new SmError.UnprocessableError('Duplicate name exists.')
         }
         else {
           throw err
@@ -43,7 +37,7 @@ module.exports.createUser = async function createUser (req, res, next) {
       }
     }
     else {
-     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
+     throw new SmError.PrivilegeError()    
     }
   }
   catch(err) {
@@ -61,7 +55,7 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
+      throw new SmError.PrivilegeError()    
     }
   }
   catch(err) {
@@ -70,16 +64,11 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
 }
 
 module.exports.exportUsers = async function exportUsers (projection, elevate, userObject) {
-  try {
-    if (elevate) {
-      return await User.getUsers(null, null, projection, elevate, userObject )
-    }
-    else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
-    }
+  if (elevate) {
+    return await User.getUsers(null, null, projection, elevate, userObject )
   }
-  catch (err) {
-    throw (err)
+  else {
+    throw new SmError.PrivilegeError()    
   }
 } 
 
@@ -102,7 +91,7 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res, next)
       res.json(response)
     }
     else {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
+      throw new SmError.PrivilegeError()    
     }
   }
   catch(err) {
@@ -117,7 +106,7 @@ module.exports.getUsers = async function getUsers (req, res, next) {
     let usernameMatch = req.query['username-match']
     let projection = req.query.projection
     if ( !elevate && projection && projection.length > 0) {
-      throw( {status: 403, message: "User has insufficient privilege to complete this request."} )
+      throw new SmError.PrivilegeError()
     }
     let response = await User.getUsers( username, usernameMatch, projection, elevate, req.userObject)
     res.json(response)
@@ -141,7 +130,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
         let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw( {status:400, message: `One or more collectionIds are invalid.`} ) 
+          throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
         }
       }
 
@@ -149,7 +138,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       res.json(response)
     }
     else {
-     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
+     throw new SmError.PrivilegeError()    
     }
   }
   catch(err) {
@@ -171,7 +160,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
         let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw( {status: 400, message: `One or more collectionIds are invalid.`} )   
+          throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
         }
       }
 
@@ -179,7 +168,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
       res.json(response)
     }
     else {
-     throw( {status: 403, message: "User has insufficient privilege to complete this request."} )    
+     throw new SmError.PrivilegeError()    
     }
   }
   catch(err) {
