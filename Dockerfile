@@ -5,6 +5,7 @@
 # **/state.json
 # **/README.md
 # **/.git
+# **/.gitignore
 # **/data
 # **/docs
 # **/test
@@ -31,7 +32,8 @@ COPY --chown=node:node ./api/source .
 RUN npm ci
 
 RUN mkdir client
-COPY --chown=node:node ./clients/extjs ./client
+# Requires the client build files. Alternatively, copy ./client/src 
+COPY --chown=node:node ./client/dist ./client
 
 RUN mkdir docs
 COPY --chown=node:node ./docs/_build/html ./docs

@@ -1,25 +1,41 @@
 name: Publish Docker images
+env:
+  DOCKERHUB_REPOSITORY: nuwcdivnpt/stig-manager
 on:
   workflow_dispatch:
 jobs:
+  build-client:
+    uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
   build-push-alpine:
     name: Build and push from Alpine base
+    needs: build-client
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
+      - 
+        name: Check out the repo
         uses: actions/checkout@v2
-      - name: Get repository metadata
+        with:
+          ref: main
+          fetch-depth: 0
+      -
+        name: Download client distribution
+        uses: actions/download-artifact@v2
+        with:
+          name: client-dist
+          path: ./client/dist
+      - 
+        name: Get repository metadata
         id: repo
         uses: actions/github-script@v3
         with:
           script: |
             const repo = await github.repos.get(context.repo)
             return repo.data
-      - name: Prepare variables
+      - 
+        name: Prepare variables
         id: prep
         run: |
-          git fetch --prune --unshallow
-          DOCKER_IMAGE=nuwcdivnpt/stig-manager
+          DOCKER_IMAGE=${{ env.DOCKERHUB_REPOSITORY }}
           BRANCH=$(git symbolic-ref --short HEAD)
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
@@ -31,14 +47,17 @@ jobs:
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=describe::${DESCRIBE}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')                    
-      - name: Set up Docker Buildx
+      - 
+        name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
+      - 
+        name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
-      - name: Build and push
+      - 
+        name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
@@ -61,34 +80,48 @@ jobs:
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ steps.prep.outputs.describe }}
             org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
-      - name: Image digest
+      - 
+        name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-      - name: Update Docker Hub Description
+      - 
+        name: Update Docker Hub Description
         uses: peter-evans/dockerhub-description@v2
         with:
           username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
-          repository: nuwcdivnpt/stig-manager
+          repository: ${{ env.DOCKERHUB_REPOSITORY }}
           short-description: An API and Web client for managing STIG assessments.
           readme-filepath: ./docs/the-project/DockerHub_Readme.md
   build-push-ironbank:
     name: Build and push from Iron Bank base
+    needs: build-client
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
+      - 
+        name: Check out the repo
         uses: actions/checkout@v2
-      - name: Get repository metadata
+        with:
+          ref: main
+          fetch-depth: 0
+      -
+        name: Download client distribution
+        uses: actions/download-artifact@v2
+        with:
+          name: client-dist
+          path: ./client/dist
+      - 
+        name: Get repository metadata
         id: repo
         uses: actions/github-script@v3
         with:
           script: |
             const repo = await github.repos.get(context.repo)
             return repo.data
-      - name: Prepare variables
+      - 
+        name: Prepare variables
         id: prep
         run: |
-          git fetch --prune --unshallow
-          DOCKER_IMAGE=nuwcdivnpt/stig-manager
+          DOCKER_IMAGE=${{ env.DOCKERHUB_REPOSITORY }}
           BRANCH=$(git symbolic-ref --short HEAD)
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
@@ -100,20 +133,24 @@ jobs:
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=describe::${DESCRIBE}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')                    
-      - name: Set up Docker Buildx
+      - 
+        name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
+      - 
+        name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
-      - name: Login to Iron Bank
+      - 
+        name: Login to Iron Bank
         uses: docker/login-action@v1
         with:
           registry: registry1.dso.mil
           username: ${{ secrets.IRONBANK_USERNAME }}
           password: ${{ secrets.IRONBANK_CLI_TOKEN }}          
-      - name: Build and push
+      - 
+        name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
@@ -137,5 +174,6 @@ jobs:
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ steps.prep.outputs.describe }}
             org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
-      - name: Image digest
+      - 
+        name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

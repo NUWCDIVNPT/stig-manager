@@ -1,0 +1,27 @@
+name: Build client
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  builder:
+    name: builder
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Check out the repo
+        uses: actions/checkout@v2
+      - 
+        name: Install uglify-js
+        run: npm install -g uglify-js
+      - 
+        name: Create distribution
+        working-directory: ./client
+        run: ./build.sh
+      - 
+        name: Upload distribution
+        uses: actions/upload-artifact@v2
+        with:
+          name: client-dist
+          path: ./client/dist
+      
+
