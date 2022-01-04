@@ -6,7 +6,6 @@ on:
       - main
     paths:
     - 'api/source/**'
-    - 'clients/extjs/**'
     - 'test/api/**'
     - 'Dockerfile'
     - '.github/workflows/api-tests.yml'
