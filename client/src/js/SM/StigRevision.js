@@ -396,6 +396,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
     SM.StigRevision.StigGrid.superclass.initComponent.call(this)
   }
 })
+Ext.reg('sm-stigrevision-grid', SM.StigRevision.StigGrid)
 
 SM.StigRevision.ImportStigs = function ( grid ) {
   const fp = new Ext.FormPanel({
