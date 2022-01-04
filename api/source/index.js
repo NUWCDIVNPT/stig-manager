@@ -162,8 +162,8 @@ const STIGMAN = {
     apiBase: "${config.client.apiBase}",
     welcome: {
       image: "${config.client.welcome.image}",
-      title: "${config.client.welcome.title}",
-      message: "${config.client.welcome.message}",
+      title: "${config.client.welcome.title.replace(/"/g, '\\"')}",
+      message: "${config.client.welcome.message.replace(/"/g, '\\"')}",
       link: "${config.client.welcome.link}"
     },
     commit: {

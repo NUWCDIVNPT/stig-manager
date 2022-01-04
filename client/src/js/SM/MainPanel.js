@@ -133,7 +133,7 @@ SM.DocWidget = Ext.extend(Ext.Panel, {
           `</div>`,
           
           `<div class='sm-home-widget-text'>`,
-          `<div class='sm-home-widget-subtitle'> Just Geting Started? </div>`,
+          `<div class='sm-home-widget-subtitle'> Just Getting Started? </div>`,
           `Check out our <a target="_blank" href="docs/user-guide/user-quickstart.html">User Walkthrough</a> or the <a target="_blank" href="docs/user-guide/user-guide.html">User Guide</a>`,
           `</div>`,
 
