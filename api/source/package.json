@@ -31,7 +31,6 @@
     "on-finished": "^2.3.0",
     "on-headers": "^1.0.2",
     "semver": "^7.3.4",
-    "swagger-ui-dist": "^3.51.2",
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
     "uuid": "^8.3.2",
