@@ -1,3 +1,7 @@
+.x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr {
+	background-color: hsl(40, 100%, 90%);
+	background-image: unset;
+}
 .sm-review-sprite {
 	color: #161128 !important;
 	font: 600 10px Open Sans,helvetica, sans-serif;

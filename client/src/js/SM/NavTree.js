@@ -935,9 +935,9 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     treeRender: function (tree) {
       new Ext.ToolTip({
           target: tree.header,
-          showDelay: 2000,
+          showDelay: 1000,
           dismissDelay: 0,
-          autoWidth: true,
+          width: 600,
           title: 'OAuth2 token payload',
           listeners: {
               show: function (tip) {
@@ -948,7 +948,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 tokenParsed.exp = `${tokenParsed.exp} (${expDate.format('Y-m-d H:i:s')})`
                 tokenParsed.iat = `${tokenParsed.iat} (${iatDate.format('Y-m-d H:i:s')})`
                 tokenParsed.auth_time = `${tokenParsed.auth_time} (${authTimeDate.format('Y-m-d H:i:s')})`
-                tip.update("<pre>" + JSON.stringify(tokenParsed,null,2) + "</pre>")
+                tip.update("<pre style='white-space: pre-wrap;'>" + JSON.stringify(tokenParsed,null,2) + "</pre>")
               }
           }
       }).getId() //for sonarcloud to see object used
