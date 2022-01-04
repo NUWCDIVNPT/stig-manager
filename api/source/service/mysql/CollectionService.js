@@ -91,8 +91,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
             json_object(
               'userId', CAST(user_data.userId as char),
               'username', user_data.username,
-              'email', JSON_VALUE(user_data.lastClaims, "$.${config.oauth.claims.email}"), 
-              'displayName', JSON_VALUE(user_data.lastClaims, "$.${config.oauth.claims.name}")
+              'email', JSON_UNQUOTE(JSON_EXTRACT(user_data.lastClaims, "$.${config.oauth.claims.email}")), 
+              'displayName', JSON_UNQUOTE(JSON_EXTRACT(user_data.lastClaims, "$.${config.oauth.claims.name}"))
             )
           )
           from collection_grant 
