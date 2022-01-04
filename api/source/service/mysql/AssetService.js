@@ -118,8 +118,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       binds: []
     }
     if (inPredicates.assetId) {
-      predicates.statements.push('a.assetId = :assetId')
-      predicates.binds.assetId = inPredicates.assetId
+      predicates.statements.push('a.assetId = ?')
+      predicates.binds.push(inPredicates.assetId)
     }
     if ( inPredicates.name ) {
       let matchStr = '= ?'
@@ -173,7 +173,6 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     sql += ' order by a.name'
   
     connection = await dbUtils.pool.getConnection()
-    // connection.config.namedPlaceholders = true
     let [rows] = await connection.query(sql, predicates.binds)
     return (rows)
   }
