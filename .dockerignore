@@ -2,6 +2,7 @@
 **/state.json
 **/README.md
 **/.git
+**/.gitignore
 **/data
 **/test
 **/uploads

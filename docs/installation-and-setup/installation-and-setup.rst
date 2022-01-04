@@ -154,7 +154,7 @@ Procedure
 #. From the ``/api/source`` directory, start Node, specifying the index.js file:  ``node index.js``
 
 .. note::
-  If running from source with a clone of the GitHub repository, the client is located at ``../../clients/exts`` relative to the API directory. Set this with the ``STIGMAN_CLIENT_DIRECTORY`` Environment Variable.
+  When running from source, the client files are located at ``../../client/src`` relative to the API directory. You can build a minimized client distribution by running ``client/build.sh``, which will place files at ``../../client/dist``. Set the ``STIGMAN_CLIENT_DIRECTORY`` environment variable as appropriate.
 
 .. note::
   It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying from source, to monitor the app and keep it running.
