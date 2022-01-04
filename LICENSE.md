@@ -7,9 +7,10 @@
 
 ## MIT License
 
-Copyright (c) 2020-2021 U.S. Federal Government (in countries where recognized)
-Copyright (c) 2020-2021 Science Applications International Corporation
-Copyright (c) 2020-2021 Rite-Solutions, Inc. 
+```
+Copyright (c) 2020-2022 U.S. Federal Government (in countries where recognized)
+Copyright (c) 2020-2022 Science Applications International Corporation
+Copyright (c) 2020-2022 Rite-Solutions, Inc. 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +21,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
+```
 ---
 
 *For the STIG Manager client, which uses the ExtJS 3.4 JavaScript framework licensed under the GNU General Public License*
