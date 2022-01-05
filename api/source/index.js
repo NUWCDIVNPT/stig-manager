@@ -9,7 +9,9 @@ const {serializeError} = require('./utils/serializeError')
 const packageJson = require("./package.json")
 logger.writeInfo('index', 'starting', {
   version: packageJson.version,
-  env: logger.serializeEnvironment()
+  env: logger.serializeEnvironment(),
+  dirname: __dirname,
+  cwd: process.cwd()
 })
 
 const config = require('./utils/config')
@@ -195,6 +197,7 @@ const STIGMAN = {
     app.get('/js/Env.js', function (req, res) {
       writer.writeWithContentType(res, {payload: envJS, contentType: "application/javascript"})
     })
+    logger.writeDebug('index', 'client', {client_static: path.join(__dirname, directory)})
     const expressStatic = express.static(path.join(__dirname, directory))
     app.use('/', (req, res, next) => {
       req.component = 'static'

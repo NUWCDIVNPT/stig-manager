@@ -47,8 +47,10 @@ USER node
 ENV COMMIT_SHA=${COMMIT_SHA} \
 COMMIT_BRANCH=${COMMIT_BRANCH} \
 COMMIT_TAG=${COMMIT_TAG} \
-COMMIT_DESCRIBE=${COMMIT_DESCRIBE}
+COMMIT_DESCRIBE=${COMMIT_DESCRIBE} \
+STIGMAN_CLIENT_DIRECTORY=./client \
+STIGMAN_DOCS_DIRECTORY=./docs
 
 EXPOSE 54000
-HEALTHCHECK --interval=30s --timeout=3s --start-period=120s CMD node healthcheck.js
+HEALTHCHECK --interval=120s --timeout=3s --start-period=120s CMD node healthcheck.js
 CMD [ "node", "index.js" ]
