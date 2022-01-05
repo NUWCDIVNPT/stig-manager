@@ -46,6 +46,12 @@ ext/resources/images/gray/qtip/tip-anchor-sprite.gif
 ext/resources/images/gray/qtip/tip-sprite.gif
 ext/resources/images/gray/tabs/tab-close.gif
 ext/resources/images/gray/window/icon-question.gif
+ext/resources/images/default/menu/menu.gif
+ext/resources/images/default/grid/hmenu-asc.gif
+ext/resources/images/default/grid/hmenu-desc.gif
+ext/resources/images/gray/menu/menu-parent.gif
+ext/resources/images/default/grid/columns.gif
+ext/resources/images/gray/menu/item-over.gif
 ext/ux/fileuploadfield/css/fileuploadfield.css"
 tar cf - -C $SrcDir --files-from <(echo "${ExtResources}") | tar xf - -C $DistDir
 
