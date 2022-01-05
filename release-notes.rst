@@ -1,3 +1,27 @@
+1.2.0
+-----
+Commits:
+
+- 13e4d1a dev: api distribution build script (#541)
+- 434e984 refactor: remove client from event path (#540)
+- b1903c6 fix: register xtype for STIG revision grid (#539)
+- bb374d1 fix: escape quotes in Welcome title and message (#538)
+- 459ef3e refactor: JSON_EXTRACT() instead of JSON_VALUE() (#537)
+- 19892dc chore: increment copyright year (#536)
+- d93bb4d chore: update node modules (#535)
+- 7fad835 dev: client distribution build script (#534)
+- dff8a9e feat: JSON logging and supporting code (#530)
+- 3ac29a5 docs:  updated Logging, Environment Variables, Setup and Deployment docs. (#524)
+
+Introduces:
+
+- structured logging output from the API as a JSON stream
+- build script to generate a minimized client distrubution
+- build script to generate signed binaries of the API for Windows and Linux
+- updates to the CD workflows
+- dependency updates which resolve recently reported security vulnerabilities
+- minor bug fixes
+
 1.1.0
 -----
 Commits:
