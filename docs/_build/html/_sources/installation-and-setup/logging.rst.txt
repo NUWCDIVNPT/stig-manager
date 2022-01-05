@@ -5,36 +5,101 @@ Logging
 ########################################
 
 
-STIG Manager writes all log entries to STDOUT.  How you capture and persist these log entries will depend on your Organizational requirements. 
+STIG Manager streams structured JSON logging objects to standard output (STDOUT). 
+You should capture and persist these logging objects in accordance with your Organizational requirements. 
 
 
-.. rubric:: Log format
+Logging schemas
+---------------
 
-The API implements a structured logging format in JSON, and supports several logging levels and modes.
+The full JSON Schema (Draft 07) definition of our logging objects is available here. This documentation is organized to describe each 
+logging component separately and presents the relevant sub-schemas.
 
+Common
+------
 
-Log entries will conform to the following JSON schema:
+.. tabs::
 
-.. code-block:: yaml
+  .. code-tab:: json
 
+    {
+      "$schema": "https://json-schema.org/draft-07/schema",
+      "$id": "http://yourdomain.com/schemas/myschema.json",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "component": {
+          "type": "string",
+          "enum": [
+            "index",
+            "initData",
+            "oidc",
+            "mysql",
+            "static",
+            "rest",
+            "logger"
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "date",
+        "level",
+        "component",
+        "type",
+        "data"
+      ],
+      "additionalProperties": false
+    }
+
+  .. code-tab:: yaml
+
+    "$schema": https://json-schema.org/draft-07/schema
+    "$id": http://yourdomain.com/schemas/myschema.json
     type: object
     properties:
-        date:
-            type: string
-        level:
-            type: integer
-        component:
-            type: string
-        type:
-            type: string
-        data:
-            type: object
+      date:
+        type: string
+        format: date-time
+      level:
+        type: integer
+        minimum: 1
+        maximum: 4
+      component:
+        type: string
+        enum:
+        - index
+        - initData
+        - oidc
+        - mysql
+        - static
+        - rest
+        - logger
+      type:
+        type: string
+      data:
+        type: object
     required:
     - date
     - level
     - component
     - type
     - data
+    additionalProperties: false
+
 
 
 

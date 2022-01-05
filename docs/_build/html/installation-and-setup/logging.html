@@ -15,7 +15,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\css\lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images/LightBox2/lightbox2/dist/css/lightbox.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
 
   
@@ -37,8 +38,9 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2\dist\js\lightbox-plus-jquery.min.js"></script>
-        <script src="../_static/sphinxcontrib-images\LightBox2\lightbox2-customize\jquery-noconflict.js"></script>
+        <script src="../_static/tabs.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/dist/js/lightbox-plus-jquery.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
         <script src="../_static/js/custom.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -102,7 +104,11 @@
 <li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="authentication.html">2. Authentication and Identity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">4. Logging</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4. Logging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#logging-schemas">4.1. Logging schemas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#common">4.2. Common</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
@@ -207,30 +213,95 @@
             
   <div class="section" id="logging">
 <span id="id1"></span><h1><span class="section-number">4. </span>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h1>
-<p>STIG Manager writes all log entries to STDOUT.  How you capture and persist these log entries will depend on your Organizational requirements.</p>
-<p class="rubric">Log format</p>
-<p>The API implements a structured logging format in JSON, and supports several logging levels and modes.</p>
-<p>Log entries will conform to the following JSON schema:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+<p>STIG Manager streams structured JSON logging objects to standard output (STDOUT).
+You should capture and persist these logging objects in accordance with your Organizational requirements.</p>
+<div class="section" id="logging-schemas">
+<h2><span class="section-number">4.1. </span>Logging schemas<a class="headerlink" href="#logging-schemas" title="Permalink to this headline">¶</a></h2>
+<p>The full JSON Schema (Draft 07) definition of our logging objects is available here. This documentation is organized to describe each
+logging component separately and presents the relevant sub-schemas.</p>
+</div>
+<div class="section" id="common">
+<h2><span class="section-number">4.2. </span>Common<a class="headerlink" href="#common" title="Permalink to this headline">¶</a></h2>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-SlNPTg==" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-SlNPTg==" name="SlNPTg==" role="tab" tabindex="0">JSON</button><button aria-controls="panel-0-WUFNTA==" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-WUFNTA==" name="WUFNTA==" role="tab" tabindex="-1">YAML</button></div><div aria-labelledby="tab-0-SlNPTg==" class="sphinx-tabs-panel code-tab group-tab" id="panel-0-SlNPTg==" name="SlNPTg==" role="tabpanel" tabindex="0"><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;$schema&quot;</span><span class="p">:</span> <span class="s2">&quot;https://json-schema.org/draft-07/schema&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;$id&quot;</span><span class="p">:</span> <span class="s2">&quot;http://yourdomain.com/schemas/myschema.json&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;date&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;date-time&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;level&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;minimum&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="nt">&quot;maximum&quot;</span><span class="p">:</span> <span class="mi">4</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;component&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;index&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;initData&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;oidc&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mysql&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;static&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rest&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;logger&quot;</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;date&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;component&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span>
+  <span class="p">],</span>
+  <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-WUFNTA==" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-0-WUFNTA==" name="WUFNTA==" role="tabpanel" tabindex="0"><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="s">&quot;$schema&quot;</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">https://json-schema.org/draft-07/schema</span>
+<span class="s">&quot;$id&quot;</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">http://yourdomain.com/schemas/myschema.json</span>
+<span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
 <span class="nt">properties</span><span class="p">:</span>
-    <span class="nt">date</span><span class="p">:</span>
-        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
-    <span class="nt">level</span><span class="p">:</span>
-        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
-    <span class="nt">component</span><span class="p">:</span>
-        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
-    <span class="nt">type</span><span class="p">:</span>
-        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
-    <span class="nt">data</span><span class="p">:</span>
-        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
+  <span class="nt">date</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+    <span class="nt">format</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">date-time</span>
+  <span class="nt">level</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+    <span class="nt">minimum</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+    <span class="nt">maximum</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
+  <span class="nt">component</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+    <span class="nt">enum</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">index</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">initData</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">oidc</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">mysql</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">static</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">rest</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">logger</span>
+  <span class="nt">type</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+  <span class="nt">data</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">object</span>
 <span class="nt">required</span><span class="p">:</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">date</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">level</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">component</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span>
 <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">data</span>
+<span class="nt">additionalProperties</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
 </pre></div>
 </div>
+</div></div>
 <p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> object is extensible and will contain structured details concerning the event.</p>
 <p>The contents of the logs can be controlled with the following <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a>:</p>
 <dl class="simple">
@@ -245,6 +316,7 @@
 </ul>
 </dd>
 </dl>
+</div>
 </div>
 
 
