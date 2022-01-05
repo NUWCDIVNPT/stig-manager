@@ -1,0 +1,12 @@
+## Directory for the STIG Manager API distribution archives
+
+# Content can be written here by executing:
+# $ ../build.sh
+#
+# This file hopes to prevent commits to this directory
+
+# Ignore everything in this directory
+*
+
+# Except this file
+!.gitignore

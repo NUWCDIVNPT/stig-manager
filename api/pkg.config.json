@@ -1,0 +1,10 @@
+{
+    "name": "stig-manager",
+    "bin": "./source/index.js",
+    "pkg": {
+        "scripts": ["./source/controllers/**/*.js", "./source/service/**/*.js"],
+        "assets": ["../client/dist/**/*", "../docs/_build/html"],
+        "targets": [ "node16-win", "node16-linuxstatic" ],
+        "outputPath": "./bin"
+    }
+}
