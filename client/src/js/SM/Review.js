@@ -65,7 +65,7 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
             dismissDelay: 0,
             autoWidth: true,
             tpl: SM.DetailTipTpl,
-            data: _this.fieldSettings
+            data: _this.fieldSettings.detail
           }) 
         }
       }
@@ -95,7 +95,7 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
             dismissDelay: 0,
             autoWidth: true,
             tpl: SM.CommentTipTpl,
-            data: _this.fieldSettings
+            data: _this.fieldSettings.comment
           }) 
         }
       }
@@ -269,13 +269,13 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
 
     function isReviewSubmittable () {
       if (!rcb.value) return false
-      if (_this.fieldSettings.detailRequired === 'always' && !dta.getValue()) return false
-      if (_this.fieldSettings.detailRequired === 'findings' 
+      if (_this.fieldSettings.detail.required === 'always' && !dta.getValue()) return false
+      if (_this.fieldSettings.detail.required === 'findings' 
         && rcb.value === 'fail'
         && !dta.getValue()) return false
-      if (_this.fieldSettings.commentRequired === 'always'
+      if (_this.fieldSettings.comment.required === 'always'
         && (!cta.getValue())) return false
-      if (_this.fieldSettings.commentRequired === 'findings'
+      if (_this.fieldSettings.comment.required === 'findings'
         && rcb.value === 'fail'
         && (!cta.getValue())) return false
       return true
@@ -324,10 +324,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       // }
 
       if (editable) {
-        if (fieldSettings.detailEnabled === 'always') {
+        if (fieldSettings.detail.enabled === 'always') {
           detailTextArea.enable()
         } 
-        else if (fieldSettings.detailEnabled === 'findings') {
+        else if (fieldSettings.detail.enabled === 'findings') {
           if (resultCombo.value === 'fail') {
             detailTextArea.enable()
           }
@@ -336,10 +336,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
           }
         } 
         
-        if (fieldSettings.commentEnabled === 'always') {
+        if (fieldSettings.comment.enabled === 'always') {
           commentTextArea.enable()
         } 
-        else if (fieldSettings.commentEnabled === 'findings') {
+        else if (fieldSettings.comment.enabled === 'findings') {
           if (resultCombo.value === 'fail') {
             commentTextArea.enable()
           }
@@ -527,10 +527,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       setReviewFormItemStates: setReviewFormItemStates,
       setReviewFormTips: setReviewFormTips,
       fieldSettings: this.fieldSettings || {
-        detailEnabled: 'always',
-        detailRequired: 'always',
-        commentEnabled: 'findings',
-        commentRequired: 'findings' 
+        detail: {
+          enabled: 'always',
+          required: 'always'
+        },
+        comment: {
+          enabled: 'findings',
+          required: 'findings'
+        } 
       },
       items: [
         {

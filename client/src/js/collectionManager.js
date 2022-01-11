@@ -17,16 +17,11 @@ async function addCollectionManager( params ) {
 			method: 'GET'
 		})
 		let apiCollection = JSON.parse(result.response.responseText)
-		let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
-			detailEnabled: 'always',
-			detailRequired: 'always',
-			commentEnabled: 'findings',
-			commentRequired: 'findings'
-		}
+		let apiFieldSettings = apiCollection.settings.fields
+
 		function onFieldSettingsChanged (collectionId, fieldSettings) {
 			if (collectionId === apiCollection.collectionId) {
-				apiFieldSettings = fieldSettings
-				assetGrid.apiFieldSettings = apiFieldSettings
+				assetGrid.apiFieldSettings = fieldSettings
 			}
 		}
 	

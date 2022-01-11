@@ -3,35 +3,6 @@
 Ext.ns('SM')
 Ext.ns('SM.Collection')
 
-SM.WorkflowComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function () {
-        let config = {
-            displayField: 'display',
-            valueField: 'value',
-            triggerAction: 'all',
-            mode: 'local',
-            editable: false
-        }
-        let _this = this
-        let data = [
-            ['emass', 'RMF Package'],
-            ['continuous', 'Continuous']
-        ]
-        this.store = new Ext.data.SimpleStore({
-            fields: ['value', 'display']
-        })
-        this.store.on('load', function (store) {
-            _this.setValue(_this.value)
-        })
-
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.WorkflowComboBox.superclass.initComponent.call(this)
-
-        this.store.loadData(data)
-    }
-})
-Ext.reg('sm-workflow-combo', SM.WorkflowComboBox);
-
 SM.CollectionDescriptionTextArea = Ext.extend(Ext.form.TextArea, {
     initComponent: function () {
         const _this = this
@@ -663,12 +634,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 nameField.setValue(apiCollection.name)
                 descriptionField.setValue(apiCollection.description)
                 metadataGrid.setValue(apiCollection.metadata)
-                if (apiCollection.metadata.fieldSettings) {
-                    settingsReviewFields.setValues(JSON.parse(apiCollection.metadata.fieldSettings))
-                }
-                if (apiCollection.metadata.statusSettings) {
-                    settingsStatusFields.setValues(JSON.parse(apiCollection.metadata.statusSettings))
-                }
+                settingsReviewFields.setValues(apiCollection.settings.fields)
+                settingsStatusFields.setValues(apiCollection.settings.status)
                 grantGrid.setValue(apiCollection.grants)
             },
             getFieldValues: function (dirtyOnly) {
@@ -691,8 +658,18 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                         }
                     }
                 })
-                _this.serializeFieldSettings(o)
-                _this.serializeStatusSettings(o)
+                o.settings = {
+                    fields: _this.serializeFieldSettings(o),
+                    status: _this.serializeStatusSettings(o)
+                }
+                delete o.commentEnabled
+                delete o.commentRequired
+                delete o.detailEnabled
+                delete o.detailRequired
+                delete o.canAccept
+                delete o.minAcceptGrant
+                delete o.resetCriteria
+        
                 return o
             },
             items: [
@@ -735,11 +712,6 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                             items: [ nameField, descriptionField]
                         },
                         {
-                            xtype: 'hidden',
-                            name: 'workflow',
-                            value: 'emass'
-                        },
-                        {
                             xtype: 'tabpanel',
                             style: {
                                 paddingTop: "10px"
@@ -779,66 +751,39 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
         SM.Collection.CreateForm.superclass.initComponent.call(this);
     },
     serializeFieldSettings: function (o) {
-        const reviewFields = [
-            'commentEnabled',
-            'commentRequired',
-            'detailEnabled',
-            'detailRequired'
-        ]
-        const fieldSettings = {}
-        for (const field of reviewFields) {
-            fieldSettings[field] = o[field]
-            delete o[field]
-        }
-        if (o.metadata) {
-            o.metadata.fieldSettings = JSON.stringify(fieldSettings)
-        }
-        else {
-            o.metadata = {
-                fieldSettings: JSON.stringify(fieldSettings)
+        return {
+            comment: {
+                enabled: o.commentEnabled,
+                required: o.commentRequired
+            },
+            detail: {
+                enabled: o.detailEnabled,
+                required: o.detailRequired
             }
-        }
+        }        
     },
-    serializeStatusSettings: function (o) {
-        const statusFields = [
-            'canAccept',
-            'minGrant',
-            'resetCriteria'
-        ]
-        const statusSettings = {}
-        for (const field of statusFields) {
-            statusSettings[field] = o[field]
-            delete o[field]
-        }
-        if (o.metadata) {
-            o.metadata.statusSettings = JSON.stringify(statusSettings)
-        }
-        else {
-            o.metadata = {
-                statusSettings: JSON.stringify(statusSettings)
-            }
-        }
-    }
+    serializeStatusSettings: ({canAccept,minAcceptGrant,resetCriteria}) => ({canAccept,minAcceptGrant,resetCriteria})
 })
 
 SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
     // SM.Collection.ManagePanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         let _this = this
-        async function putMetadataValue(key, value) {
+        async function patchSettings(value) {
             const result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/${key}`,
-                method: 'PUT',
-                jsonData: JSON.stringify(value)
+                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
+                method: 'PATCH',
+                jsonData: {
+                    settings: value
+                }
             })
-            return result.response.responseText ? JSON.parse(result.response.responseText) : ""
+            return result.response.responseText ? JSON.parse(result.response.responseText).settings : undefined
         }
-        async function getMetadataValue(key) {
-            const result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/${key}`,
-                method: 'GET'
+        async function updateSettings() {
+            return await patchSettings({
+                fields: settingsReviewFields.serialize(),
+                status: settingsStatusFields.serialize()
             })
-            return result.response.responseText ? JSON.parse(result.response.responseText) : null
         }
 
         const nameField = new Ext.form.TextField({
@@ -973,47 +918,31 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 
         const settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
             iconCls: 'sm-stig-icon',
-            fieldSettings: JSON.parse(_this.apiCollection?.metadata?.fieldSettings ?? null),
+            fieldSettings: _this.apiCollection?.settings?.fields,
             border: true,
             autoHeight: true,
             onFieldSelect: async function (fieldset) {
                 try {
-                    const fieldSettings = fieldset.serialize()
-                    await putMetadataValue('fieldSettings', JSON.stringify(fieldSettings))
-                    SM.Dispatcher.fireEvent('fieldsettingschanged', _this.apiCollection.collectionId, fieldSettings)
+                    const newSettings = await updateSettings()
+                    SM.Dispatcher.fireEvent('fieldsettingschanged', _this.apiCollection.collectionId, newSettings.fields)
                 }
                 catch (e) {
                     alert(e.message)
-                    try {
-                        const apiSettings = await getMetadataValue('fieldSettings')
-                        fieldset.setValues(JSON.parse(apiSettings))
-                    }
-                    catch (e) {
-                        alert(e.message)
-                    }
                 }
             }
         })
         const settingsStatusFields = new SM.Collection.StatusSettings.StatusFields({
             iconCls: 'sm-star-icon-16',
-            statusSettings: JSON.parse(_this.apiCollection?.metadata?.statusSettings ?? null),
+            statusSettings: _this.apiCollection?.settings?.status,
             border: true,
             autoHeight: true,
             onFieldsUpdate: async function (fieldset) {
                 try {
-                    const statusSettings = fieldset.serialize()
-                    await putMetadataValue('statusSettings', JSON.stringify(statusSettings))
-                    SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, statusSettings)
+                    const newSettings = await updateSettings()
+                    SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, newSettings.status)
                 }
                 catch (e) {
                     alert(e.message)
-                    try {
-                        const apiSettings = await getMetadataValue('statusSettings')
-                        fieldset.setValues(JSON.parse(apiSettings))
-                    }
-                    catch (e) {
-                        alert(e.message)
-                    }
                 }
             }
         })
@@ -1173,7 +1102,7 @@ Ext.reg('sm-collection-panel', SM.Collection.ManagePanel);
 
 Ext.ns('SM.Collection.FieldSettings')
 
-SM.Collection.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, {
+SM.Collection.FieldSettings.FieldEnabledComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         let config = {
             displayField: 'display',
@@ -1195,12 +1124,12 @@ SM.Collection.FieldSettings.FieldActiveComboBox = Ext.extend(Ext.form.ComboBox, 
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.Collection.FieldSettings.FieldActiveComboBox.superclass.initComponent.call(this)
+        SM.Collection.FieldSettings.FieldEnabledComboBox.superclass.initComponent.call(this)
 
         this.store.loadData(data)
     }
 })
-Ext.reg('sm-field-active-combo', SM.Collection.FieldSettings.FieldActiveComboBox)
+Ext.reg('sm-field-enabled-combo', SM.Collection.FieldSettings.FieldEnabledComboBox)
 
 SM.Collection.FieldSettings.FieldRequiredComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
@@ -1258,14 +1187,18 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.fieldSettings = _this.fieldSettings ?? {
-            detailEnabled: 'always',
-            detailRequired: 'always',
-            commentEnabled: 'findings',
-            commentRequired: 'findings'
+            detail: {
+                enabled: 'always',
+                required: 'always'
+            },
+            comment: {
+                enabled: 'findings',
+                required: 'findings'
+            }
         }
-        const detailEnabledCombo = new SM.Collection.FieldSettings.FieldActiveComboBox({
+        const detailEnabledCombo = new SM.Collection.FieldSettings.FieldEnabledComboBox({
             name: 'detailEnabled',
-            value: _this.fieldSettings.detailEnabled,
+            value: _this.fieldSettings.detail.enabled,
             anchor: '-10',
             listeners: {
                 select: onSelect
@@ -1274,7 +1207,7 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
         const detailRequiredCombo = new SM.Collection.FieldSettings.FieldRequiredComboBox({
             name: 'detailRequired',
             enabledField: detailEnabledCombo,
-            value: _this.fieldSettings.detailRequired,
+            value: _this.fieldSettings.detail.required,
             anchor: '100%',
             listeners: {
                 select: onSelect
@@ -1282,20 +1215,18 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
         })
         detailEnabledCombo.requiredField = detailRequiredCombo
 
-        const commentEnabledCombo = new SM.Collection.FieldSettings.FieldActiveComboBox({
+        const commentEnabledCombo = new SM.Collection.FieldSettings.FieldEnabledComboBox({
             name: 'commentEnabled',
-            value: _this.fieldSettings.commentEnabled,
+            value: _this.fieldSettings.comment.enabled,
             anchor: '-10',
             listeners: {
                 select: onSelect
             }
         })
-        // commentEnabledCombo.setValue('findings')
-
         const commentRequiredCombo = new SM.Collection.FieldSettings.FieldRequiredComboBox({
             name: 'commentRequired',
             enabledField: commentEnabledCombo,
-            value: _this.fieldSettings.commentRequired,
+            value: _this.fieldSettings.comment.required,
             anchor: '100%',
             listeners: {
                 select: onSelect
@@ -1304,24 +1235,23 @@ SM.Collection.FieldSettings.ReviewFields = Ext.extend(Ext.form.FieldSet, {
         commentEnabledCombo.requiredField = commentRequiredCombo
 
         _this.serialize = function () {
-            const output = {}
-            const items = [
-                detailEnabledCombo,
-                detailRequiredCombo,
-                commentEnabledCombo,
-                commentRequiredCombo
-            ]
-            for (const item of items) {
-                output[item.name] = item.value
+            return {
+                comment: {
+                    enabled: commentEnabledCombo.value,
+                    required: commentRequiredCombo.value
+                },
+                detail: {
+                    enabled: detailEnabledCombo.value,
+                    required: detailRequiredCombo.value
+                }
             }
-            return output
         }
 
         _this.setValues = function (values) {
-            detailEnabledCombo.setValue(values.detailEnabled)
-            detailRequiredCombo.setValue(values.detailRequired)
-            commentEnabledCombo.setValue(values.commentEnabled)
-            commentRequiredCombo.setValue(values.commentRequired)
+            detailEnabledCombo.setValue(values.detail.enabled)
+            detailRequiredCombo.setValue(values.detail.required)
+            commentEnabledCombo.setValue(values.comment.enabled)
+            commentRequiredCombo.setValue(values.comment.required)
         }
 
         function onSelect(item, record, index) {
@@ -1477,7 +1407,7 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         const _this = this
         _this.statusSettings = _this.statusSettings ?? {
             canAccept: true,
-            minGrant: 3,
+            minAcceptGrant: 3,
             resetCriteria: 'result'
         }
         const canAcceptCheckbox = new SM.Collection.StatusSettings.AcceptCheckbox({
@@ -1491,11 +1421,11 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
             }
         })
         const grantComboBox = new SM.Collection.StatusSettings.GrantComboBox({
-            name: 'minGrant',
+            name: 'minAcceptGrant',
             fieldLabel: '<span style="padding-left: 18px;">Grant required to set Accept or Reject</span>', 
             disabled: !_this.statusSettings.canAccept,
             width: 125,
-            value: _this.statusSettings.minGrant || 3,
+            value: _this.statusSettings.minAcceptGrant,
             listeners: {
                 select: onComboSelect
             }

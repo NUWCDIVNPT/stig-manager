@@ -53,7 +53,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         collection (
           collectionId,
           name,
-          workflow,
+          settings,
           metadata 
         ) VALUES ?`,
         insertBinds: []
@@ -176,7 +176,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       dml.collection.insertBinds.push([
         parseInt(c.collectionId) || null,
         c.name,
-        c.workflow,
+        JSON.stringify(c.settings),
         JSON.stringify(c.metadata)
       ])
       for (const grant of c.grants) {

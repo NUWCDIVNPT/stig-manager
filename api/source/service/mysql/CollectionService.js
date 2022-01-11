@@ -20,7 +20,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
       'c.description',
-      'c.workflow',
+      'c.settings',
       'c.metadata'
     ]
     let joins = [
@@ -155,10 +155,6 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       predicates.statements.push(`c.name ${matchStr}`)
       predicates.binds.push( inPredicates.name )
     }
-    if ( inPredicates.workflow ) {
-      predicates.statements.push('c.workflow = ?')
-      predicates.binds.push( inPredicates.workflow )
-    }
     if ( inPredicates.metadata ) {
       for (const pair of inPredicates.metadata) {
         const [key, value] = pair.split(':')
@@ -180,7 +176,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     if (predicates.statements.length > 0) {
       sql += "\nWHERE " + predicates.statements.join(" and ")
     }
-    sql += ' group by c.collectionId, c.name, c.description, c.workflow, c.metadata'
+    sql += ' group by c.collectionId, c.name, c.description, c.settings, c.metadata'
     sql += ' order by c.name'
     
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -544,6 +540,9 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
     if ('metadata' in collectionFields) {
       collectionFields.metadata = JSON.stringify(collectionFields.metadata)
     }
+    if ('settings' in collectionFields) {
+      collectionFields.settings = JSON.stringify(collectionFields.settings)
+    }
   
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
@@ -557,9 +556,9 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
       let sqlInsert =
       `INSERT INTO
           collection
-          (name,  workflow, metadata)
+          (name, description, settings, metadata)
         VALUES
-          (:name, :workflow, :metadata)`
+          (:name, :description, :settings, :metadata)`
       let [rows] = await connection.execute(sqlInsert, binds)
       collectionId = rows.insertId
     }
@@ -1083,7 +1082,6 @@ exports.deleteCollectionMetadataKey = async function ( collectionId, key ) {
   return rows.length > 0 ? rows[0].value : ""
 }
 
-
 /*
 Available only to level 3 or 4 users ("Manage" or "Owner")
 Returns number of history entries deleted.
@@ -1285,4 +1283,16 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
     throw ( {status: 500, message: err.message, stack: err.stack} ) 
   }
 
+}
+
+exports.getCollectionSettings = async function ( collectionId ) {
+  let sql = `
+    select
+      settings
+    from 
+      collection
+    where 
+      collectionId = ?`
+  let [rows] = await dbUtils.pool.query(sql, [collectionId])
+  return rows.length > 0 ? rows[0].settings : undefined
 }

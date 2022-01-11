@@ -17,8 +17,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       'a.fqdn',
       `json_object (
         'collectionId', CAST(c.collectionId as char),
-        'name', c.name,
-        'workflow', c.workflow
+        'name', c.name
       ) as "collection"`,
       'a.description',
       'a.ip',

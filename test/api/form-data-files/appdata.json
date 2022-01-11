@@ -350,7 +350,18 @@
             "collectionId": "21",
             "name": "Collection X",
             "description": null,
-            "workflow": "emass",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {
                 "reqRar": "true",
                 "pocName": "poc2Patched",
@@ -388,7 +399,18 @@
             "collectionId": "83",
             "name": "Collection Y",
             "description": null,
-            "workflow": "emass",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {
                 "reqRar": "true",
                 "pocName": "string",
@@ -406,7 +428,18 @@
             "collectionId": "1",
             "name": "Collection Z put",
             "description": null,
-            "workflow": "continuous",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {
                 "reqRar": "true",
                 "pocName": "poc2Put",
@@ -440,7 +473,18 @@
             "collectionId": "84",
             "name": "delete Collection Admin",
             "description": null,
-            "workflow": "continuous",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {},
             "grants": [
                 {
@@ -453,7 +497,18 @@
             "collectionId": "85",
             "name": "delete Collection lvl4",
             "description": null,
-            "workflow": "continuous",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {},
             "grants": [
                 {
@@ -470,7 +525,18 @@
             "collectionId": "86",
             "name": "delete Collection NONE",
             "description": null,
-            "workflow": "continuous",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {},
             "grants": []
         },
@@ -478,7 +544,18 @@
             "collectionId": "92",
             "name": "test Collection",
             "description": null,
-            "workflow": "continuous",
+            "settings": {
+                "fields": {
+                    "comment": {
+                        "enabled": "findings",
+                        "required": "findings"
+                    },
+                    "detail": {
+                        "enabled": "always",
+                        "required": "always"
+                    }
+                }
+            },
             "metadata": {},
             "grants": [
                 {

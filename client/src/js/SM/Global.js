@@ -46,12 +46,12 @@ SM.DetailTipText = `<b>Detail</b><br>A description of how the evaluator or evalu
 SM.DetailTipTpl = new Ext.XTemplate(
     '<b>Detail</b><br>A description of how the evaluator or evaluation tool determined the result.<br><br>',
     '<b>Collection Settings</b></br>This field is enabled ',
-    `<tpl if="detailEnabled == 'always'">for any result.<br></tpl>`,
-    `<tpl if="detailEnabled == 'findings'">for findings only.<br></tpl>`,
+    `<tpl if="enabled == 'always'">for any result.<br></tpl>`,
+    `<tpl if="enabled == 'findings'">for findings only.<br></tpl>`,
     `Content in this field is `,
-    `<tpl if="detailRequired == 'always'">required to submit a review.<br></tpl>`,
-    `<tpl if="detailRequired == 'findings'">required to submit a finding.<br></tpl>`,
-    `<tpl if="detailRequired == 'optional'">optional.<br></tpl>`,
+    `<tpl if="required == 'always'">required to submit a review.<br></tpl>`,
+    `<tpl if="required == 'findings'">required to submit a finding.<br></tpl>`,
+    `<tpl if="required == 'optional'">optional.<br></tpl>`,
     `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;FINDING_DETAILS&gt;<br><b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;message&gt;`
 )
 
@@ -61,12 +61,12 @@ SM.CommentTipText = `<b>Comment</b><br>Additional comment by the evaluator or ev
 SM.CommentTipTpl = new Ext.XTemplate(
     '<b>Comment</b><br>Additional comment by the evaluator or evaluation tool.<br><br>',
     '<b>Collection Settings</b></br>This field is enabled ',
-    `<tpl if="commentEnabled == 'always'">for any result.<br></tpl>`,
-    `<tpl if="commentEnabled == 'findings'">for findings only.<br></tpl>`,
+    `<tpl if="enabled == 'always'">for any result.<br></tpl>`,
+    `<tpl if="enabled == 'findings'">for findings only.<br></tpl>`,
     `Content in this field is `,
-    `<tpl if="commentRequired == 'always'">required to submit a review.<br></tpl>`,
-    `<tpl if="commentRequired == 'findings'">required to submit a finding.<br></tpl>`,
-    `<tpl if="commentRequired == 'optional'">optional.<br></tpl>`,
+    `<tpl if="required == 'always'">required to submit a review.<br></tpl>`,
+    `<tpl if="required == 'findings'">required to submit a finding.<br></tpl>`,
+    `<tpl if="required == 'optional'">optional.<br></tpl>`,
     `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
     <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata comment&gt;`
 )

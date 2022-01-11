@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c5b39dff-5d54-4b3b-87ab-436d1105840e",
+		"_postman_id": "fe349687-4729-4c8a-91c3-371cdb80a186",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -2364,7 +2364,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/collections?workflow=emass&projection=owners&projection=statistics",
+											"raw": "{{baseUrl}}/collections?projection=owners&projection=statistics",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2381,7 +2381,8 @@
 												{
 													"key": "workflow",
 													"value": "emass",
-													"description": "Match Collections having a specific workflow."
+													"description": "Match Collections having a specific workflow.",
+													"disabled": true
 												},
 												{
 													"key": "metadata",
@@ -2533,68 +2534,6 @@
 												{
 													"key": "name-match",
 													"value": "{{collectionMatchType}}"
-												}
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Return a list of Collections accessible to the requester WORKFLOW",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													""
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/collections?workflow=emass&elevate={{elevated}}&projection=owners&projection=statistics",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"collections"
-											],
-											"query": [
-												{
-													"key": "name",
-													"value": "{{collectionMatchString}}",
-													"description": "Matches a string anywhere in the object name",
-													"disabled": true
-												},
-												{
-													"key": "workflow",
-													"value": "emass",
-													"description": "Match Collections having a specific workflow."
-												},
-												{
-													"key": "metadata",
-													"value": "{{metadataKey}}:{{metadataValue}}",
-													"description": "A query parameter that specifies metadata key:value pairs to select matching Collections",
-													"disabled": true
-												},
-												{
-													"key": "elevate",
-													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
-												},
-												{
-													"key": "projection",
-													"value": "owners",
-													"description": "Additional properties to include in the response.\n"
-												},
-												{
-													"key": "projection",
-													"value": "statistics",
-													"description": "Additional properties to include in the response.\n"
 												}
 											]
 										}
@@ -7891,7 +7830,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n\n  \"description\": null,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 												},
 												"url": {
 													"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -8435,7 +8374,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Patched\",\n  \"pocEmail\": \"pocEmail@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+											"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -8560,7 +8499,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+											"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": null,\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -8807,16 +8746,13 @@
 											"    return;\r",
 											"}\r",
 											"\r",
-											"\r",
 											"let jsonData = pm.response.json();\r",
-											"\r",
 											"\r",
 											"pm.test(\"Response JSON is an object\", function () {\r",
 											"    pm.expect(jsonData).to.be.an('object');\r",
-											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
-											"\r",
 											"});\r",
+											"\r",
+											"pm.test(\"\")\r",
 											""
 										],
 										"type": "text/javascript"
@@ -8833,7 +8769,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": \"Collection TEST description\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Put\",\n  \"pocEmail\": \"pocEmailPut@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": \"true\"\n  },\n    \"grants\": [\n\n        {\n                \"userId\": \"1\",\n            \"accessLevel\": 4\n        }\n    ]\n}\n"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ]\n}\n"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=grants",
@@ -14814,7 +14750,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n  \"pocName\": \"poc2Patched\",\n  \"pocEmail\": \"pocEmail@email.com\",\n  \"pocPhone\": \"12342\",\n  \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+							"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/collections/:collectionId?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -14922,7 +14858,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"workflow\": \"continuous\",\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+							"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": null,\n  \"settings\": {\n    \"fields\": {\n        \"detail\": {\n            \"enabled\": \"always\",\n            \"required\": \"findings\"\n        },\n        \"comment\": {\n            \"enabled\": \"always\",\n            \"required\": \"findings\"\n        }\n    },\n    \"status\": {\n        \"canAccept\": true,\n        \"minAcceptGrant\": 2,\n        \"resetCriteria\": \"result\"\n    }\n  },\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
