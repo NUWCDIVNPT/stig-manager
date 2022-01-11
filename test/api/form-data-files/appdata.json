@@ -360,6 +360,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {
@@ -409,6 +414,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {
@@ -438,6 +448,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {
@@ -483,6 +498,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {},
@@ -507,6 +527,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {},
@@ -535,6 +560,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {},
@@ -554,6 +584,11 @@
                         "enabled": "always",
                         "required": "always"
                     }
+                },
+                "status": {
+                    "canAccept": true,
+                    "minAcceptGrant": 3,
+                    "resetCriteria": "result"
                 }
             },
             "metadata": {},
