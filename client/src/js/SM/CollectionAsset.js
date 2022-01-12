@@ -373,7 +373,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'sm-import-icon',
                         text: 'Import CKL or SCAP...',
                         handler: function() {
-                            showImportResultFiles( me.collectionId, {fieldSettings: me.apiFieldSettings} );            
+                            showImportResultFiles( me.collectionId, me.apiFieldSettings );            
                         }
                     },
                     '-',

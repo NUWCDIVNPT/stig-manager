@@ -9,17 +9,17 @@ const SmError = require('../utils/error')
 const _this = this
 
 function isReviewSubmittable ( fieldSettings, review ) {
-  if (fieldSettings.detailRequired === 'always' 
+  if (fieldSettings.detail.required === 'always' 
     && !review.detail) return false
 
-  if (fieldSettings.detailRequired === 'findings' 
+  if (fieldSettings.detail.required === 'findings' 
     && review.result === 'fail'
     && !review.detail) return false
 
-  if (fieldSettings.commentRequired === 'always'
+  if (fieldSettings.comment.required === 'always'
     && (!review.comment)) return false
 
-  if (fieldSettings.commentRequired === 'findings'
+  if (fieldSettings.comment.required === 'findings'
     && review.result === 'fail'
     && (!review.comment)) return false
 
@@ -36,29 +36,11 @@ function normalizeReview ( review ) {
   return review
 }
 
-async function getFieldSettings ( collectionId ) {
-  const response = await Collection.getCollectionMetadataValue(collectionId, 'fieldSettings')
-  return response ? JSON.parse(response) : {
-    detailEnabled: 'always',
-    detailRequired: 'always',
-    commentEnabled: 'findings',
-    commentRequired: 'findings'
-  }
-}
-
-async function getStatusSettings(collectionId) {
-  const response = await Collection.getCollectionMetadataValue(collectionId, 'statusSettings')
-  return response ? JSON.parse(response) : {
-    canAccept: true,
-    minGrant: 3,
-    resetCriteria: 'result'
-  }
-}
-
 async function normalizeAndValidateReviews( reviews, collectionId, assetId, userObject ) {
   const userRules = await Review.getRulesByAssetUser( assetId, userObject )
-  const fieldSettings = await getFieldSettings(collectionId)
-  const statusSettings = await getStatusSettings(collectionId)
+  const collectionSettings = await Collection.getCollectionSettings(collectionId)
+  const fieldSettings = collectionSettings.fields
+  const statusSettings = collectionSettings.status
   const collectionGrant = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
   const permitted = [], rejected = []
   for (const review of reviews) {
@@ -70,7 +52,7 @@ async function normalizeAndValidateReviews( reviews, collectionId, assetId, user
       else {
         if (isReviewSubmittable(fieldSettings, review)) {
           if (review.status.label !== 'submitted') {
-            if (statusSettings.canAccept === true && collectionGrant.accessLevel >= statusSettings.minGrant) {
+            if (statusSettings.canAccept === true && collectionGrant.accessLevel >= statusSettings.minAcceptGrant) {
               permitted.push(review)
             }
             else {

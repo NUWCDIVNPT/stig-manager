@@ -5,12 +5,7 @@ async function addReview( params ) {
     method: 'GET'
   })
   let apiCollection = JSON.parse(result.response.responseText)
-  let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
-    detailEnabled: 'always',
-    detailRequired: 'always',
-    commentEnabled: 'findings',
-    commentRequired: 'findings'
-  }
+  let apiFieldSettings = apiCollection.settings.fields
 
 
   // Classic compatability. Remove after modernization

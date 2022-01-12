@@ -109,12 +109,10 @@ module.exports.getCollections = async function getCollections (req, res, next) {
     const elevate = req.query.elevate
     const name = req.query.name
     const nameMatch = req.query['name-match']
-    const workflow = req.query.workflow
     const metadata = req.query.metadata
     const response = await Collection.getCollections({
       name: name,
       nameMatch: nameMatch,
-      workflow: workflow,
       metadata: metadata
     }, projection, elevate, req.userObject)
     res.json(response)

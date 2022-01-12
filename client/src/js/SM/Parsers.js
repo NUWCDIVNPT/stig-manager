@@ -173,7 +173,7 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}, fieldSett
           }
         })
         if (!ruleId) return
-        let status = bestStatusForVuln(result, vuln.FINDING_DETAILS, vuln.COMMENTS, fieldSettings)
+        // let status = bestStatusForVuln(result, vuln.FINDING_DETAILS, vuln.COMMENTS, fieldSettings)
         vulnArray.push({
           ruleId: ruleId,
           result: result,
@@ -193,7 +193,7 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}, fieldSett
 
   function bestStatusForVuln(result, detail, comment, fieldSettings) {
     let detailSubmittable = false
-    switch (fieldSettings.detailRequired) {
+    switch (fieldSettings.detail.required) {
       case 'optional':
         detailSubmittable = true
         break
@@ -209,7 +209,7 @@ const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}, fieldSett
         break
     } 
     let commentSubmittable = false
-    switch (fieldSettings.commentRequired) {
+    switch (fieldSettings.comment.required) {
       case 'optional':
         commentSubmittable = true
         break

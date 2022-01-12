@@ -747,7 +747,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
-        - $ref: '#/components/parameters/CollectionWorkflowQuery'
         - $ref: '#/components/parameters/MetadataQuery'
         - $ref: '#/components/parameters/CollectionsProjectionQuery'
       responses:
@@ -3309,7 +3308,7 @@ components:
         - collectionId
         - name
         - description
-        - workflow
+        - settings
         - metadata
         - created   
       additionalProperties: false
@@ -3323,8 +3322,8 @@ components:
         description:
           type: string
           nullable: true
-        workflow:
-          $ref: '#/components/schemas/CollectionWorkflow'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
         created:
@@ -3338,13 +3337,11 @@ components:
           type: string
         name:
           type: string
-        workflow:
-          $ref: '#/components/schemas/CollectionWorkflow'
     CollectionCreateOrReplace:
       type: object
       required:
         - name
-        - workflow
+        - settings
         - metadata
         - grants
       additionalProperties: false
@@ -3354,14 +3351,66 @@ components:
         description:
           type: string
           nullable: true
-        workflow:
-          $ref: '#/components/schemas/CollectionWorkflow'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
         grants:
           type: array
           items:
             $ref: '#/components/schemas/UserGrant'
+    CollectionFieldEnabledAlways:
+      type: object
+      additionalProperties: false
+      required:
+        - enabled
+        - required
+      properties:
+        enabled:
+          type: string
+          enum:
+            - always
+        required:
+          type: string
+          enum:
+            - always
+            - findings
+            - optional
+    CollectionFieldEnabledFindings:
+      type: object
+      additionalProperties: false
+      required:
+        - enabled
+        - required
+      properties:
+        enabled:
+          type: string
+          enum:
+            - findings
+        required:
+          type: string
+          enum:
+            - findings
+            - optional
+    CollectionFieldSetting:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/CollectionFieldEnabledAlways'
+        - $ref: '#/components/schemas/CollectionFieldEnabledFindings'
+      example:   # Sample object
+        enabled: 'always'
+        required: 'findings'
+    CollectionFieldSettings:
+      type: object
+      additionalProperties: false
+      required:
+        - detail
+        - comment
+      properties:
+        detail:
+          $ref: '#/components/schemas/CollectionFieldSetting'
+        comment:
+          $ref: '#/components/schemas/CollectionFieldSetting'
     CollectionGrant:
       type: object
       required:
@@ -3392,7 +3441,7 @@ components:
         - collectionId
         - name
         - description
-        - workflow
+        - settings
         - metadata
         - created    
       additionalProperties: false
@@ -3406,8 +3455,8 @@ components:
         description:
           type: string
           nullable: true
-        workflow:
-          $ref: '#/components/schemas/CollectionWorkflow'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
         created:
@@ -3437,7 +3486,7 @@ components:
         - collectionId
         - name
         - description
-        - workflow
+        - settings
         - metadata
         - created     
       additionalProperties: false
@@ -3451,8 +3500,8 @@ components:
         description:
           type: string
           nullable: true
-        workflow:
-          $ref: '#/components/schemas/CollectionWorkflow'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
         created:
@@ -3464,6 +3513,14 @@ components:
             $ref: '#/components/schemas/User'
         statistics:
           type: object               
+    CollectionSettings:
+      type: object
+      additionalProperties: false
+      properties:
+        fields:
+          $ref: '#/components/schemas/CollectionFieldSettings'
+        status:
+          $ref: '#/components/schemas/CollectionStatusSettings'
     CollectionStatus:
       type: object
       additionalProperties: false
@@ -3512,6 +3569,27 @@ components:
           type: integer
         auto:
           type: integer
+    CollectionStatusSettings:
+      type: object
+      additionalProperties: false
+      required:
+        - canAccept
+        - minAcceptGrant
+        - resetCriteria
+      properties:
+        canAccept:
+          type: boolean
+        minAcceptGrant:
+          type: integer
+          minimum: 2
+          maximum: 4
+          example: 2
+        resetCriteria:
+          type: string
+          enum:
+            - any
+            - result
+          example: 'result'
     CollectionStig:
       type: object
       additionalProperties: false
@@ -3555,8 +3633,8 @@ components:
         description:
           type: string
           nullable: true
-        workflow:
-          $ref: '#/components/schemas/CollectionWorkflow'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
         grants:
@@ -3568,11 +3646,6 @@ components:
                 type: string
               accessLevel:
                 type: integer
-    CollectionWorkflow:
-      type: string
-      enum:
-        - continuous
-        - emass
     Date:
       type: string
       format: date
@@ -4635,15 +4708,6 @@ components:
           enum:
             - owners
             - statistics
-    CollectionWorkflowQuery:
-      name: workflow
-      in: query
-      description: Match Collections having a specific workflow.
-      schema:
-        type: string
-        enum:
-          - continuous
-          - emass
     EndDateQuery:
       name: endDate
       in: query

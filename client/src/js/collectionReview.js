@@ -16,16 +16,8 @@ async function addCollectionReview ( params ) {
 			method: 'GET',
 		  })
 		let apiCollection = JSON.parse(result.response.responseText)
-		let apiFieldSettings = apiCollection.metadata.fieldSettings ? JSON.parse(apiCollection.metadata.fieldSettings) : {
-			detailEnabled: 'always',
-			detailRequired: 'always',
-			commentEnabled: 'findings',
-			commentRequired: 'findings'
-		}
-		let apiStatusSettings = apiCollection.metadata.statusSettings ? JSON.parse(apiCollection.metadata.statusSettings) : {
-			canAccept: true,
-			minGrant: 3
-		}
+		let apiFieldSettings = apiCollection.settings.fields
+		let apiStatusSettings = apiCollection.settings.status
 	
 		result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
@@ -899,17 +891,17 @@ async function addCollectionReview ( params ) {
 					case 'result':
 						return true
 					case 'detail':
-						if (apiFieldSettings.detailEnabled === 'always') {
+						if (apiFieldSettings.detail.enabled === 'always') {
 							return true;
 						}
-						if (apiFieldSettings.detailEnabled === 'findings') {
+						if (apiFieldSettings.detail.enabled === 'findings') {
 							return record.data.result === 'fail'
 						} 
 					case 'comment':
-						if (apiFieldSettings.commentEnabled === 'always') {
+						if (apiFieldSettings.comment.enabled === 'always') {
 							return true;
 						}
-						if (apiFieldSettings.commentEnabled === 'findings') {
+						if (apiFieldSettings.comment.enabled === 'findings') {
 							return record.data.result === 'fail'
 						} 
 				}
@@ -1253,13 +1245,13 @@ async function addCollectionReview ( params ) {
 
 		function isReviewComplete (result, rcomment, acomment) {
 			if (!result) return false
-      if (apiFieldSettings.detailRequired === 'always' && !rcomment) return false
-      if (apiFieldSettings.detailRequired === 'findings' 
+      if (apiFieldSettings.detail.required === 'always' && !rcomment) return false
+      if (apiFieldSettings.detail.required === 'findings' 
         && result === 'fail'
         && !rcomment) return false
-      if (apiFieldSettings.commentRequired === 'always'
+      if (apiFieldSettings.comment.required === 'always'
         && (!acomment)) return false
-      if (apiFieldSettings.commentRequired === 'findings'
+      if (apiFieldSettings.comment.required === 'findings'
         && result === 'fail'
         && (!acomment)) return false
       return true

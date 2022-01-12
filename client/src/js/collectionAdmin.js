@@ -66,7 +66,7 @@ function addCollectionAdmin( params ) {
     listeners: {
       load: function (store, records) {
         store.isLoaded = true;
-        collectionGrid.getSelectionModel().selectFirstRow();
+        // collectionGrid.getSelectionModel().selectFirstRow();
       }
     }
   })
