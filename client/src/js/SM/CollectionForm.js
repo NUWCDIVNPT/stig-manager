@@ -659,8 +659,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                     }
                 })
                 o.settings = {
-                    fields: _this.serializeFieldSettings(o),
-                    status: _this.serializeStatusSettings(o)
+                    fields: settingsReviewFields.serialize(),
+                    status: settingsStatusFields.serialize()
                 }
                 delete o.commentEnabled
                 delete o.commentRequired
@@ -1457,7 +1457,7 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         _this.setValues = function (values) {
             criteriaComboBox.setValue(values.resetCriteria || 'result')
             canAcceptCheckbox.setValue(values.canAccept || false)
-            grantComboBox.setValue(values.minGrant || 3)
+            grantComboBox.setValue(values.minAcceptGrant || 3)
             grantComboBox.setDisabled(!values.canAccept)
         }
 
