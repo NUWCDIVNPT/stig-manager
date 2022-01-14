@@ -71,7 +71,7 @@ jobs:
             COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
-            stig-manager.last-migration.mysql=1.1.0
+            stig-manager.last-migration.mysql=1.2.1
             org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
             org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
             org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}
@@ -165,7 +165,7 @@ jobs:
             COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
-            stig-manager.last-migration.mysql=1.1.0
+            stig-manager.last-migration.mysql=1.2.1
             org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
             org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
             org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}
