@@ -352,13 +352,13 @@
             "description": null,
             "settings": {
                 "fields": {
-                    "comment": {
-                        "enabled": "findings",
-                        "required": "findings"
-                    },
                     "detail": {
                         "enabled": "always",
                         "required": "always"
+                    },
+                    "comment": {
+                        "enabled": "always",
+                        "required": "findings"
                     }
                 },
                 "status": {

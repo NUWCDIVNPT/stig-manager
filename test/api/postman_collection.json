@@ -10025,7 +10025,82 @@
 													"response": []
 												},
 												{
-													"name": "PUT Review without Detail",
+													"name": "PUT Review: saved, pass, no detail",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"User is forbidden by grant\", function () {\r",
+																	"        pm.response.to.have.status(403)\r",
+																	"        pm.expect(jsonData).to.have.all.keys(\"error\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Review was saved\", function () {\r",
+																	"        pm.response.to.have.status(200)\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"saved\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: submitted, pass, no detail Copy",
 													"event": [
 														{
 															"listen": "test",
@@ -10070,6 +10145,168 @@
 														"body": {
 															"mode": "raw",
 															"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: accepted, pass, no detail",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"pm.test(\"Status should be 403\", function () {\r",
+																	"    pm.response.to.have.status(403)\r",
+																	"})\r",
+																	"pm.test(\"Response JSON is an error object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"    pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"})\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"Response does not have property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.not.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Response has property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"accepted\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: submit, fail, no comment",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"pm.test(\"Status should be 403\", function () {\r",
+																	"    pm.response.to.have.status(403)\r",
+																	"})\r",
+																	"pm.test(\"Response JSON is an error object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"    pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"})\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"Response does not have property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.not.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Response has property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"fail\",\n    \"detail\": \"string\",\n    \"comment\": \"\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
 														},
 														"url": {
 															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
