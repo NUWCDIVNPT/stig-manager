@@ -40,6 +40,7 @@
   {
     "Test Case Description": " lvl1, not elevated, etc.",
     "user": "lvl1",
+    "userId": "85",
     "userExpectations": "lvl1",
     "accessLevel": "lvl1",
     "globalAccess": "false",
@@ -77,6 +78,7 @@
   {
     "Test Case Description": " lvl2, not elevated, etc.",
     "user": "lvl2",
+    "userId": "21",
     "userExpectations": "lvl2",
     "accessLevel": "lvl2",
     "globalAccess": "false",
@@ -111,6 +113,7 @@
   {
     "Test Case Description": " lvl3, not elevated, etc.",
     "user": "lvl3",
+    "userId": "44",
     "userExpectations": "lvl3",
     "accessLevel": "lvl3",
     "globalAccess": "false",
@@ -145,6 +148,7 @@
   {
     "Test Case Description": " lvl4, not elevated, etc.",
     "user": "lvl4",
+    "userId": "45",
     "userExpectations": "lvl4",
     "accessLevel": "lvl4",
     "globalAccess": "false",
@@ -179,6 +183,7 @@
   {
     "Test Case Description": " collectionCreator, not elevated, etc.",
     "user": "collectioncreator",
+    "userId": "82",
     "userExpectations": "allpkgs",
     "accessLevel": "collection_creator",
     "globalAccess": "false",

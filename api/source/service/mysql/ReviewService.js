@@ -214,8 +214,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     'r.comment',
     'CAST(r.userId as char) as userId',
     'ud.username',
-    'r.ts',
-    'r.touchTs',
+    "DATE_FORMAT(r.ts, '%Y-%m-%dT%H:%i:%sZ') as ts",
+    "DATE_FORMAT(r.touchTs, '%Y-%m-%dT%H:%i:%sZ') as touchTs",
     `JSON_OBJECT(
       'label', status.api,
       'text', r.statusText,
