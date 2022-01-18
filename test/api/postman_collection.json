@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "fe349687-4729-4c8a-91c3-371cdb80a186",
+		"_postman_id": "5b46bc3d-cd1f-41c4-ba65-3922926e8925",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -3480,7 +3480,7 @@
 													"}\r",
 													"\r",
 													"if (user == \"bizarroLvl1\" || user == \"lvl1\" || user == \"collectioncreator\") {\r",
-													"    pm.test(\"Status should be is 403 for user lvl1, collectionCreator, and bizarroLvl1\", function () {\r",
+													"    pm.test(\"Status should be is 403 for user lvl1, collectioncreator, and bizarroLvl1\", function () {\r",
 													"        pm.response.to.have.status(403);\r",
 													"    });\r",
 													"    return;\r",
@@ -7830,7 +7830,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n\n  \"description\": null,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"always\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n\n  \"description\": null,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 												},
 												"url": {
 													"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -8746,14 +8746,34 @@
 											"    return;\r",
 											"}\r",
 											"\r",
-											"let jsonData = pm.response.json();\r",
+											"let respJson = pm.response.json();\r",
 											"\r",
-											"pm.test(\"Response JSON is an object\", function () {\r",
-											"    pm.expect(jsonData).to.be.an('object');\r",
-											"});\r",
+											"pm.test(\"Response matches request\", function () {\r",
+											"    pm.expect(collectionGetToPost(respJson))\r",
+											"    .to.eql(JSON.parse(pm.request.body.raw))\r",
+											"})\r",
 											"\r",
-											"pm.test(\"\")\r",
-											""
+											"function collectionGetToPost (collectionGet) {\r",
+											"    // extract the transformed and unposted properties\r",
+											"    const {collectionId, grants, ...collectionPost} = collectionGet\r",
+											"\r",
+											"    // add transformed properties to the derived post  \r",
+											"    collectionPost.grants = grantsPostToGet(grants)\r",
+											"\r",
+											"    // the derived post object\r",
+											"    return collectionPost\r",
+											"}\r",
+											"\r",
+											"function grantsPostToGet(grantsGetArray) {\r",
+											"    const grantsPostArray = []\r",
+											"    for (const grant of grantsGetArray) {\r",
+											"        grantsPostArray.push({\r",
+											"            userId: grant.user.userId,\r",
+											"            accessLevel: grant.accessLevel\r",
+											"        })\r",
+											"    }\r",
+											"    return grantsPostArray\r",
+											"}"
 										],
 										"type": "text/javascript"
 									}
@@ -8769,10 +8789,10 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ]\n}\n"
+									"raw": "{\n    \"name\": \"TEST\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ]\n}\n"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=grants",
+									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=grants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -8787,25 +8807,8 @@
 										},
 										{
 											"key": "projection",
-											"value": "assets",
-											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
 											"value": "grants",
 											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
-											"value": "owners"
-										},
-										{
-											"key": "projection",
-											"value": "statistics"
-										},
-										{
-											"key": "projection",
-											"value": "grants"
 										}
 									]
 								}
@@ -9841,16 +9844,33 @@
 											"    return;\r",
 											"}\r",
 											"\r",
+											"let respJson = pm.response.json();\r",
 											"\r",
-											"let jsonData = pm.response.json();\r",
+											"pm.test(\"Response matches request\", function () {\r",
+											"    pm.expect(assetGetToPost(respJson))\r",
+											"    .to.eql(JSON.parse(pm.request.body.raw))\r",
+											"})\r",
 											"\r",
+											"function assetGetToPost(assetGet) {\r",
+											"    // extract the transformed and unposted properties\r",
+											"    const {assetId, collection, stigs, mac, fqdn, ...assetPost} = assetGet\r",
+											"    \r",
+											"    // add transformed properties to the derived post  \r",
+											"    assetPost.collectionId = collection.collectionId\r",
+											"    assetPost.stigs = stigsGetToPost(stigs)\r",
 											"\r",
-											"pm.test(\"Response JSON is an object\", function () {\r",
-											"    pm.expect(jsonData).to.be.an('object');\r",
-											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"    // the derived post object\r",
+											"    return assetPost\r",
+											"}\r",
 											"\r",
-											"});\r",
+											"function stigsGetToPost(stigsGetArray) {\r",
+											"    const stigsPostArray = []\r",
+											"    for (const stig of stigsGetArray) {\r",
+											"        stigsPostArray.push(stig.benchmarkId)\r",
+											"    }\r",
+											"    return stigsPostArray\r",
+											"}\r",
+											"\r",
 											""
 										],
 										"type": "text/javascript"
@@ -9870,7 +9890,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -9885,17 +9905,8 @@
 										},
 										{
 											"key": "projection",
-											"value": "statusStats",
-											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
 											"value": "stigs",
 											"description": "Additional properties to include in the response.\n"
-										},
-										{
-											"key": "projection",
-											"value": "stigGrants"
 										}
 									]
 								}
@@ -9917,7 +9928,7 @@
 											"name": "{rule Id}",
 											"item": [
 												{
-													"name": "Set all properties of a Review",
+													"name": "PUT Review: all projections",
 													"event": [
 														{
 															"listen": "test",
@@ -9925,6 +9936,7 @@
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
 																	"console.log(\"user: \" + user);\r",
+																	"console.log(\"userId: \" + pm.iterationData.get(\"userId\"))\r",
 																	"\r",
 																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
 																	"    user = \"elevated\";\r",
@@ -9932,13 +9944,13 @@
 																	"}\r",
 																	"\r",
 																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
-																	"    pm.test(\"Status should be is 403 for collectionCreator\", function () {\r",
+																	"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
 																	"        pm.response.to.have.status(403);\r",
 																	"    });\r",
 																	"    return;\r",
 																	"}\r",
 																	"else {\r",
-																	"    pm.test(\"Status code is 200 for all users but collectionCreator\", function () {\r",
+																	"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
 																	"        pm.response.to.have.status(200);\r",
 																	"    });\r",
 																	"}\r",
@@ -9946,15 +9958,64 @@
 																	"    return;\r",
 																	"}\r",
 																	"\r",
-																	"\r",
-																	"let jsonData = pm.response.json();\r",
-																	"\r",
-																	"\r",
-																	"pm.test(\"Response JSON is an object\", function () {\r",
-																	"    pm.expect(jsonData).to.be.an('object');\r",
-																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
-																	"\r",
+																	"const respData = pm.response.json()\r",
+																	"const reqData = JSON.parse(pm.request.body.raw)\r",
+																	"const expectedReview = {\r",
+																	"  assetId: \"42\",\r",
+																	"  assetName: \"Collection_X_lvl1_asset-1\",\r",
+																	"  ruleId: pm.environment.get(\"testRuleId\"),\r",
+																	"  result: reqData.result,\r",
+																	"  detail: reqData.detail,\r",
+																	"  autoResult: reqData.autoResult,\r",
+																	"  comment: reqData.comment,\r",
+																	"  userId: pm.iterationData.get(\"userId\"),\r",
+																	"  username: pm.iterationData.get(\"user\"),\r",
+																	"  ts: respData.ts,\r",
+																	"  touchTs: respData.ts,\r",
+																	"  status: {\r",
+																	"      ts: respData.ts,\r",
+																	"      text: null,\r",
+																	"      user: {\r",
+																	"          userId: pm.iterationData.get(\"userId\"),\r",
+																	"          username: pm.iterationData.get(\"user\")\r",
+																	"      },\r",
+																	"      label: reqData.status\r",
+																	"  },\r",
+																	"  stigs: [\"VPN_SRG\"],\r",
+																	"  rule: {\r",
+																	"    title: \"The VPN Gateway must ensure inbound and outbound traffic is configured with a security policy in compliance with information flow control policies.\",\r",
+																	"    ruleId: \"SV-106179r1_rule\",\r",
+																	"    version: \"SRG-NET-000019-VPN-000040\",\r",
+																	"    severity: \"medium\"\r",
+																	"  },\r",
+																	"  history: [{\r",
+																	"    ts: \"2021-07-16T03:34:02Z\",\r",
+																	"    detail: \"test\\nvisible to lvl1\",\r",
+																	"    result: \"pass\",\r",
+																	"    status: {\r",
+																	"        ts: \"2021-07-16T03:34:02Z\",\r",
+																	"        text: null,\r",
+																	"        user: {\r",
+																	"            userId: \"1\",\r",
+																	"            username: \"stigmanadmin\"\r",
+																	"        },\r",
+																	"        label: \"submitted\"\r",
+																	"    },\r",
+																	"    userId: \"1\",\r",
+																	"    comment: \"idk\",\r",
+																	"    touchTs: \"2021-07-16T03:34:02Z\",\r",
+																	"    username: \"stigmanadmin\",\r",
+																	"    autoResult: false\r",
+																	"  }]  \r",
+																	"}\r",
+																	"pm.test(\"Response matches expected response\", function () {\r",
+																	"    try {\r",
+																	"        pm.expect(respData).to.eql(expectedReview)\r",
+																	"    }\r",
+																	"    catch (e) {\r",
+																	"        e.message = `actual: ${JSON.stringify(e.actual)}, expected: ${JSON.stringify(e.expected)}`\r",
+																	"        throw(e)\r",
+																	"    }\r",
 																	"});\r",
 																	""
 																],
@@ -10001,6 +10062,324 @@
 																	"key": "projection",
 																	"value": "stigs"
 																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: saved, pass, no detail",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"User is forbidden by grant\", function () {\r",
+																	"        pm.response.to.have.status(403)\r",
+																	"        pm.expect(jsonData).to.have.all.keys(\"error\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Review was saved\", function () {\r",
+																	"        pm.response.to.have.status(200)\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"saved\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: submitted, pass, no detail Copy",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"pm.test(\"Status should be 403\", function () {\r",
+																	"    pm.response.to.have.status(403)\r",
+																	"})\r",
+																	"pm.test(\"Response JSON is an error object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"    pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"})\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"Response does not have property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.not.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Response has property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: accepted, pass, no detail",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"pm.test(\"Status should be 403\", function () {\r",
+																	"    pm.response.to.have.status(403)\r",
+																	"})\r",
+																	"pm.test(\"Response JSON is an error object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"    pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"})\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"Response does not have property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.not.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Response has property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"accepted\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "PUT Review: submit, fail, no comment",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"pm.test(\"Status should be 403\", function () {\r",
+																	"    pm.response.to.have.status(403)\r",
+																	"})\r",
+																	"pm.test(\"Response JSON is an error object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"    pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"})\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) {\r",
+																	"    pm.test(\"Response does not have property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.not.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Response has property detail\", function () {\r",
+																	"        pm.expect(jsonData).to.have.property(\"detail\")\r",
+																	"    })\r",
+																	"}\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"result\": \"fail\",\n    \"detail\": \"string\",\n    \"comment\": \"\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
 															],
 															"variable": [
 																{
@@ -10483,6 +10862,93 @@
 													"response": []
 												},
 												{
+													"name": "PATCH Review to Accepted",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\")\r",
+																	"console.log(\"user: \" + user)\r",
+																	"\r",
+																	"let jsonData = pm.response.json()\r",
+																	"\r",
+																	"switch (user) {\r",
+																	"    case \"collectioncreator\":\r",
+																	"        pm.test(\"Status is 403\", () => pm.response.to.have.status(403))\r",
+																	"        pm.test(\"Response is error without detail\", () => {\r",
+																	"            pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"            pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"            pm.expect(jsonData).to.not.have.property(\"detail\")\r",
+																	"        })\r",
+																	"        break\r",
+																	"    case \"lvl1\":\r",
+																	"    case \"lvl2\":\r",
+																	"        pm.test(\"Status is 403\", () => pm.response.to.have.status(403))\r",
+																	"        pm.test(\"Response is error with detail\", () => {\r",
+																	"            pm.expect(jsonData).to.be.an(\"object\")\r",
+																	"            pm.expect(jsonData).to.have.property(\"error\")\r",
+																	"            pm.expect(jsonData).to.have.property(\"detail\")\r",
+																	"        })\r",
+																	"        break\r",
+																	"    case \"lvl3\":\r",
+																	"    case \"lvl4\":\r",
+																	"    case \"stigmanadmin\":\r",
+																	"        pm.test(\"Status is 200\", () => pm.response.to.have.status(200))\r",
+																	"        break\r",
+																	"}"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PATCH",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n    \"status\": \"accepted\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId",
+																":ruleId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}",
+																	"description": "(Required) A path parameter that indentifies an Asset"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}",
+																	"description": "(Required) A path parameter that indentifies a Rule"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
 													"name": "Merge metadata property/value into a Review",
 													"event": [
 														{
@@ -10846,16 +11312,18 @@
 															"    return;\r",
 															"}\r",
 															"\r",
-															"\r",
 															"let jsonData = pm.response.json();\r",
+															"const expectedResponse = {\r",
+															"    rejected: [],\r",
+															"    affected: {\r",
+															"        updated: 0,\r",
+															"        inserted: 1\r",
+															"    }\r",
+															"}\r",
 															"\r",
-															"\r",
-															"pm.test(\"Response JSON is an object\", function () {\r",
-															"    pm.expect(jsonData).to.be.an('object');\r",
-															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
-															"\r",
-															"});\r",
+															"pm.test(\"Response matches request\", function () {\r",
+															"    pm.expect(jsonData).to.eql(expectedResponse);\r",
+															"})\r",
 															""
 														],
 														"type": "text/javascript"
@@ -17001,6 +17469,121 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "Collection settings",
+					"item": [
+						{
+							"name": "Invalid fields.detail.required value",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status is 400 \", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"{{$timestamp}}\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"findings\",\n                \"required\": \"always\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"always\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 3,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {},\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ]\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Missing settings",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status is 400 \", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"{{$timestamp}}\",\n    \"description\": \"Collection TEST description\",\n    \"metadata\": {},\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ]\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token.stigmanadmin}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
 				}
 			],
 			"description": "These tests should be self contained, provide their own authorization, and repopulate test data if required.",
@@ -17107,6 +17690,10 @@
 					"//misc",
 					"pm.environment.set(\"accessLevel\", pm.iterationData.get(\"accessLevel\"));",
 					"",
+					"// utils = {",
+					"//     grantsPostToGet: function (grantsRespArray) {",
+					"//     }",
+					"// }",
 					""
 				]
 			}
