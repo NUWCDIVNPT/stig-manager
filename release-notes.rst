@@ -37,6 +37,7 @@ Includes a MySQL migration that:
 
 Commits: 
 
+- 6622d39 test: collection settings; object creation (#550)
 - 675e031 feat: adds Collection.settings (#548)
 - fa55151 doc: synchronize build with source (#543)
 - 9c071ff fix: add additional images to client dist (#544)
