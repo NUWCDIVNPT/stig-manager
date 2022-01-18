@@ -1,5 +1,58 @@
+1.2.1
+-----
+Changes:
+
+- BREAKING API CHANGE: The OpenAPI schema for Collection was revised. ``Collection.workflow`` was removed. ``Collection.settings`` was introduced and is mandatory for POST/PUT requests.
+- Resolved a bug where ``Collection.description`` was not being saved (#547)
+
+Includes a MySQL migration that:
+
+- Drops column ``collection.workflow``
+- Adds column ``collection.settings`` as type ``JSON``
+- Sets the value of column ``settings`` for each record in table ``collection`` based on the value of ``metadata.fieldSettings`` if it exists, and ``metadata.statusSettings`` if it exists. If those values do not exist, then the default value of settings is used.
+
+  .. code-block:: json
+    
+    {
+      "fields": {
+        "detail": {
+          "enabled": "findings",
+          "required": "findings"
+        },
+        "comment": {
+          "enabled": "always",
+          "required": "always"
+        }
+      },
+      "status": {
+        "canAccept": true,
+        "minAcceptGrant": 3,
+        "resetCriteria": "result"
+      }
+    }
+
+- Removes the keys ``fieldSettings`` and ``statusSettings`` from the value of column ``metadata`` for each record in table ``collection``
+
+**We recommend backing up your database before updating to any release with a database migration.**
+
+Commits: 
+
+- 6622d39 test: collection settings; object creation (#550)
+- 675e031 feat: adds Collection.settings (#548)
+- fa55151 doc: synchronize build with source (#543)
+- 9c071ff fix: add additional images to client dist (#544)
+
 1.2.0
 -----
+Changes:
+
+- structured logging output from the API as a JSON stream
+- build script to generate a minimized client distrubution
+- build script to generate signed binaries of the API for Windows and Linux
+- updates to the CD workflows
+- dependency updates which resolve recently reported security vulnerabilities
+- minor bug fixes
+
 Commits:
 
 - 13e4d1a dev: api distribution build script (#541)
@@ -13,24 +66,8 @@ Commits:
 - dff8a9e feat: JSON logging and supporting code (#530)
 - 3ac29a5 docs:  updated Logging, Environment Variables, Setup and Deployment docs. (#524)
 
-Introduces:
-
-- structured logging output from the API as a JSON stream
-- build script to generate a minimized client distrubution
-- build script to generate signed binaries of the API for Windows and Linux
-- updates to the CD workflows
-- dependency updates which resolve recently reported security vulnerabilities
-- minor bug fixes
-
 1.1.0
 -----
-Commits:
-
-- ui: styling tweaks (#517)
-- docs: consolidated some redundant docs, added info about collection settings, updated screenshots (#514)
-- feat: update UI labels (#513)
-- feat: review status handling (#511)
-
 Includes breaking changes to the OpenAPI definition that affect clients such as `STIG Manager Watcher <https://github.com/NUWCDIVNPT/stigman-watcher>`_. Some properties of the schemas for ``Review...`` and ``ReviewHistory...`` have been changed, renamed or removed:
 
 - ``resultComment`` is renamed to ``detail``
@@ -44,6 +81,12 @@ Includes a MySQL migration that changes the schema for tables ``review`` and ``r
 - The migration also drops the small, static table ``action``.
 - We recommend backing up the database before updating to any release with a database migration. 
 
+Commits:
+
+- ui: styling tweaks (#517)
+- docs: consolidated some redundant docs, added info about collection settings, updated screenshots (#514)
+- feat: update UI labels (#513)
+- feat: review status handling (#511)
   
 1.0.42
 ------
