@@ -22,7 +22,7 @@ else:
   newline = '\n'
 
 
-with open('../../../docs/installation-and-setup/envvars.csv', 'r') as csvfile:
+with open('../../docs/installation-and-setup/envvars.csv', 'r') as csvfile:
     reader = csv.DictReader(csvfile)
     with io.open(filename, 'w', newline=newline) as f:
       for row in reader:
