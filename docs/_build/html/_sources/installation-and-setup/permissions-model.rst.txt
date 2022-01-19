@@ -1,7 +1,7 @@
 
 .. _permissions-and-data:
 
-Permissions and Data
+Data Model
 =========================
 
 
@@ -18,17 +18,6 @@ Collections are composed of:
   * Reviews of the Rules that compose each attached STIG
   * User Grants providing access to some or all of the Assets/STIGs in that Collection
   * Reports providing Status and Findings information
-
-
-
-..
-
-  Permissions Model
-  --------------------
-
-
-  API Endpoints and their Roles
-  -----------------------------------
 
 
 

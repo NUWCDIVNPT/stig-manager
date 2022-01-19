@@ -105,7 +105,7 @@
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Data Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">8. Securing and Assessing STIG Manager Deployments</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#securing-your-deployment">8.1. Securing Your Deployment</a><ul>
@@ -403,9 +403,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-odd"><th class="stub"><p>V-222392</p></th>
 <td><p>The application must display an explicit logoff message to users indicating the reliable termination of authenticated communications sessions.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>The SPA does not display an explicit ‘logged out’ screen, it immediately redirects to the login screen of the configured OIDC Provider.</p>
-<p>Addressed by Issue #485</p>
-</td>
+<td><p>The SPA does not display an explicit ‘logged out’ screen, it immediately redirects to the login screen of the configured OIDC Provider. Addressed by Issue #485</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222393</p></th>
 <td><p>The application must associate organization-defined types of security attributes having organization-defined security attribute values with information in storage.</p></td>
@@ -675,7 +673,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-odd"><th class="stub"><p>V-222447</p></th>
 <td><p>The application must provide audit record generation capability for HTTP headers including User-Agent, Referer, GET, and POST.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Addressed by Issue #179, allowing different log levels and configuration to affect headers included in audit record.</p></td>
+<td><p>Application allows for log levels and configuration that will include these headers in the logged audit records.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222448</p></th>
 <td><p>The application must provide audit record generation capability for connecting system IP addresses.</p></td>
@@ -690,7 +688,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-even"><th class="stub"><p>V-222450</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to grant privileges occur.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Addressed by Issue #179, must include POST content and JSON reply in audit record.</p></td>
+<td><p>Application allows for log levels and configuration that will include POST content and JSON replies in audit records.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222451</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to access security objects occur.</p></td>
@@ -710,7 +708,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-even"><th class="stub"><p>V-222454</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to modify privileges occur.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Addressed by Issue #179, must include POST content and JSON reply in audit record.</p></td>
+<td><p>Application allows for log levels and configuration that will include POST content and JSON replies in audit records.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222455</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to modify security objects occur.</p></td>
@@ -730,7 +728,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-even"><th class="stub"><p>V-222458</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to delete privileges occur.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Addressed by Issue #179, must include POST content and JSON reply in audit record.</p></td>
+<td><p>Application allows for log levels and configuration that will include POST content and JSON replies in audit records.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222459</p></th>
 <td><p>The application must generate audit records when successful/unsuccessful attempts to delete security levels occur.</p></td>
@@ -787,7 +785,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-odd"><th class="stub"><p>V-222469</p></th>
 <td><p>The application must log application shutdown events.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown. Addressed by Issue #484</p>
+<td><p>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown.</p>
 <p>Your local definition of ‘application shutdown’ may include other components (i.e, OIDC Provider, database, reverse proxies, log servers, etc.) whose compliance with this check must be individually evaluated.</p>
 </td>
 </tr>
@@ -834,9 +832,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-even"><th class="stub"><p>V-222478</p></th>
 <td><p>The application must generate audit records containing the full-text recording of privileged commands or the individual identities of group account users.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>When logging endpoint requests, if the request includes parameter ‘elevate’ == true, the API emits audit records that include the JSON POST content and the JSON reply</p>
-<p>Addressed by Issue #179</p>
-</td>
+<td><p>When logging endpoint requests, if the request includes parameter ‘elevate’ == true, the API emits audit records that include the JSON POST content and the JSON reply</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222479</p></th>
 <td><p>The application must implement transaction recovery logs when transaction based.</p></td>
@@ -1446,7 +1442,7 @@ The provided assessments may not apply to the way you have configured your deplo
 <tr class="row-even"><th class="stub"><p>V-222600</p></th>
 <td><p>The application must not disclose unnecessary information to users.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Error messages addressed by Issue #483</p></td>
+<td><p>Error messages to users do not disclose unnecessary information.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222601</p></th>
 <td><p>The application must not store sensitive information in hidden fields.</p></td>
@@ -1497,12 +1493,12 @@ SonarCloud scans, including OWASP tests, are run regularly to identify vulnerabi
 <tr class="row-even"><th class="stub"><p>V-222610</p></th>
 <td><p>The application must generate error messages that provide information necessary for corrective actions without revealing information that could be exploited by adversaries.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Error messages addressed by Issue #483</p></td>
+<td><p>Error messages to client do not reveal exploitable information.</p></td>
 </tr>
 <tr class="row-odd"><th class="stub"><p>V-222611</p></th>
 <td><p>The application must reveal error messages only to the ISSO, ISSM, or SA.</p></td>
 <td><p>Not a Finding</p></td>
-<td><p>Error messages addressed by Issue #483</p></td>
+<td><p>Error messages  appear in logs that are only accessible by authorized users.</p></td>
 </tr>
 <tr class="row-even"><th class="stub"><p>V-222612</p></th>
 <td><p>The application must not be vulnerable to overflow attacks.</p></td>

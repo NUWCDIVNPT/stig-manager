@@ -106,18 +106,19 @@
 <li class="toctree-l4"><a class="reference internal" href="#quick-start-orchestration-with-docker-compose">1.2.1. Quick Start Orchestration with Docker Compose</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#container-deployment-with-docker">1.2.2. Container Deployment with Docker</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deployment-from-source-code">1.2.3. Deployment from Source Code</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#common-configuration-variables">1.2.4. Common Configuration Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deployment-with-executable-binaries">1.2.4. Deployment with Executable Binaries</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#additional-suggested-configuration">1.3. Additional Suggested Configuration</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#tls">1.3.1. TLS</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#enable-extra-ca-certificates">1.3.2. Enable Extra CA Certificates</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configure-logging">1.3.3. Configure Logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables">1.3. Environment Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#additional-suggested-configuration">1.4. Additional Suggested Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tls">1.4.1. TLS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#enable-extra-ca-certificates">1.4.2. Enable Extra CA Certificates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-logging">1.4.3. Configure Logging</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#first-steps">1.4. First Steps</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#configure-users">1.4.1. Configure Users</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#import-stigs">1.4.2. Import STIGs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#first-steps">1.5. First Steps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configure-users">1.5.1. Configure Users</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#import-stigs">1.5.2. Import STIGs</a></li>
 </ul>
 </li>
 </ul>
@@ -126,7 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Data Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="securing.html">8. Securing and Assessing STIG Manager Deployments</a></li>
 </ul>
@@ -233,8 +234,9 @@
 <p>Several deployment approaches are described in this document:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#deploy-docker-compose"><span class="std std-ref">Deploy our sample Docker Compose orchestration</span></a></p></li>
-<li><p><a class="reference internal" href="#deploy-container"><span class="std std-ref">Deploy with Individual Containers</span></a></p></li>
-<li><p><a class="reference internal" href="#deploy-from-source"><span class="std std-ref">Deploy from Source Code in Node.js runtime environment</span></a></p></li>
+<li><p><a class="reference internal" href="#deploy-container"><span class="std std-ref">Deploy with individual containers</span></a></p></li>
+<li><p><a class="reference internal" href="#deploy-from-source"><span class="std std-ref">Deploy from source code in Node.js runtime environment</span></a></p></li>
+<li><p><a class="reference internal" href="#deploy-binaries"><span class="std std-ref">Deploy with executable binaries</span></a></p></li>
 </ul>
 <dl class="simple">
 <dt>A STIG Manager deployment requires at least two other mandatory services, which are freely available but must be provided and configured by the those deploying the STIG Manager instance:</dt><dd><ul class="simple">
@@ -273,7 +275,7 @@
 </dd>
 <dt><strong>OIDC Provider</strong>  (Always Required)</dt><dd><p>An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.</p>
 </dd>
-<dt><strong>MySQL Database</strong>  (Always Required)</dt><dd><p>A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.</p>
+<dt><strong>MySQL Database</strong>  (Always Required)</dt><dd><p>A stateful data storage capability that supports mutual TLS authentication and secure data at rest. STIGMan OSS supports MySQL 8.0.14 and above.</p>
 </dd>
 </dl>
 </div>
@@ -375,8 +377,39 @@ nuwcdivnpt/stig-manager
 </div>
 </div>
 </div>
-<div class="section" id="common-configuration-variables">
-<h3><span class="section-number">1.2.4. </span>Common Configuration Variables<a class="headerlink" href="#common-configuration-variables" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="deployment-with-executable-binaries">
+<span id="deploy-binaries"></span><h3><span class="section-number">1.2.4. </span>Deployment with Executable Binaries<a class="headerlink" href="#deployment-with-executable-binaries" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager releases include .zip and .tar files containing a single executable binary that includes NodeJS, the STIGMan OSS API and Client, and required NodeJS packages.</p>
+<div class="section" id="id6">
+<h4><span class="section-number">1.2.4.1. </span>Requirements<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><a class="reference internal" href="authentication.html#keycloak"><span class="std std-ref">OIDC Authentication Provider</span></a></p></li>
+<li><p><a class="reference internal" href="db.html#mysql"><span class="std std-ref">Database - MySQL 8.0.14+</span></a></p></li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h4><span class="section-number">1.2.4.2. </span>Procedure<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic">
+<li><p>Download the appropriate STIG Manager OSS artifact from <a class="reference external" href="github.com/nuwcdivnpt/stig-manager/releases">the latest release</a> and unzip/untar into the desired directory.</p></li>
+<li><p>Install and configure the Authentication and Database requirements. Sample configuration instructions for these requirements can be found here:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="authentication.html#keycloak"><span class="std std-ref">Authentication - RedHat Keycloak 11+</span></a></p></li>
+<li><p><a class="reference internal" href="db.html#mysql"><span class="std std-ref">Database - MySQL 8.0.14+</span></a></p></li>
+</ul>
+<p><em>Make note of the address and ports these servers are using (as well as any other values that differ from the defaults). Set the appropriate</em> <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> <em>to these values so STIG Manager will be able to reach them</em></p>
+</li>
+<li><p>Set Environment Variables as appropriate for your environment.</p></li>
+<li><p>Run the executable.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended that you make use of a process manager such as <a class="reference external" href="https://github.com/Unitech/pm2">PM2</a> when deploying the executable, to monitor the app and keep it running.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="environment-variables">
+<h2><span class="section-number">1.3. </span>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
 <p>The API and Web Client are configured using <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a>. They neither require nor use a configuration file.</p>
 <p>It is likely you will have to set at least some of these Environment Variables, but check the full <a class="reference internal" href="environment-variables.html#environment-variables"><span class="std std-ref">Environment Variables</span></a> reference for the full list:</p>
 <blockquote>
@@ -405,88 +438,83 @@ nuwcdivnpt/stig-manager
 <li><p>STIGMAN_CLASSIFICATION</p></li>
 </ul>
 </li>
-<li><p>Swagger OpenAPI Tool Configuration:</p>
-<ul>
-<li><p>STIGMAN_SWAGGER_ENABLED</p></li>
-<li><p>STIGMAN_SWAGGER_AUTHORITY</p></li>
-<li><p>STIGMAN_SWAGGER_REDIRECT</p></li>
-</ul>
-</li>
 </ul>
 </div></blockquote>
-<p>STIG Manager can be configured to download and import the latest STIG library on first startup. These options require access to <a class="reference external" href="https://public.cyber.mil/stigs/">https://public.cyber.mil</a> to complete. STIGs can also be imported manually. Enable this function by setting these Variables to “true”:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>STIGMAN_INIT_IMPORT_STIGS</p></li>
-<li><p>STIGMAN_INIT_IMPORT_SCAP</p></li>
-</ul>
-</div></blockquote>
-</div>
 </div>
 <div class="section" id="additional-suggested-configuration">
-<h2><span class="section-number">1.3. </span>Additional Suggested Configuration<a class="headerlink" href="#additional-suggested-configuration" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.4. </span>Additional Suggested Configuration<a class="headerlink" href="#additional-suggested-configuration" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="tls">
-<h3><span class="section-number">1.3.1. </span>TLS<a class="headerlink" href="#tls" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.4.1. </span>TLS<a class="headerlink" href="#tls" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="reverse-proxy.html#reverse-proxy"><span class="std std-ref">Set up TLS with a reverse proxy to secure connections to STIG Manager.</span></a></p>
 </div>
 <div class="section" id="enable-extra-ca-certificates">
-<h3><span class="section-number">1.3.2. </span>Enable Extra CA Certificates<a class="headerlink" href="#enable-extra-ca-certificates" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.4.2. </span>Enable Extra CA Certificates<a class="headerlink" href="#enable-extra-ca-certificates" title="Permalink to this headline">¶</a></h3>
 <p>Set the <code class="docutils literal notranslate"><span class="pre">NODE_EXTRA_CA_CERTS=file-path</span></code> Node.js environment variable to direct Node to accept CA certificates you have provided, in addition to its built-in CA certs. In the case of the Iron Bank based image, DoD CA certificates are already located here: <code class="docutils literal notranslate"><span class="pre">/etc/pki/ca-trust/source/anchors/Certificates_PKCS7_v5.7_DoD.pem</span></code></p>
 <p>Check the <a class="reference external" href="https://nodejs.org/api/cli.html#cli_node_extra_ca_certs_file">Node.js documentation for more information.</a></p>
 </div>
 <div class="section" id="configure-logging">
-<h3><span class="section-number">1.3.3. </span>Configure Logging<a class="headerlink" href="#configure-logging" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.4.3. </span>Configure Logging<a class="headerlink" href="#configure-logging" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="logging.html#logging"><span class="std std-ref">Store logs according to Organization requirements.</span></a></p>
 </div>
 </div>
 <div class="section" id="first-steps">
-<h2><span class="section-number">1.4. </span>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.5. </span>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Up until this point, the setup has concerned the actual operational deployment of the app.  For STIG Manager to function effectively, it also requires:</dt><dd><ul class="simple">
+<li><p>Users.</p></li>
+<li><p>A set of baseline STIGs for reference.</p></li>
+</ul>
+</dd>
+</dl>
 <div class="section" id="configure-users">
-<span id="user-roles-privs"></span><span id="add-users"></span><span id="adding-users"></span><span id="index-0"></span><h3><span class="section-number">1.4.1. </span>Configure Users<a class="headerlink" href="#configure-users" title="Permalink to this headline">¶</a></h3>
-<p>Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak) and be assigned the appropriate tokens, scopes, and roles before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments.</p>
-<p>User privileges are controlled by the Authentication Provider. This can be done by configuring and assigning Users the appropriate roles. In Keycloak, this can be done using the “Role Mappings” tab for that user, or you can set these roles as defaults using the Configure-&gt;Roles-&gt;Default Roles interface.  See the <a class="reference internal" href="authentication.html#authentication"><span class="std std-ref">Authentication and Identity</span></a> section for more information.</p>
-<p>Assign at least one User the <code class="docutils literal notranslate"><span class="pre">admin</span></code> role when setting up STIG Manager for the first time.</p>
-<table class="colwidths-given tight-table docutils align-default" id="id6">
-<caption><span class="caption-text">STIG Manager User Types, STIG Manager Privileges, and suggested Roles:</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
+<span id="user-roles-privs"></span><span id="add-users"></span><span id="adding-users"></span><span id="index-0"></span><h3><span class="section-number">1.5.1. </span>Configure Users<a class="headerlink" href="#configure-users" title="Permalink to this headline">¶</a></h3>
+<p>Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak), which must provide them with an appropriately configured OIDC token. This token must express the user name, privileges, and scopes in accordance with the configuration you have set using the API and Client environment variables.  Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments.</p>
+<p>See the <a class="reference internal" href="authentication.html#authentication"><span class="std std-ref">Authentication and Identity</span></a> section for more information about configuring your Authentication Provider.</p>
+<p>Assign at least one User the <code class="docutils literal notranslate"><span class="pre">admin</span></code> privilege when setting up STIG Manager for the first time. That user will be responsible for importing the baseline DISA STIGs that STIG Manager uses for reference.</p>
+<table class="colwidths-given tight-table docutils align-default" id="id9">
+<caption><span class="caption-text">STIG Manager Privileges, associated user role names, and Abilities (assumes a valid token has been granted by the OIDC provider):</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
-<col style="width: 60%" />
 <col style="width: 20%" />
+<col style="width: 60%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>User Type</p></th>
-<th class="head"><p>Privileges</p></th>
-<th class="head"><p>Roles</p></th>
+<tr class="row-odd"><th class="head"><p>User Privilege</p></th>
+<th class="head"><p>Informal User Role Name</p></th>
+<th class="head"><p>Abilities</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Administrator User</p></td>
-<td><p>Access STIG Manager, Manage Collections, Import STIGs, Manage Users, Import/Export App data</p></td>
-<td><p>admin, user</p></td>
+<tr class="row-even"><td><p>admin</p></td>
+<td><p>“Application Manager”</p></td>
+<td><p>Access STIG Manager; Can Manage Collections, Import STIGs, Manage Users, Import/Export App data</p></td>
 </tr>
-<tr class="row-odd"><td><p>Collection Creator User</p></td>
-<td><p>Access STIG Manager, Create Collections</p></td>
-<td><p>user, create_collection</p></td>
+<tr class="row-odd"><td><p>create_collection</p></td>
+<td><p>“Collection Creator”</p></td>
+<td><p>Access STIG Manager; Can create their own Collections</p></td>
 </tr>
-<tr class="row-even"><td><p>Restricted User</p></td>
+<tr class="row-even"><td><p>No explicit privileges</p></td>
+<td><p>“User”</p></td>
 <td><p>Access STIG Manager</p></td>
-<td><p>user</p></td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection.</p>
+<p>The User Privileges above control levels of access to the overall application, and are distinct from Collection Grants.  Collection Grants control access to individual Collections, and are managed in the application, not the OIDC Provider.  All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection.</p>
 </div>
-<p>It is recommended that most users should be “Collection Creator Users”(ie. assigned the “user” and “create_collection” roles). A Restricted User will only have access to grants they have been assigned by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.</p>
-<p>STIG Manager will automatically create its own user associations for Collection grants once an authenticated user accesses the system. The roles Admin and Collection Creator are visible in the User Grants administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.</p>
+<p>It is recommended that most users should have the “create_collection” privilege. A User with no privileges will only have access to Collections that they have been assigned grants to by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.</p>
+<p>Users with the Admin and Collection Creator privileges are indicated in the User Grants Application Management tab, but must be managed in the Authentication Provider. Only specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.</p>
+<blockquote>
+<div><p>See the term <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> in the glossary for more information about Users and their access to the application.</p>
+</div></blockquote>
 </div>
 <div class="section" id="import-stigs">
-<h3><span class="section-number">1.4.2. </span>Import STIGs<a class="headerlink" href="#import-stigs" title="Permalink to this headline">¶</a></h3>
-<p>Up until this point, the setup has concerned the actual operational deployment of the app.  For this function, and additional functions of the App, STIG Manager Users are required.  See the <a class="reference internal" href="../reference/index.html#term-User"><span class="xref std std-term">User</span></a> for more information on their different roles and privileges.</p>
+<h3><span class="section-number">1.5.2. </span>Import STIGs<a class="headerlink" href="#import-stigs" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager requires a set of the published DISA STIGs to serve as a reference for making STIG assignments to Assets and calculating statistics, as well as populating its browsable STIG Library.  This action can only be performed by Application Managers (ie. users with the “admin” privilege).</p>
 <ol class="arabic simple">
-<li><p>Download the latest <a class="reference external" href="https://public.cyber.mil/stigs/compilations/">quarterly STIG Library Compilations from DISA</a> and import it into STIG Manager.</p></li>
-<li><p>Log in to STIG Manager using an Administrator user to import STIGs. For information on how to do this, and other STIG Manager Admin functions, see the <a class="reference internal" href="../admin-guide/admin-quickstart.html#stig-import"><span class="std std-ref">STIG and SCAP Benchmarks</span></a> portion of the <a class="reference internal" href="../admin-guide/admin-quickstart.html#admin-quickstart"><span class="std std-ref">STIGMan Application Manager (Administrator) Walkthrough</span></a>.</p></li>
+<li><p>Download the latest <a class="reference external" href="https://public.cyber.mil/stigs/compilations/">quarterly STIG Library Compilations from DISA</a>.</p></li>
+<li><p>Log in to STIG Manager using an Application Manager user and import STIGs via the “STIG and SCAP Benchmarks” interface. For more information about this operation, and other STIG Manager Admin functions, see the <a class="reference internal" href="../admin-guide/admin-quickstart.html#stig-import"><span class="std std-ref">STIG and SCAP Benchmarks</span></a> portion of the <a class="reference internal" href="../admin-guide/admin-quickstart.html#admin-quickstart"><span class="std std-ref">STIGMan Application Manager (Administrator) Walkthrough</span></a>.</p></li>
 </ol>
 </div>
 </div>

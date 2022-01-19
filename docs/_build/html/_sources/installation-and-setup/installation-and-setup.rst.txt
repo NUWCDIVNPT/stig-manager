@@ -9,8 +9,9 @@ The STIG Manager open-source project provides an API and Web Client. The project
 Several deployment approaches are described in this document:
 
 - :ref:`Deploy our sample Docker Compose orchestration<deploy-docker-compose>`
-- :ref:`Deploy with Individual Containers <deploy-container>`
-- :ref:`Deploy from Source Code in Node.js runtime environment <deploy-from-source>`
+- :ref:`Deploy with individual containers <deploy-container>`
+- :ref:`Deploy from source code in Node.js runtime environment <deploy-from-source>`
+- :ref:`Deploy with executable binaries <deploy-binaries>`
 
 A STIG Manager deployment requires at least two other mandatory services, which are freely available but must be provided and configured by the those deploying the STIG Manager instance:
   - An OpenID Connect (OIDC) Provider
@@ -46,7 +47,7 @@ The required and optional components of a STIG Manager OSS deployment:
 **OIDC Provider**  (Always Required)
   An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.
 **MySQL Database**  (Always Required)
-  A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.
+  A stateful data storage capability that supports mutual TLS authentication and secure data at rest. STIGMan OSS supports MySQL 8.0.14 and above.
 
 -------------------------------
 
@@ -160,8 +161,45 @@ Procedure
   It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying from source, to monitor the app and keep it running.
 
 
-Common Configuration Variables
--------------------------------------------------
+
+.. _deploy-binaries:
+
+Deployment with Executable Binaries
+---------------------------------------------
+
+STIG Manager releases include .zip and .tar files containing a single executable binary that includes NodeJS, the STIGMan OSS API and Client, and required NodeJS packages. 
+
+
+Requirements
+~~~~~~~~~~~~~~
+
+- :ref:`OIDC Authentication Provider <keycloak>`
+- :ref:`mySQL`
+
+
+Procedure
+~~~~~~~~~~~~~~~~~~~~~
+
+
+#. Download the appropriate STIG Manager OSS artifact from `the latest release <github.com/nuwcdivnpt/stig-manager/releases>`__ and unzip/untar into the desired directory.
+#. Install and configure the Authentication and Database requirements. Sample configuration instructions for these requirements can be found here:
+
+   - :ref:`keycloak`
+   - :ref:`mySQL`
+
+   *Make note of the address and ports these servers are using (as well as any other values that differ from the defaults). Set the appropriate* :ref:`Environment Variables` *to these values so STIG Manager will be able to reach them*
+
+#. Set Environment Variables as appropriate for your environment. 
+#. Run the executable. 
+
+.. note::
+  It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying the executable, to monitor the app and keep it running.
+
+
+
+Environment Variables
+===============================================
+
 The API and Web Client are configured using :ref:`Environment Variables`. They neither require nor use a configuration file.
 
 It is likely you will have to set at least some of these Environment Variables, but check the full :ref:`Environment Variables` reference for the full list:
@@ -187,17 +225,6 @@ It is likely you will have to set at least some of these Environment Variables, 
     - STIGMAN_API_PORT
     - STIGMAN_CLASSIFICATION
   
-  * Swagger OpenAPI Tool Configuration:
-
-    - STIGMAN_SWAGGER_ENABLED
-    - STIGMAN_SWAGGER_AUTHORITY
-    - STIGMAN_SWAGGER_REDIRECT
-
-STIG Manager can be configured to download and import the latest STIG library on first startup. These options require access to `https://public.cyber.mil <https://public.cyber.mil/stigs/>`_ to complete. STIGs can also be imported manually. Enable this function by setting these Variables to "true":
-
-  * STIGMAN_INIT_IMPORT_STIGS
-  * STIGMAN_INIT_IMPORT_SCAP
-
 
 Additional Suggested Configuration
 =======================================
@@ -221,6 +248,11 @@ Configure Logging
 First Steps
 ==============
 
+
+Up until this point, the setup has concerned the actual operational deployment of the app.  For STIG Manager to function effectively, it also requires:
+  - Users.
+  - A set of baseline STIGs for reference. 
+
 .. index::
    single: Add Users
 
@@ -231,46 +263,49 @@ First Steps
 Configure Users
 --------------------------
 
-Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak) and be assigned the appropriate tokens, scopes, and roles before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
+Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak), which must provide them with an appropriately configured OIDC token. This token must express the user name, privileges, and scopes in accordance with the configuration you have set using the API and Client environment variables.  Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
 
-User privileges are controlled by the Authentication Provider. This can be done by configuring and assigning Users the appropriate roles. In Keycloak, this can be done using the "Role Mappings" tab for that user, or you can set these roles as defaults using the Configure->Roles->Default Roles interface.  See the :ref:`Authentication and Identity<authentication>` section for more information. 
+See the :ref:`Authentication and Identity<authentication>` section for more information about configuring your Authentication Provider. 
 
-Assign at least one User the ``admin`` role when setting up STIG Manager for the first time. 
+Assign at least one User the ``admin`` privilege when setting up STIG Manager for the first time. That user will be responsible for importing the baseline DISA STIGs that STIG Manager uses for reference. 
 
-.. list-table:: STIG Manager User Types, STIG Manager Privileges, and suggested Roles: 
-  :widths: 20 60 20
+.. list-table:: STIG Manager Privileges, associated user role names, and Abilities (assumes a valid token has been granted by the OIDC provider): 
+  :widths: 20 20 60
   :header-rows: 1
   :class: tight-table
 
-  * - User Type
-    - Privileges
-    - Roles
-  * - Administrator User
-    - Access STIG Manager, Manage Collections, Import STIGs, Manage Users, Import/Export App data
-    - admin, user
-  * - Collection Creator User
-    - Access STIG Manager, Create Collections
-    - user, create_collection
-  * - Restricted User  
+  * - User Privilege
+    - Informal User Role Name
+    - Abilities
+  * - admin
+    - "Application Manager"
+    - Access STIG Manager; Can Manage Collections, Import STIGs, Manage Users, Import/Export App data
+  * - create_collection
+    - "Collection Creator"
+    - Access STIG Manager; Can create their own Collections
+  * - No explicit privileges
+    - "User"
     - Access STIG Manager
-    - user
 
 .. note::
-   All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection. 
+   The User Privileges above control levels of access to the overall application, and are distinct from Collection Grants.  Collection Grants control access to individual Collections, and are managed in the application, not the OIDC Provider.  All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection. 
 
-It is recommended that most users should be "Collection Creator Users"(ie. assigned the "user" and "create_collection" roles). A Restricted User will only have access to grants they have been assigned by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
+It is recommended that most users should have the "create_collection" privilege. A User with no privileges will only have access to Collections that they have been assigned grants to by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
 
-STIG Manager will automatically create its own user associations for Collection grants once an authenticated user accesses the system. The roles Admin and Collection Creator are visible in the User Grants administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
+Users with the Admin and Collection Creator privileges are indicated in the User Grants Application Management tab, but must be managed in the Authentication Provider. Only specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
+
+ See the term :term:`User` in the glossary for more information about Users and their access to the application. 
+
 
 
 Import STIGs
 ------------------
 
-Up until this point, the setup has concerned the actual operational deployment of the app.  For this function, and additional functions of the App, STIG Manager Users are required.  See the :term:`User` for more information on their different roles and privileges. 
+STIG Manager requires a set of the published DISA STIGs to serve as a reference for making STIG assignments to Assets and calculating statistics, as well as populating its browsable STIG Library.  This action can only be performed by Application Managers (ie. users with the "admin" privilege). 
 
-#. Download the latest `quarterly STIG Library Compilations from DISA <https://public.cyber.mil/stigs/compilations/>`_ and import it into STIG Manager. 
+#. Download the latest `quarterly STIG Library Compilations from DISA <https://public.cyber.mil/stigs/compilations/>`_. 
 
-#. Log in to STIG Manager using an Administrator user to import STIGs. For information on how to do this, and other STIG Manager Admin functions, see the :ref:`stig-import` portion of the :ref:`admin-quickstart`. 
+#. Log in to STIG Manager using an Application Manager user and import STIGs via the "STIG and SCAP Benchmarks" interface. For more information about this operation, and other STIG Manager Admin functions, see the :ref:`stig-import` portion of the :ref:`admin-quickstart`. 
 
 
 

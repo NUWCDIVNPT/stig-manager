@@ -13,7 +13,7 @@ Requirements
 Software Requirements
 ------------------------
 - Node.js 14+
-- MySql 8.0.14+ or MS SQL Server 2019
+- MySql 8.0.14+ 
 - RedHat Keycloak 11+
 
 

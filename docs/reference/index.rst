@@ -113,15 +113,15 @@ This is a glossary with definition terms for thing like :term:`Asset`:
 
         * In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the "Restricted User access list..." button in the Grants panel toolbar.
 
-        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak) through the assignment of User Roles:
-            * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
-            * Administrator: Gives the user Administrative access to STIG Manager via the "Administration" node of the Nav Tree. The Administrator Privilege allows the User to:
+        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak):
+            * create_collection: Gives the User the ability to create their own Collections in STIG Manager.  
+            * admin: Gives the user App Management access to STIG Manager via the "Application Management" node of the Nav Tree. The Administrator Privilege allows the User to:
             
                 * Import new STIGs into STIG Manager, as well as Delete them.
                 * Create and Alter Collections, and view their metadata.
                 * Create and Alter Users, and view their metadata.
                 * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager (except Review History)
-                * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Administrative interface.
+                * The admin privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the App Management interface.
 
 
     XCCDF

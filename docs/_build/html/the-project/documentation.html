@@ -216,20 +216,11 @@
 <div class="section" id="documentation-build">
 <h2>Documentation Build<a class="headerlink" href="#documentation-build" title="Permalink to this headline">¶</a></h2>
 <p>To build the documentation locally:</p>
-<ol class="arabic">
+<ol class="arabic simple">
 <li><p>Clone the STIG Manager repository from GitHub.</p></li>
 <li><p>Install Python</p></li>
-<li><p>Install Sphinx <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sphinx</span></code></p></li>
 <li><p>Navigate to /docs folder of the repository.</p></li>
-<li><p>Install the following sphinx extensions using the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command (listed in the extensions array of the local conf.py file):</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">sphinx-rtd-theme</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">recommonmark</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sphinxcontrib.images</span></code></p></li>
-</ul>
-</div></blockquote>
-</li>
+<li><p>Install Sphinx, its extensions, and other required python modules using the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code> command.</p></li>
 <li><p>Depending on the OS you are using, build the documentation using make.bat or the Makefile, and specify html as the format. Windows PowerShell example: <code class="docutils literal notranslate"><span class="pre">./make</span> <span class="pre">html</span></code></p></li>
 </ol>
 <p>By default, the build product is located in <code class="docutils literal notranslate"><span class="pre">_build</span></code> in the docs directory.</p>

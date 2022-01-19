@@ -118,7 +118,7 @@
 <li class="toctree-l2"><a class="reference internal" href="db.html">3. Database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Data Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="securing.html">8. Securing and Assessing STIG Manager Deployments</a></li>
 </ul>
@@ -221,15 +221,15 @@
             
   <div class="section" id="authentication-and-identity">
 <span id="authentication"></span><h1><span class="section-number">2. </span>Authentication and Identity<a class="headerlink" href="#authentication-and-identity" title="Permalink to this headline">¶</a></h1>
-<p>The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access. The STIG Manager OSS Project suggests the use of the <strong>Authorization Code Flow with Proof Key for Code Exchange</strong> (PKCE)​ flavor of OAuth 2.0​.</p>
+<p>The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access. The STIG Manager OSS Project implements the the <strong>Authorization Code Flow with Proof Key for Code Exchange</strong> (PKCE)​ flavor of OAuth 2.0​.</p>
 <p>STIG Manager OSS has been tested to work with Keycloak and Okta as OIDC providers.  It is expected to work with other OIDC providers if they can be configured to provide a token that meets the requirements specified below. Please create an Issue with details on our GitHub project if you experience issues with other providers.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If you are using the demonstration Keycloak container from the Project’s Docker Hub page, you may not need to change any settings or variables described in this section.</p>
+<p>If you are using the demonstration Keycloak container from the Project’s Docker Hub page, you may not need to change any settings or variables described in this section.  However, you should not use this pre-configured image in a Production environment.</p>
 </div>
 <div class="section" id="json-web-token-jwt-requirements">
 <h2><span class="section-number">2.1. </span>JSON Web Token (JWT) Requirements<a class="headerlink" href="#json-web-token-jwt-requirements" title="Permalink to this headline">¶</a></h2>
-<p>The JWT produced by the Identity Provider should provide the claims specified below. Some of them may have different names in your configuration, and can be specified in STIGMan’s environment variables if they differ from the default values:</p>
+<p>The JWT produced by the Identity Provider should provide the claims specified below. Some of them may have different names in your configuration. They can be specified with STIGMan’s environment variables if they differ from the default values:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Username - <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> - <strong>default:</strong> <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p></li>
@@ -241,7 +241,7 @@
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>STIG Manager will use the value specified in the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p>
+<p>STIG Manager will use the value specified in the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_USERNAME_CLAIM</span></code> environment variable as the Claim that holds a user’s unique username. This value defaults to the Keycloak default, which is <code class="docutils literal notranslate"><span class="pre">preferred_username</span></code></p>
 </div>
 <div class="literal-block-wrapper docutils container" id="a-decoded-jwt">
 <div class="code-block-caption"><span class="caption-text">The decoded data payload of a sample JWT, with some relevant claims highlighted.</span><a class="headerlink" href="#a-decoded-jwt" title="Permalink to this code">¶</a></div>
@@ -261,14 +261,13 @@
    <span class="nt">&quot;nonce&quot;</span><span class="p">:</span> <span class="s2">&quot;2a6a0726-6795-47f5-88a6-00eb8aed9e23&quot;</span><span class="p">,</span>
    <span class="nt">&quot;session_state&quot;</span><span class="p">:</span> <span class="s2">&quot;dca9233f-3d5b-4237-9e6e-be52d90cebdc&quot;</span><span class="p">,</span>
    <span class="nt">&quot;acr&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
-<span class="hll">   <span class="nt">&quot;realm_access&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class="hll">     <span class="nt">&quot;roles&quot;</span><span class="p">:</span> <span class="p">[</span>
+   <span class="nt">&quot;realm_access&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="hll">     <span class="nt">&quot;roles&quot;</span><span class="p">:</span> <span class="p">[</span>
 </span><span class="hll">       <span class="s2">&quot;create_collection&quot;</span><span class="p">,</span>
-</span><span class="hll">       <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
-</span><span class="hll">       <span class="s2">&quot;user&quot;</span>
+</span><span class="hll">       <span class="s2">&quot;admin&quot;</span>
 </span><span class="hll">     <span class="p">]</span>
-</span><span class="hll">   <span class="p">},</span>
-</span>   <span class="nt">&quot;resource_access&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span>   <span class="p">},</span>
+   <span class="nt">&quot;resource_access&quot;</span><span class="p">:</span> <span class="p">{</span>
      <span class="nt">&quot;realm-management&quot;</span><span class="p">:</span> <span class="p">{</span>
        <span class="nt">&quot;roles&quot;</span><span class="p">:</span> <span class="p">[</span>
          <span class="s2">&quot;view-users&quot;</span><span class="p">,</span>
@@ -286,12 +285,12 @@
    <span class="p">},</span>
 <span class="hll">   <span class="nt">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig&quot;</span><span class="p">,</span>
 </span>   <span class="nt">&quot;email_verified&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-<span class="hll">   <span class="nt">&quot;preferred_username&quot;</span><span class="p">:</span> <span class="s2">&quot;Jane Stigsdottir&quot;</span>
+<span class="hll">   <span class="nt">&quot;preferred_username&quot;</span><span class="p">:</span> <span class="s2">&quot;Jane_Stigsdottir&quot;</span>
 </span> <span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<p>The fields highlighted in the sample token above control the access and information STIG Manager requires to allow users to access the application.  The token your OIDC provider creates does not need to look exactly like this, but where it differs the relevant claims must be specified using STIG Manager Environment Variables.</p>
+<p>The fields highlighted in the sample token above specify information STIG Manager requires to allow users to access the application.  The token your OIDC provider creates does not need to look exactly like this, but where it differs the relevant claims must be specified using STIG Manager Environment Variables.</p>
 <div class="section" id="cross-origin-resource-sharing-cors">
 <h3><span class="section-number">2.1.1. </span>Cross-Origin Resource Sharing (CORS)<a class="headerlink" href="#cross-origin-resource-sharing-cors" title="Permalink to this headline">¶</a></h3>
 <p>If your deployment environment has your OIDC Provider and the STIGMan Client in different origins (ie. domains), you will need to specify the Client origin in the Web Origins configuration options of your OIDC Provider. This will set the <code class="docutils literal notranslate"><span class="pre">Access-Control-Allow-Origin</span></code> header in the OIDC Provider’s responses, and permit browsers to make subsequent requests to the OIDC provider.</p>
@@ -304,15 +303,53 @@
 </div>
 <div class="section" id="scopes-and-privileges">
 <span id="oidc-scopes"></span><h2><span class="section-number">2.2. </span>Scopes, and Privileges<a class="headerlink" href="#scopes-and-privileges" title="Permalink to this headline">¶</a></h2>
-<p>The STIG Manager API restricts endpoint access using the “scope” claims in the JWT. See the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml">API specification</a> for details.</p>
-<p>The guide provided below maps scopes to various Realm Roles that are then assigned to Users.
-These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the <a class="reference external" href="https://www.keycloak.org/documentation">Keycloak Documentation</a> for more information.</p>
-<p>The <strong>Roles</strong> specified in the JWT map to Privileges in STIG Manager that allow varying levels of access and abilities. See the <a class="reference internal" href="installation-and-setup.html#user-roles-privs"><span class="std std-ref">Configure Users</span></a> section of the Setup Guide for more information.</p>
-<p>The <strong>Scopes</strong> specified in the JWT control access to API endpoints as specified in the OpenAPI spec.  See the <a class="reference internal" href="#oidc-scopes-table"><span class="std std-ref">STIG Manager Client Scopes and Roles</span></a> table below for a suggestion on how to allocate these scopes using OIDC roles, and more information.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization’s Security Policy.</p>
-</div>
+<p>The <strong>Scopes</strong> specified in the scope claim of the JWT control overall access to API endpoints as specified in the <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml">OpenAPI specification</a> .   In order for the web client provided with the Project to function as documented, STIG Manager Users and
+“admins” (Application Managers) should have the scopes listed here.</p>
+<dl class="simple">
+<dt>Users without the “admin” privilege should get the following scopes in the generated OIDC token:</dt><dd><ul class="simple">
+<li><p>stig-manager:collection</p></li>
+<li><p>stig-manager:stig:read</p></li>
+<li><p>stig-manager:user:read</p></li>
+</ul>
+</dd>
+<dt>Users with the <code class="docutils literal notranslate"><span class="pre">admin</span></code> privilege must include these scopes in the generated OIDC token:</dt><dd><ul class="simple">
+<li><p>stig-manager:collection</p></li>
+<li><p>stig-manager:op</p></li>
+<li><p>stig-manager:stig</p></li>
+<li><p>stig-manager:user</p></li>
+</ul>
+</dd>
+</dl>
+<p>Users with the <cite>create_collection</cite> privilege do not require any additional scopes.</p>
+<p>The privileges specified in the <code class="docutils literal notranslate"><span class="pre">STIGMAN_JWT_PRIVILEGES_CLAIM</span></code> claim in the JWT map to Privileges in STIG Manager that allow different levels of access and abilities to manipulate STIGMan data.</p>
+<table class="colwidths-given tight-table docutils align-default" id="id1">
+<caption><span class="caption-text">STIG Manager Privileges, associated user role names, and Abilities (assumes a valid token has been granted by the OIDC provider):</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>User Privilege</p></th>
+<th class="head"><p>Informal User Role Name</p></th>
+<th class="head"><p>Abilities</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>admin</p></td>
+<td><p>“Application Manager”</p></td>
+<td><p>Access STIG Manager; Can Manage Collections, Import STIGs, Manage Users, Import/Export App data</p></td>
+</tr>
+<tr class="row-odd"><td><p>create_collection</p></td>
+<td><p>“Collection Creator”</p></td>
+<td><p>Access STIG Manager; Can create their own Collections</p></td>
+</tr>
+<tr class="row-even"><td><p>No explicit privileges</p></td>
+<td><p>“User”</p></td>
+<td><p>Access STIG Manager</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="authentication-redhat-keycloak-11">
 <span id="keycloak"></span><h2><span class="section-number">2.3. </span>Authentication - RedHat Keycloak 11+<a class="headerlink" href="#authentication-redhat-keycloak-11" title="Permalink to this headline">¶</a></h2>
@@ -321,6 +358,12 @@ Keycloak is readily available, actively maintained by a major OSS vendor, suppor
 Keycloak supports many External Identity Providers, but has only been tested using its own authentication.
 <a class="reference external" href="https://www.keycloak.org/documentation">More information about RedHat Keycloak.</a></p>
 <p>A sample Docker-compose orchestration, using a Keycloak image configured as specified below and containing Demo users, can be found <a class="reference external" href="https://hub.docker.com/r/nuwcdivnpt/stig-manager">on our Docker Hub page.</a></p>
+<p>The guide provided below maps scopes to various Realm Roles that are then assigned to Users.
+These Roles and Scopes can be provided to users in various ways, using Client Roles, Client Groups, defaults, etc. Please refer to the <a class="reference external" href="https://www.keycloak.org/documentation">Keycloak Documentation</a> for more information.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure your chosen Authentication Provider in accordance with your organization’s Security Policy.</p>
+</div>
 <div class="section" id="keycloak-configuration">
 <h3><span class="section-number">2.3.1. </span>Keycloak Configuration<a class="headerlink" href="#keycloak-configuration" title="Permalink to this headline">¶</a></h3>
 <p>The following items in the Keycloak installation must be created and configured appropriately, and their values passed to STIG Manager in the appropriate Environment Variable:</p>
@@ -347,8 +390,8 @@ Keycloak supports many External Identity Providers, but has only been tested usi
 <li><p>Configure-&gt;Client Scopes - Create the following scopes, and assign them the specified roles in that scope’s “Scope” tab:</p></li>
 </ul>
 <blockquote id="oidc-scopes-table">
-<div><table class="colwidths-given tight-table docutils align-default" id="id1">
-<caption><span class="caption-text">STIG Manager Client Scopes and Roles:</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<div><table class="colwidths-given tight-table docutils align-default" id="id2">
+<caption><span class="caption-text">STIG Manager Client Scopes and Roles:</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 22%" />
 <col style="width: 78%" />
@@ -362,13 +405,7 @@ Keycloak supports many External Identity Providers, but has only been tested usi
 <tr class="row-even"><td><p>stig-manager:collection</p></td>
 <td><p>user</p></td>
 </tr>
-<tr class="row-odd"><td><p>stig-manager:collection:read</p></td>
-<td><p>user</p></td>
-</tr>
-<tr class="row-even"><td><p>stig-manager:op</p></td>
-<td><p>admin</p></td>
-</tr>
-<tr class="row-odd"><td><p>stig-manager:op:read</p></td>
+<tr class="row-odd"><td><p>stig-manager:op</p></td>
 <td><p>admin</p></td>
 </tr>
 <tr class="row-even"><td><p>stig-manager:stig</p></td>

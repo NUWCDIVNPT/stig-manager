@@ -1,0 +1,27 @@
+name: Build docs
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  builder:
+    name: builder
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Check out the repo
+        uses: actions/checkout@v2
+      - 
+        name: build image
+        run: docker build --tag sphinx-with-requirements ./docs
+      -
+        name: run image, generating docs
+        working-directory: ./docs
+        run: docker run --rm -v $(pwd):/docs sphinx-with-requirements make html
+      - 
+        name: Upload docs
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs-build
+          path: ./docs/_build/html
+      
+
