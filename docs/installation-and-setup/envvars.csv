@@ -37,7 +37,6 @@
 "STIGMAN_JWT_SERVICENAME_CLAIM","**Default** ``clientId`` The access token claim whose value is the user's client","API, Client"
 "STIGMAN_JWT_USERNAME_CLAIM","**Default** ``preferred_username`` The access token claim whose value is the user's username","API, Client"
 "STIGMAN_OIDC_PROVIDER","**Default** ``http://localhost:8080/auth/realms/stigman``  The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.","API, Client     "
-"STIGMAN_OIDC_PROXY_HOST","**No default** The ``Host:`` header value to be used by the CORS proxy for outbound requests. Some OIDC providers return configuration metadata with endpoint URLs having this value as their base.","API, Client"
 "STIGMAN_SWAGGER_ENABLED","**Default** ``false`` Whether to enable the SwaggerUI SPA at /api-docs ","API"
 "STIGMAN_SWAGGER_OIDC_PROVIDER","**Default** Value of ``STIGMAN_OIDC_PROVIDER`` SwaggerUI override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the SwaggerUI when fetching metadata.","API  "
 "STIGMAN_SWAGGER_REDIRECT","**Default** ``http://localhost:54000/api-docs/oauth2-redirect.html`` The redirect URL sent by SwaggerUI to the OIDC provider when authorizing","API"
