@@ -18,8 +18,8 @@ let localCompilationFile = '/home/csmig/dev/STIG-samples/U_SRG-STIG_Library_2021
 
 
 exports.fetchCompilation = async function fetchCompilation() {
+  const logType = 'stig'
   try {
-    const logType = 'stig'
     logger.writeDebug(logComponent, logType, { message: 'Retreiving list of Compilation files from public.cyber.mil'})
     let html = await got(compilationURL)
     html = html.body.toString()
@@ -41,13 +41,14 @@ exports.fetchCompilation = async function fetchCompilation() {
     }
   }
   catch (e) {
-    logger.writeError(logComponent, logType, { message: e.message, stack: e.stack})      
+    logger.writeError(logComponent, logType, { message: e.message, stack: e.stack})
+    throw(e)          
   }
 }
 
 exports.fetchScap = async function fetchScap() {
+  const logType = 'scap'
   try {
-    const logType = 'scap'
     logger.writeInfo(logComponent, logType, { message: `Retreiving list of available SCAP Benchmarks`, url: scapURL})      
     let html = await got(scapURL);
     html = html.body.toString()
@@ -63,7 +64,8 @@ exports.fetchScap = async function fetchScap() {
     }
   }
   catch (e) {
-    logger.writeError(logComponent, logType, { message: e.message, stack: e.stack})      
+    logger.writeError(logComponent, logType, { message: e.message, stack: e.stack})
+    throw(e)      
   }
 }
 
