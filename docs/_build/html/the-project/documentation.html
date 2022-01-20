@@ -107,6 +107,7 @@
 <li class="toctree-l2"><a class="reference internal" href="testing.html">STIG Manager Testing Guide</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">STIG Manager Documentation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#documentation-build">Documentation Build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-documentation-with-python">Build Documentation with Python</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="examples.html">Examples and Sample Data</a></li>
@@ -215,6 +216,23 @@
 <p>The STIG Manager OSS Documentation is written in reStructuredText. Sphinx and the Read The Docs theme is used to generate the site, which is located in the project repo and hosted on Read The Docs: <a class="reference external" href="https://stig-manager.readthedocs.io/">stig-manager.readthedocs.io</a> and on GitHub Pages: <a class="reference external" href="https://nuwcdivnpt.github.io/stig-manager/#/">nuwcdivnpt.github.io</a></p>
 <div class="section" id="documentation-build">
 <h2>Documentation Build<a class="headerlink" href="#documentation-build" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Requires:</dt><dd><ul class="simple">
+<li><p>Docker</p></li>
+</ul>
+</dd>
+</dl>
+<p>To build the documentation in a Sphinx container:</p>
+<ol class="arabic simple">
+<li><p>Clone the STIG Manager repository from GitHub.</p></li>
+<li><p>Navigate to /docs folder of the repository.</p></li>
+<li><p>Use the /docs Dockerfile to build the Sphinx Image with our Python requirements: <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">build</span> <span class="pre">--tag</span> <span class="pre">sphinx-with-requirements</span> <span class="pre">.</span></code></p></li>
+<li><p>Run the image you just created, mounting the /docs as a volume, and generate the documentation:  <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--rm</span> <span class="pre">-v</span> <span class="pre">${PWD}:/docs</span> <span class="pre">sphinx-with-requirements</span> <span class="pre">make</span> <span class="pre">html</span></code></p></li>
+</ol>
+<p>The Documentation will be generated in the <code class="docutils literal notranslate"><span class="pre">_build/html</span></code> directory.</p>
+</div>
+<div class="section" id="build-documentation-with-python">
+<h2>Build Documentation with Python<a class="headerlink" href="#build-documentation-with-python" title="Permalink to this headline">¶</a></h2>
 <p>To build the documentation locally:</p>
 <ol class="arabic simple">
 <li><p>Clone the STIG Manager repository from GitHub.</p></li>
@@ -223,7 +241,7 @@
 <li><p>Install Sphinx, its extensions, and other required python modules using the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code> command.</p></li>
 <li><p>Depending on the OS you are using, build the documentation using make.bat or the Makefile, and specify html as the format. Windows PowerShell example: <code class="docutils literal notranslate"><span class="pre">./make</span> <span class="pre">html</span></code></p></li>
 </ol>
-<p>By default, the build product is located in <code class="docutils literal notranslate"><span class="pre">_build</span></code> in the docs directory.</p>
+<p>By default, the build product is located in <code class="docutils literal notranslate"><span class="pre">_build/html</span></code> in the docs directory.</p>
 </div>
 </div>
 
