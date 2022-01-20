@@ -6,13 +6,9 @@ on:
 jobs:
   build-client:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
-  build-docs:
-    uses: nuwcdivnpt/stig-manager/.github/workflows/build-docs.yml@main   
   build-push-alpine:
     name: Build and push from Alpine base
-    needs: 
-      - build-client
-      - build-docs
+    needs: build-client
     runs-on: ubuntu-latest
     steps:
       - 
@@ -27,12 +23,6 @@ jobs:
         with:
           name: client-dist
           path: ./client/dist
-      -
-        name: Download documentation
-        uses: actions/download-artifact@v2
-        with:
-          name: docs-build
-          path: ./docs/_build/html          
       - 
         name: Get repository metadata
         id: repo
@@ -104,9 +94,7 @@ jobs:
           readme-filepath: ./docs/the-project/DockerHub_Readme.md
   build-push-ironbank:
     name: Build and push from Iron Bank base
-    needs: 
-      - build-client
-      - build-docs
+    needs: build-client
     runs-on: ubuntu-latest
     steps:
       - 
@@ -121,12 +109,6 @@ jobs:
         with:
           name: client-dist
           path: ./client/dist
-      -
-        name: Download documentation
-        uses: actions/download-artifact@v2
-        with:
-          name: docs-build
-          path: ./docs/_build/html                
       - 
         name: Get repository metadata
         id: repo

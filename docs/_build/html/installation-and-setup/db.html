@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>3. Database &mdash; STIG Manager  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinxcontrib-images/LightBox2/lightbox2/dist/css/lightbox.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2/dist/js/lightbox-plus-jquery.min.js"></script>
+        <script src="../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
+        <script src="../_static/js/custom.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Logging" href="logging.html" />
+    <link rel="prev" title="2. Authentication and Identity" href="authentication.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> STIG Manager
+          
+
+          
+            
+            <img src="../_static/shield-green-check.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../features/index.html">Introduction and Features</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Setup and Deployment</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation-and-setup.html">1. STIG Manager OSS Setup and Technical Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="authentication.html">2. Authentication and Identity</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3. Database</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#database-user-requirements">3.1. Database User Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#database-mysql-8-0-14">3.2. Database - MySQL 8.0.14+</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configure-mysql">3.2.1. Configure MySQL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-mysql-for-tls">3.2.2. Configure MySQL for TLS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-stig-manager-to-use-your-mysql-database">3.2.3. Configure STIG Manager to use your MySQL Database</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">4. Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reverse-proxy.html">5. Deploy with TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="permissions-model.html">6. Permissions and Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment-variables.html">7. Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="securing.html">8. Securing and Assessing STIG Manager Deployments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guide/index.html">For Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-guide/index.html">For Admins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../the-project/index.html">The STIG Manager Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Terminology and Concepts</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Common Tasks:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html">Build A Collection with .ckl or XCCDF Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-a-stig-on-an-asset">Review a STIG on an Asset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#review-an-entire-collection-at-once">Review an entire Collection at once</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#accept-and-reject-stig-reviews">Accept and Reject STIG Reviews</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#analyze-findings-and-generate-a-poa-m">Analyze Findings and Generate a POA&amp;M</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#check-evaluation-progress">Check Evaluation Progress</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#transfer-assets-to-another-collection">Transfer Assets to Another Collection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">STIG Manager</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Setup and Deployment</a> &raquo;</li>
+        
+      <li><span class="section-number">3. </span>Database</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/installation-and-setup/db.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="logging.html" class="btn btn-neutral float-right" title="4. Logging" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+      
+      
+        <a href="authentication.html" class="btn btn-neutral float-left" title="2. Authentication and Identity" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="database">
+<span id="db"></span><h1><span class="section-number">3. </span>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
+<p>The STIGMan API was developed with a Controller-Service model that allows additional database services to be developed while using the same Controller code.
+Right now, the only database supported is MySQL.</p>
+<div class="section" id="database-user-requirements">
+<h2><span class="section-number">3.1. </span>Database User Requirements<a class="headerlink" href="#database-user-requirements" title="Permalink to this headline">¶</a></h2>
+<p>The database user specified must have sufficient permissions on the specified schema to update and create tables.
+Specify the User and Schema with these environment variables:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_SCHEMA</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STIGMAN_DB_USER</span></code></p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="database-mysql-8-0-14">
+<span id="mysql"></span><h2><span class="section-number">3.2. </span>Database - MySQL 8.0.14+<a class="headerlink" href="#database-mysql-8-0-14" title="Permalink to this headline">¶</a></h2>
+<p>STIG Manager has been tested with MySQL 8.0.21.</p>
+<p>The API requires knowledge of 1) the DB address/port, 2) which schema (database) is used for STIG Manager, and 3) User credentials with necessary privileges on that schema. <a class="reference external" href="https://dev.mysql.com/doc/">More information about MySQL.</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The API includes a database migration function which tracks the database schema version and if necessary can automatically update the schema at launch. The initial run of the API scaffolds all database objects and static data.  Releases that require a database change will include the image label “new-data-migration” with a value that lists the database services affected.</p>
+</div>
+<div class="section" id="configure-mysql">
+<h3><span class="section-number">3.2.1. </span>Configure MySQL<a class="headerlink" href="#configure-mysql" title="Permalink to this headline">¶</a></h3>
+<p>STIG Manager requires a database schema, and the use of an account with SuperUser privileges on the intended schema:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Create schema - suggested value: stigman</p></li>
+<li><p>Create user - suggested value: stigman</p></li>
+<li><p>Grant User all privileges on created schema (<code class="docutils literal notranslate"><span class="pre">grant</span> <span class="pre">all</span> <span class="pre">on</span> <span class="pre">*stigman*</span> <span class="pre">schema</span> <span class="pre">to</span> <span class="pre">*stigman*</span> <span class="pre">user</span></code>).</p></li>
+</ul>
+</div></blockquote>
+<p>The above steps are sufficient for a username/password setup, but it is highly recommended that you configure MySQL to use TLS connections.</p>
+</div>
+<div class="section" id="configure-mysql-for-tls">
+<h3><span class="section-number">3.2.2. </span>Configure MySQL for TLS<a class="headerlink" href="#configure-mysql-for-tls" title="Permalink to this headline">¶</a></h3>
+<p>Configure MySQL to use TLS by altering the <code class="docutils literal notranslate"><span class="pre">/etc/mysql/conf.d/tls.cnf</span></code> file, specifying the certificates it should use, and requiring TLS connections.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Sample Configuration</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">mysqld</span><span class="p">]</span>
+<span class="n">ssl</span><span class="o">-</span><span class="n">ca</span><span class="o">=/</span><span class="n">etc</span><span class="o">/</span><span class="n">certs</span><span class="o">/</span><span class="n">ca</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">ssl</span><span class="o">-</span><span class="n">cert</span><span class="o">=/</span><span class="n">etc</span><span class="o">/</span><span class="n">certs</span><span class="o">/</span><span class="n">server</span><span class="o">-</span><span class="n">cert</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">ssl</span><span class="o">-</span><span class="n">key</span><span class="o">=/</span><span class="n">etc</span><span class="o">/</span><span class="n">certs</span><span class="o">/</span><span class="n">server</span><span class="o">-</span><span class="n">key</span><span class="o">.</span><span class="n">pem</span>
+<span class="n">require_secure_transport</span><span class="o">=</span><span class="n">ON</span>
+</pre></div>
+</div>
+</div>
+<p>Place the certificates in the locations specified in the .cnf file. This sample tls.cnf file can be found in our <a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager-docker-compose/blob/main/tls/mysql/tls.cnf">sample orchestration repo on GitHub</a>.</p>
+<p>The stigman API user must be altered in MySQL such that it is identified by the subject of the valid X.509 certificate it will use to connect. The following command, customized to suit your certificates, will accomplish this:
+<code class="docutils literal notranslate"><span class="pre">ALTER</span> <span class="pre">USER</span> <span class="pre">stigman&#64;'%'</span> <span class="pre">IDENTIFIED</span> <span class="pre">BY</span> <span class="pre">''</span> <span class="pre">REQUIRE</span> <span class="pre">SUBJECT</span> <span class="pre">'/C=US/ST=California/L=Santa</span> <span class="pre">Clara/CN=fake-client';</span></code></p>
+<p><a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager-docker-compose">A sample orchestration for STIG Manager configured with TLS is available.</a></p>
+<p><a class="reference external" href="https://dev.mysql.com/doc/refman/8.0/en/using-encrypted-connections.html">More information about configuring MySQL to use encrypted connections.</a></p>
+</div>
+<div class="section" id="configure-stig-manager-to-use-your-mysql-database">
+<h3><span class="section-number">3.2.3. </span>Configure STIG Manager to use your MySQL Database<a class="headerlink" href="#configure-stig-manager-to-use-your-mysql-database" title="Permalink to this headline">¶</a></h3>
+<p>Specify your MySQL DB with the following Environment Variables:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>STIGMAN_DB_HOST</em> - Default: localhost - The database hostname or IP from to the API server</p></li>
+<li><p><em>STIGMAN_DB_PORT</em> - Default: 50001 - The datafbase TCP port relative to the API server</p></li>
+<li><p><em>STIGMAN_DB_USER</em> - Default: stigman - The user account used to login to the database</p></li>
+<li><p><em>STIGMAN_DB_SCHEMA</em> - Default: stigman - The schema where the STIG Manager object are found</p></li>
+<li><p><em>STIGMAN_DB_PASSWORD</em> - The database user password. Not required if configuring TLS connections, as shown below.</p></li>
+</ul>
+</div></blockquote>
+<p>To enable TLS connections with your MySQL database, specify the following Environment Variables:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>STIGMAN_DB_TLS_CA_FILE</em> - A file/path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database.</p></li>
+<li><p><em>STIGMAN_DB_TLS_CERT_FILE</em> - A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client.</p></li>
+<li><p><em>STIGMAN_DB_TLS_KEY_FILE</em> - A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client.</p></li>
+</ul>
+</div></blockquote>
+<p><a class="reference external" href="https://github.com/NUWCDIVNPT/stig-manager-docker-compose">A sample orchestration for STIG Manager configured for TLS to MySQL is available.</a> This sample orchestration uses self-signed certificates and should be used for testing purposes only.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="logging.html" class="btn btn-neutral float-right" title="4. Logging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="authentication.html" class="btn btn-neutral float-left" title="2. Authentication and Identity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021 U.S. Federal Government (in countries where recognized).
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
