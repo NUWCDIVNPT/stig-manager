@@ -10,8 +10,9 @@ jobs:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-docs.yml@main   
   build-push-alpine:
     name: Build and push from Alpine base
-    needs: [build-client, build-docs]
-
+    needs: 
+      - build-client
+      - build-docs
     runs-on: ubuntu-latest
     steps:
       - 
@@ -103,7 +104,9 @@ jobs:
           readme-filepath: ./docs/the-project/DockerHub_Readme.md
   build-push-ironbank:
     name: Build and push from Iron Bank base
-    needs: [ build-client, build-docs]
+    needs: 
+      - build-client
+      - build-docs
     runs-on: ubuntu-latest
     steps:
       - 
