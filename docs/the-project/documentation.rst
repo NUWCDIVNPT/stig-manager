@@ -11,22 +11,31 @@ The STIG Manager OSS Documentation is written in reStructuredText. Sphinx and th
 Documentation Build
 ----------------------
 
+Requires:
+ - Docker
+
+To build the documentation in a Sphinx container:
+
+#. Clone the STIG Manager repository from GitHub.
+#. Navigate to /docs folder of the repository. 
+#. Use the /docs Dockerfile to build the Sphinx Image with our Python requirements: ``docker build --tag sphinx-with-requirements .``
+#. Run the image you just created, mounting the /docs as a volume, and generate the documentation:  ``docker run --rm -v ${PWD}:/docs sphinx-with-requirements make html``
+
+The Documentation will be generated in the ``_build/html`` directory. 
+
+
+
+
+Build Documentation with Python
+---------------------------------
+
 To build the documentation locally:
 
 #. Clone the STIG Manager repository from GitHub.
 #. Install Python
-#. Install Sphinx ``pip install sphinx``
 #. Navigate to /docs folder of the repository. 
-#. Install the following sphinx extensions using the ``pip install`` command (listed in the extensions array of the local conf.py file):
-
-    - ``sphinx-rtd-theme``
-    - ``recommonmark``
-    - ``sphinxcontrib.images``
-
+#. Install Sphinx, its extensions, and other required python modules using the ``pip install -r requirements.txt`` command.
 #. Depending on the OS you are using, build the documentation using make.bat or the Makefile, and specify html as the format. Windows PowerShell example: ``./make html``
 
-By default, the build product is located in ``_build`` in the docs directory. 
-
-
-
+By default, the build product is located in ``_build/html`` in the docs directory. 
 

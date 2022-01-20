@@ -35,10 +35,12 @@ extensions = [
     'sphinxcontrib.images',
     'sphinx.ext.todo',
     'recommonmark',
-    'sphinx_tabs.tabs'
+    'sphinx_tabs.tabs',
     # ,
     # 'sphinx_markdown_tables',
 ]
+
+
 
 todo_include_todos = True
 

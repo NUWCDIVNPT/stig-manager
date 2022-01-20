@@ -519,22 +519,23 @@ If you have the proper Grant to a Collection, you can modify settings that affec
 
 
 .. rubric:: Review Fields Settings
-   :class: rubric
+   :class: rubric3
 
+Review Field settings control requirements for the Detail and Comment fields when Users are inputting Review results or making use of the optional "Submit" status action.  Reviews can always be saved.  Use of the "Submitted" status is optional and can be used to indicate that a Review is considered "complete" by the Reviewer.  
 
 If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews to be Submitted in this Collection. 
 
 The default Settings for Review Submission in Collections are:
-      - Always display the Detail field.
+      - Always enable the Detail field.
       - Require text in the Detail field in order to Submit. 
-      - Display the Comment field for "Findings only".
+      - Enable the Comment field for "Findings only".
       - Require text in the Comment field for "Findings only" in order to Submit.
 
 .. rubric:: Review Status Settings
-   :class: rubric
+   :class: rubric3
 
 
-Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject reviews. The Grant levels required to do this can also be selected. 
+Review Status Settings control the behavior of the Status fields of a Review.  The status of Reviews will be reset to "Saved" if the Result changes, or, optionally, if any Review field is altered. Collection Owners or Managers can control whether they  want to use the Accept/Reject options for Reviews, and which Grant levels are required to do this.
 
 The default Settings for Review Status are: 
       - Reset Status to "Saved" when Review Result changes (As opposed to ANY Review field change, the other option).
