@@ -103,11 +103,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       },
       userStigAssetMap: {
         sqlDelete: `DELETE FROM user_stig_asset_map`,
-        // sqlInsert: `INSERT INTO stigman.user_stig_asset_map (
-        //   userId,
-        //   benchmarkId,
-        //   assetId
-        // ) VALUES ?`,
         sqlInsert: `INSERT INTO user_stig_asset_map
         (saId, userId)
         SELECT
@@ -127,15 +122,53 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       reviewHistory: {
         sqlDelete: `DELETE FROM review_history`,
         sqlInsert: `INSERT INTO review_history (
-          assetId,
-          ruleId,
-          activityType,
-          columnName,
-          oldValue,
-          newValue,
-          userId,
-          ts
-        ) VALUES ?`,
+            reviewId,
+            resultId,
+            detail,
+            comment,
+            autoResult,
+            ts,
+            userId,
+            statusId,
+            statusText,
+            statusUserId,
+            statusTs,
+            touchTs
+          )
+          SELECT
+            r.reviewId,
+            jt.resultId,
+            jt.detail,
+            jt.comment,
+            jt.autoResult,
+            jt.ts,
+            jt.userId,
+            jt.statusId,
+            jt.statusText,
+            jt.statusUserId,
+            jt.statusTs,
+            jt.touchTs
+          FROM
+            JSON_TABLE(
+              ?,
+              "$[*]"
+              COLUMNS(
+                assetId INT PATH "$.assetId",
+                ruleId VARCHAR(45) PATH "$.ruleId",
+                resultId INT PATH "$.resultId",
+                detail MEDIUMTEXT PATH "$.detail",
+                comment MEDIUMTEXT PATH "$.comment",
+                autoResult INT PATH "$.autoResult",
+                ts DATETIME PATH "$.ts",
+                userId INT PATH "$.userId",
+                statusId INT PATH "$.statusId",
+                statusText VARCHAR(255) PATH "$.statusText",
+                statusUserId INT PATH "$.statusUserId",
+                statusTs DATETIME PATH "$.statusTs",
+                touchTs DATETIME PATH "$.touchTs"
+              )
+            ) as jt 
+            LEFT JOIN review r ON (jt.assetId = r.assetId COLLATE utf8mb4_0900_ai_ci and jt.ruleId = r.ruleId COLLATE utf8mb4_0900_ai_ci)`,
         insertBinds: []
       },
       review: {
@@ -204,12 +237,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       let assetId = assetFields.assetId
       for (const sr of stigGrants) {
         sr.userIds = sr.userIds.map( u => parseInt(u))
-        // const userIds = []
-        // if (sr.userIds && sr.userIds.length > 0) {
-        //   for (const userId of sr.userIds) {
-        //     userIds.push(parseInt(userId) || null)
-        //   }
-        // }
         dml.stigAssetMap.insertBinds.push([
           parseInt(assetId) || null,
           sr.benchmarkId,
@@ -219,36 +246,42 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     }
 
     // Tables: review, review_history
+    const historyRecords = []
     for (const review of reviews) {
-      // for (const h of review.history) {
-      //   dml.reviewHistory.insertBinds.push([
-      //     review.assetId,
-      //     review.ruleId,
-      //     h.activityType,
-      //     h.columnName,
-      //     h.oldValue,
-      //     h.newValue,
-      //     h.userId,
-      //     new Date(h.ts)
-      //   ])
-      // }
+      for (const h of review.history) {
+        historyRecords.push({
+          assetId: parseInt(review.assetId),
+          ruleId: review.ruleId,
+          resultId: dbUtils.REVIEW_RESULT_API[h.result],
+          detail: h.detail,
+          comment: h.comment,
+          autoResult: h.autoResult ? 1 : 0,
+          ts: new Date(h.ts),
+          userId: parseInt(h.userId),
+          statusId: dbUtils.REVIEW_STATUS_API[h.status.label],
+          statusText: h.statusText,
+          statusUserId: parseInt(h.status.userId),
+          statusTs: new Date(h.status.ts),
+          touchTs: new Date(h.touchTs)
+        })
+      }
       dml.review.insertBinds.push([
-        parseInt(review.assetId) || null,
+        parseInt(review.assetId),
         review.ruleId,
         dbUtils.REVIEW_RESULT_API[review.result],
         review.detail,
         review.comment,
-        parseInt(review.userId) || null,
+        parseInt(review.userId),
         review.autoState ? 1 : 0,
         new Date(review.ts),
-
         review.status?.text,
-        parseInt(review.status?.user?.userId),
+        parseInt(review.status?.userId),
         dbUtils.REVIEW_STATUS_API[review.status?.label],
         new Date(review.status?.ts),
         JSON.stringify(review.metadata || {})
       ])
     }
+    dml.reviewHistory.insertBinds = JSON.stringify(historyRecords)
 
     return dml
   }

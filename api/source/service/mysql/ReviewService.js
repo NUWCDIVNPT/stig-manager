@@ -417,6 +417,91 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   return (rows)
 }
 
+exports.exportReviews = async function (includeHistory = false) {
+  const columns = [
+    'CAST(r.assetId as char) as assetId',
+    'r.ruleId',
+    'result.api as "result"',
+    'r.detail',
+    'r.autoResult',
+    'r.comment',
+    'CAST(r.userId as char) as userId',
+    "DATE_FORMAT(r.ts, '%Y-%m-%dT%H:%i:%sZ') as ts",
+    "DATE_FORMAT(r.touchTs, '%Y-%m-%dT%H:%i:%sZ') as touchTs",
+    `JSON_OBJECT(
+      'label', status.api,
+      'text', r.statusText,
+      'userId', CAST(r.statusUserId as char),
+      'ts', DATE_FORMAT(r.statusTs, '%Y-%m-%dT%TZ')
+    ) as status`,
+    'r.metadata'
+  ]
+  const joins = [
+    'review r',
+    'left join result on r.resultId = result.resultId',
+    'left join status on r.statusId = status.statusId',
+  ]
+
+  let groupBy
+  if (includeHistory) {
+    columns.push(`
+    (select
+      coalesce(
+        (select json_arrayagg(
+              json_object(
+                'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
+                'result', result.api,
+                'detail', rh.detail,
+                'comment', rh.comment,
+                'autoResult', cast(rh.autoResult is true as json),
+                'userId', CAST(rh.userId as char),
+                'status', JSON_OBJECT(
+                  'label', status.api,
+                  'text', rh.statusText,
+                  'userId', CAST(rh.statusUserId as char),
+                  'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
+                ),
+                'touchTs', DATE_FORMAT(rh.touchTs, '%Y-%m-%dT%TZ')
+              )
+            )
+          FROM
+            review_history rh
+            left join result on rh.resultId = result.resultId 
+            left join status on rh.statusId = status.statusId 
+          where
+            rh.reviewId = r.reviewId),
+        json_array()
+      )
+    ) as "history"`)
+    groupBy = [
+      'r.assetId',
+      'r.ruleId',
+      'r.resultId',
+      'result.api',
+      'r.detail',
+      'r.autoResult',
+      'r.comment',
+      'status.api',
+      'r.userId',
+      'r.ts',
+      'r.statusText',
+      'r.statusUserId',
+      'r.statusTs',
+      'r.metadata',
+      'r.reviewId',
+    ]
+  }
+
+  const sql = `SELECT
+  ${columns.join(',\n')}
+  FROM
+  ${joins.join(" \n")}
+  ${includeHistory ? ` GROUP BY ${groupBy.join(', ')}` : ''}
+  `
+  let [rows] = await dbUtils.pool.query(sql)
+  return (rows)
+}
+
 
 /**
  * Delete a Review
