@@ -260,7 +260,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           userId: parseInt(h.userId),
           statusId: dbUtils.REVIEW_STATUS_API[h.status.label],
           statusText: h.statusText,
-          statusUserId: parseInt(h.status.userId),
+          statusUserId: parseInt(h.status.userId ?? h.status.user?.userId),
           statusTs: new Date(h.status.ts),
           touchTs: new Date(h.touchTs)
         })
@@ -275,7 +275,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         review.autoState ? 1 : 0,
         new Date(review.ts),
         review.status?.text,
-        parseInt(review.status?.userId),
+        parseInt(review.status.userId ?? review.status.user?.userId),
         dbUtils.REVIEW_STATUS_API[review.status?.label],
         new Date(review.status?.ts),
         JSON.stringify(review.metadata || {})
@@ -367,14 +367,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     res.write(`Commit successful\n`)
     hrend = process.hrtime(hrstart)
     stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    // // Postload
-    // hrstart = process.hrtime() 
-    // for (const sql of dml.postload) {
-    //   ;[result] = await connection.execute(sql)
-    // }
-    // hrend = process.hrtime(hrstart)
-    // stats.postload = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
     // Total time calculation
     hrend = process.hrtime(totalstart)
