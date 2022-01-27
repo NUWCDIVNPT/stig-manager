@@ -138,8 +138,8 @@ try {
   }
 }
 
-module.exports.exportReviews = async function exportReviews (projection, userObject) {
-  return await Review.getReviews(projection, {}, userObject )
+module.exports.exportReviews = async function exportReviews (includeHistory) {
+  return await Review.exportReviews(includeHistory)
 } 
 
 module.exports.getReviewByAssetRule = async function (req, res, next) {
