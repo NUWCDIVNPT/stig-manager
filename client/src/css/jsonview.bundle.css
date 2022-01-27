@@ -15,12 +15,15 @@
     text-align: center;
     cursor: pointer; }
   .json-container .empty-icon {
-    width: 18px; }
+    margin-left: 18px; }
   .json-container .json-type {
     margin-right: 4px;
     margin-left: 4px; }
+  .json-container .empty-icon ~ .json-key {
+    font-weight: unset; }  
   .json-container .json-key {
     color: #444;
+    font-weight: 600;
     margin-right: 4px;
     margin-left: 4px; }
   .json-container .json-index {
@@ -48,10 +51,13 @@
     display: inline-block;
     width: 0;
     height: 0;
-    border-style: solid; }
+    border-style: solid;
+    }
   .json-container .sm-caret-down {
     border-width: 6px 5px 0 5px;
-    border-color: #808080 transparent; }
+    border-color: #585858 transparent;
+    }
   .json-container .sm-caret-right {
     border-width: 5px 0 5px 6px;
-    border-color: transparent transparent transparent #808080; }
+    border-color: transparent transparent transparent #585858;
+    }

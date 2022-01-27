@@ -1,9 +1,7 @@
 openapi: 3.0.1
 info:
   title: STIG Manager API
-  description: >-
-    An API for managing evaluations of Security Technical Implementation Guide
-    (STIG) assessments.
+  description: An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.
   contact:
     name: Carl Smigielski
     email: carl.a.smigielski@saic.com
@@ -21,20 +19,11 @@ paths:
       summary: Return a list of Assets accessible to the requester
       operationId: getAssets
       parameters:
-        - name: collectionId
-          required: true
-          in: query
-          description: Selects Assets mapped to a Collection
-          schema:
-            type: string
+        - $ref: '#/components/parameters/CollectionIdQuery'
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/MetadataQuery'
-        - name: benchmarkId
-          in: query
-          description: Selects Assets mapped to a STIG
-          schema:
-            type: string
+        - $ref: '#/components/parameters/BenchmarkIdQuery'
       responses:
         '200':
           description: AssetProjected array response
@@ -189,43 +178,17 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/checklists':
     parameters:
-      - name: assetId
-        in: path
-        description: A path parameter that identifies an Asset
-        required: true
-        schema:
-          type: string
-      - name: benchmarkId
-        in: query
-        description: Identifies a STIG. Default is all mapped STIGs.
-        schema:
-          type: array
-          items:
-            type: string
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
     get:
       tags:
         - Asset
       summary: Return a multi-STIG CKL for an Asset and its mapped STIGs
       operationId: getChecklistByAsset
-      # parameters:
-      # - name: format
-      #   in: query
-      #   description: The format of the response. Default if missing is 'json'
-      #   schema:
-      #     type: string
-      #     default: json
-      #     enum:
-      #       - json
-      #       - ckl
       responses:
         '200':
           description: Review response
           content:
-            # application/json:
-            #   schema:
-            #     type: array
-            #     items:
-            #       $ref: '#/components/schemas/ChecklistAssetStigs'
             application/xml:
               schema:
                 $ref: '#/components/schemas/ChecklistCkl'
@@ -240,27 +203,9 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
-      - name: assetId
-        in: path
-        description: A path parameter that identifies an Asset
-        required: true
-        schema:
-          type: string
-      - name: benchmarkId
-        in: path
-        description: A path parameter that identifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: >-
-          A path parameter that identifies a STIG revision [
-          V{version_num}R{release_num} | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+      - $ref: '#/components/parameters/AssetIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/RevisionStrPath'
     get:
       tags:
         - Asset
@@ -595,145 +540,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/assets/{assetId}/stigs/{benchmarkId}/users':
-    parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
-      - $ref: '#/components/parameters/AssetIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdPath'
-    # get:
-    #   tags:
-    #     - Asset
-    #   summary: >-
-    #     Return accessLevel = 1 Users granted access to this STIG-Asset
-    #     combination
-    #   operationId: getAssetStigGrants
-    #   responses:
-    #     '200':
-    #       description: STIGs response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             type: array
-    #             items:
-    #               $ref: '#/components/schemas/UserBasic'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:collection:read'
-    # put:
-    #   tags:
-    #     - Asset
-    #   summary: >-
-    #     UNIMPLEMENTED Set all the accessLevel = 1 Users granted access to this
-    #     STIG-Asset combination
-    #   operationId: setAssetStigGrants
-    #   responses:
-    #     '200':
-    #       description: Asset response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             type: array
-    #             items:
-    #               description: >-
-    #                 A List of userIds with accessLevel 1 on the Asset's
-    #                 Collection
-    #               type: string
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:collection'
-    # delete:
-    #   tags:
-    #     - Asset
-    #   summary: >-
-    #     UNIMPLEMENTED Revoke all accessLevel = 1 User access to this STIG-Asset
-    #     combination
-    #   operationId: deleteAssetStigGrants
-    #   responses:
-    #     '200':
-    #       description: Asset response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             type: array
-    #             items:
-    #               $ref: '#/components/schemas/UserBasic'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:collection'
-  '/assets/{assetId}/stigs/{benchmarkId}/users/{userId}':
-    parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
-      - $ref: '#/components/parameters/AssetIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdPath'
-      - $ref: '#/components/parameters/UserIdPath'
-    # put:
-    #   tags:
-    #     - Asset
-    #   summary: >-
-    #     UNIMPLEMENTED Grant an accessLevel = 1 User access to a STIG-Asset
-    #     combination
-    #   operationId: setAssetStigGrant
-    #   responses:
-    #     '200':
-    #       description: Asset response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             type: array
-    #             items:
-    #               $ref: '#/components/schemas/UserBasic'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:collection'
-    # delete:
-    #   tags:
-    #     - Asset
-    #   summary: >-
-    #     UNIMPLEMENTED Revoke an accessLevel = 1 User's access to a STIG-Asset
-    #     combination
-    #   operationId: deleteAssetStigGrant
-    #   responses:
-    #     '200':
-    #       description: Asset response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             type: array
-    #             items:
-    #               $ref: '#/components/schemas/UserBasic'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:collection'
   /collections:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -911,21 +717,8 @@ paths:
   '/collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
-      - name: benchmarkId
-        in: path
-        description: A path parameter that identifies a STIG
-        required: true
-        schema:
-          type: string
-      - name: revisionStr
-        in: path
-        description: >-
-          A path parameter that identifies a STIG revision [
-          V{version_num}R{release_num} | 'latest' ]
-        required: true
-        schema:
-          pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-          type: string
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/RevisionStrPath'
     get:
       tags:
         - Collection
@@ -1167,8 +960,7 @@ paths:
     post:
       tags:
         - Review
-      summary: >-
-        Post one or more Reviews
+      summary: Post one or more Reviews
       description: ''
       operationId: postReviewsByAsset
       parameters:
@@ -1256,9 +1048,7 @@ paths:
       tags:
         - Review
       summary: Set all properties of a Review
-      description: >-
-        Create a new Review, or update all properties of an existing Review,
-        setting missing properties to null
+      description: Create a new Review or update all properties of an existing Review
       operationId: putReviewByAssetRule
       requestBody:
         required: true
@@ -1480,41 +1270,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  
-  # '/collections/{collectionId}/reviews/{assetId}/{ruleId}/status':
-  #   parameters:
-  #     - $ref: '#/components/parameters/CollectionIdPath'
-  #     - $ref: '#/components/parameters/AssetIdPath'
-  #     - $ref: '#/components/parameters/RuleIdPath'
-  #   put:
-  #     tags:
-  #       - Review
-  #     summary: Set the value of the provided Collection metadata key to the provided string
-  #     operationId: putAssetRuleReviewStatus
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: '#/components/schemas/ReviewStatusPut'
-  #     responses:
-  #       '200':
-  #         description: ReviewProjected response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/ReviewAssetRule'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:collection'
-
-        
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -1986,6 +1741,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiDefinition'
+  /op/details:
+    get:
+      tags:
+        - Operation
+      summary: Return deployment details
+      operationId: getDetails
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+           description: Detail response
+           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Detail'
+      security:
+        - oauth:
+            - stig-manager:op:read
   /stigs:
     get:
       tags:
@@ -2082,9 +1855,7 @@ paths:
     get:
       tags:
         - STIG
-      summary: >-
-        Return the defintion and associated checks and fixes for the specified
-        Rule
+      summary: Return the defintion and associated checks and fixes for the specified Rule
       operationId: getRuleByRuleId
       parameters:
         - $ref: '#/components/parameters/RuleProjectionQuery'
@@ -2239,9 +2010,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -2276,9 +2045,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?)$
@@ -2316,9 +2083,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -2357,9 +2122,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -2386,9 +2149,7 @@ paths:
     get:
       tags:
         - STIG
-      summary: >-
-        Return the rules, checks and fixes for a Group from a specified revision
-        of a STIG.
+      summary: Return the rules, checks and fixes for a Group from a specified revision of a STIG.
       description: None
       operationId: getGroupByRevision
       parameters:
@@ -2401,9 +2162,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -2446,9 +2205,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -2487,9 +2244,7 @@ paths:
             type: string
         - name: revisionStr
           in: path
-          description: >-
-            A path parameter that identifies a STIG revision [
-            V{version_num}R{release_num} | 'latest' ]
+          description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
           required: true
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -3085,15 +2840,6 @@ components:
             type: boolean
           status:
             $ref: '#/components/schemas/ChecklistStatus'
-    # ChecklistAssetStigs:
-    #   type: object
-    #   properties:
-    #     benchmarkId:
-    #       type: string
-    #     revisionStr:
-    #       type: string
-    #     checklist:
-    #       $ref: '#/components/schemas/ChecklistAssetStig'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -3615,6 +3361,70 @@ components:
       type: string
       format: date
       # pattern: '^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$'        
+    Detail:
+      type: object
+      properties:
+        dbInfo:
+          $ref: '#/components/schemas/DetailMySqlInfo'
+        assetStig:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetailAssetStig'
+    DetailAssetStig:
+      type: object
+      additionalProperties: false
+      properties:
+        collectionId:
+          $ref: '#/components/schemas/StringUuid'
+        assetCnt:
+          type: integer
+        range01to05:
+          type: integer
+        range06to10:
+          type: integer
+        range11to15:
+          type: integer
+        range16plus:
+          type: integer
+    DetailMySqlInfo:
+      type: object
+      properties:
+        status:
+          type: object
+          additionalProperties:
+            type: string
+        variables:
+          type: object
+          additionalProperties:
+            type: string
+        tables:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DetailMySqlTableInfo'
+    DetailMySqlTableInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        tableName:
+          type: string
+        tableRows:
+          type: integer
+        tableCollation:
+          type: string
+        avgRowLength:
+          type: integer
+        dataLength:
+          type: integer
+        maxDataLength:
+          type: integer
+        indexLength:
+          type: integer
+        autoIncrement:
+          type: integer
+        createTime:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        updateTime:
+          $ref: '#/components/schemas/StringDateTimeNullable'
     EmassAp:
       type: object
       nullable: true
@@ -3626,70 +3436,6 @@ components:
           type: string
         assessmentProcedure:
           type: string
-    # EmassPoamRarRecord:
-    #   type: object
-    #   properties:
-    #     status:
-    #       $ref: '#/components/schemas/EmassPoamRarStatus'
-    #     control:
-    #       type: string
-    #     residualRisk:
-    #       $ref: '#/components/schemas/RuleSeverity'
-    #     mitigations:
-    #       type: string
-    #     completionDate:
-    #       type: string
-    #       format: date
-    #     milestone:
-    #       type: string
-    #     rarLikelihood:
-    #       type: string
-    #     rarRecommendedCorrectiveAction:
-    #       type: string
-    #     rarRemediationDescription:
-    #       type: string
-    #     rarComment:
-    #       type: string
-    # EmassPoamRarRecordUpdate:
-    #   type: object
-    #   required:
-    #     - status
-    #     - control
-    #     - residualRisk
-    #     - mitigations
-    #     - completionDate
-    #     - milestone
-    #     - rarLikelihood
-    #     - rarRecommendedCorrectiveAction
-    #     - rarRemediationDescription
-    #     - rarComment
-    #   properties:
-    #     status:
-    #       $ref: '#/components/schemas/EmassPoamRarStatus'
-    #     control:
-    #       type: string
-    #     residualRisk:
-    #       $ref: '#/components/schemas/RuleSeverity'
-    #     mitigations:
-    #       type: string
-    #     completionDate:
-    #       type: string
-    #       format: date
-    #     milestone:
-    #       type: string
-    #     rarLikelihood:
-    #       type: string
-    #     rarRecommendedCorrectiveAction:
-    #       type: string
-    #     rarRemediationDescription:
-    #       type: string
-    #     rarComment:
-    #       type: string
-    # EmassPoamRarStatus:
-    #   type: string
-    #   enum:
-    #     - ongoing
-    #     - completed
     Error:
       required:
         - message
@@ -4539,8 +4285,7 @@ components:
     AssetProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4582,8 +4327,7 @@ components:
     CciProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4603,9 +4347,7 @@ components:
     ChecklistProjectionQuery:
       name: projection
       in: query
-      description: >
-        Optional properties to return. Selecting "checks" or "fixes" will also
-        select "fullrules"
+      description: Optional properties to return. Selecting "checks" or "fixes" will also select "fullrules"
       style: form
       explode: true
       schema:
@@ -4633,8 +4375,7 @@ components:
     CollectionProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4650,8 +4391,7 @@ components:
     CollectionsProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4670,9 +4410,7 @@ components:
     ElevateQuery:
       name: elevate
       in: query
-      description: >-
-        Elevate the user context for this request if user is permitted
-        (canAdmin)
+      description: Elevate the user context for this request if user is permitted (canAdmin)
       schema:
         type: boolean
     FindingAggregatorQuery:
@@ -4718,8 +4456,7 @@ components:
     GroupProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4739,17 +4476,14 @@ components:
       name: key
       in: path
       required: true
-      description: >-
-        A path parameter that specifies a metadata key
+      description: A path parameter that specifies a metadata key
       schema:
         pattern: '^([\w\.]+)$'
         type: string
     MetadataQuery:
       name: metadata
       in: query
-      description: >-
-        A query parameter that specifies metadata key:value pairs to select
-        matching Objects
+      description: A query parameter that specifies metadata key:value pairs to select matching Objects
       schema:
         type: array
         items:
@@ -4793,8 +4527,7 @@ components:
     ReviewProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4809,8 +4542,7 @@ components:
     ReviewHistoryStatsProjectionQuery:
       name: projection
       in: query
-      description: |
-        Return review history statistics with the specified level of granularity.
+      description: Return review history statistics with the specified level of granularity.
       style: form
       explode: true
       schema:
@@ -4822,8 +4554,7 @@ components:
     ReviewsProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4859,9 +4590,7 @@ components:
     RevisionStrPath:
       name: revisionStr
       in: path
-      description: >-
-        A path parameter that identifies a STIG revision [
-        V{version_num}R{release_num} | 'latest' ]
+      description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
       required: true
       schema:
         pattern: ^(V\d+R\d+(\.\d+)?|latest)$
@@ -4869,9 +4598,7 @@ components:
     RevisionStrQuery:
       name: revisionStr
       in: query
-      description: >-
-        Selects Reviews mapped to a Revision [ V{version_num}R{release_num} |
-        'latest' ]; requires benchmarkId
+      description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} |'latest' ]; requires benchmarkId
       schema:
         pattern: ^(V\d+R\d+(\.\d+)?|latest)$
         type: string
@@ -4891,8 +4618,7 @@ components:
     RuleProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4913,8 +4639,7 @@ components:
     StigAssetsProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4962,8 +4687,7 @@ components:
     UserProjectionQuery:
       name: projection
       in: query
-      description: |
-        Additional properties to include in the response.
+      description: Additional properties to include in the response.
       style: form
       explode: true
       schema:
@@ -4984,14 +4708,13 @@ components:
     oauth:
       type: openIdConnect
       openIdConnectUrl: http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration
-# security:
-#   - oauth:
-#     - stig-manager
-#     - 'stig-manager:op'
-#     - 'stig-manager:op:read'
-#     - 'stig-manager:stig'
-#     - 'stig-manager:stig:read'
-#     - 'stig-manager:collection'
-#     - 'stig-manager:collection:read'
-#     - 'stig-manager:user'
-#     - 'stig-manager:user:read'
+# supported oauth scopes:
+# - stig-manager
+# - 'stig-manager:op'
+# - 'stig-manager:op:read'
+# - 'stig-manager:stig'
+# - 'stig-manager:stig:read'
+# - 'stig-manager:collection'
+# - 'stig-manager:collection:read'
+# - 'stig-manager:user'
+# - 'stig-manager:user:read'

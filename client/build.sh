@@ -118,7 +118,6 @@ uglifyjs \
 'js/collectionManager.js' \
 'js/stigAdmin.js' \
 'js/appDataAdmin.js' \
-'js/adminTab.js' \
 'js/completionStatus.js' \
 'js/findingsSummary.js' \
 'js/review.js' \

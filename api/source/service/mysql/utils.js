@@ -25,6 +25,7 @@ function getPoolConfig() {
     port: config.database.port,
     user: config.database.username,
     database: config.database.schema,
+    decimalNumbers: true,
     typeCast: function (field, next) {
       if ((field.type === "BIT") && (field.length === 1)) {
         let bytes = field.buffer() || [0];

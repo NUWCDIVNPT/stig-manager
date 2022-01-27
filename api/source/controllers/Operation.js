@@ -131,3 +131,19 @@ module.exports.getDefinition = async function getDefinition (req, res, next) {
     next(err)
   }
 }
+
+module.exports.getDetails = async function getDetails (req, res, next) {
+  try {
+    let elevate = req.query.elevate
+    if ( elevate ) {
+      const response = await Operation.getDetails()
+      res.json(response)
+    }
+    else {
+      throw new SmError.PrivilegeError()
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}
