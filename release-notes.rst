@@ -1,3 +1,19 @@
+1.2.2
+-----
+Changes:
+
+- Fix a UI regresssion that incorrectly hides the "Accept" button and disables the "Reject" feature
+- The experimental AppData feature now supports Review history items
+
+Commits:
+
+- fix: accept button incorrectly hidden (#571)
+- feat: include review history in appdata export/import (#562)
+- remove: CORS proxy for OIDC (#558)
+- refactor: fetchStig/Scap logging (#557)
+- chore: Build updates (#556) 
+- doc: remove videos from source and build
+
 1.2.1
 -----
 Changes:
