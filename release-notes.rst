@@ -1,3 +1,11 @@
+1.2.2
+-----
+Changes:
+- Fix a UI regresssion that incorrectly hides the "Accept" button and disables the "Reject" feature
+
+Commits:
+- fix: accept button incorrectly hidden (#571)
+
 1.2.1
 -----
 Changes:
