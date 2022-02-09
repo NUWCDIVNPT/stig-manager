@@ -173,7 +173,7 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 					rowArray.push('"' + ev.getAttribute('exportvalue') + '"');
 				} else {
 					// No element with an 'exportvalue' attribute was found was found. The CSV data will be the quoted and escaped textContent of the <td>'s firstChild
-					let value = '"' + rowCells[ci[x]].firstChild.textContent.replace(/"/g,'""') + '"';
+					let value = '"' + rowCells[ci[x]].firstChild.textContent.replace(/"/g,'""').trim() + '"';
 					rowArray.push(value);
 				}
 			}
