@@ -1,3 +1,19 @@
+1.2.3
+-----
+
+Changes:
+
+  - (App) Trim white space from exported CSV values
+  - (API) Include request body when logging at level 4
+  - (App) Corrected web app logic for XCCDF imports
+
+Commits:
+
+- a93f6fe fix: web app xccdf import logic (#582)
+- 22cbfe7 feat: log request body when logLevel = 4 (#581)
+- 4319979 feat: ExportButton trims values (#576)
+
+
 1.2.2
 -----
 Changes:
