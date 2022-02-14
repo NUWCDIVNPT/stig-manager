@@ -76,7 +76,7 @@ function serializeRequest (req) {
     method: req.method,
     url: req.originalUrl,
     headers: req.headers,
-    body: req.query.elevate === true ||  req.query.elevate === 'true' ? req.body : undefined
+    body: req.query.elevate === true ||  req.query.elevate === 'true' || config.log.level === 4 ? req.body : undefined
   }
 }
 
