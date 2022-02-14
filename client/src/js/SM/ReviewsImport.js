@@ -1386,12 +1386,25 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                     throw ('Event is missing the dataTransfer property')
                 }
                 entries = await getAllFileEntries(e.dataTransfer.items, e.currentTarget)
-                for (const entry of entries) {
-                    files.push(await entryFilePromise(entry))
+                if (!entries.length) {
+                    showErrors({
+                        errors: [{
+                            file: {
+                                name: '[UNSUPPORTED FILES]'
+                            },
+                            error: 'No .ckl or .xml files were dropped'
+                        }],
+                        stopWizard: true
+                    })
                 }
-                files.sort((a, b) => a.lastModified - b.lastModified)
-                Object.assign(cklParseOptions, cklOptions)
-                warnOnExcessFiles(files)    
+                else {
+                    for (const entry of entries) {
+                        files.push(await entryFilePromise(entry))
+                    }
+                    files.sort((a, b) => a.lastModified - b.lastModified)
+                    Object.assign(cklParseOptions, cklOptions)
+                    warnOnExcessFiles(files)
+                }
             }
             catch (e) {
                 alert(e)
@@ -1410,7 +1423,7 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                     while (queue.length > 0) {
                         let entry = queue.shift()
                         searched++
-                        if (entry.isFile && entry.name.toLowerCase().endsWith('.ckl')) {
+                        if (entry.isFile && (entry.name.toLowerCase().endsWith('.ckl') || entry.name.toLowerCase().endsWith('.xml'))) {
                             fileEntries.push(entry)
                             found++
                             el.innerText = `Searching... Searched ${searched} files, found ${found} results files`
@@ -1678,7 +1691,7 @@ async function showImportResultFiles(collectionId, fieldSettings) {
             let pePanel = new SM.ReviewsImport.ParseErrorsPanel({
                 errors: results.errors.length > 0 ? results.errors : null,
                 duplicates: results.hasDuplicates ? results.dupedRows : null,
-                continueHandler: onContinue,
+                continueHandler: results.stopWizard ? onAbort : onContinue,
                 backHandler: onBack
             })
             fpwindow.removeAll()
@@ -1688,6 +1701,10 @@ async function showImportResultFiles(collectionId, fieldSettings) {
 
             function onContinue() {
                 showOptions(results)
+            }
+
+            function onAbort() {
+                fpwindow.close()
             }
 
             function onBack() {

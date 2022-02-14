@@ -299,6 +299,7 @@ const reviewsFromScc = function (sccFileContent, options = {}) {
           ruleId: ruleResult.idref.replace('xccdf_mil.disa.stig_rule_', ''),
           result: ruleResult.result,
           detail: `SCC Reviewed at ${ruleResult.time}`,
+          comment: null,
           autoResult: true,
           status: 'saved'
         })  
