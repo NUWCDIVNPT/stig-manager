@@ -411,10 +411,8 @@ exports.getDetails = async function() {
 
     await dbUtils.pool.query(sqlAnalyze)
 
-    const [[schemaInfoArray], [variablesArray], [statusArray], [assetStig]] = await Promise.all([
+    const [[schemaInfoArray], [assetStig]] = await Promise.all([
       dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
-      dbUtils.pool.query('show variables'),
-      dbUtils.pool.query('show global status'),
       dbUtils.pool.query(sqlCollectionAssetStigs)
     ])
 
@@ -423,8 +421,6 @@ exports.getDetails = async function() {
 
     return ({
       dbInfo: {
-        status: statusArray.reduce(nameValuesReducer ,{}),
-        variables: variablesArray.reduce(nameValuesReducer ,{}),
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
       assetStig

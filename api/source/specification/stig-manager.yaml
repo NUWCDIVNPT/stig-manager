@@ -3389,14 +3389,6 @@ components:
     DetailMySqlInfo:
       type: object
       properties:
-        status:
-          type: object
-          additionalProperties:
-            type: string
-        variables:
-          type: object
-          additionalProperties:
-            type: string
         tables:
           type: object
           additionalProperties:
