@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5b46bc3d-cd1f-41c4-ba65-3922926e8925",
+		"_postman_id": "0895f99a-ad58-45ff-8d4b-5b7b55103e61",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -7306,66 +7306,145 @@
 									"response": []
 								}
 							]
-						},
-						{
-							"name": "Return API version and configuration information",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"if (pm.response.code !== 200) {\r",
-											"    return;\r",
-											"}\r",
-											"\r",
-											"\r",
-											"let jsonData = pm.response.json();\r",
-											"\r",
-											"\r",
-											"pm.test(\"Response JSON is an object\", function () {\r",
-											"    pm.expect(jsonData).to.be.an('object');\r",
-											"});\r",
-											"\r",
-											"let configKeys = [\r",
-											"    \"version\",\r",
-											"    \"commit\"\r",
-											"]\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											"\r",
-											""
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/op/configuration",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"op",
-										"configuration"
-									]
-								}
-							},
-							"response": []
 						}
 					]
+				},
+				{
+					"name": "Return API Deployment Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let user = pm.environment.get(\"user\");\r",
+									"console.log(\"user: \" + user);\r",
+									"\r",
+									"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+									"    user = \"elevated\";\r",
+									"    console.log(\"setting user to 'elevated'\");\r",
+									"}\r",
+									"\r",
+									"if (user != \"elevated\") { //placeholder for \"users\" that should fail\r",
+									"    pm.test(\"Status should be is 403 for users not elevated\", function () {\r",
+									"        pm.response.to.have.status(403);\r",
+									"    });\r",
+									"    return;\r",
+									"}\r",
+									"else {\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"}\r",
+									"if (pm.response.code !== 200) {\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"\r",
+									"let jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Response JSON is an object\", function () {\r",
+									"    pm.expect(jsonData).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"dbInfo.tables exists\", function () {\r",
+									"    pm.expect(jsonData.dbInfo).to.exist;\r",
+									"    pm.expect(jsonData.dbInfo).to.have.property('tables');\r",
+									"\r",
+									"});\r",
+									"\r",
+									"pm.test(\"assetStig exists\", function () {\r",
+									"    pm.expect(jsonData.assetStig).to.exist;\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/op/details?elevate={{elevated}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"op",
+								"details"
+							],
+							"query": [
+								{
+									"key": "elevate",
+									"value": "{{elevated}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Return API version and configuration information",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"if (pm.response.code !== 200) {\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"\r",
+									"let jsonData = pm.response.json();\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response JSON is an object\", function () {\r",
+									"    pm.expect(jsonData).to.be.an('object');\r",
+									"});\r",
+									"\r",
+									"let configKeys = [\r",
+									"    \"version\",\r",
+									"    \"commit\"\r",
+									"]\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/op/configuration",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"op",
+								"configuration"
+							]
+						}
+					},
+					"response": []
 				},
 				{
 					"name": "Return the requester's user information",

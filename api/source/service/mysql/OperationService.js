@@ -1,9 +1,6 @@
 'use strict';
 const dbUtils = require('./utils')
-const Asset = require(`./AssetService`);
-const Collection = require(`./CollectionService`);
-// const User = require(`./UserService`);
-// const Reviews = require(`./ReviewService`);
+const config = require('../../utils/config')
 
 
 /**
@@ -388,4 +385,69 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       await connection.release()
     }
   }
+}
+
+exports.getDetails = async function() {
+  const sqlAnalyze = `ANALYZE TABLE
+  collection, asset, review, review_history, user`
+  const sqlInfoSchema = `SELECT
+    TABLE_NAME as tableName,
+    TABLE_ROWS as tableRows,
+    TABLE_COLLATION as tableCollation,
+    AVG_ROW_LENGTH as avgRowLength,
+    DATA_LENGTH as dataLength,
+    MAX_DATA_LENGTH as maxDataLength,
+    INDEX_LENGTH as indexLength,
+    AUTO_INCREMENT as autoIncrement,
+    CREATE_TIME as createTime,
+    UPDATE_TIME as updateTime
+  FROM
+    information_schema.TABLES
+  WHERE
+    TABLE_SCHEMA = ?
+  ORDER BY
+    TABLE_NAME`
+  const sqlCollectionAssetStigs = `
+    SELECT
+      CAST(sub.collectionId as char) as collectionId,
+      sum(case when sub.assetId then 1 else 0 end) as assetCnt,
+      sum(case when sub.stigAssetCnt >= 1 and sub.stigAssetCnt <= 5 then 1 else 0 end) as range01to05,
+      sum(case when sub.stigAssetCnt >= 6 and sub.stigAssetCnt <= 10 then 1 else 0 end) as range06to10,
+      sum(case when sub.stigAssetCnt >= 11 and sub.stigAssetCnt <= 15 then 1 else 0 end) as range11to15,
+      sum(case when sub.stigAssetCnt >= 16 then 1 else 0 end) as range16plus
+    FROM
+    (SELECT
+      c.collectionId,
+      c.name,
+      a.assetId,
+      COUNT(sa.assetId) as stigAssetCnt
+    FROM
+      collection c
+      LEFT JOIN asset a on a.collectionId = c.collectionId
+      LEFT JOIN stig_asset_map sa on sa.assetId = a.assetId 
+    GROUP BY
+      c.collectionId,
+      c.name,
+      a.assetId) as sub
+    GROUP BY
+      sub.collectionId
+    ORDER BY
+      sub.collectionId`
+
+    await dbUtils.pool.query(sqlAnalyze)
+
+    const [[schemaInfoArray], [assetStig]] = await Promise.all([
+      dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
+      dbUtils.pool.query(sqlCollectionAssetStigs)
+    ])
+
+    const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
+    const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
+
+    return ({
+      dbInfo: {
+        tables: schemaInfoArray.reduce(schemaReducer, {})
+      },
+      assetStig
+    })
 }

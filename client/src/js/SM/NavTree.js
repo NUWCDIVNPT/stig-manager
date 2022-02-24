@@ -629,7 +629,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                     },
                     {
                       id: 'appdata-admin',
-                      text: 'Application Data <span class="sm-navtree-sprite">experimental</span>',
+                      text: 'Application Info',
                       leaf: true,
                       iconCls: 'sm-database-save-icon'
                     }

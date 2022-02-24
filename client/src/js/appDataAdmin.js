@@ -1,4 +1,4 @@
-function addAppDataAdmin( params ) {
+async function addAppDataAdmin( params ) {
   let { treePath } = params
   const tab = Ext.getCmp('main-tab-panel').getItem('appdata-admin-tab')
 	if (tab) {
@@ -6,12 +6,33 @@ function addAppDataAdmin( params ) {
 		return
 	}
 
-  const apiPanel = new Ext.Panel({
-    // baseCls: 'x-plain',
-		cls: 'sm-round-panel',
-		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+  const detailJson = new Ext.Panel({
     region: 'center',
-    // autoHeight: true,
+    title: 'Anonymized Deployment Details',
+		cls: 'sm-round-panel',
+    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
+    autoScroll: true,
+    buttonAlign: 'left',
+    bbar: [
+      {
+        text: 'JSON',
+        iconCls: 'sm-export-icon',
+        handler: function (btn) {
+          if (detailResponseText) {
+            const blob = new Blob([detailResponseText], {type: 'application/json'})
+            downloadBlob(blob, 'stig-manager-details.json')
+          }
+        }
+      }
+    ]
+  })
+
+  const appDataPanel = new Ext.Panel({
+    region: 'north',
+    title: 'Application Data <span class="sm-navtree-sprite">experimental</span>',
+    margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+		cls: 'sm-round-panel',
+    height: 200,
     labelWidth: 1,
     hideLabel: true,
     // width: 500,
@@ -23,12 +44,13 @@ function addAppDataAdmin( params ) {
     items: [
       {
         xtype: 'fieldset',
+        width: 200,
         title: 'Export',
         items: [
           {
             xtype: 'button',
             id: 'appdata-admin-form-export-btn',
-            text: 'Download Application Data',
+            text: 'Download Application Data&nbsp;',
             iconCls: 'sm-export-icon',
             handler: async function () {
               try {
@@ -49,18 +71,18 @@ function addAppDataAdmin( params ) {
       {
         xtype: 'fieldset',
         title: 'Import',
+        width: 200,
         items: [
           {
             xtype: 'button',
             id: 'appdata-admin-form-import-btn',
-            text: 'Replace Application Data...',
+            text: 'Replace Application Data...&nbsp;',
             iconCls: 'sm-import-icon',
             handler: handleImport
           }
         ]
       }
     ]
-
   })
 
   function handleImport (item, event) {
@@ -168,7 +190,7 @@ function addAppDataAdmin( params ) {
     appwindow.show(document.body);
   }
 
-  const getAppdata = async function () {
+  async function getAppdata () {
     try {
       let url = `${STIGMAN.Env.apiBase}/op/appdata?elevate=true`
       await window.oidcProvider.updateToken(10)
@@ -192,7 +214,25 @@ function addAppDataAdmin( params ) {
     }
   }
 
-  const downloadBlob = function (blob, filename) {
+  let detailResponseText
+  async function getDetail () {
+    try {
+      let result = await Ext.Ajax.requestPromise({
+        url: `${STIGMAN.Env.apiBase}/op/details`,
+        params: {
+          elevate: curUser.privileges.canAdmin
+        },
+        method: 'GET'
+      })
+      detailResponseText = result.response.responseText
+      return JSON.parse(detailResponseText)
+    }
+    catch (e) {
+      alert (e.message)
+    }
+  }
+
+  function downloadBlob (blob, filename) {
     let a = document.createElement('a')
     a.style.display = "none"
     let url = window.URL.createObjectURL(blob)
@@ -209,12 +249,23 @@ function addAppDataAdmin( params ) {
     id: 'appdata-admin-tab',
     sm_treePath: treePath,
     iconCls: 'sm-database-save-icon',
-    title: 'Application Data',
+    title: 'Application Info',
     closable: true,
     layout: 'border',
     border: false,
-    items: [apiPanel]
+    items: [detailJson, appDataPanel]
   })
-  thisTab.show();
+  thisTab.show()
 
+  let opDetail = await getDetail()
+
+  const detailTree = JsonView.createTree(opDetail)
+  // adjust for rendering
+  // the parent and first child (dbInfo) are expanded
+  detailTree.key = `GET ${STIGMAN.Env.apiBase}/op/details?elevate=true`
+  detailTree.isExpanded = true
+  detailTree.children[0].isExpanded = true
+
+  const el = detailJson.body
+  JsonView.render(detailTree, el)
 }
