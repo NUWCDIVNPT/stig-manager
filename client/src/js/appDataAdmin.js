@@ -28,7 +28,7 @@ async function addAppDataAdmin( params ) {
   })
 
   const appDataPanel = new Ext.Panel({
-    region: 'south',
+    region: 'north',
     title: 'Application Data <span class="sm-navtree-sprite">experimental</span>',
     margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 		cls: 'sm-round-panel',
