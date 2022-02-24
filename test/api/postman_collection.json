@@ -7370,7 +7370,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/op/details?elevate=true",
+							"raw": "{{baseUrl}}/op/details?elevate={{elevated}}",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -7381,7 +7381,7 @@
 							"query": [
 								{
 									"key": "elevate",
-									"value": "true"
+									"value": "{{elevated}}"
 								}
 							]
 						}
