@@ -1,3 +1,22 @@
+1.2.4
+-----
+
+Changes:
+
+- (API/App) Endpoint and UI for deployment-wide usage statistics
+- (App) CKL export fixes
+- (App) Changed incorrectly named column headers on the Collection Manage workspace
+- (API/App) Require a compliance result (pass, fail, notapplicable) to submit a Review
+- (Docs) Updates regarding "submit" status requirements
+  
+Commits:
+
+- 8f0905f docs: updates regarding "submit" status requirements (#595)
+- 86a9890 fix: require a compliance result to submit review (#594)
+- b506920 fix: headers don't match API (#592)
+- 0c7ecf5 fix: CKL export fails to include all rules (#591)
+- 98025ce feat: endpoint and ui for /op/details (#570)
+
 1.2.3
 -----
 
