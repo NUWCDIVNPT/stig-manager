@@ -149,7 +149,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true
 			},
             { 	
-				header: "Checks",
+				header: "Rules",
 				width: 50,
                 fixed: true,
 				dataIndex: 'ruleCount',
@@ -175,7 +175,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderDurationToNow
             },
             { 	
-				header: "Reviewed",
+				header: "Saved",
 				width: 100,
                 fixed: true,
 				dataIndex: 'savedPct',

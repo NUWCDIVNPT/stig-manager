@@ -131,7 +131,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderDurationToNow
             },
             { 	
-				header: "Reviewed",
+				header: "Saved",
 				width: 100,
                 fixed: true,
 				dataIndex: 'savedPct',
