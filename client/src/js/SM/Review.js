@@ -269,6 +269,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
 
     function isReviewSubmittable () {
       if (!rcb.value) return false
+      if (rcb.value !== 'pass' && rcb.value !== 'fail' && rcb.value !== 'notapplicable') return false
       if (_this.fieldSettings.detail.required === 'always' && !dta.getValue()) return false
       if (_this.fieldSettings.detail.required === 'findings' 
         && rcb.value === 'fail'

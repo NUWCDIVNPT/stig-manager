@@ -9,6 +9,8 @@ const SmError = require('../utils/error')
 const _this = this
 
 function isReviewSubmittable ( fieldSettings, review ) {
+  if (review.result !== 'pass' && review.result !== 'fail' && review.result !== 'notapplicable') return false
+
   if (fieldSettings.detail.required === 'always' 
     && !review.detail) return false
 

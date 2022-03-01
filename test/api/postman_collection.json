@@ -17235,7 +17235,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"result\": \"informational\",\n    \"detail\": \"test\\nvisible to lvl1, THIS REVIEW IS INFORMATIONAL (but comes back as Not_Reviewed in a ckl)\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+									"raw": "{\n    \"result\": \"informational\",\n    \"detail\": \"test\\nvisible to lvl1, THIS REVIEW IS INFORMATIONAL (but comes back as Not_Reviewed in a ckl)\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"saved\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
