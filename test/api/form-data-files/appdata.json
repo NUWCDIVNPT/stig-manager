@@ -4,23 +4,23 @@
       "userId": "87",
       "username": "admin",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
-        "lastAccess": 1643160178,
+        "created": "2022-02-03 00:06:42.000000",
+        "lastAccess": 1643846883,
         "lastClaims": {
           "acr": "0",
           "aud": "realm-management",
           "azp": "stig-manager",
-          "exp": 1643160404,
-          "iat": 1643160104,
+          "exp": 1643847077,
+          "iat": 1643846777,
           "iss": "http://localhost:8080/auth/realms/stigman",
-          "jti": "099155f4-cfb1-4dc4-92e0-7e4fb30a2b25",
-          "sid": "dd782564-156e-4c84-a6eb-ce8163bb261d",
+          "jti": "c62e03d4-f995-4240-8dd8-2d91ac2d72f8",
           "sub": "bf87a16f-39e6-46d9-8971-f0ef51dd3f85",
           "typ": "Bearer",
           "name": "Admin Burke",
-          "nonce": "8a8fbd39-7f6b-46aa-add5-00b7a8705a5c",
+          "email": "admin@admin.com",
+          "nonce": "f96767b4-d2ca-4952-80e3-a6c47f69599b",
           "scope": "openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig",
-          "auth_time": 1643154519,
+          "auth_time": 1643829521,
           "given_name": "Admin",
           "family_name": "Burke",
           "realm_access": {
@@ -30,7 +30,8 @@
               "user"
             ]
           },
-          "session_state": "dd782564-156e-4c84-a6eb-ce8163bb261d",
+          "session_state": "0840c654-7412-4734-a93f-09dce4babb99",
+          "email_verified": false,
           "resource_access": {
             "realm-management": {
               "roles": [
@@ -42,14 +43,14 @@
           },
           "preferred_username": "admin"
         },
-        "collectionGrantCount": 5
+        "collectionGrantCount": 6
       }
     },
     {
       "userId": "86",
       "username": "bizarroLvl1",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": null,
         "lastClaims": {},
         "collectionGrantCount": 2
@@ -59,7 +60,7 @@
       "userId": "82",
       "username": "collectioncreator",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": 1602652554,
         "lastClaims": {
           "acr": "1",
@@ -103,7 +104,7 @@
       "userId": "85",
       "username": "lvl1",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": 1602652493,
         "lastClaims": {
           "acr": "1",
@@ -146,7 +147,7 @@
       "userId": "21",
       "username": "lvl2",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": 1602652507,
         "lastClaims": {
           "acr": "1",
@@ -189,7 +190,7 @@
       "userId": "44",
       "username": "lvl3",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": 1602652565,
         "lastClaims": {
           "acr": "1",
@@ -232,7 +233,7 @@
       "userId": "45",
       "username": "lvl4",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": 1602652573,
         "lastClaims": {
           "acr": "1",
@@ -275,8 +276,8 @@
       "userId": "1",
       "username": "stigmanadmin",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
-        "lastAccess": 1643160098,
+        "created": "2022-02-03 00:06:42.000000",
+        "lastAccess": 1643846850,
         "lastClaims": {
           "acr": "0",
           "aud": [
@@ -327,7 +328,7 @@
       "userId": "22",
       "username": "wf-test",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": null,
         "lastClaims": {},
         "collectionGrantCount": 0
@@ -337,7 +338,7 @@
       "userId": "43",
       "username": "workforce-60",
       "statistics": {
-        "created": "2022-01-26 01:21:38.000000",
+        "created": "2022-02-03 00:06:42.000000",
         "lastAccess": null,
         "lastClaims": {},
         "collectionGrantCount": 0
@@ -618,293 +619,370 @@
         },
         {
           "accessLevel": 4,
-                    "userId": "1"
-                }
-            ]
+          "userId": "1"
         }
-    ],
-    "assets": [
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "assetId": "29",
+      "name": "ACHERNAR_Collection_X_asset",
+      "fqdn": null,
+      "description": "",
+      "ip": "10.0.0.18",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "21"
+    },
+    {
+      "assetId": "62",
+      "name": "Collection_X_asset",
+      "fqdn": null,
+      "description": "",
+      "ip": "10.1.1.1",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
         {
-            "assetId": "29",
-            "name": "ACHERNAR_Collection_X_asset",
-            "fqdn": null,
-            "description": "",
-            "ip": "10.0.0.18",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [],
-            "collectionId": "21"
+          "benchmarkId": "VPN_SRG",
+          "userIds": []
         },
         {
-            "assetId": "62",
-            "name": "Collection_X_asset",
-            "fqdn": null,
-            "description": "",
-            "ip": "10.1.1.1",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": []
-                },
-                {
-                    "benchmarkId": "Windows_10_STIG",
-                    "userIds": []
-                }
-            ],
-            "collectionId": "21"
-        },
-        {
-            "assetId": "42",
-            "name": "Collection_X_lvl1_asset-1",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": true,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": [
-                        "85"
-                    ]
-                },
-                {
-                    "benchmarkId": "Windows_10_STIG",
-                    "userIds": [
-                        "86"
-                    ]
-                }
-            ],
-            "collectionId": "21"
-        },
-        {
-            "assetId": "154",
-            "name": "Collection_X_lvl1_asset-2",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": [
-                        "85"
-                    ]
-                },
-                {
-                    "benchmarkId": "Windows_10_STIG",
-                    "userIds": []
-                }
-            ],
-            "collectionId": "21"
-        },
-        {
-            "assetId": "240",
-            "name": "Collection_Y_asset-noGrants",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": []
-                }
-            ],
-            "collectionId": "83"
-        },
-        {
-            "assetId": "153",
-            "name": "Collection_Y_lvl_1_asset-1",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": []
-                }
-            ],
-            "collectionId": "83"
-        },
-        {
-            "assetId": "38",
-            "name": "FOMALHAUT",
-            "fqdn": null,
-            "description": "",
-            "ip": "10.0.0.27",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": [
-                        "85"
-                    ]
-                }
-            ],
-            "collectionId": "1"
-        },
-        {
-            "assetId": "246",
-            "name": "tesetest",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [],
-            "collectionId": "92"
-        },
-        {
-            "assetId": "241",
-            "name": "test asset POST stigmanadmin",
-            "fqdn": null,
-            "description": "test desc",
-            "ip": "1.1.1.1",
-            "mac": null,
-            "noncomputing": true,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": []
-                },
-                {
-                    "benchmarkId": "Windows_10_STIG",
-                    "userIds": []
-                }
-            ],
-            "collectionId": "1"
-        },
-        {
-            "assetId": "34",
-            "name": "test asset stigmanadmin",
-            "fqdn": null,
-            "description": "test desc",
-            "ip": "1.1.1.1",
-            "mac": null,
-            "noncomputing": true,
-            "metadata": {},
-            "stigGrants": [
-                {
-                    "benchmarkId": "RHEL_7_STIG",
-                    "userIds": []
-                },
-                {
-                    "benchmarkId": "VPN_SRG",
-                    "userIds": []
-                },
-                {
-                    "benchmarkId": "Windows_10_STIG",
-                    "userIds": []
-                }
-            ],
-            "collectionId": "1"
-        },
-        {
-            "assetId": "242",
-            "name": "testasset",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [],
-            "collectionId": "85"
-        },
-        {
-            "assetId": "245",
-            "name": "testasset",
-            "fqdn": null,
-            "description": "test desc",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [],
-            "collectionId": "92"
-        },
-        {
-            "assetId": "243",
-            "name": "testasset111",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [],
-            "collectionId": "85"
-        },
-        {
-            "assetId": "244",
-            "name": "wat",
-            "fqdn": null,
-            "description": "",
-            "ip": "",
-            "mac": null,
-            "noncomputing": false,
-            "metadata": {},
-            "stigGrants": [],
-            "collectionId": "85"
+          "benchmarkId": "Windows_10_STIG",
+          "userIds": []
         }
-    ],
-    "reviews": [
+      ],
+      "collectionId": "21"
+    },
+    {
+      "assetId": "42",
+      "name": "Collection_X_lvl1_asset-1",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": true,
+      "metadata": {},
+      "stigGrants": [
         {
-            "assetId": "42",
-            "ruleId": "SV-106179r1_rule",
-            "result": "pass",
-            "detail": "test\nvisible to lvl1",
-            "autoResult": false,
-            "comment": "idk",
-            "userId": "1",
-            "ts": "2021-07-16T03:34:02.000Z",
-            "touchTs": "2021-07-16T03:34:02.000Z",
-            "status": {
-                "ts": "2021-07-16T03:34:02Z",
-                "text": null,
-                "userId": "1",
-                "label": "submitted"
-            },
-            "metadata": {
-                "testkey": "testvalue"
+          "benchmarkId": "VPN_SRG",
+          "userIds": [
+            "85"
+          ]
+        },
+        {
+          "benchmarkId": "Windows_10_STIG",
+          "userIds": [
+            "86"
+          ]
+        }
+      ],
+      "collectionId": "21"
+    },
+    {
+      "assetId": "154",
+      "name": "Collection_X_lvl1_asset-2",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG",
+          "userIds": [
+            "85"
+          ]
+        },
+        {
+          "benchmarkId": "Windows_10_STIG",
+          "userIds": []
+        }
+      ],
+      "collectionId": "21"
+    },
+    {
+      "assetId": "240",
+      "name": "Collection_Y_asset-noGrants",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG",
+          "userIds": []
+        }
+      ],
+      "collectionId": "83"
+    },
+    {
+      "assetId": "153",
+      "name": "Collection_Y_lvl_1_asset-1",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG",
+          "userIds": []
+        }
+      ],
+      "collectionId": "83"
+    },
+    {
+      "assetId": "38",
+      "name": "FOMALHAUT",
+      "fqdn": null,
+      "description": "",
+      "ip": "10.0.0.27",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG",
+          "userIds": [
+            "85"
+          ]
+        }
+      ],
+      "collectionId": "1"
+    },
+    {
+      "assetId": "246",
+      "name": "tesetest",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "92"
+    },
+    {
+      "assetId": "241",
+      "name": "test asset POST stigmanadmin",
+      "fqdn": null,
+      "description": "test desc",
+      "ip": "1.1.1.1",
+      "mac": null,
+      "noncomputing": true,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "Windows_10_STIG",
+          "userIds": []
+        }
+      ],
+      "collectionId": "1"
+    },
+    {
+      "assetId": "34",
+      "name": "test asset stigmanadmin",
+      "fqdn": null,
+      "description": "test desc",
+      "ip": "1.1.1.1",
+      "mac": null,
+      "noncomputing": true,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "RHEL_7_STIG",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "VPN_SRG",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "Windows_10_STIG",
+          "userIds": []
+        }
+      ],
+      "collectionId": "1"
+    },
+    {
+      "assetId": "242",
+      "name": "testasset",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "85"
+    },
+    {
+      "assetId": "245",
+      "name": "testasset",
+      "fqdn": null,
+      "description": "test desc",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "92"
+    },
+    {
+      "assetId": "243",
+      "name": "testasset111",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "85"
+    },
+    {
+      "assetId": "244",
+      "name": "wat",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "85"
+    }
+  ],
+  "reviews": [
+    {
+      "assetId": "42",
+      "ruleId": "SV-106179r1_rule",
+      "result": "pass",
+      "detail": "test\nvisible to lvl1",
+      "autoResult": false,
+      "comment": "idk",
+      "userId": "1",
+      "ts": "2021-07-16T03:34:02Z",
+      "touchTs": "2021-07-16T03:34:02Z",
+      "status": {
+        "ts": "2021-07-16T03:34:02Z",
+        "text": null,
+        "label": "submitted",
+        "userId": "1"
       },
-      "history": []
+      "metadata": {
+        "testkey": "testvalue"
+      },
+      "history": [
+        {
+          "ts": "2020-08-11T23:37:45Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2020-08-11T23:37:45Z",
+            "text": null,
+            "label": "submitted",
+            "userId": "1"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2020-08-11T23:37:45Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2020-08-11T23:37:45Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2022-01-26T01:22:58Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2022-01-26T01:22:58Z",
+          "autoResult": false
+        }
+      ]
     },
     {
       "assetId": "42",
       "ruleId": "SV-106181r1_rule",
       "result": "notapplicable",
-      "detail": "test\nvisible to lvl1",
+      "detail": "test\nvisible to lvl1\nhas history",
       "autoResult": false,
-      "comment": null,
-      "userId": "1",
-      "ts": "2020-08-11T22:26:50Z",
-      "touchTs": "2020-08-11T22:26:50Z",
+      "comment": "",
+      "userId": "87",
+      "ts": "2022-02-03T00:07:05Z",
+      "touchTs": "2022-02-03T00:07:07Z",
       "status": {
-        "ts": "2020-08-11T22:26:50Z",
+        "ts": "2022-02-03T00:07:07Z",
         "text": null,
         "label": "submitted",
-        "userId": "1"
+        "userId": "87"
       },
       "metadata": {},
-      "history": []
+      "history": [
+        {
+          "ts": "2020-08-11T22:26:50Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "notapplicable",
+          "status": {
+            "ts": "2020-08-11T22:26:50Z",
+            "text": null,
+            "label": "submitted",
+            "userId": "1"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2020-08-11T22:26:50Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2020-08-11T22:26:50Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "notapplicable",
+          "status": {
+            "ts": "2022-02-03T00:06:56Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2022-02-03T00:06:56Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2022-02-03T00:07:05Z",
+          "detail": "test\nvisible to lvl1\nhas history",
+          "result": "notapplicable",
+          "status": {
+            "ts": "2022-02-03T00:07:05Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "87",
+          "comment": "",
+          "touchTs": "2022-02-03T00:07:05Z",
+          "autoResult": false
+        }
+      ]
     },
     {
       "assetId": "42",
@@ -1056,38 +1134,7 @@
         "userId": "87"
       },
       "metadata": {},
-      "history": [
-        {
-          "ts": "2020-08-11T23:37:45Z",
-          "detail": "test\nvisible to lvl1",
-          "result": "pass",
-          "status": {
-            "ts": "2020-08-11T23:37:45Z",
-            "text": null,
-            "label": "submitted",
-            "userId": "1"
-          },
-          "userId": "1",
-          "comment": null,
-          "touchTs": "2020-08-11T23:37:45Z",
-          "autoResult": false
-        },
-        {
-          "ts": "2020-08-11T23:37:45Z",
-          "detail": "test\nvisible to lvl1",
-          "result": "pass",
-          "status": {
-            "ts": "2022-01-26T01:22:58Z",
-            "text": null,
-            "label": "saved",
-            "userId": "87"
-          },
-          "userId": "1",
-          "comment": null,
-          "touchTs": "2022-01-26T01:22:58Z",
-          "autoResult": false
-        }
-      ]
+      "history": []
     },
     {
       "assetId": "62",
@@ -1150,20 +1197,51 @@
       "assetId": "154",
       "ruleId": "SV-106179r1_rule",
       "result": "pass",
-      "detail": "test\nvisible to lvl1",
+      "detail": "test\nvisible to lvl1\nhas history",
       "autoResult": false,
-      "comment": null,
-      "userId": "1",
-      "ts": "2020-08-11T22:30:38Z",
-      "touchTs": "2020-08-11T22:30:38Z",
+      "comment": "",
+      "userId": "87",
+      "ts": "2022-02-02T20:20:18Z",
+      "touchTs": "2022-02-02T20:20:18Z",
       "status": {
-        "ts": "2020-08-11T22:30:38Z",
+        "ts": "2022-02-02T20:20:18Z",
         "text": null,
         "label": "submitted",
-        "userId": "1"
+        "userId": "87"
       },
       "metadata": {},
-      "history": []
+      "history": [
+        {
+          "ts": "2020-08-11T22:30:38Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2020-08-11T22:30:38Z",
+            "text": null,
+            "label": "submitted",
+            "userId": "1"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2020-08-11T22:30:38Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2020-08-11T22:30:38Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2022-02-02T20:20:03Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2022-02-02T20:20:03Z",
+          "autoResult": false
+        }
+      ]
     },
     {
       "assetId": "154",
