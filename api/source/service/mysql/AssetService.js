@@ -788,9 +788,9 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
         VULN: []
       }
       let siDataArray = iStigJs.STIG_INFO.SI_DATA
-      siDataRefs.forEach(siDatum => {
+      for (const siDatum of siDataRefs) {
         siDataArray.push(siDatum)
-      })
+      }
   
       // CHECKLIST.STIGS.iSTIG.STIG_INFO.VULN
       let [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])
@@ -820,8 +820,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
   
       // let vulnArray = cklJs.CHECKLIST.STIGS.iSTIG.VULN
       let vulnArray = iStigJs.VULN
-      resultGetChecklist.forEach( r => {
-        let vulnObj = {
+      for (const r of resultGetChecklist) {
+        const vulnObj = {
           STIG_DATA: [],
           STATUS: r.result || 'Not_Reviewed',
           FINDING_DETAILS: r.detail,
@@ -829,12 +829,12 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
           SEVERITY_OVERRIDE: null,
           SEVERITY_JUSTIFICATION: null
         }
-        stigDataRef.forEach(stigDatum => {
+        for (const stigDatum of stigDataRef) {
           vulnObj.STIG_DATA.push({
             VULN_ATTRIBUTE: stigDatum[0],
             ATTRIBUTE_DATA: r[stigDatum[1]]
           })
-        })
+        }
         // STIGRef
         vulnObj.STIG_DATA.push({
           VULN_ATTRIBUTE: 'STIGRef',
@@ -842,17 +842,16 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
         })
         // CCI_REFs
         if (r.ccis) {
-          let ccis = r.ccis.split(',')
-          ccis.forEach( cci=> {
+          const ccis = r.ccis.split(',')
+          for (const cci of ccis) {
             vulnObj.STIG_DATA.push({
               VULN_ATTRIBUTE: 'CCI_REF',
               ATTRIBUTE_DATA: `CCI-${cci}`
             })
-          })
-          vulnArray.push(vulnObj)
+          }
         }
-      })
-  
+        vulnArray.push(vulnObj)        
+      }
       cklJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
     }
 
@@ -863,7 +862,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
     throw (e)
   }
   finally {
-    if (typeof connection !== 'undefinied') {
+    if (typeof connection !== 'undefined') {
       await connection.release()
     }
   }
