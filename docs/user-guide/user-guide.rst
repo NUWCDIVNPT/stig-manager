@@ -264,7 +264,6 @@ From the Checklist menu in the Menu Bar, the User can:
    * Import STIG results for this Asset in .ckl or XCCDF form.
    * Switch between Revisions of the STIG being displayed.
 
-When a .ckl or XCCDF file is imported, any Reviews that meet the Review Requirement criteria will be set to a Submitted state.
 
 The menu bar also supports a variety of status and Title filters.
 
@@ -333,6 +332,7 @@ The default Settings for Reviews in Collections are:
       - Require text in the Detail field in order to Submit. 
       - Display the Comment field for "Findings only".
       - Require text in the Comment field for "Findings only" in order to Submit.
+      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
 
 
 .. thumbnail:: /assets/images/review-requirements-popup.png
@@ -431,7 +431,7 @@ Provides a view of the overall Status and Evaluation progress of the entire Coll
 
 This report can be grouped by Asset or by STIG using the Grouping options at the top of the panel.
 
-This report consists of the total number of Checks associated with each Asset or STIG across the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Returned, and Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
+This report consists of the total number of Checks associated with each Asset or STIG across the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Rejected, and Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
 
 This report can be exported as a .csv using the Down-Arrow button at the bottom of the panel.
 
@@ -529,6 +529,8 @@ The default Settings for Review Submission in Collections are:
       - Require text in the Detail field in order to Submit. 
       - Display the Comment field for "Findings only".
       - Require text in the Comment field for "Findings only" in order to Submit.
+      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
+ 
 
 .. rubric:: Review Status Settings
    :class: rubric
@@ -847,7 +849,7 @@ If the importer needs to create an Asset, it will set this metadata and set the 
 |
 
 .. note::
-   STIG Manager does not typically import .ckl reviews with a "Not_Reviewed" status. However, if a "Not_Reviewed" result includes data in the "Finding_Details" element, it will be imported with a result of "Informational". Upon export as a .ckl, any Informational results that remain will be generated with a "Not_Reviewed" status once more. 
+   STIG Manager does not typically import .ckl reviews with a "Not_Reviewed" status. However, if a "Not_Reviewed" result includes data in the "Finding_Details" or "Comments" elements, it will be imported with a result of "Informational". Upon export as a .ckl, any Informational results that remain will be generated with a "Not_Reviewed" status once more. 
 
 
 |
