@@ -1,4 +1,3 @@
-
 .. _terminology:
 
 Terminology and Concepts
@@ -77,7 +76,7 @@ This is a glossary with definition terms for thing like :term:`Asset`:
             * Status Label - Saved, Submitted, Accepted, or Rejected (Depends on Collection Settings.)
             * Status Text - Contextual text describing status change. Most often used when a Review is "Rejected" and requires further work by the original Evaluator.
 		
-          * In order to be Submitted, the Evaluation must meet the requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
+          * In order to be Submitted, the Evaluation must have a Result of "Not A Finding," "Not Applicable," or "Open," and must meet any additional requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
           * In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.
 
     	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Rule, the user who set the Status of a Review, and timestamps for those actions are also collected.

@@ -471,7 +471,6 @@ Users can also import results from .ckl or XCCDF formats, and export their resul
 </ul>
 </dd>
 </dl>
-<p>When a .ckl or XCCDF file is imported, any Reviews that meet the Review Requirement criteria will be set to a Submitted state.</p>
 <p>The menu bar also supports a variety of status and Title filters.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -551,6 +550,7 @@ It also provides information about the Controls associated with this Rule, inclu
 <li><p>Require text in the Detail field in order to Submit.</p></li>
 <li><p>Display the Comment field for “Findings only”.</p></li>
 <li><p>Require text in the Comment field for “Findings only” in order to Submit.</p></li>
+<li><p>Review must have an Evaluation Result of “Not A Finding,” “Not Applicable,” or “Open. (Not Configurable)</p></li>
 </ul>
 </dd>
 </dl>
@@ -663,7 +663,7 @@ Information about the Asset, Rule, Last Changed Date, and applicable STIG or STI
 <span id="id10"></span><h2><span class="section-number">2.7. </span>Status Report<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
 <p>Provides a view of the overall Status and Evaluation progress of the entire Collection.</p>
 <p>This report can be grouped by Asset or by STIG using the Grouping options at the top of the panel.</p>
-<p>This report consists of the total number of Checks associated with each Asset or STIG across the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Returned, and Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of “Open” Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.</p>
+<p>This report consists of the total number of Checks associated with each Asset or STIG across the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Rejected, and Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of “Open” Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.</p>
 <p>This report can be exported as a .csv using the Down-Arrow button at the bottom of the panel.</p>
 <figure class="">
             <a 
@@ -774,6 +774,7 @@ From this Workspace, the User can:</p>
 <li><p>Require text in the Detail field in order to Submit.</p></li>
 <li><p>Display the Comment field for “Findings only”.</p></li>
 <li><p>Require text in the Comment field for “Findings only” in order to Submit.</p></li>
+<li><p>Review must have an Evaluation Result of “Not A Finding,” “Not Applicable,” or “Open. (Not Configurable)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1157,7 +1158,7 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>STIG Manager does not typically import .ckl reviews with a “Not_Reviewed” status. However, if a “Not_Reviewed” result includes data in the “Finding_Details” element, it will be imported with a result of “Informational”. Upon export as a .ckl, any Informational results that remain will be generated with a “Not_Reviewed” status once more.</p>
+<p>STIG Manager does not typically import .ckl reviews with a “Not_Reviewed” status. However, if a “Not_Reviewed” result includes data in the “Finding_Details” or “Comments” elements, it will be imported with a result of “Informational”. Upon export as a .ckl, any Informational results that remain will be generated with a “Not_Reviewed” status once more.</p>
 </div>
 <div class="line-block">
 <div class="line"><br /></div>
