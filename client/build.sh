@@ -26,32 +26,37 @@ ext/ext-all.js
 ext/ux/GroupSummary.js
 ext/resources/css/ext-all.css
 ext/resources/css/xtheme-gray.css
-ext/resources/images/default/button/arrow.gif
-ext/resources/images/default/dd/drop-no.gif
-ext/resources/images/default/grid/grid-split.gif
-ext/resources/images/default/grid/loading.gif
 ext/resources/images/default/shadow-c.png
 ext/resources/images/default/shadow-lr.png
 ext/resources/images/default/shadow.png
+ext/resources/images/default/button/arrow.gif
+ext/resources/images/default/dd/drop-no.gif
+ext/resources/images/default/grid/loading.gif
+ext/resources/images/default/grid/hmenu-asc.gif
+ext/resources/images/default/grid/hmenu-desc.gif
+ext/resources/images/default/grid/columns.gif
+ext/resources/images/default/grid/grid-split.gif
+ext/resources/images/default/menu/menu.gif
 ext/resources/images/default/tree/loading.gif
 ext/resources/images/gray/button/btn.gif
+ext/resources/images/gray/button/group-cs.gif
+ext/resources/images/gray/button/group-tb.gif
+ext/resources/images/gray/button/group-lr.gif
 ext/resources/images/gray/form/trigger.gif
+ext/resources/images/gray/form/clear-trigger.gif
 ext/resources/images/gray/grid/col-move-bottom.gif
 ext/resources/images/gray/grid/col-move-top.gif
 ext/resources/images/gray/grid/sort_asc.gif
 ext/resources/images/gray/grid/sort_desc.gif
+ext/resources/images/gray/menu/menu-parent.gif
+ext/resources/images/gray/menu/item-over.gif
+ext/resources/images/gray/menu/item-over-disabled.gif
 ext/resources/images/gray/panel/tool-sprites.gif
 ext/resources/images/gray/panel/white-top-bottom.gif
 ext/resources/images/gray/qtip/tip-anchor-sprite.gif
 ext/resources/images/gray/qtip/tip-sprite.gif
 ext/resources/images/gray/tabs/tab-close.gif
 ext/resources/images/gray/window/icon-question.gif
-ext/resources/images/default/menu/menu.gif
-ext/resources/images/default/grid/hmenu-asc.gif
-ext/resources/images/default/grid/hmenu-desc.gif
-ext/resources/images/gray/menu/menu-parent.gif
-ext/resources/images/default/grid/columns.gif
-ext/resources/images/gray/menu/item-over.gif
 ext/ux/fileuploadfield/css/fileuploadfield.css"
 tar cf - -C $SrcDir --files-from <(echo "${ExtResources}") | tar xf - -C $DistDir
 
@@ -80,12 +85,13 @@ cp $SrcDir/js/Env.js.example $DistDir/js
 cd $SrcDir
 uglifyjs \
 'js/SM/Global.js' \
+'js/SM/EventDispatcher.js' \
+'js/SM/Cache.js' \
 'js/SM/TipContent.js' \
 'js/SM/Ajax.js' \
 'js/SM/Warnings.js' \
 'js/SM/Classification.js' \
 'js/SM/MainPanel.js' \
-'js/SM/EventDispatcher.js' \
 'js/FileUploadField.js' \
 'js/MessageBox.js' \
 'js/overrides.js' \
@@ -95,9 +101,9 @@ uglifyjs \
 'js/SM/NavTree.js' \
 'js/SM/RowEditorToolbar.js' \
 'js/SM/Collection.js' \
+'js/SM/CollectionStig.js' \
 'js/SM/CollectionForm.js' \
 'js/SM/CollectionAsset.js' \
-'js/SM/CollectionStig.js' \
 'js/SM/CollectionGrant.js' \
 'js/SM/ColumnFilters.js' \
 'js/SM/FindingsPanel.js' \

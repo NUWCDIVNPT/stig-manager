@@ -32,6 +32,7 @@ SM.GetUserObject = async function () {
 }
 
 SM.styledEmptyRenderer = v => v ? v : '<span class="sm-empty-cell" />'
+SM.styledZeroRenderer = v => v !== 0 ? v : '-'
 
 SM.ResultTipText = `<b>Result</b><br>The result of an evaluation of a STIG ruleId.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;STATUS&gt;<br>
 <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;result&gt;`

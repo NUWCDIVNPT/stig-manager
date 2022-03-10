@@ -88,6 +88,7 @@ SM.RowEditorNewBtn = Ext.extend(Ext.Button, {
         this.grid.getView().refresh()
         this.grid.getSelectionModel().selectRow(0)
         this.editor.startEditing(0)
+        this.grid.colModel.columns[0].editor.focus(true)
     }
 })
 Ext.reg('sm-new-button', SM.RowEditorNewBtn);

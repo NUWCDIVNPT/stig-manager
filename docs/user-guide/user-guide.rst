@@ -79,6 +79,26 @@ The components of the Navigation Tree are described below.
       :show_caption: True
       :title: Navigation Tree
 
+|
+
+The Assets and STIGS you see in the NavTree can be filtered by clicking on the Label icon next to every Collection:
+
+.. thumbnail:: /assets/images/navtree-label-filter-button.png
+      :width: 25% 
+      :show_caption: True
+      :title: Navigation Tree Label Button
+
+|
+
+Click the button, select one or more Labels and then click off the menu, or hit "Apply":
+
+.. thumbnail:: /assets/images/navtree-label-filter.png
+      :width: 25% 
+      :show_caption: True
+      :title: Navigation Tree Label Filter
+
+Only Assets with your selected Labels will be displayed. 
+
 
 ----------------------------
 
@@ -459,6 +479,7 @@ From this Workspace, the User can:
    * Batch import CKL or XCCDF files to automatically scaffold or add to their Collection
    * Batch export CKL files for external tools such as eMASS
    * Add/Modify/Remove Assets in the Collection 
+   * Create and Apply Labels to Assets in the Collection. 
    * Transfer Assets to another Collection
    * Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)
    * Delete the Collection (if Collection Owner)
@@ -564,6 +585,45 @@ This Tab allows Users with proper access to record miscellaneous data to associa
 
 -------------------------------
 
+
+.. _labels-tab:
+
+
+Labels Tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This Tab allows you to create various Labels and apply them to Assets. Labels are specific to Collections, and will be removed from Assets if they are moved to a different Collection. Labels exist only as an organizing tool, they do not affect the processing or function of the Assets or their Reviews. 
+
+Create a label by clicking the "New Label" button. Labels can be assigned a name, optional description, and color. 
+Double-click an existing label to edit it. 
+
+.. thumbnail:: /assets/images/collection-manage-labels.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Labels Tab
+
+.. thumbnail:: /assets/images/collection-manage-new-label.png
+      :width: 50% 
+      :show_caption: True
+      :title: Create a New Label
+
+-------------------------------
+
+When a Label is selected in Label tab of the Collection Properties Panel, the "Tag Assets..." button is enabled. Click the "Tag Assets..." button to view the Assets that are tagged with that label. Click the "Assign Assets" button on this screen to tag new Assets with that label. 
+
+.. thumbnail:: /assets/images/collection-manage-tag-assets-modal.png
+      :width: 50% 
+      :show_caption: True
+      :title: View the Assets tagged with a Particular Label
+
+.. thumbnail:: /assets/images/collection-manage-tag-assets-assign-label-modal.png
+      :width: 50% 
+      :show_caption: True
+      :title: Tag new Assets with a Label      
+
+|
+
+
        
 Assets Panel
 ------------------
@@ -577,15 +637,24 @@ The :ref:`Collection Builder` option allows the User to create many Assets and t
       :show_caption: True
       :title: Collection -> Manage -> Assets toolbar
 
+|
+
+Click on the "Labels" column header, or any other column header, to filter the Asset grid by the data in the selected column(s).
+
+.. thumbnail:: /assets/images/collection-manage-asset-panel-label-filtering.png
+      :width: 50% 
+      :show_caption: True
+      :title: Asset Panel Label Filtering
+
 
 -------------------------------
 
 
 Create Asset
 ~~~~~~~~~~~~~~~
-Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs can also be assigned to the new Asset from this interface.
+Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs and labels can also be assigned to the new Asset from this interface.
 
-.. thumbnail:: /assets/images/create-asset.png
+.. thumbnail:: /assets/images/collection-manage-asset-label-edit.png
       :width: 50% 
       :show_caption: True
       :title: Create an Asset
@@ -736,7 +805,15 @@ Individual Asset-STIG assignments to Restricted Users are removed when an Asset 
 
 Change Asset Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To alter an Asset's properties, select an Asset and click this button, or double-click the Asset row.
+To alter an Asset's properties or tag it with Labels, select an Asset and click this button, or double-click the Asset row.
+
+.. thumbnail:: /assets/images/collection-manage-asset-label-edit.png
+      :width: 50% 
+      :show_caption: True
+      :title: Asset Properties
+
+
+-------------------------------
 
 STIGs Panel
 -------------------

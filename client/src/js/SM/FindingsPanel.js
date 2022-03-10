@@ -360,6 +360,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 					fields: [
 						{ name: 'assetId', type: 'string' },
 						{ name: 'assetName', type: 'string' },
+						{ name: 'assetLabelIds' },
 						{ name: 'stigs' },
 						{ name: 'ruleId', type: 'string' },
 						{ name: 'severity', type: 'string' },
@@ -395,7 +396,28 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true,
 				filter: {type: 'string'}
 			 },
-			 { 
+			 {
+        header: "Labels",
+        width: 120,
+        dataIndex: 'assetLabelIds',
+        sortable: false,
+        filter: {
+            type: 'values', 
+            collectionId: me.panel.collectionId,
+            renderer: SM.ColumnFilters.Renderers.labels
+        },
+        renderer: function (value, metadata) {
+            const labels = []
+            for (const labelId of value) {
+                const label = SM.Cache.CollectionMap.get(me.panel.collectionId).labelMap.get(labelId)
+                if (label) labels.push(label)
+            }
+            labels.sort((a,b) => a.name.localeCompare(b.name))
+            metadata.attr = 'style="white-space:normal;"'
+            return SM.Collection.LabelArrayTpl.apply(labels)
+        }
+      },
+			{ 
 				header: "Rule", 
 				width: 80, 
 				dataIndex: 'ruleId', 
@@ -683,23 +705,23 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
 		const me = this
         const parent = new SM.FindingsParentGrid({
-            cls: 'sm-round-panel',
-            margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
-            border: false,                 
-            region: 'center',
-			panel: this,
-			aggValue: me.aggregator || 'groupId',
-            title: 'Aggregated Findings'
+					cls: 'sm-round-panel',
+					margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+          border: false,                 
+					region: 'center',
+					panel: this,
+					aggValue: me.aggregator || 'groupId',
+					title: 'Aggregated Findings'
         })
         const child = new SM.FindingsChildGrid({
-            cls: 'sm-round-panel',
-            margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
-            border: false,                 
-            region: 'east',
-            width: '50%',
-            split: true,
-            panel: this,
-            title: 'Individual Findings'
+					cls: 'sm-round-panel',
+					margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
+					border: false,                 
+					region: 'east',
+					width: '60%',
+					split: true,
+					panel: this,
+					title: 'Individual Findings'
         })
         parent.child = child
         child.parent = parent

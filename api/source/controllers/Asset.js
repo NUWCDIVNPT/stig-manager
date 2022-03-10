@@ -177,7 +177,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
 }
 
 module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
-  let assets =  await Asset.getAssets(null, null, null, null, null, projection, elevate, userObject )
+  let assets =  await Asset.getAssets(null, null, null, null, null, null, projection, elevate, userObject )
   return assets
 } 
 
@@ -217,6 +217,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let nameMatch = req.query['name-match']
     let benchmarkId = req.query.benchmarkId
     let metadata = req.query.metadata
+    let labelIds = req.query.labelId
     let projection = req.query.projection
     let elevate = req.query.elevate
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
@@ -231,7 +232,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
           }
         }
       }
-      let response = await Asset.getAssets(collectionId, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
+      let response = await Asset.getAssets(collectionId, labelIds, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
       res.json(response)
     }
     else {
@@ -363,11 +364,12 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
     let elevate = req.query.elevate
     let collectionId = req.params.collectionId
     let benchmarkId = req.params.benchmarkId
+    let labelId = req.query.labelId
     let projection = req.query.projection
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
-        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, projection, elevate, req.userObject )
+        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, labelId, projection, elevate, req.userObject )
         res.json(response)
     }
     else {
@@ -433,7 +435,7 @@ module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res,
       let collectionAssets = collection.assets.map( a => a.assetId)
       if (assetIds.every( a => collectionAssets.includes(a))) {
         await Asset.attachAssetsToStig( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
-        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, projection, elevate, req.userObject )
+        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, null, projection, elevate, req.userObject )
         res.json(response)
       }
       else {
@@ -737,3 +739,47 @@ module.exports.deleteAssetMetadataKey = async function (req, res, next) {
   }  
 }
 
+module.exports.getAssetLabels = async function (req, res, next) {
+  try {
+    res.json({})
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.addAssetLabels = async function (req, res, next) {
+  try {
+    res.json({})
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.replaceAssetLabels = async function (req, res, next) {
+  try {
+    res.json({})
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteAssetLabels = async function (req, res, next) {
+  try {
+    res.json({})
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteAssetLabelById = async function (req, res, next) {
+  try {
+    res.json({})
+  }
+  catch (err) {
+    next(err)
+  }
+}

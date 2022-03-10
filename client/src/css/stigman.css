@@ -1,3 +1,62 @@
+.x-menu-check-item .x-menu-item-icon {
+	background-image:url(../img/checkboxes.svg);
+	background-position: 1px 0px;
+	background-repeat: no-repeat;
+	background-color: transparent;
+}
+.x-menu-item-checked .x-menu-item-icon {
+	background-position: -24px 0px;
+}
+.x-tree-node {
+	margin-bottom: 2px;
+	font-size: 11px;
+}
+.x-grid3-row td, .x-grid3-summary-row td{
+    line-height: 15px;
+}
+.sm-label-edit-color {
+    /* margin-left: 4px; */
+    position: absolute;
+    top: 5px;
+    right: 2px;
+    cursor: pointer;
+}
+.x-tree-node-el.x-unselectable {
+	cursor: default
+}
+.sm-tree-toolbar {
+	display: none;
+}
+.x-tree-node-el:hover .sm-tree-toolbar, .x-tree-selected .sm-tree-toolbar {
+	display: inline;
+	position: absolute;
+	right: 10px;
+	margin-top: 2px;
+	cursor: pointer;
+}
+.x-tree-node-el:not(.x-tree-selected):hover .sm-tree-toolbar {
+	opacity: 0.5
+}
+.x-color-palette {
+	height: unset;
+	width: 108px;
+}
+.sm-label-icon {
+  background-image: url(../img/label.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+} 
+.sm-label-sprite {
+	/* color: #161128 !important; */
+	font: 600 10px/14px Open Sans, helvetica, sans-serif;
+	top: 0px;
+	padding: 0px 5px 0px 5px !important;
+	border-radius:  3px;
+	user-select: none;
+	margin-left: 3px;
+	white-space: nowrap;
+}
+
 .x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr {
 	background-color: hsl(40, 100%, 90%);
 	background-image: unset;
@@ -28,11 +87,11 @@
 	background-image: url(../img/clock.svg);
 	width: auto;
 }
-.sm-review-sprite-reviewed {
+.sm-review-sprite-modified {
 	background-image: url(../img/shield-green-check.svg)
 }
-.sm-review-sprite-reviewed::after {
-	content: "Reviewed";
+.sm-review-sprite-modified::after {
+	content: "Modified";
 }
 .sm-review-sprite-saved {
 	background-image: url(../img/disk-16.png);
@@ -420,7 +479,7 @@ body {
 }
 
 .sm-grid-sprite {
-	font: bold 11px/13px Open Sans,helvetica, sans-serif;
+	font: bold 10px/13px Open Sans,helvetica, sans-serif;
 	position: relative;
 	top: 1px;
 	background-color: #ffffff;

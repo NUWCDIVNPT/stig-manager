@@ -1,5 +1,5 @@
 Ext.ns('SM')
-let doWoWindow
+Ext.ns('SM.NavTree')
 
 SM.NodeSorter = (a, b) => {
   if (a.attributes.sortToTop) {
@@ -12,7 +12,8 @@ SM.NodeSorter = (a, b) => {
 }
 
 SM.CollectionNodeConfig = function (collection) {
-  const onAssetChanged = async (node, apiAsset) => {
+  // Handlers for the STIG parent node
+  async function onAssetChanged (node, apiAsset) {
     let apiAssetBids = apiAsset.stigs.map( stig => stig.benchmarkId )
     // changing this asset might have changed the Collection STIG list
     let result = await Ext.Ajax.requestPromise({
@@ -79,7 +80,7 @@ SM.CollectionNodeConfig = function (collection) {
       }
     }
   }
-  const onAssetDeleted = async (node, apiAsset) => {
+  async function onAssetDeleted (node, apiAsset) {
     // deleting this asset might have changed the Collection STIG list
     let result = await Ext.Ajax.requestPromise({
       url: `${STIGMAN.Env.apiBase}/collections/${apiAsset.collection.collectionId}`,
@@ -117,16 +118,27 @@ SM.CollectionNodeConfig = function (collection) {
     }
   }
 
-  let children = []
-  let reports = [ {
-    id: `${collection.collectionId}-findings-node`,
-    text: 'Findings',
-    collectionId: collection.collectionId,
-    collectionName: collection.name,
-    iconCls: 'sm-report-icon',
-    action: 'findings',
-    leaf: true
-  }]
+  const children = []
+  const reports = [
+    {
+      id: `${collection.collectionId}-findings-node`,
+      text: 'Findings',
+      collectionId: collection.collectionId,
+      collectionName: collection.name,
+      iconCls: 'sm-report-icon',
+      action: 'findings',
+      leaf: true
+    },
+    {
+      id: `${collection.collectionId}-findings-status-node`,
+      text: 'Status',
+      collectionId: collection.collectionId,
+      collectionName: collection.name,
+      action: 'collection-status',
+      iconCls: 'sm-report-icon',
+      leaf: true
+    }
+  ]
   const collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
   if (collectionGrant && collectionGrant.accessLevel >= 3) {
     children.push({
@@ -139,17 +151,6 @@ SM.CollectionNodeConfig = function (collection) {
       leaf: true
     })
   }
-  // if (collectionGrant && collectionGrant.accessLevel >= 2) {
-    reports.push({
-      id: `${collection.collectionId}-findings-status-node`,
-      text: 'Status',
-      collectionId: collection.collectionId,
-      collectionName: collection.name,
-      action: 'collection-status',
-      iconCls: 'sm-report-icon',
-      leaf: true
-    })
-  // }
 
   children.push(
     {
@@ -175,14 +176,50 @@ SM.CollectionNodeConfig = function (collection) {
       children: reports
     }
   )
-  let node = {
+
+  // Utility methods for setting the node name
+  function formatTextAndLabels(collection, filteredLabels) {
+    const name = SM.he(collection.name)
+    const labelSpans = SM.Collection.LabelArrayTpl.apply(filteredLabels)
+    const areSomeLabelsInUse = collection.labels.some((label) => label.uses > 0)
+    const toolsEl = areSomeLabelsInUse ? '<img class="sm-tree-toolbar" src="../img/label.svg" width="12" height="12">' : ''
+    return `${name} ${labelSpans} ${toolsEl}`
+  }
+  function formatTextAndLabelsAndToolbar({name, labels}) {
+    return `${SM.he(name)} ${SM.Collection.LabelArrayTpl.apply(labels)} <img class="sm-tree-toolbar" src="../img/label.svg" width="12" height="12">`
+  }
+  function formatToolbar () {
+
+  }
+  const labelsMenu = new SM.Collection.LabelsMenu({
+    labels: collection.labels,
+    showHeader: true,
+    showApply: true,
+    ignoreUnusedLabels: true,
+    listeners: {
+      applied: function (labelIds) {
+          SM.Dispatcher.fireEvent('labelfilter', collection.collectionId, labelIds)
+      }
+    }
+  })
+  const node = {
     id: `${collection.collectionId}-collection-node`,
     node: 'collection',
-    text: SM.he(collection.name),
+    text: formatTextAndLabels(collection, []),
     collectionId: collection.collectionId,
     collectionName: collection.name,
     iconCls: 'sm-collection-icon',
-    children: children
+    labels: collection.labels,
+    labelsMenu,
+    listeners: {
+      click: function (node, e) {
+        if (e.target.className === "sm-tree-toolbar") {
+          node.attributes.labelsMenu.showAt(e.xy)
+        }
+      }
+    },
+    children,
+    formatTextAndLabels
   }
   return node
 }
@@ -219,6 +256,8 @@ SM.AssetNodeConfig = function (collectionId, asset) {
       }
     }
   }
+  const labelMap = SM.Cache.CollectionMap.get(collectionId).labelMap
+  const labels = asset.labelIds.map( labelId => labelMap.get(labelId))
   return {
     id: `${collectionId}-${asset.assetId}-assets-asset-node`,
     text: SM.he(asset.name),
@@ -227,7 +266,7 @@ SM.AssetNodeConfig = function (collectionId, asset) {
     collectionId: collectionId,
     assetId: asset.assetId,
     iconCls: 'sm-asset-icon',
-    qtip: SM.he(asset.name),
+    qtip: `${SM.he(asset.name)} ${SM.Collection.LabelArrayTpl.apply(labels)}`,
     onAssetChanged: onAssetChanged
   }
 }
@@ -241,6 +280,7 @@ SM.AssetStigNodeConfig = function (asset, stig) {
     iconCls: 'sm-stig-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
+    assetLabelIds: asset.labelIds,
     assetId: asset.assetId,
     collectionId: asset.collection.collectionId,
     workflow: asset.collection.workflow,
@@ -263,6 +303,8 @@ SM.StigNodeConfig = function (collectionId, stig) {
 }
 
 SM.StigAssetNodeConfig = function (stig, asset) {
+  const labelMap = SM.Cache.CollectionMap.get(asset.collectionId).labelMap
+  const labels = asset.assetLabelIds.map( labelId => labelMap.get(labelId))
   return {
     id: `${asset.collectionId}-${stig.benchmarkId}-${asset.assetId}-leaf`,
     text: SM.he(asset.name),
@@ -271,10 +313,13 @@ SM.StigAssetNodeConfig = function (stig, asset) {
     iconCls: 'sm-asset-icon',
     stigName: stig.benchmarkId,
     assetName: asset.name,
+    assetLabels: labels,
     assetId: asset.assetId,
     collectionId: asset.collectionId ?? asset.collection?.collectionId,
     benchmarkId: stig.benchmarkId,
-    qtip: SM.he(asset.name)
+    // qtip: SM.he(asset.name)
+
+    qtip: `${SM.he(asset.name)} ${SM.Collection.LabelArrayTpl.apply(labels)}`
   }
 }
 
@@ -346,6 +391,44 @@ SM.LibraryNodesConfig = function (stigs) {
 SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     initComponent: function() {
       let me = this
+      function getCollectionNode (collectionId) {
+        return me.getNodeById('collections-root').findChild('id', `${collectionId}-collection-node`, true)
+      }
+      function refreshCollectionNodeText (node) {
+        const cachedCollection = SM.Cache.CollectionMap.get(node.attributes.collectionId)
+        const labelIds = node.attributes.labelsMenu.getCheckedLabelIds()
+        const filterLabels = cachedCollection.labels.filter( label => labelIds.includes(label.labelId))
+        const text = node.attributes.formatTextAndLabels(cachedCollection, filterLabels)
+        node.setText(text)
+      }
+      function refreshCollectionNodeChildren (collectionNode) {
+        if (collectionNode.isExpanded()) {
+          const reloadNodesDepth1 = [
+            collectionNode.findChild('node', 'stigs'),
+            collectionNode.findChild('node', 'assets')
+          ]
+          for (const node of reloadNodesDepth1) {
+            if (node.isExpanded()) {
+              const expandedChildren = []
+              while(node.firstChild){
+                if (node.firstChild.isExpanded()) {
+                  expandedChildren.push(node.firstChild.id)
+                }
+                node.removeChild(node.firstChild);
+              }
+              node.loaded = false
+              node.expand(false, false, (node) => {
+                node.eachChild( (node) => {
+                  if (expandedChildren.includes(node.id)) {
+                    node.expand(false, false)
+                  }
+                })
+              })
+            }
+          }
+        }
+      }
+      this.getCollectionNode = getCollectionNode
       let config = {
           autoScroll: true,
           split: true,
@@ -406,56 +489,55 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
 
       this.sortNodes = (a, b) => a.text < b.text ? -1 : 1
 
-      this.onAssetChanged = (apiAsset) => {
-        let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`)
-        if (assetsNode && assetsNode.isExpanded() ) {
-          let assetNode = assetsNode.findChild('assetId', apiAsset.assetId)
-          if (assetNode) {
-            assetNode.attributes.onAssetChanged(assetNode, apiAsset)
-          }
-        }
-        let stigsNode = me.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
-        if (stigsNode && stigsNode.isExpanded()) {
-          stigsNode.attributes.onAssetChanged(stigsNode, apiAsset)
-        }
+      this.onAssetChanged = async (apiAsset) => {
+        const collectionId = apiAsset.collection.collectionId
+        const collectionNode = getCollectionNode(collectionId)
+        await SM.Cache.updateCollectionLabels(collectionId)
+        collectionNode.attributes.labelsMenu.refreshItems(
+          SM.Cache.CollectionMap.get(collectionId).labels)
+        refreshCollectionNodeText(collectionNode)
+        refreshCollectionNodeChildren(collectionNode)
       }
       this.onAssetCreated = (apiAsset) => {
-        let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`, true)
-        if ( assetsNode && assetsNode.isExpanded() ) {
-          assetsNode.appendChild(SM.AssetNodeConfig(apiAsset.collection.collectionId, apiAsset))
-          assetsNode.sort(SM.NodeSorter)
-        }
-        let stigsNode = me.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
-        if (stigsNode && stigsNode.isExpanded()) {
-          stigsNode.attributes.onAssetChanged(stigsNode, apiAsset)
-        }
+        const collectionNode = getCollectionNode(apiAsset.collection.collectionId)
+        refreshCollectionNodeChildren(collectionNode)
+
+        // let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`, true)
+        // if ( assetsNode && assetsNode.isExpanded() ) {
+        //   assetsNode.appendChild(SM.AssetNodeConfig(apiAsset.collection.collectionId, apiAsset))
+        //   assetsNode.sort(SM.NodeSorter)
+        // }
+        // let stigsNode = me.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
+        // if (stigsNode && stigsNode.isExpanded()) {
+        //   stigsNode.attributes.onAssetChanged(stigsNode, apiAsset)
+        // }
       }
       this.onAssetDeleted = (apiAsset) => {
-        let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`, true)
-        if (assetsNode && assetsNode.isExpanded() ) {
-          let assetNode = assetsNode.findChild('assetId', apiAsset.assetId)
-          if (assetNode) {
-            assetNode.remove(true)
-          }
-        }
-        let stigsNode = me.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
-        if (stigsNode && stigsNode.isExpanded()) {
-          stigsNode.attributes.onAssetDeleted(stigsNode, apiAsset)
-        }
+        const collectionNode = getCollectionNode(apiAsset.collection.collectionId)
+        refreshCollectionNodeChildren(collectionNode)
+
+        // let assetsNode = me.getNodeById(`${apiAsset.collection.collectionId}-assets-node`, true)
+        // if (assetsNode && assetsNode.isExpanded() ) {
+        //   let assetNode = assetsNode.findChild('assetId', apiAsset.assetId)
+        //   if (assetNode) {
+        //     assetNode.remove(true)
+        //   }
+        // }
+        // let stigsNode = me.getNodeById(`${apiAsset.collection.collectionId}-stigs-node`)
+        // if (stigsNode && stigsNode.isExpanded()) {
+        //   stigsNode.attributes.onAssetDeleted(stigsNode, apiAsset)
+        // }
       }
-      this.onCollectionChanged = function (changes) {
-        if ('name' in changes) {
-          let collectionRoot = me.getNodeById('collections-root')
-          let collectionNode = collectionRoot.findChild('id', `${changes.collectionId}-collection-node`, true)
-          if (collectionNode) {
-            collectionNode.setText(SM.he(changes.name))
-            collectionNode.collectionName = changes.name
-            collectionNode.eachChild( child => {
-              if (child.attributes.collectionName) {
-                child.attributes.collectionName = changes.name
-              }
-            })
-          }
+      this.onCollectionChanged = function (apiCollection) {
+        const collectionNode = getCollectionNode(apiCollection.collectionId)
+        if (collectionNode) {
+          refreshCollectionNodeText(collectionNode)
+          collectionNode.collectionName = apiCollection.name
+          collectionNode.eachChild( child => {
+            if (child.attributes.collectionName) {
+              child.attributes.collectionName = apiCollection.name
+            }
+          })
           function sortFn (a, b) {
             if (a.attributes.id === 'collection-create-leaf') {
               return -1
@@ -471,12 +553,11 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             }
             return 0
           }
-          collectionRoot.sort(sortFn)
+          collectionNode.parentNode.sort(sortFn)
         }
       }
       this.onCollectionDeleted = function (collectionId) {
-        let collectionRoot = me.getNodeById('collections-root')
-        let collectionNode = collectionRoot.findChild('id', `${collectionId}-collection-node`, true)
+        const collectionNode = getCollectionNode(collectionId)
         if (collectionNode) {
           collectionNode.remove()
         }
@@ -569,6 +650,48 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
         }
 
       }
+      this.onLabelCreated = function (collectionId, label) {
+        if (label.uses > 0) {
+          const collectionNode = getCollectionNode(collectionId)
+          if (collectionNode) {
+            collectionNode.attributes.labelsMenu.addLabel(label)
+            refreshCollectionNodeText(collectionNode)
+          }
+        }
+      }
+      this.onLabelChanged = function (collectionId, label) {
+        const collectionNode = getCollectionNode(collectionId)
+        if (collectionNode) {
+          collectionNode.attributes.labelsMenu.refreshItems(SM.Cache.CollectionMap.get(collectionId).labels)
+          refreshCollectionNodeText(collectionNode)
+        }        
+      }
+      this.onLabelDeleted = function (collectionId, labelId) {
+        let collectionNode = getCollectionNode(collectionId)
+          if (collectionNode) {
+            const labelsMenu = collectionNode.attributes.labelsMenu
+            const checkedLabelIds = labelsMenu.getCheckedLabelIds()
+            labelsMenu.refreshItems(SM.Cache.CollectionMap.get(collectionId).labels)
+            refreshCollectionNodeText(collectionNode)
+            if (checkedLabelIds.includes(labelId)) {
+              refreshCollectionNodeChildren(collectionNode)
+            }
+          }
+      }
+      this.onLabelFilter = function (collectionId, labelIds) {
+        const collectionNode = getCollectionNode(collectionId)
+        refreshCollectionNodeText(collectionNode)
+        refreshCollectionNodeChildren(collectionNode)
+      }
+      this.onLabelAssetsChanged = async function (collectionId, labelId, apiAssets) {
+        const collectionNode = getCollectionNode(collectionId)
+        await SM.Cache.updateCollectionLabels(collectionId)
+        collectionNode.attributes.labelsMenu.refreshItems(
+          SM.Cache.CollectionMap.get(collectionId).labels)
+        refreshCollectionNodeText(collectionNode)
+        refreshCollectionNodeChildren(collectionNode)
+      }
+
       this.getApiStig = async (benchmarkId) => {
         try {
           let result = await Ext.Ajax.requestPromise({
@@ -593,6 +716,11 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
       SM.Dispatcher.addListener('assetcreated', this.onAssetCreated, me)
       SM.Dispatcher.addListener('assetdeleted', this.onAssetDeleted, me)
       SM.Dispatcher.addListener('stigassetschanged', this.onStigAssetsChanged, me) 
+      SM.Dispatcher.addListener('labelcreated', this.onLabelCreated, me) 
+      SM.Dispatcher.addListener('labelchanged', this.onLabelChanged, me) 
+      SM.Dispatcher.addListener('labeldeleted', this.onLabelDeleted, me) 
+      SM.Dispatcher.addListener('labelfilter', this.onLabelFilter, me) 
+      SM.Dispatcher.addListener('labelassetschanged', this.onLabelAssetsChanged, me) 
     },
     loadTree: async function (node, cb) {
         try {
@@ -669,11 +797,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           if (node === 'collections-root') {
-            let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/collections`,
-              method: 'GET'
-            })
-            let apiCollections = JSON.parse(result.response.responseText)
+            const collectionMap = await SM.Cache.getCollections()
+            const apiCollections = [...collectionMap.values()]
             let content = apiCollections.map(collection => SM.CollectionNodeConfig(collection))
             if (curUser.privileges.canCreateCollection) {
               content.unshift({
@@ -693,15 +818,20 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           match = node.match(/^(\d+)-assets-node$/)
           if (match) {
             let collectionId = match[1]
+            const params = {
+              collectionId
+            }
+            const labelId = this.ownerTree.getCollectionNode(collectionId).attributes.labelsMenu.getCheckedLabelIds()
+            if (labelId?.length) {
+              params.labelId = labelId
+            }
             let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
+              url: `${STIGMAN.Env.apiBase}/assets`,
               method: 'GET',
-              params: {
-                projection: 'assets'
-              }
+              params
             })
-            let apiCollection = JSON.parse(result.response.responseText)
-            let content = apiCollection.assets.map(asset => SM.AssetNodeConfig(collectionId, asset))
+            let apiCollectionAssets = JSON.parse(result.response.responseText)
+            let content = apiCollectionAssets.map(asset => SM.AssetNodeConfig(collectionId, asset))
             cb(content, { status: true })
             return
           }
@@ -727,15 +857,19 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           match = node.match(/^(\d+)-stigs-node$/)
           if (match) {
             let collectionId = match[1]
-            let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
-              method: 'GET',
-              params: {
-                projection: 'stigs'
+            const request = {
+              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
+              method: 'GET'
+            }
+            const labelId = this.ownerTree.getCollectionNode(collectionId).attributes.labelsMenu.getCheckedLabelIds()
+            if (labelId?.length) {
+              request.params = {
+                labelId
               }
-            })
-            let apiCollection = JSON.parse(result.response.responseText)
-            let content = apiCollection.stigs.map( stig => SM.StigNodeConfig( collectionId, stig ) )
+            }
+            let result = await Ext.Ajax.requestPromise(request)
+            let apiStigs = JSON.parse(result.response.responseText)
+            let content = apiStigs.map( stig => SM.StigNodeConfig( collectionId, stig ) )
             cb( content, { status: true } )
             return
           }
@@ -744,11 +878,17 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           if (match) {
             let collectionId = match[1]
             let benchmarkId = match[2]
-              // TODO: Should use endpoint /collections/{collectionId}/stigs/{benchmarkId}/assets
-              let result = await Ext.Ajax.requestPromise({
+            const request = {
               url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
               method: 'GET'
-            })
+            }
+            const labelId = this.ownerTree.getCollectionNode(collectionId).attributes.labelsMenu.getCheckedLabelIds()
+            if (labelId?.length) {
+              request.params = {
+                labelId
+              }
+            }
+            let result = await Ext.Ajax.requestPromise(request)
             let apiAssets = JSON.parse(result.response.responseText)
             let content = []
             if (apiAssets.length > 0) {
@@ -770,6 +910,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     treeClick: function (n, e) {
         let idAppend;
         let tab;
+        
         if (!n.leaf) {
           return
         }
@@ -915,22 +1056,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           case 'appdata-admin':
             addAppDataAdmin( { treePath: n.getPath() });
             break;
-          case 'wo-admin':
-            doWo();
-            break;
         }
 
-        function doWo() {
-          let w = 400
-          let h = 400
-          let left = (window.innerWidth/2)-(w/2)
-          let top = (window.innerHeight/2)-(h/2)
-          doWoWindow = window.open(window.oidcProvider.createLoginUrl({
-            scope: 'stig-manager'
-          }),'doWo', `top=${top},left=${left},width=${w},height=${h},resizeable,scrollbars,status`)
-          let one = doWoWindow
-        }
-      
     },
     treeRender: function (tree) {
       new Ext.ToolTip({

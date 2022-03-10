@@ -21,6 +21,17 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       ) as "collection"`,
       'a.description',
       'a.ip',
+      `(select
+          coalesce(
+            json_arrayagg(
+              BIN_TO_UUID(cl.uuid,1)
+            ), json_array()
+          )
+        from
+          collection_label_asset_map al
+          left join collection_label cl on al.clId = cl.clId
+        where
+          al.assetId = a.assetId) as labelIds`,
       'a.mac',
       'a.noncomputing',
       'a.metadata'
@@ -119,6 +130,12 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     if (inPredicates.assetId) {
       predicates.statements.push('a.assetId = ?')
       predicates.binds.push(inPredicates.assetId)
+    }
+    if (inPredicates.labelIds?.length) {
+      joins.push('left join collection_label_asset_map cla on a.assetId = cla.assetId')
+      predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
+      const uuidBinds = inPredicates.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
     }
     if ( inPredicates.name ) {
       let matchStr = '= ?'
@@ -318,7 +335,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
 
     // Extract or initialize non-scalar properties to separate variables
     let binds
-    let { stigs, ...assetFields } = body
+    let { stigs, labelIds, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('noncomputing')) {
@@ -364,6 +381,8 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
             INNER JOIN stig_asset_map USING (saId)
             WHERE stig_asset_map.assetId = ?`
           await connection.query(sqlDeleteRestrictedUsers, [assetId])
+          const sqlDeleteLabels = `DELETE FROM collection_label_asset_map WHERE assetId = ?`
+          await connection.query(sqlDeleteLabels, [assetId])
         }
       }
     }
@@ -400,6 +419,32 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
         })
       }
     }
+
+      // Process labelIds, spec requires for CREATE/REPLACE not for UPDATE
+      if (labelIds) {
+        if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+          let sqlDeleteLabels = `
+            DELETE FROM 
+              collection_label_asset_map
+            WHERE 
+              assetId = ?`
+          await connection.query(sqlDeleteLabels, [ assetId ])
+        }
+        if (labelIds.length > 0) {      
+          let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+          // INSERT into stig_asset_map
+          let sqlInsertLabels = `
+            INSERT INTO collection_label_asset_map (assetId, clId) 
+              SELECT
+                ?,
+                clId
+              FROM
+                collection_label
+              WHERE
+                uuid IN (?)`
+          await connection.query(sqlInsertLabels, [assetId, uuidBinds])
+        }
+      }
     // Commit the changes
     await connection.commit()
   }
@@ -531,6 +576,13 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     const columns = [
       'DISTINCT CAST(a.assetId as char) as assetId',
       'a.name',
+      `(SELECT 
+        coalesce(json_arrayagg(BIN_TO_UUID(cl2.uuid,1)),json_array())
+      FROM 
+        collection_label_asset_map cla2
+        left join collection_label cl2 on cla2.clId = cl2.clId
+      WHERE
+        cla2.assetId = a.assetId) as assetLabelIds`,
       'CAST(a.collectionId as char) as collectionId'
     ]
     let joins = [
@@ -538,7 +590,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
       'left join collection_grant cg on c.collectionId = cg.collectionId',
       'inner join asset a on c.collectionId = a.collectionId',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join user_stig_asset_map usa on sa.saId = usa.saId',
+      'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ]
     // PROJECTIONS
     if (inProjection.includes('restrictedUserAccess')) {
@@ -571,6 +623,12 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
       // Mandatory by OpenAPI spec
       predicates.statements.push('sa.benchmarkId = ?')
       predicates.binds.push( inPredicates.benchmarkId )
+    }
+    if (inPredicates.labelId?.length) {
+      joins.push('left join collection_label_asset_map cla on a.assetId = cla.assetId')
+      predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
+      const uuidBinds = inPredicates.labelId.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
     }
     if (context == dbUtils.CONTEXT_USER) {
       predicates.statements.push('cg.userId = ?')
@@ -977,10 +1035,11 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
  * dept String Selects Assets exactly matching a department string (optional)
  * returns List
  **/
-exports.getAssets = async function(collectionId, name, nameMatch, benchmarkId, metadata, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, labelIds, name, nameMatch, benchmarkId, metadata, projection, elevate, userObject) {
   try {
     let rows = await _this.queryAssets(projection, {
       collectionId,
+      labelIds,
       name,
       nameMatch,
       benchmarkId,
@@ -1054,11 +1113,12 @@ exports.getChecklistByAsset = async function(assetId, benchmarks, format, elevat
 }
 
 
-exports.getAssetsByStig = async function( collectionId, benchmarkId, projection, elevate, userObject) {
+exports.getAssetsByStig = async function( collectionId, benchmarkId, labelId, projection, elevate, userObject) {
   try {
     let rows = await _this.queryStigAssets(projection, {
-      collectionId: collectionId,
-      benchmarkId: benchmarkId
+      collectionId,
+      benchmarkId,
+      labelId
     }, elevate, userObject)
     return (rows)
 

@@ -202,6 +202,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     stopEditing : function(saveChanges){
         this.editing = false;
         this.grid.getEl()?.unmask()
+
         if(!this.isVisible()){
             return;
         }
@@ -283,12 +284,12 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
             } else if(i == len - 1){
                 ed.margins = pm('0 0 2 1');
             } else{
-                if (Ext.isIE) {
-                    ed.margins = pm('0 0 2 0');
-                }
-                else {
-                    ed.margins = pm('0 1 2 0');
-                }
+                // if (Ext.isIE) {
+                    // ed.margins = pm('0 0 2 0');
+                // }
+                // else {
+                    ed.margins = pm('0 1 2 3');
+                // }
             }
             ed.setWidth(cm.getColumnWidth(i));
             ed.column = c;

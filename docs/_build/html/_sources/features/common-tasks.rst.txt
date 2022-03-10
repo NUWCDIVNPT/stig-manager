@@ -89,6 +89,15 @@ Assets can be moved from one Collection to another if a User has "Manage" or "Ow
 Transfer Assets with the :ref:`"Transfer To" button in the Manage Collection Workspace.<transfer-asset>`
 
 
+Tag Assets with Labels
+=========================
+
+If you have Manage or Owner access to a Collection, you can create labels in your Collection that can be used to tag Assets. Tagging assets can allow you set up groups of Assets, or mark them them as a certain team's responsibility, or sort them more effectively.
+
+Check out the :ref:`Labels <labels-tab>` section of the user guide for a further description of this feature. 
+
+
+
 Update STIGs
 =====================
 

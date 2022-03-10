@@ -229,9 +229,10 @@ module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCol
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
     const collectionId = req.params.collectionId
+    const labelIds = req.query.labelId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant || req.userObject.privileges.globalAccess ) {
-      const response = await Collection.getStigsByCollection( collectionId, false, req.userObject )
+      const response = await Collection.getStigsByCollection( collectionId, labelIds, false, req.userObject )
       res.json(response)
       }
     else {
@@ -310,8 +311,7 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
   }
 }
 
-
-async function getCollectionIdAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, allowElevate = false) {
+function getCollectionIdAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, allowElevate = false) {
   let collectionId = request.params.collectionId
   const elevate = request.query.elevate
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
@@ -323,7 +323,7 @@ async function getCollectionIdAndCheckPermission(request, minimumAccessLevel = S
 
 module.exports.getCollectionMetadata = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let result = await Collection.getCollectionMetadata(collectionId, req.userObject)
     res.json(result)
   }
@@ -334,7 +334,7 @@ module.exports.getCollectionMetadata = async function (req, res, next) {
 
 module.exports.patchCollectionMetadata = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let metadata = req.body
     await Collection.patchCollectionMetadata(collectionId, metadata)
     let result = await Collection.getCollectionMetadata(collectionId)
@@ -347,7 +347,7 @@ module.exports.patchCollectionMetadata = async function (req, res, next) {
 
 module.exports.putCollectionMetadata = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let body = req.body
     await Collection.putCollectionMetadata( collectionId, body)
     let result = await Collection.getCollectionMetadata(collectionId)
@@ -360,7 +360,7 @@ module.exports.putCollectionMetadata = async function (req, res, next) {
 
 module.exports.getCollectionMetadataKeys = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let result = await Collection.getCollectionMetadataKeys(collectionId, req.userObject)
     if (!result) {
       throw new SmError.NotFoundError('metadata keys not found')
@@ -374,7 +374,7 @@ module.exports.getCollectionMetadataKeys = async function (req, res, next) {
 
 module.exports.getCollectionMetadataValue = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let key = req.params.key
     let result = await Collection.getCollectionMetadataValue(collectionId, key, req.userObject)
     if (!result) {
@@ -389,7 +389,7 @@ module.exports.getCollectionMetadataValue = async function (req, res, next) {
 
 module.exports.putCollectionMetadataValue = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let key = req.params.key
     let value = req.body
     let result = await Collection.putCollectionMetadataValue(collectionId, key, value)
@@ -400,10 +400,9 @@ module.exports.putCollectionMetadataValue = async function (req, res, next) {
   }  
 }
 
-
 module.exports.deleteCollectionMetadataKey = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req)
+    let collectionId = getCollectionIdAndCheckPermission(req)
     let key = req.params.key
     let result = await Collection.deleteCollectionMetadataKey(collectionId, key, req.userObject)
     res.status(204).send()
@@ -413,11 +412,9 @@ module.exports.deleteCollectionMetadataKey = async function (req, res, next) {
   }  
 }
 
-
-
 module.exports.deleteReviewHistoryByCollection = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    let collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const retentionDate = req.query.retentionDate
     const assetId = req.query.assetId
     
@@ -431,7 +428,7 @@ module.exports.deleteReviewHistoryByCollection = async function (req, res, next)
 
 module.exports.getReviewHistoryByCollection = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Full)
+    let collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Full)
     const startDate = req.query.startDate
     const endDate = req.query.endDate
     const assetId = req.query.assetId
@@ -448,7 +445,7 @@ module.exports.getReviewHistoryByCollection = async function (req, res, next) {
 
 module.exports.getReviewHistoryStatsByCollection = async function (req, res, next) {
   try {
-    let collectionId = await getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Full)
+    let collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Full)
     const startDate = req.query.startDate
     const endDate = req.query.endDate
     const assetId = req.query.assetId
@@ -462,4 +459,102 @@ module.exports.getReviewHistoryStatsByCollection = async function (req, res, nex
   catch (err) {
     next(err)
   }  
+}
+
+module.exports.getCollectionLabels = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await Collection.getCollectionLabels( collectionId, req.userObject )
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.createCollectionLabel = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const labelId = await Collection.createCollectionLabel( collectionId, req.body )
+    const response = await Collection.getCollectionLabelById( collectionId, labelId, req.userObject )
+    res.status(201).json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getCollectionLabelById = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await Collection.getCollectionLabelById( collectionId, req.params.labelId, req.userObject )
+    if (!response) {
+      throw new SmError.NotFoundError()
+    }
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.patchCollectionLabelById = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const affectedRows = await Collection.patchCollectionLabelById( collectionId, req.params.labelId, req.body )
+    if (affectedRows === 0) {
+      throw new SmError.NotFoundError()
+    }
+    const response = await Collection.getCollectionLabelById( collectionId, req.params.labelId, req.userObject )
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteCollectionLabelById = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const affectedRows = await Collection.deleteCollectionLabelById(collectionId, req.params.labelId)
+    if (affectedRows === 0) {
+      throw new SmError.NotFoundError()
+    }
+    res.status(204).end()
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getAssetsByCollectionLabelId = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const response = await Collection.getAssetsByCollectionLabelId( collectionId, req.params.labelId, req.userObject )
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req)
+    const labelId = req.params.labelId
+    const assetIds = req.body
+    let collection = await Collection.getCollection( collectionId, ['assets'], false, req.userObject)
+    let collectionAssets = collection.assets.map( a => a.assetId)
+    if (assetIds.every( a => collectionAssets.includes(a))) {
+      await Collection.putAssetsByCollectionLabelId( collectionId, labelId, assetIds )
+      const response = await Collection.getAssetsByCollectionLabelId( collectionId, req.params.labelId, req.userObject )
+      res.json(response)
+    }
+    else {
+      throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
+    }
+  }
+  catch (err) {
+    next(err)
+  }
 }

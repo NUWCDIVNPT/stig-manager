@@ -36,9 +36,9 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
         align: 'left',
         renderer: function (value, metadata, record) {
           var returnStr = '<img src="' + getFileIcon(value) + '" class="sm-artifact-file-icon">';
-          returnStr += '<b>' + value + '</b>';
+          returnStr += '<b>' + SM.he(value) + '</b>';
           returnStr += '<br><b>Type:</b> ' + record.data.type + ' <b>Size:</b> ' + record.data.size;
-          returnStr += `<br><i>Attached ${record.data.date.format('Y-m-d')} by ${record.data.user.name}</i>`;
+          returnStr += `<br><i>Attached ${record.data.date.format('Y-m-d')} by ${SM.he(record.data.user.name)}</i>`;
           return returnStr;
         }
       },
