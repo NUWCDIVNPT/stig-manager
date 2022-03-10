@@ -10,11 +10,13 @@ Generalized queries for collection(s).
 **/
 exports.queryCollections = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) { 
     let context
-    if (userObject.privileges.globalAccess || elevate) {
+    if (elevate) {
       context = dbUtils.CONTEXT_ALL
     } else {
       context = dbUtils.CONTEXT_USER
     }
+
+    const queries = []
 
     let columns = [
       'CAST(c.collectionId as char) as collectionId',
@@ -102,7 +104,9 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
         )
       ) as "owners"`)
     }
-
+    if (inProjection.includes('labels')) {
+      queries.push(_this.getCollectionLabels('all', userObject))
+    }
     if (inProjection.includes('statistics')) {
       if (context == dbUtils.CONTEXT_USER) {
         joins.push('left join collection_grant cgstat on c.collectionId = cgstat.collectionId')
@@ -179,8 +183,36 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     sql += ' group by c.collectionId, c.name, c.description, c.settings, c.metadata'
     sql += ' order by c.name'
     
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows)
+    // perform concurrent labels query
+    if (queries.length) {
+      queries.push(dbUtils.pool.query(sql, predicates.binds))
+      const results = await Promise.all(queries)
+
+      const labelResults = results[0]
+      const collectionResults = results[1][0]
+      
+      // transform labels into Map
+      const labelMap = new Map()
+      for (const labelResult of labelResults) {
+        const {collectionId, ...label} = labelResult
+        const existing = labelMap.get(collectionId)
+        if (existing) {
+          existing.push(label)
+        }
+        else {
+          labelMap.set(collectionId, [label])
+        }
+      }
+      for (const collectionResult of collectionResults) {
+        collectionResult.labels = labelMap.get(collectionResult.collectionId) ?? []
+      }
+
+      return collectionResults
+    }
+    else {
+      let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+      return (rows)  
+    }
 }
 
 exports.queryFindings = async function (aggregator, inProjection = [], inPredicates = {}, userObject) {
@@ -351,6 +383,13 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
     let columns = [
       `distinct cast(a.assetId as char) as assetId`,
       'a.name as assetName',
+      `(SELECT 
+        coalesce(json_arrayagg(BIN_TO_UUID(cl2.uuid,1)),json_array())
+      FROM 
+        collection_label_asset_map cla2
+        left join collection_label cl2 on cla2.clId = cl2.clId
+      WHERE
+        cla2.assetId = a.assetId) as assetLabelIds`,
       'sa.benchmarkId',
       `json_object(
         'total', cr.ruleCount,
@@ -535,7 +574,7 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
   // REPLACE/UPDATE: collectionId is not null
   let connection // available to try, catch, and finally blocks
   try {
-    const {grants, ...collectionFields} = body
+    const {grants, labels, ...collectionFields} = body
     // Stringify JSON values
     if ('metadata' in collectionFields) {
       collectionFields.metadata = JSON.stringify(collectionFields.metadata)
@@ -595,7 +634,27 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
       let binds = grants.map(i => [collectionId, i.userId, i.accessLevel])
       await connection.query(sqlInsertGrants, [binds])
     }
-    
+
+    // Process labels
+    if (labels && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+      // DELETE from collection_grant
+      let sqlDeleteLabels = 'DELETE FROM collection_label where collectionId = ?'
+      await connection.execute(sqlDeleteLabels, [collectionId])
+    }
+    if (labels && labels.length > 0) {
+      // INSERT into collection_label
+      let sqlInsertLabels = `
+        INSERT INTO 
+        collection_label (collectionId, name, description, color, uuid)
+        VALUES
+          ?`      
+      const binds = labels.map(i => [collectionId, i.name, i.description, i.color, {
+        toSqlString: function () {
+          return `UUID_TO_BIN(UUID(),1)`
+        }
+      }])
+      await connection.query(sqlInsertLabels, [binds])
+    }
 
     // Commit the changes
     await connection.commit()
@@ -626,11 +685,8 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
  * returns List
  **/
 exports.createCollection = async function(body, projection, userObject) {
-  try {
-    let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
-    return (row)
-  }
-  finally {}
+  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
+  return (row)
 }
 
 
@@ -869,7 +925,7 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
 
 }
 
-exports.getStigsByCollection = async function( collectionId, elevate, userObject ) {
+exports.getStigsByCollection = async function( collectionId, labelIds, elevate, userObject ) {
   try {
     let context
     if (userObject.privileges.globalAccess) {
@@ -910,6 +966,15 @@ exports.getStigsByCollection = async function( collectionId, elevate, userObject
     }
     predicates.statements.push('c.collectionId = ?')
     predicates.binds.push( collectionId )
+
+    if (labelIds?.length) {
+      joins.push('inner join collection_label_asset_map cla on a.assetId = cla.assetId')
+      predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
+      const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
+
+    }
+
     if (context == dbUtils.CONTEXT_USER) {
       joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
       predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -1295,4 +1360,217 @@ exports.getCollectionSettings = async function ( collectionId ) {
       collectionId = ?`
   let [rows] = await dbUtils.pool.query(sql, [collectionId])
   return rows.length > 0 ? rows[0].settings : undefined
+}
+
+exports.getCollectionLabels = async function (collectionId, userObject) {
+  // this method is called by queryCollections() in this module, when that method's
+  // request includes projection=labels. Only in that case can collectionId === 'all'
+  const columns = [
+    'BIN_TO_UUID(cl.uuid,1) labelId',
+    'cl.name',
+    'cl.description',
+    'cl.color',
+    'count(distinct cla.claId) as uses'
+  ]
+  const joins = [
+    'collection_label cl', 
+    'left join collection_grant cg_l on cl.collectionId = cg_l.collectionId',
+    'left join asset a_l on cl.collectionId = a_l.collectionId',
+    'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
+    'left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId',
+    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId'
+  ]
+  const groups = [
+    'cl.uuid',
+    'cl.name',
+    'cl.description',
+    'cl.color'
+  ]
+  const predicates = {
+    statements: [
+      `(cg_l.userId = ? AND 
+        CASE WHEN cg_l.accessLevel = 1 THEN 
+          usa_l.userId = cg_l.userId
+          AND cla.claId IS NOT NULL 
+        ELSE 
+          TRUE 
+        END)`
+    ],
+    binds: [userObject.userId]
+  }
+  const order = [
+    'cl.name'
+  ]
+  if (collectionId === 'all') {
+    columns.push('CAST(cl.collectionId as char) as collectionId')
+    groups.push('cl.collectionId')
+    order.unshift('cl.collectionId')
+  }
+  else {
+    predicates.statements.push('cl.collectionId = ?')
+    predicates.binds.push(collectionId)
+  }
+  const sql = `SELECT
+  ${columns.join(',\n')}
+  FROM 
+  ${joins.join('\n')}
+  WHERE
+  ${predicates.statements.join(' AND ')}
+  GROUP BY
+  ${groups.join(',\n')}
+  ORDER BY
+  ${order.join(',\n')}`
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return rows
+}
+
+exports.createCollectionLabel = async function (collectionId, label) {
+  let [resultInsert] = await dbUtils.pool.query(
+    `INSERT INTO collection_label 
+    (collectionId, name, description, color, uuid)
+    VALUES (?, ?, ?, ?, UUID_TO_BIN(UUID(),1))`,
+  [collectionId, label.name, label.description, label.color])
+
+  const [resultGet] = await dbUtils.pool.query(
+    `SELECT BIN_TO_UUID(uuid,1) as uuid from collection_label where clId = ?`,
+    [resultInsert.insertId]
+  )
+  return resultGet[0].uuid
+}
+
+exports.getCollectionLabelById = async function (collectionId, labelId, userObject) {
+  const [rows] = await dbUtils.pool.query(
+    `select
+    BIN_TO_UUID(cl.uuid,1) labelId,
+    cl.name,
+    cl.description,
+    cl.color,
+    count(distinct cla.claId) as uses
+  from
+    collection_label cl 
+    left join collection_grant cg_l on cl.collectionId = cg_l.collectionId
+    left join asset a_l on cl.collectionId = a_l.collectionId
+    left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId
+    left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId
+    left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId
+  where 
+    cl.collectionId = ?
+    and cl.uuid = UUID_TO_BIN(?,1) 
+    and (cg_l.userId = ? AND 
+      CASE WHEN cg_l.accessLevel = 1 THEN 
+        usa_l.userId = cg_l.userId
+        AND cla.claId IS NOT NULL 
+      ELSE 
+        TRUE 
+      END)
+  group by
+    cl.uuid,
+    cl.name,
+    cl.description,
+    cl.color`,
+    [collectionId, labelId, userObject.userId])
+  return rows[0]
+}
+
+exports.patchCollectionLabelById = async function (collectionId, labelId, label) {
+  const [rows] = await dbUtils.pool.query(
+    `UPDATE
+      collection_label
+    SET
+      ?
+    WHERE
+      collectionId = ?
+      and uuid = UUID_TO_BIN(?,1)`,
+    [label, collectionId, labelId])
+  return rows.affectedRows
+}
+
+exports.deleteCollectionLabelById = async function (collectionId, labelId) {
+  const [rows] = await dbUtils.pool.query(
+    `DELETE FROM
+      collection_label
+    WHERE
+      collectionId = ?
+      and uuid = UUID_TO_BIN(?,1)`,
+    [collectionId, labelId])
+  return rows.affectedRows
+}
+
+exports.getAssetsByCollectionLabelId = async function (collectionId, labelId, userObject) {
+  const sqlGetAssets = `
+select
+	a.assetId,
+  a.name
+from
+  collection_label cl 
+  left join collection_grant cg on cl.collectionId = cg.collectionId
+  left join asset a on cl.collectionId = a.collectionId
+  left join stig_asset_map sa on a.assetId = sa.assetId
+  left join user_stig_asset_map usa on sa.saId = usa.saId
+  left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId
+where 
+  cl.collectionId = ?
+  and cl.uuid = UUID_TO_BIN(?,1)
+  and (cg.userId = ? AND 
+    CASE WHEN cg.accessLevel = 1 THEN 
+      usa.userId = cg.userId
+    ELSE 
+      TRUE 
+    END)
+    and cla.claId IS NOT NULL 
+group by
+  a.assetId,
+  a.name`
+  const [rows] = await dbUtils.pool.query(
+    sqlGetAssets,
+    [collectionId, labelId, userObject.userId])
+  return rows
+}
+
+exports.putAssetsByCollectionLabelId = async function (collectionId, labelId, assetIds) {
+  let connection
+  try {
+    connection = await dbUtils.pool.getConnection()
+    await connection.query('START TRANSACTION')
+
+    const sqlGetClId = `select clId from collection_label where uuid = UUID_TO_BIN(?,1)`
+    const [clIdRows] = await connection.query( sqlGetClId, [ labelId ] )
+    const clId = clIdRows[0].clId
+
+    let sqlDelete = `
+    DELETE FROM 
+      collection_label_asset_map
+    WHERE 
+      clId = ?`
+    if (assetIds.length > 0) {
+      sqlDelete += ' and assetId NOT IN ?'
+    }  
+    await connection.query( sqlDelete, [ clId, [assetIds] ] )
+    // Push any bind values
+    const binds = []
+    for (const assetId of assetIds) {
+      binds.push([clId, assetId])
+    }
+    if (binds.length > 0) {
+      let sqlInsert = `
+      INSERT IGNORE INTO 
+        collection_label_asset_map (clId, assetId)
+      VALUES
+        ?`
+      await connection.query(sqlInsert, [ binds ])
+    }
+    // Commit the changes
+    await connection.commit()
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
 }

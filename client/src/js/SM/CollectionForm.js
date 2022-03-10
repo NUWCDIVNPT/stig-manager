@@ -42,7 +42,7 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
                 if (_this.grid.editor.editing == false) {
                     return true
                 }
-                if (v === "") { return "Blank values no allowed" }
+                if (v === "") { return "Blank values not allowed" }
             }
         }
         let data = [
@@ -178,7 +178,7 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                                 if (this.grid.editor.editing == false) {
                                     return true
                                 }
-                                if (v === "") { return "Blank values no allowed" }
+                                if (v === "") { return "Blank values not allowed" }
                                 // Is there an item in the store like _this?
                                 let searchIdx = this.grid.store.findExact('key', v)
                                 // Is it _this?
@@ -268,7 +268,7 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
                 if (_this.grid.editor.editing == false) {
                     return true
                 }
-                if (v === "") { return "Blank values no allowed" }
+                if (v === "") { return "Blank values not allowed" }
             },
             doQuery: function (q, forceAll) {
                 q = Ext.isEmpty(q) ? '' : q;
@@ -562,6 +562,7 @@ Ext.reg('sm-user-grants-grid', SM.UserGrantsGrid);
 SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
         const _this = this
+        this.showGrantsOnly = this.showGrantsOnly ?? false
         const nameField = new Ext.form.TextField({
             fieldLabel: 'Name',
             labelStyle: 'font-weight: 600;',
@@ -604,7 +605,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
             name: 'metadata',
             ignoreKeys: ['fieldSettings', 'statusSettings'],
             anchor: '100% 0',
-            border: true
+            border: true,
+            hidden: true
         })
         const settingsReviewFields = new SM.Collection.FieldSettings.ReviewFields({
             iconCls: 'sm-stig-icon',
@@ -622,6 +624,31 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
 			title: 'Grants',
 			border: true
 		})
+        const labelGrid = new SM.Collection.LabelsGrid({
+			collectionId: 0,
+            iconCls: 'sm-label-icon',
+            title: 'Labels',
+            border: true
+        })
+
+        const tabPanelItems = this.showGrantsOnly ? [grantGrid] : [
+            grantGrid,
+            {
+                xtype: 'panel',
+                title: 'Settings',
+                layout: 'form',
+                iconCls: 'sm-setting-icon',
+                border: true,
+                padding: 10,
+                items: [
+                    settingsReviewFields,
+                    settingsStatusFields
+                ]
+            },
+            metadataGrid,
+            labelGrid
+        ]
+
 
         let config = {
             baseCls: 'x-plain',
@@ -637,6 +664,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 settingsReviewFields.setValues(apiCollection.settings.fields)
                 settingsStatusFields.setValues(apiCollection.settings.status)
                 grantGrid.setValue(apiCollection.grants)
+                labelGrid.setValue(apiCollection.labels)
             },
             getFieldValues: function (dirtyOnly) {
                 // Override Ext.form.FormPanel implementation to check submitValue
@@ -669,7 +697,11 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 delete o.canAccept
                 delete o.minAcceptGrant
                 delete o.resetCriteria
-        
+                delete o['undefined']
+
+                o.metadata = o.metadata ?? metadataGrid.getValue()
+                o.labels = o.labels ?? labelGrid.getValue()
+
                 return o
             },
             items: [
@@ -719,25 +751,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                             region: 'center',
                             activeTab: 0,
                             border: false,
-                            items: [ 
-                                grantGrid,
-                                {
-                                    xtype: 'panel',
-                                    title: 'Settings',
-                                    layout: 'form',
-                                    iconCls: 'sm-setting-icon',
-                                    border: true,
-                                    padding: 10,
-                                    items: [
-                                        settingsReviewFields,
-                                        settingsStatusFields
-                                    ]
-                                },
-                                metadataGrid
-                            ]      
-                                
+                            items: tabPanelItems
                         }
-                               
                     ]
                 }
             ],
@@ -818,6 +833,9 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         let result = await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                             method: 'PATCH',
+                            params: {
+                                projection: 'labels'
+                            },
                             jsonData: {
                                 name: newValue.trim()
                             }
@@ -996,6 +1014,74 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 			accessLevel: g.accessLevel
 		})))
 
+        this.labelGrid = new SM.Collection.LabelsGrid({
+			collectionId: _this.apiCollection.collectionId,
+            iconCls: 'sm-label-icon',
+            title: 'Labels',
+            border: true,
+            listeners: {
+                labeldeleted: async (labelId) => {
+                    try {
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}/labels/${labelId}`,
+                            method: 'DELETE'
+                        })
+
+                        // Let the rest of the app know
+                        SM.Dispatcher.fireEvent('labeldeleted', _this.apiCollection.collectionId, labelId)
+                    }
+                    catch (e) {
+                        alert ('Label delete failed')
+                    }
+				},
+				labelchanged: async (grid, record) => {
+                    try {
+                        const {labelId, uses, ...labelData} = record.data
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}/labels/${labelId}`,
+                            method: 'PATCH',
+                            jsonData: labelData
+                        })
+                        const sortState = grid.store.getSortState()
+                        grid.store.sort(sortState.field, sortState.direction)
+
+                        // Let the rest of the app know
+                        const newlabel = JSON.parse(result.response.responseText)
+                        SM.Dispatcher.fireEvent('labelchanged',  _this.apiCollection.collectionId, newlabel)
+                    }
+                    catch (e) {
+                        alert ('Label update failed')
+                    }
+				},
+                labelcreated: async (grid, record) => {
+                    try {
+                        const {labelId, uses, ...labelData} = record.data
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}/labels`,
+                            method: 'POST',
+                            jsonData: labelData
+                        })
+                        const label = JSON.parse(result.response.responseText)
+                        record.data.labelId = label.labelId
+                        record.data.uses = label.uses
+                        record.commit()
+                        const sortState = grid.store.getSortState()
+                        grid.store.sort(sortState.field, sortState.direction)
+
+                        // Let the rest of the app know
+                        const modlabel = JSON.parse(result.response.responseText)
+                        // modlabel.collectionId = _this.apiCollection.collectionId
+                        SM.Dispatcher.fireEvent('labelcreated', _this.apiCollection.collectionId, modlabel)
+                        
+                    }
+                    catch (e) {
+                        alert ('Label create failed')
+                    }
+                }
+            }
+        })
+        this.labelGrid.setValue(_this.apiCollection.labels)
+
         let config = {
             title: this.title || 'Collection properties',
             layout: 'form',
@@ -1084,7 +1170,8 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                         settingsStatusFields
                                     ]
                                 },
-                                metadataGrid
+                                metadataGrid,
+                                this.labelGrid
                             ]      
                                 
                         }
@@ -1483,4 +1570,673 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         SM.Collection.StatusSettings.StatusFields.superclass.initComponent.call(this);
     }
 })
+SM.getContrastYIQ = function (hexcolor){
+	var r = parseInt(hexcolor.substr(0,2),16);
+	var g = parseInt(hexcolor.substr(2,2),16);
+	var b = parseInt(hexcolor.substr(4,2),16);
+	var yiq = ((r*299)+(g*587)+(b*114))/1000;
+	return (yiq >= 128) ? '#080808' : '#f7f7f7';
+}
+
+SM.Collection.LabelSpriteHtml = `<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color: #{color};" ext:qtip="{[SM.he(SM.he(values.description))]}">{[SM.he(values.name)]}</span>`
+
+SM.Collection.LabelTpl = new Ext.XTemplate(
+    SM.Collection.LabelSpriteHtml
+)
+SM.Collection.LabelArrayTpl = new Ext.XTemplate(
+    '<tpl for=".">',
+    `${SM.Collection.LabelSpriteHtml} `,
+    '</tpl>'
+)
+SM.Collection.LabelEditTpl = new Ext.XTemplate(
+    '<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color:#{color};">{[SM.he(values.name)]}</span><img class="sm-label-edit-color" src="../img/color-picker.svg" width="12" height="12">'
+)
+
+
+SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
+    defaultAutoCreate : {tag: "div"},
+    submitValue: false,
+    initComponent: function () {
+        SM.Collection.LabelNameEditor.superclass.initComponent.call(this)
+    },
+    setValue: function () {
+        if (this.rendered) {
+            const data = this.ownerCt.record.data
+            this.namefield.setValue(data.name)
+            this.previewfield.update({
+                name: data.name,
+                color: data.color
+            })
+            this.previewfield.color = data.color
+        }
+    },
+    getValue: function () {
+        return {
+            name: this.namefield.getValue(),
+            color: this.previewfield.color
+        }
+    },
+    onRender: function (ct, position) {
+        SM.Collection.LabelNameEditor.superclass.onRender.call(this, ct, position);
+        const _this = this
+        const cpm = new Ext.menu.ColorMenu({
+            submitValue: false,
+            listeners: {
+                select: function (palette, color) {
+                    _this.previewfield.color = color
+                    _this.previewfield.update({
+                        name: _this.namefield.getValue(),
+                        color
+                    })
+                },
+                mouseover: function (menu, e, item) {
+                    let one = 1
+                },
+                beforeshow: function (menu) {
+                    let one = 1
+                }
+            }
+        })
+        cpm.palette.colors = [
+            '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
+            '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
+        ]
+        this.namefield = new Ext.form.TextField({
+            value: this.ownerCt.record.data.name,
+            anchor: '100%',
+            align: 'stretch',
+            allowBlank: false,
+            maxLength: 16,
+            enableKeyEvents: true,
+            validator: function (v) {
+                // Don't keep the form from validating when I'm not active
+                if (_this.grid.editor.editing == false) {
+                    return true
+                }
+                if (v === "") { return "Blank values not allowed" }
+                // Is there an item in the store like _this?
+                let searchIdx = _this.grid.store.findExact('name', v)
+                // Is it _this?
+                let isMe = _this.grid.selModel.isSelected(searchIdx)
+                if (searchIdx == -1 || isMe) {
+                    return true
+                } else {
+                    return "Duplicate names not allowed"
+                }
+            },
+            listeners: {
+                keyup: function (field, e) {
+                    _this.previewfield.update({
+                        name: field.getValue(),
+                        color: _this.previewfield.color
+                    })
+                }
+            }
+        })
+        this.isValid = function (preventMark) {
+            return this.namefield.isValid(preventMark)
+        }
+
+        this.previewfield = new Ext.form.DisplayField({
+            submitValue: false,
+            tpl: SM.Collection.LabelEditTpl,
+            data: {
+                name: this.ownerCt.record.data.name,
+                color: this.ownerCt.record.data.color
+            },
+            color: this.ownerCt.record.data.color,
+            anchor: '100%',
+            getValue: function () { 
+                return this.color
+            },
+            listeners: {
+                render: function (field, owner) {
+                    field.el.addListener('click', (e) => {
+                        if (e.target.tagName === 'IMG') {
+                            cpm.showAt(e.xy)
+                            cpm.palette.select(_this.previewfield.color, true) //suppress event
+                        }
+                    })
+                }
+            }
+        })
+
+        this.panel = new Ext.Panel({
+            renderTo: this.el,
+            height: 50,
+            width: this.width,
+            border: false,
+            layout: 'form',
+            layoutConfig: {
+                hideLabels: true
+            },
+            bodyStyle: 'background-color: transparent;',
+            items: [
+                this.namefield,
+                this.previewfield
+            ]
+        })
+    },
+    focus : function(selectText, delay){
+        if(delay){
+            this.focusTask = new Ext.util.DelayedTask(this.focus, this, [selectText, false]);
+            this.focusTask.delay(Ext.isNumber(delay) ? delay : 10);
+            return this;
+        }
+        if(this.rendered && !this.isDestroyed){
+            this.namefield.el.focus();
+            if(selectText === true){
+                this.namefield.el.dom.select();
+            }
+        }
+        return this;
+    }
+})
+
+SM.Collection.LabelsGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent: function () {
+        const _this = this
+        let fields = [
+            {
+                name: 'labelId',
+                type: 'string',
+            },
+            {
+                name: 'name',
+                type: 'string'
+            },
+            {
+                name: 'description',
+                type: 'string'
+            },
+            {
+                name: 'color',
+               type: 'string'
+            },
+            {
+                name: 'uses',
+               type: 'integer'
+            }
+       ]
+        this.newRecordConstructor = Ext.data.Record.create([            {
+            name: 'name',
+            type: 'string'
+        },
+        {
+            name: 'description',
+            type: 'string'
+        },
+        {
+             name: 'color',
+            type: 'string'
+        }
+        ])
+        this.editor = new Ext.ux.grid.RowEditor({
+            saveText: 'Save',
+            grid: this,
+            clicksToEdit: 2,
+            errorSummary: false, // don't display errors during validation monitoring
+            listeners: {
+                validateedit: function (editor, changes, record, index) {
+                    // transform record
+                    changes.color = changes.name.color
+                    changes.name = changes.name.name
+                },
+                canceledit: function (editor, forced) {
+                    // The 'editing' property is set by RowEditorToolbar.js
+                    if (editor.record.editing === true) { // was the edit on a new record?
+                        this.grid.store.suspendEvents(false);
+                        this.grid.store.remove(editor.record);
+                        this.grid.store.resumeEvents();
+                        this.grid.getView().refresh();
+                    }
+                },
+                afteredit: function (editor, changes, record, index) {
+                    editor.grid.fireEvent(
+                        record.data.labelId ? 'labelchanged' : 'labelcreated',
+                        editor.grid,
+                        record
+                    )
+                }
+            }
+        })
+        const labelStore = new Ext.data.JsonStore({
+            grid: this,
+            baseParams: this.baseParams,
+            root: '',
+            fields,
+            idProperty: 'labelId',
+            sortInfo: {
+                field: 'name',
+                direction: 'ASC'
+            },
+            listeners: {
+                remove: function (store, record, index) {
+                    _this.fireEvent('labeldeleted', record.data.labelId)
+                }
+            }
+        })
+
+        const columns = [
+            {
+                header: "Name",
+                width: 50,
+                dataIndex: 'name',
+                sortable: true,
+                renderer: function (v, params, record) {
+                    return SM.Collection.LabelTpl.apply({
+                        color: record.data.color,
+                        name: v,
+                        description: ''
+                    })
+                },
+                editor: new SM.Collection.LabelNameEditor({
+                    grid: this
+                })
+            },
+            {
+                header: "Description",
+                width: 70,
+                dataIndex: 'description',
+                sortable: false,
+                editor: new Ext.form.TextField({submitValue: false})
+            },
+            {
+                header: '<img src="img/target.svg" width=12 height=12>',
+                width: 15,
+                dataIndex: 'uses',
+                align: 'center',
+                sortable: true,
+                renderer: SM.styledZeroRenderer
+            }
+        ]
+        const tbar = new SM.RowEditorToolbar({
+            itemString: 'Label',
+            editor: this.editor,
+            gridId: this.id,
+            deleteProperty: 'name',
+            newRecord: this.newRecordConstructor,
+            newRecordValues: {
+                name: '',
+                description: '',
+                color: '99CCFF'
+            }
+        })
+        tbar.addSeparator()
+        this.assetBtn = tbar.addButton({
+            iconCls: 'sm-asset-icon',
+            disabled: true,
+            text: 'Tag Assets...',
+            handler: function () {
+                var r = _this.getSelectionModel().getSelected();
+                // Ext.getBody().mask('Getting asset list for ' + r.get('name') + '...');
+                SM.Collection.showLabelAssetsWindow(_this.collectionId, r.get('labelId'));
+            }
+        })
+
+        const config = {
+            isFormField: true,
+            name: 'labels',
+            allowBlank: false,
+            layout: 'fit',
+            height: 150,
+            plugins: [this.editor],
+            store: labelStore,
+            cm: new Ext.grid.ColumnModel({
+                columns: columns
+            }),
+            sm: new Ext.grid.RowSelectionModel({
+                singleSelect: true,
+                listeners: {
+                    selectionchange: function (sm) {
+                        tbar.delButton.setDisabled(!sm.hasSelection())
+                        _this.assetBtn.setDisabled(!sm.hasSelection())
+                    }
+                }
+            }),
+            view: new SM.ColumnFilters.GridView({
+                emptyText: this.emptyText || 'No records to display',
+                deferEmptyText: false,
+                forceFit: true,
+                markDirty: false
+            }),
+            listeners: {
+                // instances should handle 'labelchanged'
+                // instances should handle 'labelcreated'
+                // instances should handle 'labelremoved'
+            },
+            tbar: tbar,
+
+            getValue: function () {
+                const labels = []
+                labelStore.data.items.forEach((i) => {
+                    const { uses, ...labelfields } = i.data
+                    labels.push(labelfields)
+                })
+                return labels
+            },
+            setValue: function (v) {
+                labelStore.loadData(v)
+            },
+            validator: function (v) {
+                let one = 1
+            },
+            markInvalid: function () {
+                let one = 1
+            },
+            clearInvalid: function () {
+                let one = 1
+            },
+            isValid: function () {
+                return true
+            },
+            getName: () => this.name,
+            validate: function () {
+                let one = 1
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.LabelsGrid.superclass.initComponent.call(this)
+    }
+})
+
+SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
+    initComponent: function () {
+        const _this = this
+
+        this.addEvents('applied')
+
+        const items = []
+        if (this.showHeader) {
+            items.push(this.getTextItemConfig())
+        }
+        for (const label of this.initialConfig.labels) {
+            if (label.uses === 0 && this.ignoreUnusedLabels) continue
+            items.push(this.getLabelItemConfig(label))
+        }
+        if (this.showApply) {
+            items.push('-', this.getActionItemConfig())
+        }
+        const config = {
+            items,
+            listeners: {
+                itemclick: this.onItemClick,
+                hide: function (menu) {
+                    const labelIds = menu.getCheckedLabelIds()
+                    this.fireEvent('applied', labelIds)
+                }
+            }    
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.LabelsMenu.superclass.initComponent.call(this)
+    },
+    onItemClick: function (item, e) {
+        if (item.hideOnClick) { // only the Apply item
+            const labelIds = this.getCheckedLabelIds()
+            this.fireEvent('applied', labelIds)
+        }
+    },
+    getCheckedLabelIds: function (excludeUnused = false) {
+        const checked = this.items.items.reduce( function (labelIds, item) {
+            if (item.checked) {
+                if (excludeUnused && item.label.uses === 0) {
+                    return labelIds
+                }
+                labelIds.push(item.labelId)
+            }
+            return labelIds
+        }, [])
+        return checked
+    },
+    getLabelItemConfig: function (label, checked = false) {
+        return {
+            xtype: 'menucheckitem',
+            hideOnClick: false,
+            text: SM.Collection.LabelTpl.apply(label),
+            labelId: label.labelId,
+            label,
+            checked,
+            listeners: {
+                checkchange: function (item, checked) {
+                    item.parentMenu.fireEvent('itemcheckchanged', item, checked)
+                }
+            }
+        }
+    },
+    getTextItemConfig: function (text = '<b>FILTER</b>') {
+        return {
+            hideOnClick : false,
+            activeClass: '',
+            text,
+            iconCls: 'sm-menuitem-filter-icon',
+            cls: 'sm-menuitem-filter-label'
+        }
+    },
+
+    getActionItemConfig: function (text = '<b>Apply</b>') {
+        return {
+            xtype: 'menuitem',
+            text,
+            icon: 'img/change.svg'
+        }
+    },
+    setLabelsChecked: function (labelIds, checked) {
+        for (const labelId of labelIds) {
+            this.find('labelId', labelId)[0].setChecked(checked, true) //suppressEvent = true
+        }
+    },
+    updateLabel: function (label) {
+        const item = this.find('labelId', label.labelId)[0]
+        if (item) {
+            if (label.uses === 0 && this.ignoreUnusedLabels) {
+                this.removeLabel(label)
+            }
+            else {
+                item.label = label
+                item.setText(SM.Collection.LabelTpl.apply(label))
+                this.items.sort('ASC', this.sorter)
+                this.rerender()
+            }    
+        }    
+    },
+    addLabel: function (label) {
+        if (label.uses === 0 && this.ignoreUnusedLabels) return
+        this.addItem(this.getLabelItemConfig(label))
+        this.items.sort('ASC', this.sorter)
+        this.rerender()
+    },
+    removeLabel: function (labelId) {
+        const item = this.find('labelId', labelId)[0]
+        if (item) {
+            this.remove(item)
+        }
+    },
+    sorter: function (a, b) {
+        return a.label.name.localeCompare(b.label.name)
+    },
+    refreshItems: function (labels) {
+        const labelIdSet = new Set(this.getCheckedLabelIds())
+        this.removeAll()
+        if (this.showHeader) {
+            this.addItem(this.getTextItemConfig())
+        }
+        labels.sort((a,b) => a.name.localeCompare(b.name))
+        for (const label of labels) {
+            if (label.uses === 0 && this.ignoreUnusedLabels) continue
+            const checked = labelIdSet.has(label.labelId)
+            this.addItem(this.getLabelItemConfig(label, checked))
+        }
+        if (this.showApply) {
+            this.addItem('-')
+            this.addItem(this.getActionItemConfig())
+        }
+    },
+    rerender: function () {
+        if (this.rendered) {
+            this.el.remove()
+            delete this.el
+            delete this.ul
+            this.rendered = false
+            this.render()
+            this.doLayout.call(this, false, true)
+        }       
+    }
+})
+
+SM.Collection.LabelAssetsForm = Ext.extend(Ext.form.FormPanel, {
+    initComponent: function () {
+        let me = this
+        this.assetsGrid = new SM.StigAssetsGrid({
+            name: 'assets',
+            collectionId: this.collectionId,
+            isValid: () => {
+                // override of SM.StigAssetsGrid
+                return true
+            },
+        })
+        this.assetsGrid.getSelectionModel().addListener('rowselect', function (sm, rowIndex, record) {
+            if (!record.data.labelIds.includes(me.labelId)) {
+                record.data.labelIds.push(me.labelId)
+                record.commit()    
+            }
+        })
+        this.assetsGrid.getSelectionModel().addListener('rowdeselect', function (sm, rowIndex, record) {
+            record.data.labelIds = record.data.labelIds.filter( i => i !== me.labelId)
+            record.commit()
+        })
+        if (! this.collectionId) {
+            throw ('missing property collectionId')
+        }
+        const labelSpan = SM.Collection.LabelTpl.apply(SM.Cache.CollectionMap.get(this.collectionId).labelMap.get(this.labelId))
+        const labelField = new Ext.form.DisplayField({
+            fieldLabel: 'Label',
+            hideLabel: true,
+            anchor: '100%',
+            value: labelSpan
+        })
+ 
+        const config = {
+            baseCls: 'x-plain',
+            // height: 400,
+            labelWidth: 80,
+            monitorValid: true,
+            trackResetOnLoad: true,
+            items: [
+                {
+                    xtype: 'fieldset',
+                    title: '<b>Label</b>',
+                    items: [
+                        labelField
+                    ]
+                },
+                {
+                    xtype: 'fieldset',
+                    title: '<b>Tagged Assets</b>',
+                    anchor: "100% -70",
+                    layout: 'fit',
+                    items: [
+                        this.assetsGrid
+                    ]
+                }
+
+            ],
+            buttons: [{
+                text: this.btnText || 'Save',
+                collectionId: me.collectionId,
+                formBind: true,
+                handler: this.btnHandler || function () {}
+            }]
+        }
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.LabelAssetsForm.superclass.initComponent.call(this)
+
+    },
+    initPanel: async function () {
+        try {
+            await this.assetsGrid.store.loadPromise()
+        }
+        catch (e) {
+            alert (e)
+        }
+    }
+})
+
+SM.Collection.showLabelAssetsWindow = async function ( collectionId, labelId ) {
+    try {
+        let labelAssetsFormPanel = new SM.Collection.LabelAssetsForm({
+            collectionId,
+            labelId: labelId,
+            btnHandler: async function( btn ){
+                try {
+                    if (labelAssetsFormPanel.getForm().isValid()) {
+                        let values = labelAssetsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+                        let result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels/${labelId}/assets`,
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                            jsonData: values.assets
+                        })
+                        const apiLabelAssets = JSON.parse(result.response.responseText)
+                        SM.Dispatcher.fireEvent('labelassetschanged', collectionId, labelId, apiLabelAssets)
+                        appwindow.close()
+                    }
+                }
+                catch (e) {
+                    alert(e.stack)
+                }
+            }
+        })
+
+        /******************************************************/
+        // Form window
+        /******************************************************/
+        var appwindow = new Ext.Window({
+            title: 'Tagged Assets, Label ID ' + labelId,
+            cls: 'sm-dialog-window sm-round-panel',
+            modal: true,
+            hidden: true,
+            width: 510,
+            height:660,
+            layout: 'fit',
+            plain:true,
+            bodyStyle:'padding:10px;',
+            buttonAlign:'right',
+            items: labelAssetsFormPanel
+        });
+        
+        appwindow.render(Ext.getBody())
+        await labelAssetsFormPanel.initPanel() // Load asset grid store
+
+        let result = await Ext.Ajax.requestPromise({
+            url: `${STIGMAN.Env.apiBase}/assets`,
+            method: 'GET',
+            params: {
+                collectionId,
+                labelId
+            }
+        })
+        const apiLabelAssets = JSON.parse(result.response.responseText)            
+        labelAssetsFormPanel.getForm().setValues({
+            labelId,
+            assets: apiLabelAssets
+        })
+                
+        appwindow.show(document.body);
+    }
+    catch (e) {
+        if(typeof e === 'object') {
+            if (e instanceof Error) {
+              e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+            }
+            else {
+              // payload = JSON.stringify(payload, null, 2);
+              e = JSON.stringify(e);
+            }
+          }        
+        alert(e)
+        Ext.getBody().unmask()
+    }	
+}
+
 

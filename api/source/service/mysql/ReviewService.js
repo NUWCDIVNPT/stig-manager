@@ -207,6 +207,13 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   const columns = [
     'CAST(r.assetId as char) as assetId',
     'asset.name as "assetName"',
+    `(SELECT 
+      coalesce(json_arrayagg(BIN_TO_UUID(cl2.uuid,1)),json_array())
+    FROM 
+      collection_label_asset_map cla2
+      left join collection_label cl2 on cla2.clId = cl2.clId
+    WHERE
+      cla2.assetId = r.assetId) as assetLabelIds`,
     'r.ruleId',
     'result.api as "result"',
     'r.detail',

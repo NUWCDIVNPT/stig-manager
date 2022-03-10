@@ -28,6 +28,7 @@ async function addCollectionReview ( params ) {
 		let colAssets = apiAssets.map( colAsset => ({
 			assetId: colAsset.assetId,
 			assetName: colAsset.name,
+			assetLabelIds: colAsset.assetLabelIds,
 			result: null,
 			detail: null,
 			comment: null,
@@ -662,9 +663,11 @@ async function addCollectionReview ( params ) {
 			{	
 				name:'assetId',
 				type: 'string'
-			},,{	
+			},{	
 				name:'assetName',
 				type: 'string'
+			},{	
+				name:'assetLabelIds'
 			},{
 				name:'ruleId',
 				type: 'string'
@@ -751,8 +754,29 @@ async function addCollectionReview ( params ) {
 					filter: {
 						type: 'string'
 					}
-				}
-				,{ 
+				},
+				{
+					header: "Labels",
+					width: 50,
+					dataIndex: 'assetLabelIds',
+					sortable: false,
+					filter: {
+							type: 'values', 
+							collectionId: apiCollection.collectionId,
+							renderer: SM.ColumnFilters.Renderers.labels
+					},
+					renderer: function (value, metadata) {
+							const labels = []
+							for (const labelId of value) {
+									const label = SM.Cache.CollectionMap.get(apiCollection.collectionId).labelMap.get(labelId)
+									if (label) labels.push(label)
+							}
+							labels.sort((a,b) => a.name.localeCompare(b.name))
+							metadata.attr = 'style="white-space:normal;"'
+							return SM.Collection.LabelArrayTpl.apply(labels)
+					}
+				},
+				{ 
 					id:'Result' + idAppend,
 					header: '<span exportvalue="Result">Result<i class= "fa fa-question-circle sm-question-circle"></i></span>',
 					width: 70,
@@ -1098,7 +1122,7 @@ async function addCollectionReview ( params ) {
 									dismissDelay: 0,
 									autoWidth: true,
 									tpl: SM[`${idPrefix}TipTpl`],
-									data: apiFieldSettings
+									data: apiFieldSettings[idPrefix.toLowerCase()] ?? {}
 								}) 
 							}
 						}					

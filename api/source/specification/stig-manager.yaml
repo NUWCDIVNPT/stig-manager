@@ -20,6 +20,7 @@ paths:
       operationId: getAssets
       parameters:
         - $ref: '#/components/parameters/CollectionIdQuery'
+        - $ref: '#/components/parameters/LabelIdQuery'
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/MetadataQuery'
@@ -240,6 +241,144 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  # '/assets/{assetId}/labels':
+  #   parameters:
+  #     - $ref: '#/components/parameters/AssetIdPath'
+  #   get:
+  #     tags:
+  #       - Asset
+  #     summary: Return the Labels for Asset
+  #     operationId: getAssetLabels
+  #     responses:
+  #       '200':
+  #         description: Labels response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/Label'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:collection:read'
+  #   post:
+  #     tags:
+  #       - Asset
+  #     summary: Add labels to an Asset
+  #     operationId: addAssetLabels
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: array
+  #             items:
+  #               $ref: '#/components/schemas/LabelId'
+  #     responses:
+  #       '200':
+  #         description: Labels response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/Label'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:collection'
+  #   put:
+  #     tags:
+  #       - Asset
+  #     summary: Removes any previous labels and sets the new labels for an Asset
+  #     operationId: replaceAssetLabels
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: array
+  #             items:
+  #               $ref: '#/components/schemas/LabelId'
+  #     responses:
+  #       '200':
+  #         description: Labels response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/Label'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:collection'
+  #   delete:
+  #     tags:
+  #       - Asset
+  #     summary: Removes all labels from an Asset
+  #     operationId: deleteAssetLabels
+  #     responses:
+  #       '200':
+  #         description: Labels response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/Label'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:collection'
+  # '/assets/{assetId}/labels/{labelId}':
+  #   parameters:
+  #     - $ref: '#/components/parameters/AssetIdPath'
+  #     - $ref: '#/components/parameters/LabelIdPath'
+  #   delete:
+  #     tags:
+  #       - Asset
+  #     summary: Remove a label from an Asset
+  #     operationId: deleteAssetLabelById
+  #     responses:
+  #       '200':
+  #         description: Labels response
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: '#/components/schemas/Label'
+  #       default:
+  #         description: unexpected error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #     security:
+  #       - oauth:
+  #           - 'stig-manager:collection'
   '/assets/{assetId}/metadata':
     parameters:
       - $ref: '#/components/parameters/AssetIdPath'
@@ -1270,6 +1409,192 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/labels':
+    get:
+      tags:
+        - Collection
+      summary: Return labels of the specified Collection
+      operationId: getCollectionLabels
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+      responses:
+        200:
+          description: Labels response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    post:
+      tags:
+        - Collection
+      summary: Create a label in the specified Collection
+      operationId: createCollectionLabel
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelCreate'
+      responses:
+        200:
+          description: Label response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/labels/{labelId}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/LabelIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the specified Label of the specified Collection
+      operationId: getCollectionLabelById
+      responses:
+        200:
+          description: Labels response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    patch:
+      tags:
+        - Collection
+      summary: Update an existing Label
+      operationId: patchCollectionLabelById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelUpdate'
+      responses:
+        '200':
+          description: Label response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Collection
+      summary: Delete a Label
+      operationId: deleteCollectionLabelById
+      responses:
+        '204':
+          description: No Content
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/labels/{labelId}/assets':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/LabelIdPath'
+    get:
+      tags:
+        - Collection
+        - Asset
+      summary: Return the Assets mapped to the Label
+      operationId: getAssetsByCollectionLabelId
+      responses:
+        '200':
+          description: Asset response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+        - Asset
+      summary: Replace the Label's Asset mappings
+      operationId: putAssetsByCollectionLabelId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/String255'
+      responses:
+        '200':
+          description: The Label's Asset mappings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/String255'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'          
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -1560,6 +1885,7 @@ paths:
   '/collections/{collectionId}/stigs':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/LabelIdQuery'
     get:
       tags:
         - Collection
@@ -1596,6 +1922,8 @@ paths:
       summary: Get the Assets in a Collection attached to a STIG
       description: ''
       operationId: getAssetsByStig
+      parameters:
+        - $ref: '#/components/parameters/LabelIdQuery'
       responses:
         '200':
           description: AssetBasicProjected response
@@ -2524,6 +2852,10 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        labelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'
         mac:
           type: string
           nullable: true
@@ -2531,7 +2863,7 @@ components:
         noncomputing:
           type: boolean
         metadata:
-          $ref: '#/components/schemas/Metadata'    
+          $ref: '#/components/schemas/Metadata'  
     AssetBasic:
       type: object
       required:
@@ -2590,6 +2922,10 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        labelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'
         mac:
           type: string
           nullable: true
@@ -2622,7 +2958,7 @@ components:
         - ip
         - mac
         - noncomputing
-        # - metadata
+        - labelIds
       additionalProperties: false
       properties:
         assetId:
@@ -2646,6 +2982,10 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        labelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'
         mac:
           type: string
           nullable: true
@@ -2716,6 +3056,10 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        labelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'
         mac:
           type: string
           nullable: true
@@ -3070,6 +3414,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserGrant'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelCreate'
     CollectionFieldEnabledAlways:
       type: object
       additionalProperties: false
@@ -3189,6 +3537,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
         statistics:
           type: object     
     CollectionsProjected:
@@ -3222,11 +3574,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
         statistics:
           type: object               
     CollectionSettings:
       type: object
       additionalProperties: false
+      required:
+        - fields
+        - status
       properties:
         fields:
           $ref: '#/components/schemas/CollectionFieldSettings'
@@ -3481,6 +3840,56 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RuleAbbr'
+    Label:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - description
+        - color
+        - labelId
+        - uses
+      properties:
+        labelId:
+          $ref: '#/components/schemas/LabelId'
+        name:
+          $ref: '#/components/schemas/LabelName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        color:
+          $ref: '#/components/schemas/StringHexColor'
+        uses:
+          type: integer
+    LabelCreate:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - description
+        - color
+      properties:
+        name:
+          $ref: '#/components/schemas/LabelName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        color:
+          $ref: '#/components/schemas/StringHexColor'
+    LabelId:
+      $ref: '#/components/schemas/StringUuid'
+    LabelName:
+      type: string
+      minLength: 1
+      maxLength: 16
+    LabelUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          $ref: '#/components/schemas/LabelName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        color:
+          $ref: '#/components/schemas/StringHexColor'
     Metadata:
       type: object
       additionalProperties:
@@ -4094,6 +4503,10 @@ components:
       type: string
       format: date-time
       nullable: true
+    StringHexColor:
+      type: string
+      pattern: "^[a-fA-F0-9]{6}$"
+      example: "aa33cc"
     StringMax:
       type: string
       maxLength: 16777215
@@ -4104,6 +4517,10 @@ components:
     StringUuid:
       type: string
       maxLength: 36
+    StringUuidReadOnly:
+      type: string
+      maxLength: 36
+      readOnly: true
     StringUuidNullable:
       type: string
       maxLength: 36
@@ -4360,6 +4777,7 @@ components:
         type: string
     CollectionIdQuery:
       name: collectionId
+      required: true
       in: query
       description: A query parameter that identifies a Collection
       schema:
@@ -4380,6 +4798,7 @@ components:
             - owners
             - statistics
             - stigs
+            - labels
     CollectionsProjectionQuery:
       name: projection
       in: query
@@ -4393,6 +4812,7 @@ components:
           enum:
             - owners
             - statistics
+            - labels
     EndDateQuery:
       name: endDate
       in: query
@@ -4464,6 +4884,21 @@ components:
       schema:
         type: string
         maxLength: 255
+    LabelIdPath:
+      name: labelId
+      in: path
+      required: true
+      description: A path parameter that specifies a Label
+      schema:
+        $ref: '#/components/schemas/LabelId'
+    LabelIdQuery:
+      name: labelId
+      in: query
+      description: A query parameter that specifies a Label
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/LabelId'
     MetadataKeyPath:
       name: key
       in: path

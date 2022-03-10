@@ -294,6 +294,7 @@ function addCollectionAdmin( params ) {
 async function showCollectionProps(collectionId) {
   try {
     let fp = new SM.Collection.CreateForm({
+      showGrantsOnly: true,
       btnText: collectionId ? 'Update' : 'Create',
       btnHandler: async () => {
         try {
@@ -317,7 +318,7 @@ async function showCollectionProps(collectionId) {
         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
         params: {
           elevate: curUser.privileges.canAdmin,
-          projection: 'grants'
+          projection: ['grants', 'labels']
         },
         method: 'GET'
       })
@@ -343,7 +344,7 @@ async function showCollectionProps(collectionId) {
 
   }
   catch (err) {
-    alert(e.message)
+    alert(err.message)
   }
 }
 

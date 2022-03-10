@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0895f99a-ad58-45ff-8d4b-5b7b55103e61",
+		"_postman_id": "c9237e73-7a04-4fa1-ae51-606fe7383e17",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -387,7 +387,7 @@
 											"name": "{benchmark Id}/assets",
 											"item": [
 												{
-													"name": "Get the Assets in a Collection attached to a STIG",
+													"name": "Assets in a Collection attached to a STIG",
 													"event": [
 														{
 															"listen": "test",
@@ -499,6 +499,265 @@
 																	"key": "projection",
 																	"value": "restrictedUserAccess",
 																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel}}",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "benchmarkId",
+																	"value": "{{testBenchmark}}",
+																	"description": "(Required) A path parameter that indentifies a STIG"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Assets in a Collection attached to a STIG - label",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array of proper length\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
+																	"\r",
+																	"    if (user == \"lvl1\" ) {\r",
+																	"        pm.expect(jsonData.length).to.equal(1);\r",
+																	"    }\r",
+																	"    else{\r",
+																	"        pm.expect(jsonData.length).to.equal(2);\r",
+																	"\r",
+																	"    }    \r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"assets have expected properties and values\", function () {\r",
+																	"    for (let asset of jsonData){\r",
+																	"        let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+																	"        var regex = new RegExp(assetMatchString);\r",
+																	"        pm.expect(asset.name).to.match(regex);\r",
+																	"\r",
+																	"        if (pm.request.url.getQueryString().match(/projection=restrictedUserAccess/)) {\r",
+																	"            for (let grant of asset.restrictedUserAccess){\r",
+																	"                console.log(grant.username)\r",
+																	"            }\r",
+																	"        }\r",
+																	"\r",
+																	"    };\r",
+																	"\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?projection=restrictedUserAccess&labelId={{testLabel}}",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"stigs",
+																":benchmarkId",
+																"assets"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "{{elevated}}",
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "restrictedUserAccess",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel}}"
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "benchmarkId",
+																	"value": "{{testBenchmark}}",
+																	"description": "(Required) A path parameter that indentifies a STIG"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Assets in a Collection attached to a STIG - label-lvl1",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array of proper length\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
+																	"    pm.expect(jsonData.length).to.equal(1);\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"assets have expected properties and values\", function () {\r",
+																	"    for (let asset of jsonData){\r",
+																	"        let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+																	"        var regex = new RegExp(assetMatchString);\r",
+																	"        pm.expect(asset.name).to.match(regex);\r",
+																	"\r",
+																	"        if (pm.request.url.getQueryString().match(/projection=restrictedUserAccess/)) {\r",
+																	"            for (let grant of asset.restrictedUserAccess){\r",
+																	"                console.log(grant.username)\r",
+																	"            }\r",
+																	"        }\r",
+																	"\r",
+																	"    };\r",
+																	"\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?projection=restrictedUserAccess&labelId={{testLabel-lvl1}}",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"stigs",
+																":benchmarkId",
+																"assets"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "{{elevated}}",
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "restrictedUserAccess",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel-lvl1}}"
 																}
 															],
 															"variable": [
@@ -613,6 +872,208 @@
 															"value": "{{elevated}}",
 															"description": "Elevate the user context for this request if user is permitted (canAdmin)",
 															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the STIGs mapped in the specified Collection - label",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+															"\r",
+															"pm.test(\"Response has requested properties and values\", function () {\r",
+															"    for (let stig of jsonData){\r",
+															"        // pm.expect(stig).to.have.all.keys(stigKeys);\r",
+															"        pm.expect(stig.benchmarkId).to.be.oneOf(validStigs);\r",
+															"        \r",
+															"        if (user == \"lvl1\" ) {\r",
+															"            pm.expect(stig.assetCount).to.equal(1);\r",
+															"        }\r",
+															"        else{\r",
+															"            pm.expect(stig.assetCount).to.equal(2);\r",
+															"\r",
+															"        }\r",
+															"\r",
+															"    };\r",
+															"\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/stigs?labelId={{testLabel}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"stigs"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}",
+															"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+															"disabled": true
+														},
+														{
+															"key": "labelId",
+															"value": "{{testLabel}}"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return the STIGs mapped in the specified Collection - label-lvl1",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an array\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+															"\r",
+															"pm.test(\"Response has requested properties and values\", function () {\r",
+															"    for (let stig of jsonData){\r",
+															"        // pm.expect(stig).to.have.all.keys(stigKeys);\r",
+															"        pm.expect(stig.benchmarkId).to.be.oneOf(validStigs);\r",
+															"        pm.expect(stig.assetCount).to.equal(1);\r",
+															"\r",
+															"    };\r",
+															"\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/stigs?labelId={{testLabel-lvl1}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"stigs"
+													],
+													"query": [
+														{
+															"key": "elevate",
+															"value": "{{elevated}}",
+															"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+															"disabled": true
+														},
+														{
+															"key": "labelId",
+															"value": "{{testLabel-lvl1}}"
 														}
 													],
 													"variable": [
@@ -2107,6 +2568,308 @@
 									]
 								},
 								{
+									"name": "labels",
+									"item": [
+										{
+											"name": "{labelId}",
+											"item": [
+												{
+													"name": "Collection label",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response has requested properties and values\", function () {\r",
+																	" \r",
+																	"    if (user == \"lvl1\" ) {\r",
+																	"        pm.expect(jsonData.uses).to.equal(1);\r",
+																	"\r",
+																	"    }\r",
+																	"    else{\r",
+																	"        pm.expect(jsonData.uses).to.equal(2);\r",
+																	"\r",
+																	"    }            \r",
+																	"\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"// let collectionMatchString = pm.environment.get(\"collectionMatchString\");\r",
+																	"// // console.log(\"collection string = \" + collectionMatchString);\r",
+																	"// var regex = new RegExp(collectionMatchString);\r",
+																	"// // let collectionNames = _.map(jsonData, 'name');\r",
+																	"// // console.log(jsonData.name);\r",
+																	"\r",
+																	"// pm.test(\"Check that proper Collections are returned\", function () {\r",
+																	"//     pm.expect(jsonData.name).to.match(regex);\r",
+																	"//     // console.log(\"checking \" + jsonData.name + \" against regex \" + collectionMatchString + \".\" ); \r",
+																	"// });\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/labels/:labelId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"labels",
+																":labelId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel}}"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Get Assets in Collection with a label",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response has requested properties and values\", function () {\r",
+																	"    if (user == \"lvl1\" ) {\r",
+																	"        pm.expect(jsonData.length).to.equal(1);\r",
+																	"    }\r",
+																	"    else{\r",
+																	"        pm.expect(jsonData.length).to.equal(2);\r",
+																	"    }            \r",
+																	"\r",
+																	"    let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+																	"    var regex = new RegExp(assetMatchString);\r",
+																	"    for (let asset of jsonData){\r",
+																	"        pm.expect(asset.name).to.match(regex);\r",
+																	"    }\r",
+																	"\r",
+																	"\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"// let collectionMatchString = pm.environment.get(\"collectionMatchString\");\r",
+																	"// // console.log(\"collection string = \" + collectionMatchString);\r",
+																	"// var regex = new RegExp(collectionMatchString);\r",
+																	"// // let collectionNames = _.map(jsonData, 'name');\r",
+																	"// // console.log(jsonData.name);\r",
+																	"\r",
+																	"// pm.test(\"Check that proper Collections are returned\", function () {\r",
+																	"//     pm.expect(jsonData.name).to.match(regex);\r",
+																	"//     // console.log(\"checking \" + jsonData.name + \" against regex \" + collectionMatchString + \".\" ); \r",
+																	"// });\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/labels/:labelId/assets",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"labels",
+																":labelId",
+																"assets"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel}}"
+																}
+															]
+														}
+													},
+													"response": []
+												}
+											]
+										},
+										{
+											"name": "Labels for the specified Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+															"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200\", function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"let testLabelLvl1 = pm.environment.get(\"testLabel-lvl1\");\r",
+															"let testLabelFull = pm.environment.get(\"testLabel\");\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an array of proper length\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('array');\r",
+															"    pm.expect(jsonData.length).to.equal(2);\r",
+															"});\r",
+															"\r",
+															"pm.test(\"Response has requested properties and values\", function () {\r",
+															"    for (var label of jsonData){\r",
+															"        if (user == \"lvl1\" ) {\r",
+															"            pm.expect(label.uses).to.equal(1);\r",
+															"        }\r",
+															"        else {\r",
+															"            if (label.name == testLabelFull){\r",
+															"                pm.expect(label.uses).to.equal(2);\r",
+															"            }\r",
+															"            if (label.name == testLabelLvl1){\r",
+															"                pm.expect(label.uses).to.equal(1);\r",
+															"            }\r",
+															"\r",
+															"        }\r",
+															"    }\r",
+															"\r",
+															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/labels",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"labels"
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
 									"name": "Return a Collection",
 									"event": [
 										{
@@ -2141,75 +2904,6 @@
 													"pm.test(\"Response JSON is an object\", function () {\r",
 													"    pm.expect(jsonData).to.be.an('object');\r",
 													"});\r",
-													"\r",
-													"// let collectionKeys = [\r",
-													"//     // \"collectionId\",\r",
-													"//     // \"name\",\r",
-													"//     // \"workflow\",\r",
-													"//     // \"description\",\r",
-													"//     // \"metadata\"\r",
-													"// ]\r",
-													"\r",
-													"// let grantKeys = [\r",
-													"//     \"user\",\r",
-													"//     \"accessLevel\",\r",
-													"//     // \"userId\",\r",
-													"//     // \"username\"\r",
-													"// ]\r",
-													"\r",
-													"// let userBasicKeys = [\r",
-													"//     // \"user\",\r",
-													"//     // \"accessLevel\",\r",
-													"//     \"userId\",\r",
-													"//     \"username\"\r",
-													"//      // ,\r",
-													"//     // \"display\",\r",
-													"//     // \"email\"   \r",
-													"// ]\r",
-													"\r",
-													"// let userKeys = [\r",
-													"//     // \"user\",\r",
-													"//     // \"accessLevel\",\r",
-													"//     \"userId\",\r",
-													"//     \"username\",\r",
-													"//     \"displayName\",\r",
-													"//     \"email\"   \r",
-													"// ]\r",
-													"\r",
-													"// let stigKeys = [\r",
-													"//     \"title\",\r",
-													"//     \"ruleCount\",\r",
-													"//     \"benchmarkId\",\r",
-													"//     \"lastRevisionDate\",\r",
-													"//     \"lastRevisionStr\"\r",
-													"// ]\r",
-													"\r",
-													"// let statisticsKeys = [\r",
-													"//     \"created\",\r",
-													"//     \"assetCount\",\r",
-													"//     \"grantCount\",\r",
-													"//     \"checklistCount\"\r",
-													"// ]\r",
-													"\r",
-													"// if (pm.request.url.getQueryString().match(/projection=assets/)) {\r",
-													"//     collectionKeys.push(\"assets\")\r",
-													"// }\r",
-													"// if (pm.request.url.getQueryString().match(/projection=grants/)) {\r",
-													"//     collectionKeys.push(\"grants\")\r",
-													"// }\r",
-													"// if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
-													"//     collectionKeys.push(\"stigs\")\r",
-													"// }\r",
-													"// if (pm.request.url.getQueryString().match(/projection=owners/)) {\r",
-													"//     collectionKeys.push(\"owners\")\r",
-													"// }\r",
-													"// if (pm.request.url.getQueryString().match(/projection=statistics/)) {\r",
-													"//     collectionKeys.push(\"statistics\")\r",
-													"// }\r",
-													"\r",
-													"// pm.test(\"Check if object contains all provided keys\", function () {\r",
-													"//     pm.expect(jsonData).to.have.all.keys(collectionKeys);\r",
-													"// });\r",
 													"\r",
 													"\r",
 													"pm.test(\"Response has requested properties and values\", function () {\r",
@@ -2266,6 +2960,21 @@
 													"        pm.expect(jsonData.statistics).to.exist;\r",
 													"    }\r",
 													"\r",
+													"    if (pm.request.url.getQueryString().match(/projection=labels/)) {\r",
+													"        // console.log(\"checking statistics projection\");\r",
+													"        pm.expect(jsonData.labels).to.exist;\r",
+													"        if (user == \"lvl1\" ) {\r",
+													"            pm.expect(jsonData.labels.length).to.equal(2);\r",
+													"            pm.expect(jsonData.labels[0].uses).to.equal(1);\r",
+													"            pm.expect(jsonData.labels[1].uses).to.equal(1);\r",
+													"\r",
+													"        }\r",
+													"        else{\r",
+													"            pm.expect(jsonData.labels.length).to.equal(2);\r",
+													"\r",
+													"        }            \r",
+													"\r",
+													"    }\r",
 													"    // };\r",
 													"\r",
 													"});\r",
@@ -2294,7 +3003,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
+											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -2329,6 +3038,10 @@
 												{
 													"key": "projection",
 													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
 												}
 											],
 											"variable": [
@@ -4253,7 +4966,7 @@
 							]
 						},
 						{
-							"name": "Return a list of Assets accessible to the requester (with STIG grants projection)",
+							"name": "Assets accessible to the requester (with STIG grants projection)",
 							"event": [
 								{
 									"listen": "test",
@@ -4424,7 +5137,7 @@
 							"response": []
 						},
 						{
-							"name": "Return a list of Assets accessible to the requester - No StigGrants (for lvl1 user success)",
+							"name": "Assets accessible to the requester - No StigGrants (for lvl1 user success)",
 							"event": [
 								{
 									"listen": "test",
@@ -4600,7 +5313,7 @@
 							"response": []
 						},
 						{
-							"name": "Return a list of Assets accessible to the requester - No filters or StigGrants (for lvl1 user success)",
+							"name": "Assets accessible to the requester - No filters or StigGrants (for lvl1 user success)",
 							"event": [
 								{
 									"listen": "test",
@@ -4783,6 +5496,119 @@
 											"key": "projection",
 											"value": "stigGrants",
 											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Assets accessible to the requester - labels",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"collectioncreator\" || user == \"bizarroLvl1\") {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, Lvl1, or bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array');\r",
+											"    if (user == \"lvl1\" ) {\r",
+											"        pm.expect(jsonData.length).to.equal(1);\r",
+											"    }\r",
+											"    else{\r",
+											"        pm.expect(jsonData.length).to.equal(2);\r",
+											"\r",
+											"    }    \r",
+											"});\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&labelId={{testLabel}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets"
+									],
+									"query": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) Selects Assets mapped to a Collection"
+										},
+										{
+											"key": "benchmarkId",
+											"value": "{{testBenchmark}}",
+											"description": "Selects Assets mapped to a STIG",
+											"disabled": true
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "statusStats",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants",
+											"disabled": true
+										},
+										{
+											"key": "labelId",
+											"value": "{{testLabel}}"
 										}
 									]
 								}
@@ -8169,6 +8995,110 @@
 											"response": []
 										},
 										{
+											"name": "Merge metadata property/value into a Collection",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"let user = pm.environment.get(\"user\");\r",
+															"console.log(\"user: \" + user);\r",
+															"\r",
+															"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+															"    user = \"elevated\";\r",
+															"    console.log(\"setting user to 'elevated'\");\r",
+															"}\r",
+															"\r",
+															"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+															"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+															"        pm.response.to.have.status(403);\r",
+															"    });\r",
+															"    return;\r",
+															"}\r",
+															"else {\r",
+															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(200);\r",
+															"    });\r",
+															"}\r",
+															"\r",
+															"if (pm.response.code !== 200) {\r",
+															"    return;\r",
+															"}\r",
+															"\r",
+															"let jsonData = pm.response.json();\r",
+															"\r",
+															"\r",
+															"pm.test(\"Response JSON is an object\", function () {\r",
+															"    pm.expect(jsonData).to.be.an('object');\r",
+															"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+															"\r",
+															"});\r",
+															""
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "PATCH",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"{{testMetadataKey}}\":\"{{metadataValue}}\"\n}"
+												},
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/metadata",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"metadata"
+													],
+													"query": [
+														{
+															"key": "projection",
+															"value": "rule",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "history",
+															"description": "Additional properties to include in the response.\n",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "stigs",
+															"disabled": true
+														},
+														{
+															"key": "projection",
+															"value": "metadata",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}",
+															"description": "(Required) A path parameter that indentifies a Collection"
+														}
+													]
+												},
+												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+											},
+											"response": []
+										},
+										{
 											"name": "Delete one metadata key/value of a Collection",
 											"event": [
 												{
@@ -8271,9 +9201,438 @@
 												"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
 											},
 											"response": []
+										}
+									]
+								},
+								{
+									"name": "labels",
+									"item": [
+										{
+											"name": "{labelId}",
+											"item": [
+												{
+													"name": "Replace a Labels Asset Mappings in a Collection",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an array\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('array');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"// let requestToTest = JSON.parse(pm.request.body.raw)\r",
+																	"let testAsset = pm.environment.get(\"testAsset\");\r",
+																	"\r",
+																	"pm.test(\"Response matches request\", function () {\r",
+																	"    pm.expect(jsonData[0].assetId).to.equal(JSON.parse(testAsset))\r",
+																	"})\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PUT",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "[{{testAsset}}]"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/labels/:labelId/assets",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"labels",
+																":labelId",
+																"assets"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "Update Label in a Collection",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"let requestToTest = JSON.parse(pm.request.body.raw)\r",
+																	"\r",
+																	"pm.test(\"Response matches request\", function () {\r",
+																	"    pm.expect(jsonData.description)\r",
+																	"    .to.eql(requestToTest.description)\r",
+																	"    pm.expect(jsonData.color)\r",
+																	"    .to.eql(requestToTest.color)\r",
+																	"})\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PATCH",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"name\": \"test-label-full\",\n  \"description\": \"test label patched\",\n  \"color\": \"aa34cc\"\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/labels/:labelId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"labels",
+																":labelId"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{testLabel}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												},
+												{
+													"name": "Delete Label in a Collection",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" || user == \"lvl1\" || user ==\"lvl2\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be 403 for collectioncreator\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 204 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+																	"        pm.response.to.have.status(204);\r",
+																	"    });\r",
+																	"}\r",
+																	"\r",
+																	"if (pm.response.code !== 204) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"// let jsonData = pm.response.json();\r",
+																	"\r",
+																	"\r",
+																	"// pm.test(\"Response JSON is an object\", function () {\r",
+																	"//     pm.expect(jsonData).to.be.an('object');\r",
+																	"//     // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+																	"//     // pm.expect(jsonData).to.have.lengthOf(1);\r",
+																	"\r",
+																	"// });\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"// let requestToTest = JSON.parse(pm.request.body.raw)\r",
+																	"\r",
+																	"// pm.test(\"Response matches request\", function () {\r",
+																	"//     pm.expect(jsonData.description)\r",
+																	"//     .to.eql(requestToTest.description)\r",
+																	"//     pm.expect(jsonData.color)\r",
+																	"//     .to.eql(requestToTest.color)\r",
+																	"// })\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "DELETE",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": ""
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/labels/:labelId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"labels",
+																":labelId"
+															],
+															"query": [
+																{
+																	"key": "projection",
+																	"value": "rule",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "history",
+																	"description": "Additional properties to include in the response.\n",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "metadata",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{scrapCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																},
+																{
+																	"key": "labelId",
+																	"value": "{{scrapLabel}}"
+																}
+															]
+														},
+														"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+													},
+													"response": []
+												}
+											]
 										},
 										{
-											"name": "Merge metadata property/value into a Collection",
+											"name": "Create Label in a Collection",
 											"event": [
 												{
 													"listen": "test",
@@ -8294,12 +9653,12 @@
 															"    return;\r",
 															"}\r",
 															"else {\r",
-															"    pm.test(\"Status code is 200 for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
-															"        pm.response.to.have.status(200);\r",
+															"    pm.test(\"Status code is 2001for all users but collectioncreator, lvl1, or lvl2. user=\" + user, function () {\r",
+															"        pm.response.to.have.status(201);\r",
 															"    });\r",
 															"}\r",
 															"\r",
-															"if (pm.response.code !== 200) {\r",
+															"if (pm.response.code !== 201) {\r",
 															"    return;\r",
 															"}\r",
 															"\r",
@@ -8312,6 +9671,37 @@
 															"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
 															"\r",
 															"});\r",
+															"\r",
+															"\r",
+															"\r",
+															"let requestToTest = JSON.parse(pm.request.body.raw)\r",
+															"\r",
+															"pm.test(\"Response matches request\", function () {\r",
+															"    pm.expect(jsonData.name).to.eql(requestToTest.name)\r",
+															"    pm.expect(jsonData.description).to.eql(requestToTest.description)\r",
+															"    pm.expect(jsonData.color).to.eql(requestToTest.color)\r",
+															"    pm.expect(jsonData.uses).to.eql(0)\r",
+															"})\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
+															"\r",
 															""
 														],
 														"type": "text/javascript"
@@ -8319,7 +9709,7 @@
 												}
 											],
 											"request": {
-												"method": "PATCH",
+												"method": "POST",
 												"header": [
 													{
 														"key": "Content-Type",
@@ -8328,17 +9718,17 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"{{testMetadataKey}}\":\"{{metadataValue}}\"\n}"
+													"raw": "{\n  \"name\": \"test-label-POST\",\n  \"description\": \"test label POSTED\",\n  \"color\": \"aa34cc\"\n}"
 												},
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/metadata",
+													"raw": "{{baseUrl}}/collections/:collectionId/labels",
 													"host": [
 														"{{baseUrl}}"
 													],
 													"path": [
 														"collections",
 														":collectionId",
-														"metadata"
+														"labels"
 													],
 													"query": [
 														{
@@ -8367,7 +9757,7 @@
 													"variable": [
 														{
 															"key": "collectionId",
-															"value": "{{testCollection}}",
+															"value": "{{scrapCollection}}",
 															"description": "(Required) A path parameter that indentifies a Collection"
 														}
 													]
@@ -8826,18 +10216,28 @@
 											"}\r",
 											"\r",
 											"let respJson = pm.response.json();\r",
+											"let requestToTest = JSON.parse(pm.request.body.raw)\r",
+											"\r",
+											"//Collection creator cannot see labels on collection it did not give itself a grant for\r",
+											"if (user == \"collectioncreator\") { \r",
+											"    requestToTest.labels = []\r",
+											"}\r",
+											"console.log(\"requestToTest: \" + JSON.stringify(requestToTest));\r",
+											"\r",
+											"\r",
 											"\r",
 											"pm.test(\"Response matches request\", function () {\r",
 											"    pm.expect(collectionGetToPost(respJson))\r",
-											"    .to.eql(JSON.parse(pm.request.body.raw))\r",
+											"    .to.eql(requestToTest)\r",
 											"})\r",
 											"\r",
 											"function collectionGetToPost (collectionGet) {\r",
 											"    // extract the transformed and unposted properties\r",
-											"    const {collectionId, grants, ...collectionPost} = collectionGet\r",
+											"    const {collectionId, grants, labels, ...collectionPost} = collectionGet\r",
 											"\r",
 											"    // add transformed properties to the derived post  \r",
 											"    collectionPost.grants = grantsPostToGet(grants)\r",
+											"    collectionPost.labels = labelsPostToGet(labels)\r",
 											"\r",
 											"    // the derived post object\r",
 											"    return collectionPost\r",
@@ -8852,6 +10252,14 @@
 											"        })\r",
 											"    }\r",
 											"    return grantsPostArray\r",
+											"}\r",
+											"\r",
+											"function labelsPostToGet(labelsGetArray) {\r",
+											"   return labelsGetArray.map( label => {\r",
+											"        const {labelId, uses, ...labelPost} = label\r",
+											"        return labelPost\r",
+											"\r",
+											"    })\r",
 											"}"
 										],
 										"type": "text/javascript"
@@ -8868,10 +10276,10 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ]\n}\n"
+									"raw": "{\n    \"name\": \"TEST\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ],\n    \"labels\": [\n        {\n            \"name\": \"TEST\",\n            \"description\": \"Collection label description\",\n            \"color\": \"ffffff\"\n        }\n    ]\n}\n"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=grants",
+									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=grants&projection=labels",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -8888,6 +10296,10 @@
 											"key": "projection",
 											"value": "grants",
 											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "labels"
 										}
 									]
 								}
@@ -9966,7 +11378,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"labelIds\": [\"{{testLabel}}\"],\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=stigs",
@@ -10014,8 +11426,9 @@
 															"script": {
 																"exec": [
 																	"let user = pm.environment.get(\"user\");\r",
+																	"let userId = pm.environment.get(\"userId\");\r",
 																	"console.log(\"user: \" + user);\r",
-																	"console.log(\"userId: \" + pm.iterationData.get(\"userId\"))\r",
+																	"console.log(\"userId: \" + userId)\r",
 																	"\r",
 																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
 																	"    user = \"elevated\";\r",
@@ -10042,21 +11455,25 @@
 																	"const expectedReview = {\r",
 																	"  assetId: \"42\",\r",
 																	"  assetName: \"Collection_X_lvl1_asset-1\",\r",
+																	"  assetLabelIds: [\r",
+																	"    \"755b8a28-9a68-11ec-b1bc-0242ac110002\",\r",
+																	"    \"5130dc84-9a68-11ec-b1bc-0242ac110002\"\r",
+																	"    ],\r",
 																	"  ruleId: pm.environment.get(\"testRuleId\"),\r",
 																	"  result: reqData.result,\r",
 																	"  detail: reqData.detail,\r",
 																	"  autoResult: reqData.autoResult,\r",
 																	"  comment: reqData.comment,\r",
-																	"  userId: pm.iterationData.get(\"userId\"),\r",
-																	"  username: pm.iterationData.get(\"user\"),\r",
+																	"  userId: userId,\r",
+																	"  username: user,\r",
 																	"  ts: respData.ts,\r",
 																	"  touchTs: respData.ts,\r",
 																	"  status: {\r",
 																	"      ts: respData.ts,\r",
 																	"      text: null,\r",
 																	"      user: {\r",
-																	"          userId: pm.iterationData.get(\"userId\"),\r",
-																	"          username: pm.iterationData.get(\"user\")\r",
+																	"          userId: userId,\r",
+																	"          username: user\r",
 																	"      },\r",
 																	"      label: reqData.status\r",
 																	"  },\r",
@@ -17496,7 +18913,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"result\": \"INVALID\",\n    \"detail\": \"test\\nvisible to lvl1, test of invalid result enum\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+									"raw": "{\n    \"result\": \"INVALID\",\n    \"detail\": \"test\\nvisible to lvl1, test of invalid result enum\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"saved\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
@@ -17719,6 +19136,7 @@
 					"//default to stigmanadmin user, elevated, if not iterating, and user is not in env",
 					"if (user === undefined) {",
 					"    user = \"stigmanadmin\";",
+					"    userId = \"1\";",
 					"    elevate = true;",
 					"    pm.environment.set(\"user\", user);",
 					"    pm.environment.set(\"elevated\", elevate);",
@@ -17748,6 +19166,7 @@
 					"pm.environment.set(\"testAssetName\", pm.iterationData.get(\"testAssetName\"));",
 					"pm.environment.set(\"testRuleId\", pm.iterationData.get(\"testRuleId\"));",
 					"pm.environment.set(\"testUserId\", pm.iterationData.get(\"testUserId\"));",
+					"pm.environment.set(\"userId\", pm.iterationData.get(\"userId\"));",
 					"pm.environment.set(\"metadataKey\", pm.iterationData.get(\"metadataKey\"));",
 					"pm.environment.set(\"metadataValue\", pm.iterationData.get(\"metadataValue\"));",
 					"// pm.environment.set(\"targetCollectionName\", pm.iterationData.get(\"targetCollectionName\"));",

@@ -14,6 +14,16 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             this.store.sort(sortState.field, sortState.direction)    
         }
     },
+    onLabelChanged: function (collectionId, label) {
+        if (collectionId === this.collectionId) {
+            this.getView().refresh()
+        }
+    },
+    onLabelDeleted: function (collectionId, labelId) {
+        if (collectionId === this.collectionId) {
+            this.getStore().reload()
+        }
+    },
     initComponent: function() {
         const me = this
         const id = Ext.id()
@@ -25,6 +35,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             {name: 'ip', type: 'string'},
             {name: 'mac', type: 'string'},
             {name: 'noncomputing', type: 'boolean'},
+            {name: 'labelIds'},
             {
                 name: 'ruleCount',
                 type: 'integer',
@@ -103,15 +114,37 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         me.totalTextCmp = new SM.RowCountTextItem ({
             store: assetStore
         })
-
+        const assetColumnId = Ext.id()
         const columns = [
             { 	
 				header: "Asset",
-				width: 100,
+                id: assetColumnId,
+				width: 175,
                 dataIndex: 'name',
 				sortable: true,
                 filter: {type: 'string'}
 			},
+            {
+                header: "Labels",
+                width: 120,
+                dataIndex: 'labelIds',
+                sortable: false,
+                filter: {
+                    type: 'values', 
+                    collectionId: me.collectionId,
+                    renderer: SM.ColumnFilters.Renderers.labels
+                },
+                renderer: function (value, metadata) {
+                    const labels = []
+                    for (const labelId of value) {
+                        const label = SM.Cache.CollectionMap.get(me.collectionId).labelMap.get(labelId)
+                        if (label) labels.push(label)
+                    }
+                    labels.sort((a,b) => a.name.localeCompare(b.name))
+                    metadata.attr = 'style="white-space:normal;"'
+                    return SM.Collection.LabelArrayTpl.apply(labels)
+                }
+            },
             { 	
 				header: "FQDN",
 				width: 100,
@@ -123,7 +156,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
             { 	
 				header: "IP",
-                fixed: true,
 				width: 100,
                 dataIndex: 'ip',
 				sortable: true,
@@ -132,7 +164,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "MAC",
                 hidden: true,
-                fixed: true,
 				width: 110,
                 dataIndex: 'mac',
 				sortable: true,
@@ -142,7 +173,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "STIGs",
 				width: 50,
-                fixed: true,
 				dataIndex: 'stigCount',
 				align: "center",
 				tooltip:"Total STIGs Assigned",
@@ -151,7 +181,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Rules",
 				width: 50,
-                fixed: true,
 				dataIndex: 'ruleCount',
 				align: "center",
 				sortable: true
@@ -159,7 +188,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 header: 'Oldest',
                 width: 50,
-                fixed: true,
                 dataIndex: 'minTs',
                 align: 'center',
                 sortable: true,
@@ -168,7 +196,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 header: 'Newest',
                 width: 50,
-                fixed: true,
                 dataIndex: 'maxTs',
                 align: 'center',
                 sortable: true,
@@ -177,7 +204,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Saved",
 				width: 100,
-                fixed: true,
 				dataIndex: 'savedPct',
 				align: "center",
 				sortable: true,
@@ -186,7 +212,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Submitted",
 				width: 100,
-                fixed: true,
 				dataIndex: 'submittedPct',
 				align: "center",
 				sortable: true,
@@ -195,7 +220,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Accepted",
 				width: 100,
-                fixed: true,
 				dataIndex: 'acceptedPct',
 				align: "center",
 				sortable: true,
@@ -204,7 +228,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Rejected",
 				width: 100,
-                fixed: true,
 				dataIndex: 'rejectedPct',
 				align: "center",
 				sortable: true,
@@ -340,7 +363,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
-                forceFit:true,
+                forceFit: true,
+                autoExpandColumn: assetColumnId,
                 listeners: {
                     filterschanged: function (view, item, value) {
                       assetStore.filter(view.getFilterFns())  
@@ -423,9 +447,85 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 
         SM.Dispatcher.addListener('assetchanged', this.onAssetChangedOrCreated, this)
         SM.Dispatcher.addListener('assetcreated', this.onAssetChangedOrCreated, this)
+        // SM.Dispatcher.addListener('labelcreated', this.onLabelCreated, this)
+        SM.Dispatcher.addListener('labelchanged', this.onLabelChanged, this)
+        SM.Dispatcher.addListener('labeldeleted', this.onLabelDeleted, this)
     }   
 })
 Ext.reg('sm-collection-asset-grid', SM.CollectionAssetGrid)
+
+SM.AssetLabelField = Ext.extend(Ext.form.Field, {
+    defaultAutoCreate : {tag: "div"},
+    initComponent: function () {
+        const _this = this
+        this.labelIds = this.labelIds || []
+        const cachedCollection = SM.Cache.CollectionMap.get(this.collectionId)
+        this.labelsMenu = new SM.Collection.LabelsMenu({
+            // menuTitle: 'Manage labels',
+            labels: cachedCollection.labels,
+            listeners: {
+                itemcheckchanged: function (item, checked) {
+                    const cachedCollection = SM.Cache.CollectionMap.get(_this.collectionId)
+                    _this.labelIds = item.parentMenu.getCheckedLabelIds()
+                    const assetLabels = cachedCollection.labels.filter( label => _this.labelIds.includes(label.labelId))
+                    _this.previewfield.update(assetLabels)
+                },
+                applied: function (labelIds) {
+                    const cachedCollection = SM.Cache.CollectionMap.get(_this.collectionId)
+                    const assetLabels = cachedCollection.labels.filter( label => labelIds.includes(label.labelId))
+                    _this.previewfield.update(assetLabels)
+                    _this.labelIds = labelIds
+                }
+            }
+        })
+        this.menuBtn = new Ext.Button({
+            menu: this.labelsMenu
+        })
+        this.previewfield = new Ext.form.DisplayField({
+            tpl: SM.Collection.LabelArrayTpl,
+            data: [],
+        })
+        const config = {
+            name: 'labelIds'
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.AssetLabelField.superclass.initComponent.call(this)
+    },
+    setValue: function (labelIds) {
+            this.labelIds = labelIds
+            this.labelsMenu.setLabelsChecked(labelIds, true)
+
+            const cachedCollection = SM.Cache.CollectionMap.get(this.collectionId)
+            const assetLabels = cachedCollection.labels.filter( function (label) {
+                return labelIds.includes(label.labelId)
+            })
+            this.previewfield.update(assetLabels)
+    },
+    getValue: function () {
+        return this.labelIds
+    },
+    onRender: function (ct, position) {
+        SM.AssetLabelField.superclass.onRender.call(this, ct, position);
+        const _this = this
+
+        this.panel = new Ext.Panel({
+            renderTo: this.el,
+            // height: 50,
+            // width: this.width,
+            border: false,
+            layout: 'hbox',
+            layoutConfig: {
+                align: 'middle'
+            },
+            bodyStyle: 'background-color: transparent;',
+            items: [
+                this.menuBtn,
+                this.previewfield
+            ]
+        })
+    }
+})
+Ext.reg('sm-asset-label-field', SM.AssetLabelField)
 
 
 SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
@@ -734,7 +834,21 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
         if (! this.initialCollectionId) {
             throw (new Error('missing property initialCollectionId'))
         }
- 
+        let assetLabelField
+        if (SM.Cache.CollectionMap.get(this.initialCollectionId).labels.length) {
+            assetLabelField = {
+                xtype: 'sm-asset-label-field',
+                collectionId: this.initialCollectionId,
+                fieldLabel: 'Labels'
+            }
+        }
+        else {
+            assetLabelField = {
+                xtype: 'displayfield',
+                fieldLabel: 'Labels',
+                value: '<i>Asset labels are not defined for this Collection</i>'
+            }
+        }
         let config = {
             baseCls: 'x-plain',
             region: 'south',
@@ -783,6 +897,13 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                     ]
                                 }
                             ]
+                        },
+                        {
+                            xtype: 'checkbox',
+                            name: 'noncomputing',
+                            hideLabel: false,
+                            checked: false,
+                            boxLabel: 'Non-computing'
                         },
                         {
                             layout: 'column',
@@ -841,13 +962,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                                 },
                             ]
                         },
-                        {
-                            xtype: 'checkbox',
-                            name: 'noncomputing',
-                            hideLabel: false,
-                            checked: false,
-                            boxLabel: 'Non-computing'
-                        },
+                        assetLabelField,
                         {
                             xtype: 'sm-metadata-grid',
                             submitValue: true,
@@ -865,7 +980,7 @@ SM.AssetProperties = Ext.extend(Ext.form.FormPanel, {
                 {
                     xtype: 'fieldset',
                     title: '<b>STIG Assignments</b>',
-                    anchor: "100% -260",
+                    anchor: "100% -290",
                     layout: 'fit',
                     items: [
                         this.stigGrid

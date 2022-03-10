@@ -155,6 +155,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#add-users">Add Users</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#export-accepted-results">Export Accepted Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#transfer-assets-to-another-collection">Transfer Assets to Another Collection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#tag-assets-with-labels">Tag Assets with Labels</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#update-stigs">Update STIGs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../features/common-tasks.html#having-a-problem-let-us-know-and-submit-an-issue-on-github">Having a problem? Let us know and submit an issue on GitHub!</a></li>
 </ul>
@@ -292,7 +293,42 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
                      height="auto"
                      alt=""/>
                 </a><figcaption>Navigation Tree</figcaption>
-            </figure><hr class="docutils" />
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>The Assets and STIGS you see in the NavTree can be filtered by clicking on the Label icon next to every Collection:</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/navtree-label-filter-button1.png"
+               title="Navigation Tree Label Button"
+               data-title="Navigation Tree Label Button"
+               
+               ><img src="../_images/navtree-label-filter-button1.png"
+                     class=""
+                     width="25%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Navigation Tree Label Button</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Click the button, select one or more Labels and then click off the menu, or hit “Apply”:</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/navtree-label-filter1.png"
+               title="Navigation Tree Label Filter"
+               data-title="Navigation Tree Label Filter"
+               
+               ><img src="../_images/navtree-label-filter1.png"
+                     class=""
+                     width="25%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Navigation Tree Label Filter</figcaption>
+            </figure><p>Only Assets with your selected Labels will be displayed.</p>
+<hr class="docutils" />
 <div class="section" id="collections-node">
 <span id="index-2"></span><h3><span class="section-number">2.3.1. </span>Collections Node<a class="headerlink" href="#collections-node" title="Permalink to this headline">¶</a></h3>
 <p>The Collection Node lists all the Collections accessible to the User, as well as the <em>+Create Collection…</em> option, for those with that privilege.</p>
@@ -691,6 +727,7 @@ From this Workspace, the User can:</p>
 <li><p>Batch import CKL or XCCDF files to automatically scaffold or add to their Collection</p></li>
 <li><p>Batch export CKL files for external tools such as eMASS</p></li>
 <li><p>Add/Modify/Remove Assets in the Collection</p></li>
+<li><p>Create and Apply Labels to Assets in the Collection.</p></li>
 <li><p>Transfer Assets to another Collection</p></li>
 <li><p>Add or remove STIGs from the Collection (STIGs must be assigned to at least 1 Asset to be associated with a Collection)</p></li>
 <li><p>Delete the Collection (if Collection Owner)</p></li>
@@ -809,9 +846,72 @@ From this Workspace, the User can:</p>
 <div class="section" id="metadata-tab">
 <h4><span class="section-number">2.8.1.3. </span>Metadata Tab<a class="headerlink" href="#metadata-tab" title="Permalink to this headline">¶</a></h4>
 <p>This Tab allows Users with proper access to record miscellaneous data to associate with this Collection.</p>
-</div>
-</div>
 <hr class="docutils" />
+</div>
+<div class="section" id="labels-tab">
+<span id="id11"></span><h4><span class="section-number">2.8.1.4. </span>Labels Tab<a class="headerlink" href="#labels-tab" title="Permalink to this headline">¶</a></h4>
+<p>This Tab allows you to create various Labels and apply them to Assets. Labels are specific to Collections, and will be removed from Assets if they are moved to a different Collection. Labels exist only as an organizing tool, they do not affect the processing or function of the Assets or their Reviews.</p>
+<p>Create a label by clicking the “New Label” button. Labels can be assigned a name, optional description, and color.
+Double-click an existing label to edit it.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/collection-manage-labels1.png"
+               title="Collection Labels Tab"
+               data-title="Collection Labels Tab"
+               
+               ><img src="../_images/collection-manage-labels1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Collection Labels Tab</figcaption>
+            </figure><figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/collection-manage-new-label1.png"
+               title="Create a New Label"
+               data-title="Create a New Label"
+               
+               ><img src="../_images/collection-manage-new-label1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Create a New Label</figcaption>
+            </figure><hr class="docutils" />
+<p>When a Label is selected in Label tab of the Collection Properties Panel, the “Tag Assets…” button is enabled. Click the “Tag Assets…” button to view the Assets that are tagged with that label. Click the “Assign Assets” button on this screen to tag new Assets with that label.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/collection-manage-tag-assets-modal1.png"
+               title="View the Assets tagged with a Particular Label"
+               data-title="View the Assets tagged with a Particular Label"
+               
+               ><img src="../_images/collection-manage-tag-assets-modal1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>View the Assets tagged with a Particular Label</figcaption>
+            </figure><figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/collection-manage-tag-assets-assign-label-modal1.png"
+               title="Tag new Assets with a Label"
+               data-title="Tag new Assets with a Label"
+               
+               ><img src="../_images/collection-manage-tag-assets-assign-label-modal1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Tag new Assets with a Label</figcaption>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
 <div class="section" id="assets-panel">
 <h3><span class="section-number">2.8.2. </span>Assets Panel<a class="headerlink" href="#assets-panel" title="Permalink to this headline">¶</a></h3>
 <p>This panel lists the Assets that are a part of this Collection. An Asset’s properties can be modified by double-clicking on the Asset row or by choosing “Change Asset Properties…” from the toolbar.</p>
@@ -830,18 +930,35 @@ The <a class="reference internal" href="#collection-builder"><span class="std st
                      height="auto"
                      alt=""/>
                 </a><figcaption>Collection -> Manage -> Assets toolbar</figcaption>
-            </figure><hr class="docutils" />
-<div class="section" id="create-asset">
-<h4><span class="section-number">2.8.2.1. </span>Create Asset<a class="headerlink" href="#create-asset" title="Permalink to this headline">¶</a></h4>
-<p>Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs can also be assigned to the new Asset from this interface.</p>
+            </figure><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Click on the “Labels” column header, or any other column header, to filter the Asset grid by the data in the selected column(s).</p>
 <figure class="">
             <a 
                data-lightbox="group-default"
-               href="../_images/create-asset1.png"
+               href="../_images/collection-manage-asset-panel-label-filtering1.png"
+               title="Asset Panel Label Filtering"
+               data-title="Asset Panel Label Filtering"
+               
+               ><img src="../_images/collection-manage-asset-panel-label-filtering1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Asset Panel Label Filtering</figcaption>
+            </figure><hr class="docutils" />
+<div class="section" id="create-asset">
+<h4><span class="section-number">2.8.2.1. </span>Create Asset<a class="headerlink" href="#create-asset" title="Permalink to this headline">¶</a></h4>
+<p>Click the Create Asset button to create an Asset manually. Enter relevant Asset info in the popup window that appears. STIGs and labels can also be assigned to the new Asset from this interface.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/collection-manage-asset-label-edit1.png"
                title="Create an Asset"
                data-title="Create an Asset"
                
-               ><img src="../_images/create-asset1.png"
+               ><img src="../_images/collection-manage-asset-label-edit1.png"
                      class=""
                      width="50%"
                      height="auto"
@@ -1015,9 +1132,23 @@ Individual Asset-STIG assignments to Restricted Users are removed when an Asset 
 <hr class="docutils" />
 <div class="section" id="change-asset-properties">
 <h4><span class="section-number">2.8.2.6. </span>Change Asset Properties<a class="headerlink" href="#change-asset-properties" title="Permalink to this headline">¶</a></h4>
-<p>To alter an Asset’s properties, select an Asset and click this button, or double-click the Asset row.</p>
+<p>To alter an Asset’s properties or tag it with Labels, select an Asset and click this button, or double-click the Asset row.</p>
+<figure class="">
+            <a 
+               data-lightbox="group-default"
+               href="../_images/collection-manage-asset-label-edit1.png"
+               title="Asset Properties"
+               data-title="Asset Properties"
+               
+               ><img src="../_images/collection-manage-asset-label-edit1.png"
+                     class=""
+                     width="50%"
+                     height="auto"
+                     alt=""/>
+                </a><figcaption>Asset Properties</figcaption>
+            </figure></div>
 </div>
-</div>
+<hr class="docutils" />
 <div class="section" id="stigs-panel">
 <h3><span class="section-number">2.8.3. </span>STIGs Panel<a class="headerlink" href="#stigs-panel" title="Permalink to this headline">¶</a></h3>
 <p>This panel lists all the STIGs that have been assigned to at least one Asset in the Collection.
@@ -1107,8 +1238,8 @@ STIG Assignments can also be added or removed from Assets with the buttons at th
 <p>When the STIG Manager Client imports data from <a class="reference internal" href="../reference/index.html#term-ckl"><span class="xref std std-term">.ckl files</span></a>, in the simplest case it will attempt to match (and, in some instances, create) the Asset specified in the .ckl’s <code class="docutils literal notranslate"><span class="pre">&lt;HOST_NAME&gt;</span></code> element.  However, if the <code class="docutils literal notranslate"><span class="pre">&lt;ASSET&gt;&lt;WEB_OR_DATABASE&gt;</span></code> element in the .ckl has a value of <code class="docutils literal notranslate"><span class="pre">true</span></code>, special processing is invoked. This processing will attempt to match the <code class="docutils literal notranslate"><span class="pre">&lt;HOST_NAME&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;WEB_DB_SITE&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;WEB_DB_INSTANCE&gt;</span></code> values in the .ckl with Asset metadata when identifying the Asset.  When the STIG Manager Client creates Assets from .ckls with these elements populated, it will populate the same Asset metadata according to the table below.</p>
 <p>Conversely, when STIG Manager produces a .ckl file from an Asset that has the below metadata values set, it will populate the appropriate .ckl elements.</p>
 <p>The following metadata properties are used when the value of <code class="docutils literal notranslate"><span class="pre">&lt;ASSET&gt;&lt;WEB_OR_DATABASE&gt;</span></code>  is <code class="docutils literal notranslate"><span class="pre">true</span></code>:</p>
-<table class="colwidths-given tight-table docutils align-default" id="id11">
-<caption><span class="caption-text"><strong>CKL elements map to STIG Manager Asset metadata</strong></span><a class="headerlink" href="#id11" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given tight-table docutils align-default" id="id12">
+<caption><span class="caption-text"><strong>CKL elements map to STIG Manager Asset metadata</strong></span><a class="headerlink" href="#id12" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 20%" />

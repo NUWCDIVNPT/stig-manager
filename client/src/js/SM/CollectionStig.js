@@ -73,41 +73,48 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         me.totalTextCmp = new SM.RowCountTextItem ({
             store: store
         })
+        const benchmarkColumnId = Ext.id()
         let columns = [
             { 	
 				header: "BenchmarkId",
-				width: 100,
+                id: benchmarkColumnId,
+				width: 300,
                 dataIndex: 'benchmarkId',
 				sortable: true,
                 filter: {type:'string'}
-			// },{ 	
-			// 	header: "Title",
-			// 	width: 150,
-            //     dataIndex: 'title',
-			// 	sortable: true
-			},{ 	
+			},
+            { 	
+				header: "Title",
+                hidden: true,
+				width: 150,
+                dataIndex: 'title',
+				sortable: true
+			},
+            { 	
 				header: "Revision",
-				width: 50,
+				width: 100,
                 dataIndex: 'lastRevisionStr',
                 align: "center",
                 sortable: true
-			},{ 	
+			},
+            { 	
 				header: "Date",
 				width: 50,
+                hidden: true,
 				dataIndex: 'lastRevisionDate',
                 align: "center",
 				sortable: true
-			},{
+			},
+            {
                 header: 'Rules',
                 width: 70,
-                fixed: true,
                 dataIndex: 'ruleCount',
                 align: "center",
                 sortable: true
-            },{
+            },
+            {
                 header: 'Assets',
                 width: 70,
-                fixed: true,
                 dataIndex: 'assetCount',
                 align: "center",
                 sortable: true
@@ -115,7 +122,6 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 header: 'Oldest',
                 width: 50,
-                fixed: true,
                 dataIndex: 'minTs',
                 align: 'center',
                 sortable: true,
@@ -124,7 +130,6 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 header: 'Newest',
                 width: 50,
-                fixed: true,
                 dataIndex: 'maxTs',
                 align: 'center',
                 sortable: true,
@@ -133,31 +138,30 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Saved",
 				width: 100,
-                fixed: true,
 				dataIndex: 'savedPct',
 				align: "center",
 				sortable: true,
                 renderer: renderPct
-			},{ 	
+			},
+            { 	
 				header: "Submitted",
 				width: 100,
-                fixed: true,
 				dataIndex: 'submittedPct',
 				align: "center",
 				sortable: true,
                 renderer: renderPct
-			},{ 	
+			},
+            { 	
 				header: "Accepted",
 				width: 100,
-                fixed: true,
 				dataIndex: 'acceptedPct',
 				align: "center",
 				sortable: true,
                 renderer: renderPct
-			},{ 	
+			},
+            { 	
 				header: "Rejected",
 				width: 100,
-                fixed: true,
 				dataIndex: 'rejectedPct',
 				align: "center",
 				sortable: true,
@@ -337,17 +341,12 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
         }
     },
     initComponent: function() {
-        let reader = new Ext.data.JsonReader({
-            idProperty: 'benchmarkId',
-            root: '',
-            fields: [
-                {name:'assetId',type:'string'},
-                {name:'name',type:'string'}
-            ]
-        })
+        const _this = this
         let fields = Ext.data.Record.create([
             {name:'assetId',type:'string'},
-            {name:'name',type:'string'}
+            {name:'name',type:'string'},
+            {name:'labelIds'},
+            {name:'collection'}
         ])
         let store = new Ext.data.JsonStore({
             url: `${STIGMAN.Env.apiBase}/assets`,
@@ -356,7 +355,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                 collectionId: this.collectionId
             },
             grid: this,
-            reader: reader,
+            // reader: reader,
             autoLoad: false,
             restful: true,
             encode: false,
@@ -376,10 +375,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             store: store
         })
         let sm = new Ext.grid.CheckboxSelectionModel({
-            checkOnly: true,
-            // header: '',
-            listeners: {
-            },
+            checkOnly: false,
             onRefresh: function() {
                 // override to render selections properly after a grid refresh
                 var ds = this.grid.store, index;
@@ -390,7 +386,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                         this.grid.view.addRowClass(index, this.grid.view.selectedRowClass);
                     }
                 }
-            }
+            }   
         })                
         let config = {
             isFormField: true,
@@ -411,15 +407,30 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                     ,width: 150
                     ,dataIndex:'name'
                     ,sortable: true
-                    ,renderer: function(value, metaData, record, rowIndex, colIndex, store){
-                        return '<b>' + value + '</b>';
+                },
+                {
+                    header: "Labels",
+                    width: 120,
+                    dataIndex: 'labelIds',
+                    sortable: false,
+                    filter: {
+                        type: 'values', 
+                        collectionId: _this.collectionId,
+                        renderer: SM.ColumnFilters.Renderers.labels
+                    },
+                    renderer: function (value, metadata, record) {
+                        const labels = []
+                        for (const labelId of value) {
+                            const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                            if (label) labels.push(label)
+                        }
+                        labels.sort((a,b) => a.name.localeCompare(b.name))
+                        metadata.attr = 'style="white-space:normal;"'
+                        return SM.Collection.LabelArrayTpl.apply(labels)
                     }
-                }
+                }    
             ],
             border: true,
-            // style: {
-            //     borderLeftWidth: "1px"
-            // },
             loadMask: true,
             stripeRows: true,
             sm: sm,
@@ -496,14 +507,14 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             },
             markInvalid: function() {},
             clearInvalid: function() {},
-            isValid: () => {
-                return this.getSelectionModel().getCount() > 0
-            },
             getName: () => this.name,
             validate: () => true
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.StigAssetsGrid.superclass.initComponent.call(this);
+    },
+    isValid: function ()  {
+        return this.getSelectionModel().getCount() > 0
     }
 })
 Ext.reg('sm-stig-assets-grid', SM.StigAssetsGrid)

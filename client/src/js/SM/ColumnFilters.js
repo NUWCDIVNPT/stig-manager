@@ -10,61 +10,6 @@ SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
     ) 
     SM.ColumnFilters.GridView.superclass.constructor.call(this, config);
   },
-  handleHdOver : function(e, target) {
-    var header = this.findHeaderCell(target);
-        
-    if (header && !this.headersDisabled) {
-        var fly = this.fly(header);
-        
-        this.activeHdRef = target;
-        this.activeHdIndex = this.getCellIndex(header);
-        this.activeHdRegion = fly.getRegion();
-        
-        if (!this.isMenuDisabled(this.activeHdIndex, fly)) {
-            fly.addClass('x-grid3-hd-over');
-            this.activeHdBtn = fly.child('.x-grid3-hd-btn');
-            
-            if (this.activeHdBtn) {
-                this.activeHdBtn.dom.style.height = (header.firstChild.offsetHeight - 1) + 'px';
-            }
-        }
-    }
-  },
-  handleHdDownOrig : function(e, target) {
-    if (Ext.fly(target).hasClass('x-grid3-hd-btn')) {
-        e.stopEvent();
-        
-        var colModel  = this.cm,
-            header    = this.findHeaderCell(target),
-            index     = this.getCellIndex(header),
-            sortable  = colModel.isSortable(index),
-            menu      = this.hmenu,
-            menuItems = menu.items,
-            menuCls   = this.headerMenuOpenCls,
-            sep;
-        
-        this.hdCtxIndex = index;
-        
-        Ext.fly(header).addClass(menuCls);
-        if (this.hideSortIcons) {
-            menuItems.get('asc').setVisible(sortable);
-            menuItems.get('desc').setVisible(sortable);
-            sep = menuItems.get('sortSep');
-            if (sep) {
-                sep.setVisible(sortable);    
-            }
-        } else {
-            menuItems.get('asc').setDisabled(!sortable);
-            menuItems.get('desc').setDisabled(!sortable);
-        }
-        
-        menu.on('hide', function() {
-            Ext.fly(header).removeClass(menuCls);
-        }, this, {single:true});
-        
-        menu.show(target, 'tl-bl?');
-    }
-  },
   handleHdDown: function (e, target) {
     // Modifies superclass method to support lastHide
 
@@ -154,6 +99,15 @@ SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
         filterFns.push({
           fn: function (record) {
             const value = record.data[dataIndex]
+            if (Array.isArray(value)) { 
+            // the record data is an Array of values
+              if (Array.isArray(conditions[dataIndex])) {
+                if (conditions[dataIndex].includes('') && value.length === 0) return true
+                return value.some( v => conditions[dataIndex].includes(v))
+              }
+            }
+
+            // the record data is a scalar value (we're missing object handling?)
             if (Array.isArray(conditions[dataIndex])) {
               return conditions[dataIndex].includes(value) 
             }
@@ -230,12 +184,13 @@ SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
         if (isLoading) col.filtered = false
         const itemConfigs = []
         // get unique values for this column from the record set
-        const uniqueSet = new Set(records.map( r => r.data[col.dataIndex] ))
+        // const uniqueSet = new Set(records.flatMap( r => Array.isArray(r.data[col.dataIndex] ? ).flat())
+        const uniqueSet = new Set(records.flatMap( r => r.data[col.dataIndex] ? (r.data[col.dataIndex].length ? r.data[col.dataIndex] : '') : r.data[col.dataIndex] ))
         const uniqueArray = [...uniqueSet].sort(col.filter.comparer)
         const cValue = cVals[col.dataIndex]
         for ( const value of uniqueArray ) {
           itemConfigs.push({
-            text: col.filter.renderer ? col.filter.renderer(value) : value ? value : '<i>(No value)</i>',
+            text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
             xtype: 'menucheckitem',
             column: col,
             hideOnClick: false,
@@ -391,6 +346,9 @@ SM.ColumnFilters.Scorers = {
 SM.ColumnFilters.CompareFns = {
   severity: (a, b) => {
     return SM.ColumnFilters.Scorers.severity[a] - SM.ColumnFilters.Scorers.severity[b]
+  },
+  labels: (a, b) => {
+    
   }
 }
 
@@ -433,5 +391,10 @@ SM.ColumnFilters.Renderers = {
       v = v.replace(re,'<span class="sm-text-highlight">$&</span>')
     }
     return this.configRenderer ? this.configRenderer.call(this, v, m, r, ri, ci, s) : v
+  },
+  labels: function (labelId, collectionId) {
+    if (!labelId) return '<i>(No value)</i>'
+    const labelObj = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+    return SM.Collection.LabelTpl.apply(labelObj)
   }
 }

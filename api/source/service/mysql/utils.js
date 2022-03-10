@@ -362,6 +362,13 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
   }
 }
 
+module.exports.uuidToSqlString  = function (uuid) {
+  return {
+    toSqlString: function () {
+      return `UUID_TO_BIN(${mysql.escape(uuid)},1)`
+    }
+  }
+}
 
 module.exports.CONTEXT_ALL = 'all'
 module.exports.CONTEXT_DEPT = 'department'

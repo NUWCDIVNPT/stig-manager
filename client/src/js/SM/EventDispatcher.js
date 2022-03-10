@@ -15,5 +15,9 @@ SM.Dispatcher.addEvents(
     'userchanged',
     'stigassetschanged',
     'fieldsettingschanged',
-    'statussettingschanged'
+    'statussettingschanged',
+    'labelcreated',
+    'labelchanged',
+    'labeldeleted',
+    'labelfilter'
 )

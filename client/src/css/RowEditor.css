@@ -73,3 +73,6 @@ Build date: 2013-04-03 15:07:25
     list-style-type:disc;
     margin-left:15px;
 }
+.x-row-editor.x-small-editor {
+  border-right: #c4c4c4 solid 1px;
+}

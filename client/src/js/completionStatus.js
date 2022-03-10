@@ -11,12 +11,13 @@ function addCompletionStatus( params) {
 		sortInfo: {
 			field: 'assetName'
 		},
-		groupField: 'assetName',
+		groupField: 'benchmarkId',
 		reader: new Ext.data.JsonReader({
 			root: '',
 			fields: [
 				{name:'assetId',type:'int'},
 				'assetName',
+				'assetLabelIds',
 				{name:'benchmarkId',type:'string'},
 	
 				{name:'rulesAuto', type:'int', mapping: 'rules.auto'},
@@ -57,24 +58,43 @@ function addCompletionStatus( params) {
 		layout:'fit',
 		store: statusStore,
 		columns: [
-			{header: "Asset",width:35,dataIndex:'assetName',sortable:true,
+			{
+				header: "Asset",width:35,dataIndex:'assetName',sortable:true,
 				summaryRenderer: function(v, params, data){
-                    return "Totals";
-                },
+          return "Totals";
+        },
 			},
-			{header: "Checklist",width:35,dataIndex:'benchmarkId',sortable:true,id:'completionGrid-'+ collectionId + 'becnhmarkId',
+			{
+				header: "Labels",
+				id: `status-labels-${collectionId}`,
+				width: 30,
+				dataIndex: 'assetLabelIds',
+				sortable: false,
+				renderer: function (value, metadata) {
+						const labels = []
+						for (const labelId of value) {
+								const label = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+								if (label) labels.push(label)
+						}
+						labels.sort((a,b) => a.name.localeCompare(b.name))
+						metadata.attr = 'style="white-space:normal;"'
+						return SM.Collection.LabelArrayTpl.apply(labels)
+				}
+			},
+			{
+				header: "Checklist",width:35,dataIndex:'benchmarkId',sortable:true,id:'completionGrid-'+ collectionId + 'becnhmarkId',
 				summaryRenderer: function(v, params, data){
-                    return "Totals";
-                },
+          return "Totals";
+        },
 			},
 			{header: "Checks",width:10,dataIndex:'rulesTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "Not Checked",width:10,dataIndex:'notCheckedTotal',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},
 			{header: "Oldest",width:10,dataIndex:'minTs',sortable:true,align:'center',renderer:renderDurationToNow,summaryType: 'min'},
 			{header: "Newest",width:10,dataIndex:'maxTs',sortable:true,align:'center',renderer:renderDurationToNow,summaryType: 'max'},
 			{header: "Saved",width:10,dataIndex:'savedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "<img src=img/ready-16.png width=12 height=12> Submitted",width:10,dataIndex:'submittedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "<img src=img/rejected-16.png width=12 height=12> Rejected",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
-			{header: "<img src=img/star.svg width=12 height=12> Accepted",width:10,dataIndex:'acceptedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "<img src=img/ready-16.png width=12 height=12 exportvalue='Submitted'> Submitted",width:10,dataIndex:'submittedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "<img src=img/rejected-16.png width=12 height=12 exportvalue='Rejected'> Rejected",width:10,dataIndex:'rejectedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
+			{header: "<img src=img/star.svg width=12 height=12 exportvalue='Accepted'> Accepted",width:10,dataIndex:'acceptedTotal',sortable:true,align:'right',renderer:renderGrey,summaryType: 'sum'},
 			{header: "Cat 1",width:10,dataIndex:'highCount',sortable:true,align:'right',renderer:renderCat1,summaryType: 'sum'},			
 			{header: "Cat 2",width:10,dataIndex:'mediumCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'},			
 			{header: "Cat 3",width:10,dataIndex:'lowCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}
@@ -125,27 +145,8 @@ function addCompletionStatus( params) {
 					items: [
 					{
 						xtype: 'tbbutton',
-						icon: 'img/security_firewall_on.png',
+						iconCls: 'sm-stig-icon',
 						tooltip: 'Group by STIG',
-						toggleGroup: 'completionGrid-groupBy' + collectionId,
-						enableToggle:true,
-						allowDepress: false,
-						width: 20,
-						handler: function(btn){
-							if (btn.pressed) {
-								Ext.getCmp('completionGrid-expandButton' + collectionId).enable();
-								Ext.getCmp('completionGrid-collapseButton' + collectionId).enable();
-								completionGrid.getStore().groupBy('benchmarkId');
-							} else {
-								Ext.getCmp('completionGrid-expandButton' + collectionId).disable();
-								Ext.getCmp('completionGrid-collapseButton' + collectionId).disable();
-								completionGrid.getStore().clearGrouping();
-							}
-						}
-					},{
-						xtype: 'tbbutton',
-						icon: 'img/accuracy-16.png',
-						tooltip: 'Group by asset',
 						toggleGroup: 'completionGrid-groupBy' + collectionId,
 						enableToggle:true,
 						allowDepress: false,
@@ -155,7 +156,32 @@ function addCompletionStatus( params) {
 							if (btn.pressed) {
 								Ext.getCmp('completionGrid-expandButton' + collectionId).enable();
 								Ext.getCmp('completionGrid-collapseButton' + collectionId).enable();
+								completionGrid.getStore().groupBy('benchmarkId');
+								const cm = completionGrid.getColumnModel() 
+								cm.setHidden(cm.getIndexById(`status-labels-${collectionId}`), false)
+
+							} else {
+								Ext.getCmp('completionGrid-expandButton' + collectionId).disable();
+								Ext.getCmp('completionGrid-collapseButton' + collectionId).disable();
+								completionGrid.getStore().clearGrouping();
+							}
+						}
+					},{
+						xtype: 'tbbutton',
+						iconCls: 'sm-asset-icon',
+						tooltip: 'Group by asset',
+						toggleGroup: 'completionGrid-groupBy' + collectionId,
+						enableToggle:true,
+						allowDepress: false,
+						width: 20,
+						handler: function(btn){
+							if (btn.pressed) {
+								Ext.getCmp('completionGrid-expandButton' + collectionId).enable();
+								Ext.getCmp('completionGrid-collapseButton' + collectionId).enable();
 								completionGrid.getStore().groupBy('assetName');
+								const cm = completionGrid.getColumnModel() 
+								cm.setHidden(cm.getIndexById(`status-labels-${collectionId}`), true)
+
 							} else {
 								Ext.getCmp('completionGrid-expandButton' + collectionId).disable();
 								Ext.getCmp('completionGrid-collapseButton' + collectionId).disable();
@@ -203,8 +229,8 @@ function addCompletionStatus( params) {
 			,{
 				xtype: 'exportbutton',
 				hasMenu: false,
-				exportType: 'store',
-				storeBasename: collectionName + '-Status',
+				exportType: 'grid',
+				gridBasename: 'Status (grid)',
 				iconCls: 'sm-export-icon',
 				text: 'CSV'
 			},

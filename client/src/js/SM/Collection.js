@@ -3,9 +3,14 @@
 async function addOrUpdateCollection( collectionId, collectionObj, options ) {
     try {
       let url, method
+      if (options.elevate && collectionId) {
+          delete collectionObj.settings
+          delete collectionObj.metadata
+          delete collectionObj.labels
+      }
       if (collectionId) {
         url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${options.elevate}`
-        method = 'PUT'
+        method = 'PATCH'
       }
       else {
         url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate}`,
@@ -16,7 +21,7 @@ async function addOrUpdateCollection( collectionId, collectionObj, options ) {
         method: method,
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
         params: {
-          projection: ['owners', 'statistics']
+          projection: ['owners', 'statistics', 'labels']
         },
         jsonData: collectionObj
       })

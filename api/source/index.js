@@ -70,7 +70,7 @@ app.use( logger.requestLogger )
 // app.use(compression())
 
 const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
-app.use( openApiMiddleware ({
+app.use( "/api", openApiMiddleware ({
   apiSpec: apiSpecPath,
   validateRequests: {
     coerceTypes: true,
@@ -195,6 +195,7 @@ const STIGMAN = {
 }    
 `
     app.get('/js/Env.js', function (req, res) {
+      req.component = 'static'
       writer.writeWithContentType(res, {payload: envJS, contentType: "application/javascript"})
     })
     logger.writeDebug('index', 'client', {client_static: path.join(__dirname, directory)})

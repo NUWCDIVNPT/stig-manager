@@ -55,6 +55,18 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         ) VALUES ?`,
         insertBinds: []
       },
+      collectionLabel: {
+        sqlDelete: `DELETE FROM collection_label`,
+        sqlInsert: `INSERT INTO
+        collection_label (
+          collectionId,
+          name,
+          description,
+          color,
+          uuid
+        ) VALUES ?`,
+        insertBinds: []
+      },
       userData: {
         sqlDelete: `DELETE FROM user_data`,
         sqlInsert: `INSERT INTO
@@ -87,6 +99,27 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           noncomputing,
           metadata
         ) VALUES ?`,
+        insertBinds: []
+      },
+      assetLabel: {
+        sqlDelete: `DELETE FROM collection_label_asset_map`,
+        sqlInsert: `INSERT INTO collection_label_asset_map (
+          assetId,
+          clId
+        ) 
+        SELECT
+          jt.assetId,
+          cl.clId
+        FROM
+          JSON_TABLE(
+            ?,
+            '$[*]' COLUMNS(
+              assetId INT PATH '$.assetId',
+              collectionId INT PATH '$.collectionId',
+              NESTED PATH '$.labelIds[*]' COLUMNS ( labelId VARCHAR(36) PATH '$')
+            )
+          ) as jt
+          INNER JOIN collection_label cl on cl.collectionId = jt.collectionId COLLATE utf8mb4_0900_ai_ci and cl.uuid = UUID_TO_BIN(jt.labelId,1)`,
         insertBinds: []
       },
       stigAssetMap: {
@@ -201,7 +234,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       ])
     }
     
-    // Tables: collection, collection_grant_map
+    // Tables: collection, collection_grant_map, collection_label
     for (const c of collections) {
       dml.collection.insertBinds.push([
         parseInt(c.collectionId) || null,
@@ -216,12 +249,21 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           grant.accessLevel
         ])
       }
+      for (const label of c.labels) {
+        dml.collectionLabel.insertBinds.push([
+          parseInt(c.collectionId),
+          label.name,
+          label.description,
+          label.color,
+          dbUtils.uuidToSqlString(label.labelId)
+        ])
+      }
     }
 
-
-    // Tables: asset, stig_asset_map, user_stig_asset_map
+    // Tables: asset, collection_label_asset_maps, stig_asset_map, user_stig_asset_map
+    const assetLabels = []
     for (const asset of assets) {
-      let { stigGrants, ...assetFields} = asset
+      let { stigGrants, labelIds, ...assetFields} = asset
       dml.asset.insertBinds.push([
         parseInt(assetFields.assetId) || null,
         parseInt(assetFields.collectionId) || null,
@@ -240,7 +282,15 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           JSON.stringify(sr.userIds)
         ])
       }
+      if (labelIds?.length > 0) {
+        assetLabels.push({
+          assetId: parseInt(assetFields.assetId),
+          collectionId: parseInt(assetFields.collectionId),
+          labelIds
+        })  
+      }
     }
+    dml.assetLabel.insertBinds.push(JSON.stringify(assetLabels))
 
     // Tables: review, review_history
     const historyRecords = []
@@ -308,6 +358,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'userStigAssetMap',
       'stigAssetMap',
       'collectionGrant',
+      'assetLabel',
+      'collectionLabel',
       'collection',
       'asset',
       'userData',
@@ -327,8 +379,10 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     tableOrder = [
       'userData',
       'collection',
+      'collectionLabel',
       'collectionGrant',
       'asset',
+      'assetLabel',
       'stigAssetMap',
       'userStigAssetMap',
       'review',

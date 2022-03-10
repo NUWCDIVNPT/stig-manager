@@ -611,6 +611,8 @@ async function addReview( params ) {
       name: 'assetName',
       type: 'string'
     }, {
+      name: 'assetLabelIds',
+    }, {
       name: 'status',
       type: 'string',
       mapping: 'status.label'
@@ -739,7 +741,28 @@ async function addReview( params ) {
           type: 'string'
         }
       },
-			{ 	
+      {
+        header: "Labels",
+        width: 120,
+        dataIndex: 'assetLabelIds',
+        sortable: false,
+        filter: {
+            type: 'values', 
+            collectionId: apiCollection.collectionId,
+            renderer: SM.ColumnFilters.Renderers.labels
+        },
+        renderer: function (value, metadata) {
+            const labels = []
+            for (const labelId of value) {
+                const label = SM.Cache.CollectionMap.get(apiCollection.collectionId).labelMap.get(labelId)
+                if (label) labels.push(label)
+            }
+            labels.sort((a,b) => a.name.localeCompare(b.name))
+            metadata.attr = 'style="white-space:normal;"'
+            return SM.Collection.LabelArrayTpl.apply(labels)
+        }
+    },
+    { 	
 				header: "Status", 
 				width: 50,
 				fixed: true,
@@ -856,6 +879,20 @@ async function addReview( params ) {
   /******************************************************/
   // START Input form
   /******************************************************/
+  let labelSpans
+  if (leaf.assetLabels) {
+    labelSpans = SM.Collection.LabelArrayTpl.apply(leaf.assetLabels)
+  }
+  else {
+    const labelMap = SM.Cache.CollectionMap.get(apiCollection.collectionId).labelMap
+    const labels = []
+    for (const labelId of leaf.assetLabelIds) {
+        const label = labelMap.get(labelId)
+        if (label) labels.push(label)
+    }
+    labels.sort((a,b) => a.name.localeCompare(b.name))
+    labelSpans = SM.Collection.LabelArrayTpl.apply(labels)
+  }
 
   const reviewForm = new SM.Review.Form.Panel({
     cls: 'sm-round-panel',
@@ -867,7 +904,7 @@ async function addReview( params ) {
     height: '65%',
     minHeight: 320,
     id: 'reviewForm' + idAppend,
-    title: 'Review on ' + SM.he(leaf.assetName),
+    title: `Review on ${SM.he(leaf.assetName)} ${labelSpans}`,
     padding: 10,
     labelWidth: 54,
     fieldSettings: apiFieldSettings,

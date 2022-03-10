@@ -12,7 +12,7 @@ async function addCollectionManager( params ) {
 		let result = await Ext.Ajax.requestPromise({
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			params: {
-				projection: 'grants'
+				projection: ['grants', 'labels']
 			},
 			method: 'GET'
 		})
@@ -32,12 +32,13 @@ async function addCollectionManager( params ) {
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			region: 'west',
-			width: '30%',
+			width: 430,
 			minWidth:430,
 			padding: '10px 10px 10px 10px',
 			border: false,
 			split: true,
 			layout: 'fit',
+			collapsible: true,
 			allowDelete: collectionGrant.accessLevel === 4
 		})
 		let assetGrid = new SM.CollectionAssetGrid({
@@ -51,7 +52,8 @@ async function addCollectionManager( params ) {
 			region: 'north',
 			border: false,
 			split: true,
-			height: '50%'
+			height: '50%',
+			stripeRows: true
 		})
 		let stigGrid = new SM.CollectionStigsGrid({
 			collectionId: collectionId,
@@ -61,7 +63,8 @@ async function addCollectionManager( params ) {
 			margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
 			border: false,
 			title: 'STIGs',
-			region: 'center'
+			region: 'center',
+			stripeRows: true
 		})
 		let managerTab = new Ext.Panel({
 			id: `${collectionId}-collection-manager-tab`,
@@ -100,18 +103,38 @@ async function addCollectionManager( params ) {
 				}
 			]
 		})
-		let onAssetEvent = (apiAsset) => {
+		async function onAssetEvent (apiAsset) {
 			if (apiAsset.collection.collectionId === collectionId) {
 				assetGrid.getStore().reload()
 				stigGrid.getStore().reload()
+				
+				// update labels grid
+				let result = await Ext.Ajax.requestPromise({
+					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+					method: 'GET'
+				})
+				const labels = JSON.parse(result.response.responseText)
+				collectionPanel.labelGrid.setValue(labels)
 			}
 		}
-		let onStigAssetsChanged = (eCollectionId) => {
+		function onStigAssetsChanged (eCollectionId) {
 			if (eCollectionId === collectionId) {
 				assetGrid.getStore().reload()
 				stigGrid.getStore().reload()
 			}
 		}
+		async function onLabelAssetsChanged() {
+			assetGrid.getStore().reload()
+				// update labels grid
+				let result = await Ext.Ajax.requestPromise({
+					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+					method: 'GET'
+				})
+				const labels = JSON.parse(result.response.responseText)
+				collectionPanel.labelGrid.setValue(labels)
+		}
+
+
 		managerTab.updateTitle = function () {
 			managerTab.setTitle(`${managerTab.sm_tabMode === 'ephemeral' ? '<i>':''}${SM.he(managerTab.collectionName)} / Manage${this.sm_tabMode === 'ephemeral' ? '</i>':''}`)
 		}
@@ -136,6 +159,7 @@ async function addCollectionManager( params ) {
 		
 		assetGrid.getStore().load()
 		stigGrid.getStore().load()
+		SM.Dispatcher.addListener('labelassetschanged', onLabelAssetsChanged)
 		SM.Dispatcher.addListener('assetchanged', onAssetEvent)
 		SM.Dispatcher.addListener('assetcreated', onAssetEvent)
 		SM.Dispatcher.addListener('assetdeleted', onAssetEvent)
