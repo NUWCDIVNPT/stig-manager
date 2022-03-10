@@ -383,13 +383,16 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
     let columns = [
       `distinct cast(a.assetId as char) as assetId`,
       'a.name as assetName',
-      `(SELECT 
-        coalesce(json_arrayagg(BIN_TO_UUID(cl2.uuid,1)),json_array())
-      FROM 
-        collection_label_asset_map cla2
-        left join collection_label cl2 on cla2.clId = cl2.clId
-      WHERE
-        cla2.assetId = a.assetId) as assetLabelIds`,
+      `coalesce(
+        (select
+          json_arrayagg(BIN_TO_UUID(cl.uuid,1))
+        from
+          collection_label_asset_map cla
+          left join collection_label cl on cla.clId = cl.clId
+        where
+          cla.assetId = a.assetId),
+        json_array()
+      ) as assetLabelIds`,
       'sa.benchmarkId',
       `json_object(
         'total', cr.ruleCount,
