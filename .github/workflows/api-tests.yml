@@ -39,7 +39,7 @@ jobs:
           -e MYSQL_DATABASE=stigman \
           -e MYSQL_USER=stigman \
           -e MYSQL_PASSWORD=stigman \
-          mysql:8.0.14
+          mysql:8.0.21
       -
         name: Run from image
         id: api-run
