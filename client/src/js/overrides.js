@@ -1010,5 +1010,23 @@ Ext.override(Ext.data.JsonStore, {
                 }
             })
         })
+    },
+    reloadPromise : function (params) {
+        return new Promise ( (resolve, reject) => {
+            this.reload({
+                params: params,
+                callback: function (records, options, success) {
+                    if (success) {
+                        resolve ({
+                            records: records,
+                            options: options
+                        })
+                    } else {
+                        reject ('Reload failed')
+                    }
+                }
+            })
+        })
     }
+
 })

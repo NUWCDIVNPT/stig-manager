@@ -41,6 +41,13 @@
 	height: unset;
 	width: 108px;
 }
+.x-color-palette em {
+	border: 0px;
+}
+.x-color-palette em span {
+	width: 12px;
+	height: 12px;
+}
 .sm-label-icon {
   background-image: url(../img/label.svg) !important;
   background-repeat: no-repeat;
