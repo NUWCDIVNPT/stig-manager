@@ -1,3 +1,21 @@
+1.2.5
+-----
+​
+Changes:
+
+  - (API/App) Release of new Asset Labelling feature. Tag Assets in a Collection with Labels 
+  - (App) Navigation Tree filtering on Asset Labels. 
+  - (App) Asset Labels are now displayed in various places in UI. 
+  - (Docs) Documentation for new Asset Label feature available. See sections on the `Navigation Tree <https://stig-manager.readthedocs.io/en/latest/user-guide/user-guide.html#navigation-tree>`_ and `Collection Management - Labels <https://stig-manager.readthedocs.io/en/latest/user-guide/user-guide.html#labels-tab`_.
+  - (App) Adjusted language used in Review Panel Attribution box for clarity.
+  - (App) Restricted Collection modification options available in Application Management interface to better reflect overall application security approach. 
+  - (App) Adjusted line spacing to loosen up grid views a little.
+
+Commits:
+
+- b662de4 feat: Collection labels (#605)
+- 78b8db6 fix: remove listeners on destroy (#606)
+
 1.2.4
 -----
 
