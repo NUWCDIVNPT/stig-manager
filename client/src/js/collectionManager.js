@@ -84,6 +84,8 @@ async function addCollectionManager( params ) {
 					SM.Dispatcher.removeListener('assetcreated', onAssetEvent)
 					SM.Dispatcher.removeListener('assetdeleted', onAssetEvent)
 					SM.Dispatcher.removeListener('stigassetschanged', onStigAssetsChanged)
+					SM.Dispatcher.removeListener('labelassetschanged', onLabelAssetsChanged)
+					SM.Dispatcher.removeListener('fieldsettingschanged', onFieldSettingsChanged)
 				}
 			},
 			items: [
@@ -123,8 +125,9 @@ async function addCollectionManager( params ) {
 				stigGrid.getStore().reload()
 			}
 		}
-		async function onLabelAssetsChanged() {
-			assetGrid.getStore().reload()
+		async function onLabelAssetsChanged(eCollectionId, labelId, apiLabelAssets) {
+			if (eCollectionId === collectionId) {
+				await assetGrid.getStore().reloadPromise()
 				// update labels grid
 				let result = await Ext.Ajax.requestPromise({
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
@@ -132,6 +135,7 @@ async function addCollectionManager( params ) {
 				})
 				const labels = JSON.parse(result.response.responseText)
 				collectionPanel.labelGrid.setValue(labels)
+			}
 		}
 
 

@@ -380,6 +380,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 beforedestroy: function(grid) {
                     SM.Dispatcher.removeListener('assetchanged', me.onAssetChangedOrCreated, me)
                     SM.Dispatcher.removeListener('assetcreated', me.onAssetChangedOrCreated, me)
+                    SM.Dispatcher.removeListener('labelchanged', me.onLabelChanged, me)
+                    SM.Dispatcher.removeListener('labeldeleted', me.onLabelDeleted, me)
                 }
             },
             tbar: new Ext.Toolbar({
@@ -447,7 +449,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 
         SM.Dispatcher.addListener('assetchanged', this.onAssetChangedOrCreated, this)
         SM.Dispatcher.addListener('assetcreated', this.onAssetChangedOrCreated, this)
-        // SM.Dispatcher.addListener('labelcreated', this.onLabelCreated, this)
         SM.Dispatcher.addListener('labelchanged', this.onLabelChanged, this)
         SM.Dispatcher.addListener('labeldeleted', this.onLabelDeleted, this)
     }   
