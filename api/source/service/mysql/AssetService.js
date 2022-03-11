@@ -21,17 +21,16 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       ) as "collection"`,
       'a.description',
       'a.ip',
-      `(select
-          coalesce(
-            json_arrayagg(
-              BIN_TO_UUID(cl.uuid,1)
-            ), json_array()
-          )
+      `coalesce(
+        (select
+          json_arrayagg(BIN_TO_UUID(cl.uuid,1))
         from
-          collection_label_asset_map al
-          left join collection_label cl on al.clId = cl.clId
+          collection_label_asset_map cla
+          left join collection_label cl on cla.clId = cl.clId
         where
-          al.assetId = a.assetId) as labelIds`,
+          cla.assetId = a.assetId),
+        json_array()
+      ) as labelIds`,
       'a.mac',
       'a.noncomputing',
       'a.metadata'
@@ -132,8 +131,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       predicates.binds.push(inPredicates.assetId)
     }
     if (inPredicates.labelIds?.length) {
-      joins.push('left join collection_label_asset_map cla on a.assetId = cla.assetId')
-      predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
+      joins.push('left join collection_label_asset_map cla2 on a.assetId = cla2.assetId')
+      predicates.statements.push('cla2.clId IN (select clId from collection_label where uuid IN ?)')
       const uuidBinds = inPredicates.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
       predicates.binds.push([uuidBinds])
     }
@@ -576,13 +575,16 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     const columns = [
       'DISTINCT CAST(a.assetId as char) as assetId',
       'a.name',
-      `(SELECT 
-        coalesce(json_arrayagg(BIN_TO_UUID(cl2.uuid,1)),json_array())
-      FROM 
-        collection_label_asset_map cla2
-        left join collection_label cl2 on cla2.clId = cl2.clId
-      WHERE
-        cla2.assetId = a.assetId) as assetLabelIds`,
+      `coalesce(
+        (select
+          json_arrayagg(BIN_TO_UUID(cl.uuid,1))
+        from
+          collection_label_asset_map cla
+          left join collection_label cl on cla.clId = cl.clId
+        where
+          cla.assetId = a.assetId),
+        json_array()
+      ) as assetLabelIds`,
       'CAST(a.collectionId as char) as collectionId'
     ]
     let joins = [
@@ -625,8 +627,8 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
       predicates.binds.push( inPredicates.benchmarkId )
     }
     if (inPredicates.labelId?.length) {
-      joins.push('left join collection_label_asset_map cla on a.assetId = cla.assetId')
-      predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
+      joins.push('left join collection_label_asset_map cla2 on a.assetId = cla2.assetId')
+      predicates.statements.push('cla2.clId IN (select clId from collection_label where uuid IN ?)')
       const uuidBinds = inPredicates.labelId.map( uuid => dbUtils.uuidToSqlString(uuid))
       predicates.binds.push([uuidBinds])
     }
