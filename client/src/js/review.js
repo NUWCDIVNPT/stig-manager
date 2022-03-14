@@ -80,10 +80,10 @@ async function addReview( params ) {
       load: function (store, records) {
         // Were we passed a specific rule to select?
         if ('undefined' !== typeof selectedRule) {
-          var index = ourGrid.getStore().find('ruleId', selectedRule);
+          var index = store.find('ruleId', selectedRule);
           groupGrid.getSelectionModel().selectRow(index);
 
-          var rowEl = ourGrid.getView().getRow(index);
+          var rowEl = groupGrid.getView().getRow(index);
           //rowEl.scrollIntoView(ourGrid.getGridEl(), false);
           rowEl.scrollIntoView();
           //ourGrid.getView().focusRow(index+5);
@@ -1121,6 +1121,7 @@ async function addReview( params ) {
   } else {
     thisTab = tp.add( reviewTab )
   }
+  console.log('Review tab added')
   thisTab.updateTitle.call(thisTab)
   thisTab.show();
 

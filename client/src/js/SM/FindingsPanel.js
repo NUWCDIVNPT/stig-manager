@@ -1,202 +1,202 @@
 Ext.ns('SM')
 
 SM.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function () {
-        let me = this
-        let config = {
-            width: 70,
-            forceSelection: true,
-            editable: false,
-            mode: 'local',
-            triggerAction: 'all',
-            displayField:'display',
-            valueField: 'aggregator',
-            store: new Ext.data.SimpleStore({
-                fields: ['display', 'aggregator'],
-                data : [['Group', 'groupId'],['Rule', 'ruleId'],['CCI', 'cci']]
-            })
-        }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.AggregatorCombo.superclass.initComponent.call(this)
-    }
+	initComponent: function () {
+		let me = this
+		let config = {
+			width: 70,
+			forceSelection: true,
+			editable: false,
+			mode: 'local',
+			triggerAction: 'all',
+			displayField: 'display',
+			valueField: 'aggregator',
+			store: new Ext.data.SimpleStore({
+				fields: ['display', 'aggregator'],
+				data: [['Group', 'groupId'], ['Rule', 'ruleId'], ['CCI', 'cci']]
+			})
+		}
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		SM.AggregatorCombo.superclass.initComponent.call(this)
+	}
 })
 Ext.reg('sm-aggregator-combo', SM.AggregatorCombo)
 
 SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
-    initComponent: function() {
-        let me = this
-        this.aggValue = this.aggValue || 'groupId'
-        this.stigAllValue = '--- All Collection STIGs ---'
-        this.stigValue = this.stigValue || this.stigAllValue
-        const store = new Ext.data.JsonStore({
-					proxy: new Ext.data.HttpProxy({
-						url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/findings`,
-						method: 'GET'
-					}),
-					baseParams: {
-						projection: 'stigs'
-					},
-					sortInfo: {
-						field: 'assetCount',
-						direction: 'DESC'
-					},
-					root: '',
-					fields: [
-						{ name: 'severity', type: 'string', sortType: sortSeverity },
-						{ name: 'assetCount', type: 'int' },
-						{ name: 'stigs' },
-						{ name: 'groupId', type: 'string', sortType: sortGroupId },
-						{ name: 'ruleId', type: 'string' },
-						{ name: 'title', type: 'string' },
-						{ name: 'cci', type: 'string' },
-						{ name: 'definition', type: 'string' },
-						{ name: 'apAcronym', type: 'string' },
-					],
-					listeners: {
-						load: function (store, records) {
-							setColumnStates(me.aggValue)
-						}
-					}
-        })
-				const totalTextCmp = new SM.RowCountTextItem({store:store})
-        const renderSeverity = (val) => {
-            switch (val) {
-                case 'high':
-                    return '<span class="sm-grid-sprite sm-severity-high">CAT 1</span>'
-                case 'medium':
-                    return '<span class="sm-grid-sprite sm-severity-medium">CAT 2</span>'
-                case 'low':
-                    return '<span class="sm-grid-sprite sm-severity-low">CAT 3</span>'
-                case 'mixed':
-                    return '<span class="sm-grid-sprite sm-severity-low">Mixed</span>'
-                default:
-                    return '<span class="sm-grid-sprite sm-severity-low">U</span>'
-            }
-        }
-        const colModel = new Ext.grid.ColumnModel([
-			{ 
-				header: "CAT", 
+	initComponent: function () {
+		let me = this
+		this.aggValue = this.aggValue || 'groupId'
+		this.stigAllValue = '--- All Collection STIGs ---'
+		this.stigValue = this.stigValue || this.stigAllValue
+		const store = new Ext.data.JsonStore({
+			proxy: new Ext.data.HttpProxy({
+				url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/findings`,
+				method: 'GET'
+			}),
+			baseParams: {
+				projection: 'stigs'
+			},
+			sortInfo: {
+				field: 'assetCount',
+				direction: 'DESC'
+			},
+			root: '',
+			fields: [
+				{ name: 'severity', type: 'string', sortType: sortSeverity },
+				{ name: 'assetCount', type: 'int' },
+				{ name: 'stigs' },
+				{ name: 'groupId', type: 'string', sortType: sortGroupId },
+				{ name: 'ruleId', type: 'string' },
+				{ name: 'title', type: 'string' },
+				{ name: 'cci', type: 'string' },
+				{ name: 'definition', type: 'string' },
+				{ name: 'apAcronym', type: 'string' },
+			],
+			listeners: {
+				load: function (store, records) {
+					setColumnStates(me.aggValue)
+				}
+			}
+		})
+		const totalTextCmp = new SM.RowCountTextItem({ store: store })
+		const renderSeverity = (val) => {
+			switch (val) {
+				case 'high':
+					return '<span class="sm-grid-sprite sm-severity-high">CAT 1</span>'
+				case 'medium':
+					return '<span class="sm-grid-sprite sm-severity-medium">CAT 2</span>'
+				case 'low':
+					return '<span class="sm-grid-sprite sm-severity-low">CAT 3</span>'
+				case 'mixed':
+					return '<span class="sm-grid-sprite sm-severity-low">Mixed</span>'
+				default:
+					return '<span class="sm-grid-sprite sm-severity-low">U</span>'
+			}
+		}
+		const colModel = new Ext.grid.ColumnModel([
+			{
+				header: "CAT",
 				hidden: false,
-				align: 'center', 
-				width: 60, 
-				dataIndex: 'severity', 
-				sortable: true, 
+				align: 'center',
+				width: 60,
+				dataIndex: 'severity',
+				sortable: true,
 				renderer: renderSeverity,
 				filter: {
 					type: 'values',
 					comparer: SM.ColumnFilters.CompareFns.severity,
 					renderer: SM.ColumnFilters.Renderers.severity
-				}	
+				}
 			},
-			{ 
-				header: "Group", 
+			{
+				header: "Group",
 				hidden: false,
-				width: 80, 
-				dataIndex: 'groupId', 
+				width: 80,
+				dataIndex: 'groupId',
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			{ 
-				header: "Rule", 
+			{
+				header: "Rule",
 				hidden: true,
-				width: 80, 
-				dataIndex: 'ruleId', 
+				width: 80,
+				dataIndex: 'ruleId',
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			{ 
-				header: "CCI", 
+			{
+				header: "CCI",
 				hidden: true,
-				width: 80, 
-				dataIndex: 'cci', 
+				width: 80,
+				dataIndex: 'cci',
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			{ 
-				header: "AP Acronym", 
+			{
+				header: "AP Acronym",
 				hidden: true,
-				width: 80, 
-				dataIndex: 'apAcronym', 
+				width: 80,
+				dataIndex: 'apAcronym',
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			{ 
-				header: "Title", 
+			{
+				header: "Title",
 				hidden: false,
-				width: 270, 
-				dataIndex: 'title', 
-				renderer: columnWrap, 
+				width: 270,
+				dataIndex: 'title',
+				renderer: columnWrap,
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			{ 
-				header: "Definition", 
+			{
+				header: "Definition",
 				hidden: true,
-				width: 135, 
-				dataIndex: 'definition', 
-				renderer: columnWrap, 
+				width: 135,
+				dataIndex: 'definition',
+				renderer: columnWrap,
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			{ 
-				header: "Assets", 
+			{
+				header: "Assets",
 				hidden: false,
-				width: 75, 
-				align: 'center', 
-				dataIndex: 'assetCount', 
+				width: 75,
+				align: 'center',
+				dataIndex: 'assetCount',
 				sortable: true
-		},
-			{ 
+			},
+			{
 				header: "STIGs",
 				hidden: false,
-				width: 120, 
-				dataIndex: 'stigs', 
+				width: 120,
+				dataIndex: 'stigs',
 				renderer: v => {
 					return columnWrap(v.join('\n'))
-				}, 
-				sortable: true, 
+				},
+				sortable: true,
 			}
-        ])
-        const view = new SM.ColumnFilters.GridView({
+		])
+		const view = new SM.ColumnFilters.GridView({
 			forceFit: true,
 			emptyText: 'No records found.',
 			listeners: {
 				filterschanged: function (view) {
-					store.filter(view.getFilterFns())  
+					store.filter(view.getFilterFns())
 				}
-			},		
+			},
 		})
-        const sm = new Ext.grid.RowSelectionModel({
+		const sm = new Ext.grid.RowSelectionModel({
 			singleSelect: true,
 			listeners: {
 				rowselect: (sm, index, record) => {
-                    me.panel.fireEvent('parentrowselect', sm, index, record)
-                }
+					me.panel.fireEvent('parentrowselect', sm, index, record)
+				}
 			}
-        })
-        const tbar = new Ext.Toolbar({
+		})
+		const tbar = new Ext.Toolbar({
 			items: [
 				{
 					xtype: 'tbtext',
-                    text: 'Aggregator:'                    
-                },
-                ' ',' ',' ',
-				{
-                    xtype: 'sm-aggregator-combo',
-                    value: this.aggValue,
-                    listeners: {
-                        select: function (f, r, i) {
-                            me.aggValue = f.getValue()
-                            me.fireEvent('aggregatorchanged', me.aggValue)
-                        }
-                    }
+					text: 'Aggregator:'
 				},
-                ' ',' ',' ',
+				' ', ' ', ' ',
+				{
+					xtype: 'sm-aggregator-combo',
+					value: this.aggValue,
+					listeners: {
+						select: function (f, r, i) {
+							me.aggValue = f.getValue()
+							me.fireEvent('aggregatorchanged', me.aggValue)
+						}
+					}
+				},
+				' ', ' ', ' ',
 				{
 					xtype: 'tbtext',
 					text: 'STIG:  '
 				},
-                ' ',' ',' ',
+				' ', ' ', ' ',
 				{
 					xtype: 'sm-stig-selection-field',
 					url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}?projection=stigs`,
@@ -211,7 +211,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					value: this.stigValue,
 					listeners: {
 						select: function (f, r, i) {
-                            me.stigValue = f.getValue()
+							me.stigValue = f.getValue()
 							me.fireEvent('stigchanged', me.stigValue)
 						}
 					}
@@ -223,7 +223,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			iconCls: 'icon-excel',
 			text: 'Generate POA&M...'
 		})
-        const bbar = new Ext.Toolbar({
+		const bbar = new Ext.Toolbar({
 			items: [
 				{
 					xtype: 'tbbutton',
@@ -296,133 +296,133 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			// colModel.resumeEvents()
 			// view.layout(true)
 		}
-        const onAggregatorChanged = (aggregator) => {
-            const params = {
-                aggregator: aggregator
-            }
-            if (me.stigValue != me.stigAllValue) {
-                params.benchmarkId = me.stigValue
-            }
-            store.load({
-                params: params
+		const onAggregatorChanged = (aggregator) => {
+			const params = {
+				aggregator: aggregator
+			}
+			if (me.stigValue != me.stigAllValue) {
+				params.benchmarkId = me.stigValue
+			}
+			store.load({
+				params: params
 			})
 			generatePoamBtn.setDisabled(aggregator === 'cci')
-        }
-        const onStigChanged = (benchmarkId) => {
-            const params = {
-                aggregator: me.aggValue
-            }
-            if (benchmarkId != me.stigAllValue) {
-                params.benchmarkId = benchmarkId
-            }
-            store.load({
-                params: params
-            })
-        }
-        
-        const config = {
+		}
+		const onStigChanged = (benchmarkId) => {
+			const params = {
+				aggregator: me.aggValue
+			}
+			if (benchmarkId != me.stigAllValue) {
+				params.benchmarkId = benchmarkId
+			}
+			store.load({
+				params: params
+			})
+		}
+
+		const config = {
 			loadMask: true,
 			stripeRows: true,
-            store: store,
-            colModel: colModel,
-            view: view,
-            sm: sm,
-            tbar: tbar,
-            bbar: bbar,
-            listeners: {
-                aggregatorchanged: onAggregatorChanged,
-                stigchanged: onStigChanged
-            },
+			store: store,
+			colModel: colModel,
+			view: view,
+			sm: sm,
+			tbar: tbar,
+			bbar: bbar,
+			listeners: {
+				aggregatorchanged: onAggregatorChanged,
+				stigchanged: onStigChanged
+			},
 
-        }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.FindingsParentGrid.superclass.initComponent.call(this)
-    }
+		}
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		SM.FindingsParentGrid.superclass.initComponent.call(this)
+	}
 })
 
 SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
-    initComponent: function() {
-        const me = this
-        const store = new Ext.data.JsonStore({
-					proxy: new Ext.data.HttpProxy({
-						url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/reviews`,
-						method: 'GET'
-					}),
-					baseParams: {
-						result: 'fail',
-						projection: 'stigs'
-					},
-					sortInfo: {
-						field: 'assetName',
-						direction: 'ASC'
-					},
-					root: '',
-					fields: [
-						{ name: 'assetId', type: 'string' },
-						{ name: 'assetName', type: 'string' },
-						{ name: 'assetLabelIds' },
-						{ name: 'stigs' },
-						{ name: 'ruleId', type: 'string' },
-						{ name: 'severity', type: 'string' },
-						{ name: 'result', type: 'string' },
-						{ name: 'detail', type: 'string' },
-						{ name: 'comment', type: 'string' },
-						{ name: 'autoResult', type: 'boolean' },
-						{ name: 'status', type: 'string' },
-						{ name: 'userId', type: 'string' },
-						{ name: 'username', type: 'string' },
-						{ name: 'ts', type: 'string' },
-						{ name: 'reviewComplete', type: 'boolean' }
-					]
-        })
-			const totalTextCmp = new SM.RowCountTextItem({store:store})
-			const expander = new Ext.ux.grid.RowExpander({
+	initComponent: function () {
+		const me = this
+		const store = new Ext.data.JsonStore({
+			proxy: new Ext.data.HttpProxy({
+				url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/reviews`,
+				method: 'GET'
+			}),
+			baseParams: {
+				result: 'fail',
+				projection: 'stigs'
+			},
+			sortInfo: {
+				field: 'assetName',
+				direction: 'ASC'
+			},
+			root: '',
+			fields: [
+				{ name: 'assetId', type: 'string' },
+				{ name: 'assetName', type: 'string' },
+				{ name: 'assetLabelIds' },
+				{ name: 'stigs' },
+				{ name: 'ruleId', type: 'string' },
+				{ name: 'severity', type: 'string' },
+				{ name: 'result', type: 'string' },
+				{ name: 'detail', type: 'string' },
+				{ name: 'comment', type: 'string' },
+				{ name: 'autoResult', type: 'boolean' },
+				{ name: 'status', type: 'string' },
+				{ name: 'userId', type: 'string' },
+				{ name: 'username', type: 'string' },
+				{ name: 'ts', type: 'string' },
+				{ name: 'reviewComplete', type: 'boolean' }
+			]
+		})
+		const totalTextCmp = new SM.RowCountTextItem({ store: store })
+		const expander = new Ext.ux.grid.RowExpander({
 			tpl: new Ext.XTemplate(
-			  '<b>Reviewer:</b> {username}</p>',
-			  '<tpl if="detail">',
+				'<b>Reviewer:</b> {username}</p>',
+				'<tpl if="detail">',
 				'<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
-			  '</tpl>',
-			  '<tpl if="comment">',
+				'</tpl>',
+				'<tpl if="comment">',
 				'<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
-			  '</tpl>'
+				'</tpl>'
 			)
-		  })
-        const columns = [
+		})
+		const columns = [
 			expander,
-			{ 
-				header: "Asset", 
-				width: 80, 
-				dataIndex: 'assetName', 
+			{
+				header: "Asset",
+				width: 80,
+				dataIndex: 'assetName',
 				sortable: true,
-				filter: {type: 'string'}
-			 },
-			 {
-        header: "Labels",
-        width: 120,
-        dataIndex: 'assetLabelIds',
-        sortable: false,
-        filter: {
-            type: 'values', 
-            collectionId: me.panel.collectionId,
-            renderer: SM.ColumnFilters.Renderers.labels
-        },
-        renderer: function (value, metadata) {
-            const labels = []
-            for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(me.panel.collectionId).labelMap.get(labelId)
-                if (label) labels.push(label)
-            }
-            labels.sort((a,b) => a.name.localeCompare(b.name))
-            metadata.attr = 'style="white-space:normal;"'
-            return SM.Collection.LabelArrayTpl.apply(labels)
-        }
-      },
-			{ 
-				header: "Rule", 
-				width: 80, 
-				dataIndex: 'ruleId', 
-				sortable: true, 
-				filter: {type: 'string'}
+				filter: { type: 'string' }
+			},
+			{
+				header: "Labels",
+				width: 120,
+				dataIndex: 'assetLabelIds',
+				sortable: false,
+				filter: {
+					type: 'values',
+					collectionId: me.panel.collectionId,
+					renderer: SM.ColumnFilters.Renderers.labels
+				},
+				renderer: function (value, metadata) {
+					const labels = []
+					for (const labelId of value) {
+						const label = SM.Cache.CollectionMap.get(me.panel.collectionId).labelMap.get(labelId)
+						if (label) labels.push(label)
+					}
+					labels.sort((a, b) => a.name.localeCompare(b.name))
+					metadata.attr = 'style="white-space:normal;"'
+					return SM.Collection.LabelArrayTpl.apply(labels)
+				}
+			},
+			{
+				header: "Rule",
+				width: 80,
+				dataIndex: 'ruleId',
+				sortable: true,
+				filter: { type: 'string' }
 			},
 			// { 
 			// 	header: "Severity", 
@@ -438,35 +438,35 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			// 	sortable: true,
 			// 	hidden: true
 			// },
-			{ 
-				header: "Last changed", 
-				width: 80, 
-				dataIndex: 'ts', 
-				sortable: true, 
+			{
+				header: "Last changed",
+				width: 80,
+				dataIndex: 'ts',
+				sortable: true,
 			},
-			{ 
-				header: "STIGs", 
-				width: 130, 
-				dataIndex: 'stigs', 
+			{
+				header: "STIGs",
+				width: 130,
+				dataIndex: 'stigs',
 				renderer: v => {
 					return columnWrap(v.join('\n'))
-				}, 
-				sortable: true, 
+				},
+				sortable: true,
 			}
-        ]
-        const view = new SM.ColumnFilters.GridView({
+		]
+		const view = new SM.ColumnFilters.GridView({
 			forceFit: true,
 			emptyText: 'Select a finding to the left.',
 			listeners: {
 				filterschanged: function (view, item, value) {
-				  store.filter(view.getFilterFns())  
+					store.filter(view.getFilterFns())
 				}
-			}		
-        })
-        const sm = new Ext.grid.RowSelectionModel({
+			}
+		})
+		const sm = new Ext.grid.RowSelectionModel({
 			singleSelect: true
-        })
-        const bbar = new Ext.Toolbar({
+		})
+		const bbar = new Ext.Toolbar({
 			items: [
 				{
 					xtype: 'tbbutton',
@@ -497,48 +497,48 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				totalTextCmp
 			]
 		})
-		
-        const config = {
-            loadMask: true,
+
+		const config = {
+			loadMask: true,
 			stripeRows: true,
 			plugins: expander,
-			store: store,
-            columns: columns,
-            view: view,
-            sm: sm,
-            bbar: bbar
-        }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.FindingsChildGrid.superclass.initComponent.call(this)
-    }
+			store,
+			columns,
+			view,
+			sm,
+			bbar
+		}
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		SM.FindingsChildGrid.superclass.initComponent.call(this)
+	}
 })
 
 SM.PoamStatusComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function() {
-        let config = {
-            displayField: 'display',
-            valueField: 'value',
-            triggerAction: 'all',
-            mode: 'local',
-            editable: false      
-        }
-        let me = this
-        let data = [
-            ['Ongoing','Ongoing'],
-            ['Completed', 'Completed']
-        ]
-        this.store = new Ext.data.SimpleStore({
-            fields: ['value','display']
-        })
-        this.store.on('load',function(store){
-            me.setValue(store.getAt(0).get('value'))
-        })
+	initComponent: function () {
+		let config = {
+			displayField: 'display',
+			valueField: 'value',
+			triggerAction: 'all',
+			mode: 'local',
+			editable: false
+		}
+		let me = this
+		let data = [
+			['Ongoing', 'Ongoing'],
+			['Completed', 'Completed']
+		]
+		this.store = new Ext.data.SimpleStore({
+			fields: ['value', 'display']
+		})
+		this.store.on('load', function (store) {
+			me.setValue(store.getAt(0).get('value'))
+		})
 
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PoamStatusComboBox.superclass.initComponent.call(this)
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		SM.PoamStatusComboBox.superclass.initComponent.call(this)
 
-        this.store.loadData(data)
-    }
+		this.store.loadData(data)
+	}
 })
 Ext.reg('sm-poam-status-combo', SM.PoamStatusComboBox);
 
@@ -584,43 +584,43 @@ SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 					value: 'Ongoing'
 				}]
 			}
-			
+
 		]
 		const config = {
-            baseCls: 'x-plain',
-            labelWidth: 70,
-            monitorValid: true,
+			baseCls: 'x-plain',
+			labelWidth: 70,
+			monitorValid: true,
 			trackResetOnLoad: true,
 			items: items,
-            buttons: [{
+			buttons: [{
 				text: this.btnText || 'Generate',
 				iconCls: 'icon-excel',
 				height: 30,
 				width: 120,
 				parentPanel: me,
-                formBind: true,
-                handler: this.btnHandler || function () {}
-            }]
+				formBind: true,
+				handler: this.btnHandler || function () { }
+			}]
 		}
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.PoamOptionsPanel.superclass.initComponent.call(this)
+		SM.PoamOptionsPanel.superclass.initComponent.call(this)
 	}
 })
 
-SM.RequestAndServePoam = async function ( collectionId, params ) {
+SM.RequestAndServePoam = async function (collectionId, params) {
 	let mb
 	try {
 		mb = Ext.MessageBox.wait('Generating POA&M')
 		const search = new URLSearchParams(params).toString()
 		let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/poam?${search}`
-	
+
 		await window.oidcProvider.updateToken(10)
 		let response = await fetch(
 			url,
 			{
 				method: 'GET',
 				headers: new Headers({
-					  'Authorization': `Bearer ${window.oidcProvider.token}`
+					'Authorization': `Bearer ${window.oidcProvider.token}`
 				})
 			}
 		)
@@ -629,9 +629,9 @@ SM.RequestAndServePoam = async function ( collectionId, params ) {
 		const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
 		const blob = await response.blob()
 		mb.hide()
-		downloadBlob (blob, filename)
-	
-		function downloadBlob (blob, filename) {
+		downloadBlob(blob, filename)
+
+		function downloadBlob(blob, filename) {
 			let a = document.createElement('a')
 			a.style.display = "none"
 			let url = window.URL.createObjectURL(blob)
@@ -645,7 +645,7 @@ SM.RequestAndServePoam = async function ( collectionId, params ) {
 	}
 	catch (e) {
 		mb.hide()
-		alert (e.message)
+		alert(e.message)
 	}
 }
 
@@ -659,14 +659,14 @@ SM.GeneratePoamButton = Ext.extend(Ext.Button, {
 				btnHandler: (btn, e) => {
 					const params = poamOptionsPanel.getForm().getFieldValues()
 					if (params.date && params.date instanceof Date) {
-						params.date = Ext.util.Format.date(params.date,'m/d/Y')
+						params.date = Ext.util.Format.date(params.date, 'm/d/Y')
 					}
 					params.aggregator = me.parentGrid.aggValue
 					if (me.parentGrid.stigValue && me.parentGrid.stigValue !== me.parentGrid.stigAllValue) {
 						params.benchmarkId = me.parentGrid.stigValue
 					}
 					appwindow.close()
-					SM.RequestAndServePoam( me.parentGrid.panel.collectionId, params )
+					SM.RequestAndServePoam(me.parentGrid.panel.collectionId, params)
 				}
 			})
 			/******************************************************/
@@ -678,11 +678,11 @@ SM.GeneratePoamButton = Ext.extend(Ext.Button, {
 				modal: true,
 				hidden: true,
 				width: 230,
-				height:310,
+				height: 310,
 				layout: 'fit',
-				plain:true,
-				bodyStyle:'padding:5px;',
-				buttonAlign:'right',
+				plain: true,
+				bodyStyle: 'padding:5px;',
+				buttonAlign: 'right',
 				items: poamOptionsPanel
 			})
 			appwindow.show(document.body);
@@ -695,71 +695,90 @@ SM.GeneratePoamButton = Ext.extend(Ext.Button, {
 		}
 
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.GeneratePoamButton.superclass.initComponent.call(this)
+		SM.GeneratePoamButton.superclass.initComponent.call(this)
 	}
 })
 Ext.reg('sm-generate-poam-button', SM.GeneratePoamButton);
 
 // config: {collectionId}
 SM.FindingsPanel = Ext.extend(Ext.Panel, {
-    initComponent: function () {
+	initComponent: function () {
 		const me = this
-        const parent = new SM.FindingsParentGrid({
-					cls: 'sm-round-panel',
-					margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
-          border: false,                 
-					region: 'center',
-					panel: this,
-					aggValue: me.aggregator || 'groupId',
-					title: 'Aggregated Findings'
-        })
-        const child = new SM.FindingsChildGrid({
-					cls: 'sm-round-panel',
-					margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
-					border: false,                 
-					region: 'east',
-					width: '60%',
-					split: true,
-					panel: this,
-					title: 'Individual Findings'
-        })
-        parent.child = child
-        child.parent = parent
-        this.parent = parent
-        this.child = child
+		const parent = new SM.FindingsParentGrid({
+			cls: 'sm-round-panel',
+			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+			border: false,
+			region: 'center',
+			panel: this,
+			aggValue: me.aggregator || 'groupId',
+			title: 'Aggregated Findings'
+		})
+		const child = new SM.FindingsChildGrid({
+			cls: 'sm-round-panel',
+			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
+			border: false,
+			region: 'east',
+			width: '60%',
+			split: true,
+			panel: this,
+			title: 'Individual Findings',
+			listeners: {
+				rowdblclick: onChildRowDblClick
+			}
+		})
+		parent.child = child
+		child.parent = parent
+		this.parent = parent
+		this.child = child
 
-        onParentRowSelect = (sm, index, record) => {
-            const params = {}
-            params[parent.aggValue] = record.data[parent.aggValue]
-            if (parent.stigValue !== parent.stigAllValue) {
-                params.benchmarkId = parent.stigValue
-            }
-            child.store.load({
-                params: params
-            })
-        }
-        const config = {
-            layout: 'border',
-            border: false,
-            items: [
-                parent,
-                child
-            ],
-            listeners: {
-                parentrowselect: onParentRowSelect
-            }
-        }
+		onParentRowSelect = (sm, index, record) => {
+			const params = {}
+			params[parent.aggValue] = record.data[parent.aggValue]
+			if (parent.stigValue !== parent.stigAllValue) {
+				params.benchmarkId = parent.stigValue
+			}
+			child.store.load({
+				params: params
+			})
+		}
+		function onChildRowDblClick (grid, rowIndex) {
+			const r = grid.getStore().getAt(rowIndex);
+			const leaf = {
+				collectionId: grid.panel.collectionId, 
+				assetId: r.data.assetId,
+				assetName: r.data.assetName,
+				assetLabelIds: r.data.assetLabelIds,
+				benchmarkId: r.data.stigs[0],
+				stigName: r.data.stigs[0],
+			}
+			addReview({
+				leaf,
+				selectedRule: r.data.ruleId
+			})
+		}
 
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.FindingsPanel.superclass.initComponent.call(this)
+		const config = {
+			layout: 'border',
+			border: false,
+			items: [
+				parent,
+				child
+			],
+			listeners: {
+				parentrowselect: onParentRowSelect
+			}
+		}
 
-        // parent.store.load({
-        //     params: {
-        //         aggregator: parent.aggValue
-        //     }
-        // })
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		SM.FindingsPanel.superclass.initComponent.call(this)
 
-    }
+		// parent.store.load({
+		//     params: {
+		//         aggregator: parent.aggValue
+		//     }
+		// })
+
+	}
 })
 
 

@@ -20,7 +20,7 @@ function addFindingsSummary( params ) {
 		title: '',
 		closable: true,
 		layout: 'fit',
-		sm_tabMode: 'ephemeral',
+		sm_tabMode: 'permanent',
 		sm_treePath: treePath,
 		items: [findingsPanel]
 	})
