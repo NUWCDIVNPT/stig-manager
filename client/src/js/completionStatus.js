@@ -118,20 +118,18 @@ function addCompletionStatus( params) {
 		}),
 		listeners: {
 			rowdblclick: {
-				fn: function(grid,rowIndex,e) {
-					var r = grid.getStore().getAt(rowIndex);
+				fn: function (grid, rowIndex) {
+					const r = grid.getStore().getAt(rowIndex);
 					if (r.get('stigTitle') != '!! NO STIG ASSIGNMENTS !!') {
-						Ext.getCmp('main-tabs').setActiveTab('tab-reviews');
-						var n = new Object();
-						var attributes = new Object();
-						attributes.report = "review";
-						attributes.assetId = r.get('assetId');
-						attributes.assetName = r.get('assetName');
-						attributes.benchmarkId = r.get('benchmarkId');
-						attributes.stigName = r.get('benchmarkId');
-						attributes.revId = r.get('revId');
-						n.attributes = attributes;
-						reviewsTreeClick(n);
+						const leaf = {
+							collectionId, 
+							assetId: r.data.assetId,
+							assetName: r.data.assetName,
+							assetLabelIds: r.data.assetLabelIds,
+							benchmarkId: r.data.benchmarkId,
+							stigName: r.data.benchmarkId,
+						}
+						addReview({leaf})
 					}
 				}
 			}
@@ -251,7 +249,7 @@ function addCompletionStatus( params) {
 		title: '',
 		closable:true,
 		layout: 'border',
-		sm_tabMode: 'ephemeral',
+		sm_tabMode: 'permanent',
 		sm_treePath: treePath,
 		items: [completionGrid]
 	})
