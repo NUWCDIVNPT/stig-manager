@@ -1,5 +1,19 @@
 async function addReview( params ) {
-  let { leaf, selectedRule, selectedResource, treePath } = params
+  let { leaf, selectedRule, selectedResource, treePath, dblclick = false } = params
+  const idAppend = '-' + leaf.assetId + '-' + leaf.benchmarkId.replace(".", "_");
+  const tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
+  if (tab) {
+    if (dblclick) {
+      tab.makePermanent()
+    }
+    tab.show()
+    if (selectedRule) {
+      tab.selectRule(selectedRule)
+    }
+    return
+  }
+
+
   let result = await Ext.Ajax.requestPromise({
     url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
     method: 'GET'
@@ -13,8 +27,6 @@ async function addReview( params ) {
     let match = leaf.stigRevStr.match(/V(\d+)R(\d+)/)
     leaf.revId = `${leaf.benchmarkId}-${match[1]}-${match[2]}`
   }
-  var idAppend = '-' + leaf.assetId + '-' + leaf.benchmarkId.replace(".", "_");
-  var TEMPLATE_STR = '!_TEMPLATE';
   var unsavedChangesPrompt = 'You have modified your review. Would you like to save your changes?';
 
   /******************************************************/
@@ -1101,6 +1113,12 @@ async function addReview( params ) {
           return true;
         }
       }
+    },
+    selectRule: function (ruleId) {
+      const index = groupStore.find('ruleId', selectedRule);
+      groupGrid.getSelectionModel().selectRow(index);
+      var rowEl = groupGrid.getView().getRow(index);
+      rowEl.scrollIntoView();
     }
   })
   reviewTab.updateTitle = function () {
@@ -1121,7 +1139,6 @@ async function addReview( params ) {
   } else {
     thisTab = tp.add( reviewTab )
   }
-  console.log('Review tab added')
   thisTab.updateTitle.call(thisTab)
   thisTab.show();
 

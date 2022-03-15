@@ -924,20 +924,11 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           })
         }
         if (n.attributes.report == 'review') {
-          idAppend = '-' + n.attributes.assetId + '-' + n.attributes.benchmarkId.replace(".", "_");
-          tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
-          if (tab) {
-            // Detect double click
-            if (e.browserEvent.detail === 2) {
-              tab.makePermanent()
-            }
-            tab.show();
-          } else {
-            addReview({
-              leaf: n.attributes,
-              treePath: n.getPath()
-            })
-          }
+          addReview({
+            leaf: n.attributes,
+            treePath: n.getPath(),
+            dblclick: e.browserEvent.detail === 2
+          })
         }
         if (n.attributes.report == 'collection-review') {
           idAppend = '-' + n.attributes.collectionId + '-' + n.attributes.benchmarkId.replace(".", "_");
