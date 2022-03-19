@@ -821,7 +821,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       if (revisionStr === 'latest') {
         ;[resultGetBenchmarkId] = await connection.query(sqlGetBenchmarkId, [benchmarkId])
         revId = resultGetBenchmarkId[0].revId
-        revisionStrResolved = 'V' + resultGetBenchmarkId[0].version + 'R' + resultGetBenchmarkId[0].release
+        revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
       }
       else {
         let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
@@ -918,7 +918,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       cklJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
     }
 
-    return ({assetName: resultGetAsset[0].name, cklJs: cklJs, revisionStrResolved: revisionStrResolved})
+    return ({assetName: resultGetAsset[0].name, cklJs, revisionStrResolved})
 
   }
   catch (e) {
