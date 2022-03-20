@@ -9257,7 +9257,7 @@
 																	"let testAsset = pm.environment.get(\"testAsset\");\r",
 																	"\r",
 																	"pm.test(\"Response matches request\", function () {\r",
-																	"    pm.expect(jsonData[0].assetId).to.equal(JSON.parse(testAsset))\r",
+																	"    pm.expect(jsonData[0].assetId).to.equal(testAsset)\r",
 																	"})\r",
 																	"\r",
 																	"\r",
