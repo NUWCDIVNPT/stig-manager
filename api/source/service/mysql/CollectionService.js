@@ -715,9 +715,9 @@ exports.deleteCollection = async function(collectionId, projection, elevate, use
 /**
  * Return the Checklist for the supplied Collection and STIG 
  *
- * collectionId Integer A path parameter that indentifies a Collection
- * benchmarkId String A path parameter that indentifies a STIG
- * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
+ * collectionId Integer A path parameter that identifies a Collection
+ * benchmarkId String A path parameter that identifies a STIG
+ * revisionStr String A path parameter that identifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns CollectionChecklist
  **/
 exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId, revisionStr, userObject ) {
@@ -1200,7 +1200,7 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
   }
   
   let sql = `
-    SELECT a.assetId, 
+    SELECT CAST(a.assetId as char) as assetId, 
       (select coalesce(
         (select json_arrayagg(
           json_object
@@ -1286,7 +1286,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
     sql += `, coalesce(
       (SELECT json_arrayagg(
         json_object(
-          'assetId', assetId,
+          'assetId', CAST(assetId as char) ,
           'historyEntryCount', historyEntryCount,
           'oldestHistoryEntry', oldestHistoryEntry
           )
@@ -1502,7 +1502,7 @@ exports.deleteCollectionLabelById = async function (collectionId, labelId) {
 exports.getAssetsByCollectionLabelId = async function (collectionId, labelId, userObject) {
   const sqlGetAssets = `
 select
-	a.assetId,
+  CAST(a.assetId as char) as assetId ,
   a.name
 from
   collection_label cl 
