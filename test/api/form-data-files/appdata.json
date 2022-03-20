@@ -935,26 +935,103 @@
       "metadata": {
         "testkey": "testvalue"
       },
-      "history": []
+      "history": [
+        {
+          "ts": "2020-08-11T23:37:45Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2020-08-11T23:37:45Z",
+            "text": null,
+            "label": "submitted",
+            "userId": "1"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2020-08-11T23:37:45Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2020-08-11T23:37:45Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2022-01-26T01:22:58Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2022-01-26T01:22:58Z",
+          "autoResult": false
+        }
+      ]
     },
     {
       "assetId": "42",
       "ruleId": "SV-106181r1_rule",
       "result": "notapplicable",
-      "detail": "test\nvisible to lvl1",
+      "detail": "test\nvisible to lvl1\nhas history",
       "autoResult": false,
-      "comment": null,
-      "userId": "1",
-      "ts": "2020-08-11T22:26:50Z",
-      "touchTs": "2020-08-11T22:26:50Z",
+      "comment": "",
+      "userId": "87",
+      "ts": "2022-02-03T00:07:05Z",
+      "touchTs": "2022-02-03T00:07:07Z",
       "status": {
-        "ts": "2020-08-11T22:26:50Z",
+        "ts": "2022-02-03T00:07:07Z",
         "text": null,
         "label": "submitted",
-        "userId": "1"
+        "userId": "87"
       },
       "metadata": {},
-      "history": []
+      "history": [
+        {
+          "ts": "2020-08-11T22:26:50Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "notapplicable",
+          "status": {
+            "ts": "2020-08-11T22:26:50Z",
+            "text": null,
+            "label": "submitted",
+            "userId": "1"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2020-08-11T22:26:50Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2020-08-11T22:26:50Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "notapplicable",
+          "status": {
+            "ts": "2022-02-03T00:06:56Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2022-02-03T00:06:56Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2022-02-03T00:07:05Z",
+          "detail": "test\nvisible to lvl1\nhas history",
+          "result": "notapplicable",
+          "status": {
+            "ts": "2022-02-03T00:07:05Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "87",
+          "comment": "",
+          "touchTs": "2022-02-03T00:07:05Z",
+          "autoResult": false
+        }
+      ]
     },
     {
       "assetId": "42",
@@ -1106,38 +1183,7 @@
         "userId": "87"
       },
       "metadata": {},
-      "history": [
-        {
-          "ts": "2020-08-11T23:37:45Z",
-          "detail": "test\nvisible to lvl1",
-          "result": "pass",
-          "status": {
-            "ts": "2020-08-11T23:37:45Z",
-            "text": null,
-            "label": "submitted",
-            "userId": "1"
-          },
-          "userId": "1",
-          "comment": null,
-          "touchTs": "2020-08-11T23:37:45Z",
-          "autoResult": false
-        },
-        {
-          "ts": "2020-08-11T23:37:45Z",
-          "detail": "test\nvisible to lvl1",
-          "result": "pass",
-          "status": {
-            "ts": "2022-01-26T01:22:58Z",
-            "text": null,
-            "label": "saved",
-            "userId": "87"
-          },
-          "userId": "1",
-          "comment": null,
-          "touchTs": "2022-01-26T01:22:58Z",
-          "autoResult": false
-        }
-      ]
+      "history": []
     },
     {
       "assetId": "62",
@@ -1200,20 +1246,51 @@
       "assetId": "154",
       "ruleId": "SV-106179r1_rule",
       "result": "pass",
-      "detail": "test\nvisible to lvl1",
+      "detail": "test\nvisible to lvl1\nhas history",
       "autoResult": false,
-      "comment": null,
-      "userId": "1",
-      "ts": "2020-08-11T22:30:38Z",
-      "touchTs": "2020-08-11T22:30:38Z",
+      "comment": "",
+      "userId": "87",
+      "ts": "2022-02-02T20:20:18Z",
+      "touchTs": "2022-02-02T20:20:18Z",
       "status": {
-        "ts": "2020-08-11T22:30:38Z",
+        "ts": "2022-02-02T20:20:18Z",
         "text": null,
         "label": "submitted",
-        "userId": "1"
+        "userId": "87"
       },
       "metadata": {},
-      "history": []
+      "history": [
+        {
+          "ts": "2020-08-11T22:30:38Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2020-08-11T22:30:38Z",
+            "text": null,
+            "label": "submitted",
+            "userId": "1"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2020-08-11T22:30:38Z",
+          "autoResult": false
+        },
+        {
+          "ts": "2020-08-11T22:30:38Z",
+          "detail": "test\nvisible to lvl1",
+          "result": "pass",
+          "status": {
+            "ts": "2022-02-02T20:20:03Z",
+            "text": null,
+            "label": "saved",
+            "userId": "87"
+          },
+          "userId": "1",
+          "comment": null,
+          "touchTs": "2022-02-02T20:20:03Z",
+          "autoResult": false
+        }
+      ]
     },
     {
       "assetId": "154",
