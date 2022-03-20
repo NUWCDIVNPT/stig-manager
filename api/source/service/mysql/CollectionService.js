@@ -1212,10 +1212,10 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
             'comment', rh.comment,
             'autoResult', rh.autoResult = 1,
             'status', status.api,
-            'userId', rh.userId,
+            'userId', CAST(rh.userId as char),
             'username', ud.username,
             'statusText', rh.statusText,
-            'statusUserId', rh.statusUserId
+            'statusUserId', CAST(rh.statusUserId as char)
             )
           )
           FROM review_history rh
