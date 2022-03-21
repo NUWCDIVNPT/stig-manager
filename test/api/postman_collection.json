@@ -22078,6 +22078,563 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Tests in Development - not expected to pass",
+			"item": [
+				{
+					"name": "LoadTestData",
+					"item": [
+						{
+							"name": "Import a new STIG - VPN  (as admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{vpnStig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - Win 10  (as admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{win10Stig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - RHEL 7 (as admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{rhel7Stig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import and overwrite application data (as elevated Admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"Commit successful\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{appDataFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/op/appdata?elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"op",
+										"appdata"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "History - review format",
+					"item": [
+						{
+							"name": "History records - check review object format",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"\r",
+											"if (user == \"bizarroLvl1\" ||  user == \"lvl1\" ||  user == \"collectioncreator\") {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"// else if (user == \"collectioncreator\" ) {\r",
+											"//     pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
+											"//         pm.response.to.have.status(204);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"let testStartDate = pm.environment.get(\"testStartDate\");\r",
+											"// let startDate = new Date(pm.environment.get(\"testStartDate\"));\r",
+											"let testEndDate = pm.environment.get(\"testEndDate\");\r",
+											"let testAsset = pm.environment.get(\"testAsset\");\r",
+											"let testRuleId = pm.environment.get(\"testRuleId\");\r",
+											"let testStatus = pm.environment.get(\"testStatus\");\r",
+											"\r",
+											"let expectedArrayLength = 6;//history length variable from env.\r",
+											"\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array');\r",
+											"});\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"for (let assetItem of jsonData){\r",
+											"    if (pm.request.url.getQueryString().match(/assetId=/)) {\r",
+											"        console.log(\"param assetId found\"  );\r",
+											"        console.log(\"assetId:\" + assetItem.assetId)\r",
+											"        pm.test(\"Response matches proper assetId\", function () {\r",
+											"\r",
+											"            pm.expect(assetItem.assetId).to.equal(testAsset);\r",
+											"        });\r",
+											"\r",
+											"    }\r",
+											"\r",
+											"    for (let history of assetItem.history){\r",
+											"\r",
+											"        if (pm.request.url.getQueryString().match(/startDate=/)) {\r",
+											"            console.log(\"param startDate found\"  );\r",
+											"            console.log(\"testStartDate:\" + testStartDate  );\r",
+											"            console.log(\"ts:\" + history.ts  );\r",
+											"            // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"            pm.test(\"Response has proper startDate\", function () {\r",
+											"\r",
+											"                pm.expect(Date.parse(history.ts)).to.be.above(Date.parse(testStartDate));\r",
+											"            });\r",
+											"\r",
+											"        }\r",
+											"        if (pm.request.url.getQueryString().match(/endDate=/)) {\r",
+											"            console.log(\"param endDate found\"  );\r",
+											"            console.log(\"testEndDate:\" + testEndDate  );\r",
+											"            console.log(\"ts:\" + history.ts  );\r",
+											"            // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"            pm.test(\"Response has proper endDate\", function () {\r",
+											"\r",
+											"                pm.expect(Date.parse(history.ts)).to.be.below(Date.parse(testEndDate));\r",
+											"                // pm.expect(Date.parse(history.ts)).to.be.below(Date.parse(testStartDate));\r",
+											"            });\r",
+											"        }\r",
+											"\r",
+											"        if (pm.request.url.getQueryString().match(/ruleId=/)) {\r",
+											"            console.log(\"param ruleId found\"  );\r",
+											"            console.log(\"testRuleId:\" + testRuleId  );\r",
+											"            console.log(\"ruleId-response:\" + history.ruleId );\r",
+											"            // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"            pm.test(\"Response has proper ruleId\", function () {\r",
+											"\r",
+											"                pm.expect(history.ruleId).to.equal(testRuleId);\r",
+											"            });\r",
+											"\r",
+											"        }\r",
+											"\r",
+											"        if (pm.request.url.getQueryString().match(/status=/)) {\r",
+											"            console.log(\"param status found\"  );\r",
+											"            console.log(\"testStatus:\" + testStatus  );\r",
+											"            // console.log(\"status:\" + history.status.label );\r",
+											"            console.log(\"status:\" + history.status );\r",
+											"            // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"            pm.test(\"Response has proper status\", function () {\r",
+											"                pm.expect(history.status).to.equal(testStatus);\r",
+											"                // pm.expect(history.status.label).to.equal(testStatus);\r",
+											"            });            \r",
+											"\r",
+											"        }    \r",
+											"    \r",
+											"    }\r",
+											"\r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/review-history?startDate={{testStartDate}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"review-history"
+									],
+									"query": [
+										{
+											"key": "startDate",
+											"value": "{{testStartDate}}"
+										},
+										{
+											"key": "endDate",
+											"value": "{{testEndDate}}",
+											"disabled": true
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"disabled": true
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}",
+											"disabled": true
+										},
+										{
+											"key": "status",
+											"value": "{{testStatus}}",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		}
 	],
 	"auth": {
