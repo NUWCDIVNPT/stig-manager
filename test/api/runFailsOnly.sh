@@ -54,3 +54,11 @@ newman run postman_collection.json -e postman_environment.json -d collectionRunn
 --reporter-htmlextra-export \
 ./newman/additionalSundry.html | grep -A18 '┌─────'
 
+echo "History Tests"
+newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 \
+  --folder "History Tests" -r cli,htmlextra \
+  --reporter-cli-no-assertions \
+  --reporter-cli-no-console \
+  --reporter-htmlextra-showOnlyFails \
+  --reporter-htmlextra-export \
+  ./newman/HistoryReport.html | grep -A18 '┌─────'
