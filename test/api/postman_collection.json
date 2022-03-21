@@ -19187,7 +19187,189 @@
 					"name": "Review History - various params",
 					"item": [
 						{
-							"name": "History records - all",
+							"name": "History records - no params",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"\r",
+											"if (user == \"bizarroLvl1\" ||  user == \"lvl1\" ||  user == \"collectioncreator\") {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"// else if (user == \"collectioncreator\" ) {\r",
+											"//     pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
+											"//         pm.response.to.have.status(204);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"let testStartDate = pm.environment.get(\"testStartDate\");\r",
+											"// let startDate = new Date(pm.environment.get(\"testStartDate\"));\r",
+											"let testEndDate = pm.environment.get(\"testEndDate\");\r",
+											"let testAsset = pm.environment.get(\"testAsset\");\r",
+											"let testRuleId = pm.environment.get(\"testRuleId\");\r",
+											"let testStatus = pm.environment.get(\"testStatus\");\r",
+											"\r",
+											"let expectedArrayLength = 6;//history length variable from env.\r",
+											"\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array');\r",
+											"});\r",
+											"\r",
+											"pm.test(\"history response has proper number of assets\", function () {\r",
+											"    pm.expect(jsonData).to.have.length(4);\r",
+											"\r",
+											"    // pm.expect(Date.parse(history.ts)).to.be.above(Date.parse(testStartDate));\r",
+											"});\r",
+											"\r",
+											"\r",
+											"for (let assetItem of jsonData){\r",
+											"\r",
+											"    if (assetItem.assetId == testAsset) {\r",
+											"        console.log(\"test asset found\"  );\r",
+											"        pm.test(\"test asset history entries\", function () {\r",
+											"            pm.expect(assetItem.history).to.have.length(5);\r",
+											"\r",
+											"            // pm.expect(Date.parse(history.ts)).to.be.above(Date.parse(testStartDate));\r",
+											"        });\r",
+											"    }\r",
+											"\r",
+											"    // for (let history of assetItem.history){\r",
+											"\r",
+											"\r",
+											"    //     if (pm.request.url.getQueryString().match(/startDate=/)) {\r",
+											"    //         console.log(\"param startDate found\"  );\r",
+											"    //         console.log(\"testStartDate:\" + testStartDate  );\r",
+											"    //         console.log(\"ts:\" + history.ts  );\r",
+											"    //         // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"    //         pm.test(\"Response has proper startDate\", function () {\r",
+											"\r",
+											"    //             pm.expect(Date.parse(history.ts)).to.be.above(Date.parse(testStartDate));\r",
+											"    //         });\r",
+											"\r",
+											"    //     }\r",
+											"    //     if (pm.request.url.getQueryString().match(/endDate=/)) {\r",
+											"    //         console.log(\"param endDate found\"  );\r",
+											"    //         console.log(\"testEndDate:\" + testEndDate  );\r",
+											"    //         console.log(\"ts:\" + history.ts  );\r",
+											"    //         // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"    //         pm.test(\"Response has proper endDate\", function () {\r",
+											"\r",
+											"    //             pm.expect(Date.parse(history.ts)).to.be.below(Date.parse(testEndDate));\r",
+											"    //             // pm.expect(Date.parse(history.ts)).to.be.below(Date.parse(testStartDate));\r",
+											"    //         });\r",
+											"    //     }\r",
+											"\r",
+											"    //     if (pm.request.url.getQueryString().match(/ruleId=/)) {\r",
+											"    //         console.log(\"param ruleId found\"  );\r",
+											"    //         console.log(\"testRuleId:\" + testRuleId  );\r",
+											"    //         console.log(\"ruleId-response:\" + history.ruleId );\r",
+											"    //         // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"    //         pm.test(\"Response has proper ruleId\", function () {\r",
+											"\r",
+											"    //             pm.expect(history.ruleId).to.equal(testRuleId);\r",
+											"    //         });\r",
+											"\r",
+											"    //     }\r",
+											"\r",
+											"    //     if (pm.request.url.getQueryString().match(/status=/)) {\r",
+											"    //         console.log(\"param status found\"  );\r",
+											"    //         console.log(\"testStatus:\" + testStatus  );\r",
+											"    //         // console.log(\"status:\" + history.status.label );\r",
+											"    //         console.log(\"status:\" + history.status );\r",
+											"    //         // console.log(\"touchTs:\" + history.touchTs  );\r",
+											"    //         pm.test(\"Response has proper status\", function () {\r",
+											"    //             pm.expect(history.status).to.equal(testStatus);\r",
+											"    //             // pm.expect(history.status.label).to.equal(testStatus);\r",
+											"    //         });            \r",
+											"\r",
+											"    //     }    \r",
+											"    \r",
+											"    // }\r",
+											"\r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/review-history",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"review-history"
+									],
+									"query": [
+										{
+											"key": "startDate",
+											"value": "{{testStartDate}}",
+											"disabled": true
+										},
+										{
+											"key": "endDate",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "assetId",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "ruleId",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "status",
+											"value": "",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "History records - all params",
 							"event": [
 								{
 									"listen": "test",
