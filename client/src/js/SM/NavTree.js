@@ -185,12 +185,6 @@ SM.CollectionNodeConfig = function (collection) {
     const toolsEl = areSomeLabelsInUse ? '<img class="sm-tree-toolbar" src="img/label.svg" width="12" height="12">' : ''
     return `${name} ${labelSpans} ${toolsEl}`
   }
-  function formatTextAndLabelsAndToolbar({name, labels}) {
-    return `${SM.he(name)} ${SM.Collection.LabelArrayTpl.apply(labels)} <img class="sm-tree-toolbar" src="../img/label.svg" width="12" height="12">`
-  }
-  function formatToolbar () {
-
-  }
   const labelsMenu = new SM.Collection.LabelsMenu({
     labels: collection.labels,
     showHeader: true,

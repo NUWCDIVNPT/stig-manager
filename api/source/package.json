@@ -1,6 +1,6 @@
 {
   "name": "stig-management-api",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.",
   "main": "index.js",
   "scripts": {

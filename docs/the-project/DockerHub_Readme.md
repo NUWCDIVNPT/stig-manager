@@ -1,10 +1,8 @@
 # STIG Manager OSS on Docker Hub
 
-*This is pre-release software and the Docker images are made available for pilot testing only*
-
 STIG Manager is an API and Web client for managing the assessment of Information Systems for compliance with [security checklists](https://public.cyber.mil/stigs/) published by the United States (U.S.) Defense Information Systems Agency (DISA). STIG Manager supports DISA checklists [distributed](https://public.cyber.mil/stigs/downloads/) as either a Security Technical Implementation Guide (STIG) or a Security Requirements Guide (SRG).
 
-**Documentation:** [https://nuwcdivnpt.github.io/stig-manager](https://stig-manager.readthedocs.io/en/latest/)
+**Documentation:** [https://stig-manager.readthedocs.io/en/latest/](https://stig-manager.readthedocs.io/en/latest/)
 
 **Source:** [https://github.com/NUWCDIVNPT/stig-manager](https://github.com/NUWCDIVNPT/stig-manager)
 
@@ -65,12 +63,12 @@ services:
 ```
 $ docker-compose up -d && docker-compose logs -f
 ```
-- On initial container startup, STIG Manager will connect to [DoD Cyber Exchange](https://public.cyber.mil) and import the latest STIG Library Compilation and any available SCAP content.
-- When all the services have started, STIG Manager will output:
+- STIG Manager will wait for MySQL and Keycloak to become ready
+- When MySQL is ready, STIG Manager will perform an initial migration and create the necessary schema objects.
+- STIG Manager will then connect to [DoD Cyber Exchange](https://public.cyber.mil) and import the latest STIG Library Compilation and any available SCAP content.
+- When STIG Manager is ready to handle requests, it will output a JSON log entry similar to:
 ```
-Server is listening on port 54000
-API is available at /api
-Client is available at /
+{"date":"2022-02-18T18:25:50.749Z","level":3,"component":"index","type":"started","data":{"durationS":0.956811184,"port":"54000","api":"/api","client":"/","documentation":"/docs","swagger":"/api-docs"}}
 ```
 - Navigate to ```http://localhost:54000```
 - Login using credentials "admin/password", as documented for [the demonstration Keycloak image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth)
@@ -78,7 +76,7 @@ Client is available at /
 
 ## STIG Manager OSS Environment Variables
 
-Refer to our documentation for the [environment variables consumed by STIG Manager](https://nuwcdivnpt.github.io/stig-manager/#/Environment_Variables) 
+Refer to our documentation for the [environment variables consumed by STIG Manager](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/environment-variables.html) 
 
 ## STIG Manager Container Healthcheck
 
