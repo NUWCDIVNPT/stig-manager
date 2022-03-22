@@ -1589,7 +1589,7 @@ SM.Collection.LabelArrayTpl = new Ext.XTemplate(
     '</tpl>'
 )
 SM.Collection.LabelEditTpl = new Ext.XTemplate(
-    '<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color:#{color};">{[SM.he(values.name)]}</span><img class="sm-label-edit-color" src="../img/color-picker.svg" width="12" height="12">'
+    '<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color:#{color};">{[SM.he(values.name)]}</span><img class="sm-label-edit-color" src="img/color-picker.svg" width="12" height="12">'
 )
 
 
