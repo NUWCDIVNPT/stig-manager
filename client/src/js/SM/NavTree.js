@@ -182,7 +182,7 @@ SM.CollectionNodeConfig = function (collection) {
     const name = SM.he(collection.name)
     const labelSpans = SM.Collection.LabelArrayTpl.apply(filteredLabels)
     const areSomeLabelsInUse = collection.labels.some((label) => label.uses > 0)
-    const toolsEl = areSomeLabelsInUse ? '<img class="sm-tree-toolbar" src="../img/label.svg" width="12" height="12">' : ''
+    const toolsEl = areSomeLabelsInUse ? '<img class="sm-tree-toolbar" src="img/label.svg" width="12" height="12">' : ''
     return `${name} ${labelSpans} ${toolsEl}`
   }
   function formatTextAndLabelsAndToolbar({name, labels}) {
