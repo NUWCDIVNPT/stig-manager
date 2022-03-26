@@ -1219,11 +1219,17 @@ from
         'detail', rh.detail,
         'comment', rh.comment,
         'autoResult', rh.autoResult = 1,
-        'status', status.api,
+        'status', JSON_OBJECT(
+          'label', status.api,
+          'text', rh.statusText,
+          'user', JSON_OBJECT(
+            'userId', CAST(rh.statusUserId as char),
+            'username', udStatus.username
+          ),
+          'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
+        ),        
         'userId', rh.userId,
         'username', ud.username,
-        'statusText', rh.statusText,
-        'statusUserId', rh.statusUserId,
         'touchTs', rh.touchTs
         )
 		) as 'history'
@@ -1231,6 +1237,7 @@ from
 		review_history rh
 		INNER JOIN review rv on rh.reviewId = rv.reviewId
 		INNER JOIN user_data ud on rh.userId = ud.userId
+    left join user_data udStatus on udStatus.userId=rh.statusUserId
 		INNER JOIN result on rh.resultId = result.resultId
 		INNER JOIN status on rh.statusId = status.statusId
 		inner join asset a on a.assetId = rv.assetId
