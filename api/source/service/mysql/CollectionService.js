@@ -1200,31 +1200,43 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
   }
   
 let sql = `
-  SELECT 
-	CAST(a.assetId as char) as assetId,  
-    rv.ruleId,  
-	json_arrayagg(           
-		json_object(              
-			'ts', rh.ts,
-			'result', result.api,
-      'detail', rh.detail,
-      'comment', rh.comment,
-      'autoResult', rh.autoResult = 1,
-      'status', status.api,
-      'userId', rh.userId,
-      'username', ud.username,
-      'statusText', rh.statusText,
-      'statusUserId', rh.statusUserId             
-    )           
-	) as history
-FROM review_history rh             
-	INNER JOIN review rv on rh.reviewId = rv.reviewId             
-	INNER JOIN user_data ud on rh.userId = ud.userId             
-	INNER JOIN result on rh.resultId = result.resultId             
-	INNER JOIN status on rh.statusId = status.statusId             
-	INNER JOIN asset a on a.assetId = rv.assetId          
-WHERE rv.assetId = a.assetId
-  AND a.collectionId = :collectionId`
+select
+CAST(innerQuery.assetId as char) as assetId,
+	json_arrayagg(
+		json_object(
+			'ruleId', innerQuery.ruleId,
+			'history', innerQuery.history
+		)
+	) as reviewHistories
+from
+	(select 
+		a.assetId, 
+		rv.ruleId, 
+		json_arrayagg(
+		  json_object(
+        'ts', rh.ts,
+        'result', result.api,
+        'detail', rh.detail,
+        'comment', rh.comment,
+        'autoResult', rh.autoResult = 1,
+        'status', status.api,
+        'userId', rh.userId,
+        'username', ud.username,
+        'statusText', rh.statusText,
+        'statusUserId', rh.statusUserId,
+        'touchTs', rh.touchTs
+        )
+		) as 'history'
+	FROM
+		review_history rh
+		INNER JOIN review rv on rh.reviewId = rv.reviewId
+		INNER JOIN user_data ud on rh.userId = ud.userId
+		INNER JOIN result on rh.resultId = result.resultId
+		INNER JOIN status on rh.statusId = status.statusId
+		inner join asset a on a.assetId = rv.assetId
+	WHERE
+		rv.assetId = a.assetId
+		and a.collectionId = :collectionId`
 
   if (startDate) {
     binds.startDate = startDate
@@ -1243,7 +1255,7 @@ WHERE rv.assetId = a.assetId
 
   if(status) {
     binds.statusId = dbUtils.REVIEW_STATUS_API[status]
-    sql += ' AND rh.statusId = :statusId'
+    sql += " AND rh.statusId = :statusId"
   }
   
 
@@ -1253,39 +1265,42 @@ WHERE rv.assetId = a.assetId
   }
 
   sql += `
-  group by rv.ruleId, a.assetID
+	group by
+		rv.ruleId, a.assetID) innerQuery
+group by
+	innerQuery.assetId
   `
 
   try {
     let [rows] = await dbUtils.pool.query(sql, binds)
-    // const array = JSON.parse(rows)
-    const reducer = (map, v) => {
-      const ruleIdItem = {
-        ruleId: v.ruleId,
-        history: v.history
-      }
-      if (!map.has(v.assetId)) {
-        map.set(v.assetId, [ruleIdItem]
-        )
-      }
-      else {
-        map.get(v.assetId).push(ruleIdItem)
-      }
-      return map
-    }
+    // // const array = JSON.parse(rows)
+    // const reducer = (map, v) => {
+    //   const ruleIdItem = {
+    //     ruleId: v.ruleId,
+    //     history: v.history
+    //   }
+    //   if (!map.has(v.assetId)) {
+    //     map.set(v.assetId, [ruleIdItem]
+    //     )
+    //   }
+    //   else {
+    //     map.get(v.assetId).push(ruleIdItem)
+    //   }
+    //   return map
+    // }
     
-    const response = rows.reduce(reducer, new Map())
+    // const response = rows.reduce(reducer, new Map())
     
-    const returnArray = []
-    for (const entry of response.entries()) {
-      returnArray.push({
-        assetId: entry[0],
-        reviewHistories: entry[1]
-      })
-    }
+    // const returnArray = []
+    // for (const entry of response.entries()) {
+    //   returnArray.push({
+    //     assetId: entry[0],
+    //     reviewHistories: entry[1]
+    //   })
+    // }
     
-    console.log(JSON.stringify(returnArray, null, 2))    
-    return (returnArray)
+    // console.log(JSON.stringify(returnArray, null, 2))    
+    return (rows)
   }
   catch(err) {
     throw ( {status: 500, message: err.message, stack: err.stack} ) 
