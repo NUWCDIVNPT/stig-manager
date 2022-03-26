@@ -4087,15 +4087,29 @@ components:
       type: object
       required:
         - assetId
-        - history
+        - reviewHistories
       additionalProperties: false
       properties:
         assetId:
-          type: string
+          $ref: '#/components/schemas/String255'       
+        reviewHistories: 
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistoryRule'
+    ReviewHistoryRule:
+      type: object
+      required:
+        - ruleId
+        - history
+      additionalProperties: false
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/String255'       
         history:
           type: array
           items:
-            $ref: '#/components/schemas/ReviewHistory'   
+            $ref: '#/components/schemas/ReviewHistory'
+
     ReviewHistoryDeleted:     
       type: object
       required:

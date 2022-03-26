@@ -1199,31 +1199,32 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     collectionId: collectionId
   }
   
-  let sql = `
-    SELECT CAST(a.assetId as char) as assetId, 
-      (select coalesce(
-        (select json_arrayagg(
-          json_object
-            (
-            'ruleId', rv.ruleId,
-            'ts', rh.ts, 
-            'result', result.api,
-            'detail', rh.detail,
-            'comment', rh.comment,
-            'autoResult', rh.autoResult = 1,
-            'status', status.api,
-            'userId', CAST(rh.userId as char),
-            'username', ud.username,
-            'statusText', rh.statusText,
-            'statusUserId', CAST(rh.statusUserId as char)
-            )
-          )
-          FROM review_history rh
-            INNER JOIN review rv on rh.reviewId = rv.reviewId
-            INNER JOIN user_data ud on rh.userId = ud.userId
-            INNER JOIN result on rh.resultId = result.resultId
-            INNER JOIN status on rh.statusId = status.statusId
-          WHERE rv.assetId = a.assetId`
+let sql = `
+  SELECT 
+	CAST(a.assetId as char) as assetId,  
+    rv.ruleId,  
+	json_arrayagg(           
+		json_object(              
+			'ts', rh.ts,
+			'result', result.api,
+      'detail', rh.detail,
+      'comment', rh.comment,
+      'autoResult', rh.autoResult = 1,
+      'status', status.api,
+      'userId', rh.userId,
+      'username', ud.username,
+      'statusText', rh.statusText,
+      'statusUserId', rh.statusUserId             
+    )           
+	) as history
+FROM review_history rh             
+	INNER JOIN review rv on rh.reviewId = rv.reviewId             
+	INNER JOIN user_data ud on rh.userId = ud.userId             
+	INNER JOIN result on rh.resultId = result.resultId             
+	INNER JOIN status on rh.statusId = status.statusId             
+	INNER JOIN asset a on a.assetId = rv.assetId          
+WHERE rv.assetId = a.assetId
+  AND a.collectionId = :collectionId`
 
   if (startDate) {
     binds.startDate = startDate
@@ -1245,22 +1246,46 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     sql += ' AND rh.statusId = :statusId'
   }
   
-  sql += `
-          ), json_array()
-        )
-      ) as history
-    FROM asset a
-    WHERE a.collectionId = :collectionId
-  `
 
   if(assetId) {
     binds.assetId = assetId
     sql += " AND a.assetId = :assetId"
   }
 
+  sql += `
+  group by rv.ruleId, a.assetID
+  `
+
   try {
     let [rows] = await dbUtils.pool.query(sql, binds)
-    return (rows)
+    // const array = JSON.parse(rows)
+    const reducer = (map, v) => {
+      const ruleIdItem = {
+        ruleId: v.ruleId,
+        history: v.history
+      }
+      if (!map.has(v.assetId)) {
+        map.set(v.assetId, [ruleIdItem]
+        )
+      }
+      else {
+        map.get(v.assetId).push(ruleIdItem)
+      }
+      return map
+    }
+    
+    const response = rows.reduce(reducer, new Map())
+    
+    const returnArray = []
+    for (const entry of response.entries()) {
+      returnArray.push({
+        assetId: entry[0],
+        reviewHistories: entry[1]
+      })
+    }
+    
+    console.log(JSON.stringify(returnArray, null, 2))    
+    return (returnArray)
   }
   catch(err) {
     throw ( {status: 500, message: err.message, stack: err.stack} ) 
