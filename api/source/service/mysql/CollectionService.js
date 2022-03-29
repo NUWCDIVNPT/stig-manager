@@ -696,7 +696,7 @@ exports.createCollection = async function(body, projection, userObject) {
 /**
  * Delete a Collection
  *
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
@@ -852,7 +852,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
 /**
  * Return a Collection
  *
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.getCollection = async function(collectionId, projection, elevate, userObject) {
@@ -1011,7 +1011,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
  * Replace all properties of a Collection
  *
  * body CollectionAssign  (optional)
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.replaceCollection = async function( collectionId, body, projection, userObject) {
@@ -1038,7 +1038,7 @@ exports.setStigAssetsByCollectionUser = async function (collectionId, userId, st
  * Merge updates to a Collection
  *
  * body CollectionAssign  (optional)
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.updateCollection = async function( collectionId, body, projection, userObject) {
@@ -1228,7 +1228,7 @@ from
           ),
           'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
         ),        
-        'userId', rh.userId,
+        'userId', CAST(rh.userId as char),
         'username', ud.username,
         'touchTs', rh.touchTs
         )
