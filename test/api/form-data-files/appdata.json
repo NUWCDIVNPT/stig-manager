@@ -956,14 +956,14 @@
           "detail": "test\nvisible to lvl1",
           "result": "pass",
           "status": {
-            "ts": "2022-01-26T01:22:58Z",
+            "ts": "2020-08-11T23:37:45Z",
             "text": null,
             "label": "saved",
             "userId": "87"
           },
           "userId": "1",
           "comment": null,
-          "touchTs": "2022-01-26T01:22:58Z",
+          "touchTs": "2020-08-11T23:37:45Z",
           "autoResult": false
         }
       ]
@@ -1006,14 +1006,14 @@
           "detail": "test\nvisible to lvl1",
           "result": "notapplicable",
           "status": {
-            "ts": "2022-02-03T00:06:56Z",
+            "ts": "2020-08-11T22:26:50Z",
             "text": null,
             "label": "saved",
             "userId": "87"
           },
           "userId": "1",
           "comment": null,
-          "touchTs": "2022-02-03T00:06:56Z",
+          "touchTs": "2020-08-11T22:26:50Z",
           "autoResult": false
         },
         {
@@ -1280,14 +1280,14 @@
           "detail": "test\nvisible to lvl1",
           "result": "pass",
           "status": {
-            "ts": "2022-02-02T20:20:03Z",
+            "ts": "2020-08-11T22:30:38Z",
             "text": null,
             "label": "saved",
             "userId": "87"
           },
           "userId": "1",
           "comment": null,
-          "touchTs": "2022-02-02T20:20:03Z",
+          "touchTs": "2020-08-11T22:30:38Z",
           "autoResult": false
         }
       ]

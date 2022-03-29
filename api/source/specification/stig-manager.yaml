@@ -1776,8 +1776,8 @@ paths:
       summary: Return history records for the specified Collection that meet the specified criteria
       operationId: getReviewHistoryByCollection
       parameters: 
-        - $ref: '#/components/parameters/StartDateQuery' # Upper (most recent) bound of returned history entry timestamps
-        - $ref: '#/components/parameters/EndDateQuery'    # Lower (earliest) bound of returned history entry timestamps 
+        - $ref: '#/components/parameters/StartDateQuery' # Lower bound (earliest date) of returned history entry timestamps
+        - $ref: '#/components/parameters/EndDateQuery'    # Upper bound (latest date) of returned history entry timestamps 
         - $ref: '#/components/parameters/AssetIdQuery'  # return review history entries for just the specified assetId, if provided.
         - $ref: '#/components/parameters/RuleIdQuery'  # return review history entries for just the specified RuleId, if provided.        
         - $ref: '#/components/parameters/ReviewStatusQuery' # return review history entries with the specified status
@@ -1832,8 +1832,8 @@ paths:
       summary: Return history statistics for the specified Collection
       operationId: getReviewHistoryStatsByCollection
       parameters:
-        - $ref: '#/components/parameters/StartDateQuery' # Upper (most recent) bound of history entry timestamps
-        - $ref: '#/components/parameters/EndDateQuery'    # Lower (earliest) bound of history entry timestamps 
+        - $ref: '#/components/parameters/StartDateQuery' # Lower bound (earliest date) of returned history entry count
+        - $ref: '#/components/parameters/EndDateQuery'    # Upper bound (latest date) of returned history entry count
         - $ref: '#/components/parameters/AssetIdQuery'  # return review history stats for just the specified assetId, if provided.
         - $ref: '#/components/parameters/RuleIdQuery'  # return review history stats for just the specified RuleId, if provided.        
         - $ref: '#/components/parameters/ReviewStatusQuery' # return review history stats with the specified status        
@@ -4091,7 +4091,7 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          $ref: '#/components/schemas/String255'       
+          $ref: '#/components/schemas/String255'
         reviewHistories: 
           type: array
           items:
@@ -4136,13 +4136,13 @@ components:
     ReviewHistoryStatsAsset:
       type: object
       required: 
-        - ruleId
+        - assetId
         - historyEntryCount
         - oldestHistoryEntry
       additionalProperties: false
       properties:
         assetId:
-          type: string
+          $ref: '#/components/schemas/String255'
         historyEntryCount:
           type: integer
         oldestHistoryEntry:

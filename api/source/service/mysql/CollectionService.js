@@ -1163,7 +1163,7 @@ exports.deleteReviewHistoryByCollection = async function (collectionId, retentio
       INNER JOIN review r on rh.reviewId = r.reviewId
       INNER JOIN asset a on r.assetId = a.assetId
     WHERE a.collectionId = :collectionId
-      AND rh.ts < :retentionDate`
+      AND rh.touchTs < :retentionDate`
 
   if(assetId) {
     sql += ' AND a.assetId = :assetId'
@@ -1247,12 +1247,12 @@ from
 
   if (startDate) {
     binds.startDate = startDate
-    sql += " AND rh.ts >= :startDate"
+    sql += " AND rh.touchTs >= :startDate"
   }
 
   if (endDate) {
     binds.endDate = endDate
-    sql += " AND rh.ts <= :endDate"
+    sql += " AND rh.touchTs <= :endDate"
   }
 
   if(ruleId) {
@@ -1280,33 +1280,6 @@ group by
 
   try {
     let [rows] = await dbUtils.pool.query(sql, binds)
-    // // const array = JSON.parse(rows)
-    // const reducer = (map, v) => {
-    //   const ruleIdItem = {
-    //     ruleId: v.ruleId,
-    //     history: v.history
-    //   }
-    //   if (!map.has(v.assetId)) {
-    //     map.set(v.assetId, [ruleIdItem]
-    //     )
-    //   }
-    //   else {
-    //     map.get(v.assetId).push(ruleIdItem)
-    //   }
-    //   return map
-    // }
-    
-    // const response = rows.reduce(reducer, new Map())
-    
-    // const returnArray = []
-    // for (const entry of response.entries()) {
-    //   returnArray.push({
-    //     assetId: entry[0],
-    //     reviewHistories: entry[1]
-    //   })
-    // }
-    
-    // console.log(JSON.stringify(returnArray, null, 2))    
     return (rows)
   }
   catch(err) {
@@ -1327,7 +1300,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
     collectionId: collectionId
   }
 
-  let sql = 'SELECT COUNT(*) as collectionHistoryEntryCount, MIN(rh.ts) as oldestHistoryEntryDate'
+  let sql = 'SELECT COUNT(*) as collectionHistoryEntryCount, MIN(rh.touchTs) as oldestHistoryEntryDate'
 
   if (projection && projection.includes('asset')) {
     sql += `, coalesce(
@@ -1340,7 +1313,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
         )
         FROM 
         (
-          SELECT a.assetId, COUNT(*) as historyEntryCount, MIN(rh.ts) as oldestHistoryEntry
+          SELECT a.assetId, COUNT(*) as historyEntryCount, MIN(rh.touchTs) as oldestHistoryEntry
           FROM review_history rh
             INNER JOIN review rv on rh.reviewId = rv.reviewId
             INNER JOIN asset a on rv.assetId = a.assetId
@@ -1364,12 +1337,12 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
 
   if (startDate) {
     binds.startDate = startDate
-    additionalPredicates += " AND rh.ts >= :startDate"
+    additionalPredicates += " AND rh.touchTs >= :startDate"
   }
 
   if (endDate) {
     binds.endDate = endDate
-    additionalPredicates += " AND rh.ts <= :endDate"
+    additionalPredicates += " AND rh.touchTs <= :endDate"
   }
 
   if(ruleId) {
