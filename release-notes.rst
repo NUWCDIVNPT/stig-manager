@@ -1,3 +1,18 @@
+1.2.6
+-----
+
+Changes:
+
+  - (App) Rows in the Status and Finding report link to the corresponding Review tabs
+  - (API/App) CKL filenames contain the STIG revision string
+  - (App) Ensure the Label icon in the NavTree displays in all deployments
+
+Commits:
+
+  - 3ad3f21 fix: modify path to label.svg in NavTree (#626)
+  - 17c4705 fix: provide specific revision string in suggested filename, in place of "latest" (#623)
+  - ec8ebde feat: dblclick on a Status/Finding row opens the corresponding Review tab (#616)
+
 1.2.5
 -----
 ​

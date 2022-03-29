@@ -666,6 +666,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
 exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmarks, elevate, userObject) {
   let connection
   try {
+    let revisionStrResolved // Will hold specific revision string value, as opposed to "latest" 
     let cklJs = {
       CHECKLIST: {
         ASSET: {
@@ -782,6 +783,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       const regex = /^(?<benchmarkId>\S+?)(-(?<revisionStr>V\d+R\d+(\.\d+)?))?$/
       const found = benchmark.match(regex)
       const revisionStr = found.groups.revisionStr || 'latest'
+      revisionStrResolved = revisionStr
       const benchmarkId = found.groups.benchmarkId
       
       let sqlGetBenchmarkId
@@ -819,6 +821,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       if (revisionStr === 'latest') {
         ;[resultGetBenchmarkId] = await connection.query(sqlGetBenchmarkId, [benchmarkId])
         revId = resultGetBenchmarkId[0].revId
+        revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
       }
       else {
         let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
@@ -915,7 +918,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       cklJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
     }
 
-    return ({assetName: resultGetAsset[0].name, cklJs: cklJs})
+    return ({assetName: resultGetAsset[0].name, cklJs, revisionStrResolved})
 
   }
   catch (e) {

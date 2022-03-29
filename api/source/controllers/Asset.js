@@ -299,7 +299,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         const j2x = new J2X(defaultOptions)
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += j2x.parse(response.cklJs)
-        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${revisionStr}.ckl`, 'application/xml')
+        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
       }
     }
     else {
