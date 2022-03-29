@@ -112,7 +112,7 @@ async function run() {
   try {
     if (!config.client.disabled) {
       await setupClient(app, config.client.directory)
-      logger.writeDebug('index', 'client', {message: 'suceeded setting up client'})
+      logger.writeDebug('index', 'client', {message: 'succeeded setting up client'})
     }
     else {
       logger.writeDebug('index', 'client', {message: 'client disabled'})
@@ -120,7 +120,7 @@ async function run() {
     if (!config.docs.disabled) {
       // setup documentation route
       app.use('/docs', express.static(path.join(__dirname, config.docs.docsDirectory)))
-      logger.writeDebug('index', 'client', {message: 'suceeded setting up documentation'})
+      logger.writeDebug('index', 'client', {message: 'succeeded setting up documentation'})
     }
     else {
       logger.writeDebug('index', 'client', {message: 'documentation disabled'})
@@ -144,7 +144,7 @@ async function run() {
       app.get(['/swagger.json','/openapi.json'], function(req, res) {
         res.json(oasDoc);
       })
-      logger.writeDebug('index', 'client', {message: 'suceeded setting up swagger-ui'})
+      logger.writeDebug('index', 'client', {message: 'succeeded setting up swagger-ui'})
     }
     startServer(app)
   }

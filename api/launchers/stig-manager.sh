@@ -129,7 +129,7 @@
 #
 #  Affects: Client Appearance
 #==============================================================================
-# export STIGMAN_CLIENT_WELCOME_IMAGE =
+# export STIGMAN_CLIENT_WELCOME_IMAGE=
 
 #==============================================================================
 # STIGMAN_CLIENT_WELCOME_LINK
@@ -148,7 +148,7 @@
 #
 #  Affects: Client Appearance     
 #==============================================================================
-# export STIGMAN_CLIENT_WELCOME_MESSAGE =
+# export STIGMAN_CLIENT_WELCOME_MESSAGE=
 
 #==============================================================================
 # STIGMAN_CLIENT_WELCOME_TITLE 
@@ -158,7 +158,7 @@
 #
 #  Affects: Client Appearance
 #==============================================================================
-# export STIGMAN_CLIENT_WELCOME_TITLE =
+# export STIGMAN_CLIENT_WELCOME_TITLE=
 
 #==============================================================================
 # STIGMAN_DB_HOST
