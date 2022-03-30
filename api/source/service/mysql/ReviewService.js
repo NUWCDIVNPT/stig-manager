@@ -53,6 +53,7 @@ const writeQueries = {
   CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
     ruleId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
     resultId int,
+    resultEngine json,
     detail mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
     comment mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
     autoResult json,
@@ -63,6 +64,10 @@ const writeQueries = {
     SELECT
       jt.ruleId,
       jtresult.resultId,
+      CASE WHEN jt.autoResult AND jt.resultEngine IS NULL
+        THEN JSON_OBJECT('type','scap','product','scc')
+        ELSE jt.resultEngine
+      END as resultEngine,
       jt.detail,
       jt.comment,
       jt.autoResult,
@@ -75,6 +80,7 @@ const writeQueries = {
         COLUMNS(
           ruleId VARCHAR(255) PATH "$.ruleId",
           result VARCHAR(255) PATH "$.result",
+          resultEngine JSON PATH "$.resultEngine",
           detail MEDIUMTEXT PATH "$.detail" NULL ON EMPTY,
           comment MEDIUMTEXT PATH "$.comment",
           autoResult JSON PATH "$.autoResult",
@@ -90,6 +96,7 @@ const writeQueries = {
     assetId,
       ruleId,
       resultId,
+      resultEngine,
       detail,
       comment,
       autoResult,
@@ -104,6 +111,7 @@ const writeQueries = {
     :assetId,
     i.ruleId,
     i.resultId,
+    i.resultEngine,
     i.detail,
     i.comment,
     CASE WHEN i.autoResult THEN 1 ELSE 0 END,
@@ -147,6 +155,8 @@ const writeQueries = {
       THEN CASE WHEN i.autoResult THEN 1 ELSE 0 END
       ELSE r.autoResult
     END,
+
+    r.resultEngine = COALESCE(i.resultEngine, r.resultEngine),
 
     r.ts = CASE WHEN i.resultId IS NOT NULL 
     OR i.detail IS NOT NULL 
@@ -217,8 +227,9 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         cla.assetId = r.assetId),
       json_array()
     ) as assetLabelIds`,
-  'r.ruleId',
+    'r.ruleId',
     'result.api as "result"',
+    'r.resultEngine',
     'r.detail',
     'r.autoResult',
     'r.comment',
@@ -243,6 +254,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     'rule.severity',
     'r.resultId',
     'result.api',
+    'r.resultEngine',
     'r.detail',
     'r.autoResult',
     'r.comment',
@@ -299,6 +311,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                 'result', result.api,
+                'resultEngine', rh.resultEngine,
                 'detail', rh.detail,
                 'comment', rh.comment,
                 'autoResult', cast(rh.autoResult is true as json),
@@ -432,8 +445,8 @@ exports.exportReviews = async function (includeHistory = false) {
     'CAST(r.assetId as char) as assetId',
     'r.ruleId',
     'result.api as "result"',
+    'r.resultEngine',
     'r.detail',
-    'r.autoResult',
     'r.comment',
     'CAST(r.userId as char) as userId',
     "DATE_FORMAT(r.ts, '%Y-%m-%dT%H:%i:%sZ') as ts",
@@ -461,9 +474,9 @@ exports.exportReviews = async function (includeHistory = false) {
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                 'result', result.api,
+                'resultEngine', rh.resultEngine,
                 'detail', rh.detail,
                 'comment', rh.comment,
-                'autoResult', cast(rh.autoResult is true as json),
                 'userId', CAST(rh.userId as char),
                 'status', JSON_OBJECT(
                   'label', status.api,
@@ -488,8 +501,8 @@ exports.exportReviews = async function (includeHistory = false) {
       'r.ruleId',
       'r.resultId',
       'result.api',
+      'r.resultEngine',
       'r.detail',
-      'r.autoResult',
       'r.comment',
       'status.api',
       'r.userId',
@@ -582,7 +595,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject, resetC
       statusUserId,
       statusTs,
       statusId,
-      touchTs
+      touchTs,
+      resultEngine
     ) SELECT 
         reviewId,
         resultId,
@@ -595,7 +609,8 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject, resetC
         statusUserId,
         statusTs,
         statusId,
-        touchTs
+        touchTs,
+        resultEngine
       FROM
         review 
       WHERE

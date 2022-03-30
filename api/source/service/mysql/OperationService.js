@@ -195,7 +195,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
                 statusText VARCHAR(255) PATH "$.statusText",
                 statusUserId INT PATH "$.statusUserId",
                 statusTs DATETIME PATH "$.statusTs",
-                touchTs DATETIME PATH "$.touchTs"
+                touchTs DATETIME PATH "$.touchTs",
+                resultEngine JSON PATH "$.resultEngine"
               )
             ) as jt 
             LEFT JOIN review r ON (jt.assetId = r.assetId COLLATE utf8mb4_0900_ai_ci and jt.ruleId = r.ruleId COLLATE utf8mb4_0900_ai_ci)`,
@@ -216,7 +217,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           statusUserId,
           statusId,
           statusTs,
-          metadata
+          metadata,
+          resultEngine
         ) VALUES ?`,
         insertBinds: []
       }
@@ -309,7 +311,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           statusText: h.statusText,
           statusUserId: parseInt(h.status.userId ?? h.status.user?.userId),
           statusTs: new Date(h.status.ts),
-          touchTs: new Date(h.touchTs)
+          touchTs: new Date(h.touchTs),
+          resultEngine: JSON.stringify(h.resultEngine)
         })
       }
       dml.review.insertBinds.push([
@@ -319,13 +322,14 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         review.detail,
         review.comment,
         parseInt(review.userId),
-        review.autoState ? 1 : 0,
+        review.autoResult ? 1 : 0,
         new Date(review.ts),
         review.status?.text,
         parseInt(review.status.userId ?? review.status.user?.userId),
         dbUtils.REVIEW_STATUS_API[review.status?.label],
         new Date(review.status?.ts),
-        JSON.stringify(review.metadata || {})
+        JSON.stringify(review.metadata || {}),
+        review.resultEngine ? JSON.stringify(review.resultEngine) : null
       ])
     }
     dml.reviewHistory.insertBinds = JSON.stringify(historyRecords)
