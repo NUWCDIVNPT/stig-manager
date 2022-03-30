@@ -216,13 +216,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
 }
 
 exports.queryFindings = async function (aggregator, inProjection = [], inPredicates = {}, userObject) {
-  let context
-  if (userObject.privileges.globalAccess) {
-    context = dbUtils.CONTEXT_ALL
-  } else {
-    context = dbUtils.CONTEXT_USER
-  }
 
+  let context = dbUtils.CONTEXT_USER
   let columns, groupBy, orderBy
   switch (aggregator) {
     case 'ruleId':
@@ -373,13 +368,8 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
 
 exports.queryStatus = async function (inPredicates = {}, userObject) {
   try {
-    let context
-    if (userObject.privileges.globalAccess) {
-      context = dbUtils.CONTEXT_ALL
-    } else {
-      context = dbUtils.CONTEXT_USER
-    }
 
+    let context  = dbUtils.CONTEXT_USER
     let columns = [
       `distinct cast(a.assetId as char) as assetId`,
       'a.name as assetName',
@@ -757,20 +747,18 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     }
 
     // Access control
-    if (!userObject.privileges.globalAccess) {
-      const collectionGrant = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-      if (collectionGrant && collectionGrant.accessLevel === 1) {
-        predicates.statements.push(`a.assetId in (
-          select
-              sa.assetId
-          from
-              user_stig_asset_map usa 
-              left join stig_asset_map sa on (usa.saId=sa.saId and sa.benchmarkId = :benchmarkId) 
-          where
-              usa.userId=:userId)`)
-        predicates.binds.userId = userObject.userId
-      }
-    } 
+    const collectionGrant = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant && collectionGrant.accessLevel === 1) {
+      predicates.statements.push(`a.assetId in (
+        select
+            sa.assetId
+        from
+            user_stig_asset_map usa 
+            left join stig_asset_map sa on (usa.saId=sa.saId and sa.benchmarkId = :benchmarkId) 
+        where
+            usa.userId=:userId)`)
+      predicates.binds.userId = userObject.userId
+    }
   
     const sql = `
       select
@@ -930,14 +918,8 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
 
 exports.getStigsByCollection = async function( collectionId, labelIds, elevate, userObject ) {
   try {
-    let context
-    if (userObject.privileges.globalAccess) {
-      context = dbUtils.CONTEXT_ALL
-    }
-    else {
-      context = dbUtils.CONTEXT_USER
-    }
 
+    let context  = dbUtils.CONTEXT_USER
     let columns = [
       'cr.benchmarkId',
       'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
