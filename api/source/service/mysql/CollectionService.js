@@ -696,7 +696,7 @@ exports.createCollection = async function(body, projection, userObject) {
 /**
  * Delete a Collection
  *
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
@@ -715,9 +715,9 @@ exports.deleteCollection = async function(collectionId, projection, elevate, use
 /**
  * Return the Checklist for the supplied Collection and STIG 
  *
- * collectionId Integer A path parameter that indentifies a Collection
- * benchmarkId String A path parameter that indentifies a STIG
- * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
+ * collectionId Integer A path parameter that identifies a Collection
+ * benchmarkId String A path parameter that identifies a STIG
+ * revisionStr String A path parameter that identifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns CollectionChecklist
  **/
 exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId, revisionStr, userObject ) {
@@ -852,7 +852,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
 /**
  * Return a Collection
  *
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.getCollection = async function(collectionId, projection, elevate, userObject) {
@@ -1011,7 +1011,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
  * Replace all properties of a Collection
  *
  * body CollectionAssign  (optional)
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.replaceCollection = async function( collectionId, body, projection, userObject) {
@@ -1038,7 +1038,7 @@ exports.setStigAssetsByCollectionUser = async function (collectionId, userId, st
  * Merge updates to a Collection
  *
  * body CollectionAssign  (optional)
- * collectionId Integer A path parameter that indentifies a Collection
+ * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
 exports.updateCollection = async function( collectionId, body, projection, userObject) {
@@ -1163,7 +1163,7 @@ exports.deleteReviewHistoryByCollection = async function (collectionId, retentio
       INNER JOIN review r on rh.reviewId = r.reviewId
       INNER JOIN asset a on r.assetId = a.assetId
     WHERE a.collectionId = :collectionId
-      AND rh.ts < :retentionDate`
+      AND rh.touchTs < :retentionDate`
 
   if(assetId) {
     sql += ' AND a.assetId = :assetId'
@@ -1199,40 +1199,60 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     collectionId: collectionId
   }
   
-  let sql = `
-    SELECT a.assetId, 
-      (select coalesce(
-        (select json_arrayagg(
-          json_object
-            (
-            'ruleId', rv.ruleId,
-            'ts', rh.ts, 
-            'result', result.api,
-            'detail', rh.detail,
-            'comment', rh.comment,
-            'autoResult', rh.autoResult = 1,
-            'status', status.api,
-            'userId', rh.userId,
-            'username', ud.username,
-            'statusText', rh.statusText,
-            'statusUserId', rh.statusUserId
-            )
-          )
-          FROM review_history rh
-            INNER JOIN review rv on rh.reviewId = rv.reviewId
-            INNER JOIN user_data ud on rh.userId = ud.userId
-            INNER JOIN result on rh.resultId = result.resultId
-            INNER JOIN status on rh.statusId = status.statusId
-          WHERE rv.assetId = a.assetId`
+let sql = `
+select
+CAST(innerQuery.assetId as char) as assetId,
+	json_arrayagg(
+		json_object(
+			'ruleId', innerQuery.ruleId,
+			'history', innerQuery.history
+		)
+	) as reviewHistories
+from
+	(select 
+		a.assetId, 
+		rv.ruleId, 
+		json_arrayagg(
+		  json_object(
+        'ts', rh.ts,
+        'result', result.api,
+        'detail', rh.detail,
+        'comment', rh.comment,
+        'autoResult', rh.autoResult = 1,
+        'status', JSON_OBJECT(
+          'label', status.api,
+          'text', rh.statusText,
+          'user', JSON_OBJECT(
+            'userId', CAST(rh.statusUserId as char),
+            'username', udStatus.username
+          ),
+          'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
+        ),        
+        'userId', CAST(rh.userId as char),
+        'username', ud.username,
+        'touchTs', rh.touchTs
+        )
+		) as 'history'
+	FROM
+		review_history rh
+		INNER JOIN review rv on rh.reviewId = rv.reviewId
+		INNER JOIN user_data ud on rh.userId = ud.userId
+    left join user_data udStatus on udStatus.userId=rh.statusUserId
+		INNER JOIN result on rh.resultId = result.resultId
+		INNER JOIN status on rh.statusId = status.statusId
+		inner join asset a on a.assetId = rv.assetId
+	WHERE
+		rv.assetId = a.assetId
+		and a.collectionId = :collectionId`
 
   if (startDate) {
     binds.startDate = startDate
-    sql += " AND rh.ts >= :startDate"
+    sql += " AND rh.touchTs >= :startDate"
   }
 
   if (endDate) {
     binds.endDate = endDate
-    sql += " AND rh.ts <= :endDate"
+    sql += " AND rh.touchTs <= :endDate"
   }
 
   if(ruleId) {
@@ -1242,21 +1262,21 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
 
   if(status) {
     binds.statusId = dbUtils.REVIEW_STATUS_API[status]
-    sql += ' AND rh.statusId = :statusId'
+    sql += " AND rh.statusId = :statusId"
   }
   
-  sql += `
-          ), json_array()
-        )
-      ) as history
-    FROM asset a
-    WHERE a.collectionId = :collectionId
-  `
 
   if(assetId) {
     binds.assetId = assetId
     sql += " AND a.assetId = :assetId"
   }
+
+  sql += `
+	group by
+		rv.ruleId, a.assetID) innerQuery
+group by
+	innerQuery.assetId
+  `
 
   try {
     let [rows] = await dbUtils.pool.query(sql, binds)
@@ -1280,20 +1300,20 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
     collectionId: collectionId
   }
 
-  let sql = 'SELECT COUNT(*) as collectionHistoryEntryCount, MIN(rh.ts) as oldestHistoryEntryDate'
+  let sql = 'SELECT COUNT(*) as collectionHistoryEntryCount, MIN(rh.touchTs) as oldestHistoryEntryDate'
 
   if (projection && projection.includes('asset')) {
     sql += `, coalesce(
       (SELECT json_arrayagg(
         json_object(
-          'assetId', assetId,
+          'assetId', CAST(assetId as char) ,
           'historyEntryCount', historyEntryCount,
           'oldestHistoryEntry', oldestHistoryEntry
           )
         )
         FROM 
         (
-          SELECT a.assetId, COUNT(*) as historyEntryCount, MIN(rh.ts) as oldestHistoryEntry
+          SELECT a.assetId, COUNT(*) as historyEntryCount, MIN(rh.touchTs) as oldestHistoryEntry
           FROM review_history rh
             INNER JOIN review rv on rh.reviewId = rv.reviewId
             INNER JOIN asset a on rv.assetId = a.assetId
@@ -1317,12 +1337,12 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
 
   if (startDate) {
     binds.startDate = startDate
-    additionalPredicates += " AND rh.ts >= :startDate"
+    additionalPredicates += " AND rh.touchTs >= :startDate"
   }
 
   if (endDate) {
     binds.endDate = endDate
-    additionalPredicates += " AND rh.ts <= :endDate"
+    additionalPredicates += " AND rh.touchTs <= :endDate"
   }
 
   if(ruleId) {
@@ -1502,7 +1522,7 @@ exports.deleteCollectionLabelById = async function (collectionId, labelId) {
 exports.getAssetsByCollectionLabelId = async function (collectionId, labelId, userObject) {
   const sqlGetAssets = `
 select
-	a.assetId,
+  CAST(a.assetId as char) as assetId ,
   a.name
 from
   collection_label cl 
