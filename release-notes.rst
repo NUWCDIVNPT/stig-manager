@@ -1,3 +1,16 @@
+1.2.7
+-----
+
+Changes:
+
+  - (API) Update dependency `minimist` to address a High severity vulnerability
+  - (API/Tests) Review History endpoint fixes and new CI tests
+
+Commits:
+
+  - 4b2d0b9 mixed: Review History tests and fixes to structure and calculation dates  (#631)
+  - a6b1c0c chore(deps): bump minimist from 1.2.5 to 1.2.6 in /api/source (#630)
+
 1.2.6
 -----
 
