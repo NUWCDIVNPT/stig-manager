@@ -7,12 +7,20 @@ STIG Manager is an API and Web client for managing the assessment of Information
 **Source:** [https://github.com/NUWCDIVNPT/stig-manager](https://github.com/NUWCDIVNPT/stig-manager)
 
 ## Supported tags
-- From the `node:lts-alpine` base image (the default if no tag is provided)
-  - `latest`, `latest-alpine`
-- From the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/)
-  - `latest-ironbank`
 
-In addition, we provide a limited selection of releases tagged as *`release`*`[-`*`distro`*`]`, where `distro` defauts to `alpine`. For example, `1.0.40` or `1.0.40-ironbank`
+Built from the current HEAD of our `main` branch: 
+  - `nuwcdivnpt/stig-manager:latest`
+    - uses the `node:lts-alpine` base image
+  - `nuwcdivnpt/stig-manager:latest-ironbank`
+    - uses the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/)
+
+
+Built from a point release tag on our `main` branch:
+  - `nuwcdivnpt/stig-manager:s<point-release>`
+    - uses the `node:lts-alpine` base image
+  - `nuwcdivnpt/stig-manager:<point-release>-ironbank`
+    - uses the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/)
+  - For example, `nuwcdivnpt/stig-manager:1.2.7` or `nuwcdivnpt/stig-manager:1.2.7-ironbank`
 
 ## Quick Start Orchestration
 
@@ -43,7 +51,7 @@ services:
     cap_add:
       - SYS_NICE  # workaround MySQL logging bug => mbind: Operation not permitted 
   api:
-    image: nuwcdivnpt/stig-manager
+    image: nuwcdivnpt/stig-manager:latest
     environment:
       - STIGMAN_OIDC_PROVIDER=http://auth:8080/auth/realms/stigman
       - STIGMAN_CLASSIFICATION=U
