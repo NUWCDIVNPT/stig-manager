@@ -3,19 +3,35 @@ env:
   DOCKERHUB_REPOSITORY: nuwcdivnpt/stig-manager
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/source/**'
+      - 'client/src/**'
+      - 'docs/**'
+      - 'Dockerfile'
+      - '.github/workflows/build-client.yml'
+      - '.github/workflows/build-docs.yml'
+      - '.github/workflows/pub-docker.yml'
+    tags:
+      - 1.**
 jobs:
   build-client:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
+  build-docs:
+    uses: nuwcdivnpt/stig-manager/.github/workflows/build-docs.yml@main   
   build-push-alpine:
     name: Build and push from Alpine base
-    needs: build-client
+    needs: 
+      - build-client
+      - build-docs
     runs-on: ubuntu-latest
     steps:
       - 
         name: Check out the repo
         uses: actions/checkout@v2
         with:
-          ref: main
           fetch-depth: 0
       -
         name: Download client distribution
@@ -23,6 +39,12 @@ jobs:
         with:
           name: client-dist
           path: ./client/dist
+      -
+        name: Download documentation
+        uses: actions/download-artifact@v2
+        with:
+          name: docs-build
+          path: ./docs/_build/html          
       - 
         name: Get repository metadata
         id: repo
@@ -40,8 +62,10 @@ jobs:
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:latest-alpine,${DOCKER_IMAGE}:${TAG},${DOCKER_IMAGE}:${TAG}-alpine"
+          TAGS=${DOCKER_IMAGE}:latest
+          [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}" 
           echo ::set-output name=version::${TAG}
+          echo ::set-output name=sha::${SHA}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=branch::${BRANCH}
           echo ::set-output name=tags::${TAGS}
@@ -66,7 +90,7 @@ jobs:
           push: true
           build-args: |
             COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
-            COMMIT_SHA=${{ github.sha }}
+            COMMIT_SHA=${{ steps.prep.outputs.sha }}
             COMMIT_TAG=${{ steps.prep.outputs.tag }}
             COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
           tags: ${{ steps.prep.outputs.tags }}
@@ -85,7 +109,7 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
       - 
         name: Update Docker Hub Description
-        uses: peter-evans/dockerhub-description@v2
+        uses: peter-evans/dockerhub-description@v3
         with:
           username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
@@ -94,7 +118,9 @@ jobs:
           readme-filepath: ./docs/the-project/DockerHub_Readme.md
   build-push-ironbank:
     name: Build and push from Iron Bank base
-    needs: build-client
+    needs: 
+      - build-client
+      - build-docs
     runs-on: ubuntu-latest
     steps:
       - 
@@ -109,6 +135,12 @@ jobs:
         with:
           name: client-dist
           path: ./client/dist
+      -
+        name: Download documentation
+        uses: actions/download-artifact@v2
+        with:
+          name: docs-build
+          path: ./docs/_build/html          
       - 
         name: Get repository metadata
         id: repo
@@ -126,8 +158,10 @@ jobs:
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
-          TAGS="${DOCKER_IMAGE}:latest-ironbank,${DOCKER_IMAGE}:${TAG}-ironbank"
+          TAGS="${DOCKER_IMAGE}:latest-ironbank"
+          [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}-ironbank" 
           echo ::set-output name=version::${TAG}
+          echo ::set-output name=sha::${SHA}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=branch::${BRANCH}
           echo ::set-output name=tags::${TAGS}
@@ -160,7 +194,7 @@ jobs:
           build-args: |
             BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs16:latest
             COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
-            COMMIT_SHA=${{ github.sha }}
+            COMMIT_SHA=${{ steps.prep.outputs.sha }}
             COMMIT_TAG=${{ steps.prep.outputs.tag }}
             COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
           tags: ${{ steps.prep.outputs.tags }}

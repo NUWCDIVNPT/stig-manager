@@ -28,6 +28,10 @@ cd ./source
 npm ci
 cd ..
 ../client/build.sh
+../docs/build.sh
+
+DESCRIBE=$(git describe --tags | sed 's/\(.*\)-.*/\1/')
+echo $DESCRIBE
 
 # Make binaries
 echo "Building binaries"
@@ -35,11 +39,11 @@ pkg -C gzip --public --public-packages=* --no-bytecode pkg.config.json
 
 echo "Creating archives with launchers"
 # Windows archive
-zip --junk-paths $DISTDIR/stig-manager-win.zip $LAUNCHERDIR/stig-manager.bat $BINDIR/stig-manager-win.exe
-[[ $1 == "--sign" ]] && gpg --keyring $KEYRING --default-key $SIGNING_KEY --armor --detach-sig  $DISTDIR/stig-manager-win.zip
+zip --junk-paths $DISTDIR/stig-manager-win-$DESCRIBE.zip $LAUNCHERDIR/stig-manager.bat $BINDIR/stig-manager-win.exe
+[[ $1 == "--sign" ]] && gpg --keyring $KEYRING --default-key $SIGNING_KEY --armor --detach-sig  $DISTDIR/stig-manager-win-$DESCRIBE.zip
 
 # Linux archive
-tar -cJvf $DISTDIR/stig-manager-linux.tar.xz --xform='s|^|stig-manager/|S' -C $LAUNCHERDIR stig-manager.sh -C ../$BINDIR stig-manager-linuxstatic
-[[ $1 == "--sign" ]] && gpg --keyring $KEYRING --default-key $SIGNING_KEY --armor --detach-sig $DISTDIR/stig-manager-linux.tar.xz
+tar -cJvf $DISTDIR/stig-manager-linux-$DESCRIBE.tar.xz --xform='s|^|stig-manager/|S' -C $LAUNCHERDIR stig-manager.sh -C ../$BINDIR stig-manager-linuxstatic
+[[ $1 == "--sign" ]] && gpg --keyring $KEYRING --default-key $SIGNING_KEY --armor --detach-sig $DISTDIR/stig-manager-linux-$DESCRIBE.tar.xz
 
 echo "Build artifacts are in $DISTDIR"
