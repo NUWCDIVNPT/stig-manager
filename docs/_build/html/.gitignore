@@ -1,4 +1,4 @@
-## Directory for the STIG Manager Sphinx documentation build
+## Directory for the STIG Manager Sphinx documentation HTML files
 
 # Content can be written here by executing:
 # $ ../build.sh
@@ -8,6 +8,5 @@
 # Ignore everything in this directory
 *
 
-# Except this file and the html directory
-!html
+# Except this file
 !.gitignore
