@@ -7,6 +7,9 @@
 .x-menu-item-checked .x-menu-item-icon {
 	background-position: -24px 0px;
 }
+.x-menu-group-item .x-menu-item-icon {
+	background-image: none
+}
 .x-tree-node {
 	margin-bottom: 2px;
 	font-size: 11px;
