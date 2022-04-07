@@ -210,7 +210,7 @@ paths:
     get:
       tags:
         - Asset
-      summary: Return JSON or a CKL file for an Asset and STIG
+      summary: Return JSON summary or a CKL file for an Asset and STIG
       operationId: getChecklistByAssetStig
       parameters:
         - name: format
@@ -224,11 +224,13 @@ paths:
               - ckl
       responses:
         '200':
-          description: Review response
+          description: A JSON array of Checklist summary items or a CKL
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChecklistAssetStig'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChecklistAssetStig'
             application/xml:
               schema:
                 $ref: '#/components/schemas/ChecklistCkl'
@@ -3161,29 +3163,29 @@ components:
         content:
           type: string
     ChecklistAssetStig:
-      type: array
-      items:
-        type: object
-        additionalProperties: false  
-        properties:
-          ruleId:
-            type: string
-          ruleTitle:
-            type: string
-          groupId:
-            type: string
-          groupTitle:
-            type: string
-          severity:
-            $ref: '#/components/schemas/RuleSeverity'
-          autoCheckAvailable:
-            type: boolean
-          result:
-            $ref: '#/components/schemas/ChecklistResult'
-          autoResult:
-            type: boolean
-          status:
-            $ref: '#/components/schemas/ChecklistStatus'
+      type: object
+      additionalProperties: false  
+      properties:
+        ruleId:
+          type: string
+        ruleTitle:
+          type: string
+        groupId:
+          type: string
+        groupTitle:
+          type: string
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        result:
+          $ref: '#/components/schemas/ChecklistResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        autoResult:
+          type: boolean
+        autoCheckAvailable:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ChecklistStatus'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -3898,6 +3900,62 @@ components:
       type: string
     MetadataValue:
       type: string
+    ResultEngine:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          $ref: '#/components/schemas/ResultEngineType'
+        product:
+          $ref: '#/components/schemas/String255'
+        version:
+          $ref: '#/components/schemas/String255'
+        time:
+          $ref: '#/components/schemas/StringDateTime'
+        checkContent:
+          $ref: '#/components/schemas/ResultEngineCheckContent'
+        overrides:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ResultEngineOverride'
+      required:
+        - product
+        - type
+    ResultEngineCheckContent:
+      type: object
+      additionalProperties: false
+      properties:
+        location:
+          $ref: '#/components/schemas/String255'
+        component:
+          $ref: '#/components/schemas/String255'
+      required:
+        - location
+    ResultEngineOverride:
+      type: object
+      additionalProperties: false
+      properties:
+        authority:
+          $ref: '#/components/schemas/String255'
+        oldResult:
+          $ref: '#/components/schemas/ReviewResult'
+        newResult:
+          $ref: '#/components/schemas/ReviewResult'
+        remark:
+          $ref: '#/components/schemas/String255'
+        time:
+          $ref: '#/components/schemas/StringDateTime'
+      required:
+        - authority
+        - oldResult
+        - newResult
+    ResultEngineType:
+      type: string
+      enum:
+        - scap
+        - script
+        - other
     ReviewAsset:
       type: object
       required:
@@ -3905,7 +3963,6 @@ components:
         - result
         - detail
         - comment
-        - autoResult
         - status
         - userId
         - username
@@ -3916,6 +3973,8 @@ components:
           $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         detail:
           $ref: '#/components/schemas/StringMaxNullable'
         comment:
@@ -3956,6 +4015,8 @@ components:
           $ref: '#/components/schemas/StringMax'
         autoResult:
           type: boolean
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
@@ -3966,11 +4027,12 @@ components:
         - result
         - detail
         - comment
-        - autoResult
       additionalProperties: false
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         detail:
           $ref: '#/components/schemas/StringMax'
         comment:
@@ -3987,7 +4049,6 @@ components:
         - result
         - detail
         - comment
-        - autoResult
         - userId
         - username
         - ts
@@ -3996,6 +4057,8 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         detail:
           $ref: '#/components/schemas/StringMaxNullable'
         comment:
@@ -4031,13 +4094,14 @@ components:
         - result
         - detail
         - comment
-        - autoResult
       additionalProperties: false
       properties:
         ruleId:
           $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         detail:
           $ref: '#/components/schemas/StringMaxNullable'
         comment:
@@ -4054,8 +4118,6 @@ components:
         - result
         - detail
         - comment
-        - autoResult
-        - metadata
         - status
         - userId
         - username
@@ -4065,14 +4127,14 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         detail:
           $ref: '#/components/schemas/StringMaxNullable'
         comment:
           $ref: '#/components/schemas/StringMaxNullable'
         autoResult:
           type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatusRead'
         userId:
@@ -4247,7 +4309,6 @@ components:
         - result
         - detail
         - comment
-        - autoResult
         - userId
         - username
         - ts
@@ -4263,6 +4324,8 @@ components:
           $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
         detail:
           $ref: '#/components/schemas/StringMaxNullable'
         comment:
