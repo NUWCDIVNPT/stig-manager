@@ -9,13 +9,8 @@ const _this = this
 Generalized queries for collection(s).
 **/
 exports.queryCollections = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) { 
-    let context
-    if (elevate) {
-      context = dbUtils.CONTEXT_ALL
-    } else {
-      context = dbUtils.CONTEXT_USER
-    }
-
+    const context = elevate ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+    
     const queries = []
 
     let columns = [
@@ -216,8 +211,6 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
 }
 
 exports.queryFindings = async function (aggregator, inProjection = [], inPredicates = {}, userObject) {
-
-  let context = dbUtils.CONTEXT_USER
   let columns, groupBy, orderBy
   switch (aggregator) {
     case 'ruleId':
@@ -347,10 +340,9 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     predicates.statements.push('cgr.benchmarkId = ?')
     predicates.binds.push( inPredicates.benchmarkId )
   }
-  if (context == dbUtils.CONTEXT_USER) {
-    predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
-    predicates.binds.push( userObject.userId, userObject.userId )
-  }
+  predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
+  predicates.binds.push( userObject.userId, userObject.userId )
+  
   // CONSTRUCT MAIN QUERY
   let sql = 'SELECT '
   sql+= columns.join(",\n")
@@ -367,151 +359,135 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
 }
 
 exports.queryStatus = async function (inPredicates = {}, userObject) {
-  try {
+  let columns = [
+    `distinct cast(a.assetId as char) as assetId`,
+    'a.name as assetName',
+    `coalesce(
+      (select
+        json_arrayagg(BIN_TO_UUID(cl.uuid,1))
+      from
+        collection_label_asset_map cla
+        left join collection_label cl on cla.clId = cl.clId
+      where
+        cla.assetId = a.assetId),
+      json_array()
+    ) as assetLabelIds`,
+    'sa.benchmarkId',
+    `json_object(
+      'total', cr.ruleCount,
+      'auto', cr.ovalCount
+    ) as rules`,
+    'sa.minTs',
+    'sa.maxTs',
+    `json_object(
+      'low', sa.lowCount,
+        'medium', sa.mediumCount,
+        'high', sa.highCount
+    ) as findings`,
+    `json_object(
+      'saved', json_object(
+        'total', sa.savedManual + sa.savedAuto,
+            'auto', sa.savedAuto),
+      'submitted', json_object(
+          'total', sa.submittedManual + sa.submittedAuto,
+            'auto', sa.submittedAuto),
+      'rejected', json_object(
+          'total', sa.rejectedManual + sa.rejectedAuto,
+            'auto', sa.rejectedAuto),
+      'accepted', json_object(
+          'total', sa.acceptedManual + sa.acceptedAuto,
+            'auto', sa.acceptedAuto)
+    ) as status`           
+  ]
+  let joins = [
+    'collection c',
+    'left join collection_grant cg on c.collectionId = cg.collectionId',
+    'left join asset a on c.collectionId = a.collectionId',
+    'inner join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join user_stig_asset_map usa on sa.saId = usa.saId',
+    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
+  ]
 
-    let context  = dbUtils.CONTEXT_USER
-    let columns = [
-      `distinct cast(a.assetId as char) as assetId`,
-      'a.name as assetName',
-      `coalesce(
-        (select
-          json_arrayagg(BIN_TO_UUID(cl.uuid,1))
-        from
-          collection_label_asset_map cla
-          left join collection_label cl on cla.clId = cl.clId
-        where
-          cla.assetId = a.assetId),
-        json_array()
-      ) as assetLabelIds`,
-      'sa.benchmarkId',
-      `json_object(
-        'total', cr.ruleCount,
-        'auto', cr.ovalCount
-      ) as rules`,
-      'sa.minTs',
-      'sa.maxTs',
-      `json_object(
-        'low', sa.lowCount,
-          'medium', sa.mediumCount,
-          'high', sa.highCount
-      ) as findings`,
-     `json_object(
-        'saved', json_object(
-          'total', sa.savedManual + sa.savedAuto,
-              'auto', sa.savedAuto),
-        'submitted', json_object(
-           'total', sa.submittedManual + sa.submittedAuto,
-              'auto', sa.submittedAuto),
-        'rejected', json_object(
-           'total', sa.rejectedManual + sa.rejectedAuto,
-              'auto', sa.rejectedAuto),
-        'accepted', json_object(
-           'total', sa.acceptedManual + sa.acceptedAuto,
-              'auto', sa.acceptedAuto)
-      ) as status`           
-    ]
-    let joins = [
-      'collection c',
-      'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join asset a on c.collectionId = a.collectionId',
-      'inner join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join user_stig_asset_map usa on sa.saId = usa.saId',
-      'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
-    ]
+  // PROJECTIONS
 
-    // PROJECTIONS
-
-    // PREDICATES
-    let predicates = {
-      statements: [],
-      binds: []
-    }
-    
-    // collectionId predicate is mandatory per API spec
-    if ( inPredicates.collectionId ) {
-      predicates.statements.push('c.collectionId = ?')
-      predicates.binds.push( inPredicates.collectionId )
-    }
-    if ( inPredicates.benchmarkIds ) {
-      predicates.statements.push('sa.benchmarkId IN ?')
-      predicates.binds.push( [inPredicates.benchmarkIds] )
-    }
-    if ( inPredicates.assetIds ) {
-      predicates.statements.push('sa.assetId IN ?')
-      predicates.binds.push( [inPredicates.assetIds] )
-    }
-    if (context == dbUtils.CONTEXT_USER) {
-      predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
-      predicates.binds.push( userObject.userId, userObject.userId )
-    }
-    // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += '\nFROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
-    }
-    sql += '\norder by a.name, sa.benchmarkId'
-    
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows)
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: []
   }
-  // catch (err) {
-  //   throw err
-  // }
-  finally{}
+  
+  // collectionId predicate is mandatory per API spec
+  if ( inPredicates.collectionId ) {
+    predicates.statements.push('c.collectionId = ?')
+    predicates.binds.push( inPredicates.collectionId )
+  }
+  if ( inPredicates.benchmarkIds ) {
+    predicates.statements.push('sa.benchmarkId IN ?')
+    predicates.binds.push( [inPredicates.benchmarkIds] )
+  }
+  if ( inPredicates.assetIds ) {
+    predicates.statements.push('sa.assetId IN ?')
+    predicates.binds.push( [inPredicates.assetIds] )
+  }
+  predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
+  predicates.binds.push( userObject.userId, userObject.userId )
+  
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += '\nFROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += '\norder by a.name, sa.benchmarkId'
+  
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows)
 }
 
 exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, userObject) {
-  try {
-    let columns = [
-      'sa.benchmarkId',
-      `json_object(
-        'assetId', CAST(a.assetId as char),
-        'name', a.name
-      ) as asset`
-    ]
-    let joins = [
-      'collection c',
-      'left join asset a on c.collectionId = a.collectionId',
-      'left join stig_asset_map sa on a.assetId = sa.assetId',
-    ]
-    // PREDICATES
-    let predicates = {
-      statements: [],
-      binds: []
-    }
-    if ( inPredicates.collectionId ) {
-      predicates.statements.push('c.collectionId = ?')
-      predicates.binds.push( inPredicates.collectionId )
-    } else {
-      throw ( {status: 400, message: 'Missing required predicate: collectionId'} )
-    }
-    if ( inPredicates.userId ) {
-      joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
-      predicates.statements.push('usa.userId = ?')
-      predicates.binds.push( inPredicates.userId )
-    }
-
-    // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += ' FROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
-    }
-    sql += ' order by sa.benchmarkId, a.name'
-    
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows)
-
+  let columns = [
+    'sa.benchmarkId',
+    `json_object(
+      'assetId', CAST(a.assetId as char),
+      'name', a.name
+    ) as asset`
+  ]
+  let joins = [
+    'collection c',
+    'left join asset a on c.collectionId = a.collectionId',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+  ]
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: []
   }
-  // catch (err) {
-  //   throw err
-  // }
-  finally{}
+  if ( inPredicates.collectionId ) {
+    predicates.statements.push('c.collectionId = ?')
+    predicates.binds.push( inPredicates.collectionId )
+  } else {
+    throw ( {status: 400, message: 'Missing required predicate: collectionId'} )
+  }
+  if ( inPredicates.userId ) {
+    joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
+    predicates.statements.push('usa.userId = ?')
+    predicates.binds.push( inPredicates.userId )
+  }
+
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += ' order by sa.benchmarkId, a.name'
+  
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows)
 }
 
 exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId, userId, stigAssets, projection, userObject) {
@@ -550,10 +526,7 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    // throw err
-    throw ( {status: 500, message: 'Database transaction issue.', stack: err.stack} )
-
-    
+    throw (err)
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -661,14 +634,8 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
       await connection.release()
     }
   }
-
-  try {
-    let row = await _this.getCollection(collectionId, projection, true, userObject)
-    return row
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let row = await _this.getCollection(collectionId, projection, true, userObject)
+  return row
 }
 
 /**
@@ -690,15 +657,10 @@ exports.createCollection = async function(body, projection, userObject) {
  * returns CollectionInfo
  **/
 exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
-  try {
-    let row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
-    let sqlDelete = `DELETE FROM collection where collectionId = ?`
-    await dbUtils.pool.query(sqlDelete, [collectionId])
-    return (row[0])
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
+  let sqlDelete = `DELETE FROM collection where collectionId = ?`
+  await dbUtils.pool.query(sqlDelete, [collectionId])
+  return (row[0])
 }
 
 
@@ -821,13 +783,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
     const [rows] = await connection.query(sql, predicates.binds)
-    // for (const row of rows) {
-    //   row.autoCheckAvailable = row.autoCheckAvailable === 1 ? true : false
-    // }
     return (rows)
-  }
-  catch (err) {
-    throw ( {status: 500,  message: err.message, stack: err.stack })
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -844,16 +800,10 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
  * returns CollectionInfo
  **/
 exports.getCollection = async function(collectionId, projection, elevate, userObject) {
-  try {
-    let rows = await _this.queryCollections(projection, {
-      collectionId: collectionId
-    }, elevate, userObject)
+  let rows = await _this.queryCollections(projection, {
+    collectionId: collectionId
+  }, elevate, userObject)
   return (rows[0])
-  }
-  // catch (err) {
-  //   throw (err)
-  // }
-  finally{}
 }
 
 
@@ -863,130 +813,94 @@ exports.getCollection = async function(collectionId, projection, elevate, userOb
  * returns List
  **/
 exports.getCollections = async function(predicates, projection, elevate, userObject) {
-  try {
-    let rows = await _this.queryCollections(projection, predicates, elevate, userObject)
-    return (rows)
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let rows = await _this.queryCollections(projection, predicates, elevate, userObject)
+  return (rows)
 }
 
 exports.getFindingsByCollection = async function( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, userObject ) {
-  try {
-    let rows = await _this.queryFindings(aggregator, projection, { 
-      collectionId: collectionId,
-      benchmarkId: benchmarkId,
-      assetId: assetId,
-      acceptedOnly: acceptedOnly
-    }, userObject)
-    return (rows)
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
-
+  let rows = await _this.queryFindings(aggregator, projection, { 
+    collectionId: collectionId,
+    benchmarkId: benchmarkId,
+    assetId: assetId,
+    acceptedOnly: acceptedOnly
+  }, userObject)
+  return (rows)
 }
 
 exports.getStatusByCollection = async function( collectionId, assetIds, benchmarkIds, userObject ) {
-  try {
-    let rows = await _this.queryStatus({ 
-      collectionId,
-      benchmarkIds,
-      assetIds
-     }, userObject)
-    return (rows)
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let rows = await _this.queryStatus({ 
+    collectionId,
+    benchmarkIds,
+    assetIds
+    }, userObject)
+  return (rows)
 }
 
 exports.getStigAssetsByCollectionUser = async function (collectionId, userId, elevate, userObject) {
-  try {
-    let rows = await _this.queryStigAssets([], { 
-      collectionId: collectionId,
-      userId: userId
-    }, userObject)
-    return (rows)
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
-
+  let rows = await _this.queryStigAssets([], { 
+    collectionId: collectionId,
+    userId: userId
+  }, userObject)
+  return (rows)
 }
 
 exports.getStigsByCollection = async function( collectionId, labelIds, elevate, userObject ) {
-  try {
+  let columns = [
+    'cr.benchmarkId',
+    'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
+    `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
+    'st.title',
+    'cr.ruleCount',
+    'COUNT(a.assetId) as assetCount',
+    'CAST(SUM(sa.acceptedManual) + SUM(sa.acceptedAuto) AS SIGNED) as acceptedCount',
+    'CAST(SUM(sa.rejectedManual) + SUM(sa.rejectedAuto) AS SIGNED) as rejectedCount',
+    'CAST(SUM(sa.submittedManual) + SUM(sa.submittedAuto) AS SIGNED) as submittedCount',
+    'CAST(SUM(sa.savedManual) + SUM(sa.savedAuto) AS SIGNED) as savedCount',
+    `LEAST(MIN(minTs), MIN(maxTs)) as minTs`,
+    `GREATEST(MAX(minTs), MAX(maxTs)) as maxTs`
+  ]
 
-    let context  = dbUtils.CONTEXT_USER
-    let columns = [
-      'cr.benchmarkId',
-      'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
-      `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
-      'st.title',
-      'cr.ruleCount',
-      'COUNT(a.assetId) as assetCount',
-      'CAST(SUM(sa.acceptedManual) + SUM(sa.acceptedAuto) AS SIGNED) as acceptedCount',
-      'CAST(SUM(sa.rejectedManual) + SUM(sa.rejectedAuto) AS SIGNED) as rejectedCount',
-      'CAST(SUM(sa.submittedManual) + SUM(sa.submittedAuto) AS SIGNED) as submittedCount',
-      'CAST(SUM(sa.savedManual) + SUM(sa.savedAuto) AS SIGNED) as savedCount',
-      `LEAST(MIN(minTs), MIN(maxTs)) as minTs`,
-      `GREATEST(MAX(minTs), MAX(maxTs)) as maxTs`
-    ]
+  let joins = [
+    'collection c',
+    'left join collection_grant cg on c.collectionId = cg.collectionId',
+    'left join asset a on c.collectionId = a.collectionId',
+    'inner join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join current_rev cr on sa.benchmarkId=cr.benchmarkId',
+    'left join stig st on cr.benchmarkId=st.benchmarkId'
+  ]
 
-    let joins = [
-      'collection c',
-      'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join asset a on c.collectionId = a.collectionId',
-      'inner join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join current_rev cr on sa.benchmarkId=cr.benchmarkId',
-      'left join stig st on cr.benchmarkId=st.benchmarkId'
-    ]
-
-    // PREDICATES
-    let predicates = {
-      statements: [],
-      binds: []
-    }
-    predicates.statements.push('c.collectionId = ?')
-    predicates.binds.push( collectionId )
-
-    if (labelIds?.length) {
-      joins.push('inner join collection_label_asset_map cla on a.assetId = cla.assetId')
-      predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
-      const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-      predicates.binds.push([uuidBinds])
-
-    }
-
-    if (context == dbUtils.CONTEXT_USER) {
-      joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
-      predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
-      predicates.binds.push( userObject.userId )
-    }
-    // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += ' FROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
-    }
-    sql += ' group by cr.benchmarkId, cr.version, cr.release, cr.benchmarkDateSql, st.title, cr.ruleCount '
-    sql += ' order by cr.benchmarkId'
-    
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows)
-
-
-    // let rows = await _this.queryCollections(['stigs'], { collectionId: collectionId }, elevate, userObject)
-    // return (rows[0].stigs)
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: []
   }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+  predicates.statements.push('c.collectionId = ?')
+  predicates.binds.push( collectionId )
+
+  if (labelIds?.length) {
+    joins.push('inner join collection_label_asset_map cla on a.assetId = cla.assetId')
+    predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
+    const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+    predicates.binds.push([uuidBinds])
+
   }
 
+  joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
+  predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
+  predicates.binds.push( userObject.userId )
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += ' FROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += ' group by cr.benchmarkId, cr.version, cr.release, cr.benchmarkDateSql, st.title, cr.ruleCount '
+  sql += ' order by cr.benchmarkId'
+  
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows)
 }
 
 /**
@@ -997,23 +911,13 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
  * returns CollectionInfo
  **/
 exports.replaceCollection = async function( collectionId, body, projection, userObject) {
-  try {
-    let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.REPLACE, collectionId, body, projection, userObject)
-    return (row)
-  } 
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.REPLACE, collectionId, body, projection, userObject)
+  return (row)
 }
 
 exports.setStigAssetsByCollectionUser = async function (collectionId, userId, stigAssets, userObject) {
-  try {
-    let row = await _this.updateOrReplaceUserStigAssets(dbUtils.WRITE_ACTION.REPLACE, collectionId, userId, stigAssets, userObject)
-    return (row)
-  } 
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let row = await _this.updateOrReplaceUserStigAssets(dbUtils.WRITE_ACTION.REPLACE, collectionId, userId, stigAssets, userObject)
+  return (row)
 }
 
 /**
@@ -1024,13 +928,8 @@ exports.setStigAssetsByCollectionUser = async function (collectionId, userId, st
  * returns CollectionInfo
  **/
 exports.updateCollection = async function( collectionId, body, projection, userObject) {
-  try {
-    let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.UPDATE, collectionId, body, projection, userObject)
-    return (row)
-  } 
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.UPDATE, collectionId, body, projection, userObject)
+  return (row)
 }
 
 
@@ -1181,7 +1080,7 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     collectionId: collectionId
   }
   
-let sql = `
+  let sql = `
 select
 CAST(innerQuery.assetId as char) as assetId,
 	json_arrayagg(
@@ -1260,13 +1159,8 @@ group by
 	innerQuery.assetId
   `
 
-  try {
-    let [rows] = await dbUtils.pool.query(sql, binds)
-    return (rows)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} ) 
-  }
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return (rows)
 }
 
 /*
@@ -1344,15 +1238,8 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
 
   sql = sql.replace(/additionalPredicates/g, additionalPredicates)
 
-
-  try {
-    let [rows] = await dbUtils.pool.query(sql, binds)
-    return (rows[0])
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} ) 
-  }
-
+  let [rows] = await dbUtils.pool.query(sql, binds)
+  return (rows[0])
 }
 
 exports.getCollectionSettings = async function ( collectionId ) {
