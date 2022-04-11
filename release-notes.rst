@@ -5,9 +5,25 @@ Changes:
 
   - (API) Update dependency `minimist` to address a High severity vulnerability
   - (API/Tests) Review History endpoint fixes and new CI tests
+  - (App) In the Collection/STIG Review checklist grid, the columns that count O, NF, NA, and NR were expanded to accommodate up to 4 digits. These columns remain fixed width and are not re-sizable by the user.
+  - (App) In both the Asset/STIG Review and Collection/STIG Review checklist grids, the default visible columns were changed from "Group ID and Group Title" to "Group ID and Rule Title". This more closely reflects the observed preferences of many users.
+  - (API) resultEngine property added to Review schema. This property is intended to hold data about automated sources of the Review Results. See the API Specification for more details. 
+
+  - (DB) Includes a MySQL migration that:
+    
+    - Adds JSON column ``resultEngine`` to ``review`` and ``review_history`` tables. 
+    - Where ``autoResult`` column is set to 1, sets value of resultEngine to  ``{type: "scap", product: "scc"}``
+
+  **We recommend backing up your database before updating to any release with a database migration.**
+
 
 Commits:
 
+  - 9936c15 refactor: remove references to globalAccess and unneeded try/catch (#632)
+  - 428784e feat: widen columns; default to groupId/ruleTitle (#640)
+  - 99e6e17 feat: resultEngine property added to Review schema (#638)
+  - 070b060 docs: include stub html directory (#639)
+  - 62011d8 build: add doc build; build images on commit and tag (#637)
   - 4b2d0b9 mixed: Review History tests and fixes to structure and calculation dates  (#631)
   - a6b1c0c chore(deps): bump minimist from 1.2.5 to 1.2.6 in /api/source (#630)
 
