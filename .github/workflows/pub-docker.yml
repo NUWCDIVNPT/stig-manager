@@ -32,6 +32,7 @@ jobs:
         name: Check out the repo
         uses: actions/checkout@v2
         with:
+          ref: main
           fetch-depth: 0
       -
         name: Download client distribution
