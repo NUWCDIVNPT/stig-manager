@@ -152,6 +152,21 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// Group grid menus
 		/******************************************************/
+
+		function groupRuleColHandler (item) {
+			const {idProp, titleProp} = item.colProps
+			const cm = groupGrid.getColumnModel()
+			const colNames = ['groupId','groupTitle','ruleId','ruleTitle']
+			const cols = {}
+			groupGrid.titleColumnDataIndex = titleProp
+			groupGrid.autoExpandColumn = titleProp + idAppend
+			for (const colName of colNames) {
+				const index = cm.findColumnIndex(colName)
+				const hide = colName !== idProp && colName !== titleProp
+				cm.setHidden(index, hide)
+			}
+			groupGrid.getView().autoExpand()
+		}
 		var groupChecklistMenu = new Ext.menu.Menu({
 			id: 'groupChecklistMenu' + idAppend,
 			items: [
@@ -161,51 +176,25 @@ async function addCollectionReview ( params ) {
 					menu: {
 						items: [ 
 							{
-								id: 'groupFileMenu-title-groupItem' + idAppend,
-								text: 'Group ID and title',
-								checked: false,
-								group: 'titleType' + idAppend,
-								handler: function(item,eventObject){
-									var cm = groupGrid.getColumnModel();
-									var groupTitleIndex = cm.findColumnIndex('groupTitle');
-									var ruleTitleIndex = cm.findColumnIndex('ruleTitle');
-									var groupIdIndex = cm.findColumnIndex('groupId');
-									var ruleIdIndex = cm.findColumnIndex('ruleId');
-									var titleWidth = cm.getColumnWidth(ruleTitleIndex);
-									var idWidth = cm.getColumnWidth(ruleIdIndex);
-									cm.setColumnWidth(groupTitleIndex,titleWidth);
-									cm.setColumnWidth(groupIdIndex,idWidth);
-									groupGrid.titleColumnDataIndex = 'groupTitle';
-									filterGroupStore();
-									cm.setHidden(ruleTitleIndex,true);
-									cm.setHidden(ruleIdIndex,true);
-									cm.setHidden(groupTitleIndex,false);
-									cm.setHidden(groupIdIndex,false);
-									groupGrid.autoExpandColumn = 'groupTitle' + idAppend;
-								}
-							},{
-								id: 'groupFileMenu-title-ruleItem' + idAppend,
-								text: 'Rule ID and title',
+								text: 'Group ID and Rule title',
+								colProps: {idProp: 'groupId', titleProp: 'ruleTitle'},
 								checked: true,
 								group: 'titleType' + idAppend,
-								handler: function(item,eventObject){
-									var cm = groupGrid.getColumnModel();
-									var groupTitleIndex = cm.findColumnIndex('groupTitle');
-									var ruleTitleIndex = cm.findColumnIndex('ruleTitle');
-									var groupIdIndex = cm.findColumnIndex('groupId');
-									var ruleIdIndex = cm.findColumnIndex('ruleId');
-									var titleWidth = cm.getColumnWidth(groupTitleIndex);
-									var idWidth = cm.getColumnWidth(groupIdIndex);
-									cm.setColumnWidth(ruleTitleIndex,titleWidth);
-									cm.setColumnWidth(ruleIdIndex,idWidth);
-									groupGrid.titleColumnDataIndex = 'ruleTitle';
-									filterGroupStore();
-									cm.setHidden(groupTitleIndex,true);
-									cm.setHidden(groupIdIndex,true);
-									cm.setHidden(ruleTitleIndex,false);
-									cm.setHidden(ruleIdIndex,false);
-									groupGrid.autoExpandColumn = 'ruleTitle' + idAppend;
-								}
+								handler: groupRuleColHandler
+							},
+							{
+								text: 'Group ID and Group title',
+								colProps: {idProp: 'groupId', titleProp: 'groupTitle'},
+								checked: false,
+								group: 'titleType' + idAppend,
+								handler: groupRuleColHandler
+							},
+							{
+								text: 'Rule ID and Rule title',
+								colProps: {idProp: 'ruleId', titleProp: 'ruleTitle'},
+								checked: false,
+								group: 'titleType' + idAppend,
+								handler: groupRuleColHandler
 							}
 						]
 					}
@@ -365,13 +354,28 @@ async function addCollectionReview ( params ) {
 					if (autoCheckAvailable === true) {
 						return 'sm-scap-grid-item';
 					}
+				},
+				onColumnSplitterMoved : function(cellIndex, width) {
+					// override that does NOT set userResized and calls autoExpand()
+					// this.userResized = true;
+					this.grid.colModel.setColumnWidth(cellIndex, width, true);
+	
+					if (this.forceFit) {
+							this.fitColumns(true, false, cellIndex);
+							this.updateAllColumnWidths();
+					} else {
+							this.updateColumnWidth(cellIndex, width);
+							this.syncHeaderScroll();
+					}
+					this.grid.fireEvent('columnresize', cellIndex, width);
+					this.autoExpand()
 				}
 			}),
 			columns: [
 				{ 	
 					id:'cat' + idAppend,
 					header: "CAT", 
-					width: 48,
+					width: 44,
 					align: 'left',
 					dataIndex: 'severity',
 					fixed: true,
@@ -386,10 +390,10 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'groupId' + idAppend,
 					header: "Group",
-					width: 95,
+					width: 85,
 					dataIndex: 'groupId',
 					sortable: true,
-					hidden: true,
+					hidden: false,
 					hideable: false,
 					align: 'left',
 					filter: {
@@ -399,9 +403,10 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'ruleId' + idAppend,
 					header: "Rule Id",
-					width: 95,
+					width: 105,
 					dataIndex: 'ruleId',
 					sortable: true,
+					hidden: true,
 					hideable: false,
 					align: 'left',
 					filter: {
@@ -427,6 +432,7 @@ async function addCollectionReview ( params ) {
 					width: 80,
 					dataIndex: 'ruleTitle',
 					renderer: columnWrap,
+					hidden: false,
 					hideable: false,
 					sortable: true,
 					filter: {
@@ -436,7 +442,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'oCnt' + idAppend,
 					header: '<div style="color:red;font-weight:bolder;" exportvalue="O">O</div>', 
-					width: 32,
+					width: 40,
 					align: 'center',
 					dataIndex: 'oCnt',
 					renderer:renderOpen,
@@ -446,7 +452,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'nfCnt' + idAppend,
 					header: '<div style="color:green;font-weight:bolder;" exportvalue="NF">NF</div>', 
-					width: 32,
+					width: 40,
 					align: 'center',
 					renderer:renderCounts,
 					dataIndex: 'nfCnt',
@@ -456,7 +462,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'naCnt' + idAppend,
 					header: '<div style="color:grey;font-weight:bolder;" exportvalue="NA">NA</div>', 
-					width: 32,
+					width: 40,
 					align: 'center',
 					renderer:renderCounts,
 					dataIndex: 'naCnt',
@@ -466,7 +472,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'nrCnt' + idAppend,
 					header: "NR", 
-					width: 32,
+					width: 40,
 					align: 'center',
 					renderer:renderOpen,
 					dataIndex: 'nrCnt',
@@ -476,7 +482,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'readyCnt' + idAppend,
 					header: '<img src=img/ready-16.png width=12 height=12 exportvalue="Submitted">', 
-					width: 32,
+					width: 40,
 					align: 'center',
 					dataIndex: 'readyCnt',
 					fixed: true,
@@ -486,7 +492,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'rejectCnt' + idAppend,
 					header: '<img src=img/rejected-16.png width=12 height=12 exportvalue="Rejected">', 
-					width: 32,
+					width: 40,
 					align: 'center',
 					dataIndex: 'rejectCnt',
 					fixed: true,
@@ -496,7 +502,7 @@ async function addCollectionReview ( params ) {
 				{ 	
 					id:'approveCnt' + idAppend,
 					header: '<img src=img/star.svg width=12 height=12 exportvalue="Approved">', 
-					width: 32,
+					width: 40,
 					align: 'center',
 					dataIndex: 'approveCnt',
 					fixed: true,
