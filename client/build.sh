@@ -48,9 +48,10 @@ ext/resources/images/gray/grid/col-move-bottom.gif
 ext/resources/images/gray/grid/col-move-top.gif
 ext/resources/images/gray/grid/sort_asc.gif
 ext/resources/images/gray/grid/sort_desc.gif
-ext/resources/images/gray/menu/menu-parent.gif
+ext/resources/images/gray/menu/group-checked.gif
 ext/resources/images/gray/menu/item-over.gif
 ext/resources/images/gray/menu/item-over-disabled.gif
+ext/resources/images/gray/menu/menu-parent.gif
 ext/resources/images/gray/panel/tool-sprites.gif
 ext/resources/images/gray/panel/white-top-bottom.gif
 ext/resources/images/gray/qtip/tip-anchor-sprite.gif
