@@ -37,29 +37,33 @@
 //     }
 //   ]
 // }
+
+function tagValueProcessor(tagName, tagValue) {
+  var txt = document.createElement("textarea")
+  txt.innerHTML = tagValue
+  return txt.value
+}
+
 const reviewsFromCkl = function reviewsFromCkl (cklData, options = {}, fieldSettings) {
-  function tagValueProcessor(html) {
-    var txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
-  }
   options.ignoreNr = !!options.ignoreNr
-  const fastparseOptions = {
-    attributeNamePrefix: "",
-    ignoreAttributes: false,
-    ignoreNameSpace: true,
+  const parseOptions = {
     allowBooleanAttributes: false,
+    attributeNamePrefix: "",
+    cdataPropName: "__cdata", //default is 'false'
+    ignoreAttributes: false,
     parseNodeValue: false,
     parseAttributeValue: false,
+    removeNSPrefix: true,
     trimValues: true,
-    cdataTagName: "__cdata", //default is 'false'
-    cdataPositionChar: "\\c",
     localeRange: "", //To support non english character in tag/attribute values.
-    parseTrueNumberOnly: false,
-    arrayMode: true, //"strict"
-    tagValueProcessor: val => tagValueProcessor(val)
+    tagValueProcessor,
+    commentPropName: "__comment",
+    isArray: (name, jpath, isLeafNode, isAttribute) => {
+      return name === '__comment' || !isLeafNode
+    }
   }
-  let parsed = parser.parse(cklData, fastparseOptions)
+  const parser = new fxp.XMLParser(parseOptions)
+  let parsed = parser.parse(cklData)
 
   if (!parsed.CHECKLIST) throw (new Error("No CHECKLIST element"))
   if (!parsed.CHECKLIST[0].ASSET) throw (new Error("No ASSET element"))
@@ -233,20 +237,24 @@ const reviewsFromScc = function (sccFileContent, options = {}) {
     options.ignoreNotChecked = !!options.ignoreNotChecked
     // Parse the XML
     const parseOptions = {
-      attributeNamePrefix: "",
-      ignoreAttributes: false,
-      ignoreNameSpace: true,
       allowBooleanAttributes: false,
+      attributeNamePrefix: "",
+      cdataPropName: "__cdata", //default is 'false'
+      ignoreAttributes: false,
       parseNodeValue: true,
       parseAttributeValue: true,
+      removeNSPrefix: true,
       trimValues: true,
-      cdataTagName: "__cdata", //default is 'false'
-      cdataPositionChar: "\\c",
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
-      arrayMode: false //"strict"
+      tagValueProcessor,
+      commentPropName: "__comment",
+      // isArray: (name, jpath, isLeafNode, isAttribute) => {
+      //   return name === '__comment' || !isLeafNode
+      // }
     }
-    let parsed = parser.parse(sccFileContent, parseOptions)
+    const parser = new fxp.XMLParser(parseOptions)  
+    let parsed = parser.parse(sccFileContent)
 
     // Baic sanity checks
     if (!parsed.Benchmark) throw (new Error("No Benchmark element"))

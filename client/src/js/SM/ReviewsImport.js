@@ -850,7 +850,7 @@ SM.ReviewsImport.ParseErrorsPanel = Ext.extend(Ext.Panel, {
             items: items,
             buttons: [{
                 xtype: 'button',
-                text: 'Continue',
+                text: me.stopWizard ? 'Close' : 'Continue',
                 handler: me.continueHandler
             }],
             buttonAlign: 'right'
@@ -1565,6 +1565,7 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                 const results = await parseFiles(files, pb)
                 task.cancel()
 
+                results.stopWizard = !results.rows.length
                 if (results.errors.length > 0 || results.hasDuplicates) {
                     showErrors(results)
                 } else {
@@ -1691,6 +1692,7 @@ async function showImportResultFiles(collectionId, fieldSettings) {
             let pePanel = new SM.ReviewsImport.ParseErrorsPanel({
                 errors: results.errors.length > 0 ? results.errors : null,
                 duplicates: results.hasDuplicates ? results.dupedRows : null,
+                stopWizard: results.stopWizard,
                 continueHandler: results.stopWizard ? onAbort : onContinue,
                 backHandler: onBack
             })
