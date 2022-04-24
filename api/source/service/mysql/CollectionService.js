@@ -18,7 +18,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       'c.name',
       'c.description',
       'c.settings',
-      'c.metadata'
+      'c.metadata',
+      'c.created'
     ]
     let joins = [
       'collection c',
@@ -293,6 +294,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     columns.push(`cast(concat('[', group_concat(distinct json_object (
       'ruleId', ru.ruleId,
       'title', ru.title,
+      'version', ru.version,
       'severity', ru.severity) order by ru.ruleId), ']') as json) as "rules"`)
   }
   if (inProjection.includes('groups')) {

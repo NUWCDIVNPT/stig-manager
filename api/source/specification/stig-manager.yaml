@@ -3075,6 +3075,8 @@ components:
           type: array
           items:
             type: string
+    BenchmarkId:
+        type: string           
     Cci:
       type: object
       additionalProperties: false
@@ -3114,6 +3116,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CciReferenceRev4'
+    CciBasicArrayItem:
+      type: object
+      additionalProperties: false
+      properties:
+        cci:
+          type: string
+        apAcronym:
+          type: string
+        control:
+          type: string
+        definition:
+          type: string          
     CciListItem:
       type: object
       additionalProperties: false
@@ -3800,28 +3814,49 @@ components:
       type: object
       additionalProperties: false
       properties:
+        assetCount:
+          type: integer
         ruleId:
-          type: string
-        ruleTitle:
-          type: string
+          type: string      
         groupId:
           type: string
+        cci:
+          type: string
+        title:
+          type: string
+        definition:
+          type: string              
         groupTitle:
           type: string
+        apAcronym:
+          type: string          
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-        ccis:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciBasic'
-        benchmarkIds:
-          type: array
-          items:
-            type: string
+
+        # benchmarkIds:
+        #   type: array
+        #   items:
+        #     type: string
         assets:
           type: array
           items:
             $ref: '#/components/schemas/AssetBasic'
+        ccis:
+          type: array
+          items:
+            $ref: '#/components/schemas/CciBasicArrayItem'            
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupProjected'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleAbbr'      
+        stigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenchmarkId'                              
     Fix:
       type: object
       additionalProperties: false
@@ -3838,6 +3873,8 @@ components:
           type: string
         title:
           type: string
+        severity:
+          type: string          
         rules:
             type: array
             items:
@@ -4453,7 +4490,7 @@ components:
             mitigations:
               type: string
               nullable: true
-            securityOverrideGuidance:
+            severityOverrideGuidance:
               type: string
               nullable: true
             potentialImpacts:
@@ -4471,7 +4508,7 @@ components:
         ccis:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CciBasicArrayItem'
         checks:
           type: array
           items:
