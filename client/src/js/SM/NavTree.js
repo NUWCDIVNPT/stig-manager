@@ -427,7 +427,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           autoScroll: true,
           split: true,
           collapsible: true,
-          title: `<span onclick="window.oidcProvider.logout()">${curUser.display === 'USER' ? SM.he(curUser.username) : SM.he(curUser.display)} - Logout</span>`,
+          title: `<span onclick="window.oidcProvider.logout()">${curUser.displayName === 'USER' ? SM.he(curUser.username) : SM.he(curUser.displayName)} - Logout</span>`,
           bodyStyle: 'padding:5px;',
           width: me.width || 300,
           minSize: 220,
