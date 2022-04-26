@@ -301,7 +301,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       const autoResultField = ack
       const button1 = btn1 // left button
       const button2 = btn2 // right button
-      // const attachButton = Ext.getCmp('attachmentsGrid' + idAppend).fileUploadField; // 'add attachment' button
       const fp = _this
       const fieldSettings = _this.fieldSettings
 
@@ -312,16 +311,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       commentTextArea.setDisabled(!editable)
       btn1.setDisabled(!editable)
       btn2.setDisabled(!editable)
-
-      // // Original autoResult handling
-      // if (autoResultField.value == true && resultCombo.value === 'notapplicable') {
-      //   autoResultField.value = false;
-      // }
-
-      // if (autoResultField.value == true) { // Disable editing for autoResult
-      //   resultCombo.disable();
-      //   detailTextArea.disable();
-      // }
 
       if (editable) {
         if (fieldSettings.detail.enabled === 'always') {
@@ -353,16 +342,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
           commentTextArea.disable()
         }
       }
-
-      //Disable the add attachment button if the review has not been saved yet
-      // if (fp.groupGridRecord.data.result == "") {
-      //   attachButton.disable();
-      //   attachButton.button.setTooltip('This button is disabled because the review has never been saved.');
-      // } else {
-      //   attachButton.enable();
-      //   //attachButton.setTooltip('Attach a file to this review.'); 
-      //   attachButton.button.setTooltip('');
-      // }
 
       if (isReviewSubmittable()) {
         if (fp.reviewChanged()) {
@@ -421,7 +400,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               button2.actionType = 'submit';
               button2.setTooltip('');
               break;
-            case 'accepted':
             case 'submitted': // ready
               // button 1
               button1.enable();
@@ -430,12 +408,34 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               button1.actionType = 'unsubmit';
               button1.setTooltip('');
               // button 2
+              if (_this.canAccept) {
+                button2.enable();
+                button2.setText('Accept');
+                button2.setIconClass('sm-star-icon-16');
+                button2.actionType = 'accept';
+                button2.setTooltip('');
+              }
+              else {
+                button2.disable();
+                button2.setText('Submit');
+                button2.setIconClass('sm-ready-icon');
+                button2.actionType = '';
+                button2.setTooltip('This button is disabled because the review has already been submitted.');
+              }
+              break;
+            case 'accepted':
+              // button 1
+              button1.enable();
+              button1.setText('Unsubmit');
+              button1.setIconClass('sm-disk-icon');
+              button1.actionType = 'unsubmit';
+              button1.setTooltip('');
+              // button 2
               button2.disable();
-              button2.setText('Submit');
-              button2.setIconClass('sm-ready-icon');
+              button2.setText('Accept');
+              button2.setIconClass('sm-star-icon-16');
               button2.actionType = '';
-              button2.setTooltip('This button is disabled because the review has already been submitted.');
-              // review fields
+              button2.setTooltip('This button is disabled because the review has already been accepted.');
               break;
             case 'rejected': // rejected
               // button 1
@@ -451,18 +451,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
               button2.actionType = '';
               button2.setTooltip('This button is disabled because the review has not been modified.');
               break;
-            // case 'accepted': // approved
-            //   // we should never get here because of the earlier 'if' statement
-            //   // button 1
-            //   button1.hide();
-            //   button1.setText('Save without submitting');
-            //   button1.setIconClass('sm-database-save-icon');
-            //   button1.actionType = '';
-            //   // button 2
-            //   button2.hide();
-            //   button2.setText('Save and Submit');
-            //   button2.actionType = '';
-            //   break;
           }
         }
       } 

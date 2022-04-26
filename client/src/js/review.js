@@ -14,12 +14,15 @@ async function addReview( params ) {
   }
 
 
-  let result = await Ext.Ajax.requestPromise({
+  const result = await Ext.Ajax.requestPromise({
     url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
     method: 'GET'
   })
-  let apiCollection = JSON.parse(result.response.responseText)
-  let apiFieldSettings = apiCollection.settings.fields
+  const apiCollection = JSON.parse(result.response.responseText)
+  const apiFieldSettings = apiCollection.settings.fields
+  const apiStatusSettings = apiCollection.settings.status
+  const accessLevel = curUser.collectionGrants.filter(g => g.collection.collectionId == apiCollection.collectionId)[0].accessLevel
+  const canAccept = apiStatusSettings.canAccept && accessLevel >= apiStatusSettings.minAcceptGrant
 
 
   // Classic compatability. Remove after modernization
@@ -924,6 +927,7 @@ async function addReview( params ) {
     title: `Review on ${SM.he(leaf.assetName)} ${labelSpans}`,
     padding: 10,
     labelWidth: 54,
+    canAccept,
     fieldSettings: apiFieldSettings,
     btnHandler: function (btn) {
       console.log(btn)
@@ -1175,6 +1179,7 @@ async function addReview( params ) {
       }
       let result, reviewFromApi
       switch (saveParams.type) {
+        case 'accept':
         case 'submit':
         case 'unsubmit':
           result = await Ext.Ajax.requestPromise({
@@ -1185,7 +1190,7 @@ async function addReview( params ) {
             },
             headers: { 'Content-Type': 'application/json;charset=utf-8' },
             jsonData: {
-              status: saveParams.type == 'submit' ? 'submitted' : 'saved'
+              status: saveParams.type == 'submit' ? 'submitted' : saveParams.type === 'accept' ? 'accepted' : 'saved'
             }
           })
           reviewFromApi = JSON.parse(result.response.responseText)
