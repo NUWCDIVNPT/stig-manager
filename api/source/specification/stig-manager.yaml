@@ -2609,11 +2609,11 @@ paths:
       operationId: getUserObject
       responses:
         '200':
-          description: UserProjected response
+          description: User response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProjected'
+                $ref: '#/components/schemas/User'
         default:
           description: unexpected error
           content:

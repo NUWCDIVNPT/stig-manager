@@ -137,7 +137,7 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
           type: file.type,
           user: {
             userId: curUser.userId,
-            name: curUser.display
+            name: curUser.displayName
           },
           digest: shahex
         },
