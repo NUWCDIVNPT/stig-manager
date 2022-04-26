@@ -186,7 +186,6 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   // PROJECTIONS
   if ( inProjection && inProjection.includes('detail') ) {
     columns.push(`json_object(
-      'version', r.version,
       'weight', r.weight,
       'vulnDiscussion', r.vulnDiscussion,
       'falsePositives', r.falsePositives,
@@ -224,7 +223,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
           json_object(
             'cci', rc.cci,
             'apAcronym', cci.apAcronym,
-            'control',  cr.indexDisa
+            'definition',  cci.definition
           )
         ) 
         from
@@ -357,7 +356,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
           json_object(
             'cci', rc.cci,
             'apAcronym', cci.apAcronym,
-            'control',  cr.indexDisa
+            'definition',  cci.definition
           )
         ) 
         from
@@ -1331,7 +1330,7 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
     `SELECT
       ${ro.table_alias}.benchmarkId,
       concat('V', ${ro.table_alias}.version, 'R', ${ro.table_alias}.release) as "revisionStr",
-      ${ro.table_alias}.version,
+      cast(${ro.table_alias}.version as char) as version,
       ${ro.table_alias}.release,
       date_format(${ro.table_alias}.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       ${ro.table_alias}.status,
@@ -1370,7 +1369,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
     `SELECT
       r.benchmarkId,
       concat('V', r.version, 'R', r.release) as "revisionStr",
-      r.version,
+      CAST(r.version as char) as version,
       r.release,
       date_format(r.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       r.status,

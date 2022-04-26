@@ -27,7 +27,8 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         req.bearer = token
         req.userObject = {
             username: decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'null',
-            display: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER'
+            displayName: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER',
+            email: decoded[config.oauth.claims.email] ||  'None Provided'
         }
 
         let grantedScopes = decoded[config.oauth.claims.scope]?.split(' ')

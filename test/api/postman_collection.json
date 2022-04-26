@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "89cd345d-b482-4b65-b68f-d4a5a7e27a5f",
+		"_postman_id": "0895f99a-ad58-45ff-8d4b-5b7b55103e61",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -13439,6 +13439,9 @@
 											"console.log(\"requestToTest: \" + JSON.stringify(requestToTest));\r",
 											"\r",
 											"\r",
+											"// created now being returned, but don't know what value it will be.\r",
+											"// response validation will verify that the property exists.\r",
+											"delete respJson.created;\r",
 											"\r",
 											"pm.test(\"Response matches request\", function () {\r",
 											"    pm.expect(collectionGetToPost(respJson))\r",

@@ -1,4 +1,5 @@
 'use strict';
+const config = require('../../utils/config')
 const dbUtils = require('./utils')
 
 const _this = this
@@ -11,7 +12,13 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   try {
     let columns = [
       'CAST(ud.userId as char) as userId',
-      'ud.username'
+      'ud.username',
+      `json_extract(
+        ud.lastClaims, :email
+      ) as email`,
+      `json_extract(
+        ud.lastClaims, :name
+      ) as displayName`,  
     ]
     let joins = [
       'user_data ud',
@@ -43,7 +50,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
 
     if (inProjection && inProjection.includes('statistics')) {
       columns.push(`json_object(
-          'created', ud.created,
+          'created', date_format(ud.created, '%Y-%m-%dT%TZ'),
           'collectionGrantCount', count(cg.cgId),
           'lastAccess', ud.lastAccess,
           'lastClaims', ud.lastClaims
@@ -57,7 +64,10 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     // PREDICATES
     let predicates = {
       statements: [],
-      binds: {}
+      binds: {
+        name: `$.${config.oauth.claims.name}`,
+        email: `$.${config.oauth.claims.email}`
+      }
     }
     if (inPredicates.userId) {
       predicates.statements.push('ud.userId = :userId')
