@@ -223,7 +223,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
           json_object(
             'cci', rc.cci,
             'apAcronym', cci.apAcronym,
-            'control',  cr.indexDisa
+            'definition',  cci.definition
           )
         ) 
         from
@@ -356,7 +356,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
           json_object(
             'cci', rc.cci,
             'apAcronym', cci.apAcronym,
-            'control',  cr.indexDisa
+            'definition',  cci.definition
           )
         ) 
         from

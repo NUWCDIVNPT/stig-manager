@@ -3110,24 +3110,10 @@ components:
       properties:
         cci:
           type: string
-        emassAp:
-          type: string
-        controls:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciReferenceRev4'
-    CciBasicArrayItem:
-      type: object
-      additionalProperties: false
-      properties:
-        cci:
-          type: string
         apAcronym:
           type: string
-        control:
-          type: string
         definition:
-          type: string          
+          type: string
     CciListItem:
       type: object
       additionalProperties: false
@@ -3518,7 +3504,6 @@ components:
         - description
         - settings
         - metadata
-        - created    
       additionalProperties: false
       properties:
         collectionId:
@@ -3534,9 +3519,6 @@ components:
           $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
-        created:
-          type: string
-          format: date-time    
         assets:
           type: array
           items:
@@ -3567,7 +3549,6 @@ components:
         - description
         - settings
         - metadata
-        - created     
       additionalProperties: false
       properties:
         collectionId:
@@ -3583,9 +3564,6 @@ components:
           $ref: '#/components/schemas/CollectionSettings'
         metadata:
           $ref: '#/components/schemas/Metadata'
-        created:
-          type: string
-          format: date-time    
         owners:
           type: array
           items:
@@ -3826,17 +3804,10 @@ components:
           type: string
         definition:
           type: string              
-        groupTitle:
-          type: string
         apAcronym:
           type: string          
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-
-        # benchmarkIds:
-        #   type: array
-        #   items:
-        #     type: string
         assets:
           type: array
           items:
@@ -3844,7 +3815,7 @@ components:
         ccis:
           type: array
           items:
-            $ref: '#/components/schemas/CciBasicArrayItem'            
+            $ref: '#/components/schemas/CciBasic'            
         groups:
           type: array
           items:
@@ -4508,7 +4479,7 @@ components:
         ccis:
           type: array
           items:
-            $ref: '#/components/schemas/CciBasicArrayItem'
+            $ref: '#/components/schemas/CciBasic'
         checks:
           type: array
           items:

@@ -18,8 +18,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       'c.name',
       'c.description',
       'c.settings',
-      'c.metadata',
-      'c.created'
+      'c.metadata'
     ]
     let joins = [
       'collection c',
