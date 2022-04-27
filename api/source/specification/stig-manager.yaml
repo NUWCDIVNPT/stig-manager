@@ -1148,6 +1148,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewAssetRuleRead'
+        '204':
+          description: The requested resource has no content.            
         default:
           description: unexpected error
           content:
@@ -1481,8 +1483,6 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
                   $ref: '#/components/schemas/Label'
         default:
           description: unexpected error
@@ -1587,7 +1587,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/String255'
+                  $ref: '#/components/schemas/AssetBasic'
         default:
           description: unexpected error
           content:
@@ -2140,7 +2140,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/STIG'
+                $ref: '#/components/schemas/STIGPostResponse'
         default:
           description: unexpected error
           content:
@@ -2613,7 +2613,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
           content:
@@ -2889,6 +2889,12 @@ components:
           type: string
         name:
           type: string
+        collectionId:
+          type: string  #This is redundant except when in response to a request that changed an Asset's collection. 
+        assetLabelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'          
         restrictedUserAccess:
           type: array
           items:
@@ -3166,6 +3172,8 @@ components:
       type: object
       additionalProperties: false  
       properties:
+        assetId:
+          type: string
         ruleId:
           type: string
         ruleTitle:
@@ -3593,6 +3601,10 @@ components:
           type: string
         assetName:
           type: string
+        assetLabelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'          
         benchmarkId:
           type: string
         minTs:
@@ -3754,18 +3766,25 @@ components:
           type: string
         tableRows:
           type: integer
+          nullable: true
         tableCollation:
           type: string
+          nullable: true
         avgRowLength:
           type: integer
+          nullable: true
         dataLength:
           type: integer
+          nullable: true
         maxDataLength:
           type: integer
+          nullable: true
         indexLength:
           type: integer
+          nullable: true
         autoIncrement:
           type: integer
+          nullable: true
         createTime:
           $ref: '#/components/schemas/StringDateTimeNullable'
         updateTime:
@@ -3782,12 +3801,14 @@ components:
         assessmentProcedure:
           type: string
     Error:
-      required:
-        - message
       type: object
       properties:
         message:
           type: string
+        error:
+          type: string
+        detail:
+          type: string          
     FindingProjected:
       type: object
       additionalProperties: false
@@ -3911,6 +3932,7 @@ components:
     ResultEngine:
       type: object
       additionalProperties: false
+      nullable: true
       properties:
         type:
           $ref: '#/components/schemas/ResultEngineType'
@@ -3933,6 +3955,7 @@ components:
     ResultEngineCheckContent:
       type: object
       additionalProperties: false
+      nullable: true
       properties:
         location:
           $ref: '#/components/schemas/String255'
@@ -4328,6 +4351,10 @@ components:
           $ref: '#/components/schemas/StringUuid'
         assetName:
           $ref: '#/components/schemas/String255'
+        assetLabelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'              
         ruleId:
           $ref: '#/components/schemas/String255'
         result:
@@ -4534,6 +4561,8 @@ components:
           items:
            type: string
            pattern: ^V\d+R\d+(\.\d+)?$     
+    STIGPostResponse:
+      type: object
     StigAsset:
       type: object
       required:

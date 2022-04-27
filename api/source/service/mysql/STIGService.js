@@ -319,7 +319,6 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   // PROJECTIONS
   if ( inProjection && inProjection.includes('detail') ) {
     columns.push(`json_object(
-      'version', r.version,
       'weight', r.weight,
       'vulnDiscussion', r.vulnDiscussion,
       'falsePositives', r.falsePositives,
