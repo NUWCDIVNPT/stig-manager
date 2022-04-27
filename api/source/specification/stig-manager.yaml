@@ -2882,7 +2882,6 @@ components:
       required:
         - assetId
         - name
-        - restrictedUserAccess
       additionalProperties: false
       properties:
         assetId:
