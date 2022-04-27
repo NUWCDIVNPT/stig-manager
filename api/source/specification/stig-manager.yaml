@@ -1453,7 +1453,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LabelCreate'
       responses:
-        200:
+        201:
           description: Label response
           content:
             application/json:
@@ -3803,8 +3803,6 @@ components:
     Error:
       type: object
       properties:
-        message:
-          type: string
         error:
           type: string
         detail:
