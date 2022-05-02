@@ -1096,7 +1096,7 @@ from
 		rv.ruleId, 
 		json_arrayagg(
 		  json_object(
-        'ts', rh.ts,
+        'ts', DATE_FORMAT(rh.ts, '%Y-%m-%dT%TZ'),
         'result', result.api,
         'detail', rh.detail,
         'comment', rh.comment,
@@ -1112,7 +1112,8 @@ from
         ),        
         'userId', CAST(rh.userId as char),
         'username', ud.username,
-        'touchTs', rh.touchTs
+        'touchTs', DATE_FORMAT(rh.touchTs, '%Y-%m-%dT%TZ')
+
         )
 		) as 'history'
 	FROM
