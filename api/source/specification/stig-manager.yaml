@@ -1102,7 +1102,26 @@ paths:
       tags:
         - Review
       summary: Post one or more Reviews
-      description: ''
+      description: |
+        The request body can contain a mix of new and updated Reviews. The overall request is validated as follows:
+        
+        - conformance with the OAS schema for `ReviewAssetWrite`
+        - the requesting user has been granted access to the collectionId
+        
+        For updated Reviews, a `null` value in either `detail` or `comment` indicates the original value will be retained. The absence of the property `status` indicates the orignal value will be retained.
+        
+        For new Reviews, a `null` value in either `detail` or `comment` indicates the corresponding value in the new Review should be `null`. The absence of the property `status` indicates the corresponding value in the new Review should be `status: { label: "saved", text: null }`.
+        
+        For all Reviews, a string value for the `status` property is internally normalized to `status: { label: <string>, text: null }`
+        
+        Each new or updated Review is permitted or rejected as follows:
+        
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then reject the Review
+        - If the optional property `status` is absent or `status.label` has value `saved`, then permit the Review
+        - If the new or updated Review would not be submittable according to the Collection settings, then reject the Review
+        - If the value of `status.label` is `submitted`, then permit the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then permit the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then reject the Review.
       operationId: postReviewsByAsset
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
@@ -1148,8 +1167,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewAssetRuleRead'
-        '204':
-          description: The requested resource has no content.            
         default:
           description: unexpected error
           content:
@@ -1453,7 +1470,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LabelCreate'
       responses:
-        201:
+        200:
           description: Label response
           content:
             application/json:
@@ -1483,6 +1500,8 @@ paths:
           content:
             application/json:
               schema:
+                type: array
+                items:
                   $ref: '#/components/schemas/Label'
         default:
           description: unexpected error
@@ -1587,7 +1606,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssetBasic'
+                  $ref: '#/components/schemas/String255'
         default:
           description: unexpected error
           content:
@@ -2140,7 +2159,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/STIGPostResponse'
+                $ref: '#/components/schemas/STIG'
         default:
           description: unexpected error
           content:
@@ -2613,7 +2632,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProjected'
+                $ref: '#/components/schemas/User'
         default:
           description: unexpected error
           content:
@@ -2882,18 +2901,13 @@ components:
       required:
         - assetId
         - name
+        - restrictedUserAccess
       additionalProperties: false
       properties:
         assetId:
           type: string
         name:
           type: string
-        collectionId:
-          type: string  #This is redundant except when in response to a request that changed an Asset's collection. 
-        assetLabelIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelId'          
         restrictedUserAccess:
           type: array
           items:
@@ -3171,8 +3185,6 @@ components:
       type: object
       additionalProperties: false  
       properties:
-        assetId:
-          type: string
         ruleId:
           type: string
         ruleTitle:
@@ -3547,7 +3559,7 @@ components:
           items:
             $ref: '#/components/schemas/Label'
         statistics:
-          type: object     
+            $ref: '#/components/schemas/CollectionStatistics'
     CollectionsProjected:
       type: object
       required:
@@ -3580,7 +3592,7 @@ components:
           items:
             $ref: '#/components/schemas/Label'
         statistics:
-          type: object               
+            $ref: '#/components/schemas/CollectionStatistics'         
     CollectionSettings:
       type: object
       additionalProperties: false
@@ -3592,6 +3604,18 @@ components:
           $ref: '#/components/schemas/CollectionFieldSettings'
         status:
           $ref: '#/components/schemas/CollectionStatusSettings'
+    CollectionStatistics:
+      type: object
+      additionalProperties: false
+      properties:
+        created:
+          $ref: '#/components/schemas/StringDateTime'
+        assetCount:
+          type: integer     
+        grantCount:
+          type: integer     
+        checklistCount:
+          type: integer             
     CollectionStatus:
       type: object
       additionalProperties: false
@@ -3600,10 +3624,6 @@ components:
           type: string
         assetName:
           type: string
-        assetLabelIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelId'          
         benchmarkId:
           type: string
         minTs:
@@ -3698,7 +3718,7 @@ components:
         maxTs:
           type: string
           format: date-time
-          nullable: true
+          nullable: true     
     CollectionUpdate:
       type: object
       additionalProperties: false
@@ -3765,25 +3785,18 @@ components:
           type: string
         tableRows:
           type: integer
-          nullable: true
         tableCollation:
           type: string
-          nullable: true
         avgRowLength:
           type: integer
-          nullable: true
         dataLength:
           type: integer
-          nullable: true
         maxDataLength:
           type: integer
-          nullable: true
         indexLength:
           type: integer
-          nullable: true
         autoIncrement:
           type: integer
-          nullable: true
         createTime:
           $ref: '#/components/schemas/StringDateTimeNullable'
         updateTime:
@@ -3800,12 +3813,12 @@ components:
         assessmentProcedure:
           type: string
     Error:
+      required:
+        - message
       type: object
       properties:
-        error:
+        message:
           type: string
-        detail:
-          type: string          
     FindingProjected:
       type: object
       additionalProperties: false
@@ -3928,8 +3941,8 @@ components:
       type: string
     ResultEngine:
       type: object
-      additionalProperties: false
       nullable: true
+      additionalProperties: false
       properties:
         type:
           $ref: '#/components/schemas/ResultEngineType'
@@ -3952,7 +3965,6 @@ components:
     ResultEngineCheckContent:
       type: object
       additionalProperties: false
-      nullable: true
       properties:
         location:
           $ref: '#/components/schemas/String255'
@@ -4139,7 +4151,7 @@ components:
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
-          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
+          $ref: '#/components/schemas/ReviewStatusWrite'
     ReviewHistory:
       type: object
       required:
@@ -4348,10 +4360,6 @@ components:
           $ref: '#/components/schemas/StringUuid'
         assetName:
           $ref: '#/components/schemas/String255'
-        assetLabelIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelId'              
         ruleId:
           $ref: '#/components/schemas/String255'
         result:
@@ -4558,8 +4566,6 @@ components:
           items:
            type: string
            pattern: ^V\d+R\d+(\.\d+)?$     
-    STIGPostResponse:
-      type: object
     StigAsset:
       type: object
       required:
