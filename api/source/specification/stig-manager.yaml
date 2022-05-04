@@ -3547,7 +3547,7 @@ components:
           items:
             $ref: '#/components/schemas/Label'
         statistics:
-          type: object     
+          $ref: '#/components/schemas/CollectionStatistics'
     CollectionsProjected:
       type: object
       required:
@@ -3580,7 +3580,7 @@ components:
           items:
             $ref: '#/components/schemas/Label'
         statistics:
-          type: object               
+          $ref: '#/components/schemas/CollectionStatistics'
     CollectionSettings:
       type: object
       additionalProperties: false
@@ -3592,6 +3592,23 @@ components:
           $ref: '#/components/schemas/CollectionFieldSettings'
         status:
           $ref: '#/components/schemas/CollectionStatusSettings'
+    CollectionStatistics:
+      type: object
+      required:
+        - created
+        - assetCount
+        - grantCount
+        - checklistCount
+      additionalProperties: false
+      properties:
+        created:
+          $ref: '#/components/schemas/StringDateTime'
+        assetCount:
+          type: integer     
+        grantCount:
+          type: integer     
+        checklistCount:
+          type: integer                  
     CollectionStatus:
       type: object
       additionalProperties: false
