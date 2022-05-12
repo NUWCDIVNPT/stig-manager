@@ -35,43 +35,58 @@ async function addReview( params ) {
   /******************************************************/
   // START Group Grid
   /******************************************************/
+  function engineResultConverter (v,r) {
+    return r.resultEngine ? 
+      (r.resultEngine.overrides?.length ? 'override' : 'engine') : 
+      (r.result ? 'manual' : '')
+  }
   var groupFields = Ext.data.Record.create([
+    'assetId',
     {
-      name: 'assetId'
-    }, {
       name: 'groupId',
       type: 'string',
       sortType: sortGroupId
-    }, {
+    },
+    {
       name: 'ruleId',
       type: 'string',
       sortType: sortRuleId
-    }, {
+    },
+    {
       name: 'groupTitle',
       type: 'string'
-    }, {
+    },
+    {
       name: 'ruleTitle',
       type: 'string'
-    }, {
+    },
+    {
       name: 'severity',
       type: 'string',
       sortType: sortSeverity
-    }, {
+    },
+    {
       name: 'result',
       type: 'string'
-    }, {
+    },
+    {
       name: 'status',
       type: 'string'
-    }, {
+    },
+    {
       name: 'hasAttach',
       type: 'boolean'
-    }, {
-      name: 'autoResult',
-      type: 'boolean'
-    }, {
+    }, 
+    'resultEngine',
+    {
+      name: 'engineResult',
+      convert: engineResultConverter
+    },
+    {
       name: 'reviewComplete',
       type: 'boolean'
-    }, {
+    },
+    {
       name: 'autoCheckAvailable',
       type: 'boolean'
     }
@@ -469,9 +484,8 @@ async function addReview( params ) {
       },
       {
         id: 'result' + idAppend,
-        header: '<span exportvalue="Result">&#160;</span>', // per docs
-        // menuDisabled: true,
-        width: 32,
+        header: 'Result',
+        width: 44,
         fixed: true,
         dataIndex: 'result',
         sortable: true,
@@ -479,6 +493,19 @@ async function addReview( params ) {
         filter: {
           type: 'values',
           renderer: SM.ColumnFilters.Renderers.result
+        } 
+      },
+      {
+        id: 'engineResult' + idAppend,
+        header: '<div exportvalue="Engine" class="sm-engine-result-icon"></div>',
+        width: 24,
+        fixed: true,
+        dataIndex: 'engineResult',
+        sortable: true,
+        renderer: renderEngineResult,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.engineResult
         } 
       },
       {
@@ -506,16 +533,6 @@ async function addReview( params ) {
           iconCls: 'sm-checklist-icon',  // <-- icon
           text: 'Checklist',
           menu: groupChecklistMenu
-        }, 
-        '->',
-        {
-            xtype: 'tbitem',
-            html: '<div class="sm-toolbar-legend-box sm-scap-grid-item"></div>'
-        },
-        {
-            xtype: 'tbtext',
-            text: ' SCAP available',
-            style: 'margin-right: 15px;'
         }
       ]
     }),
@@ -630,32 +647,40 @@ async function addReview( params ) {
     {
       name: 'assetName',
       type: 'string'
-    }, {
+    },
+    {
       name: 'assetLabelIds',
-    }, {
+    },
+    {
       name: 'status',
       type: 'string',
       mapping: 'status.label'
-    }, {
+    },
+    {
       name: 'result',
       type: 'string'
-    }, {
-      name: 'autoResult',
-      type: 'boolean'
-    }, {
+    },
+    'resultEngine',
+    {
+      name: 'engineResult',
+      convert: engineResultConverter
+    },
+    {
       name: 'username',
       type: 'string'
-    }, {
+    },
+    {
       name: 'detail',
       type: 'string'
-    }, {
+    },
+    {
       name: 'comment',
       type: 'string'
-    }, {
+    },
+    {
       name: 'reviewId',
       type: 'int'
     }
-
   ]);
 
   var otherStore = new Ext.data.JsonStore({
@@ -710,7 +735,6 @@ async function addReview( params ) {
   })
 
   var otherGrid = new Ext.grid.GridPanel({
-    //region: 'center',
     enableDragDrop: true,
     ddGroup: 'gridDDGroup',
     plugins: expander,
@@ -718,7 +742,6 @@ async function addReview( params ) {
     height: 350,
     border: false,
     id: 'otherGrid' + idAppend,
-    //title: 'Other Assets',
     store: otherStore,
     stripeRows: true,
     sm: new Ext.grid.RowSelectionModel({
@@ -733,9 +756,6 @@ async function addReview( params ) {
           otherStore.filter(view.getFilterFns())  
         }
       }  
-    }),
-    tbar: new Ext.Toolbar({
-      items: []
     }),
     bbar: new Ext.Toolbar({
       items: [
@@ -781,21 +801,7 @@ async function addReview( params ) {
             metadata.attr = 'style="white-space:normal;"'
             return SM.Collection.LabelArrayTpl.apply(labels)
         }
-    },
-    { 	
-				header: "Status", 
-				width: 50,
-				fixed: true,
-				dataIndex: 'status',
-				sortable: true,
-				renderer: function (val, metaData, record, rowIndex, colIndex, store) {
-          return renderStatuses(val, metaData, record, rowIndex, colIndex, store)
-        },
-        filter: {
-          type: 'values',
-          renderer: SM.ColumnFilters.Renderers.status
-        }
-			},
+      },
       {
         id: 'state' + idAppend,
         header: "Result",
@@ -809,6 +815,33 @@ async function addReview( params ) {
           renderer: SM.ColumnFilters.Renderers.result
         }
       },
+      {
+        header: '<div exportvalue="Engine" class="sm-engine-result-icon"></div>',
+        width: 24,
+        fixed: true,
+        dataIndex: 'engineResult',
+        sortable: true,
+        renderer: renderEngineResult,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.engineResult
+        } 
+      },
+      { 	
+				header: "Status", 
+				width: 50,
+				fixed: true,
+        align: 'center',
+				dataIndex: 'status',
+				sortable: true,
+				renderer: function (val, metaData, record, rowIndex, colIndex, store) {
+          return renderStatuses(val, metaData, record, rowIndex, colIndex, store)
+        },
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.status
+        }
+			},
 			{ 	
 				header: "User", 
 				width: 50,
@@ -971,7 +1004,7 @@ async function addReview( params ) {
           ruleId: groupGridRecord.data.ruleId
         }
       })
-      let reviews = Ext.util.JSON.decode(reviewsReq.response.responseText)
+      let reviews = JSON.parse(reviewsReq.response.responseText)
       let review = reviews.filter(review => review.assetId == assetId)[0] || {}
       let otherReviews = reviews.filter(review => review.assetId != assetId)
   
@@ -997,7 +1030,7 @@ async function addReview( params ) {
           projection: ['history', 'metadata']
         }
       })
-      let reviewProjected = Ext.util.JSON.decode(historyMetaReq.response.responseText)
+      let reviewProjected = JSON.parse(historyMetaReq.response.responseText || '""')
       if (! reviewProjected) {
         historyData.store.removeAll()
         attachmentsGrid.getStore().removeAll()
@@ -1006,7 +1039,7 @@ async function addReview( params ) {
         // append current state of review to history grid
         let currentReview = {
           comment: reviewProjected.comment,
-          autoResult: reviewProjected.autoResult,
+          resultEngine: reviewProjected.resultEngine,
           rejectText: reviewProjected.rejectText,
           result: reviewProjected.result,
           detail: reviewProjected.detail,
@@ -1175,7 +1208,7 @@ async function addReview( params ) {
         result: fvalues.result,
         detail: fvalues.detail || null,
         comment: fvalues.comment || null,
-        autoResult: fvalues.autoResult
+        resultEngine: fp.resultChanged() ? null : fvalues.resultEngine
       }
       let result, reviewFromApi
       switch (saveParams.type) {
@@ -1239,7 +1272,8 @@ async function addReview( params ) {
       fp.groupGridRecord.data.result = reviewFromApi.result
       fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
       fp.groupGridRecord.data.status = reviewFromApi.status.label
-      fp.groupGridRecord.data.autoResult = reviewFromApi.autoResult
+      fp.groupGridRecord.data.resultEngine = reviewFromApi.resultEngine
+      fp.groupGridRecord.data.engineResult = engineResultConverter('', reviewFromApi)
       fp.groupGridRecord.commit()
       filterGroupStore()
 

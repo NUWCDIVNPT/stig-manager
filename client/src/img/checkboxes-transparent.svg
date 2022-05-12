@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="70"
+   height="14"
+   viewBox="0 0 18.520834 3.7041667"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.2 (1.0.2+r75+1)"
+   sodipodi:docname="checkboxes-transparent.svg">
+  <title
+     id="title871">Checkbox</title>
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="31.15174"
+     inkscape:cy="17.590726"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1023"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     units="px" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Checkbox</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>carl.a.smigielski@saic.com</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:rights>
+          <cc:Agent>
+            <dc:title />
+          </cc:Agent>
+        </dc:rights>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-99.21875,-146.31459)"
+     style="opacity:0.994">
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
+       id="rect847"
+       width="3.1764462"
+       height="3.1764462"
+       x="99.350327"
+       y="146.71074"
+       ry="0.69862312" />
+    <g
+       id="g910"
+       style="fill:none">
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
+         id="rect873"
+         width="3.1764462"
+         height="3.1764462"
+         x="105.9649"
+         y="146.71074"
+         ry="0.69862312" />
+    </g>
+    <path
+       style="fill:none;stroke:#cccccc;stroke-width:0.54234;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 106.69872,148.21872 0.58386,0.8425 1.05098,-1.81711 v 0"
+       id="path851"
+       sodipodi:nodetypes="cccc" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
+       id="rect893"
+       width="3.1764462"
+       height="3.1764462"
+       x="112.84407"
+       y="146.71074"
+       ry="0.69862312" />
+    <path
+       style="fill:none;stroke:#808080;stroke-width:0.529167;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 113.53614,148.29896 h 1.79231"
+       id="path903" />
+  </g>
+</svg>

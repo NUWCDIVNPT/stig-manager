@@ -35,6 +35,9 @@ function normalizeReview ( review ) {
       text: null
     }
   }
+  if ((review.result && review.resultEngine === undefined) || review.resultEngine === null) {
+    review.resultEngine = 0
+  }
   return review
 }
 
@@ -74,7 +77,6 @@ async function normalizeAndValidateReviews( reviews, collectionId, assetId, user
             reason: 'Requested status is not consistent with Collection Review field settings'
           })
         }
-
       }
     }
     else {
@@ -281,6 +283,9 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
       }
       normalizeReview(incomingReview)
       const review = { ...currentReviews[0], ...incomingReview }
+      if (currentReviews[0].resultEngine && incomingReview.result != currentReviews[0].result) {
+        review.resultEngine = null
+      }
       const [permitted, rejected, statusSettings] = await normalizeAndValidateReviews([review], collectionId, assetId, req.userObject)
       if (permitted.length > 0) {
         await Review.putReviewsByAsset( assetId, [incomingReview], req.userObject, statusSettings.resetCriteria, false)

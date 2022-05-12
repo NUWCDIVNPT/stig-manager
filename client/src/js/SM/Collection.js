@@ -1,6 +1,6 @@
 'use strict'
 
-async function addOrUpdateCollection( collectionId, collectionObj, options ) {
+async function addOrUpdateCollection( collectionId, collectionObj, options = {} ) {
     try {
       let url, method
       if (options.elevate && collectionId) {
@@ -9,11 +9,11 @@ async function addOrUpdateCollection( collectionId, collectionObj, options ) {
           delete collectionObj.labels
       }
       if (collectionId) {
-        url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${options.elevate}`
+        url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${options.elevate ?? false}`
         method = 'PATCH'
       }
       else {
-        url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate}`,
+        url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate ?? false}`,
         method = 'POST'
       }
       let result = await Ext.Ajax.requestPromise({
@@ -31,6 +31,7 @@ async function addOrUpdateCollection( collectionId, collectionObj, options ) {
       
       let event = collectionId ? 'collectionchanged' : 'collectioncreated'
       SM.Dispatcher.fireEvent( event, apiCollection, options )
+      return apiCollection
     }
     catch (e) {
       alert (e.message)

@@ -5,50 +5,6 @@ let _this = this
 
 const writeQueries = {
   dropIncoming: 'DROP TEMPORARY TABLE IF EXISTS incoming',
-  createIncomingForPatch: `
-  CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
-    ruleId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-    resultId int,
-    detail mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-    comment mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-    autoResult json,
-    statusId int,
-    statusText varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-    PRIMARY KEY (ruleId)
-  ) 
-  SELECT
-    review.ruleId as ruleId,
-    coalesce(jtresult.resultId, review.resultId) as resultId,
-    coalesce(jt.detail, review.detail) as detail,
-    coalesce(jt.comment, review.comment) as comment,
-    case when jt.autoResult is not null 
-      then jt.autoResult 
-            else case when review.autoResult = 1 
-        then cast(true as json) 
-                else cast(false as json) 
-      end
-    end as autoResult, 
-    coalesce(jtstatus.statusId, review.statusId) as statusId,
-    coalesce(jt.statusText, review.statusText) as statusText
-  FROM
-    JSON_TABLE(
-      ?,
-      "$[*]"
-      COLUMNS(
-        assetId INT PATH "$.assetId",
-        ruleId VARCHAR(255) PATH "$.ruleId",
-        result VARCHAR(255) PATH "$.result",
-        detail MEDIUMTEXT PATH "$.detail" NULL ON EMPTY,
-        comment MEDIUMTEXT PATH "$.comment",
-        autoResult JSON PATH "$.autoResult",
-        statusLabel VARCHAR(255) PATH "$.status.label",
-        statusText VARCHAR(255) PATH "$.status.text"
-      )
-    ) as jt
-    inner join review on (review.assetId = jt.assetId and review.ruleId COLLATE utf8mb4_0900_ai_ci = jt.ruleId COLLATE utf8mb4_0900_ai_ci)
-    left join result jtresult on (jtresult.api COLLATE utf8mb4_unicode_ci = jt.result COLLATE utf8mb4_unicode_ci)
-    left join status jtstatus on (jtstatus.api COLLATE utf8mb4_unicode_ci = jt.statusLabel COLLATE utf8mb4_unicode_ci)                  
-  `,
   createIncomingForPost: `
   CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
     ruleId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
@@ -64,10 +20,7 @@ const writeQueries = {
     SELECT
       jt.ruleId,
       jtresult.resultId,
-      CASE WHEN jt.autoResult AND jt.resultEngine IS NULL
-        THEN JSON_OBJECT('type','scap','product','scc')
-        ELSE jt.resultEngine
-      END as resultEngine,
+      jt.resultEngine,
       jt.detail,
       jt.comment,
       jt.autoResult,
@@ -156,7 +109,7 @@ const writeQueries = {
       ELSE r.autoResult
     END,
 
-    r.resultEngine = COALESCE(i.resultEngine, r.resultEngine),
+    r.resultEngine = CASE WHEN i.resultEngine = 0 THEN NULL ELSE COALESCE(i.resultEngine, r.resultEngine) END,
 
     r.ts = CASE WHEN i.resultId IS NOT NULL 
     OR i.detail IS NOT NULL 

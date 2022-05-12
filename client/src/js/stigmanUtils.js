@@ -172,6 +172,12 @@ function reloadStore (id) {
 
 function Sm_HistoryData (idAppend) {
 	const _this = this
+	function engineResultConverter (v,r) {
+    return r.resultEngine ? 
+      (r.resultEngine.overrides?.length ? 'override' : 'engine') : 
+      (r.result ? 'manual' : '')
+  }
+
 	this.fields = Ext.data.Record.create([
 		{
 			name:'result',
@@ -185,10 +191,11 @@ function Sm_HistoryData (idAppend) {
 			name:'comment',
 			type:'string'
 		},
-		{
-			name:'autoResult',
-			type:'boolean'
-		},
+    'resultEngine',
+    {
+      name: 'engineResult',
+      convert: engineResultConverter
+    },
 		{
 			name:'userId',
 			type:'string'
@@ -289,15 +296,6 @@ function Sm_HistoryData (idAppend) {
 				xtype: 'datecolumn',
 				format:	'Y-m-d H:i:s T'
 			},
-			{ 	
-				header: "Status", 
-				width: 50,
-				fixed: true,
-				dataIndex: 'statusLabel',
-				sortable: true,
-				renderer: renderStatuses,
-				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.status}
-			},
 			{ 
 				id:'result' + idAppend,
 				header: "Result",
@@ -307,6 +305,28 @@ function Sm_HistoryData (idAppend) {
 				renderer: renderResult,
 				sortable: true,
 				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.result}
+			},
+      {
+        header: '<div exportvalue="Engine" class="sm-engine-result-icon"></div>',
+        width: 24,
+        fixed: true,
+        dataIndex: 'engineResult',
+        sortable: true,
+        renderer: renderEngineResult,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.engineResult
+        } 
+      },
+			{ 	
+				header: "Status", 
+				width: 50,
+				fixed: true,
+				align: 'center',
+				dataIndex: 'statusLabel',
+				sortable: true,
+				renderer: renderStatuses,
+				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.status}
 			},
 			{ 	
 				header: "User", 
@@ -390,12 +410,36 @@ function encodeSm (sm,field) {
 	for (var i=0; i < selArray.length; i++) {
 		myArray.push(selArray[i].data[field]);
 	}
-	return Ext.util.JSON.encode(myArray);
+	return JSON.stringify(myArray);
 }
 
 function renderResult(val, metaData, record, rowIndex, colIndex, store) {
 	if (!val) return ''
 	return `<div class="sm-grid-result-sprite ${SM.RenderResult[val]?.css}" ext:qtip="${val}">${SM.RenderResult[val]?.textDisa}</div>`
+}
+
+function renderEngineResult(val, metadata) {
+	if (!val) return ''
+	let iconCls, tipText
+	switch (val) {
+		case 'engine':
+			metadata.attr = 'exportvalue="engine"'
+			tipText = 'Engine result',
+			iconCls = 'sm-engine-result-icon'
+			break
+		case 'override':
+			metadata.attr = 'exportvalue="override"'
+			tipText = 'Engine override',
+			iconCls = 'sm-engine-override-icon'
+			break
+		case 'manual':
+			metadata.attr = 'exportvalue="manual"'
+			tipText = 'Manual result',
+			iconCls = 'sm-engine-manual-icon'
+			break
+			
+	}
+	return `<div class="${iconCls}" ext:qtip="${tipText}"></div>`
 }
 
 function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
@@ -404,7 +448,7 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 	switch (val) {
 		case 'saved':
 			exportvalues.push('Saved')
-			statusIcons += '<img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
+			statusIcons += '<img src="img/save-icon.svg" width=12 height=12 ext:qtip="Saved" style="padding-top: 1px;">';
 			break;
 		case 'submitted':
 			exportvalues.push('Submitted')
@@ -422,13 +466,13 @@ function renderStatuses(val, metaData, record, rowIndex, colIndex, store) {
 			statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
 			break;
 	}
-	statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
-	if (record.data.autoResult) {
-		exportvalues.push('Auto')
-		statusIcons += '<img src="img/bot.svg" width=12 height=12 ext:qtip="Automated evaluation" style="padding-top: 1px;">';
-	} else {
-		statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
-	}
+	// statusIcons += '<img src="img/pixel.gif" width=4 height=12>';
+	// if (record.data.resultEngine && !record.data.resultEngine.overrides?.length) {
+	// 	exportvalues.push('ResultEngine')
+	// 	statusIcons += '<img src="img/bot.svg" width=12 height=12 ext:qtip="Automated evaluation" style="padding-top: 1px;">';
+	// } else {
+	// 	statusIcons += '<img src="img/pixel.gif" width=12 height=12>';
+	// }
 	metaData.attr = `exportvalue="${exportvalues.join(',')}"`
 	return statusIcons;
 }

@@ -659,6 +659,695 @@ SM.ReviewsImport.WarningPanel = Ext.extend(Ext.Panel, {
     }
 })
 
+SM.ReviewsImport.HelperComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        const config = {
+            listeners: {
+                render: function (ta) {
+                    ta.trigger.insertHtml('afterEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
+                    const sonarCloudInsists = new Ext.ToolTip({
+                        target: ta.wrap.dom.getElementsByClassName('fa')[0],
+                        showDelay: 0,
+                        dismissDelay: 0,
+                        width: 300,
+                        html: ta.helpText
+                    }) 
+                }
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.HelperComboBox.superclass.initComponent.call(this)
+    }
+})
+
+SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            displayField: 'display',
+            fieldLabel: this.fieldLabel ?? 'If possible, set Review status to',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false,
+            width: 120,
+            helpText: SM.TipContent.ImportOptions.AutoStatus
+        }
+        const data = [
+            ['null', 'Null'],
+            ['saved', 'Saved'],
+            ['submitted', 'Submitted']
+        ]
+        if (this.canAccept) {
+            data.push(['accepted', 'Accepted'])
+        }
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.AutoStatusComboBox.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+SM.ReviewsImport.UnreviewedComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            displayField: 'display',
+            fieldLabel: this.fieldLabel ?? 'Include unreviewed rules',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false,
+            width: 120,
+            helpText: SM.TipContent.ImportOptions.Unreviewed
+        }
+        const data = [
+            ['never', 'Never'],
+            ['commented', 'Having comments'],
+            ['always', 'Always']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.UnreviewedComboBox.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+SM.ReviewsImport.UnreviewedCommentedComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            displayField: 'display',
+            fieldLabel: this.fieldLabel ?? 'Unreviewed with a comment is',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false,
+            width: 120,
+            helpText: SM.TipContent.ImportOptions.UnreviewedCommented
+        }
+        let data = [
+            ['informational', 'Informational'],
+            ['notchecked', 'Not Reviewed'],
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.UnreviewedCommentedComboBox.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+SM.ReviewsImport.EmptyCommentComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+    initComponent: function () {
+        const _this = this
+        const config = {
+            displayField: 'display',
+            fieldLabel: this.fieldLabel ?? `Empty ${this.commentType} text is`,
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false,
+            width: 120,
+            helpText: SM.TipContent.ImportOptions.EmptyComment
+        }
+        const data = [
+            ['ignore', 'Ignored'],
+            ['replace', 'Replaced'],
+            ['import', 'Imported']
+        ]
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        this.store.on('load', function (store) {
+            _this.setValue(_this.value)
+        })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.EmptyCommentComboBox.superclass.initComponent.call(this)
+
+        this.store.loadData(data)
+    }
+})
+SM.ReviewsImport.DefaultOptions = {
+    autoStatus: 'saved',
+    unreviewed: 'commented',
+    unreviewedCommented: 'informational',
+    emptyDetail: 'ignore',
+    emptyComment: 'ignore',
+    allowCustom: true
+}
+SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
+    initComponent: function () {
+        const _this = this
+        this.context = this.context ?? 'manage' // 'or 'wizard'
+        this.initialOptions = {...SM.ReviewsImport.DefaultOptions, ...this.initialOptions}
+        this.autoStatusCombo = new SM.ReviewsImport.AutoStatusComboBox({
+            value: this.initialOptions.autoStatus,
+            name: 'autoStatus',
+            readOnly: this.context === 'wizard',
+            canAccept: this.canAccept,
+            listeners: {
+                select: onSelect
+            }
+        })
+        this.unreviewedCombo = new SM.ReviewsImport.UnreviewedComboBox({
+            value: this.initialOptions.unreviewed,
+            name: 'unreviewed',
+            readOnly: this.context === 'wizard',
+            name: 'unreviewed',
+            listeners: {
+                select: onSelect
+            }
+        })
+        this.unreviewedCommentedCombo = new SM.ReviewsImport.UnreviewedCommentedComboBox({
+            value: this.initialOptions.unreviewedCommented,
+            name: 'unreviewedCommented',
+            readOnly: this.context === 'wizard',
+            disabled: this.unreviewedCombo.value === 'never',
+            listeners: {
+                select: onSelect
+            }
+        })
+        this.emptyDetailCombo = new SM.ReviewsImport.EmptyCommentComboBox({
+            commentType: 'detail',
+            name: 'emptyDetail',
+            value: this.initialOptions.emptyDetail,
+            readOnly: this.context === 'wizard',
+            listeners: {
+                select: onSelect
+            }
+        })
+        this.emptyCommentCombo = new SM.ReviewsImport.EmptyCommentComboBox({
+            commentType: 'comment',
+            name: 'emptyComment',
+            value: this.initialOptions.emptyComment,
+            readOnly: this.context === 'wizard',
+            listeners: {
+                select: onSelect
+            }
+        })
+        this.optionComboBoxes = [
+            this.autoStatusCombo,
+            this.unreviewedCombo,
+            this.unreviewedCommentedCombo,
+            this.emptyDetailCombo,
+            this.emptyCommentCombo
+        ]
+        this.allowCustomCb = new Ext.form.Checkbox({
+            boxLabel: `Options can be customized for each import`,
+            checked: this.initialOptions.allowCustom,
+            hideLabel: true,
+            listeners: {
+                check: function (cb, checked) {
+                    _this.onOptionChanged && _this.onOptionChanged(_this, cb, checked)
+                }
+            }
+        })
+        this.customizeCb = new Ext.form.Checkbox({
+            boxLabel: `Configure custom import options`,
+            height: 22,
+            checked: false,
+            hideLabel: true,
+            listeners: {
+                check: function (cb, checked) {
+                    if (!checked) {
+                        _this.restoreOptions()
+                    }
+                    for (const combo of _this.optionComboBoxes) {
+                        combo.setReadOnly(!checked)
+                    }
+                    _this.localStorage = checked
+                    if (_this.localStorage && localStorage.wizardImportOptions?.length) {
+                        _this.restoreOptions(JSON.parse(localStorage.wizardImportOptions))
+                    }
+                    _this.onOptionChanged && _this.onOptionChanged(_this, cb, checked)
+                }
+            }
+        })
+
+        this.noCustomizeDisplay = new Ext.form.DisplayField({
+            value: '<i>Import options cannot be changed for this Collection.</i>',
+            height: 22,
+            hideLabel: true
+        })
+
+        function onSelect(item, record, index) {
+            if (item.name === 'unreviewed') {
+                _this.unreviewedCommentedCombo.setDisabled(item.value === 'never')
+            }
+            if (_this.localStorage) {
+                localStorage.setItem('wizardImportOptions', JSON.stringify(_this.getOptions())) 
+            }
+            _this.onOptionChanged && _this.onOptionChanged(_this, item, record, index)
+        }
+
+        this.restoreOptions = function (options = _this.initialOptions) {
+            for (const combo of this.optionComboBoxes) {
+                combo.setValue(options[combo.name])
+            }
+            _this.unreviewedCommentedCombo.setDisabled(_this.unreviewedCombo.value === 'never')
+        }
+
+        this.getOptions = function () {
+            const options = {
+                autoStatus: _this.autoStatusCombo.value,
+                unreviewed: _this.unreviewedCombo.value,
+                unreviewedCommented: _this.unreviewedCommentedCombo.value ,  
+                emptyDetail: _this.emptyDetailCombo.value,
+                emptyComment: _this.emptyCommentCombo.value,
+                allowCustom: _this.allowCustomCb.checked
+            }
+            return options
+        }
+
+        const items = []
+        if (this.context === 'wizard') {
+            items.push(this.initialOptions.allowCustom ? this.customizeCb : this.noCustomizeDisplay)
+        }
+        items.push(...this.optionComboBoxes)       
+        if (this.context !== 'wizard') {
+            items.push(this.allowCustomCb)
+        }
+        const config = {
+            title: 'Import options',
+            labelWidth: 200,
+            items
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.ParseOptionsFieldSet.superclass.initComponent.call(this)
+    }
+})
+
+SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent: function () {
+        const _this = this
+
+        function handleDragover(e) {
+            e.stopPropagation()
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+            this.getElementsByClassName('x-panel-body')[0].style.border = '1px dashed red'
+        }
+        function handleDragleave(e) {
+            e.stopPropagation()
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+            this.getElementsByClassName('x-panel-body')[0].style.border = ''
+
+        }
+        async function onFileDropped(e) {
+            try {
+                e.stopPropagation()
+                e.preventDefault()
+                this.getElementsByClassName('x-panel-body')[0].style.border = ''
+                let entries = []
+                let files = []
+                if (!e.dataTransfer) {
+                    throw ('Event is missing the dataTransfer property')
+                }
+                entries = await getAllFileEntries(e.dataTransfer.items, e.currentTarget)
+                if (!entries.length) {
+                    alert('no entries error')
+                }
+                else {
+                    const files = _this.store.getRange().map(r=>r.json)
+                    for (const entry of entries) {
+                        files.push(await entryFilePromise(entry))
+                    }
+                    _this.store.loadData(files)
+                }
+            }
+            catch (e) {
+                alert(e)
+            }
+
+            async function getAllFileEntries(dataTransferItemList, el) {
+                try {
+                    let searched = 0, found = 0
+                    let fileEntries = []
+                    // Use BFS to traverse entire directory/file structure
+                    let queue = []
+                    // Unfortunately dataTransferItemList is not iterable i.e. no forEach
+                    for (let i = 0; i < dataTransferItemList.length; i++) {
+                        queue.push(dataTransferItemList[i].webkitGetAsEntry())
+                    }
+                    while (queue.length > 0) {
+                        let entry = queue.shift()
+                        searched++
+                        if (entry.isFile && (entry.name.toLowerCase().endsWith('.ckl') || entry.name.toLowerCase().endsWith('.xml'))) {
+                            fileEntries.push(entry)
+                            found++
+                            // el.innerText = `Searching... Searched ${searched} files, found ${found} results files`
+                        } else if (entry.isDirectory) {
+                            queue.push(...await readAllDirectoryEntries(entry.createReader()))
+                        }
+                    }
+                    // el.innerText = `Finished. Searched ${searched} files, found ${found} results files`
+                    return fileEntries
+                }
+                catch (e) {
+                    alert(e)
+                }
+            }
+
+            // Get all the entries (files or sub-directories) in a directory 
+            // by calling readEntries until it returns empty array
+            async function readAllDirectoryEntries(directoryReader) {
+                try {
+                    let entries = []
+                    let readEntries = await readEntriesPromise(directoryReader)
+                    while (readEntries?.length > 0) {
+                        entries.push(...readEntries)
+                        readEntries = await readEntriesPromise(directoryReader)
+                    }
+                    return entries;   
+                }
+                catch (e) {
+                    alert(e)
+                }
+            }
+
+            // Wrap readEntries in a promise to make working with readEntries easier
+            // readEntries will return only some of the entries in a directory
+            // e.g. Chrome returns at most 100 entries at a time
+            async function readEntriesPromise(directoryReader) {
+                try {
+                    return await new Promise((resolve, reject) => {
+                        directoryReader.readEntries(resolve, reject)
+                    })
+                } catch (e) {
+                    alert(e)
+                }
+            }
+
+            // Wrap entry.file() in a promise
+            async function entryFilePromise(entry) {
+                try {
+                    return await new Promise((resolve, reject) => {
+                        let fullPath = entry.fullPath
+
+                        entry.file(file => {
+                            file.fullPath = fullPath
+                            resolve(file)
+                        }, reject)
+                    })
+                } catch (e) {
+                    alert(e)
+                }
+            }
+        }
+        function onFileSelected(uploadField) {
+            const files = _this.store.getRange().map(r=>r.json)
+            files.push(...uploadField.fileInput.dom.files)
+            _this.store.loadData(files)
+            uploadField.fileInput.dom.value = ''
+        }
+
+        const fields = [
+            {
+                name: 'filename',
+                type: 'string',
+                mapping: 'name'
+            },
+            {
+                name: 'size',
+                type: 'integer',
+                mapping: 'size'
+            },
+            {
+                name: 'lastModified',
+                type: 'integer',
+                mapping: 'lastModified'
+            },
+            {
+                name: 'lastModifiedDate',
+                type: 'date',
+                mapping: 'lastModifiedDate'
+            },
+            {
+                name: 'id',
+                convert: function (v, r) {
+                    return `${r.name}-${r.size}-${r.lastModified}`
+                }
+            }
+        ]
+        const store = new Ext.data.ArrayStore({
+            grid: this,
+            root: '',
+            fields: fields,         
+            idProperty: 'id',
+            sortInfo: {
+                field: 'filename',
+                direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
+            },
+            listeners: {
+                datachanged: function (store, record, index) {
+                    const files = store.getRange().map(r=>r.json)
+                    totalTextCmp.setText(files.length + ' files')
+                    _this.fireEvent('filelistchanged', files)
+                }
+            }
+        })
+        // hack override to handle setting record id as desired
+        store.reader.readRecords = function(o){
+            this.arrayData = o;
+            var s = this.meta,
+                sid = s ? Ext.num(s.idIndex, s.id) : null,
+                recordType = this.recordType,
+                fields = recordType.prototype.fields,
+                records = [],
+                success = true,
+                v;
+    
+            var root = this.getRoot(o);
+    
+            for(var i = 0, len = root.length; i < len; i++) {
+                var n = root[i],
+                    values = {},
+                    id = ((sid || sid === 0) && n[sid] !== undefined && n[sid] !== "" ? n[sid] : null);
+                for(var j = 0, jlen = fields.length; j < jlen; j++) {
+                    var f = fields.items[j],
+                        k = f.mapping !== undefined && f.mapping !== null ? f.mapping : j;
+                    v = n[k] !== undefined ? n[k] : f.defaultValue;
+                    v = f.convert(v, n);
+                    values[f.name] = v;
+                }
+                // change second argument from id to values.id
+                var record = new recordType(values, values.id);
+                record.json = n;
+                records[records.length] = record;
+            }
+    
+            var totalRecords = records.length;
+    
+            if(s.totalProperty) {
+                v = parseInt(this.getTotal(o), 10);
+                if(!isNaN(v)) {
+                    totalRecords = v;
+                }
+            }
+            if(s.successProperty){
+                v = this.getSuccess(o);
+                if(v === false || v === 'false'){
+                    success = false;
+                }
+            }
+    
+            return {
+                success : success,
+                records : records,
+                totalRecords : totalRecords
+            };
+        }
+        const totalTextCmp = new SM.RowCountTextItem({
+            text: '0 files',
+            store: store
+        })
+        const columns = [
+            {
+                header: "Filename",
+                width: 100,
+                dataIndex: 'filename',
+                sortable: true,
+                align: 'left'
+            },
+            {
+                header: "Size",
+                width: 25,
+                dataIndex: 'size',
+                sortable: true
+            },
+            {
+                header: "Last Modified",
+                width: 35,
+                dataIndex: 'lastModifiedDate',
+                sortable: true,
+                align: 'left',
+				xtype: 'datecolumn',
+				format:	'Y-m-d H:i:s T'
+            }
+        ]
+        const removeBtn = new Ext.Button(                    {
+            iconCls: 'icon-del',
+            text: 'Remove from queue',
+            disabled: true,
+            handler: function () {
+                const records = _this.getSelectionModel().getSelections()
+                _this.suspendEvents()
+                for (const record of records) {
+                    _this.store.remove(record)
+                }
+                _this.resumeEvents()
+                const files = store.getRange().map(r=>r.json)
+                totalTextCmp.setText(files.length + ' files')
+                _this.fireEvent('filelistchanged', files)
+            }
+        })
+
+        const tbar = new Ext.Toolbar({
+            items: [
+                {
+                    xtype: 'fileuploadfield',
+                    buttonOnly: true,
+                    na_this: 'importFile',
+                    accept: '.xml,.ckl',
+                    webkitdirectory: false,
+                    multiple: true,
+                    style: 'width: 95px;',
+                    buttonText: `Add files to queue...`,
+                    buttonCfg: {
+                        icon: "img/disc_drive.png"
+                    },
+                    listeners: {
+                        fileselected: onFileSelected
+                    }
+                },
+                {
+                    xtype: 'tbfill'
+                },
+                removeBtn
+            ]
+        })
+        const config = {
+            isFormField: true,
+            loadMask: true,
+            store: store,
+            columns: columns,
+            viewConfig: {
+                emptyText: 'You may drop files here',
+                deferEmptyText: false,
+                forceFit: true
+            },
+            sm: new Ext.grid.RowSelectionModel({
+                singleSelect: false,
+                listeners: {
+                    selectionchange: function (sm) {
+                        removeBtn.setDisabled(sm.getCount() === 0)
+                    }
+                }
+            }),
+            tbar: tbar,
+            bbar: new Ext.Toolbar({
+                items: [
+                    {
+                        xtype: 'tbfill'
+                    },
+                    {
+                        xtype: 'tbseparator'
+                    },
+                    totalTextCmp
+                ]
+            }),
+            listeners: {
+                render: (panel) => {
+                    const panelEl = panel.getEl().dom
+                    panelEl.addEventListener('dragenter', handleDragover, false)
+                    panelEl.addEventListener('dragover', handleDragover, false)
+                    panelEl.addEventListener('dragleave', handleDragleave, false)
+                    panelEl.addEventListener('drop', onFileDropped, false)
+                }
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.SelectFilesGrid.superclass.initComponent.call(this)
+    }
+})
+
+SM.ReviewsImport.MultiSelectPanel = Ext.extend(Ext.Panel, {
+    initComponent: function () {
+        const _this = this
+        this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
+            height: 200,
+            context: this.optionsContext,
+            canAccept: true,
+            initialOptions: {...SM.ReviewsImport.DefaultOptions, ...this.initialOptions}
+        })
+        this.selectFilesGrid = new SM.ReviewsImport.SelectFilesGrid({
+            flex: 3,
+            listeners: {
+                filelistchanged: function(list) {
+                    _this.continueBtn.setDisabled(!list.length)
+                }
+            }
+        })
+        this.continueBtn = new Ext.Button({
+            text: 'Continue',
+            disabled: true,
+            handler: () => {
+                _this.fireEvent('continue',_this)
+            }
+        })
+        const config = {
+            layout: 'vbox',
+            layoutConfig: {
+                align: 'stretch',
+                pack: 'start',
+                padding: '0 20 20 20'
+            },
+            items: [
+                {
+                    html: `<div class="sm-dialog-panel-title">Queue files for import</div>`,
+                    border: false
+                },
+                {
+                    xtype: 'displayfield',
+                    html: "<p>&nbsp;</p>",
+                },
+                this.selectFilesGrid,
+                {
+                    xtype: 'displayfield',
+                    html: "<p>&nbsp;</p>",
+                },
+                this.parseOptionsFieldSet
+            ],
+            buttons: [this.continueBtn],
+            buttonAlign: 'right',
+            listeners: {
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.ReviewsImport.MultiSelectPanel.superclass.initComponent.call(this)
+    }
+})
+
 /**
  * @class SM.ReviewsImport.SelectFilesPanel
  * @extends Ext.Panel
@@ -689,44 +1378,13 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
             this.style.border = ""
         }
 
-        const cklTextCb = new Ext.form.Checkbox({
-            boxLabel: `Remove existing text when &lt;FINDING_DETAILS&gt; or &lt;COMMENTS&gt; is empty<i class= "fa fa-question-circle sm-question-circle"></i>`,
-            hideLabel: true,
-            listeners: {
-                render: function (ta) {
-                  _this.sonarCloudInsists = new Ext.ToolTip({
-                    target: ta.wrap.dom.getElementsByClassName('fa')[0],
-                    showDelay: 0,
-                    dismissDelay: 0,
-                    width: 300,
-                    html: SM.TipContent.CklParseOptions.Text
-                  }) 
-                }
-            }
-        
+        this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
+            height: 200,
+            context: 'wizard',
+            initialOptions: this.initialOptions,
+            canAccept: this.canAccept
         })
-        const cklRevisionCb = new Ext.form.Checkbox({
-            boxLabel: `Do not import if STIG Revision does not match<i class= "fa fa-question-circle sm-question-circle"></i>`,
-            hideLabel: true,
-            listeners: {
-                render: function (ta) {
-                  _this.sonarCloudInsists = new Ext.ToolTip({
-                    target: ta.wrap.dom.getElementsByClassName('fa')[0],
-                    showDelay: 0,
-                    dismissDelay: 0,
-                    width: 300,
-                    html: SM.TipContent.CklParseOptions.Revision
-                  }) 
-                }
-            }
-        })
-        const cklParseOptions = new Ext.form.FieldSet({
-            title: 'CKL parse options',
-            items: [
-                cklTextCb,
-                cklRevisionCb,
-            ]
-        })
+
 
         const config = {
             layout: 'vbox',
@@ -757,10 +1415,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                             panelEl.addEventListener('dragover', handleDragover, false)
                             panelEl.addEventListener('dragleave', handleDragleave, false)
                             panelEl.addEventListener('drop', function (e) {
-                                _this.onFileDropped(e, this, {
-                                    replaceText: cklTextCb.value,
-                                    strictRevisionCheck: cklRevisionCb.value
-                                })
+                                _this.onFileDropped(e, this)
                             }, false)
                         }
                     }
@@ -769,7 +1424,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                     xtype: 'displayfield',
                     html: "<p>&nbsp;</p>",
                 },
-                cklParseOptions,
+                this.parseOptionsFieldSet,
                 {
                     xtype: 'displayfield',
                     html: "<p>&nbsp;</p>",
@@ -787,12 +1442,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                         icon: "img/disc_drive.png"
                     },
                     listeners: {
-                        fileselected: (uploadField) => {
-                            _this.onFileSelected(uploadField, {
-                                replaceText: cklTextCb.checked,
-                                strictRevisionCheck: cklRevisionCb.checked
-                            })
-                        }
+                        fileselected: _this.onFileSelected
                     }
                 },
 
@@ -831,7 +1481,7 @@ SM.ReviewsImport.ParseErrorsPanel = Ext.extend(Ext.Panel, {
         if (me.duplicates) {
             items.push(
                 {
-                    html: '<div class="sm-dialog-panel-title">Duplicates excluded</div>',
+                    html: '<div class="sm-dialog-panel-title">Duplicates excluded</div>There were multiple result files for some Asset/STIG pairs.<br>Results shown below <b>will not be imported</b> because they were not obtained from the most recently modified file for the Asset/STIG.',
                     width: 500,
                     border: false
                 },
@@ -905,6 +1555,15 @@ SM.ReviewsImport.OptionsPanel = Ext.extend(Ext.Panel, {
             panel: this
         })
         grid.store.loadData(me.gridData)
+        const continueBtn = new Ext.Button({
+            iconCls: 'sm-import-icon',
+            text: 'Add to Collection...',
+            margins: '0 25',
+            grid: grid,
+            handler: async () => {
+                await me.addHandler(me.taskAssets, grid.createObjects, grid.importReviews)
+            }
+        })
         const controls = new Ext.Panel({
             region: 'south',
             border: false,
@@ -924,6 +1583,7 @@ SM.ReviewsImport.OptionsPanel = Ext.extend(Ext.Panel, {
                     listeners: {
                         check: function (cb, checked) {
                             grid.enableCreateObjects(checked)
+                            continueBtn.setDisabled(!grid.store.getCount())
                         }
                     }
                 },
@@ -950,24 +1610,15 @@ SM.ReviewsImport.OptionsPanel = Ext.extend(Ext.Panel, {
             border: false,
             items: [
                 {
-                    html: '<div class="sm-dialog-panel-title">Choose options</div>',
+                    html: '<div class="sm-dialog-panel-title">Import Reviews</div>If you continue, these results will be added to the Collection.<br>&nbsp;',
                     width: 500,
                     border: false
                 },
-                controls,
+                // controls,
                 grid
             ],
             buttons: [
-                {
-                    xtype: 'button',
-                    iconCls: 'sm-import-icon',
-                    text: 'Add to Collection...',
-                    margins: '0 25',
-                    grid: grid,
-                    handler: async () => {
-                        await me.addHandler(me.taskAssets, grid.createObjects, grid.importReviews)
-                    }
-                }
+                continueBtn
             ],
             buttonAlign: 'right',
             grid: grid
@@ -1097,6 +1748,245 @@ SM.ReviewsImport.ReviewsPanel = Ext.extend(Ext.form.FormPanel, {
     }
 })
 
+SM.ReviewsImport.ImportStatusGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent: function () {
+        const me = this
+        const fields = [
+            'assetId',
+            'assetName',
+            { name: 'created', type: 'boolean'},
+            { name: 'addedStigs', type: 'boolean'},
+            'inserted',
+            'updated',
+            'rejected'
+        ]
+        const totalTextCmp = new Ext.Toolbar.TextItem({
+            text: '0 records',
+            width: 80
+        })
+        const store = new Ext.data.JsonStore({
+            grid: this,
+            root: '',
+            fields,
+            idProperty: 'assetId',
+            listeners: {
+                load: function (store, records) {
+                    totalTextCmp.setText(store.getCount() + ' records')
+                    me.view.scrollToBottom()
+                },
+                remove: function (store, record, index) {
+                    totalTextCmp.setText(store.getCount() + ' records')
+                }
+            }
+        })
+        const columns = [
+            {
+                header: "Asset",
+                width: 200,
+                dataIndex: 'assetName',
+                sortable: true
+            },
+            {
+                header: "Created",
+                width: 50,
+                dataIndex: 'created',
+                xtype: 'booleancolumn',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                header: "Added STIGs",
+                width: 50,
+                dataIndex: 'addedStigs',
+                xtype: 'booleancolumn',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                header: "Inserted",
+                width: 50,
+                dataIndex: 'inserted',
+                sortable: true,
+                align: 'center',
+                renderer: SM.styledZeroRenderer
+            },
+            {
+                header: "Updated",
+                width: 50,
+                dataIndex: 'updated',
+                sortable: true,
+                align: 'center',
+                renderer: SM.styledZeroRenderer
+            },
+            {
+                header: "Rejected",
+                width: 50,
+                dataIndex: 'rejected',
+                sortable: true,
+                align: 'center',
+                renderer: function (val, record, metadata) {
+                    return val?.length ?? '-'
+                }
+            }
+        ]
+        const config = {
+            layout: 'fit',
+            store,
+            cm: new Ext.grid.ColumnModel({
+                columns: columns
+            }),
+            sm: new Ext.grid.RowSelectionModel({
+                singleSelect: true
+            }),
+            view: new SM.ColumnFilters.GridView({
+                forceFit: true,
+                emptyText: 'No records to display',
+                holdPosition: true, // see overrides.js for why this is needed
+                scrollToBottom: function () {
+                    const dom = this.scroller.dom;
+                    dom.scrollTop  = 999999;
+                    dom.scrollLeft = 0;
+                }
+            }),
+            bbar: new Ext.Toolbar({
+                items: [
+                    {
+                        xtype: 'tbfill'
+                    },
+                    {
+                        xtype: 'tbseparator'
+                    },
+                    totalTextCmp
+                ]
+            }),
+            listeners: {
+            },
+            getValue: function () {
+                return true
+            },
+            setValue: function (v) {
+                store.loadData(v)
+            },
+            validator: function (v) {
+                let one = 1
+            },
+            markInvalid: function () {
+                let one = 1
+            },
+            clearInvalid: function () {
+                let one = 1
+            },
+            isValid: function () {
+                return true
+            },
+            getName: () => this.name,
+            validate: function () {
+                let one = 1
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        this.superclass().initComponent.call(this)
+    }
+})
+
+SM.ReviewsImport.ImportRejectGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent: function () {
+        const me = this
+        const fields = [
+            'ruleId',
+            'reason'
+        ]
+        const totalTextCmp = new Ext.Toolbar.TextItem({
+            text: '0 records',
+            width: 80
+        })
+        const store = new Ext.data.JsonStore({
+            grid: this,
+            root: '',
+            fields,
+            idProperty: 'ruleId',
+            listeners: {
+                load: function (store, records) {
+                    totalTextCmp.setText(store.getCount() + ' records')
+                },
+                remove: function (store, record, index) {
+                    totalTextCmp.setText(store.getCount() + ' records')
+                }
+            }
+        })
+        const columns = [
+            {
+                header: "Rule",
+                width: 100,
+                dataIndex: 'ruleId',
+                sortable: true
+            },
+            {
+                header: "Reason",
+                width: 200,
+                dataIndex: 'reason'
+            }
+        ]
+        const config = {
+            layout: 'fit',
+            store,
+            cm: new Ext.grid.ColumnModel({
+                columns: columns
+            }),
+            sm: new Ext.grid.RowSelectionModel({
+                singleSelect: true
+            }),
+            view: new SM.ColumnFilters.GridView({
+                forceFit: true,
+                emptyText: 'No records to display',
+                holdPosition: true, // see overrides.js for why this is needed
+                scrollToBottom: function () {
+                    const dom = this.scroller.dom;
+                    dom.scrollTop  = 999999;
+                    dom.scrollLeft = 0;
+                }
+            }),
+            bbar: new Ext.Toolbar({
+                items: [
+                    {
+                        xtype: 'tbfill'
+                    },
+                    {
+                        xtype: 'tbseparator'
+                    },
+                    totalTextCmp
+                ]
+            }),
+            listeners: {
+            },
+            getValue: function () {
+                return true
+            },
+            setValue: function (v) {
+                store.loadData(v)
+            },
+            validator: function (v) {
+                let one = 1
+            },
+            markInvalid: function () {
+                let one = 1
+            },
+            clearInvalid: function () {
+                let one = 1
+            },
+            isValid: function () {
+                return true
+            },
+            getName: () => this.name,
+            validate: function () {
+                let one = 1
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        this.superclass().initComponent.call(this)
+    }
+})
+
 SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         const me = this
@@ -1104,18 +1994,35 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
             text: '',
             border: false
         })
-        const st = new Ext.form.TextArea({
-            cls: 'sm-progress-textarea'
-            , readOnly: true
-            , flex: 3
-            , margins: {
-                top: 10
-                , bottom: 0
-                , left: 0
-                , right: 0
+        const st = new SM.ReviewsImport.ImportStatusGrid({
+            flex: 2,
+            margins: {
+                top: 10,
+                bottom: 0,
+                left: 0,
+                right: 0,
             }
         })
-
+        const rj = new SM.ReviewsImport.ImportRejectGrid({
+            flex: 1,
+            title: 'Rejected reviews',
+            margins: {
+                top: 10,
+                bottom: 0,
+                left: 0,
+                right: 0,
+            }          
+        })
+        st.getSelectionModel().on('rowselect', function( sm, index, record) {
+            rj.setTitle(`Rejected reviews for ${record.data.assetName}`)
+            rj.store.loadData(record.data.rejected)
+        })
+        const doneBtn = new Ext.Button({
+            text: 'Done',
+            margins: '0 25',
+            handler: me.doneHandler,
+            disabled: true
+        })
         const config = {
             layout: 'vbox',
             layoutConfig: {
@@ -1126,28 +2033,25 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
             border: false,
             items: [
                 {
-                    html: '<div class="sm-dialog-panel-title">Importing data</div>',
+                    html: '<div class="sm-dialog-panel-title">Importing results</div>',
                     width: 500,
                     border: false
                 },
                 pb,
-                st
+                st,
+                rj
             ],
             buttons: [
-                {
-                    xtype: 'button',
-                    text: 'Done',
-                    margins: '0 25',
-                    handler: me.doneHandler
-                }
+                doneBtn
             ],
             buttonAlign: 'right',
-            pb: pb,
-            st: st
+            pb,
+            st,
+            doneBtn
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ReviewsImport.ImportProgressPanel.superclass.initComponent.call(this)
+        this.superclass().initComponent.call(this)
     }
 })
 
@@ -1336,36 +2240,45 @@ class TaskObject {
     }
 }
 
-async function showImportResultFiles(collectionId, fieldSettings) {
+async function showImportResultFiles(collectionId) {
     try {
-        const cklParseOptions = {
-            ignoreNr: true
+        const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
+        const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
+        const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
+        const initialOptions = SM.safeJSONParse(cachedCollection.metadata.importOptions) ?? SM.ReviewsImport.DefaultOptions
+        if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
+            initialOptions.autoStatus = 'submitted'
         }
-        const scapParseOptions = {
-            ignoreNotChecked: true
-        }
-
-        const fp = new SM.ReviewsImport.SelectFilesPanel({
-            border: false,
-            autoScroll: true,
-            multifile: true,
-            onFileSelected: onFileSelected,
-            onFileDropped: onFileDropped
-        })
 
         const vpSize = Ext.getBody().getViewSize()
         let height = vpSize.height * 0.75
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
+        const fp = new SM.ReviewsImport.MultiSelectPanel({
+            border: false,
+            height: 'auto',
+            width: 'auto',
+            optionsContext: 'wizard',
+            initialOptions,
+            canAccept,
+            listeners: {
+                continue: function(panel) {
+                    const records = panel.selectFilesGrid.store.getRange()
+                    const files = records.map( r => r.json )
+                    warnOnExcessFiles(files)
+                },
+                filelist: function(list) {
+
+                }
+            }
+        })
         const fpwindow = new Ext.Window({
             title: 'Import results from CKL or XCCDF files',
             cls: 'sm-dialog-window sm-round-panel',
             modal: true,
             resizable: false,
-            // renderTo: el,
-            // autoScroll: true,
-            width: width,
-            height: height,
+            width,
+            height,
             layout: 'fit',
             plain: true,
             bodyStyle: 'padding:5px;',
@@ -1373,127 +2286,6 @@ async function showImportResultFiles(collectionId, fieldSettings) {
             items: fp
         })
         fpwindow.show(document.body)
-
-        async function onFileDropped(e, panel, cklOptions) {
-            try {
-                e.currentTarget.innerText = `Searching for result files...`
-                e.stopPropagation()
-                e.preventDefault()
-                panel.style.border = ""
-                let entries = []
-                let files = []
-                if (!e.dataTransfer) {
-                    throw ('Event is missing the dataTransfer property')
-                }
-                entries = await getAllFileEntries(e.dataTransfer.items, e.currentTarget)
-                if (!entries.length) {
-                    showErrors({
-                        errors: [{
-                            file: {
-                                name: '[UNSUPPORTED FILES]'
-                            },
-                            error: 'No .ckl or .xml files were dropped'
-                        }],
-                        stopWizard: true
-                    })
-                }
-                else {
-                    for (const entry of entries) {
-                        files.push(await entryFilePromise(entry))
-                    }
-                    files.sort((a, b) => a.lastModified - b.lastModified)
-                    Object.assign(cklParseOptions, cklOptions)
-                    warnOnExcessFiles(files)
-                }
-            }
-            catch (e) {
-                alert(e)
-            }
-
-            async function getAllFileEntries(dataTransferItemList, el) {
-                try {
-                    let searched = 0, found = 0
-                    let fileEntries = []
-                    // Use BFS to traverse entire directory/file structure
-                    let queue = []
-                    // Unfortunately dataTransferItemList is not iterable i.e. no forEach
-                    for (let i = 0; i < dataTransferItemList.length; i++) {
-                        queue.push(dataTransferItemList[i].webkitGetAsEntry())
-                    }
-                    while (queue.length > 0) {
-                        let entry = queue.shift()
-                        searched++
-                        if (entry.isFile && (entry.name.toLowerCase().endsWith('.ckl') || entry.name.toLowerCase().endsWith('.xml'))) {
-                            fileEntries.push(entry)
-                            found++
-                            el.innerText = `Searching... Searched ${searched} files, found ${found} results files`
-                        } else if (entry.isDirectory) {
-                            queue.push(...await readAllDirectoryEntries(entry.createReader()))
-                        }
-                    }
-                    el.innerText = `Finished. Searched ${searched} files, found ${found} results files`
-                    return fileEntries
-                }
-                catch (e) {
-                    alert(e)
-                }
-            }
-
-            // Get all the entries (files or sub-directories) in a directory 
-            // by calling readEntries until it returns empty array
-            async function readAllDirectoryEntries(directoryReader) {
-                try {
-                    let entries = []
-                    let readEntries = await readEntriesPromise(directoryReader)
-                    while (readEntries?.length > 0) {
-                        entries.push(...readEntries)
-                        readEntries = await readEntriesPromise(directoryReader)
-                    }
-                    return entries;   
-                }
-                catch (e) {
-                    alert(e)
-                }
-            }
-
-            // Wrap readEntries in a promise to make working with readEntries easier
-            // readEntries will return only some of the entries in a directory
-            // e.g. Chrome returns at most 100 entries at a time
-            async function readEntriesPromise(directoryReader) {
-                try {
-                    return await new Promise((resolve, reject) => {
-                        directoryReader.readEntries(resolve, reject)
-                    })
-                } catch (e) {
-                    alert(e)
-                }
-            }
-
-            // Wrap entry.file() in a promise
-            async function entryFilePromise(entry) {
-                try {
-                    return await new Promise((resolve, reject) => {
-                        let fullPath = entry.fullPath
-
-                        entry.file(file => {
-                            file.fullPath = fullPath
-                            resolve(file)
-                        }, reject)
-                    })
-                } catch (e) {
-                    alert(e)
-                }
-            }
-        }
-
-        async function onFileSelected(uploadField, cklOptions) {
-            let input = uploadField.fileInput.dom
-            const files = [...input.files]
-            // Sort files oldest to newest
-            files.sort((a, b) => a.lastModified - b.lastModified)
-            Object.assign(cklParseOptions, cklOptions)
-            warnOnExcessFiles(files)
-        }
 
         function warnOnExcessFiles(files) {
             if (files.length >= 250) {
@@ -1560,7 +2352,7 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                     fpwindow.add(pbPanel)
                     fpwindow.doLayout()
                 })
-                task.delay(250)
+                task.delay(50)
 
                 const results = await parseFiles(files, pb)
                 task.cancel()
@@ -1611,7 +2403,14 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                     let data = await readTextFileAsync(file)
                     if (extension === 'ckl') {
                         try {
-                            const r = reviewsFromCkl(data, cklParseOptions, fieldSettings)
+                            const r = ReviewParser.reviewsFromCkl({
+                                data, 
+                                fieldSettings: cachedCollection.settings.fields, 
+                                allowAccept: canAccept,
+                                importOptions: fp.parseOptionsFieldSet.getOptions(),
+                                XMLParser: fxp.XMLParser,
+                                valueProcessor: tagValueProcessor
+                            })
                             r.file = file
                             parseResults.success.push(r)
                         }
@@ -1624,8 +2423,13 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                     }
                     if (extension === 'xml') {
                         try {
-                            const r = reviewsFromScc(data, { 
-                                ignoreNotChecked: false,
+                            const r = ReviewParser.reviewsFromScc({
+                                data, 
+                                fieldSettings: cachedCollection.settings.fields, 
+                                allowAccept: canAccept,
+                                importOptions: fp.parseOptionsFieldSet.getOptions(),
+                                XMLParser: fxp.XMLParser,
+                                valueProcessor: tagValueProcessor,
                                 scapBenchmarkMap
                             })
                             r.file = file
@@ -1650,7 +2454,7 @@ async function showImportResultFiles(collectionId, fieldSettings) {
 
                 const taskConfig = {
                     createObjects: true,
-                    strictRevisionCheck: cklParseOptions.strictRevisionCheck
+                    strictRevisionCheck: fp.parseOptionsFieldSet.getOptions().strictRevisionCheck
                 } 
                 const tasks = new TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, collectionId, config: taskConfig })
                 // Transform into data for SM.ReviewsImport.Grid
@@ -1726,7 +2530,6 @@ async function showImportResultFiles(collectionId, fieldSettings) {
         }
 
         async function showImportProgress(taskAssets, modifyAssets, importReviews) {
-            let statusText = ''
             let progressPanel
             try {
                 progressPanel = new SM.ReviewsImport.ImportProgressPanel({
@@ -1742,41 +2545,32 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                 for (const taskAsset of taskAssets.values()) {
                     try {
                         let assetId = taskAsset.assetProps.assetId
-                        let sentRequest = false
                         updateProgress(processedCount / taskAssets.size, taskAsset.assetProps.name)
+                        let importAssetResult
                         if (modifyAssets && (!taskAsset.knownAsset || taskAsset.hasNewAssignment)) {
-                            assetId = await importAsset(taskAsset)
-                            updateStatusText(` OK (${taskAsset.assetProps.name}, id: ${assetId})`)
-                            sentRequest = true
+                            importAssetResult = await importAsset(taskAsset)
+                            updateStatusGrid(importAssetResult)
+                            assetId = importAssetResult.assetId
+                        }
+                        else {
+                            importAssetResult = {
+                                assetId: taskAsset.assetProps.assetId,
+                                assetName: taskAsset.assetProps.name,
+                                created: false,
+                                addedStigs: false
+                            }
                         }
                         if (importReviews) {
                             let reviewsArray = []
                             for (const benchmarkId of taskAsset.checklists.keys()) {
                                 reviewsArray = reviewsArray.concat(taskAsset.checklists.get(benchmarkId).slice(-1)[0].reviews)
                             }
-                            await importReviewArray(collectionId, assetId, reviewsArray)
-                            updateStatusText(' OK')
-                            sentRequest = true
-                        }
-                        if (sentRequest) {
-                            // Get the updated apiAsset
-                            const result = await Ext.Ajax.requestPromise({
-                                url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
-                                method: 'GET',
-                                params: {
-                                    projection: ['stigs', 'statusStats']
-                                },
-                                headers: { 'Content-Type': 'application/json;charset=utf-8' }
-                            })
-                            apiAsset = JSON.parse(result.response.responseText)
-                            SM.Dispatcher.fireEvent('assetchanged', apiAsset)
-                        }
-                        else {
-                            updateStatusText(` Nothing to do for ${taskAsset.assetProps.name}`)
+                            const importReviewArrayResult = await importReviewArray(collectionId, assetId, reviewsArray)
+                            updateStatusGrid({...importAssetResult, ...importReviewArrayResult})
                         }
                     }
                     catch (e) {
-                        updateStatusText(` ERROR (${e.message})`)
+                        alert(` ERROR (${e.message})`)
                     }
                     finally {
                         processedCount++
@@ -1784,8 +2578,11 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                     }
                 }
                 updateProgress(0, 'Finished')
+                progressPanel.doneBtn.setDisabled(false)
+                SM.Dispatcher.fireEvent('assetchanged', {collection:{collectionId}})
             }
             catch (e) {
+                SM.Dispatcher.fireEvent('assetchanged', {collection:{collectionId}})
                 alert(e.message)
             }
 
@@ -1793,36 +2590,29 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                 progressPanel.pb.updateProgress(value, SM.he(text))
             }
 
-            function updateStatusText(text, noNL, replace) {
-                var noNL = noNL || false
-                if (noNL) {
-                    statusText += text
-                } else {
-                    statusText += text + "\n"
-                }
-                progressPanel.st.setRawValue(statusText)
-                progressPanel.st.getEl().dom.scrollTop = 99999; // scroll to bottom
+            function updateStatusGrid(status) {
+                progressPanel.st.store.loadData(status, true)
             }
 
             async function importAsset(taskAsset) {
-                try {
-                    let url, method, jsonData
-                    if (taskAsset.knownAsset && taskAsset.hasNewAssignment) {
-                        url = `${STIGMAN.Env.apiBase}/assets/${taskAsset.assetProps.assetId}`
-                        method = 'PATCH'
-                        jsonData = {
-                            collectionId: taskAsset.assetProps.collectionId,
-                            stigs: taskAsset.assetProps.stigs
-                        }
+                let url, method, jsonData
+                if (taskAsset.knownAsset && taskAsset.hasNewAssignment) {
+                    url = `${STIGMAN.Env.apiBase}/assets/${taskAsset.assetProps.assetId}`
+                    method = 'PATCH'
+                    jsonData = {
+                        collectionId: taskAsset.assetProps.collectionId,
+                        stigs: taskAsset.assetProps.stigs
                     }
-                    else {
-                        url = `${STIGMAN.Env.apiBase}/assets`
-                        method = 'POST'
-                        jsonData = taskAsset.assetProps
-                    }
-                    updateStatusText(`${method} ${taskAsset.assetProps.name}`, true)
+                }
+                else {
+                    url = `${STIGMAN.Env.apiBase}/assets`
+                    method = 'POST'
+                    jsonData = taskAsset.assetProps
+                }
 
-                    let result = await Ext.Ajax.requestPromise({
+                let result, apiAsset, robj
+                try {
+                    result = await Ext.Ajax.requestPromise({
                         url: url,
                         method: method,
                         params: {
@@ -1831,29 +2621,39 @@ async function showImportResultFiles(collectionId, fieldSettings) {
                         headers: { 'Content-Type': 'application/json;charset=utf-8' },
                         jsonData: jsonData
                     })
-                    const apiAsset = JSON.parse(result.response.responseText)
-                    let event = method === 'POST' ? 'assetcreated' : 'assetchanged'
-                    SM.Dispatcher.fireEvent(event, apiAsset)
-
-                    return apiAsset.assetId
+                    apiAsset = JSON.parse(result.response.responseText)
+                    robj = {
+                        assetId: apiAsset.assetId,
+                        assetName: apiAsset.name,
+                        created: !taskAsset.knownAsset,
+                        addedStigs: taskAsset.hasNewAssignment
+                    }
                 }
-                finally { }
+                catch (e) {
+                    alert(result.response.responseText)
+                }
+                // if (apiAsset) {
+                //     let event = method === 'POST' ? 'assetcreated' : 'assetchanged'
+                //     SM.Dispatcher.fireEvent(event, apiAsset)
+                // }
+
+                return robj
             }
 
             async function importReviewArray(collectionId, assetId, reviewArray) {
-                try {
-                    let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}`
-                    updateStatusText(`POST reviews for assetId ${assetId}`, true)
-                    let result = await Ext.Ajax.requestPromise({
-                        url: url,
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                        jsonData: reviewArray
-                    })
-                    const apiReviews = JSON.parse(result.response.responseText)
-                    return apiReviews
+                let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}`
+                let result = await Ext.Ajax.requestPromise({
+                    url: url,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                    jsonData: reviewArray
+                })
+                const apiReviews = JSON.parse(result.response.responseText)
+                return {
+                    inserted: apiReviews.affected.inserted,
+                    updated: apiReviews.affected.updated,
+                    rejected: apiReviews.rejected
                 }
-                finally { }
             }
         }
     }
@@ -1872,23 +2672,31 @@ async function showImportResultFiles(collectionId, fieldSettings) {
 }
 
 async function showImportResultFile(params) {
-    const cklParseOptions = {
-        ignoreNr: true
-    }
     try {
-        const fp = new SM.ReviewsImport.SelectFilesPanel({
-            border: false,
-            autoScroll: true,
-            multifile: false,
-            onFileSelected,
-            onFileDropped
-        })
+        const cachedCollection = SM.Cache.CollectionMap.get(params.collectionId)
+        const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
+        const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
+        const initialOptions = SM.safeJSONParse(cachedCollection.metadata.importOptions) ?? SM.ReviewsImport.DefaultOptions
+        if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
+            initialOptions.autoStatus = 'submitted'
+        }
 
         const vpSize = Ext.getBody().getViewSize()
         let height = vpSize.height * 0.75
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
-        fpwindow = new Ext.Window({
+        const fp = new SM.ReviewsImport.SelectFilesPanel({
+            border: false,
+            autoScroll: true,
+            multifile: false,
+            optionsContext: 'wizard',
+            initialOptions,
+            canAccept,
+            onFileSelected,
+            onFileDropped
+        })
+
+        const fpwindow = new Ext.Window({
             title: `Import results (${SM.he(params.benchmarkId)} on ${SM.he(params.assetName)})`,
             modal: true,
             resizable: false,
@@ -1904,6 +2712,270 @@ async function showImportResultFile(params) {
         })
 
         fpwindow.show()
+
+        async function onFileDropped(e, panel) {
+            e.stopPropagation()
+            e.preventDefault()
+            panel.style.border = ""
+            let entries = []
+            let files = []
+            for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                entries.push(e.dataTransfer.items[i].webkitGetAsEntry())
+            }
+
+            for (const entry of entries) {
+                const entryContent = await readEntryContentAsync(entry)
+                files.push(...entryContent)
+            }
+            showParseFile(files[0])
+
+            function readEntryContentAsync(entry) {
+                return new Promise((resolve, reject) => {
+                    let reading = 0
+                    const files = []
+                    readEntry(entry)
+                    function readEntry(entry) {
+                        if (entry.isFile) {
+                            reading++
+                            let fullPath = entry.fullPath
+                            entry.file(file => {
+                                reading--
+                                file.fullPath = fullPath
+                                files.push(file)
+                                if (reading === 0) {
+                                    resolve(files)
+                                }
+                            })
+                        } else if (entry.isDirectory) {
+                            readReaderContent(entry.createReader())
+                        }
+                    }
+                    function readReaderContent(reader) {
+                        reading++
+                        reader.readEntries(function (entries) {
+                            reading--
+                            for (const entry of entries) {
+                                readEntry(entry)
+                            }
+                            if (reading === 0) {
+                                resolve(files)
+                            }
+                        })
+                    }
+                })
+            }
+        }
+
+        async function onFileSelected(uploadField) {
+            let input = uploadField.fileInput.dom
+            const files = [...input.files]
+            await showParseFile(files[0])
+        }
+
+        async function showParseFile(file) {
+            let task
+            try {
+                const pb = new Ext.ProgressBar({
+                    text: file.name,
+                    // margins: '0 30',
+                    border: false
+                })
+                const pbPanel = new Ext.Panel({
+                    layout: 'vbox',
+                    layoutConfig: {
+                        align: 'stretch',
+                        pack: 'start',
+                        padding: '0 20 20 20'
+                    },
+                    border: false,
+                    items: [
+                        {
+                            html: '<div class="sm-dialog-panel-title">Parsing your file</div>',
+                            width: 500,
+                            margins: '0 0',
+                            border: false
+                        },
+                        pb
+                    ]
+                })
+
+                task = new Ext.util.DelayedTask(function () {
+                    fpwindow.removeAll()
+                    fpwindow.add(pbPanel)
+                    fpwindow.doLayout()
+                })
+                task.delay(250)
+
+
+                const [apiAssetResponse, r] = await Promise.all([
+                    Ext.Ajax.requestPromise({
+                        url: `${STIGMAN.Env.apiBase}/assets/${params.assetId}`,
+                        method: 'GET'
+                    }),
+                    parseFile(file, pb)
+                ])
+                const apiAsset = JSON.parse(apiAssetResponse.response.responseText)
+                let assetMatches = false
+                if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
+                    assetMatches = apiAsset.metadata.cklHostName === r.target.metadata.cklHostName
+                    && apiAsset.metadata.cklWebDbSite === r.target.metadata.cklWebDbSite
+                    && apiAsset.metadata.cklWebDbInstance === r.target.metadata.cklWebDbInstance
+                } 
+                else {
+                    assetMatches = r.target.name === apiAsset.name
+                }
+                if (!assetMatches) {
+                    let errorStr
+                    if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
+                        errorStr = `CKL elements and values:<br><br>
+                        &lt;WEB_DB_SITE&gt; = ${r.target.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No value</span>'}<br>
+                        &lt;WEB_DB_INSTANCE&gt = ${r.target.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No value</span>'}<br><br>
+                        Asset metadata properties and values:<br><br>
+                        cklWebDbSite = ${apiAsset.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No property</span>'}<br>
+                        cklWebDbInstance = ${apiAsset.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No property</span>'}<br><br>
+                        The corresponding values do not match.
+                        </div>`
+                    }
+                    else {
+                        errorStr = `The CKL file contains reviews for ${r.target.name}`
+                    }
+                    throw (new Error(`<b>The file does not include reviews for this asset.</b><br><div class="sm-dialog-panel-callout">${errorStr}</div>`))
+                }
+                const checklistFromFile = r.checklists.filter(checklist => checklist.benchmarkId === params.benchmarkId)[0]
+                if (!checklistFromFile) {
+                    throw (new Error(`The file does not include reviews for STIG: <b>${params.benchmarkId}</b><br>The file includes reviews for: ${r.checklists[0].benchmarkId}</p>`))
+                }
+                const apiResult = await Ext.Ajax.requestPromise({
+                    url: `${STIGMAN.Env.apiBase}/assets/${params.assetId}/checklists/${params.benchmarkId}/${params.revisionStr}`,
+                    method: 'GET'
+                })
+                const checklistFromApi = JSON.parse(apiResult.response.responseText)
+                task.cancel()
+                showReviews(checklistFromFile, checklistFromApi, params.benchmarkId, params.revisionStr)
+            }
+            catch (e) {
+                task.cancel()
+                showError(e)
+            }
+        }
+
+        async function parseFile(file, pb) {
+            const extension = file.name.substring(file.name.lastIndexOf(".") + 1)
+            const data = await readTextFileAsync(file)
+
+            let r
+            if (extension === 'ckl') {
+                r = ReviewParser.reviewsFromCkl({
+                    data, 
+                    fieldSettings: cachedCollection.settings.fields, 
+                    allowAccept: canAccept,
+                    importOptions: fp.parseOptionsFieldSet.getOptions(),
+                    XMLParser: fxp.XMLParser,
+                    valueProcessor: tagValueProcessor
+                })
+            }
+            else if (extension === 'xml') {
+                const scapBenchmarkMap = await getScapBenchmarkMap()
+                r = ReviewParser.reviewsFromScc({
+                    data, 
+                    fieldSettings: cachedCollection.settings.fields, 
+                    allowAccept: canAccept,
+                    importOptions: fp.parseOptionsFieldSet.getOptions(),
+                    XMLParser: fxp.XMLParser,
+                    valueProcessor: tagValueProcessor,
+                    scapBenchmarkMap
+                })
+            }
+            else {
+                throw (new Error('Unknown file extension'))
+            }
+            r.file = file
+            return r
+        }
+
+        function showError(e) {
+            let pePanel = new SM.ReviewsImport.ParseErrorPanel({
+                error: e.message,
+                exitHandler: onExit,
+            })
+            fpwindow.removeAll()
+            fpwindow.setAutoScroll(true)
+            fpwindow.add(pePanel)
+            fpwindow.doLayout()
+
+            function onExit() {
+                fpwindow.close()
+            }
+        }
+
+        function showReviews(checklistFromFile, checklistFromApi, benchmarkId, revisionStr) {
+            let reviewsPanel = new SM.ReviewsImport.ReviewsPanel({
+                checklistFromFile: checklistFromFile,
+                checklistFromApi: checklistFromApi,
+                benchmarkId: benchmarkId,
+                revisionStr: revisionStr,
+                importHandler: showImportProgress
+            })
+            fpwindow.removeAll()
+            fpwindow.add(reviewsPanel)
+            fpwindow.doLayout()
+
+
+        }
+
+        async function showImportProgress(reviews) {
+            let progressPanel
+            try {
+                progressPanel = new SM.ReviewsImport.ImportProgressPanel({
+                    doneHandler: () => {
+                        fpwindow.close()
+                    }
+                })
+                fpwindow.removeAll()
+                fpwindow.add(progressPanel)
+                fpwindow.doLayout()
+
+                updateProgress('Importing...')
+                const importReviewArrayResult = await importReviewArray(reviews)
+                const commonProps = {
+                    assetId: params.assetId,
+                    assetName: params.assetName,
+                    created: false,
+                    addedStigs: false
+                }
+                updateStatusGrid({...commonProps, ...importReviewArrayResult})
+                updateProgress(0, 'Finished')
+                progressPanel.doneBtn.setDisabled(false)
+                params.store.reload()
+            }
+            catch (e) {
+                alert(e.message)
+            }
+
+            function updateProgress(value, text) {
+                progressPanel.pb.updateProgress(value, SM.he(text))
+            }
+
+            function updateStatusGrid(status) {
+                progressPanel.st.store.loadData(status, true)
+            }
+
+            async function importReviewArray(reviewArray) {
+                let url = `${STIGMAN.Env.apiBase}/collections/${params.collectionId}/reviews/${params.assetId}`
+                let result = await Ext.Ajax.requestPromise({
+                    url: url,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                    jsonData: reviewArray
+                })
+                apiReviews = JSON.parse(result.response.responseText)
+                return {
+                    inserted: apiReviews.affected.inserted,
+                    updated: apiReviews.affected.updated,
+                    rejected: apiReviews.rejected
+                }
+            }
+        }
     }
     catch (e) {
         if (typeof e === 'object') {
@@ -1920,263 +2992,6 @@ async function showImportResultFile(params) {
 
     }
 
-    async function onFileDropped(e, panel, cklOptions) {
-        e.stopPropagation()
-        e.preventDefault()
-        panel.style.border = ""
-        let entries = []
-        let files = []
-        for (let i = 0; i < e.dataTransfer.items.length; i++) {
-            entries.push(e.dataTransfer.items[i].webkitGetAsEntry())
-        }
-
-        for (const entry of entries) {
-            const entryContent = await readEntryContentAsync(entry)
-            files.push(...entryContent)
-        }
-        Object.assign(cklParseOptions, cklOptions)
-        showParseFile(files[0])
-
-        function readEntryContentAsync(entry) {
-            return new Promise((resolve, reject) => {
-                let reading = 0
-                const files = []
-                readEntry(entry)
-                function readEntry(entry) {
-                    if (entry.isFile) {
-                        reading++
-                        let fullPath = entry.fullPath
-                        entry.file(file => {
-                            reading--
-                            file.fullPath = fullPath
-                            files.push(file)
-                            if (reading === 0) {
-                                resolve(files)
-                            }
-                        })
-                    } else if (entry.isDirectory) {
-                        readReaderContent(entry.createReader())
-                    }
-                }
-                function readReaderContent(reader) {
-                    reading++
-                    reader.readEntries(function (entries) {
-                        reading--
-                        for (const entry of entries) {
-                            readEntry(entry)
-                        }
-                        if (reading === 0) {
-                            resolve(files)
-                        }
-                    })
-                }
-            })
-        }
-    }
-
-    async function onFileSelected(uploadField, cklOptions) {
-        let input = uploadField.fileInput.dom
-        const files = [...input.files]
-        Object.assign(cklParseOptions, cklOptions)
-        await showParseFile(files[0], cklParseOptions)
-    }
-
-    async function showParseFile(file) {
-        let task
-        try {
-            const pb = new Ext.ProgressBar({
-                text: file.name,
-                // margins: '0 30',
-                border: false
-            })
-            const pbPanel = new Ext.Panel({
-                layout: 'vbox',
-                layoutConfig: {
-                    align: 'stretch',
-                    pack: 'start',
-                    padding: '0 20 20 20'
-                },
-                border: false,
-                items: [
-                    {
-                        html: '<div class="sm-dialog-panel-title">Parsing your file</div>',
-                        width: 500,
-                        margins: '0 0',
-                        border: false
-                    },
-                    pb
-                ]
-            })
-
-            task = new Ext.util.DelayedTask(function () {
-                fpwindow.removeAll()
-                fpwindow.add(pbPanel)
-                fpwindow.doLayout()
-            })
-            task.delay(250)
-
-
-            const [apiAssetResponse, r] = await Promise.all([
-                Ext.Ajax.requestPromise({
-                    url: `${STIGMAN.Env.apiBase}/assets/${params.assetId}`,
-                    method: 'GET'
-                }),
-                parseFile(file, pb)
-            ])
-            const apiAsset = JSON.parse(apiAssetResponse.response.responseText)
-            let assetMatches = false
-            if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
-                assetMatches = apiAsset.metadata.cklHostName === r.target.metadata.cklHostName
-                && apiAsset.metadata.cklWebDbSite === r.target.metadata.cklWebDbSite
-                && apiAsset.metadata.cklWebDbInstance === r.target.metadata.cklWebDbInstance
-            } 
-            else {
-                assetMatches = r.target.name === apiAsset.name
-            }
-            if (!assetMatches) {
-                let errorStr
-                if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
-                    errorStr = `CKL elements and values:<br><br>
-                    &lt;WEB_DB_SITE&gt; = ${r.target.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No value</span>'}<br>
-                    &lt;WEB_DB_INSTANCE&gt = ${r.target.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No value</span>'}<br><br>
-                    Asset metadata properties and values:<br><br>
-                    cklWebDbSite = ${apiAsset.metadata.cklWebDbSite ?? '<span style="color:grey;font-style:italic">No property</span>'}<br>
-                    cklWebDbInstance = ${apiAsset.metadata.cklWebDbInstance ?? '<span style="color:grey;font-style:italic">No property</span>'}<br><br>
-                    The corresponding values do not match.
-                    </div>`
-                }
-                else {
-                    errorStr = `The CKL file contains reviews for ${r.target.name}`
-                }
-                throw (new Error(`<b>The file does not include reviews for this asset.</b><br><div class="sm-dialog-panel-callout">${errorStr}</div>`))
-            }
-            const checklistFromFile = r.checklists.filter(checklist => checklist.benchmarkId === params.benchmarkId)[0]
-            if (!checklistFromFile) {
-                throw (new Error(`The file does not include reviews for STIG: <b>${params.benchmarkId}</b><br>The file includes reviews for: ${r.checklists[0].benchmarkId}</p>`))
-            }
-            // Note: Only the CKL parser returns the revisionStr property
-            if (cklParseOptions.strictRevisionCheck && checklistFromFile.revisionStr && checklistFromFile.revisionStr !== params.revisionStr) {
-                throw (new Error(`The file does not include reviews for STIG: <b>${params.benchmarkId}, revision ${params.revisionStr}</b><br>The file includes reviews for revision: ${checklistFromFile.revisionStr}</p>`))
-            }
-            const apiResult = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/assets/${params.assetId}/checklists/${params.benchmarkId}/${params.revisionStr}`,
-                method: 'GET'
-            })
-            const checklistFromApi = JSON.parse(apiResult.response.responseText)
-            task.cancel()
-            showReviews(checklistFromFile, checklistFromApi, params.benchmarkId, params.revisionStr)
-        }
-        catch (e) {
-            task.cancel()
-            showError(e)
-        }
-    }
-
-    async function parseFile(file, pb) {
-        let extension = file.name.substring(file.name.lastIndexOf(".") + 1)
-        let data = await readTextFileAsync(file)
-        let r
-        if (extension === 'ckl') {
-            r = reviewsFromCkl(data, cklParseOptions, params.fieldSettings)
-        }
-        else if (extension === 'xml') {
-            r = reviewsFromScc(data, { ignoreNotChecked: false })
-        }
-        else {
-            throw (new Error('Unknown file extension'))
-        }
-        r.file = file
-        return r
-    }
-
-    function showError(e) {
-        let pePanel = new SM.ReviewsImport.ParseErrorPanel({
-            error: e.message,
-            exitHandler: onExit,
-        })
-        fpwindow.removeAll()
-        fpwindow.setAutoScroll(true)
-        fpwindow.add(pePanel)
-        fpwindow.doLayout()
-
-        function onExit() {
-            fpwindow.close()
-        }
-    }
-
-    function showReviews(checklistFromFile, checklistFromApi, benchmarkId, revisionStr) {
-        let reviewsPanel = new SM.ReviewsImport.ReviewsPanel({
-            checklistFromFile: checklistFromFile,
-            checklistFromApi: checklistFromApi,
-            benchmarkId: benchmarkId,
-            revisionStr: revisionStr,
-            importHandler: showImportProgress
-        })
-        fpwindow.removeAll()
-        fpwindow.add(reviewsPanel)
-        fpwindow.doLayout()
-
-
-    }
-
-    async function showImportProgress(reviews) {
-        let statusText = ''
-        let progressPanel
-        try {
-            progressPanel = new SM.ReviewsImport.ImportProgressPanel({
-                doneHandler: () => {
-                    fpwindow.close()
-                }
-            })
-            fpwindow.removeAll()
-            fpwindow.add(progressPanel)
-            fpwindow.doLayout()
-
-            updateProgress('Importing...')
-            let apiReviews = await importReviewArray(reviews)
-            updateStatusText(JSON.stringify(apiReviews, null, 2))
-            updateStatusText(' OK')
-            updateProgress(0, 'Finished')
-            params.store.reload()
-        }
-        catch (e) {
-            alert(e.message)
-        }
-
-        function updateProgress(value, text) {
-            progressPanel.pb.updateProgress(value, SM.he(text))
-        }
-
-        function updateStatusText(text, noNL, replace) {
-            var noNL = noNL || false
-            if (noNL) {
-                statusText += text
-            } else {
-                statusText += text + "\n"
-            }
-            progressPanel.st.setRawValue(statusText)
-            progressPanel.st.getEl().dom.scrollTop = 99999; // scroll to bottom
-        }
-
-        async function importReviewArray(reviewArray) {
-            try {
-                let url = `${STIGMAN.Env.apiBase}/collections/${params.collectionId}/reviews/${params.assetId}`
-                updateStatusText(`POST reviews for assetId ${params.assetId}`, true)
-                let result = await Ext.Ajax.requestPromise({
-                    url: url,
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                    jsonData: reviewArray
-                })
-                apiReviews = JSON.parse(result.response.responseText)
-                return apiReviews
-            }
-            catch (e) {
-                throw (e)
-            }
-        }
-
-    }
 }
 
 async function getScapBenchmarkMap() {
@@ -2187,3 +3002,18 @@ async function getScapBenchmarkMap() {
     apiScapMaps = JSON.parse(result.response.responseText)
     return new Map(apiScapMaps.map(apiScapMap => [apiScapMap.scapBenchmarkId, apiScapMap.benchmarkId]))
 }
+
+function readTextFileAsync(file) {
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+  
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+  
+      reader.onerror = reject;
+  
+      reader.readAsText(file);
+    })
+  }
+

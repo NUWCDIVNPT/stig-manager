@@ -23,7 +23,7 @@ Specify the User and Schema with these environment variables:
 .. _mySQL:
 
 
-Database - MySQL 8.0.14+
+Database - MySQL 8.0.21+
 -----------------------------
 
 STIG Manager has been tested with MySQL 8.0.21.
