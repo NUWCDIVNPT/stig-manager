@@ -75,13 +75,17 @@ function loadResources() {
         'css/font-awesome.min.css',
         'ext/ux/fileuploadfield/css/fileuploadfield.css',
         'css/RowEditor.css',
-        'css/jsonview.bundle.css'
+        'css/jsonview.bundle.css',
+        'css/dark-mode.css'
     ].forEach(function(href) {
         var link = document.createElement('link');
         link.href = href;
         link.type = "text/css";
         link.rel = "stylesheet";
         link.async= false;
+        if (href === 'css/dark-mode.css') {
+            link.disabled = (localStorage.getItem('darkMode') !== '1')
+        }
         document.head.appendChild(link);
       });
 
