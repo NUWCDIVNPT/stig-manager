@@ -140,7 +140,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 }
             },
             {
-                header: '<div class="sm-grid-result-sprite sm-result-na">I</div></div>',
+                header: '<div class="sm-grid-result-sprite sm-result-na" exportvalue="I">I</div>',
                 width: 50,
                 align: 'center',
                 dataIndex: 'informational',
@@ -148,7 +148,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: (v) => me.importReviews ? v : '--'
             },
             {
-                header: '<div class="sm-grid-result-sprite sm-result-na">NR</div></div>',
+                header: '<div class="sm-grid-result-sprite sm-result-na" exportvalue="NR">NR</div>',
                 width: 50,
                 align: 'center',
                 dataIndex: 'notchecked',
@@ -156,7 +156,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: (v) => me.importReviews ? v : '--'
             },
             {
-                header: '<div class="sm-grid-result-sprite sm-result-na">NA</div></div>',
+                header: '<div class="sm-grid-result-sprite sm-result-na" exportvalue="NA">NA</div>',
                 width: 50,
                 align: 'center',
                 dataIndex: 'notapplicable',
@@ -164,7 +164,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: (v) => me.importReviews ? v : '--'
             },
             {
-                header: '<div class="sm-grid-result-sprite sm-result-pass">NF</div></div>',
+                header: '<div class="sm-grid-result-sprite sm-result-pass" exportvalue="NF">NF</div>',
                 width: 50,
                 align: 'center',
                 dataIndex: 'pass',
@@ -172,7 +172,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: (v) => me.importReviews ? v : '--'
             },
             {
-                header: '<div class="sm-grid-result-sprite sm-result-fail">O</div></div>',
+                header: '<div class="sm-grid-result-sprite sm-result-fail" exportvalue="O">O</div>',
                 width: 50,
                 align: 'center',
                 dataIndex: 'fail',
@@ -220,6 +220,15 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             }),
             bbar: new Ext.Toolbar({
                 items: [
+                    {
+                        xtype: 'exportbutton',
+                        hasMenu: false,
+                        grid: this,
+                        gridBasename: this.exportButtonName ?? 'Parsed Assets',
+                        storeBasename: this.exportButtonName ?? 'Parsed Assets',
+                        iconCls: 'sm-export-icon',
+                        text: 'CSV'
+                    },
                     {
                         xtype: 'tbfill'
                     },
@@ -496,6 +505,15 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
             bbar: new Ext.Toolbar({
                 items: [
                     {
+                        xtype: 'exportbutton',
+                        hasMenu: false,
+                        grid: this,
+                        gridBasename: 'Parsed Rules',
+                        storeBasename: 'Parsed Rules',
+                        iconCls: 'sm-export-icon',
+                        text: 'CSV'
+                    },
+                    {
                         xtype: 'tbfill'
                     }, {
                         xtype: 'tbseparator'
@@ -586,6 +604,15 @@ SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             bbar: new Ext.Toolbar({
                 items: [
+                    {
+                        xtype: 'exportbutton',
+                        hasMenu: false,
+                        grid: this,
+                        gridBasename: 'Parse Errors',
+                        storeBasename: 'Parse Errors',
+                        iconCls: 'sm-export-icon',
+                        text: 'CSV'
+                    },
                     {
                         xtype: 'tbfill'
                     },
@@ -1268,6 +1295,15 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
             bbar: new Ext.Toolbar({
                 items: [
                     {
+                        xtype: 'exportbutton',
+                        hasMenu: false,
+                        grid: this,
+                        gridBasename: 'Source Files',
+                        storeBasename: 'Source Files',
+                        iconCls: 'sm-export-icon',
+                        text: 'CSV'
+                    },
+                    {
                         xtype: 'tbfill'
                     },
                     {
@@ -1464,7 +1500,8 @@ SM.ReviewsImport.ParseErrorsPanel = Ext.extend(Ext.Panel, {
         })
         me.duplicatesGrid = new SM.ReviewsImport.Grid({
             flex: 1,
-            newIndicator: false
+            newIndicator: false,
+            exportButtonName: 'Duplicate Asset-STIGs'
         })
         let items = []
         if (me.errors) {
@@ -1851,6 +1888,15 @@ SM.ReviewsImport.ImportStatusGrid = Ext.extend(Ext.grid.GridPanel, {
             bbar: new Ext.Toolbar({
                 items: [
                     {
+                        xtype: 'exportbutton',
+                        hasMenu: false,
+                        grid: this,
+                        gridBasename: 'Import Job',
+                        storeBasename: 'Import Job',
+                        iconCls: 'sm-export-icon',
+                        text: 'CSV'
+                    },
+                    {
                         xtype: 'tbfill'
                     },
                     {
@@ -1948,6 +1994,15 @@ SM.ReviewsImport.ImportRejectGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             bbar: new Ext.Toolbar({
                 items: [
+                    {
+                        xtype: 'exportbutton',
+                        hasMenu: false,
+                        grid: this,
+                        gridBasename: 'Unimported Rules',
+                        storeBasename: 'Unimported Rules',
+                        iconCls: 'sm-export-icon',
+                        text: 'CSV'
+                    },
                     {
                         xtype: 'tbfill'
                     },
