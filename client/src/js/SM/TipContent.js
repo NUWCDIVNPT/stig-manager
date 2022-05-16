@@ -21,6 +21,6 @@ SM.TipContent.ImportOptions.UnreviewedCommented = `The result to be imported for
 
 SM.TipContent.ImportOptions.EmptyComment = `How to handle Reviews with empty commentary text:
 <br><br><b>Ignored:</b> Retain any existing text already stored. 
-<br><br><b>Replaced:</b> Create a static message indicating the imported Review had no content here. This message will become the text for the purposes of meeting submission requirements.
+<br><br><b>Replaced:</b> Create a static message. This message will become the text for the purposes of meeting submission requirements.
 <br><br><b>Imported:</b> This will have the effect of clearing any existing text.
 `

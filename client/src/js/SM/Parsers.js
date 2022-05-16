@@ -477,42 +477,10 @@
         }
       }
 
-      let detail
-      switch (importOptions.emptyDetail) {
-        case 'ignore':
-          detail= null
-          break
-        case 'import':
-          detail = ''
-          break
-        case 'replace':
-          detail = 'There is no detail provided for the assessment'
-          break
-      }
-
-      let comment
-      switch (importOptions.emptyComment) {
-        case 'ignore':
-          comment = null
-          break
-        case 'import':
-          comment = ''
-          break
-        case 'replace':
-          comment = 'There is no comment provided for the assessment'
-          break
-      }
-
-      const review = {
-        ruleId,
-        result,
-        detail,
-        comment
-      }
-
+      let resultEngine
       if (resultEngineCommon) {
         // build the resultEngine value
-        review.resultEngine = {
+        resultEngine = {
           time: new Date(ruleResult.time), 
           ...resultEngineCommon
         }
@@ -520,7 +488,7 @@
         const checkContentHref = ruleResult?.check?.['check-content-ref']?.href?.replace('#scap_mil.disa.stig_comp_','')
         const checkContentName = ruleResult?.check?.['check-content-ref']?.name?.replace('oval:mil.disa.stig.','')
         if (checkContentHref || checkContentName) {
-          review.resultEngine.checkContent = {
+          resultEngine.checkContent = {
             location: checkContentHref,
             component: checkContentName
           }
@@ -537,12 +505,45 @@
             })
           }
           if (overrides.length) {
-            review.resultEngine.overrides = overrides
+            resultEngine.overrides = overrides
           }  
         }
       }
-      else {
-        review.resultEngine = null
+
+      const replacementText = `Result was reported by product "${resultEngine?.product}" version ${resultEngine?.version} at ${resultEngine?.time?.toISOString()} using check content "${resultEngine?.checkContent?.location}"`
+
+      let detail
+      switch (importOptions.emptyDetail) {
+        case 'ignore':
+          detail= null
+          break
+        case 'import':
+          detail = ''
+          break
+        case 'replace':
+          detail = replacementText
+          break
+      }
+
+      let comment
+      switch (importOptions.emptyComment) {
+        case 'ignore':
+          comment = null
+          break
+        case 'import':
+          comment = ''
+          break
+        case 'replace':
+          comment = replacementText
+          break
+      }
+
+      const review = {
+        ruleId,
+        result,
+        resultEngine,
+        detail,
+        comment
       }
 
       const status = bestStatusForReview(review)

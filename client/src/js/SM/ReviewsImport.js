@@ -837,7 +837,7 @@ SM.ReviewsImport.DefaultOptions = {
     autoStatus: 'saved',
     unreviewed: 'commented',
     unreviewedCommented: 'informational',
-    emptyDetail: 'ignore',
+    emptyDetail: 'replace',
     emptyComment: 'ignore',
     allowCustom: true
 }
