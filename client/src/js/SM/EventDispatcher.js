@@ -19,5 +19,6 @@ SM.Dispatcher.addEvents(
     'labelcreated',
     'labelchanged',
     'labeldeleted',
-    'labelfilter'
+    'labelfilter',
+    'importoptionschanged',
 )

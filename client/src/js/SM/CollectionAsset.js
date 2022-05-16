@@ -254,6 +254,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     let btn = await SM.confirmPromise("Confirm Delete", confirmStr)
                     if (btn == 'yes') {
                         const l = assetRecords.length
+                        let apiAsset
                         for (let i=0; i < l; i++) {
                             Ext.getBody().mask(`Deleting ${i+1}/${l} Assets`)
                             // Edge case to handle when the selected record was changed (e.g., stats updated) 
@@ -263,10 +264,10 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                                 url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
                                 method: 'DELETE'
                             })
-                            let apiAsset = JSON.parse(result.response.responseText)
+                            apiAsset = JSON.parse(result.response.responseText)
                             me.store.remove(thisRecord)
-                            SM.Dispatcher.fireEvent('assetdeleted', apiAsset)
                         }
+                        SM.Dispatcher.fireEvent('assetdeleted', apiAsset) //only need the last deleted asset
                     }
                 }
                 catch (e) {

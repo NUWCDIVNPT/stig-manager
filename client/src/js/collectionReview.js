@@ -521,46 +521,6 @@ async function addCollectionReview ( params ) {
 						iconCls: 'sm-checklist-icon',  // <-- icon
 						text: 'Checklist',
 						menu: groupChecklistMenu
-					},
-					// '-',{
-					// 	xtype: 'tbbutton',
-					// 	id: 'groupGrid-tb-filterButton' + idAppend,
-					// 	iconCls: 'sm-filter-icon',  // <-- icon
-					// 	text: 'All checks',
-					// 	menu: groupFilterMenu
-					// },
-					// ,{
-					// 	xtype: 'trigger',
-					// 	fieldLabel: 'Filter',
-					// 	triggerClass: 'x-form-clear-trigger',
-					// 	onTriggerClick: function() {
-					// 		this.triggerBlur();
-					// 		this.blur();
-					// 		this.setValue('');
-					// 		filterGroupStore();
-					// 	},
-					// 	id: 'groupGrid-filterTitle' + idAppend,
-					// 	width: 140,
-					// 	submitValue: false,
-					// 	disabled: false,
-					// 	enableKeyEvents:true,
-					// 	emptyText:'Title filter...',
-					// 	listeners: {
-					// 		keyup: function (field,e) {
-					// 			filterGroupStore();
-					// 			return false;
-					// 		}
-					// 	}
-					// },
-					'->',
-					{
-						xtype: 'tbitem',
-						html: '<div class="sm-toolbar-legend-box sm-scap-grid-item"></div>'
-					},
-					{
-						xtype: 'tbtext',
-						text: ' SCAP available',
-						style: 'margin-right: 15px;'
 					}
 				]
 			}),
@@ -665,41 +625,64 @@ async function addCollectionReview ( params ) {
 	/******************************************************/
 	// START Reviews Panel
 	/******************************************************/
+		function engineResultConverter (v,r) {
+			const conv = r.resultEngine ? 
+				(r.resultEngine.overrides?.length ? 'override' : 'engine') : 
+				(r.result ? 'manual' : '')
+				return conv
+		}
+
 		var reviewsFields = Ext.data.Record.create([
 			{	
 				name:'assetId',
 				type: 'string'
-			},{	
+			},
+			{	
 				name:'assetName',
 				type: 'string'
-			},{	
+			},
+			{	
 				name:'assetLabelIds'
-			},{
+			},
+			{
 				name:'ruleId',
 				type: 'string'
-			},{
+			},
+			{
 				name:'result',
 				type: 'string'
-			},{
+			},
+	    'resultEngine',
+			{
+				name: 'engineResult',
+				convert: engineResultConverter
+			},
+			{
 				name:'detail',
 				type:'string'
-			},{
+			},
+			{
 				name:'comment',
 				type:'string'
-			},,{
+			},
+			{
 				name:'autoResult',
 				type:'boolean'
-			},{
+			},
+			{
 				name:'userId',
 				type:'string'
-			},{
+			},
+			{
 				name:'username',
 				type:'string'
-			},{
+			},
+			{
 				name:'ts',
 				type:'date',
 				dateFormat: 'Y-m-d H:i:s'
-			},{
+			},
+			{
 				name:'status',
 				type:'string',
 				mapping: 'status?.label'
@@ -736,9 +719,22 @@ async function addCollectionReview ( params ) {
 		
 		var reviewsCm = new Ext.grid.ColumnModel({
 			columns: [
+	      {
+					header: '<div exportvalue="Engine" class="sm-engine-result-icon"></div>',
+					width: 24,
+					fixed: true,
+					dataIndex: 'engineResult',
+					sortable: true,
+					renderer: renderEngineResult,
+					filter: {
+						type: 'values',
+						renderer: SM.ColumnFilters.Renderers.engineResult
+					} 
+				},
 				{ 	
 					id:'status' + idAppend,
 					header: "Status", 
+					align: 'center',
 					width: 50,
 					fixed: true,
 					dataIndex: 'status',
@@ -796,14 +792,20 @@ async function addCollectionReview ( params ) {
 						editable: false,
 						store: new Ext.data.SimpleStore({
 							fields: ['result', 'resultStr'],
-							data: [['pass', 'NF'], ['notapplicable', 'NA'], ['fail', 'O']]
+							data: [
+								['pass', 'NF'],
+								['notapplicable', 'NA'],
+								['fail', 'O'],
+								['informational', 'I'],
+								['notchecked', 'NR']
+							]
 						}),
 						valueField:'result',
 						displayField:'resultStr',
 						monitorValid: false,
 						listeners: {
 							select: function (combo,record,index) {
-								if (combo.startValue !== combo.value ) { // Open result has been changed 
+								if (combo.startValue !== combo.value ) {
 									combo.fireEvent("blur");
 								} 
 								else {
@@ -813,24 +815,7 @@ async function addCollectionReview ( params ) {
 						},
 						triggerAction: 'all'
 					}),
-					renderer: function (val) {
-						let returnStr
-						switch (val) {
-							case 'informational':
-								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">I</div>';
-								break;
-							case 'fail':
-								returnStr = '<div style="color:red;font-weight:bolder;text-align:center">O</div>';
-								break;
-							case 'pass':
-								returnStr = '<div style="color:green;font-weight:bolder;text-align:center">NF</div>';
-								break;
-							case 'notapplicable':
-								returnStr = '<div style="color:grey;font-weight:bolder;text-align:center">NA</div>';
-								break;
-						}
-						return SM.styledEmptyRenderer(returnStr)
-					},
+					renderer: renderResult,
 					sortable: true,
 					filter: {
 						type: 'values',
@@ -1052,10 +1037,14 @@ async function addCollectionReview ( params ) {
 						if (e.record.data.status) {
 							jsonData[e.field] = e.value
 							// unset autoResult if the result has changed
-							if (e.record.data.autoResult && (e.originalValue !== e.value)) {
-								jsonData.autoResult = false
+							if (e.field === 'result' && e.originalValue !== e.value) {
+								if (e.record.data.resultEngine) {
+									jsonData.resultEngine = null
+								}
+								if (e.record.data.autoResult) {
+									jsonData.autoResult = false
+								}
 							}
-
 							result = await Ext.Ajax.requestPromise({
 								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
 								method: 'PATCH',
@@ -1171,7 +1160,7 @@ async function addCollectionReview ( params ) {
 					{
 						xtype: 'tbbutton',
 						disabled: true,
-						icon: 'img/disk-16.png',
+						iconCls: 'sm-disk-icon',
 						id: 'reviewsGrid-unsubmitButton' + idAppend,
 						text: 'Unsubmit',
 						handler: function (btn) {
@@ -1203,7 +1192,7 @@ async function addCollectionReview ( params ) {
 		SM.Dispatcher.addListener('statussettingschanged', onStatusSettingsChanged)
 		function onStatusSettingsChanged (collectionId, statusSettings) {
 			if (collectionId === apiCollection.collectionId) {
-				apStatusSettings = statusSettings
+				apiStatusSettings = statusSettings
 				setReviewsGridButtonStates()
 			}
 		}
@@ -1494,6 +1483,7 @@ async function addCollectionReview ( params ) {
 					//append the current state of the review to history
 					let currentReview = {
 						comment: apiReview.comment,
+						resultEngine: apiReview.resultEngine,
 						autoResult: apiReview.autoResult,
 						rejectText: apiReview.rejectText,
 						result: apiReview.result,
@@ -1503,7 +1493,7 @@ async function addCollectionReview ( params ) {
 						touchTs: apiReview.touchTs,
 						userId: apiReview.userId,
 						username: apiReview.username
-					  }
+					}
 					apiReview.history.push(currentReview)
 					Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
 	
@@ -1700,10 +1690,10 @@ async function addCollectionReview ( params ) {
 						xtype: 'tabpanel',
 						cls: 'sm-round-panel',
 						style: {
-							'background-color': '#eeeeee'
+							'background-color': 'transparent'
 						},
 						margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
-						border: true,
+						border: false,
 						id: 'resources-tab-panel' + idAppend,
 						height: '33%',
 						split:true,

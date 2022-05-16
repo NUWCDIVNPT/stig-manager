@@ -20,7 +20,13 @@ SM.Review.Form.ResultCombo = Ext.extend(Ext.form.ComboBox, {
       editable: false,
       store: new Ext.data.SimpleStore({
         fields: ['result', 'resultStr'],
-        data: [['pass', 'Not a Finding'], ['notapplicable', 'Not Applicable'], ['fail', 'Open']]
+        data: [
+          ['pass', 'Not a Finding'],
+          ['notapplicable', 'Not Applicable'],
+          ['fail', 'Open'],
+          ['informational', 'Informational'],
+          ['notchecked', 'Not Reviewed']
+        ]
       }),
       valueField: 'result',
       displayField: 'resultStr',
@@ -105,30 +111,87 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
   }
 })
 
-SM.Review.Form.AutoSprite = Ext.extend(Ext.form.DisplayField, {
+SM.Review.Form.ResultEngineSprite = Ext.extend(Ext.form.DisplayField, {
   autoCreate: {
-    tag: 'span',
-    class: 'sm-review-auto-sprite'
+    // tag: 'span',
+    class: 'sm-result-engine-span'
+  },
+  generateMarkup: function(resultEngine) {
+    if (!resultEngine) return `<span class="sm-result-engine-sprite">Manual</span>`
+    const productSpan = `<span class="sm-result-engine-sprite">${resultEngine.product}</span>`
+    const overrideSpan = resultEngine.overrides?.length ? `<span class="sm-result-override-sprite">Override</span>` : ''
+    return `${productSpan}${overrideSpan}`
   },
   setRawValue : function(v){
-    let displayValue = v ? 'Automated' : 'Manual'
-    this.value = !!v
+    this.value = v
     if (this.rendered) {
+      const displayValue = this.generateMarkup(v)
       this.el.dom.innerHTML = displayValue
     }
-    return !!this.value
+    return this.value
   },
   getRawValue : function(){
-    return !!this.value
+    return this.value
   },
   initComponent: function () {
     const _this = this
     const config = {
-      name: 'autoResult',
-      hideLabel: true
+      name: 'resultEngine',
+      hideLabel: true,
+      listeners: {
+        render: function (ta) {
+            ta.sm_tooltip = new Ext.ToolTip({
+                target: ta.el.dom,
+                delegate: 'span', // target of the mouseover
+                showDelay: 0,
+                dismissDelay: 0,
+                renderTo: document.body,
+                tplResultEngine: new Ext.XTemplate(
+                  '<span>',
+                  '<tpl if="values.version">',
+                    '<b>Version</b><br>{values.version}<br>',
+                  '</tpl>',
+                  '<tpl if="values.time">',
+                    '<b>Time</b><br>{[Ext.util.Format.date(values.time, "Y-m-d H:i T")]}<br>',
+                  '</tpl>',
+                  '<tpl if="values.checkContent">',
+                    '<b>Check content</b><br>{values.checkContent.location}',
+                  '</tpl>',
+                  '</span>'
+                ),
+                tplOverride: new Ext.XTemplate(
+                  '<span>',
+                    '<tpl for="overrides">',
+                      '<tpl if="oldResult">',
+                        '<b>Original result</b><br>',
+                        '{[this.getResultSprite(values.oldResult)]}<br><br>',
+                      '</tpl>',
+                      '<tpl if="authority">',
+                        '<b>Overridden by</b><br>{authority}<br><br>',
+                      '</tpl>',
+                      '<tpl if="remark">',
+                        '<b>Remark</b><br>{remark}<br>',
+                      '</tpl>',
+                    '</tpl>',
+                  '</span>',
+                  {
+                    getResultSprite: function(val) {
+                      return `<span class="sm-tooltip-result-sprite ${SM.RenderResult[val]?.css}">${SM.RenderResult[val]?.textDisa}</span>`
+                    }
+                  }
+                ),
+                listeners: {
+                  beforeshow: function updateTipBody(tip) {
+                    const tpl = tip.triggerElement.className === 'sm-result-engine-sprite' ? tip.tplResultEngine : tip.tplOverride
+                    tip.update(tpl.apply(_this.value))
+                  }
+                }
+            })
+        }
+      }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.Review.Form.AutoSprite.superclass.initComponent.call(this)
+    SM.Review.Form.ResultEngineSprite.superclass.initComponent.call(this)
   }
 })
 
@@ -147,8 +210,9 @@ SM.Review.Form.Button = Ext.extend(Ext.Button, {
 SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
     const _this = this
-    const ack = new SM.Review.Form.AutoSprite(
+    const ack = new SM.Review.Form.ResultEngineSprite(
       {
+        id: 'find-me',
         style: {
           marginLeft: '10px'
         }
@@ -160,9 +224,9 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         select: function () {
           if (ack.lastSavedData) {
             if (this.value !== this.lastSavedData) {
-              ack.setValue(false)
+              ack.setValue(null)
             } else {
-              ack.setValue(true)
+              ack.setValue(ack.lastSavedData)
             }
           }
           setReviewFormItemStates()
@@ -239,6 +303,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       )
     }
 
+    this.resultChanged = function () {
+      return ack.lastSavedData != ack.getValue()
+    }
+
     function loadValues (values) {
       const form = _this.getForm()
       form.setValues.call(form, values)
@@ -307,6 +375,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       // Initial state: Enable the entry fields if the review status is 'In progress' or 'Rejected', disable them otherwise
       const editable = (statusLabel === '' || statusLabel === 'saved' || statusLabel === 'rejected')
       resultCombo.setDisabled(!editable) // disable if not editable
+      resultCombo.setReadOnly(!editable) // disable if not editable
       detailTextArea.setDisabled(!editable)
       commentTextArea.setDisabled(!editable)
       btn1.setDisabled(!editable)
@@ -584,7 +653,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
             ddGroup: 'gridDDGroup',
             notifyEnter: function (ddSource, e, data) {
               const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
-              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true));
+              const copyableSrc = data.selections[0].data.engineResult === 'manual'
               if (editableDest && copyableSrc) { // accept drop of manual reviews
                 // no action
               } else {
@@ -593,7 +662,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
             },
             notifyOver: function (ddSource, e, data) {
               const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
-              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true));
+              const copyableSrc = data.selections[0].data.engineResult === 'manual'
               if (editableDest && copyableSrc) { // accept drop of manual reviews
                 return (reviewFormPanelDropTarget.dropAllowed);
               } else {
@@ -602,12 +671,12 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
             },
             notifyDrop: function (ddSource, e, data) {
               const editableDest = (_this.groupGridRecord.data.status == 'saved' || _this.groupGridRecord.data.status == 'rejected' || _this.groupGridRecord.data.status === "");
-              const copyableSrc = (data.selections[0].data.autoResult == false || (data.selections[0].data.autoResult == true));
+              const copyableSrc = data.selections[0].data.engineResult === 'manual'
               if (editableDest && copyableSrc) { // accept drop of manual reviews
                 // Reference the record (single selection) for readability
                 const selectedRecord = data.selections[0];
                 // Load the record into the form
-                if (!rcb.disabled && selectedRecord.data.autoResult == false) {
+                if (!rcb.disabled) {
                   rcb.setValue(selectedRecord.data.result);
                 }
                 dta.setValue(selectedRecord.data.detail);

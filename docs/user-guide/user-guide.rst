@@ -111,7 +111,7 @@ The Collection Node lists all the Collections accessible to the User, as well as
 
 +Create Collection...
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-If you have the Collection Creator privilege, this option will appear. Click this item in the Nav Tree to create a new Collection.
+If you have the Collection Creator privilege, this option will appear. Click this item in the Nav Tree to create a new Collection. See the  :ref:`Manage Collection <manage-collection-workspace>` section of this document for more information about the settings available here. 
 
 .. thumbnail:: /assets/images/create-collection-popup.png
       :width: 50% 
@@ -239,8 +239,8 @@ Feedback
 ~~~~~~~~~~~~~~~~~
 The Feedback function allows Users to see any Feedback submitted about their review, and, if they are a Collection Owner, to reject, with feedback, any review in their Collection.
 
-If Owner
-++++++++++++
+Collection Owner Abilities
+++++++++++++++++++++++++++++++
 If the User is an Owner of the Collection, they will also have the option to Accept or Reject reviews.
 Reviews can be Accepted with the button at the top of the Reviews Panel, or Rejected with the Feedback function at the bottom of this workspace.
 
@@ -276,7 +276,7 @@ Users can also import results from .ckl or XCCDF formats, and export their resul
 
 Checklist Panel
 -------------------
-The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, and :term:`Review Status <Review>`.  STIGs Rules that are known to STIG Manager to have an automated assessment option are highlighted.
+The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, Result origin, and :term:`Review Status <Review>`.  The "gear" column in the checklist panel provides information about the Result stored in STIG Manager. The "user" icon indicates the Review was performed manually. The "gear" icon indicates an automated tool evaluated the Review. The arrow icon indicates an automated tool produced the result with the help of User input, such as an XCCDF Override or an Evaluate STIG Answer File. 
 
 From the Checklist menu in the Menu Bar, the User can:
    * Toggle between Rule and Group displays of the Checklist Panel.
@@ -288,7 +288,7 @@ From the Checklist menu in the Menu Bar, the User can:
 The menu bar also supports a variety of status and Title filters.
 
 .. note::
-   STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
+   STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the individual Reviews are stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
 
 .. note::
    STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
@@ -339,9 +339,8 @@ The Review panel contains the Evaluation and any required details or commentary 
 
 Evaluation
 ~~~~~~~~~~~~~~~~~~
-The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA) and Not Reviewed (NR).
+The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA), Informational (I), and Not Reviewed (NR).  The colored sprites next to the Result provide additional information about the source of the Result. 
 
-When an XCCDF file is imported, the Details will be constructed out of available metadata in the XCCDF file.
 
 Reviews can be set to Saved or Submitted statuses from this interface. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
 
@@ -380,16 +379,22 @@ Save and Save/Submit Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review.  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
 
-Automated Results
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Automated ResultEngine Information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  Setting this flag is currently only supported for results imported via `STIGMan Watcher. <https://github.com/NUWCDIVNPT/stigman-watcher>`_  This feature will be enhanced with more options in the future. 
+If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  The origin of Reviews (Automated, Manual, Override/Answer File) is indicated in the "gear" checklist column, and with colored informational sprites next to the Result in the Review Evaluation Panel. Hover over the sprites for more info. 
 
 
 .. thumbnail:: /assets/images/asset-review-autoresult.png
       :width: 50% 
       :show_caption: True
       :title: Asset Review Workspace with Automated Results indicated.
+
+
+.. thumbnail:: /assets/images/asset-review-autoresult-with-override.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Panel with Overidden Automated Result.      
 
 |
 
@@ -539,7 +544,7 @@ Collection Settings Tab
 If you have the proper Grant to a Collection, you can modify settings that affect the behavior of this Collection and its Reviews. 
 
 
-.. rubric:: Review Fields Settings
+.. rubric:: Review Fields 
    :class: rubric
 
 
@@ -553,14 +558,14 @@ The default Settings for Review Submission in Collections are:
       - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
  
 
-.. rubric:: Review Status Settings
+.. rubric:: Review Status 
    :class: rubric
 
 
 Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject reviews. The Grant levels required to do this can also be selected. 
 
 The default Settings for Review Status are: 
-      - Reset Status to "Saved" when Review Result changes (As opposed to ANY Review field change, the other option).
+      - Reset Status to "Saved" only when the Review Result changes (As opposed to ANY Review field change, such as the Detail or Comments).
       - Enable Reviews to be set to either Accepted or Rejected Status 
 
         * User must have "Manage or Owner" Grants to "Accept or Reject" Reviews (As opposed to just Owners)
@@ -572,6 +577,60 @@ The default Settings for Review Status are:
       :show_caption: True
       :title: Review Requirements
 
+
+|
+
+
+.. _import-options:
+
+
+.. rubric:: Import Options
+   :class: rubric
+
+The options described below allow you to have fine-grained control over how the reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all users importing results from files into STIG Manager.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
+
+These import setting preferences can be locked for your Collection, or you can allow other users to customize them as they see fit when they perform their own imports. 
+
+
+If possible, set Review status to:
+  This setting allows you to set a "Goal" status for your review of Accepted, Submitted, Saved, OR, for existing reviews, to leave the status as it was, if possible. 
+
+  - **Null**: Leave the Status as it is.
+  - **Accepted**: If importing user has the proper grant, set Review to "Accepted." If they cannot Accept, Reviews will be set to "Submitted." If review does not meet Submit requirements, Review will be set to "Saved."
+  - **Submitted**: Set Review to "Submitted" status. If review does not meet Submit requirements, Review will be set to Saved.
+  - **Saved**:(**default setting**) Set Reviews to "Saved" status.
+
+
+Include Unreviewed Rules:
+  Should Rule Results without a compliance result (NF, NA, O) be imported?
+
+  - **Never**: Ignore these rules. Existing STIG Manager results will not change.  
+  - **Having Comments**: (**default setting**) Import these rules only if Detail or Comment is provided. Existing STIG Manager Reviews will be overwritten with the provided Result and Commentary.
+  - **Always**: Always import these reviews. Replace any existing Review content.
+
+Unreviewed with a comment is:
+  If import includes reviews that do not have a compliance result (NF, NA, O), but includes Detail or Comment information, STIG Manager should import these Reviews with a Result of:
+
+  - **Informational**: (**default setting**) Set Result to "Informational" to distinguish it from those Reviews that have no commentary. 
+  - **Not Reviewed**: Leave the result as "Not_Reviewed"
+
+
+Empty Detail text is:
+  If the file includes Reviews with empty Detail text, the Detail text field will be:
+
+  - **Ignored**: (**default setting**) Retain any existing Detail content already stored in STIG Manager. 
+  - **Replaced**: Create a generic message indicating the fact that the imported Review had no content here. (This message will become the Detail text for the purposes of meeting submission requirements)
+  - **Imported**: This will have the effect of removing any existing Detail text in STIG Manager.
+
+Empty Comment text is:
+  If the file includes Reviews with empty Comment text, the Comment text field will be:
+
+  - **Ignored**: (**default setting**) Retain any existing Comment content already stored in STIG Manager. 
+  - **Replaced**: Create a generic message indicating the fact that the imported Review had no content here. (This message will become the Comment text for the purposes of meeting submission requirements)
+  - **Imported**: This will have the effect of removing any existing Comment text in STIG Manager.
+
+Options can be customized for each import:
+  Allow users to customize these import options to suit their needs. The options specified here will always be the initial settings presented to all users for this Collection. (**default: allow**)
 
 
 
@@ -692,11 +751,10 @@ From the Collection Management workspace, click the "Import CKL or SCAP..." butt
       :show_caption: True
       :title: Collection Builder File Select
 
-
-
 |
 
 Drag and drop or Select one or more .ckl or XCCDF files.
+See the :ref:`import-options` section of this document for information about the options presented. 
 
 -------------------------------
 
@@ -710,6 +768,8 @@ Drag and drop or Select one or more .ckl or XCCDF files.
 |
 
 If there is an issue with the files you selected, they will appear here. One error you may encounter is that the STIG in the selected file is not installed in STIG Manager. If this is the case, contact a STIG Manager Administrator to have them install it.
+
+If you provide multiple files for the same Asset and STIG, only the latest will be imported. 
 
 This screen will be skipped if there are no issues with the files you have selected.
 
@@ -728,11 +788,7 @@ This view shows the Assets, STIGs, Review totals, filenames and date of the data
 
 New Assets and new STIG assignments that will result from this import are indicated with a (+) after the Asset or STIG name.
 
-The User can configure the import with two options. By default, both are selected:
-   * Create or update Assets and STIG associations: This option will create the indicated Asset and STIG Assignments.
-   * Import Reviews: This option will bring in the Review content of the submitted files. These Reviews will overwrite the equivalent Reviews already in the system.
-
-If the summary and options and options are appropriate, click the "Add to Collection..." button.
+If the summary is appropriate, click the "Add to Collection..." button.
 
 -------------------------------
 
@@ -744,7 +800,8 @@ If the summary and options and options are appropriate, click the "Add to Collec
 
 |
 
-The user is presented with the log of the import. 
+The user is presented with the log of the import. Select an item in the top grid for information about any "rejected" Reviews that were unable to be imported into STIG Manager. This may happen for Rules that are not currently assigned to this Asset, or for versions of STIGs that have not been loaded into STIG Manager.
+
 
 .. note::
    STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
@@ -926,7 +983,7 @@ If the importer needs to create an Asset, it will set this metadata and set the 
 |
 
 .. note::
-   STIG Manager does not typically import .ckl reviews with a "Not_Reviewed" status. However, if a "Not_Reviewed" result includes data in the "Finding_Details" or "Comments" elements, it will be imported with a result of "Informational". Upon export as a .ckl, any Informational results that remain will be generated with a "Not_Reviewed" status once more. 
+   See the :ref:`import-options` section of this document for information about STIG Manager's review import options.  
 
 
 |
