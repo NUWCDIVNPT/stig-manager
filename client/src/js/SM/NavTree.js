@@ -777,6 +777,35 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 expanded: false
               }
             )
+            content.push(
+              {
+                id: `theme-root`,
+                node: 'theme',
+                text: 'Interface',
+                iconCls: 'sm-setting-icon',
+                expanded: false,
+                children: [
+                  {
+                    id: 'dark-mode',
+                    text: 'Dark mode<span class="sm-navtree-sprite">preview</span>',
+                    leaf: true,
+                    checked: localStorage.getItem('darkMode') == '1',
+                    iconCls: 'sm-dark-mode-icon',
+                    listeners: {
+                      beforeclick: function (node , e) {
+                        node.ui.checkbox.checked = !node.ui.checkbox.checked
+                        node.fireEvent('checkchange', node, node.ui.checkbox.checked)
+                        return false
+                      },
+                      checkchange: function (node, checked) {
+                        document.querySelector("link[href='css/dark-mode.css']").disabled = !checked
+                        localStorage.setItem('darkMode', checked ? '1' : '0')
+                      }
+                    }
+                  }
+                ]
+              }
+            )
             cb(content, { status: true })
             return
           }
