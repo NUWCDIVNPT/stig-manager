@@ -1102,7 +1102,26 @@ paths:
       tags:
         - Review
       summary: Post one or more Reviews
-      description: ''
+      description: |
+        The request body can contain a mix of new and updated Reviews. The overall request is validated as follows:
+        
+        - conformance with the OAS schema for `ReviewAssetWrite`
+        - the requesting user has been granted access to the collectionId
+        
+        For updated Reviews, a `null` value in either `detail` or `comment` indicates the original value will be retained. The absence of the property `status` indicates the orignal value will be retained.
+        
+        For new Reviews, a `null` value in either `detail` or `comment` indicates the corresponding value in the new Review should be `null`. The absence of the property `status` indicates the corresponding value in the new Review should be `status: { label: "saved", text: null }`.
+        
+        For all Reviews, a string value for the `status` property is internally normalized to `status: { label: <string>, text: null }`
+        
+        Each new or updated Review is permitted or rejected as follows:
+        
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then reject the Review
+        - If the optional property `status` is absent or `status.label` has value `saved`, then permit the Review
+        - If the new or updated Review would not be submittable according to the Collection settings, then reject the Review
+        - If the value of `status.label` is `submitted`, then permit the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then permit the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then reject the Review.
       operationId: postReviewsByAsset
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
@@ -3945,8 +3964,8 @@ components:
       type: string
     ResultEngine:
       type: object
-      additionalProperties: false
       nullable: true
+      additionalProperties: false
       properties:
         type:
           $ref: '#/components/schemas/ResultEngineType'
@@ -4156,7 +4175,7 @@ components:
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
-          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
+          $ref: '#/components/schemas/ReviewStatusWrite'
     ReviewHistory:
       type: object
       required:

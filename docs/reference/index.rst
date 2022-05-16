@@ -70,7 +70,7 @@ This is a glossary with definition terms for thing like :term:`Asset`:
             * Result - Not a Finding, Not Applicable, Open
             * Detail - Details describing the selected Result. Available according to Collection Settings.
             * Comment - Additional information included in the Review. Available according to Collection Settings. 
-            * Autoresult - Indicates result originated from an automated SCAP scan or manual source
+            * Result Sprites - Colored flags indicating whether the result originated from an automated SCAP scan or manual source. Hover over these sprites for more info. 
 			
         * Status - The current state of the Review in the system. Configured via Collection Settings.
             * Status Label - Saved, Submitted, Accepted, or Rejected (Depends on Collection Settings.)

@@ -343,7 +343,12 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 	initComponent: function () {
 		const me = this
-		const store = new Ext.data.JsonStore({
+		function engineResultConverter (v,r) {
+			return r.resultEngine ? 
+				(r.resultEngine.overrides?.length ? 'override' : 'engine') : 
+				(r.result ? 'manual' : '')
+		}
+			const store = new Ext.data.JsonStore({
 			proxy: new Ext.data.HttpProxy({
 				url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/reviews`,
 				method: 'GET'
@@ -367,8 +372,16 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				{ name: 'result', type: 'string' },
 				{ name: 'detail', type: 'string' },
 				{ name: 'comment', type: 'string' },
-				{ name: 'autoResult', type: 'boolean' },
-				{ name: 'status', type: 'string' },
+				'resultEngine',
+				{
+					name: 'engineResult',
+					convert: engineResultConverter
+				},
+				{
+					name: 'status',
+					type: 'string',
+					mapping: 'status.label'
+				},
 				{ name: 'userId', type: 'string' },
 				{ name: 'username', type: 'string' },
 				{ name: 'ts', type: 'string' },
@@ -424,20 +437,6 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				sortable: true,
 				filter: { type: 'string' }
 			},
-			// { 
-			// 	header: "Severity", 
-			// 	width: 40, 
-			// 	dataIndex: 'severity', 
-			// 	sortable: true,
-			// 	hidden: true
-			// },
-			// { 
-			// 	header: "Status", 
-			// 	width: 50, 
-			// 	dataIndex: 'status', 
-			// 	sortable: true,
-			// 	hidden: true
-			// },
 			{
 				header: "Last changed",
 				width: 80,
@@ -452,7 +451,34 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 					return columnWrap(v.join('\n'))
 				},
 				sortable: true,
-			}
+			},
+			{
+        header: '<div exportvalue="Engine" class="sm-engine-result-icon"></div>',
+        width: 24,
+        fixed: true,
+        dataIndex: 'engineResult',
+        sortable: true,
+        renderer: renderEngineResult,
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.engineResult
+        } 
+      },
+      { 	
+				header: "Status", 
+				width: 50,
+				fixed: true,
+        align: 'center',
+				dataIndex: 'status',
+				sortable: true,
+				renderer: function (val, metaData, record, rowIndex, colIndex, store) {
+          return renderStatuses(val, metaData, record, rowIndex, colIndex, store)
+        },
+        filter: {
+          type: 'values',
+          renderer: SM.ColumnFilters.Renderers.status
+        }
+			},
 		]
 		const view = new SM.ColumnFilters.GridView({
 			forceFit: true,

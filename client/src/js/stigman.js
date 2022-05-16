@@ -1,5 +1,6 @@
 Ext.Ajax.timeout = 30000000
 Ext.Msg.minWidth = 300
+Ext.USE_NATIVE_JSON = true
 
 function GetXmlHttpObject() {
 	if (window.XMLHttpRequest)

@@ -195,7 +195,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               projection: 'stigs'
             }
           })
-          let assets = Ext.util.JSON.decode(result.response.responseText)
+          let assets = JSON.parse(result.response.responseText)
           let assignments = []
           assets.forEach(asset => {
             asset.stigs.forEach(stig => {
@@ -229,7 +229,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               projection: 'stigs'
             }
           })
-          let asset = Ext.util.JSON.decode(result.response.responseText)
+          let asset = JSON.parse(result.response.responseText)
           return asset.stigs.map(stig => ({
             benchmarkId: stig.benchmarkId,
             assetName: asset.name,
@@ -257,7 +257,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               projection: 'stigs'
             }
           })
-          let assets = Ext.util.JSON.decode(result.response.responseText)
+          let assets = JSON.parse(result.response.responseText)
           let assignments = []
           assets.forEach(asset => {
             asset.stigs.forEach(stig => {

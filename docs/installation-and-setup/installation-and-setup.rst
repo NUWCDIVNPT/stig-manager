@@ -37,7 +37,7 @@ Common Components
 
 -------------------------------
 
-The required and optional components of a STIG Manager OSS deployment:
+Required and optional components of a STIG Manager OSS deployment:
 
 **API** (Always Required)
   A RESTful API implemented on the current LTS version of Node.js and the Express web application framework. Exposes 1 HTTP port. Built as a stateless container service.

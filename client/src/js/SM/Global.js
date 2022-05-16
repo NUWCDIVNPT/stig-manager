@@ -204,3 +204,17 @@ SM.RuleContentTpl = new Ext.XTemplate(
     }  
   })
 
+  function tagValueProcessor(tagName, tagValue) {
+    const txt = document.createElement("textarea")
+    txt.innerHTML = tagValue
+    return txt.value
+  }
+
+  SM.safeJSONParse = function (value) {
+    try {
+        return JSON.parse(value)
+      }
+      catch (e) {
+        return undefined
+      }  
+  }

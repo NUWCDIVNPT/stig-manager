@@ -224,7 +224,7 @@ Findings Report
    * You will be prompted for a little more information, which will be prepopulated into the POA&M that will be generated for you.
 
 
-.. thumbnail:: /assets/images/FindingsReport.png
+.. thumbnail:: /assets/images/findings-report.png
       :width: 50% 
       :show_caption: True
       :alt: The Findings Report

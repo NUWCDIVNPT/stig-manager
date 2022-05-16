@@ -175,19 +175,22 @@ SM.MetadataGrid = Ext.extend(Ext.grid.GridPanel, {
                             submitValue: false,
                             validator: function (v) {
                                 // Don't keep the form from validating when I'm not active
-                                if (this.grid.editor.editing == false) {
-                                    return true
-                                }
-                                if (v === "") { return "Blank values not allowed" }
-                                // Is there an item in the store like _this?
-                                let searchIdx = this.grid.store.findExact('key', v)
-                                // Is it _this?
-                                let isMe = this.grid.selModel.isSelected(searchIdx)
-                                if (searchIdx == -1 || isMe) {
-                                    return true
-                                } else {
-                                    return "Duplicate keys not allowed"
-                                }
+                                if (this.grid.editor.editing == false) return true
+                                
+                                // blanks
+                                if (v === "") return "Blank values not allowed"
+
+                                // duplicates
+                                // already in store?
+                                const searchIdx = this.grid.store.findExact('key', v)
+                                // is it this record?
+                                const isMe = this.grid.selModel.isSelected(searchIdx)
+                                if (!(searchIdx == -1 || isMe)) return "Duplicate keys not allowed"
+
+                                // ignored key
+                                if (_this.ignoreKeys.includes(v)) return "Reserved keys not allowed"
+
+                                return true
                             }
                         })
                     },
@@ -603,7 +606,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
             title: 'Metadata',
             iconCls: 'sm-database-save-icon',
             name: 'metadata',
-            ignoreKeys: ['fieldSettings', 'statusSettings'],
+            // ignoreKeys: ['importOptions'],
             anchor: '100% 0',
             border: true,
             hidden: true
@@ -784,7 +787,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
     // SM.Collection.ManagePanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         let _this = this
-        async function patchSettings(value) {
+        async function apiPatchSettings(value) {
             const result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                 method: 'PATCH',
@@ -792,13 +795,30 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     settings: value
                 }
             })
-            return result.response.responseText ? JSON.parse(result.response.responseText).settings : undefined
+            return result.response.responseText ? JSON.parse(result.response.responseText) : undefined
+        }
+        async function apiGetImportOptions(key, value) {
+            const result = await Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/${key}`,
+                method: 'GET'
+            })
+            return result.response.responseText ? JSON.parse(result.response.responseText) : undefined
+        }
+        async function apiPutImportOptions(value) {
+            const result = await Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/importOptions`,
+                method: 'PUT',
+                jsonData: JSON.stringify(value)
+            })
+            SM.Dispatcher.fireEvent('importoptionschanged', _this.collectionId, value)
+            return result.response.responseText ? JSON.parse(result.response.responseText) : undefined
         }
         async function updateSettings() {
-            return await patchSettings({
+            const apiCollection =  await apiPatchSettings({
                 fields: settingsReviewFields.serialize(),
-                status: settingsStatusFields.serialize()
+                status: settingsStatusFields.serialize()                    
             })
+            return apiCollection
         }
 
         const nameField = new Ext.form.TextField({
@@ -908,20 +928,20 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             title: 'Metadata',
             iconCls: 'sm-database-save-icon',
             name: 'metadata',
-            ignoreKeys: ['fieldSettings', 'statusSettings'],
+            // ignoreKeys: ['importOptions'],
             anchor: '100% 0',
             border: true,
             listeners: {
                 metadatachanged: async grid => {
                     try {
-                        let data = grid.getValue()
-                        let result = await Ext.Ajax.requestPromise({
+                        const data = grid.getValue()
+                        const result = await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata`,
                             method: 'PATCH',
                             jsonData: data
                         })
-                        // let collection = JSON.parse(result.response.responseText)
-                        // grid.setValue(collection.metadata)
+                        // const apiCollection = JSON.parse(result.response.responseText)
+                        // SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                         const sortstate = grid.store.getSortState()
                         grid.store.sort([sortstate])
                     }
@@ -941,8 +961,9 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             autoHeight: true,
             onFieldSelect: async function (fieldset) {
                 try {
-                    const newSettings = await updateSettings()
-                    SM.Dispatcher.fireEvent('fieldsettingschanged', _this.apiCollection.collectionId, newSettings.fields)
+                    const apiCollection = await updateSettings()
+                    SM.Dispatcher.fireEvent('fieldsettingschanged', _this.apiCollection.collectionId, apiCollection.settings.fields)
+                    SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                 }
                 catch (e) {
                     alert(e.message)
@@ -956,8 +977,22 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             autoHeight: true,
             onFieldsUpdate: async function (fieldset) {
                 try {
-                    const newSettings = await updateSettings()
-                    SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, newSettings.status)
+                    const apiCollection = await updateSettings()
+                    SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, apiCollection.settings.status)
+                    SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
+                }
+                catch (e) {
+                    alert(e.message)
+                }
+            }
+        })
+        const settingsImportOptions = new SM.ReviewsImport.ParseOptionsFieldSet({
+            iconCls: 'sm-import-icon',
+            initialOptions: SM.safeJSONParse(_this.apiCollection?.metadata?.importOptions),
+            canAccept: true,
+            onOptionChanged: async function (fieldset) {
+                try {
+                    await apiPutImportOptions(JSON.stringify(fieldset.getOptions()))
                 }
                 catch (e) {
                     alert(e.message)
@@ -1161,13 +1196,15 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                 {
                                     xtype: 'panel',
                                     title: 'Settings',
+                                    autoScroll: true,
                                     layout: 'form',
                                     iconCls: 'sm-setting-icon',
                                     border: true,
                                     padding: 10,
                                     items: [
                                         settingsReviewFields,
-                                        settingsStatusFields
+                                        settingsStatusFields,
+                                        settingsImportOptions
                                     ]
                                 },
                                 metadataGrid,
@@ -1520,7 +1557,7 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
 
         const criteriaComboBox = new SM.Collection.StatusSettings.CriteriaComboBox({
             name: 'resetCriteria',
-            fieldLabel: 'Reset to <img src="img/disk-16.png" width=12 height=12 ext:qtip="Saved" style="padding: 1px 3px 0px 0px;vertical-align:text-top;"/>Saved upon change to', 
+            fieldLabel: 'Reset to <img src="img/save-icon.svg" width=12 height=12 ext:qtip="Saved" style="padding: 1px 3px 0px 0px;vertical-align:text-top;"/>Saved upon change to', 
             width: 125,
             value: _this.statusSettings.resetCriteria || 'result',
             listeners: {

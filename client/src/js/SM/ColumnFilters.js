@@ -357,10 +357,22 @@ SM.ColumnFilters.Renderers = {
     if (!v) return '<i>(No value)</i>'
     return `<div class="sm-grid-result-sprite ${SM.RenderResult[v]?.css}">${SM.RenderResult[v]?.textDisa}</div>`
   },
+  engineResult: function (v) {
+    if (!v) return '<i>(No value)</i>'
+    switch (v) {
+      case 'engine':
+        return '<div class="sm-engine-result-icon sm-menuitem-div-icon">Engine result</div>'
+      case 'override':
+        return '<div class="sm-engine-override-icon sm-menuitem-div-icon">Engine override</div>'
+      case 'manual':
+        return '<div class="sm-engine-manual-icon sm-menuitem-div-icon">Manual result</div>'
+      }
+    
+  },
   status: function (v) {
     switch (v) {
       case 'saved':
-        return '<img src="img/disk-16.png" width=12 height=12 class="sm-menuitem-status-icon">Saved'
+        return '<img src="img/save-icon.svg" width=12 height=12 class="sm-menuitem-status-icon">Saved'
       case 'submitted':
         return '<img src="img/ready-16.png" width=12 height=12 class="sm-menuitem-status-icon">Submitted'
       case 'rejected':
