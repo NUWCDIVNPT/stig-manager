@@ -1,3 +1,7 @@
+.x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
+	background-image: url(../img/clock.svg);
+	background-size: 16px 16px;
+}
 .sm-dark-mode-icon {
 	background-image: url(../img/dark-mode.svg) !important;
 	background-size: 16px 16px;

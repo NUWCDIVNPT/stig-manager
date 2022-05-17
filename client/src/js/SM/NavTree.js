@@ -786,6 +786,12 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                 expanded: false,
                 children: [
                   {
+                    id: 'whats-new',
+                    text: "What's New",
+                    iconCls: 'sm-stig-icon',
+                    leaf: true
+                  },
+                  {
                     id: 'dark-mode',
                     text: 'Dark mode<span class="sm-navtree-sprite">preview</span>',
                     leaf: true,
@@ -1059,17 +1065,20 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
 
         switch (n.id) {
           case 'collection-admin':
-            addCollectionAdmin( { treePath: n.getPath() } );
-            break;
+            addCollectionAdmin( { treePath: n.getPath() } )
+            break
           case 'user-admin':
-            addUserAdmin( { treePath: n.getPath() });
-            break;
+            addUserAdmin( { treePath: n.getPath() })
+            break
           case 'stig-admin':
-            addStigAdmin( { treePath: n.getPath() });
-            break;
+            addStigAdmin( { treePath: n.getPath() })
+            break
           case 'appdata-admin':
-            addAppDataAdmin( { treePath: n.getPath() });
-            break;
+            addAppDataAdmin( { treePath: n.getPath() })
+            break
+          case 'whats-new':
+            SM.WhatsNew.addTab( { treePath: n.getPath() })
+            break
         }
 
     },

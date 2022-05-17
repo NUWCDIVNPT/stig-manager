@@ -101,6 +101,7 @@ function loadScripts() {
         'js/SM/Warnings.js',
         'js/SM/Classification.js',
         'js/SM/MainPanel.js',
+        "js/SM/WhatsNew.js",
         "js/FileUploadField.js",
         "js/MessageBox.js",
         "js/overrides.js",
