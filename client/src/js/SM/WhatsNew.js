@@ -3,24 +3,73 @@ Ext.ns('SM.WhatsNew')
 SM.WhatsNew.Sources = [
   {
     date: '2022-05-16',
-    header: `What's New dialog on App start`,
-    body: `Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br></br><b>Curabitur posuere est mi, quis egestas elit lobortis a.</b><br><br>Duis eget orci eu erat vestibulum egestas. Cras nec ex lorem. Phasellus vel rutrum nunc. Sed ultricies risus in iaculis porta. Etiam auctor placerat mauris eget interdum. Ut a sagittis orci, et blandit enim. Etiam eu eros metus. Nullam turpis dolor, maximus sed ultricies ut, accumsan ut urna. Nullam facilisis nunc varius leo tincidunt auctor. Vestibulum at molestie elit.`
+    header: `What's New Dialog on App Start`,
+    body: 
+    `
+    On startup, STIG Manager now displays a "What's New" pop-up describing the latest features added to the app.  Click the "Don't show these features again" button and you will not be alerted until another new feature is added. Click "Dismiss" and you will be shown the pop-up again when you next load the app. 
+    <br><br>
+    <img src="img/whatsnew/whats-new-small.png"/>
+    <br>
+    <b>This list is always available from the "What's New" option in the new "Interface" node of the Navigation Tree.</b>
+    `
   },
   {
     date: '2022-05-16',
-    header: 'Dark Mode preview is available',
-    body: `The Dark Mode HTML goes here. We could show a picture:<br><br><img src="img/whatsnew/dark-mode.png"/>
+    header: 'Dark Mode Preview Is Available',
+    body: 
+    `
+    STIG Manager is now easier on the eyes! By popular request, STIGMan now provides a "Dark Mode" presentation for those STIG-ing after dark. This option is presented as a "Preview" feature that is expected to get additional aesthetic tweaks in the future. 
+    <br><br>
+    <b>Toggle Dark Mode on and off from the new Interface node of the Navigation Tree:</b>
+    <br><br>
+    <img src="img/whatsnew/dark-mode.png"/>
     `
   },
   {
     date: '2022-05-15',
-    header: 'Result Engine property of Reviews',
-    body: `Nam convallis cursus libero, at feugiat neque blandit eget.<br><br><img src="img/whatsnew/result-engine-1.png"/><br><br>Nullam sit amet orci id tellus tincidunt fringilla sed sit amet enim. Nam vel orci scelerisque, feugiat ligula at, commodo ipsum. Vivamus orci nulla, egestas mattis ultricies vel, congue non tortor. Integer et mi odio. Nunc dictum sapien sit amet dui facilisis, eget vehicula tellus ultrices. Cras bibendum nisi dui. Vivamus vel diam at nisi aliquam egestas in vitae velit. Etiam venenatis molestie vestibulum. Praesent eleifend vel arcu eu finibus. Fusce quis lectus ut purus aliquam volutpat at vitae ante. Vestibulum ut elementum lorem. Sed sit amet tristique urna. Ut et enim sit amet tortor viverra vehicula eu lacinia mauris. Maecenas convallis, ante sit amet bibendum tempus, diam nulla posuere dolor, in varius metus magna non tellus. Vivamus rhoncus vehicula velit.<br><br>Sed id elit tristique, bibendum ipsum at, pretium elit. Vestibulum ante lectus, rutrum ut fermentum a, fermentum vitae sapien. Pellentesque scelerisque posuere magna elementum efficitur. Aliquam erat volutpat. Aliquam mollis arcu ipsum, fringilla porttitor lacus mollis ac. Nulla commodo, nisi in auctor sollicitudin, enim libero tristique enim, at mollis ipsum metus id odio. Maecenas rhoncus commodo ultrices. Nunc ut volutpat est, id pellentesque urna.`
+    header: 'New Import Options and Additional Result Values',
+    body: 
+    `
+    STIG Manager now provides Users with more fine-grained control over the way they import their .ckl and XCCDF files. Please see the <a href="https://stig-manager.readthedocs.io/en/latest/user-guide/user-guide.html#collection-settings-tab">STIG Manager Documentation for more details about these new Collection Settings</a>.
+    <br><br>
+    <b>Control these Import Options from the Manage Collection Workspace, or from individual file import interfaces:</b>
+    <br><br>
+    <img src="img/whatsnew/import-options.png"/>
+    <br><br>
+    <b>"Informational" and "Not Reviewed" Result values can now be selected manually:</b>
+    <br><br>
+    <img src="img/whatsnew/result-values-small.png"/>
+    <br><br>
+    Please note that only Reviews marked Not a Finding, Not Applicable, or Open can be set to a Submit status!
+    `
+  },  
+  {
+    date: '2022-05-15',
+    header: 'Result Engine Property for Reviews',
+    body: 
+    `
+    STIG Manager now stores and displays additional information about the source of your Reviews! Reviews produced by compatible Result Engines, such as the latest version of Evaluate STIG and those producing XCCDF results, will now be displayed with additional information about the source of the Evaluation.  This information can include the Result Engine that performed the Evaluation, the timestamp of the actual Evaluation, and information about any Eval STIG "Answer File" ("Override" for XCCDF results) that was used to generate the results. 
+    <br><br>
+    <b>Look for this type of sprite next to your Evaluation Result, and hover over it for more info:</b>
+    <br><br>
+    <img src="img/whatsnew/result-engine-1.png"/>
+    <br><br>
+    <b>Result Engine information for a Review is also indicated in checklist views:</b>
+    <br><br>
+    <img src="img/whatsnew/result-engine-2.png"/>
+    <br>
+    `
   },
   {
     date: '2022-05-01',
-    header: 'Accept Reviews from the Asset-STIG tab',
-    body: `Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br></br><b>Curabitur posuere est mi, quis egestas elit lobortis a.</b><br><br>Duis eget orci eu erat vestibulum egestas. Cras nec ex lorem. Phasellus vel rutrum nunc. Sed ultricies risus in iaculis porta. Etiam auctor placerat mauris eget interdum. Ut a sagittis orci, et blandit enim. Etiam eu eros metus. Nullam turpis dolor, maximus sed ultricies ut, accumsan ut urna. Nullam facilisis nunc varius leo tincidunt auctor. Vestibulum at molestie elit.`
+    header: 'Accept Reviews from the Asset-STIG Tab',
+    body: 
+    `
+    Users with the appropriate Grant for a Collection can now Accept individual Reviews right from the Asset Review Workspace:
+    <br><br>
+    <img src="img/whatsnew/save-from-asset-review.png"/>
+    <br>
+    `
   }
 ]
 
