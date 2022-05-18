@@ -67,7 +67,7 @@ This is a glossary with definition terms for thing like :term:`Asset`:
         A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. These Reviews are composed of Review Evaluation Content and Status properties.  Each of these pieces carry an "Attribution" that includes the User that set that Content or Status and a timestamp indicating when they did so.  
 		
         * Review Evaluation Content - Requirements configured via Collection Settings.
-            * Result - Not a Finding, Not Applicable, Open
+            * Result - Not a Finding, Not Applicable, Open, Informational, or Not Reviewed
             * Detail - Details describing the selected Result. Available according to Collection Settings.
             * Comment - Additional information included in the Review. Available according to Collection Settings. 
             * Result Sprites - Colored flags indicating whether the result originated from an automated SCAP scan or manual source. Hover over these sprites for more info. 
@@ -143,7 +143,7 @@ This is a glossary with definition terms for thing like :term:`Asset`:
               - <TestResult><rule-result> **<metadata action-comment>** 
 
         .. note::
-            The STIG Manager API supports all XCCDF rule result enumerations: fail, pass, notapplicable, notchecked, unknown, error, notselected, informational, and fixed. However, only the first 3 can be selected in the manual evaluation portions of the GUI. Those 3 results are mapped to display as Open, Not a Finding, and Not Applicable, respectively, as these terms are commonly used during the RMF Process.  
+            The STIG Manager API supports all XCCDF rule result enumerations: fail, pass, notapplicable, notchecked, informational, error, notselected, unknown, and fixed. However, only the first 5 can be selected in the manual evaluation portions of the GUI. Those 5 results are mapped to display as Open, Not a Finding, Not Applicable, Not Reviewed, and Informational respectively, as these terms are commonly used during the RMF Process.  
 
 
 

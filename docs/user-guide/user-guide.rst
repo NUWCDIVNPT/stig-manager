@@ -373,11 +373,11 @@ Attributions
       :show_caption: True
       :title: Review Evaluation Panel with Attributions
 
+|
 
-
-Save and Save/Submit Buttons
+Save, Save/Submit, and Accept Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, or to Submit the Review.  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
+The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, to Submit the Review, or to Accept the Review (if they have the proper Collection Grant).  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
 
 Automated ResultEngine Information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

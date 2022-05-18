@@ -1,3 +1,14 @@
+.sm-whats-new p {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+.sm-whats-new img {
+	border: 1px solid hsl(0deg 0% 65%);
+}
+.x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
+	background-image: url(../img/clock.svg);
+	background-size: 16px 16px;
+}
 .sm-dark-mode-icon {
 	background-image: url(../img/dark-mode.svg) !important;
 	background-size: 16px 16px;
@@ -630,6 +641,15 @@ body {
 }
 .sm-home-widget-text a {
 	color: #000000;
+}
+.sm-home-widget-text ul {
+	list-style-type: square;
+	margin-left: 20px;
+	margin-top: 4px;
+	margin-bottom:  4px;
+}
+.sm-home-widget-text b {
+	font-weight: 600
 }
 .sm-home-widget-header-1 {
 	padding-top:10px;
