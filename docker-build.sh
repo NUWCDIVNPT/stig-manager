@@ -3,6 +3,7 @@
 # This script must be run from the top-level of the repo.
 
 ./client/build.sh
+./docs/build.sh
 
 BRANCH=$(git symbolic-ref --short HEAD)
 SHA=$(git rev-parse --short=10 HEAD)
