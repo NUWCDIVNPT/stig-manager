@@ -2,82 +2,75 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
-    date: '2022-05-16',
+    date: '2022-05-18',
     header: `What's New Dialog on App Start`,
-    body: 
-    `
-    On startup, STIG Manager now displays a "What's New" pop-up describing the latest features added to the app.  Click the "Don't show these features again" button and you will not be alerted until another new feature is added. Click "Dismiss" and you will be shown the pop-up again when you next load the app. 
-    <br><br>
-    <img src="img/whatsnew/whats-new-small.png"/>
-    <br>
-    <b>This list is always available from the "What's New" option in the new "Interface" node of the Navigation Tree.</b>
+    body: `On startup, the App now displays a "What's New" dialog describing the latest features added to the App.<p />
+    <ul><li>Click the <b>Don't show these features again</b> button and you will not be alerted until another new feature is added.</li>
+    <li>Click <b>Close</b> and you will be shown the dialog again when you next load the App.</li></ul>
+    <p />
+    <b>The list of all recent changes is always available from Interface -> What's New.</b>
     `
   },
   {
     date: '2022-05-16',
-    header: 'Dark Mode Preview Is Available',
-    body: 
-    `
-    STIG Manager is now easier on the eyes! By popular request, STIGMan now provides a "Dark Mode" presentation for those STIG-ing after dark. This option is presented as a "Preview" feature that is expected to get additional aesthetic tweaks in the future. 
-    <br><br>
-    <b>Toggle Dark Mode on and off from the new Interface node of the Navigation Tree:</b>
-    <br><br>
+    header: 'Dark Mode Preview',
+    body: `STIG Manager is now easier on the eyes! By popular request, we now provide a "Dark Mode" presentation for those STIG-ing after dark. This feature is provided as a preview which is expected to get additional aesthetic tweaks in the future. 
+    <p />
+    <b>Toggle Dark Mode on and off via Interface -> Dark Mode.</b>
+    <p />
     <img src="img/whatsnew/dark-mode.png"/>
     `
   },
   {
-    date: '2022-05-15',
+    date: '2022-05-16',
     header: 'New Import Options and Additional Result Values',
-    body: 
-    `
-    STIG Manager now provides Users with more fine-grained control over the way they import their .ckl and XCCDF files. Please see the <a href="https://stig-manager.readthedocs.io/en/latest/user-guide/user-guide.html#collection-settings-tab">STIG Manager Documentation for more details about these new Collection Settings</a>.
-    <br><br>
-    <b>Control these Import Options from the Manage Collection Workspace, or from individual file import interfaces:</b>
-    <br><br>
-    <img src="img/whatsnew/import-options.png"/>
-    <br><br>
+    body: `The App now provides Users with more fine-grained control over the way they import .ckl and XCCDF files. Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-settings-tab">STIG Manager Documentation for more details about these new Collection Settings</a>.
+    <p />
+    <b>Control these Import Options from the Collection -> Manage workspace or from the import interfaces.</b>
+    <p />
+    <img src="img/whatsnew/import-options.gif"/>
+    <p />
     <b>"Informational" and "Not Reviewed" Result values can now be selected manually:</b>
-    <br><br>
-    <img src="img/whatsnew/result-values-small.png"/>
-    <br><br>
-    Please note that only Reviews marked Not a Finding, Not Applicable, or Open can be set to a Submit status!
+    <p />
+    <img src="img/whatsnew/result-values.gif"/>
+    <p />
+    <b>Please note that only Reviews with result "Not a Finding", "Not Applicable", or "Open" can be set to a Submit status!</b>
     `
   },  
   {
-    date: '2022-05-15',
+    date: '2022-05-16',
     header: 'Result Engine Property for Reviews',
-    body: 
-    `
-    STIG Manager now stores and displays additional information about the source of your Reviews! Reviews produced by compatible Result Engines, such as the latest version of Evaluate STIG and those producing XCCDF results, will now be displayed with additional information about the source of the Evaluation.  This information can include the Result Engine that performed the Evaluation, the timestamp of the actual Evaluation, and information about any Eval STIG "Answer File" ("Override" for XCCDF results) that was used to generate the results. 
-    <br><br>
+    body: `STIG Manager now stores and displays additional information about any tool used to perform an evaluation. Reviews produced by compatible Result Engines, such as the latest version of Evaluate-STIG and those producing XCCDF results, will now be displayed with additional information about the tool.  This information can include:
+    <ul>
+    <li>the Result Engine that performed the Evaluation</li>
+    <li>the timestamp of the actual Evaluation</li>
+    <li>information about any override (e.g., Evaluate-STIG "Answer File") to the engine's original result
+    </ul> 
+    <p />
     <b>Look for this type of sprite next to your Evaluation Result, and hover over it for more info:</b>
-    <br><br>
+    <p />
     <img src="img/whatsnew/result-engine-1.png"/>
-    <br><br>
-    <b>Result Engine information for a Review is also indicated in checklist views:</b>
-    <br><br>
+    <p />
+    <b>Result Engine information for a Review is also indicated in the checklist views:</b>
+    <p />
     <img src="img/whatsnew/result-engine-2.png"/>
-    <br>
     `
   },
   {
-    date: '2022-05-01',
-    header: 'Accept Reviews from the Asset-STIG Tab',
-    body: 
-    `
-    Users with the appropriate Grant for a Collection can now Accept individual Reviews right from the Asset Review Workspace:
-    <br><br>
-    <img src="img/whatsnew/save-from-asset-review.png"/>
-    <br>
+    date: '2022-04-20',
+    header: 'Accept Reviews from the Asset-STIG Workspace',
+    body: `Users with an appropriate Grant in a Collection can now Accept individual Reviews right from the Asset-STIG Workspace:
+    <p />
+    <img src="img/whatsnew/accept-review.gif"/>
     `
   }
 ]
 
 SM.WhatsNew.BodyTpl = new Ext.XTemplate(
-  `<div class=sm-home-widget-title>New Features in the STIG Manager App</div>`,
+  `<div class="sm-home-widget-title">New Features in the STIG Manager App</div>`,
   `<tpl for=".">`,
     `<hr style="margin-left:20px;margin-right:20px;" />`,
-    `<div class=sm-home-widget-text>`,
+    `<div class="sm-whats-new sm-home-widget-text">`,
       `<div class=sm-home-widget-subtitle>{header}<div style="font-size:70%; font-style:italic;">({date})</div></div> `,
       `{body}`,
     `</div>`,
@@ -129,15 +122,15 @@ SM.WhatsNew.showDialog = function (lastDate) {
     data: SM.WhatsNew.Sources.filter( item => item.date > lastDate )  
   })
 
-  const btnDismiss = new Ext.Button({
-    text: 'Dismiss',
+  const btnClose = new Ext.Button({
+    text: 'Close',
     handler: function (b, e) {
       fpwindow.close()
     }
   })
 
   const btnRemember = new Ext.Button({
-    text: `Don't show these features again`,
+    text: `&nbsp;Don't show these features again&nbsp;`,
     handler: function (b, e) {
       localStorage.setItem('lastWhatsNew', SM.WhatsNew.Sources[0].date)
       fpwindow.close()
@@ -156,7 +149,7 @@ SM.WhatsNew.showDialog = function (lastDate) {
     buttonAlign: 'right',
     buttons: [
       btnRemember,
-      btnDismiss
+      btnClose
     ],
     items: panel
   })
