@@ -1,3 +1,39 @@
+1.2.8
+-----
+
+Changes:
+
+  - (App) Added "What's New" pop-up feature
+  - (App) Added "Dark Mode" preview feature
+  - (App) Added Import Options to Collection Settings for granular control over the way Reviews imported from files are posted to the API. 
+  - (API/OAS) Adjusted API and OAS to bring them into agreement.
+  - (App) Added "Accept" button to Asset Review Workspace
+  - (App) Updated fast-xml-parser to 4.0.7
+  - (App) Created common Parser file that can be shared across the UI and stigman-watcher
+  - (App) Updates to parser to support processing of Evaluate STIG comments, used to populate ResultEngine data. 
+
+  - (DB) Includes a MySQL migration that:
+    - Adds indexes to ``resultEngine`` JSON properties. 
+    - Removes data in column ``resultEngine`` of ``review`` and ``review_history`` tables where it was automatically populated in previous migration.  
+
+  **We recommend backing up your database before updating to any release with a database migration.**
+
+
+Commits:
+
+- 6e543c3d docs: Replaced "what's new" latin with more userbase-friendly English text, new pics, small documentation changes.
+- 6bbc763c initial SM.WhatsNew
+- 050baa41 dark-mode preview (#660)
+- 009d1dca feat: control behavior of CKL/XCCDF imports (#659)
+- fb7be174 fix: added schema "CollectionStatistics" for statistics property in the Collection(s)Projected response schema.  Resolves: #477 (#654)
+- b96d7181 fix: further OAS/API reconciliation. (#650)
+- 72397da4 fix: Client was looking for display, rather than displayName.  (#649)
+- 1fa850da fix: Initial adjustments to OAS and API to bring the two into alignment. (#648)
+- 03932e58 feat: accept button in asset review panel (#646)
+- 2365895a deps: update client fast-xml-parser to 4.0.7 (#642)
+- 8710da53 Update build.sh
+- b53807ec workflow: checkout main for alpine workflow too
+
 1.2.7
 -----
 
