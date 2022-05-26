@@ -112,10 +112,6 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
 })
 
 SM.Review.Form.ResultEngineSprite = Ext.extend(Ext.form.DisplayField, {
-  autoCreate: {
-    // tag: 'span',
-    class: 'sm-result-engine-span'
-  },
   generateMarkup: function(resultEngine) {
     if (!resultEngine) return `<span class="sm-result-engine-sprite">Manual</span>`
     const productSpan = `<span class="sm-result-engine-sprite">${resultEngine.product}</span>`
@@ -137,6 +133,7 @@ SM.Review.Form.ResultEngineSprite = Ext.extend(Ext.form.DisplayField, {
     const _this = this
     const config = {
       name: 'resultEngine',
+      cls: 'sm-result-engine-span',
       hideLabel: true,
       listeners: {
         render: function (ta) {
@@ -183,7 +180,13 @@ SM.Review.Form.ResultEngineSprite = Ext.extend(Ext.form.DisplayField, {
                 listeners: {
                   beforeshow: function updateTipBody(tip) {
                     const tpl = tip.triggerElement.className === 'sm-result-engine-sprite' ? tip.tplResultEngine : tip.tplOverride
-                    tip.update(tpl.apply(_this.value))
+                    if (_this.value) {
+                      tip.update(tpl.apply(_this.value))
+                      return true
+                    }
+                    else {
+                      return false
+                    }
                   }
                 }
             })
@@ -212,7 +215,6 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     const _this = this
     const ack = new SM.Review.Form.ResultEngineSprite(
       {
-        id: 'find-me',
         style: {
           marginLeft: '10px'
         }
