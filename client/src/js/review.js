@@ -1303,13 +1303,13 @@ async function addReview( params ) {
       //Continue the action that triggered this save (if any):					
       if (saveParams.source == "closeTab") {
         Ext.getCmp('main-tab-panel').remove('reviewTab' + idAppend)
-
+        return
       }
       else if (saveParams.source == "selectGroup") {
         saveParams.sm.selectRow(saveParams.index);
+        return
       }
       reviewForm.setReviewFormItemStates(reviewForm)
-      //Ext.Msg.alert('Success','Successfully updated review.');
     }
     catch (e) {
       Ext.Msg.alert('Fail', `Failed to update review.\n${e.message}`)
