@@ -91,15 +91,17 @@ function requestLogger (req, res, next) {
   res._startAt = undefined
   res._startTime = undefined
 
-  // // Response body handling
-  // let responseBody = ''
-  // const originalSend = res.send
-  // res.send = function (chunk, encoding, callback) {
-  //   console.log('Got chunk')
-  //   responseBody += chunk
-  //   originalSend.apply(res, arguments)
-  //   res.end()
-  // }
+  // Response body handling for privileged requests
+  let responseBody = undefined
+  if (req.query.elevate === true || req.query.elevate === 'true' ) {
+    responseBody = ''
+    const originalSend = res.send
+    res.send = function (chunk) {
+      responseBody += chunk
+      originalSend.apply(res, arguments)
+      res.end()
+    }
+  }
 
   // record request start
   recordStartTime.call(req)
@@ -117,7 +119,8 @@ function requestLogger (req, res, next) {
           date: res._startTime,
           status: response.statusCode,
           headers: response.getHeaders(),
-          errorBody: response.errorBody
+          errorBody: response.errorBody,
+          responseBody
         },
         durationMs: Number(res._startTime - req._startTime)
       })  
