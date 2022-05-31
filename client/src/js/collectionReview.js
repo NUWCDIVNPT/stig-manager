@@ -939,6 +939,16 @@ async function addCollectionReview ( params ) {
 			text: 'CSV'
 		})
 
+		const batchEditBtn = new Ext.Button({
+			disabled: true,
+			iconCls: 'icon-edit',
+			id: 'reviewsGrid-batchButton' + idAppend,
+			text: 'Batch edit',
+			handler: function (btn) {
+				handleBatchEdit(btn.findParentByType('grid'))
+			}
+		})
+
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
@@ -1002,10 +1012,12 @@ async function addCollectionReview ( params ) {
 						if (sm.getCount() == 1) { //single row selected
 							historyData.grid.enable();
 							loadResources(record);
+							batchEditBtn.disable()
 						} else {
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
+							batchEditBtn.enable()
 						}
 						setReviewsGridButtonStates()
 					},
@@ -1014,10 +1026,13 @@ async function addCollectionReview ( params ) {
 							selectedRecord = sm.getSelected();
 							historyData.grid.enable();
 							loadResources(selectedRecord);
+							batchEditBtn.disable()
 						} else {
 							historyData.store.removeAll();
 							historyData.grid.disable();
 							setRejectButtonState();
+							batchEditBtn.enable()
+
 						}
 						setReviewsGridButtonStates()
 					}
@@ -1167,7 +1182,9 @@ async function addCollectionReview ( params ) {
 							var selModel = reviewsGrid.getSelectionModel();
 							handleStatusChange (reviewsGrid,selModel,'saved');
 						}
-					}
+					},
+					'-',
+					batchEditBtn
 				]
 			}),
 			bbar: new Ext.Toolbar({
@@ -1395,6 +1412,49 @@ async function addCollectionReview ( params ) {
 				resourcesTabPanel.setActiveTab('history')
 			}
 		};
+
+		async function handleBatchEdit(grid) {
+			const records = grid.getSelectionModel().getSelections()
+			if (!records.length) return
+			const resultsSet = new Set(records.map( r => r.data.result ))
+			let initialResult = null
+			if (resultsSet.size === 1) {
+				initialResult = records[0].data.result
+			}
+
+			const review = await SM.BatchReview.showDialog(apiFieldSettings, initialResult)
+
+			const ruleId = grid.currentChecklistRecord.data.ruleId
+			const updatedReviews = []
+			for (i = 0, l = records.length; i < l; i++) {
+				Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
+				if (review.resultEngine && review.result !== records[i].data.result) {
+					review.resultEngine = null
+				}
+				try {
+					const result = await Ext.Ajax.requestPromise({
+						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${records[i].data.assetId}/${ruleId}`,
+						method: 'PUT',
+						jsonData: review
+					})
+					updatedReviews.push(JSON.parse(result.response.responseText))
+				}
+				catch (e) {
+					console.log(e)
+				}
+			}
+
+			reviewsStore.loadData(updatedReviews, true)
+			
+			// hack to reselect the records
+			const sm =reviewsGrid.getSelectionModel()
+			sm.onRefresh()
+			sm.fireEvent('selectionchange', sm)
+
+			Ext.getBody().unmask()
+			grid.updateGroupStore(grid)
+			setReviewsGridButtonStates()
+		}
 		
 		async function handleStatusChange (grid,sm,status) {
 			try {

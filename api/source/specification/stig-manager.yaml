@@ -4098,9 +4098,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/StringMaxNullable'
         comment:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/StringMaxNullable'
         autoResult:
           type: boolean
         metadata:
