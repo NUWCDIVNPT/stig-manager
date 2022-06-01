@@ -102,6 +102,7 @@ uglifyjs \
 'js/SM/SelectingGridToolbar.js' \
 'js/SM/NavTree.js' \
 'js/SM/RowEditorToolbar.js' \
+'js/SM/BatchReview.js' \
 'js/SM/Collection.js' \
 'js/SM/CollectionStig.js' \
 'js/SM/CollectionForm.js' \

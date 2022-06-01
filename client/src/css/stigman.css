@@ -677,7 +677,7 @@ body {
 .x-fieldset {
     border-radius: 3px;
 }
-.x-body-masked .ext-el-mask {
+.ext-el-mask {
     background-color: rgb(0 0 0 / 35%);
     backdrop-filter: blur(1px) saturate(50%);
     opacity: 1;
