@@ -2,6 +2,25 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-06-01',
+    header: `Batch Editing Preview`,
+    body: `Edit reviews for multiple Assets at once from the Collection Review workspace! This feature is offered as a preview of functionality that is actively under development, and may change somewhat before final release. <p />
+
+    <p />
+    <b>From the Collection Review workspace, select two or more Reviews, then click the "Batch edit" button:</b>
+    <p />
+    <img src="img/whatsnew/batch-edit-button.png"/>
+    <p />
+    <b>Make changes to any or all of the desired fields in the pop-up, and click "Apply Review." If you leave the Detail or Comment empty, Reviews will keep their existing commentary. To remove existing commentary, add a space to that field.</b>
+    <p />
+    <img src="img/whatsnew/batch-edit-popup.png"/>
+    <p />
+    <b>Your specified Result and Detail/Comment will be applied to all Assets selected!</b>
+    <p />
+    `
+  },
+
+  {
     date: '2022-05-18',
     header: `What's New Dialog on App Start`,
     body: `On startup, the App now displays a "What's New" dialog describing the latest features added to the App.<p />
