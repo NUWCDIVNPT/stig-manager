@@ -32,5 +32,3 @@ clients/extjs/js/keycloak.json
 .gitignore
 newman/
 /docs/_build/doctrees/
-coverage2/*
-test/api/runFailsOnly-scratch.sh
