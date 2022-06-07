@@ -1,3 +1,15 @@
+1.2.9
+-----
+
+Changes:
+
+  - (App) Preview of Batch Edit feature in the Collection Review Workspace.
+  - (App) Resolved an issue that could cause error pop-ups when tabs were closed. 
+  - (App) Adjusted expected Eval STIG info elements.
+  - (API) Updated dependencies (multer and express-openapi-validator) to resolve vulnerability found in one of their dependencies (dicer).
+  - (API) Log response bodies for elevated requests.
+
+
 1.2.8
 -----
 
