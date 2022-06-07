@@ -352,7 +352,7 @@
             version: esRootComment?.global?.[0]?.version,
             time: esRootComment?.global?.[0]?.time,
             checkContent: {
-              location: esRootComment?.module?.[0]?.root ?? ''
+              location: esRootComment?.module?.[0]?.name ?? ''
             }
           }
         }
