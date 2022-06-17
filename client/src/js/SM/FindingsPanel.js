@@ -348,7 +348,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				(r.resultEngine.overrides?.length ? 'override' : 'engine') : 
 				(r.result ? 'manual' : '')
 		}
-			const store = new Ext.data.JsonStore({
+		const store = new Ext.data.JsonStore({
 			proxy: new Ext.data.HttpProxy({
 				url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/reviews`,
 				method: 'GET'
@@ -362,6 +362,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				direction: 'ASC'
 			},
 			root: '',
+			storeId: Ext.id(),
 			fields: [
 				{ name: 'assetId', type: 'string' },
 				{ name: 'assetName', type: 'string' },
@@ -389,16 +390,17 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			]
 		})
 		const totalTextCmp = new SM.RowCountTextItem({ store: store })
-		const expander = new Ext.ux.grid.RowExpander({
+		const expander = new Ext.ux.grid.RowExpander2({
+			lazyRender: true,
 			tpl: new Ext.XTemplate(
-				'<b>Reviewer:</b> {username}</p>',
-				'<tpl if="detail">',
-				'<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
+				'<b>Reviewer:</b> {[values.data.username]}</p>',
+				'<tpl if="data.detail">',
+				'<p><b>Detail:</b> {[SM.TruncateRecordProperty(values, "detail")]}</p>',
 				'</tpl>',
-				'<tpl if="comment">',
-				'<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
+				'<tpl if="data.comment">',
+				'<p><b>Comment:</b> {[SM.TruncateRecordProperty(values, "comment")]}</p>',
 				'</tpl>'
-			)
+				)
 		})
 		const columns = [
 			expander,
@@ -482,7 +484,8 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 		]
 		const view = new SM.ColumnFilters.GridView({
 			forceFit: true,
-			emptyText: 'Select a finding to the left.',
+			emptyText: 'Select a finding from the grid to the left.',
+			deferEmptyText: false,
 			listeners: {
 				filterschanged: function (view, item, value) {
 					store.filter(view.getFilterFns())

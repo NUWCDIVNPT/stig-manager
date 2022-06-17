@@ -715,13 +715,14 @@ async function addReview( params ) {
     idProperty: 'reviewId'
   });
 
-  var expander = new Ext.ux.grid.RowExpander({
+  var expander = new Ext.ux.grid.RowExpander2({
+    lazyRender: true,
     tpl: new Ext.XTemplate(
-      '<tpl if="detail">',
-		  '<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
+      '<tpl if="data.detail">',
+		  '<p><b>Detail:</b> {[SM.TruncateRecordProperty(values, "detail")]}</p>',
       '</tpl>',
-		  '<tpl if="comment">',
-		  '<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
+		  '<tpl if="data.comment">',
+		  '<p><b>Comment:</b> {[SM.TruncateRecordProperty(values, "comment")]}</p>',
 		  '</tpl>'
     )
   });
@@ -1016,7 +1017,8 @@ async function addReview( params ) {
       // Display the review
       reviewForm.groupGridRecord = groupGridRecord
       reviewForm.loadValues(review)
-      reviewForm.isLoaded = true 
+      reviewForm.isLoaded = true
+      reviewForm.setReviewFormItemStates()
   
       // load others
       otherGrid.getStore().loadData(otherReviews);
@@ -1058,7 +1060,6 @@ async function addReview( params ) {
       // Attachments
       attachmentsGrid.ruleId = groupGridRecord.data.ruleId
       attachmentsGrid.loadArtifacts()
-      reviewForm.setReviewFormItemStates()
     }
     catch (e) {
       if (e.response) {

@@ -229,19 +229,19 @@ function Sm_HistoryData (idAppend) {
 		}
 	});
 
-	expander = new Ext.ux.grid.RowExpander({
+	expander = new Ext.ux.grid.RowExpander2({
 		tpl: new Ext.XTemplate(
-			'<tpl if="detail">',
-		  '<p><b>Detail:</b> {[SM.he(values.detail)]}</p>',
+			'<tpl if="data.detail">',
+		  '<p><b>Detail:</b> {[SM.TruncateRecordProperty(values, "detail")]}</p>',
 		  '</tpl>',
-		  '<tpl if="comment">',
-		  '<p><b>Comment:</b> {[SM.he(values.comment)]}</p>',
+		  '<tpl if="data.comment">',
+		  '<p><b>Comment:</b> {[SM.TruncateRecordProperty(values, "comment")]}</p>',
 		  '</tpl>',
-		  '<tpl if="status">',
-		  '<p><b>Status user:</b> {[SM.he(values.status.user.username)]}</p>',
+		  '<tpl if="data.status">',
+		  '<p><b>Status user:</b> {[SM.he(values.data.status.user.username)]}</p>',
 		  '</tpl>',
-		  '<tpl if="status">',
-		  '<p><b>Status text:</b> {[SM.he(values.status.text)]}</p>',
+		  '<tpl if="data.status">',
+		  '<p><b>Status text:</b> {[SM.he(values.data.status.text)]}</p>',
 		  '</tpl>'
 		)
 	})
