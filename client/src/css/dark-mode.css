@@ -47,6 +47,12 @@ select:-webkit-autofill {
 }
 
 /* Modified CSS */
+.x-grid3-row-expanded .x-grid3-row-body {
+    background-color: hsl(37deg 10% 23%);
+}
+.sm-truncated-action {
+	color: #5a94b9;
+}
 .sm-review-sprite {
     background-color: hsl(0 0% 38% / 1);
     border-color: hsl(0deg 0% 48%);

@@ -151,8 +151,9 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				hidden: false,
 				width: 120,
 				dataIndex: 'stigs',
-				renderer: v => {
-					return columnWrap(v.join('\n'))
+				renderer: function (v) {
+					v = v.join('\n')
+					return columnWrap.apply(this, arguments)
 				},
 				sortable: true,
 			}
@@ -449,8 +450,9 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "STIGs",
 				width: 130,
 				dataIndex: 'stigs',
-				renderer: v => {
-					return columnWrap(v.join('\n'))
+				renderer: function (v) {
+					v = v.join('\n')
+					return columnWrap.apply(this, arguments)
 				},
 				sortable: true,
 			},

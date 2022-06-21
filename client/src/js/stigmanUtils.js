@@ -506,9 +506,7 @@ const renderSeverity = (val) => {
 }
 
 
-function columnWrap(val){
-	if (undefined != val) {
-		val = val.replace(/\n/g, "<br//>");
-	}
-    return '<div style="white-space:normal !important;">'+ val +'</div>';
+function columnWrap(val, meta){
+	meta.css = 'sm-col-wrap'
+	return val
 }
