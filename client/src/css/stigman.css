@@ -1,5 +1,10 @@
+.x-grid3-row-body {
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
 .sm-col-wrap .x-grid3-cell-inner {
 	white-space: pre-wrap;
+	overflow-wrap: break-word;
 }
 .x-grid3-row-expanded .x-grid3-row-body {
 	max-width: 600px;

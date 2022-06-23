@@ -227,62 +227,56 @@ SM.RuleContentTpl = new Ext.XTemplate(
     else {
         return value
     }
-}
-SM.TruncateRecordProperty = function (record, property) {
-    const value = SM.he(record.data[property])
-    if (!value) return
+  }
+  SM.TruncateRecordProperty = function (record, property) {
+      const value = SM.he(record.data[property])
+      if (!value) return
 
-    if (value.length > SM.TruncateLimit) {
-        return `${value.slice(0,SM.TruncateLimit)}... <span class=sm-truncated-action onclick="SM.ShowUntruncated('${record.store.storeId}','${record.id}','${property}')">Full text</span>`
-    }
-    else {
-        return value
-    }
-}
+      if (value.length > SM.TruncateLimit) {
+          return `${value.slice(0,SM.TruncateLimit)}... <span class=sm-truncated-action onclick="SM.ShowUntruncated('${record.store.storeId}','${record.id}','${property}')">Full text</span>`
+      }
+      else {
+          return value
+      }
+  }
 
   SM.ShowUntruncated = function (storeId, recordId, property) {
-      const record = Ext.StoreMgr.get(storeId).getById(recordId)
-      const textarea = new Ext.form.TextArea({
-          readOnly: true
-      })
-      const closeBtn = new Ext.Button({
-          text: 'Close',
-          handler: function() {
-              fpwindow.close()
-          }
-      })
-      const copyBtn = new Ext.Button({
-        text: 'Copy to clipboard',
+    const record = Ext.StoreMgr.get(storeId).getById(recordId)
+    const textarea = new Ext.form.TextArea({
+        readOnly: true
+    })
+    const closeBtn = new Ext.Button({
+        text: 'Close',
         handler: function() {
-            navigator.clipboard.writeText(textarea.value)
+            fpwindow.close()
         }
     })
-      const fpwindow = new Ext.Window({
-        title: `Full ${property}`,
-        modal: true,
-        resizable: true,
-        width: 520,
-        height: 560,
-        layout: 'fit',
-        plain: true,
-        bodyStyle: 'padding:20px;',
-        buttonAlign: 'right',
-        buttons: [
-          copyBtn,
-          closeBtn
-        ],
-        items: textarea,
-        listeners: {
-            // beforerender: function (window) {
-            //     window.timer = setTimeout(() => {
-            //         Ext.getBody().mask('Rendering...')
-            //     }, 100)
-            // },
-            show: function (window) {
-                textarea.setValue(SM.he(record.data[property]))
-            }
-        }
-      })
-      fpwindow.show()
-      
+    const copyBtn = new Ext.Button({
+      text: 'Copy to clipboard',
+      handler: function() {
+          navigator.clipboard.writeText(textarea.value)
+      }
+    })
+    const fpwindow = new Ext.Window({
+      title: `Full ${property}`,
+      modal: true,
+      resizable: true,
+      width: 520,
+      height: 560,
+      layout: 'fit',
+      plain: true,
+      bodyStyle: 'padding:20px;',
+      buttonAlign: 'right',
+      buttons: [
+        copyBtn,
+        closeBtn
+      ],
+      items: textarea,
+      listeners: {
+          show: function (window) {
+              textarea.setValue(SM.he(record.data[property]))
+          }
+      }
+    })
+    fpwindow.show()
   }
