@@ -238,3 +238,18 @@ Ext.preg('rowexpander', Ext.ux.grid.RowExpander);
 
 //backwards compat
 Ext.grid.RowExpander = Ext.ux.grid.RowExpander;
+
+//support truncation feature by passing entire record to tpl
+Ext.ux.grid.RowExpander2 = Ext.extend(Ext.ux.grid.RowExpander, {
+    getBodyContent : function(record, index){
+        if(!this.enableCaching){
+            return this.tpl.apply(record);
+        }
+        var content = this.bodyContent[record.id];
+        if(!content){
+            content = this.tpl.apply(record);
+            this.bodyContent[record.id] = content;
+        }
+        return content;
+    }
+})

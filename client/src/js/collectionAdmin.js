@@ -102,8 +102,9 @@ function addCollectionAdmin( params ) {
         width: 150,
         dataIndex: 'owners',
         sortable: true,
-        renderer: v => {
-          return columnWrap(v.map(v => v.username).join('\n'))
+        renderer: function (v) {
+          v = v.map(v => v.username).join('\n')
+          return columnWrap.apply(this, arguments)
         }
       },
       {

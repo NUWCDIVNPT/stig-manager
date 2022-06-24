@@ -828,7 +828,8 @@ async function addCollectionReview ( params ) {
 					width: 100,
 					dataIndex: 'detail',
 					renderer: function (v) {
-						return columnWrap(SM.styledEmptyRenderer(v))
+						v = v?.length > SM.TruncateLimit ? v.slice(0,SM.TruncateLimit) + '...' : SM.styledEmptyRenderer(v)
+						return columnWrap.apply(this, arguments)
 					},
 					sortable: true,
 					filter: {
@@ -859,7 +860,8 @@ async function addCollectionReview ( params ) {
 					width: 100,
 					dataIndex: 'comment',
 					renderer: function (v) {
-						return columnWrap(SM.styledEmptyRenderer(v))
+						v = v?.length > SM.TruncateLimit ? v.slice(0,SM.TruncateLimit) + '...' : SM.styledEmptyRenderer(v)
+						return columnWrap.apply(this, arguments)
 					},
 					filter: {
 						type: 'string'
