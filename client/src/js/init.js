@@ -1,51 +1,43 @@
 async function authorizeOidc() {
     let oidcProvider = OidcProvider({
         oidcProvider: STIGMAN.Env.oauth.authority,
-        clientId: STIGMAN.Env.oauth.clientId, //'0oa15s1xbhJtGfytI5d7'
-        refreshDisabled: STIGMAN.Env.oauth.refreshToken.disabled
-    });
-    oidcProvider.refreshExpWarnCallback = async function (expTs) {
+        clientId: STIGMAN.Env.oauth.clientId
+    })
+    oidcProvider.updateCallback = async function () {
         try {
             await window.oidcProvider.updateToken(-1)
         }
         catch (e) {
-            console.log('[OIDCPROVIDER] Error in refreshExpWarnCallback')
+            console.log('[OIDCPROVIDER] Error in updateCallback')
         } 
     }
     oidcProvider.onTokenExpired = function() {
-        console.info('[OIDCPROVIDER] Token expired at ' + new Date(oidcProvider.tokenParsed['exp']*1000));
+        console.info(`[OIDCPROVIDER] Token expired at ${new Date(oidcProvider.tokenParsed.exp * 1000)}`)
     }
-    oidcProvider.onAuthSuccess = function() {
-        if (oidcProvider.refreshTokenParsed) {
-            let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
-            let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000;
-            if (oidcProvider.refreshExpWarnTid) {
-                clearTimeout(oidcProvider.refreshExpWarnTid)
+    function scheduleUpdateCallback() {
+        if (oidcProvider.refreshToken && !STIGMAN.Env.oauth.refreshToken.disabled) {
+            const now = new Date().getTime()
+            const expiration = oidcProvider.refreshTokenParsed ? oidcProvider.refreshTokenParsed.exp : oidcProvider.tokenParsed.exp
+            const updateDelay = (expiration - 60 - (now / 1000) + oidcProvider.timeSkew) * 1000;
+            if (oidcProvider.updateTid) {
+                clearTimeout(oidcProvider.updateTid)
             }
-            oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
-            console.info(`[OIDCPROVIDER] authSuccess: refresh expires ${refreshExpDate}`)
+            oidcProvider.updateTid = setTimeout(oidcProvider.updateCallback, updateDelay)
+            console.info(`[OIDCPROVIDER] Scheduled token refresh at ${new Date(now + updateDelay)}`)
         }
     }
-    oidcProvider.onAuthRefreshSuccess = function() {
-        if (oidcProvider.refreshTokenParsed) {
-            let refreshExpDate = new Date(oidcProvider.refreshTokenParsed.exp * 1000)
-            let refreshExpWarnDelay = (oidcProvider.refreshTokenParsed.exp - 60 - (new Date().getTime() / 1000) + oidcProvider.timeSkew) * 1000
-            if (oidcProvider.refreshExpWarnTid) {
-                clearTimeout(oidcProvider.refreshExpWarnTid)
-            }
-            oidcProvider.refreshExpWarnTid = setTimeout(oidcProvider.refreshExpWarnCallback, refreshExpWarnDelay, oidcProvider.refreshTokenParsed.exp)
-            console.info(`[OIDCPROVIDER] authRefreshSuccess: refresh expires ${refreshExpDate}`)
-        }
-    }
+    oidcProvider.onAuthSuccess = scheduleUpdateCallback
+    oidcProvider.onAuthRefreshSuccess = scheduleUpdateCallback
     
     try {
+        const scopePrefix = STIGMAN.Env.oauth.scopePrefix
         let scopes = [
-            "stig-manager:stig",
-            "stig-manager:stig:read",
-            "stig-manager:collection",
-            "stig-manager:user",
-            "stig-manager:user:read",
-            "stig-manager:op"
+            `${scopePrefix}stig-manager:stig`,
+            `${scopePrefix}stig-manager:stig:read`,
+            `${scopePrefix}stig-manager:collection`,
+            `${scopePrefix}stig-manager:user`,
+            `${scopePrefix}stig-manager:user:read`,
+            `${scopePrefix}stig-manager:op`
         ]
         if (STIGMAN.Env.oauth.extraScopes) {
             scopes.push(...STIGMAN.Env.oauth.extraScopes.split(" "))

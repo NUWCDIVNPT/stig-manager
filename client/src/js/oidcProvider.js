@@ -617,7 +617,7 @@
         }
 
         kc.isTokenExpired = function(minValidity) {
-            if (!kc.tokenParsed || (!kc.refreshToken && kc.flow != 'implicit' )) {
+            if (!kc.tokenParsed) {
                 throw 'Not authenticated';
             }
 
@@ -640,7 +640,10 @@
             var promise = createPromise();
 
             if (!kc.refreshToken) {
-                promise.setError('No refresh token');
+                if (kc.isTokenExpired(minValidity)) {
+                    kc.clearToken();
+                }
+                promise.setSuccess(false);
                 return promise.promise;
             }
 
@@ -1005,7 +1008,7 @@
                     kc.refreshTokenParsed = decodeToken(refreshToken);
                 }
                 catch (e) {
-                    kc.refreshTokenParsed = {};
+                    kc.refreshTokenParsed = false;
                 }
             } else {
                 delete kc.refreshToken;

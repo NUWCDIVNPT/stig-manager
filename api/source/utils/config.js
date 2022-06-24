@@ -24,6 +24,7 @@ let config = {
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || '../../client/dist',
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
+        scopePrefix: process.env.STIGMAN_CLIENT_SCOPE_PREFIX,
         refreshToken: {
             disabled: process.env.STIGMAN_CLIENT_REFRESH_DISABLED ? process.env.STIGMAN_CLIENT_REFRESH_DISABLED === "true" : false,
         },
@@ -78,7 +79,6 @@ let config = {
         authority: process.env.STIGMAN_OIDC_PROVIDER || process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
-            scopeFormat: process.env.STIGMAN_JWT_SCOPE_FORMAT || "rfc",
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
@@ -94,7 +94,7 @@ let config = {
 
 function formatChain(path) {
     const components = path?.split('.')
-    if (!components?.length) return path
+    if (components?.length === 1) return path
     for (let x=0; x < components.length; x++) {
       components[x] = `['${components[x]}']`
     }
