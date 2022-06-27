@@ -220,6 +220,14 @@ module.exports.getScapMap = async function getStigById (req, res, next) {
       benchmarkId: 'Mozilla_Firefox'
     },
     {
+      scapBenchmarkId: 'MOZ_Firefox_Linux',
+      benchmarkId: 'MOZ_Firefox_STIG'
+    },
+    {
+      scapBenchmarkId: 'MOZ_Firefox_Windows',
+      benchmarkId: 'MOZ_Firefox_STIG'
+    },    
+    {
       scapBenchmarkId: 'Solaris_10_X86_STIG',
       benchmarkId: 'Solaris_10_X86'
     }
