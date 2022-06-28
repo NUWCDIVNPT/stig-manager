@@ -471,8 +471,8 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'nrCnt' + idAppend,
-					header: "NR", 
-					width: 40,
+					header: '<div style="color:grey;font-weight:bolder;" exportvalue="Other">Other</div>', 
+					width: 44,
 					align: 'center',
 					renderer:renderOpen,
 					dataIndex: 'nrCnt',
