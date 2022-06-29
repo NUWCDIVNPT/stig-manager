@@ -15,14 +15,14 @@ let client
 const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
 
 const verifyRequest = async function (req, requiredScopes, securityDefinition) {
-        let token = getBearerToken(req)
+        const token = getBearerToken(req)
         if (!token) {
             throw({status: 401, message: 'OIDC bearer token must be provided'})
         }
-        let options = {
+        const options = {
             algorithms: ['RS256']
         }
-        let decoded = await verifyAndDecodeToken (token, getKey, options)
+        const decoded = await verifyAndDecodeToken (token, getKey, options)
         req.access_token = decoded
         req.bearer = token
         req.userObject = {
@@ -31,8 +31,10 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
             email: decoded[config.oauth.claims.email] ||  'None Provided'
         }
 
-        let grantedScopes = decoded[config.oauth.claims.scope]?.split(' ')
-        let commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
+        const grantedScopes = typeof decoded[config.oauth.claims.scope] === 'string' ? 
+            decoded[config.oauth.claims.scope].split(' ') : 
+            decoded[config.oauth.claims.scope]
+        const commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
             if (gs === rs) return gs
             let gsTokens = gs.split(":").filter(i => i.length)
             let rsTokens = rs.split(":").filter(i => i.length)
@@ -70,7 +72,7 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
                 refreshFields.lastClaims = decoded
             }
             if (req.userObject.username && (refreshFields.lastAccess || refreshFields.lastClaims)) {
-                let userId = await User.setUserData(req.userObject, refreshFields)
+                const userId = await User.setUserData(req.userObject, refreshFields)
                 if (userId != req.userObject.userId) {
                     req.userObject.userId = userId.toString()
                 }

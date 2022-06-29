@@ -1,3 +1,7 @@
+.rst-content .line-block { 
+  margin-bottom: 0;
+}
+
 figcaption {
   padding-top: 10px;
   font-size: 85%;
