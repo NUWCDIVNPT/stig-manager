@@ -1,3 +1,14 @@
+1.2.10
+-----
+
+Changes:
+
+  - (App) Refactored token handling for better Azure AD and Okta compatibility. Added new Envvars for configuration.
+  - (App) Truncate the display of long Detail and Comment fields for increased performance and readability. Full text available when editing or by clicking "Full text" link.
+  - (API) Updated SCAP map to reflect current differences between SCAP IDs and STIG IDs.  
+  - (API/App/OAS) Updated checklist statistic calculations to account for new result Id options. Changed column name to "Other" to better reflect its contents. 
+  - (API) Updated got dependency to 11.8.5
+
 1.2.9
 -----
 
