@@ -56,9 +56,9 @@ async function addCollectionReview ( params ) {
 				type: 'int',
 				mapping: 'counts.results.notapplicable'
 			},{	
-				name:'nrCnt',
+				name:'otherCnt',
 				type: 'int',
-				mapping: 'counts.results.notchecked'
+				mapping: 'counts.results.other'
 			},{	
 				name:'approveCnt',
 				type: 'int',
@@ -470,12 +470,12 @@ async function addCollectionReview ( params ) {
 					sortable: true
 				},
 				{ 	
-					id:'nrCnt' + idAppend,
+					id:'otherCnt' + idAppend,
 					header: '<div style="color:grey;font-weight:bolder;" exportvalue="Other">Other</div>', 
 					width: 44,
 					align: 'center',
 					renderer:renderOpen,
-					dataIndex: 'nrCnt',
+					dataIndex: 'otherCnt',
 					fixed: true,
 					sortable: true
 				},
@@ -969,7 +969,7 @@ async function addCollectionReview ( params ) {
 					oCnt: 0,
 					nfCnt: 0,
 					naCnt: 0,
-					nrCnt: 0,
+					otherCnt: 0,
 					approveCnt: 0,
 					rejectCnt: 0,
 					readyCnt: 0
@@ -986,7 +986,7 @@ async function addCollectionReview ( params ) {
 							counts.naCnt++
 							break
 						default:
-							counts.nrCnt++
+							counts.otherCnt++
 							break
 					}
 					switch (record.data.status) {

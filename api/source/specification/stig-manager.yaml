@@ -3319,7 +3319,7 @@ components:
                   type: integer
                 notapplicable:
                   type: integer
-                notchecked:
+                other:
                   type: integer
             statuses:
               type: object

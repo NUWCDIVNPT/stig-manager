@@ -736,7 +736,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
             'pass', sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
             'fail', sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END),
             'notapplicable', sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END),
-            'notchecked', sum(CASE WHEN r.resultId is null OR (r.resultId != 2 AND r.resultId != 3 AND r.resultId != 4) THEN 1 ELSE 0 END)
+            'other', sum(CASE WHEN r.resultId is null OR (r.resultId != 2 AND r.resultId != 3 AND r.resultId != 4) THEN 1 ELSE 0 END)
           ),
           'statuses', json_object(
             'saved', sum(CASE WHEN r.statusId = 0 THEN 1 ELSE 0 END),
