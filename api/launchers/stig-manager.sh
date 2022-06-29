@@ -82,7 +82,8 @@
 #
 #  | No default. | OAuth2 scopes to request in addition to "stig-manager:stig"
 #  "stig-manager:stig:read" "stig-manager:collection" "stig-manager:user" "stig-
-#  manager:user:read" "stig-manager:op"
+#  manager:user:read" "stig-manager:op". Some OIDC providers (Okta) generate a
+#  refresh token only if the scope "offline_access" is requested
 #
 #  Affects: Client
 #==============================================================================
@@ -100,7 +101,7 @@
 #==============================================================================
 # STIGMAN_CLIENT_OIDC_PROVIDER
 #
-#  | Default: Value | of "STIGMAN_OIDC_PROVIDER" Client override of the base URL
+#  | Default: Value of "STIGMAN_OIDC_PROVIDER" | Client override of the base URL
 #  of the OIDC provider issuing signed JWTs for the API.  The string "/.well-
 #  known/openid-configuration" will be appended by the client when fetching
 #  metadata.
@@ -113,8 +114,9 @@
 # STIGMAN_CLIENT_SCOPE_PREFIX
 #
 #  | No default. | String used as a prefix for each scope when authenticating to
-#  the OIDC Provider. Some providers (Azure AD) require a string in the format
-#  "api://<application_id>"
+#  the OIDC Provider. Some providers (Azure AD) expect scope requests in the
+#  format "api://<application_id>/<scope>", where "api://<application_id>/" is
+#  the required prefix.
 #
 #  Affects: Client
 #==============================================================================
@@ -375,17 +377,6 @@
 #  Affects: API, Client
 #==============================================================================
 # export STIGMAN_JWT_SCOPE_CLAIM=
-
-#==============================================================================
-# STIGMAN_JWT_SCOPE_FORMAT
-#
-#  | Default: "rfc" | The format used for the value of the access token scope
-#  claim. Available values: "rfc" "json". Some OIDC Providers (Okta) use "json"
-#  format
-#
-#  Affects: API, Client
-#==============================================================================
-# export STIGMAN_JWT_SCOPE_FORMAT=
 
 #==============================================================================
 # STIGMAN_JWT_SERVICENAME_CLAIM
