@@ -237,27 +237,36 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
         let _this = this
         const userStore = new Ext.data.JsonStore({
             fields: [
-                {
-                    name: 'userId',
-                    type: 'string'
-                }, {
-                    name: 'username',
-                    type: 'string'
-                }
+                'userId',
+                'username',
+                'displayName'
             ],
             autoLoad: true,
             url: `${STIGMAN.Env.apiBase}/users`,
             root: '',
             sortInfo: {
-                field: 'username',
+                field: 'displayName',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             idProperty: 'userId'
         })
+        // const tpl = `<tpl for="."><div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">{displayName}</span><br>{username}</div></tpl>`
+        const tpl = new Ext.XTemplate(
+            '<tpl for=".">',
+                '<div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">{[this.highlightQuery(values.displayName)]}</span><br>{[this.highlightQuery(values.username)]}</div>',
+            '</tpl>',
+            {
+                highlightQuery: function (text) {
+                    const re = new RegExp(_this.el.dom.value,'gi')
+                    return text.replace(re,'<span class="sm-text-highlight">$&</span>')
+                }
+            }
+        )
         const config = {
             store: userStore,
+            tpl,
             filteringStore: this.filteringStore || null,
-            displayField: 'username',
+            displayField: 'displayName',
             valueField: 'userId',
             mode: 'local',
             forceSelection: true,
@@ -265,7 +274,6 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
             minChars: 0,
             hideTrigger: false,
             triggerAction: 'all',
-            lastQuery: '',
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
                 if (_this.grid.editor.editing == false) {
@@ -273,55 +281,57 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
                 }
                 if (v === "") { return "Blank values not allowed" }
             },
-            doQuery: function (q, forceAll) {
-                q = Ext.isEmpty(q) ? '' : q;
-                var qe = {
-                    query: q,
-                    forceAll: forceAll,
-                    combo: this,
-                    cancel: false
-                };
-                if (this.fireEvent('beforequery', qe) === false || qe.cancel) {
-                    return false;
-                }
-                q = qe.query;
-                forceAll = qe.forceAll;
-                if (forceAll === true || (q.length >= this.minChars)) {
-                    if (this.lastQuery !== q) {
-                        this.lastQuery = q;
-                        if (this.mode == 'local') {
-                            this.selectedIndex = -1;
-                            if (forceAll) {
-                                this.store.clearFilter();
-                            } else {
-                                this.store.filter(this.displayField, q, false, false);
-                            }
-                            this.onLoad();
-                        } else {
-                            this.store.baseParams[this.queryParam] = q;
-                            this.store.load({
-                                params: this.getParams(q)
-                            });
-                            this.expand();
+            onTypeAhead: function () {},
+            doQuery : (q, forceAll) => {
+                // Custom re-implementation of the original ExtJS method
+                // Initial lines were retained
+				q = Ext.isEmpty(q) ? '' : q;
+				var qe = {
+					query: q,
+					forceAll: forceAll,
+					combo: this,
+					cancel:false
+				};
+				if ( this.fireEvent('beforequery', qe) === false || qe.cancel ) {
+					return false;
+				}
+				q = qe.query;
+				forceAll = qe.forceAll;
+				if ( forceAll === true || (q.length >= this.minChars) ) {
+					// Removed test against this.lastQuery
+                        this.selectedIndex = -1
+                        if (forceAll) {
+                            this.store.clearFilter()
                         }
-                    } else {
-                        this.selectedIndex = -1;
-                        this.onLoad();
-                    }
-                }
+                        else {
+                            // Build array of filter functions
+                            let filters = []
+                            if (this.filteringStore) {
+                                // Include records from the combo store that are NOT in filteringStore
+                                filters.push(
+                                    {
+                                        fn: (record) =>  this.filteringStore.indexOfId(record.id) === -1,
+                                        scope: this
+                                    }
+                                )
+                            }
+                            if (q) {
+                                // Include records that partially match the combo value
+                                filters.push(
+                                    {
+                                        fn: (record) => record.data.displayName.includes(q) || record.data.username.includes(q),
+                                        scope: this
+                                    }
+                                )
+                            }
+                            this.store.filter(filters)
+                        }
+                        this.onLoad()
+				}
             },
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
-                },
-                expand: (combo) => {
-                    if (combo.filteringStore) {
-                        combo.store.filterBy(
-                            function (record, id) {
-                                return combo.filteringStore.indexOfId(id) === -1
-                            }
-                        )
-                    }
                 }
             }
         }
@@ -335,15 +345,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {
         const _this = this
         const newFields = [
-            {
-                name: 'userId'
-            },
-            {
-                name: 'username'
-            },
-            {
-                name: 'accessLevel'
-            }
+            'userId',
+            'username',
+            'displayName',
+            'accessLevel'
         ]
         this.newRecordConstructor = Ext.data.Record.create(newFields)
         const totalTextCmp = new Ext.Toolbar.TextItem({
@@ -374,7 +379,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             fields: newFields,
             idProperty: 'userId',
             sortInfo: {
-                field: 'username',
+                field: 'displayName',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             listeners: {
@@ -398,15 +403,18 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const columns = [
             {
-                header: "Username",
+                header: "User",
                 width: 150,
-                dataIndex: 'username',
+                dataIndex: 'userId',
                 sortable: true,
+                renderer: function (v, m, r) {
+                    return `<div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">${r.data.displayName}</span><br>${r.data.username}</div>`
+                },
                 editor: userSelectionField
             },
             {
                 header: "Access Level",
-                width: 100,
+                width: 50,
                 dataIndex: 'accessLevel',
                 sortable: true,
                 renderer: (v) => SM.AccessLevelStrings[v],
@@ -458,6 +466,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         _this.accessBtn.setDisabled(record.data.accessLevel != 1)
                     }
                     editor.grid.fireEvent('grantschanged', editor.grid)
+                },
+                beforeedit: function (editor, rowIndex) {
+                    editor.userSelectionField.store.clearFilter()
+                    editor.userSelectionField.setDisabled(!!editor.grid.store.getAt(rowIndex).data.userId)
                 }
 
             }
@@ -532,6 +544,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 const data = v.map((g) => ({
                     userId: g.user.userId,
                     username: g.user.username,
+                    displayName: g.user.displayName,
                     accessLevel: g.accessLevel
                 }))
                 grantStore.loadData(data)
@@ -1043,11 +1056,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 				}
 			}
 		})
-		grantGrid.getStore().loadData(_this.apiCollection.grants.map( g => ({
-			userId: g.user.userId,
-			username: g.user.username,
-			accessLevel: g.accessLevel
-		})))
+		grantGrid.setValue(_this.apiCollection.grants)
 
         this.labelGrid = new SM.Collection.LabelsGrid({
 			collectionId: _this.apiCollection.collectionId,

@@ -71,7 +71,10 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
             json_object(
               'user', json_object(
                 'userId', CAST(user_data.userId as char),
-                'username', user_data.username
+                'username', user_data.username,
+                'displayName', COALESCE(
+                  JSON_UNQUOTE(JSON_EXTRACT(user_data.lastClaims, "$.${config.oauth.claims.name}")),
+                  user_data.username)
                 ),
               'accessLevel', accessLevel
             )

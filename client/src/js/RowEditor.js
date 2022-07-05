@@ -303,10 +303,10 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     onKey: function(f, e){
-        if(e.getKey() === e.ENTER){
-            this.stopEditing(true);
-            e.stopPropagation();
-        }
+        // if(e.getKey() === e.ENTER){
+        //     this.stopEditing(true);
+        //     e.stopPropagation();
+        // }
     },
 
     onGridKey: function(e){

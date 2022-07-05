@@ -1016,7 +1016,8 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             grants: [{
               user: {
                 userId: curUser.userId,
-                username: curUser.username
+                username: curUser.username,
+                displayName: curUser.displayName
               },
               accessLevel: 4
             }],
