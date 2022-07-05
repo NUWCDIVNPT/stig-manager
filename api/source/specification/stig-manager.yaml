@@ -3757,6 +3757,12 @@ components:
                 type: string
               accessLevel:
                 type: integer
+    CommentaryStringMax:
+      type: string
+      maxLength: 32768
+    CommentaryStringMaxNullable:
+      type: string
+      maxLength: 32768                
     Date:
       type: string
       format: date
@@ -4074,9 +4080,9 @@ components:
         result:
           $ref: '#/components/schemas/ReviewResult'
         detail:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/CommentaryStringMaxNullable'
         comment:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/CommentaryStringMaxNullable'
         autoResult:
           type: boolean
         resultEngine:
@@ -4098,9 +4104,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringMaxNullable'
         comment:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringMaxNullable'
         autoResult:
           type: boolean
         metadata:
@@ -4167,9 +4173,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringMaxNullable'
         comment:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringMaxNullable'
         autoResult:
           type: boolean
         metadata:
@@ -4336,7 +4342,7 @@ components:
         label:
           $ref: '#/components/schemas/ReviewStatusLabel'
         text:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/String255Nullable'
         user:
           $ref: '#/components/schemas/UserBasic'
         ts:
