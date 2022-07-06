@@ -3757,11 +3757,12 @@ components:
                 type: string
               accessLevel:
                 type: integer
-    CommentaryStringMax:
+    CommentaryString:
       type: string
       maxLength: 32768
-    CommentaryStringMaxNullable:
+    CommentaryStringNullable:
       type: string
+      nullable: true
       maxLength: 32768                
     Date:
       type: string
@@ -4080,9 +4081,9 @@ components:
         result:
           $ref: '#/components/schemas/ReviewResult'
         detail:
-          $ref: '#/components/schemas/CommentaryStringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         comment:
-          $ref: '#/components/schemas/CommentaryStringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         autoResult:
           type: boolean
         resultEngine:
@@ -4104,9 +4105,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/CommentaryStringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         comment:
-          $ref: '#/components/schemas/CommentaryStringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         autoResult:
           type: boolean
         metadata:
@@ -4173,9 +4174,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/CommentaryStringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         comment:
-          $ref: '#/components/schemas/CommentaryStringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         autoResult:
           type: boolean
         metadata:
