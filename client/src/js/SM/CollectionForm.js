@@ -273,7 +273,7 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
             typeAhead: true,
             minChars: 0,
             hideTrigger: false,
-            triggerAction: 'all',
+            triggerAction: 'query',
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
                 if (_this.grid.editor.editing == false) {
@@ -284,49 +284,31 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
             onTypeAhead: function () {},
             doQuery : (q, forceAll) => {
                 // Custom re-implementation of the original ExtJS method
-                // Initial lines were retained
 				q = Ext.isEmpty(q) ? '' : q;
-				var qe = {
-					query: q,
-					forceAll: forceAll,
-					combo: this,
-					cancel:false
-				};
-				if ( this.fireEvent('beforequery', qe) === false || qe.cancel ) {
-					return false;
-				}
-				q = qe.query;
-				forceAll = qe.forceAll;
 				if ( forceAll === true || (q.length >= this.minChars) ) {
 					// Removed test against this.lastQuery
-                        this.selectedIndex = -1
-                        if (forceAll) {
-                            this.store.clearFilter()
-                        }
-                        else {
-                            // Build array of filter functions
-                            let filters = []
-                            if (this.filteringStore) {
-                                // Include records from the combo store that are NOT in filteringStore
-                                filters.push(
-                                    {
-                                        fn: (record) =>  this.filteringStore.indexOfId(record.id) === -1,
-                                        scope: this
-                                    }
-                                )
+                    this.selectedIndex = -1
+                    let filters = []
+                    if (this.filteringStore) {
+                        // Exclude records from the combo store that are in the filteringStore
+                        filters.push(
+                            {
+                                fn: (record) =>  this.filteringStore.indexOfId(record.id) === -1,
+                                scope: this
                             }
-                            if (q) {
-                                // Include records that partially match the combo value
-                                filters.push(
-                                    {
-                                        fn: (record) => record.data.displayName.includes(q) || record.data.username.includes(q),
-                                        scope: this
-                                    }
-                                )
+                        )
+                    }
+                    if (q) {
+                        // Include records that partially match the combo value
+                        filters.push(
+                            {
+                                fn: (record) => record.data.displayName.includes(q) || record.data.username.includes(q),
+                                scope: this
                             }
-                            this.store.filter(filters)
-                        }
-                        this.onLoad()
+                        )
+                    }
+                    this.store.filter(filters)
+                    this.onLoad()
 				}
             },
             listeners: {
@@ -471,7 +453,6 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     editor.userSelectionField.store.clearFilter()
                     editor.userSelectionField.setDisabled(!!editor.grid.store.getAt(rowIndex).data.userId)
                 }
-
             }
         })
         const tbar = new SM.RowEditorToolbar({
@@ -1687,6 +1668,7 @@ SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
             '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
             '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
         ]
+        this.grid.editor.cpm = cpm
         this.namefield = new Ext.form.TextField({
             value: this.ownerCt.record.data.name,
             anchor: '100%',

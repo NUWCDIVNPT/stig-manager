@@ -93,7 +93,6 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
             'afteredit'
         );
     },
-
     init: function(grid){
         this.grid = grid;
         this.ownerCt = grid;
@@ -126,6 +125,16 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
         });
         grid.getColumnModel().on('hiddenchange', this.verifyLayout, this, {delay:1});
         grid.getView().on('refresh', this.stopEditing.createDelegate(this, []));
+        this.focusinHandler = (event) => {
+            console.log(event.target)
+            if (!this.el?.dom?.contains(event.target) && !this.grid?.editor?.cpm?.el?.dom?.contains(event.target)) {
+                console.log('will stop')
+                this.stopEditing(false);
+            }
+            else {
+                console.log('wont stop')
+            }  
+        }
     },
 
     beforedestroy: function() {
@@ -152,6 +161,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     startEditing: function(rowIndex, doFocus){
+        document.body.addEventListener('focusin', this.focusinHandler)
         if(this.editing && this.isDirty()){
             this.showTooltip(this.commitChangesText);
             return;
@@ -200,6 +210,8 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     stopEditing : function(saveChanges){
+        document.body.removeEventListener('focusin', this.focusinHandler)
+
         this.editing = false;
         this.grid.getEl()?.unmask()
 
@@ -424,8 +436,9 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
             }
             for(var i = index||0, len = cm.getColumnCount(); i < len; i++){
                 c = cm.getColumnAt(i);
-                if(!c.hidden && c.getEditor()){
-                    c.getEditor().focus();
+                const editor = c.getEditor()
+                if(!c.hidden && editor && !editor.disabled){
+                    editor.focus();
                     break;
                 }
             }
