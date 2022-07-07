@@ -125,7 +125,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
         });
         grid.getColumnModel().on('hiddenchange', this.verifyLayout, this, {delay:1});
         grid.getView().on('refresh', this.stopEditing.createDelegate(this, []));
-        this.focusinHandler = (event) => {
+        this.globalClickHandler = (event) => {
             console.log(event.target)
             if (!this.el?.dom?.contains(event.target) && !this.grid?.editor?.cpm?.el?.dom?.contains(event.target)) {
                 console.log('will stop')
@@ -161,7 +161,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     startEditing: function(rowIndex, doFocus){
-        document.body.addEventListener('focusin', this.focusinHandler)
+        document.body.addEventListener('click', this.globalClickHandler)
         if(this.editing && this.isDirty()){
             this.showTooltip(this.commitChangesText);
             return;
@@ -210,8 +210,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     stopEditing : function(saveChanges){
-        document.body.removeEventListener('focusin', this.focusinHandler)
-
+        document.body.removeEventListener('click', this.globalClickHandler)
         this.editing = false;
         this.grid.getEl()?.unmask()
 
