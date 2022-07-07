@@ -377,11 +377,17 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         const userSelectionField = new SM.UserSelectionField({
             submitValue: false,
             grid: this,
+            getListParent: function() {
+                return this.grid.editor.el;
+            },
             filteringStore: grantStore
         })
         const accessLevelField = new SM.AccessLevelField({
             submitValue: false,
-            grid: this
+            grid: this,
+            getListParent: function() {
+                return this.grid.editor.el;
+            }
         })
         const columns = [
             {
@@ -1619,6 +1625,41 @@ SM.Collection.LabelEditTpl = new Ext.XTemplate(
     '<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color:#{color};">{[SM.he(values.name)]}</span><img class="sm-label-edit-color" src="img/color-picker.svg" width="12" height="12">'
 )
 
+SM.Collection.ColorMenu = Ext.extend(Ext.menu.Menu, {
+    enableScrolling : false,
+    hideOnClick : true,
+    cls : 'x-color-menu',
+    paletteId : null,
+    
+    initComponent : function(){
+        Ext.apply(this, {
+            plain: true,
+            showSeparator: false,
+            items: this.palette = new Ext.ColorPalette(Ext.applyIf({
+                id: this.paletteId,
+                renderTo: null,
+                colors: [
+                    '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
+                    '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
+                ]
+            }, this.initialConfig))
+        })
+        this.palette.purgeListeners()
+        Ext.menu.ColorMenu.superclass.initComponent.call(this)
+        this.relayEvents(this.palette, ['select'])
+        this.on('select', this.menuHide, this);
+        if(this.handler){
+            this.on('select', this.handler, this.scope || this)
+        }
+    },
+
+    menuHide : function(){
+        if(this.hideOnClick){
+            this.hide(true)
+        }
+    }
+})
+
 
 SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
     defaultAutoCreate : {tag: "div"},
@@ -1646,8 +1687,9 @@ SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
     onRender: function (ct, position) {
         SM.Collection.LabelNameEditor.superclass.onRender.call(this, ct, position);
         const _this = this
-        const cpm = new Ext.menu.ColorMenu({
+        const cpm = new SM.Collection.ColorMenu({
             submitValue: false,
+            renderTo: this.grid.editor.el,
             listeners: {
                 select: function (palette, color) {
                     _this.previewfield.color = color
@@ -1664,10 +1706,11 @@ SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
                 }
             }
         })
-        cpm.palette.colors = [
-            '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
-            '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
-        ]
+        // cpm.palette.renderTo = undefined
+        // cpm.palette.colors = [
+        //     '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
+        //     '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
+        // ]
         this.grid.editor.cpm = cpm
         this.namefield = new Ext.form.TextField({
             value: this.ownerCt.record.data.name,

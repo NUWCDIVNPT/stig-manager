@@ -126,14 +126,9 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
         grid.getColumnModel().on('hiddenchange', this.verifyLayout, this, {delay:1});
         grid.getView().on('refresh', this.stopEditing.createDelegate(this, []));
         this.globalClickHandler = (event) => {
-            console.log(event.target)
-            if (!this.el?.dom?.contains(event.target) && !this.grid?.editor?.cpm?.el?.dom?.contains(event.target)) {
-                console.log('will stop')
+            if (!this.el?.dom?.contains(event.target)) {
                 this.stopEditing(false);
             }
-            else {
-                console.log('wont stop')
-            }  
         }
     },
 
