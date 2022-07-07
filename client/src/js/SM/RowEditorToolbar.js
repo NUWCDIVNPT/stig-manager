@@ -77,6 +77,7 @@ SM.RowEditorNewBtn = Ext.extend(Ext.Button, {
         SM.RowEditorNewBtn.superclass.initComponent.call(this);
     },
     btnHandler: function (button, event) {
+        event.stopPropagation()
         this.grid = Ext.getCmp(this.gridId) // grid should exist by the time we're rendered
         this.editor.stopEditing(false) // don't save changes
         this.grid.store.suspendEvents(false) // don't queue events
