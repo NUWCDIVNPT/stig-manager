@@ -688,7 +688,10 @@ SM.AssetStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             submitValue: false,
             autoLoad: true,
             grid: this,
-            filteringStore: stigAssignedStore
+            filteringStore: stigAssignedStore,
+            getListParent: function() {
+                return this.grid.editor.el;
+            }
         })
         const columns = [
             { 	

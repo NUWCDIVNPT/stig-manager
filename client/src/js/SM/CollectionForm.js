@@ -237,35 +237,43 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
         let _this = this
         const userStore = new Ext.data.JsonStore({
             fields: [
-                {
-                    name: 'userId',
-                    type: 'string'
-                }, {
-                    name: 'username',
-                    type: 'string'
-                }
+                'userId',
+                'username',
+                'displayName'
             ],
             autoLoad: true,
             url: `${STIGMAN.Env.apiBase}/users`,
             root: '',
             sortInfo: {
-                field: 'username',
+                field: 'displayName',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             idProperty: 'userId'
         })
+        // const tpl = `<tpl for="."><div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">{displayName}</span><br>{username}</div></tpl>`
+        const tpl = new Ext.XTemplate(
+            '<tpl for=".">',
+                '<div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">{[this.highlightQuery(values.displayName)]}</span><br>{[this.highlightQuery(values.username)]}</div>',
+            '</tpl>',
+            {
+                highlightQuery: function (text) {
+                    const re = new RegExp(_this.el.dom.value,'gi')
+                    return text.replace(re,'<span class="sm-text-highlight">$&</span>')
+                }
+            }
+        )
         const config = {
             store: userStore,
+            tpl,
             filteringStore: this.filteringStore || null,
-            displayField: 'username',
+            displayField: 'displayName',
             valueField: 'userId',
             mode: 'local',
             forceSelection: true,
             typeAhead: true,
             minChars: 0,
             hideTrigger: false,
-            triggerAction: 'all',
-            lastQuery: '',
+            triggerAction: 'query',
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
                 if (_this.grid.editor.editing == false) {
@@ -273,55 +281,39 @@ SM.UserSelectionField = Ext.extend(Ext.form.ComboBox, {
                 }
                 if (v === "") { return "Blank values not allowed" }
             },
-            doQuery: function (q, forceAll) {
-                q = Ext.isEmpty(q) ? '' : q;
-                var qe = {
-                    query: q,
-                    forceAll: forceAll,
-                    combo: this,
-                    cancel: false
-                };
-                if (this.fireEvent('beforequery', qe) === false || qe.cancel) {
-                    return false;
-                }
-                q = qe.query;
-                forceAll = qe.forceAll;
-                if (forceAll === true || (q.length >= this.minChars)) {
-                    if (this.lastQuery !== q) {
-                        this.lastQuery = q;
-                        if (this.mode == 'local') {
-                            this.selectedIndex = -1;
-                            if (forceAll) {
-                                this.store.clearFilter();
-                            } else {
-                                this.store.filter(this.displayField, q, false, false);
+            onTypeAhead: function () {},
+            doQuery : (q, forceAll) => {
+                // Custom re-implementation of the original ExtJS method
+				q = Ext.isEmpty(q) ? '' : q;
+				if ( forceAll === true || (q.length >= this.minChars) ) {
+					// Removed test against this.lastQuery
+                    this.selectedIndex = -1
+                    let filters = []
+                    if (this.filteringStore) {
+                        // Exclude records from the combo store that are in the filteringStore
+                        filters.push(
+                            {
+                                fn: (record) =>  this.filteringStore.indexOfId(record.id) === -1,
+                                scope: this
                             }
-                            this.onLoad();
-                        } else {
-                            this.store.baseParams[this.queryParam] = q;
-                            this.store.load({
-                                params: this.getParams(q)
-                            });
-                            this.expand();
-                        }
-                    } else {
-                        this.selectedIndex = -1;
-                        this.onLoad();
+                        )
                     }
-                }
+                    if (q) {
+                        // Include records that partially match the combo value
+                        filters.push(
+                            {
+                                fn: (record) => record.data.displayName.includes(q) || record.data.username.includes(q),
+                                scope: this
+                            }
+                        )
+                    }
+                    this.store.filter(filters)
+                    this.onLoad()
+				}
             },
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
-                },
-                expand: (combo) => {
-                    if (combo.filteringStore) {
-                        combo.store.filterBy(
-                            function (record, id) {
-                                return combo.filteringStore.indexOfId(id) === -1
-                            }
-                        )
-                    }
                 }
             }
         }
@@ -335,15 +327,10 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {
         const _this = this
         const newFields = [
-            {
-                name: 'userId'
-            },
-            {
-                name: 'username'
-            },
-            {
-                name: 'accessLevel'
-            }
+            'userId',
+            'username',
+            'displayName',
+            'accessLevel'
         ]
         this.newRecordConstructor = Ext.data.Record.create(newFields)
         const totalTextCmp = new Ext.Toolbar.TextItem({
@@ -374,7 +361,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             fields: newFields,
             idProperty: 'userId',
             sortInfo: {
-                field: 'username',
+                field: 'displayName',
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             },
             listeners: {
@@ -390,23 +377,32 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         const userSelectionField = new SM.UserSelectionField({
             submitValue: false,
             grid: this,
+            getListParent: function() {
+                return this.grid.editor.el;
+            },
             filteringStore: grantStore
         })
         const accessLevelField = new SM.AccessLevelField({
             submitValue: false,
-            grid: this
+            grid: this,
+            getListParent: function() {
+                return this.grid.editor.el;
+            }
         })
         const columns = [
             {
-                header: "Username",
+                header: "User",
                 width: 150,
-                dataIndex: 'username',
+                dataIndex: 'userId',
                 sortable: true,
+                renderer: function (v, m, r) {
+                    return `<div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">${r.data.displayName}</span><br>${r.data.username}</div>`
+                },
                 editor: userSelectionField
             },
             {
                 header: "Access Level",
-                width: 100,
+                width: 50,
                 dataIndex: 'accessLevel',
                 sortable: true,
                 renderer: (v) => SM.AccessLevelStrings[v],
@@ -458,8 +454,11 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         _this.accessBtn.setDisabled(record.data.accessLevel != 1)
                     }
                     editor.grid.fireEvent('grantschanged', editor.grid)
+                },
+                beforeedit: function (editor, rowIndex) {
+                    editor.userSelectionField.store.clearFilter()
+                    editor.userSelectionField.setDisabled(!!editor.grid.store.getAt(rowIndex).data.userId)
                 }
-
             }
         })
         const tbar = new SM.RowEditorToolbar({
@@ -532,6 +531,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 const data = v.map((g) => ({
                     userId: g.user.userId,
                     username: g.user.username,
+                    displayName: g.user.displayName,
                     accessLevel: g.accessLevel
                 }))
                 grantStore.loadData(data)
@@ -1043,11 +1043,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 				}
 			}
 		})
-		grantGrid.getStore().loadData(_this.apiCollection.grants.map( g => ({
-			userId: g.user.userId,
-			username: g.user.username,
-			accessLevel: g.accessLevel
-		})))
+		grantGrid.setValue(_this.apiCollection.grants)
 
         this.labelGrid = new SM.Collection.LabelsGrid({
 			collectionId: _this.apiCollection.collectionId,
@@ -1629,6 +1625,41 @@ SM.Collection.LabelEditTpl = new Ext.XTemplate(
     '<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color:#{color};">{[SM.he(values.name)]}</span><img class="sm-label-edit-color" src="img/color-picker.svg" width="12" height="12">'
 )
 
+SM.Collection.ColorMenu = Ext.extend(Ext.menu.Menu, {
+    enableScrolling : false,
+    hideOnClick : true,
+    cls : 'x-color-menu',
+    paletteId : null,
+    
+    initComponent : function(){
+        Ext.apply(this, {
+            plain: true,
+            showSeparator: false,
+            items: this.palette = new Ext.ColorPalette(Ext.applyIf({
+                id: this.paletteId,
+                renderTo: null,
+                colors: [
+                    '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
+                    '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
+                ]
+            }, this.initialConfig))
+        })
+        this.palette.purgeListeners()
+        Ext.menu.ColorMenu.superclass.initComponent.call(this)
+        this.relayEvents(this.palette, ['select'])
+        this.on('select', this.menuHide, this);
+        if(this.handler){
+            this.on('select', this.handler, this.scope || this)
+        }
+    },
+
+    menuHide : function(){
+        if(this.hideOnClick){
+            this.hide(true)
+        }
+    }
+})
+
 
 SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
     defaultAutoCreate : {tag: "div"},
@@ -1656,8 +1687,9 @@ SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
     onRender: function (ct, position) {
         SM.Collection.LabelNameEditor.superclass.onRender.call(this, ct, position);
         const _this = this
-        const cpm = new Ext.menu.ColorMenu({
+        const cpm = new SM.Collection.ColorMenu({
             submitValue: false,
+            renderTo: this.grid.editor.el,
             listeners: {
                 select: function (palette, color) {
                     _this.previewfield.color = color
@@ -1674,10 +1706,12 @@ SM.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
                 }
             }
         })
-        cpm.palette.colors = [
-            '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
-            '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
-        ]
+        // cpm.palette.renderTo = undefined
+        // cpm.palette.colors = [
+        //     '4568F2', '7000FF', 'E46300', '8A5000', '019900', 'DF584B', 
+        //     '99CCFF', 'D1ADFF', 'FFC399', 'FFF699', 'A3EA8F', 'F5A3A3', 
+        // ]
+        this.grid.editor.cpm = cpm
         this.namefield = new Ext.form.TextField({
             value: this.ownerCt.record.data.name,
             anchor: '100%',

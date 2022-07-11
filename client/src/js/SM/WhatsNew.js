@@ -2,6 +2,16 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-07-11',
+    header: `Enhanced User lists in the Collection Grant interface`,
+    body: `In the Collection Grants interface, the grid and dropdown lists now show the username and display name.<p/>
+    <img src="img/whatsnew/2022-07-11-A.png"/>
+    <p/>
+    When selecting a User from the dropdown list, it is possible to filter the list on a string that appears anywhere in either the username or display name.<p/>
+    <img src="img/whatsnew/2022-07-11-B.png"/>
+    `
+  },
+  {
     date: '2022-06-01',
     header: `Batch Editing Preview`,
     body: `Edit reviews for multiple Assets at once from the Collection Review workspace! This feature is offered as a preview of functionality that is actively under development, and may change somewhat before final release. <p />
@@ -19,7 +29,6 @@ SM.WhatsNew.Sources = [
     <p />
     `
   },
-
   {
     date: '2022-05-18',
     header: `What's New Dialog on App Start`,

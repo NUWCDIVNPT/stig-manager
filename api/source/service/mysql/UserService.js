@@ -16,9 +16,9 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       `json_extract(
         ud.lastClaims, :email
       ) as email`,
-      `json_extract(
+      `COALESCE(json_unquote(json_extract(
         ud.lastClaims, :name
-      ) as displayName`,  
+      )), ud.username) as displayName`,  
     ]
     let joins = [
       'user_data ud',

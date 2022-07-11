@@ -93,7 +93,6 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
             'afteredit'
         );
     },
-
     init: function(grid){
         this.grid = grid;
         this.ownerCt = grid;
@@ -126,6 +125,11 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
         });
         grid.getColumnModel().on('hiddenchange', this.verifyLayout, this, {delay:1});
         grid.getView().on('refresh', this.stopEditing.createDelegate(this, []));
+        this.globalClickHandler = (event) => {
+            if (!this.el?.dom?.contains(event.target)) {
+                this.stopEditing(false);
+            }
+        }
     },
 
     beforedestroy: function() {
@@ -152,6 +156,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     startEditing: function(rowIndex, doFocus){
+        document.body.addEventListener('click', this.globalClickHandler)
         if(this.editing && this.isDirty()){
             this.showTooltip(this.commitChangesText);
             return;
@@ -200,6 +205,7 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     stopEditing : function(saveChanges){
+        document.body.removeEventListener('click', this.globalClickHandler)
         this.editing = false;
         this.grid.getEl()?.unmask()
 
@@ -303,10 +309,10 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
     },
 
     onKey: function(f, e){
-        if(e.getKey() === e.ENTER){
-            this.stopEditing(true);
-            e.stopPropagation();
-        }
+        // if(e.getKey() === e.ENTER){
+        //     this.stopEditing(true);
+        //     e.stopPropagation();
+        // }
     },
 
     onGridKey: function(e){
@@ -424,8 +430,9 @@ Ext.ux.grid.RowEditor = Ext.extend(Ext.Panel, {
             }
             for(var i = index||0, len = cm.getColumnCount(); i < len; i++){
                 c = cm.getColumnAt(i);
-                if(!c.hidden && c.getEditor()){
-                    c.getEditor().focus();
+                const editor = c.getEditor()
+                if(!c.hidden && editor && !editor.disabled){
+                    editor.focus();
                     break;
                 }
             }

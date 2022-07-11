@@ -200,11 +200,17 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             submitValue: false,
             grid: this,
             filteringStore: grantStore,
+            getListParent: function() {
+                return this.grid.editor.el;
+            },
             autoLoad: true
         })
         const accessLevelField = new SM.AccessLevelField({
             submitValue: false,
-            grid: this
+            grid: this,
+            getListParent: function() {
+                return this.grid.editor.el;
+            }
         })
         const columns = [
             { 	

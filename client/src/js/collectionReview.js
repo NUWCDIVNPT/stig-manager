@@ -707,15 +707,6 @@ async function addCollectionReview ( params ) {
 			},
 			idProperty: 'assetId'
 		});
-
-		var editor = new Ext.ux.grid.RowEditor({
-			saveText: 'Update',
-			height: 200,
-			listeners: {
-				beforeedit: function (editor,rowIdx) {
-				}
-			}
-		});
 		
 		var reviewsCm = new Ext.grid.ColumnModel({
 			columns: [
