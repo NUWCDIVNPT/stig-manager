@@ -1120,17 +1120,17 @@ paths:
         
         **For new Reviews**
         
-        - a `null` value for either `detail` or `comment` will set the stored value to the empty string.`
+        - a `null` value for either `detail` or `comment` will set the stored value to the empty string.
         - an absent `status` property will set the stored value to `{ label: "saved", text: null }`.
         
         **Each new or updated Review is permitted or rejected as follows:**
         
-        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then reject the Review
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then **reject** the Review
         - If the optional property `status` is absent or `status.label` has value `saved`, then permit the Review
-        - If the new or updated Review would not be submittable according to the Collection settings, then reject the Review
-        - If the value of `status.label` is `submitted`, then permit the Review.
-        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then permit the Review.
-        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then reject the Review.
+        - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
+        - If the value of `status.label` is `submitted`, then **permit** the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then **permit** the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then **reject** the Review.
       operationId: postReviewsByAsset
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
@@ -1260,7 +1260,7 @@ paths:
 
         **For new Reviews**
         
-        - a `null` value for either `detail` or `comment` will set the stored value to the empty string.`
+        - a `null` value for either `detail` or `comment` will set the stored value to the empty string.
         - an absent `status` property will set the stored value to `{ label: "saved", text: null }`.
         
         The request is permitted or rejected as follows:
