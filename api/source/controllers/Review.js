@@ -36,6 +36,9 @@ function normalizeReview ( review ) {
     }
   }
   if ((review.result && review.resultEngine === undefined) || review.resultEngine === null) {
+    // How this object's resultEngine property affects the resultEngine field in the database:
+    // A zero value instructs the service to set resultEngine = NULL
+    // A null value instructs the service to retain the existing resultEngine field
     review.resultEngine = 0
   }
   return review
