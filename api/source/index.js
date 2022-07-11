@@ -73,7 +73,7 @@ const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
 app.use( "/api", openApiMiddleware ({
   apiSpec: apiSpecPath,
   validateRequests: {
-    coerceTypes: true,
+    coerceTypes: false,
     allowUnknownQueryParameters: false,
   },
   validateResponses: buildResponseValidationConfig(),
