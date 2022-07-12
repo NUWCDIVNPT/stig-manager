@@ -25,19 +25,19 @@ body:
     - label: UI or other client
     - label: Deployment
     - label: Elsewhere
-      required: true          
+      required: false          
 - type: textarea
   attributes:
     label: Current Behavior
     description: A concise description of what you're experiencing.
   validations:
-    required: false
+    required: true
 - type: textarea
   attributes:
     label: Expected Behavior
     description: A concise description of what you expected to happen.
   validations:
-    required: true
+    required: false
 - type: textarea
   attributes:
     label: Steps To Reproduce
