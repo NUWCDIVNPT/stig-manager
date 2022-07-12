@@ -13,10 +13,19 @@ body:
 - type: checkboxes
   attributes:
     label: Are you using the latest version of STIG Manager?
-    description: STIGMan is an 
+    description: The STIGMan project is in development using an agile process that releases new features and bugfixes frequently.  
     options:
-    - label: I can confirm I am running the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases)
+    - label: I am using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases)
       required: true      
+- type: checkboxes
+  attributes:
+    label: Where are you experiencing the issue?
+    options:
+    - label: API
+    - label: UI or other client
+    - label: Deployment
+    - label: Elsewhere
+      required: true          
 - type: textarea
   attributes:
     label: Current Behavior
