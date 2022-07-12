@@ -18,6 +18,7 @@ body:
     - label: I am using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases)
       required: true      
 - type: checkboxes
+  id: issue-location
   attributes:
     label: Where are you experiencing the issue?
     options:
