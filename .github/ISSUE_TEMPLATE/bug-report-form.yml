@@ -63,11 +63,13 @@ body:
     label: Describe your Environment
     description: |
       examples:
+        - **Hosting**: Are you hosting your own deployment of STIGMan or being provided with an instance? 
         - **Browser**: Chrome
         - **OS**: Ubuntu 20.04
         - **Node**: 13.14.0
         - **npm**: 7.6.3
     value: |
+        - Hosting:
         - Browser:
         - OS:
         - Node:
