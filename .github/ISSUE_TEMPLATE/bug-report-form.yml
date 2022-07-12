@@ -1,6 +1,6 @@
 name: 🐞 Bug
 description: File a bug/issue
-title: "[BUG] <title>"
+title: "***The title of your Issue here***"
 labels: [Bug, Needs Triage]
 body:
 - type: checkboxes
@@ -29,13 +29,13 @@ body:
 - type: textarea
   attributes:
     label: Current Behavior
-    description: A concise description of what you're experiencing.
+    description: A description of what you're experiencing.
   validations:
     required: true
 - type: textarea
   attributes:
     label: Expected Behavior
-    description: A concise description of what you expected to happen.
+    description: A description of what you expected to happen.
   validations:
     required: false
 - type: textarea
