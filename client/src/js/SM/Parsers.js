@@ -8,6 +8,8 @@
       valueProcessor,
       XMLParser
     }) {
+
+    const maxCommentLength = 32767
       
     if (!XMLParser) {
       if (typeof require === 'function') {
@@ -188,7 +190,7 @@
         }
       }
   
-      let detail = vuln.FINDING_DETAILS
+      let detail = vuln.FINDING_DETAILS.length > maxCommentLength ? vuln.FINDING_DETAILS.slice(0, maxCommentLength) : vuln.FINDING_DETAILS
       if (!vuln.FINDING_DETAILS) {
         switch (importOptions.emptyDetail) {
           case 'ignore':
@@ -203,7 +205,7 @@
         }
       }
   
-      let comment = vuln.COMMENTS
+      let comment = vuln.COMMENTS.length > maxCommentLength ? vuln.COMMENTS.slice(0, maxCommentLength) : vuln.COMMENTS
       if (!vuln.COMMENTS) {
         switch (importOptions.emptyComment) {
           case 'ignore':
@@ -361,7 +363,7 @@
     }
   }
   
-  exports.reviewsFromScc = function (
+  exports.reviewsFromXccdf = function (
     {
       data, 
       fieldSettings,
@@ -378,13 +380,13 @@
       attributeNamePrefix: "",
       cdataPropName: "__cdata", //default is 'false'
       ignoreAttributes: false,
-      parseTagValue: true,
+      parseTagValue: false,
       removeNSPrefix: true,
       trimValues: true,
       tagValueProcessor: valueProcessor,
       commentPropName: "__comment",
       isArray: (name, jpath, isLeafNode, isAttribute) => {
-        return name === 'override'
+        return name === 'override' || name === 'target-address'
       }
     }
     const parser = new XMLParser(parseOptions)  
@@ -393,7 +395,8 @@
     // Baic sanity checks
     if (!parsed.Benchmark) throw (new Error("No Benchmark element"))
     if (!parsed.Benchmark.TestResult) throw (new Error("No TestResult element"))
-    if (!parsed.Benchmark.TestResult['target-facts']) throw (new Error("No target-facts element"))
+    if (!parsed.Benchmark.TestResult['target']) throw (new Error("No target element"))
+    // if (!parsed.Benchmark.TestResult['target-facts']) throw (new Error("No target-facts element"))
     if (!parsed.Benchmark.TestResult['rule-result']) throw (new Error("No rule-result element"))
 
     // Process parsed data
@@ -402,6 +405,8 @@
       benchmarkId = scapBenchmarkMap.get(benchmarkId)
     }
     let target = processTargetFacts(parsed.Benchmark.TestResult['target-facts'].fact)
+    target.name = parsed.Benchmark.TestResult.target || target.name
+    target.ip = parsed.Benchmark.TestResult['target-address']?.[0] || target.ip
     if (!target.name) {
       throw (new Error('No host_name fact'))
     }
@@ -599,6 +604,7 @@
       facts.forEach(fact => {
         if (fact['#text']) {
           let name = fact.name.replace('urn:scap:fact:asset:identifier:', '')
+          name = name.replace('urn:xccdf:fact:', '')
           name = name === 'ipv4' ? 'ip' : name
           target[name] = fact['#text'] 
         }
@@ -615,5 +621,7 @@
       }
     }
   }
+
+  exports.reviewsFromScc = exports.reviewsFromXccdf
   
 }) (typeof exports === 'undefined'? this['ReviewParser'] = {} : exports)
