@@ -3819,11 +3819,11 @@ components:
                 type: integer
     CommentaryString:
       type: string
-      maxLength: 32768
+      maxLength: 32767
     CommentaryStringNullable:
       type: string
       nullable: true
-      maxLength: 32768                
+      maxLength: 32767                
     Date:
       type: string
       format: date
