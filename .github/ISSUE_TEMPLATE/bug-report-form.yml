@@ -15,9 +15,8 @@ body:
     label: Are you using the latest version of STIG Manager?
     description: The latest release is ![GitHub release](https://img.shields.io/github/v/release/NUWCDIVNPT/stig-manager?label=%20). You can see the version you are using in the app on the Home tab, in the badge next to the STIG Manager name and logo. The STIGMan project is in development using an agile process that releases new features and bugfixes frequently. 
     options:
-    - label: I am using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases).
-    - label: I am NOT using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases). I am aware that the first thing I will be asked to do is update the application so that I have the latest bugfixes. 
-      required: true      
+      - label: I am using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases).
+      - label: I am NOT using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases). I am aware that the first thing I will be asked to do is update the application so that I have the latest bugfixes. 
 - type: checkboxes
   id: issue-location
   attributes:
