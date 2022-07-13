@@ -601,8 +601,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       r.responsibility,
       r.severityOverrideGuidance,
       result.ckl as "result",
-      review.detail,
-      review.comment,
+      LEFT(review.detail,32767) as "detail",
+      LEFT(review.comment,32767) as "comment",
       MAX(c.content) as "checkContent",
       MAX(fix.text) as "fixText",
       group_concat(rcc.cci ORDER BY rcc.cci) as "ccis"
