@@ -16,13 +16,14 @@ body:
     description: The STIGMan project is in development using an agile process that releases new features and bugfixes frequently.  
     options:
     - label: I am using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases)
+    - label: I am NOT using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases). I am aware that the first thing I will be asked to do is update the application to the latest supported version[![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/releases/). 
       required: true      
 - type: dropdown
   id: issue-location
   attributes:
     multiple: true
     label: Where are you experiencing the issue?
-    description: Locations
+    description: Select one or more.
     options:
      - API
      - UI or other client
