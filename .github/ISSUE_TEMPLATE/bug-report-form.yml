@@ -22,6 +22,7 @@ body:
   attributes:
     multiple: true
     label: Where are you experiencing the issue?
+    description: Locations
     options:
      - API
      - UI or other client
