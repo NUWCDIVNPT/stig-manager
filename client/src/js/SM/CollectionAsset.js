@@ -329,7 +329,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         const modifyBtn = new Ext.Button(                    {
             iconCls: 'sm-asset-icon',
             disabled: true,
-            text: 'Properties...',
+            text: 'Modify...',
             handler: function() {
                 var r = me.getSelectionModel().getSelected();
                 Ext.getBody().mask('Getting properties...');
@@ -532,7 +532,7 @@ Ext.reg('sm-asset-label-field', SM.AssetLabelField)
 
 SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
-        let me = this
+        let _this = this
         let stigStore = new Ext.data.JsonStore({
             fields: [
                 {	name:'benchmarkId',
@@ -561,20 +561,32 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             idProperty: 'benchmarkId',
             listeners: {
                 load: (store, records, options) => {
-                    if (me.includeAllItem) {
+                    if (_this.includeAllItem) {
                         store.suspendEvents()
                         let allRecord = {
-                            benchmarkId: me.includeAllItem
+                            benchmarkId: _this.includeAllItem
                         }
-                        store.loadData( me.root ? { [me.root]: allRecord } : { allRecord }, true)
+                        store.loadData( _this.root ? { [_this.root]: allRecord } : { allRecord }, true)
                         store.sort('benchmarkId', 'ASC')
                         store.resumeEvents()
                     }
                 }
             }
         })
+        const tpl = new Ext.XTemplate(
+            '<tpl for=".">',
+                '<div class="x-combo-list-item">{[this.highlightQuery(values.benchmarkId)]}</div>',
+            '</tpl>',
+            {
+                highlightQuery: function (text) {
+                    const re = new RegExp(_this.el.dom.value,'gi')
+                    return text.replace(re,'<span class="sm-text-highlight">$&</span>')
+                }
+            }
+        )
         let config = {
             store: stigStore,
+            tpl,
             filteringStore: this.filteringStore || null,
             displayField: 'benchmarkId',
             valueField: 'benchmarkId',
@@ -582,71 +594,46 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             forceSelection: true,
 			typeAhead: true,
 			minChars: 0,
-            triggerAction: this.triggerAction || 'query',
+            triggerAction: 'query',
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
                 },
             },
+            onTypeAhead: function () {},
             doQuery : (q, forceAll) => {
                 // Custom re-implementation of the original ExtJS method
-                // Initial lines were retained
 				q = Ext.isEmpty(q) ? '' : q;
-				var qe = {
-					query: q,
-					forceAll: forceAll,
-					combo: this,
-					cancel:false
-				};
-				if ( this.fireEvent('beforequery', qe) === false || qe.cancel ) {
-					return false;
-				}
-				q = qe.query;
-				forceAll = qe.forceAll;
 				if ( forceAll === true || (q.length >= this.minChars) ) {
 					// Removed test against this.lastQuery
-                    if (this.mode == 'local') {
-                        this.selectedIndex = -1
-                        if (forceAll) {
-                            this.store.clearFilter()
-                        }
-                        else {
-                            // Build array of filter functions
-                            let filters = []
-                            if (this.filteringStore) {
-                                // Include records from the combo store that are NOT in filteringStore
-                                filters.push(
-                                    {
-                                        fn: (record) =>  this.filteringStore.indexOfId(record.id) === -1,
-                                        scope: this
-                                    }
-                                )
+                    this.selectedIndex = -1
+                    let filters = []
+                    if (this.filteringStore) {
+                        // Exclude records from the combo store that are in the filteringStore
+                        filters.push(
+                            {
+                                fn: (record) =>  record.id === this.initialBenchmarkId || this.filteringStore.indexOfId(record.id) === -1,
+                                scope: this
                             }
-                            if (q) {
-                                // Include records that partially match the combo value
-                                filters.push(
-                                    {
-                                        property: this.displayField,
-                                        value: q
-                                    }
-                                )
-                            }
-                            this.store.filter(filters)
-                        }
-                        this.onLoad()
-                    } 
-                    else {
-                        this.store.baseParams[this.queryParam] = q
-                        this.store.load({
-                            params: this.getParams(q)
-                        })
-                        this.expand()
+                        )
                     }
+                    if (q) {
+                        // Include records that partially match the combo value
+                        filters.push(
+                            {
+                                property: this.displayField,
+                                value: q,
+                                anyMatch: true
+                            }
+                        )
+                    }
+                    this.store.filter(filters)
+                    this.onLoad()
 				}
             },
             validator: (v) => {
                 // Don't keep the form from validating when I'm not active
-                if (me.grid && me.grid.editor && !me.grid.editor.editing) {
+                if (_this.grid && _this.grid.editor && !_this.grid.editor.editing) {
                     return true
                 }
                 if (v === "") { return "Blank values not allowed" }
