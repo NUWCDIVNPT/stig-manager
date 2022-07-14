@@ -196,6 +196,13 @@ async function loadApp () {
 			width: 200,
 			dismissDelay: 60000 // Show while cursor is over element
 		})
+
+		window.addEventListener('keydown', function (e) {
+			// prevent ctrl-a from being handled by the browser
+			if (e.key === 'a' && e.ctrlKey) {
+				e.preventDefault()
+			}
+		})
 		
 	}
 	catch (e) {
