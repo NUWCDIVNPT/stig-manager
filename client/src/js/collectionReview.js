@@ -830,6 +830,7 @@ async function addCollectionReview ( params ) {
 						id: 'reviewsGrid-editor-detail' + idAppend,
 						//height: 150
 						grow: true,
+						growMax: 200,
 						listeners: {
 							// focus and blur handlers enable/disable IE workaround
 							focus: function (cmp) {
@@ -841,6 +842,9 @@ async function addCollectionReview ( params ) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return false;'
 								});
+							},
+							render: function (ta) {
+								ta.el.dom.maxLength = 32767
 							}
 						}
 					})
@@ -860,6 +864,7 @@ async function addCollectionReview ( params ) {
 					editor: new Ext.form.TextArea({
 						id: 'reviewsGrid-editor-comment' + idAppend,
 						grow: true,
+						growMax: 200,
 						listeners: {
 							// focus and blur handlers enable/disable IE workaround
 							focus: function (cmp) {
@@ -871,6 +876,9 @@ async function addCollectionReview ( params ) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return false;'
 								});
+							},
+							render: function (ta) {
+								ta.el.dom.maxLength = 32767
 							}
 						}
 					}),

@@ -1103,25 +1103,34 @@ paths:
         - Review
       summary: Post one or more Reviews
       description: |
-        The request body can contain a mix of new and updated Reviews. The overall request is validated as follows:
+        The request body is an array that can contain both new and updated Reviews. All Reviews MUST contain the properties `ruleId`, `result`, `detail`, and `comment`. The overall request is validated as follows:
+
+        - conformance with the OAS schema for `ReviewAssetPost`
+        - the requesting user has been granted access to the {collectionId}
         
-        - conformance with the OAS schema for `ReviewAssetWrite`
-        - the requesting user has been granted access to the collectionId
+        **For all Reviews**
         
-        For updated Reviews, a `null` value in either `detail` or `comment` indicates the original value will be retained. The absence of the property `status` indicates the orignal value will be retained.
+        - a string value for the `status` property will set the stored value to `{ label: <string>, text: null }`
+        - an absent `resultEngine` property will set the stored value to `null`
+
+        **For updated Reviews** 
         
-        For new Reviews, a `null` value in either `detail` or `comment` indicates the corresponding value in the new Review should be `null`. The absence of the property `status` indicates the corresponding value in the new Review should be `status: { label: "saved", text: null }`.
+        - a `null` value for either `detail` or `comment` will retain the existing value.
+        - an absent `status` property will either retain the existing value or update the `status` value to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
         
-        For all Reviews, a string value for the `status` property is internally normalized to `status: { label: <string>, text: null }`
+        **For new Reviews**
         
-        Each new or updated Review is permitted or rejected as follows:
+        - a `null` value for either `detail` or `comment` will set the stored value to the empty string.
+        - an absent `status` property will set the stored value to `{ label: "saved", text: null }`.
         
-        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then reject the Review
+        **Each new or updated Review is permitted or rejected as follows:**
+        
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then **reject** the Review
         - If the optional property `status` is absent or `status.label` has value `saved`, then permit the Review
-        - If the new or updated Review would not be submittable according to the Collection settings, then reject the Review
-        - If the value of `status.label` is `submitted`, then permit the Review.
-        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then permit the Review.
-        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then reject the Review.
+        - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
+        - If the value of `status.label` is `submitted`, then **permit** the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then **permit** the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then **reject** the Review.
       operationId: postReviewsByAsset
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
@@ -1131,8 +1140,9 @@ paths:
           application/json:
             schema:
               type: array
+              minItems: 1
               items:
-                $ref: '#/components/schemas/ReviewAssetWrite'
+                $ref: '#/components/schemas/ReviewAssetPost'
       responses:
         '200':
           description: ReviewPostResponse response
@@ -1181,8 +1191,30 @@ paths:
     patch:
       tags:
         - Review
-      summary: Merge provided properties with a Review
-      description: 'Update the given properties of a Review, if it exists'
+      summary: Merge the provided properties with an existing Review
+      description: |
+        The request MUST target an existing Review and the request body MUST contain one or more Review properties. The overall request is validated as follows:
+        
+        - conformance with the OAS schema for `ReviewAssetRulePatch`
+        - the requesting user has been granted access to the {collectionId}
+        - a Review already exists for the {assetId} and {ruleId}
+        
+        A string value for the `status` property will set the stored value to `{ label: <string>, text: null }`.
+        
+        If the request changes the existing `result`, then the `resultEngine` value will be set to `null` unless the request includes an explicit `resultEngine` value. 
+
+        An absent `status` property may still lead to the `status` value being updated to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
+
+        Unlike the corresponding PUT endpoint, the `detail` and `comment` properties do not support `null` as a value.
+
+        The request is permitted or rejected as follows:
+        
+        - If the requesting user's collection grant is `restricted` AND the `assetId` is not included in any user grant, then **reject** the Review
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the user been granted access, then **reject** the Review
+        - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
+        - If the value of `status.label` is `submitted`, then **permit** the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then **permit** the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then **reject** the Review.
       operationId: patchReviewByAssetRule
       requestBody:
         required: true
@@ -1210,7 +1242,35 @@ paths:
       tags:
         - Review
       summary: Set all properties of a Review
-      description: Create a new Review or update all properties of an existing Review
+      description: |
+        The request can target either a new or an existing Review. The request body MUST contain the Review properties `result`, `detail`, and `comment`. The overall request is validated as follows:
+        
+        - conformance with the OAS schema for `ReviewAssetRulePut`
+        - the requesting user has been granted access to the {collectionId}
+
+        **For all Reviews**
+        
+        - a string value for the `status` property will set the stored value to `{ label: <string>, text: null }`
+        - an absent `resultEngine` property will set the stored value to `resultEngine: null`
+        
+        **For updated Reviews** 
+        
+        - a `null` value for either `detail` or `comment` will retain the existing value.
+        - an absent `status` property will either retain or update the `status` value to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
+
+        **For new Reviews**
+        
+        - a `null` value for either `detail` or `comment` will set the stored value to the empty string.
+        - an absent `status` property will set the stored value to `{ label: "saved", text: null }`.
+        
+        The request is permitted or rejected as follows:
+        
+        - If the requesting user's collection grant is `restricted` AND the `assetId` is not included in any user grant, then **reject** the Review
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the user been granted access, then **reject** the Review
+        - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
+        - If the value of `status.label` is `submitted`, then **permit** the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then **permit** the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then **reject** the Review.
       operationId: putReviewByAssetRule
       requestBody:
         required: true
@@ -3757,6 +3817,13 @@ components:
                 type: string
               accessLevel:
                 type: integer
+    CommentaryString:
+      type: string
+      maxLength: 32767
+    CommentaryStringNullable:
+      type: string
+      nullable: true
+      maxLength: 32767                
     Date:
       type: string
       format: date
@@ -4040,9 +4107,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryString'
         comment:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryString'
         autoResult:
           type: boolean
         status:
@@ -4070,17 +4137,43 @@ components:
     ReviewAssetRulePatch:
       type: object
       additionalProperties: false
+      minProperties: 1
       properties:
         result:
           $ref: '#/components/schemas/ReviewResult'
         detail:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/CommentaryString'
         comment:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/CommentaryString'
         autoResult:
           type: boolean
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        status:
+          $ref: '#/components/schemas/ReviewStatusWrite'
+    ReviewAssetPost:
+      type: object
+      required:
+        - ruleId
+        - result
+        - detail
+        - comment
+      additionalProperties: false
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/String255'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        detail:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        comment:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        autoResult:
+          type: boolean
         metadata:
           $ref: '#/components/schemas/Metadata'
         status:
@@ -4098,9 +4191,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         comment:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryStringNullable'
         autoResult:
           type: boolean
         metadata:
@@ -4124,9 +4217,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryString'
         comment:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryString'
         autoResult:
           type: boolean
         userId:
@@ -4151,31 +4244,6 @@ components:
             type: string
         rule:
           $ref: '#/components/schemas/RuleAbbr'
-    ReviewAssetWrite:
-      type: object
-      required:
-        - ruleId
-        - result
-        - detail
-        - comment
-      additionalProperties: false
-      properties:
-        ruleId:
-          $ref: '#/components/schemas/String255'
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        detail:
-          $ref: '#/components/schemas/StringMaxNullable'
-        comment:
-          $ref: '#/components/schemas/StringMaxNullable'
-        autoResult:
-          type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        status:
-          $ref: '#/components/schemas/ReviewStatusWrite'
     ReviewHistory:
       type: object
       required:
@@ -4194,9 +4262,9 @@ components:
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         detail:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryString'
         comment:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/CommentaryString'
         autoResult:
           type: boolean
         status:
@@ -4336,7 +4404,7 @@ components:
         label:
           $ref: '#/components/schemas/ReviewStatusLabel'
         text:
-          $ref: '#/components/schemas/StringMaxNullable'
+          $ref: '#/components/schemas/String255Nullable'
         user:
           $ref: '#/components/schemas/UserBasic'
         ts:
