@@ -114,8 +114,29 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         me.totalTextCmp = new SM.RowCountTextItem ({
             store: assetStore
         })
+        const sm = new Ext.grid.CheckboxSelectionModel({
+            singleSelect: false,
+            checkOnly: false,
+            listeners: {
+                selectionchange: function (sm) {
+                    modifyBtn.setDisabled(sm.getCount() !== 1)
+                    const hasSelection = sm.hasSelection()
+                    let someSelectionsHaveStigs = false
+                    if (hasSelection) {
+                        const selectedRecords = sm.getSelections()
+                        someSelectionsHaveStigs = selectedRecords.some( i => i.data.stigCount > 0)
+                    }
+                    for (const btn of [deleteBtn, transferBtn]) {
+                        btn.setDisabled(!hasSelection)
+                    }
+                    exportCklBtn.setDisabled(!(hasSelection && someSelectionsHaveStigs))
+                    SM.SetCheckboxSelModelHeaderState(sm)
+                }
+            }
+        })
         const assetColumnId = Ext.id()
         const columns = [
+            sm,
             { 	
 				header: "Asset",
                 id: assetColumnId,
@@ -343,24 +364,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   
             }),
-            sm: new Ext.grid.RowSelectionModel({
-                singleSelect: false,
-                listeners: {
-                    selectionchange: function (sm) {
-                        modifyBtn.setDisabled(sm.getCount() !== 1)
-                        const hasSelection = sm.hasSelection()
-                        let someSelectionsHaveStigs = false
-                        if (hasSelection) {
-                            const selectedRecords = sm.getSelections()
-                            someSelectionsHaveStigs = selectedRecords.some( i => i.data.stigCount > 0)
-                        }
-                        for (const btn of [deleteBtn, transferBtn]) {
-                            btn.setDisabled(!hasSelection)
-                        }
-                        exportCklBtn.setDisabled(!(hasSelection && someSelectionsHaveStigs))
-                    }
-                }
-            }),
+            sm,
             view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,

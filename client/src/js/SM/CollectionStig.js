@@ -73,8 +73,21 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         me.totalTextCmp = new SM.RowCountTextItem ({
             store: store
         })
+        const sm = new Ext.grid.CheckboxSelectionModel({
+            singleSelect: false,
+            checkOnly: false,
+            listeners: {
+                selectionchange: function (sm) {
+                    modifyBtn.setDisabled(sm.getCount() !== 1)
+                    deleteBtn.setDisabled(sm.getCount() !== 1)
+                    exportCklBtn.setDisabled(!sm.hasSelection())
+                    SM.SetCheckboxSelModelHeaderState(sm)
+                }
+            }
+        })
         const benchmarkColumnId = Ext.id()
         let columns = [
+            sm,
             { 	
 				header: "BenchmarkId",
                 id: benchmarkColumnId,
@@ -217,16 +230,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   
             }),
-            sm: new Ext.grid.RowSelectionModel({
-                singleSelect: false,
-                listeners: {
-                    selectionchange: function (sm) {
-                        modifyBtn.setDisabled(sm.getCount() !== 1)
-                        deleteBtn.setDisabled(sm.getCount() !== 1)
-                        exportCklBtn.setDisabled(!sm.hasSelection())
-                    }
-                }
-            }),
+            sm,
             view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,

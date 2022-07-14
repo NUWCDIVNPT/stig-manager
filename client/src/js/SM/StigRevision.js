@@ -118,16 +118,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
             removeStigsBtn.setVisible(true)
           }
 
-          const hd = this.grid.view.innerHd.querySelector('.x-grid3-hd-row .x-grid3-td-checker .x-grid3-hd-checker')
-          if (hd) {
-            const hdState = this.selections.length === 0 ? null : this.grid.store.getCount() === this.selections.length ? 'on' : 'ind'
-            hd.classList.remove('x-grid3-hd-checker-on')
-            hd.classList.remove('x-grid3-hd-checker-ind')
-            if (hdState) {
-                hd.classList.add(`x-grid3-hd-checker-${hdState}`)
-            }
-          }
-
+          SM.SetCheckboxSelModelHeaderState(sm)
         }
       }
     })
