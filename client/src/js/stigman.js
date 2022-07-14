@@ -200,7 +200,9 @@ async function loadApp () {
 		window.addEventListener('keydown', function (e) {
 			// prevent ctrl-a from being handled by the browser
 			if (e.key === 'a' && e.ctrlKey) {
-				e.preventDefault()
+				if (e.target.tagName !== 'TEXTAREA') {
+					e.preventDefault()
+				}
 			}
 		})
 		
