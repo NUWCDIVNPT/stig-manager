@@ -1,0 +1,80 @@
+name: 🐞 Bug Report
+description: File a bug/issue
+title: "***The title of your Issue here***"
+labels: [Bug, Needs Triage]
+body:
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: Please search to see if an issue already exists for the bug you encountered.
+    options:
+    - label: I have searched the existing issues
+      required: true
+- type: checkboxes
+  attributes:
+    label: Are you using the latest version of STIG Manager?
+    description: The latest release is ![GitHub release](https://img.shields.io/github/v/release/NUWCDIVNPT/stig-manager?label=%20). You can see the version you are using in the app on the Home tab, in the badge next to the STIG Manager name and logo. The STIGMan project is in development using an agile process that releases new features and bugfixes frequently. 
+    options:
+      - label: I am using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases).
+      - label: I am NOT using the latest [Release](https://github.com/NUWCDIVNPT/stig-manager/releases). I am aware that the first thing I will be asked to do is update the application so that I have the latest bugfixes. 
+- type: checkboxes
+  id: issue-location
+  attributes:
+    label: Where are you experiencing the issue?
+    description: Select one or more.
+    options:
+     - label: API
+     -  label: UI or other client
+     -  label: Deployment
+     -  label: Elsewhere
+- type: textarea
+  attributes:
+    label: Current Behavior
+    description: A description of what you're experiencing.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A description of what you expected to happen.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Steps To Reproduce
+    description: Steps to reproduce the behavior.
+    placeholder: |
+      1. In this environment...
+      2. With this config...
+      3. Run '...'
+      4. See error...
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Can you provide screenshots, logs, or other useful artifacts?
+    description: |
+      Links? References? Anything that will give us more context about the issue you are encountering!
+
+      Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Describe your Environment
+    description: |
+      examples:
+        - **Hosting**: Are you hosting your own deployment of STIGMan or being provided with an instance? 
+        - **Browser**: Chrome
+        - **OS**: Ubuntu 20.04
+        - **Node**: 13.14.0
+        - **npm**: 7.6.3
+    value: |
+        - Hosting:
+        - Browser:
+        - OS:
+        - Node:
+        - npm:
+    render: markdown
+  validations:
+    required: false    
