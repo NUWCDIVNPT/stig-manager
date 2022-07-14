@@ -243,7 +243,8 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         var r = grid.getStore().getAt(rowIndex);
                         showCollectionStigProps( r.get('benchmarkId'), grid );
                     }
-                }
+                },
+                keydown: SM.CtrlAGridHandler
             },
             tbar: new Ext.Toolbar({
                 items: [

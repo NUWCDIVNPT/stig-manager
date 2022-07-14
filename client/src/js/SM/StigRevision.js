@@ -388,7 +388,8 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
             revisionStr: record.data.lastRevisionStr,
             stigTitle: record.data.title
           }) 
-        }
+        },
+        keydown: SM.CtrlAGridHandler
       }  
     }
 

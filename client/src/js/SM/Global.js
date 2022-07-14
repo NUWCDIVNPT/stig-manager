@@ -30,6 +30,18 @@ SM.GetUserObject = async function () {
     })
     return curUser
 }
+SM.CtrlAGridHandler = function (e) {
+    if (e.browserEvent.key === 'a' && e.browserEvent.ctrlKey) {
+        e.stopPropagation()
+        e.preventDefault()
+        const sm = this.getSelectionModel()
+        sm.suspendEvents(false)
+        sm.selectRange(0, this.getStore().getCount() - 1)
+        sm.resumeEvents()
+        sm.fireEvent('selectionchange', sm)
+    }
+}
+
 
 SM.styledEmptyRenderer = v => v ? v : '<span class="sm-empty-cell" />'
 SM.styledZeroRenderer = v => v !== 0 ? v : '-'

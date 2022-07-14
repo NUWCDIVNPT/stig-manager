@@ -1001,20 +1001,7 @@ async function addCollectionReview ( params ) {
 				singleSelect: false,
 				id: 'reviewsSm' + idAppend,
 				listeners: {
-					rowselect: function(sm,index,record) {
-						if (sm.getCount() == 1) { //single row selected
-							historyData.grid.enable();
-							loadResources(record);
-							batchEditBtn.disable()
-						} else {
-							historyData.store.removeAll();
-							historyData.grid.disable();
-							setRejectButtonState();
-							batchEditBtn.enable()
-						}
-						setReviewsGridButtonStates()
-					},
-					rowdeselect: function(sm,index,deselectedRecord) {
+					selectionchange: function (sm) {
 						if (sm.getCount() == 1) { //single row selected
 							selectedRecord = sm.getSelected();
 							historyData.grid.enable();
@@ -1098,7 +1085,8 @@ async function addCollectionReview ( params ) {
 					}
 
 
-				}
+				},
+				keydown: SM.CtrlAGridHandler
 			},
 			view: new SM.ColumnFilters.GridView({
 				forceFit:true,

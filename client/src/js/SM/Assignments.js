@@ -458,8 +458,10 @@ SM.AssignmentGrid = Ext.extend(Ext.grid.GridPanel, {
           sortable: true,
           width: 250
         }
-      ]
-      
+      ],
+      listeners: {
+        keydown: SM.CtrlAGridHandler
+      }
     }
     
     Ext.apply(this, Ext.apply(this.initialConfig, config))

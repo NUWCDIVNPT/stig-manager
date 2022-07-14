@@ -1319,7 +1319,8 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                     panelEl.addEventListener('dragover', handleDragover, false)
                     panelEl.addEventListener('dragleave', handleDragleave, false)
                     panelEl.addEventListener('drop', onFileDropped, false)
-                }
+                },
+                keydown: SM.CtrlAGridHandler
             }
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))

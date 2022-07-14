@@ -383,7 +383,8 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     SM.Dispatcher.removeListener('assetcreated', me.onAssetChangedOrCreated, me)
                     SM.Dispatcher.removeListener('labelchanged', me.onLabelChanged, me)
                     SM.Dispatcher.removeListener('labeldeleted', me.onLabelDeleted, me)
-                }
+                },
+                keydown: SM.CtrlAGridHandler
             },
             tbar: new Ext.Toolbar({
                 items: [
