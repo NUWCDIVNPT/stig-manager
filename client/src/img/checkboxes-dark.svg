@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.0.2 (1.0.2+r75+1)"
-   sodipodi:docname="checkboxes-transparent.svg">
+   sodipodi:docname="checkboxes-dark.svg">
   <title
      id="title871">Checkbox</title>
   <defs
@@ -82,7 +82,7 @@
      transform="translate(-99.21875,-146.31459)"
      style="opacity:0.994">
     <rect
-       style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
+       style="fill:#3b3b3b;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
        id="rect847"
        width="3.1764462"
        height="3.1764462"
@@ -91,9 +91,9 @@
        ry="0.69862312" />
     <g
        id="g910"
-       style="fill:none">
+       style="fill:#99c8ff;fill-opacity:1">
       <rect
-         style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
+         style="fill:#99c8ff;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
          id="rect873"
          width="3.1764462"
          height="3.1764462"
@@ -102,12 +102,12 @@
          ry="0.69862312" />
     </g>
     <path
-       style="fill:none;stroke:#cccccc;stroke-width:0.54234;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;stroke:#3b3b3b;stroke-width:0.54234;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
        d="m 106.69872,148.21872 0.58386,0.8425 1.05098,-1.81711 v 0"
        id="path851"
        sodipodi:nodetypes="cccc" />
     <rect
-       style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
+       style="fill:#99c8ff;fill-opacity:1;stroke:#808080;stroke-width:0.263137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.64583"
        id="rect893"
        width="3.1764462"
        height="3.1764462"
@@ -115,7 +115,7 @@
        y="146.71074"
        ry="0.69862312" />
     <path
-       style="fill:none;stroke:#808080;stroke-width:0.529167;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;stroke:#3b3b3b;stroke-width:0.529167;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 113.53614,148.29896 h 1.79231"
        id="path903" />
   </g>

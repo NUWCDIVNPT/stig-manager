@@ -3,19 +3,18 @@ Ext.ns('SM.WhatsNew')
 SM.WhatsNew.Sources = [
   {
     date: '2022-07-14',
-    header: `Checkbox column and selection shortcuts added to all interfaces where multiple selections can be made.`,
-    body: `In interfaces such as Collection Review and Collection Management, selectable items are now indicated with checkboxes.  Selecting the checkbox at the top of the column, or using the CTRL-A keyboard shortcut, will select all items in the grid.  <p/>
-    <img src="img/whatsnew/2022-07-15-selection-checkboxes.png"/>
+    header: `Checkbox Selection for Multi-select Grids `,
+    body: `<p>In the <b>Collection Review</b> and <b>Collection Management</b> workspaces, grid rows can be selected with checkboxes.  Selecting the checkbox at the top of the column, or using the CTRL-A keyboard shortcut, will select all rows in the grid.</p>
+    <p><img src="img/whatsnew/2022-07-15-selection-checkboxes.png"/></p>
     `
   },
   {
     date: '2022-07-11',
     header: `Enhanced User lists in the Collection Grant interface`,
-    body: `In the Collection Grants interface, the grid and dropdown lists now show the username and display name.<p/>
-    <img src="img/whatsnew/2022-07-11-A.png"/>
-    <p/>
-    When selecting a User from the dropdown list, it is possible to filter the list on a string that appears anywhere in either the username or display name.<p/>
-    <img src="img/whatsnew/2022-07-11-B.png"/>
+    body: `<p>In the Collection Grants interface, the grid and dropdown lists now show the username and display name.</p>
+    <p><img src="img/whatsnew/2022-07-11-A.png"/></p>
+    <p>When selecting a User from the dropdown list, it is possible to filter the list on a string that appears anywhere in either the username or display name.</p>
+    <p><img src="img/whatsnew/2022-07-11-B.png"/></p>
     `
   },
   {
@@ -148,7 +147,7 @@ SM.WhatsNew.addTab = function (params) {
 SM.WhatsNew.showDialog = function (lastDate) {
   const vpSize = Ext.getBody().getViewSize()
   let height = vpSize.height * 0.75
-  let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
+  let width = vpSize.width * 0.33 <= 960 ? vpSize.width * 0.33 : 960
   
   const panel = new Ext.Panel({
     border: false,
