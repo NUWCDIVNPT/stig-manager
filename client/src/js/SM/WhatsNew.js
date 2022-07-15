@@ -2,6 +2,13 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-07-14',
+    header: `Checkbox column and selection shortcuts added to all interfaces where multiple selections can be made.`,
+    body: `In interfaces such as Collection Review and Collection Management, selectable items are now indicated with checkboxes.  Selecting the checkbox at the top of the column, or using the CTRL-A keyboard shortcut, will select all items in the grid.  <p/>
+    <img src="img/whatsnew/2022-07-15-selection-checkboxes.png"/>
+    `
+  },
+  {
     date: '2022-07-11',
     header: `Enhanced User lists in the Collection Grant interface`,
     body: `In the Collection Grants interface, the grid and dropdown lists now show the username and display name.<p/>

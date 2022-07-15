@@ -1208,8 +1208,10 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
             text: '0 files',
             store: store
         })
-        const sm = new Ext.grid.RowSelectionModel({
-            singleSelect: false,
+        // const sm = new Ext.grid.RowSelectionModel({
+        const sm = new Ext.grid.CheckboxSelectionModel({
+                singleSelect: false,
+                checkOnly: false,
             listeners: {
                 selectionchange: function (sm) {
                     removeBtn.setDisabled(sm.getCount() === 0)
@@ -1218,6 +1220,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         const columns = [
+            sm,
             {
                 header: "Filename",
                 width: 100,
