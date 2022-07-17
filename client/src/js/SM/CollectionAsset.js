@@ -592,15 +592,14 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             valueField: 'benchmarkId',
             mode: 'local',
             forceSelection: true,
-			typeAhead: true,
+			typeAhead: false,
 			minChars: 0,
-            triggerAction: 'query',
+            triggerAction: 'all',
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
-                },
+                }
             },
-            onTypeAhead: function () {},
             doQuery : (q, forceAll) => {
                 // Custom re-implementation of the original ExtJS method
 				q = Ext.isEmpty(q) ? '' : q;
@@ -636,11 +635,43 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 if (_this.grid && _this.grid.editor && !_this.grid.editor.editing) {
                     return true
                 }
-                if (v === "") { return "Blank values not allowed" }
+                if (v === "") { 
+                    return "Blank values not allowed"
+                }
+                if (v !== _this.initialBenchmarkId && _this.store.indexOfId(v) === -1) { 
+                    return "Value must be a benchmarkId"
+                }
+                return true
             }     
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.StigSelectionField.superclass.initComponent.call(this)
+    },
+    
+    // Re-implement validateBur() to always return false. The framework's implementation always returned true
+    // and selecting an item from the droplist would mimic a blur even when the <input> remained focused. This
+    // prevented the droplist from expanding when characters were typed following a droplist selection
+    validateBlur: function () { return false },
+    
+    // Re-implement onTriggerClick() to select the value in the droplist
+    onTriggerClick : function() {
+        if(this.readOnly || this.disabled){
+            return;
+        }
+        if(this.isExpanded()){
+            this.collapse();
+            this.el.focus();
+        }else {
+            this.onFocus({});
+            if(this.triggerAction == 'all') {
+                this.doQuery(this.allQuery, true);
+                // added line below for this override
+                this.selectByValue(this.value, true);
+            } else {
+                this.doQuery(this.getRawValue());
+            }
+            this.el.focus();
+        }
     }
 })
 Ext.reg('sm-stig-selection-field', SM.StigSelectionField)
