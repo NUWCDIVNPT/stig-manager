@@ -1,3 +1,21 @@
+Ext.override(Ext.grid.EditorGridPanel, {
+    initEvents : function(){
+        Ext.grid.EditorGridPanel.superclass.initEvents.call(this);
+        // do not want the framework's handling of mousewheel
+        // this.getGridEl().on('mousewheel', this.stopEditing.createDelegate(this, [true]), this);
+        this.on('columnresize', this.stopEditing, this, [true]);
+
+        if(this.clicksToEdit == 1){
+            this.on("cellclick", this.onCellDblClick, this);
+        }else {
+            var view = this.getView();
+            if(this.clicksToEdit == 'auto' && view.mainBody){
+                view.mainBody.on('mousedown', this.onAutoEditClick, this);
+            }
+            this.on('celldblclick', this.onCellDblClick, this);
+        }
+    }
+})
 Ext.override(Ext.grid.CheckboxSelectionModel, {
     onMouseDown : function(e, t){
         if(e.button === 0 && t.className == 'x-grid3-row-checker'){ // Only fire if left-click
@@ -30,14 +48,21 @@ Ext.override(Ext.grid.CheckboxSelectionModel, {
             var hd = Ext.fly(t.parentNode);
             var isChecked = hd.hasClass('x-grid3-hd-checker-on');
             var isIndeterminate = hd.hasClass('x-grid3-hd-checker-ind');
-            if (isChecked || isIndeterminate) {
+            if (isChecked ) {
                 hd.removeClass('x-grid3-hd-checker-on');
-                hd.removeClass('x-grid3-hd-checker-ind');
-                this.clearSelections();
+                this.suspendEvents(false)
+                this.deselectRange(0, this.grid.store.getCount() - 1)
+                this.resumeEvents()
+                this.fireEvent('selectionchange', this)
+
             }
             else {
                 hd.addClass('x-grid3-hd-checker-on');
-                this.selectAll();
+                this.suspendEvents(false)
+                this.selectRange(0, this.grid.store.getCount() - 1)
+                this.resumeEvents()
+                this.fireEvent('selectionchange', this)
+        
             }
         }
     }

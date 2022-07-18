@@ -707,9 +707,33 @@ async function addCollectionReview ( params ) {
 			},
 			idProperty: 'assetId'
 		});
+
+		const sm = new Ext.grid.CheckboxSelectionModel ({
+			singleSelect: false,
+			checkOnly: false,
+			listeners: {
+				selectionchange: function (sm) {
+					if (sm.getCount() == 1) { //single row selected
+						selectedRecord = sm.getSelected();
+						historyData.grid.enable();
+						loadResources(selectedRecord);
+						batchEditBtn.disable()
+					} else {
+						historyData.store.removeAll();
+						historyData.grid.disable();
+						setRejectButtonState();
+						batchEditBtn.enable()
+
+					}
+					setReviewsGridButtonStates()
+					SM.SetCheckboxSelModelHeaderState(sm)
+				}
+			}
+		})
 		
 		var reviewsCm = new Ext.grid.ColumnModel({
 			columns: [
+				sm,
 	      {
 					header: '<div exportvalue="Engine" class="sm-engine-result-icon"></div>',
 					width: 24,
@@ -830,6 +854,7 @@ async function addCollectionReview ( params ) {
 						id: 'reviewsGrid-editor-detail' + idAppend,
 						//height: 150
 						grow: true,
+						growMax: 200,
 						listeners: {
 							// focus and blur handlers enable/disable IE workaround
 							focus: function (cmp) {
@@ -841,6 +866,9 @@ async function addCollectionReview ( params ) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return false;'
 								});
+							},
+							render: function (ta) {
+								ta.el.dom.maxLength = 32767
 							}
 						}
 					})
@@ -860,6 +888,7 @@ async function addCollectionReview ( params ) {
 					editor: new Ext.form.TextArea({
 						id: 'reviewsGrid-editor-comment' + idAppend,
 						grow: true,
+						growMax: 200,
 						listeners: {
 							// focus and blur handlers enable/disable IE workaround
 							focus: function (cmp) {
@@ -871,6 +900,9 @@ async function addCollectionReview ( params ) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return false;'
 								});
+							},
+							render: function (ta) {
+								ta.el.dom.maxLength = 32767
 							}
 						}
 					}),
@@ -997,40 +1029,7 @@ async function addCollectionReview ( params ) {
 				}
 				checklistRecord.commit()				
 			},
-			sm: new Ext.grid.RowSelectionModel ({
-				singleSelect: false,
-				id: 'reviewsSm' + idAppend,
-				listeners: {
-					rowselect: function(sm,index,record) {
-						if (sm.getCount() == 1) { //single row selected
-							historyData.grid.enable();
-							loadResources(record);
-							batchEditBtn.disable()
-						} else {
-							historyData.store.removeAll();
-							historyData.grid.disable();
-							setRejectButtonState();
-							batchEditBtn.enable()
-						}
-						setReviewsGridButtonStates()
-					},
-					rowdeselect: function(sm,index,deselectedRecord) {
-						if (sm.getCount() == 1) { //single row selected
-							selectedRecord = sm.getSelected();
-							historyData.grid.enable();
-							loadResources(selectedRecord);
-							batchEditBtn.disable()
-						} else {
-							historyData.store.removeAll();
-							historyData.grid.disable();
-							setRejectButtonState();
-							batchEditBtn.enable()
-
-						}
-						setReviewsGridButtonStates()
-					}
-				}
-			}),
+			sm,
 			listeners: {
 				// fix weird problem shift-selecting grid rows in IE
 				// have to override this if the textarea editors are focused
@@ -1098,7 +1097,8 @@ async function addCollectionReview ( params ) {
 					}
 
 
-				}
+				},
+				keydown: SM.CtrlAGridHandler
 			},
 			view: new SM.ColumnFilters.GridView({
 				forceFit:true,

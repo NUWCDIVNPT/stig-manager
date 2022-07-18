@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "7b2f5499-19c9-4872-9376-c1d9942dc010",
+		"_postman_id": "4a6451ab-3eb6-484c-9c02-68d488454257",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17450853"
 	},
 	"item": [
 		{
@@ -12175,7 +12176,7 @@
 														],
 														"body": {
 															"mode": "raw",
-															"raw": "[{{testAsset}}]"
+															"raw": "[\"{{testAsset}}\"]"
 														},
 														"url": {
 															"raw": "{{baseUrl}}/collections/:collectionId/labels/:labelId/assets",

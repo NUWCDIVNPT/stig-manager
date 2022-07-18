@@ -30,6 +30,31 @@ SM.GetUserObject = async function () {
     })
     return curUser
 }
+SM.CtrlAGridHandler = function (e) {
+    if (e.browserEvent.key === 'a' && e.browserEvent.ctrlKey) {
+        e.stopPropagation()
+        e.preventDefault()
+        const sm = this.getSelectionModel()
+        sm.suspendEvents(false)
+        sm.selectRange(0, this.getStore().getCount() - 1)
+        sm.resumeEvents()
+        sm.fireEvent('selectionchange', sm)
+    }
+}
+SM.SetCheckboxSelModelHeaderState = function (sm) {
+    // const hd = sm.grid.view.innerHd.querySelector('.x-grid3-hd-row .x-grid3-td-checker .x-grid3-hd-checker')
+    const hd = sm.grid.view.innerHd.querySelector('.x-grid3-hd-inner.x-grid3-hd-checker')
+    if (hd) {
+      const hdState = sm.selections.length === 0 ? null : sm.grid.store.getCount() === sm.selections.length ? 'on' : 'ind'
+      hd.classList.remove('x-grid3-hd-checker-on')
+      hd.classList.remove('x-grid3-hd-checker-ind')
+      if (hdState) {
+          hd.classList.add(`x-grid3-hd-checker-${hdState}`)
+      }
+    }
+
+}
+
 
 SM.styledEmptyRenderer = v => v ? v : '<span class="sm-empty-cell" />'
 SM.styledZeroRenderer = v => v !== 0 ? v : '-'

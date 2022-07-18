@@ -64,6 +64,7 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
       enableKeyEvents: true,
       listeners: {
         render: function (ta) {
+          ta.el.dom.maxLength = 32767
           ta.mon( ta.el, 'input', _this.onInput)
           _this.infoTip = new Ext.ToolTip({
             target: ta.label.dom.getElementsByClassName('fa')[0],
@@ -94,6 +95,7 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
       name: 'comment',
       listeners: {
         'render': function (ta) {
+          ta.el.dom.maxLength = 32767
           ta.mon( ta.el, 'input', _this.onInput)
           _this.infoTip = new Ext.ToolTip({
             target: ta.label.dom.getElementsByClassName('fa')[0],
