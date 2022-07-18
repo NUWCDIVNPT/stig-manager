@@ -48,14 +48,21 @@ Ext.override(Ext.grid.CheckboxSelectionModel, {
             var hd = Ext.fly(t.parentNode);
             var isChecked = hd.hasClass('x-grid3-hd-checker-on');
             var isIndeterminate = hd.hasClass('x-grid3-hd-checker-ind');
-            if (isChecked || isIndeterminate) {
+            if (isChecked ) {
                 hd.removeClass('x-grid3-hd-checker-on');
-                hd.removeClass('x-grid3-hd-checker-ind');
-                this.clearSelections();
+                this.suspendEvents(false)
+                this.deselectRange(0, this.grid.store.getCount() - 1)
+                this.resumeEvents()
+                this.fireEvent('selectionchange', this)
+
             }
             else {
                 hd.addClass('x-grid3-hd-checker-on');
-                this.selectAll();
+                this.suspendEvents(false)
+                this.selectRange(0, this.grid.store.getCount() - 1)
+                this.resumeEvents()
+                this.fireEvent('selectionchange', this)
+        
             }
         }
     }
