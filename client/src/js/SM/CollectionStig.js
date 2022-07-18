@@ -190,9 +190,9 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         const modifyBtn = new Ext.Button({
-            iconCls: 'sm-asset-icon',
+            iconCls: 'sm-stig-icon',
             disabled: true,
-            text: 'Change STIG targets...',
+            text: 'Modify...',
             handler: function() {
                 var r = me.getSelectionModel().getSelected();
                 showCollectionStigProps(r.get('benchmarkId'), me);
@@ -200,7 +200,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const deleteBtn = new Ext.Button({
             iconCls: 'icon-del',
-            text: 'Unassign STIG',
+            text: 'Unassign STIG...',
             disabled: true,
             handler: function() {
                 try {
@@ -536,31 +536,18 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
         if (! this.collectionId) {
             throw ('missing property collectionId')
         }
-        let stigField
-        if (this.benchmarkId) {
-            stigField = new Ext.form.TextField({
-                fieldLabel: 'BenchmarkId',
-                allowBlank: true,
-                // width: 350,
-                anchor: '100%',
-                readOnly: true,
-                name: 'benchmarkId',
-                value: this.benchmarkId
-            })
-        }
-        else {
-            stigField = new SM.StigSelectionField({
-                name: 'benchmarkId',
-                submitValue: false,
-                fieldLabel: 'BenchmarkId',
-                hideTrigger: false,
-                anchor: '100%',
-                // width: 350,
-                autoLoad: true,
-                allowBlank: false,
-                filteringStore: this.stigFilteringStore
-            })
-        }
+        const stigField = new SM.StigSelectionField({
+            name: 'benchmarkId',
+            submitValue: false,
+            fieldLabel: 'BenchmarkId',
+            hideTrigger: false,
+            anchor: '100%',
+            // width: 350,
+            autoLoad: true,
+            allowBlank: false,
+            filteringStore: this.stigFilteringStore,
+            initialBenchmarkId: this.benchmarkId
+        })
  
         let config = {
             baseCls: 'x-plain',
@@ -645,7 +632,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
         // Form window
         /******************************************************/
         var appwindow = new Ext.Window({
-            title: 'STIG Targets, Collection ID ' + collectionId,
+            title: 'STIG Assignments',
             cls: 'sm-dialog-window sm-round-panel',
             modal: true,
             hidden: true,
