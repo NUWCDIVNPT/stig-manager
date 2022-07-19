@@ -390,6 +390,38 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
     }
     this.fireEvent('checkstateschanged')
   },
+  getCheckedForStreaming: function ( startNode ) {
+    startNode = startNode || this.stigsNode || this.root
+    var r = {}
+    var f = function(){
+        if (this === startNode) { 
+          return true
+        }
+        if (!this.attributes.assetId) {
+          return true
+        }
+        if(this.ui?.checkbox?.checked && !this.ui?.checkbox?.indeterminate) {
+          if (!r[this.attributes.assetId]) {
+            r[this.attributes.assetId] = {
+              assetId: this.attributes.assetId
+            }
+          }
+          if (this.attributes.benchmarkId) {
+            r[this.attributes.assetId].benchmarkIds = r[this.attributes.assetId].benchmarkIds || []
+            r[this.attributes.assetId].benchmarkIds.push(this.attributes.benchmarkId)
+            return true
+          }
+          else {
+            return false
+          }
+        }
+        else if (!this.ui?.checkbox?.checked && !this.ui?.checkbox?.indeterminate) {
+          return false
+        }
+    }
+    startNode.cascade(f)
+    return Object.values(r)
+  },
   getChecked: function ( startNode ) {
     startNode = startNode || this.stigsNode || this.root
     var r = {}
@@ -441,7 +473,7 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
         appwindow.close()
         
         const exportFn = streamingApi ? exportCklArchiveStreaming : exportCklArchive
-        exportFn(collectionId, checklists, multickl)
+        exportFn(streamingApi ? collectionId : collectionName, checklists, multickl)
       }
     })
 
