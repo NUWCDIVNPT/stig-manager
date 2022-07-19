@@ -567,6 +567,7 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
 module.exports.postCklArchiveByCollection = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req)
+    const mode = req.query.mode
     const assetStigSelections = req.body
     const assetStigArguments = []
     
@@ -595,11 +596,20 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
       else if (!requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))) {
         throw new SmError.ClientError('Asset is not mapped to all requested benchmarkIds')
       }
-      for (const benchmarkId of requestedBenchmarkIds) {
+      if (mode === 'mono') {
+        for (const benchmarkId of requestedBenchmarkIds) {
+          assetStigArguments.push({
+            assetId,
+            assetName,
+            benchmarkIds: [benchmarkId]
+          })
+        }
+      }
+      else {
         assetStigArguments.push({
           assetId,
           assetName,
-          benchmarkId
+          benchmarkIds: requestedBenchmarkIds
         })
       }
     }
@@ -627,10 +637,11 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
     res.attachment('archive-name.zip')
     zip.pipe(res)
     for (const args of assetStigArguments) {
-      const response = await AssetSvc.cklFromAssetStigs(args.assetId, [args.benchmarkId])
+      const response = await AssetSvc.cklFromAssetStigs(args.assetId, args.benchmarkIds)
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
       xml += j2x.parse(response.cklJs)
-      zip.append(xml, {name: `${args.assetName}-${args.benchmarkId}`})
+      const filename = mode === 'mono' ? `${args.assetName}-${args.benchmarkId}` : args.assetName
+      zip.append(xml, {name: filename})
     }
     zip.finalize()
   }

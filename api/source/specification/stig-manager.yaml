@@ -884,13 +884,14 @@ paths:
         - oauth:
             - 'stig-manager:collection:read'
   '/collections/{collectionId}/ckl-archive':
-    parameters:
-      - $ref: '#/components/parameters/CollectionIdPath'
     post:
       tags:
         - Collection
       summary: Return a ZIP archive containing CKLs for the supplied Assets and STIGs
       operationId: postCklArchiveByCollection
+      parameters:
+       - $ref: '#/components/parameters/CollectionIdPath'
+       - $ref: '#/components/parameters/CklModeQuery'
       requestBody:
         required: true
         content:
@@ -5029,6 +5030,16 @@ components:
             - fullrules
             - checks
             - fixes
+    CklModeQuery:
+      name: mode
+      in: query
+      description: A query parameter that describes the CKL mode
+      schema:
+        type: string
+        default: mono
+        enum:
+          - multi
+          - mono
     CollectionIdPath:
       name: collectionId
       in: path
