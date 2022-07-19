@@ -184,6 +184,35 @@ SM.ExportsAssetTree = Ext.extend(Ext.tree.TreePanel, {
     }
     startNode.cascade(f)
     return r
+  },
+  getCheckedForStreaming: function ( startNode ) {
+    startNode = startNode || this.assetsNode || this.root
+    var r = {}
+    var f = function(){
+        if (this === startNode) { 
+          return true
+        }
+        if(this.ui?.checkbox?.checked && !this.ui?.checkbox?.indeterminate) {
+          if (!r[this.attributes.assetId]) {
+            r[this.attributes.assetId] = {
+              assetId: this.attributes.assetId
+            }
+          }
+          if (this.attributes.benchmarkId) {
+            r[this.attributes.assetId].benchmarkIds = r[this.attributes.assetId].benchmarkIds || []
+            r[this.attributes.assetId].benchmarkIds.push(this.attributes.benchmarkId)
+            return true
+          }
+          else {
+            return false
+          }
+        }
+        else if (!this.ui?.checkbox?.checked && !this.ui?.checkbox?.indeterminate) {
+          return false
+        }
+    }
+    startNode.cascade(f)
+    return Object.values(r)
   }
 })
 
@@ -361,6 +390,38 @@ SM.ExportsStigTree = Ext.extend(Ext.tree.TreePanel, {
     }
     this.fireEvent('checkstateschanged')
   },
+  getCheckedForStreaming: function ( startNode ) {
+    startNode = startNode || this.stigsNode || this.root
+    var r = {}
+    var f = function(){
+        if (this === startNode) { 
+          return true
+        }
+        if (!this.attributes.assetId) {
+          return true
+        }
+        if(this.ui?.checkbox?.checked && !this.ui?.checkbox?.indeterminate) {
+          if (!r[this.attributes.assetId]) {
+            r[this.attributes.assetId] = {
+              assetId: this.attributes.assetId
+            }
+          }
+          if (this.attributes.benchmarkId) {
+            r[this.attributes.assetId].benchmarkIds = r[this.attributes.assetId].benchmarkIds || []
+            r[this.attributes.assetId].benchmarkIds.push(this.attributes.benchmarkId)
+            return true
+          }
+          else {
+            return false
+          }
+        }
+        else if (!this.ui?.checkbox?.checked && !this.ui?.checkbox?.indeterminate) {
+          return false
+        }
+    }
+    startNode.cascade(f)
+    return Object.values(r)
+  },
   getChecked: function ( startNode ) {
     startNode = startNode || this.stigsNode || this.root
     var r = {}
@@ -404,10 +465,15 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
       iconCls: 'sm-export-icon',
       disabled: false,
       handler: function () {
-        let checklists = navTree.getChecked()
+        const streamingApi = streamingCb.checked
+
+        let checklists = streamingApi ? navTree.getCheckedForStreaming() : navTree.getChecked()
         let multickl = cb.checked
+        
         appwindow.close()
-        exportCklArchive( collectionName, checklists, multickl)
+        
+        const exportFn = streamingApi ? exportCklArchiveStreaming : exportCklArchive
+        exportFn(streamingApi ? collectionId : collectionName, checklists, multickl)
       }
     })
 
@@ -463,9 +529,15 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
         { 
           xtype: 'panel',
           border: false,
-          html: `<div class="sm-dialog-panel-text" style="padding:12px;">
+          html: `<div class="sm-dialog-panel-text" style="padding:12px; display: flex; flex-flow: column;">
+          <label style="padding: 5px 0px;">
           <input type="checkbox" name="multi-ckl" id="multi-ckl" style="vertical-align: -2px;"/>
-          <label for="multi-ckl">Export multi-STIG CKLs (one file per Asset).</label>
+          Export multi-STIG CKLs (one file per Asset).
+          </label>
+          <label>
+          <input type="checkbox" name="streaming" id="streaming-cb" style="vertical-align: -2px;"/>
+          Use streaming API<span class="sm-navtree-sprite" style="font-size: 9px; font-weight: bold;">experimental</span>
+          </label>
           </div>`
         },
         '->',
@@ -480,6 +552,7 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
     })
     appwindow.show(document.body)
     const cb = appwindow.getEl().dom.querySelector('#multi-ckl')
+    const streamingCb = appwindow.getEl().dom.querySelector('#streaming-cb')
   }
   catch (e) {
     if (typeof e === 'object') {
@@ -593,6 +666,43 @@ async function exportCklArchive(collectionName, checklists, multiStig) {
     updateStatusText('Done')
 
     saveAs(blob, `${collectionName}.zip`)
+  }
+  catch (e) {
+    alert(`${e.message}\n${e.stack}`)
+  }
+}
+
+async function exportCklArchiveStreaming(collectionId, checklists, multiStig) {
+
+  function formatBytes(a,b=2,k=1024){with(Math){let d=floor(log(a)/log(k));return 0==a?"0 Bytes":parseFloat((a/pow(k,d)).toFixed(max(0,b)))+" "+["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"][d]}}
+
+  try {
+    initProgress("Exporting checklists", "Initializing...")
+    await window.oidcProvider.updateToken(10)
+    const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/ckl-archive?mode=${multiStig ? 'multi' : 'mono'}`
+    let response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.oidcProvider.token}`
+      },
+      body: JSON.stringify(checklists)
+    })
+    const reader = response.body.getReader()
+    let receivedLength = 0; // received that many bytes at the moment
+    let chunks = []; // array of received binary chunks (comprises the body)
+    while(true) {
+      const {done, value} = await reader.read()
+      if (done) {
+        break
+      }
+      chunks.push(value)
+      receivedLength += value.length
+      updateProgress(0, `Fetched: ${formatBytes(receivedLength, 1)}`)
+    }
+    const blob = new Blob(chunks)
+    const collectionApi = SM.Cache.CollectionMap.get(collectionId)
+    saveAs(blob, `${collectionApi.name}.zip`)
   }
   catch (e) {
     alert(`${e.message}\n${e.stack}`)
