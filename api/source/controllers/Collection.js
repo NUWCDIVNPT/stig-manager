@@ -640,7 +640,7 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
       const response = await AssetSvc.cklFromAssetStigs(args.assetId, args.benchmarkIds)
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
       xml += j2x.parse(response.cklJs)
-      const filename = mode === 'mono' ? `${args.assetName}-${args.benchmarkIds[0]}` : args.assetName
+      const filename = mode === 'mono' ? `${args.assetName}-${args.benchmarkIds[0]}.ckl` : args.assetName
       zip.append(xml, {name: filename})
     }
     zip.finalize()
