@@ -1,3 +1,13 @@
+1.2.11
+-----
+
+Changes:
+
+  - (App) Easily create a new set of Asset-STIG assignments based off of a set of existing assignments. New filter behavior when selecting STIGs. 
+  - (App) Added checkbox selection and CTRL-A shortcut options for selecting multiple grid items in several views. 
+  - (API) New presentation for User grants includes Usernames and Display Names. Filtering now applies to Username and Display Name components, if present.
+  - (API/App/OAS) Review Detail and Comment text fields are now limited to 32767 characters. 
+
 1.2.10
 -----
 
