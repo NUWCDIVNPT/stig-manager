@@ -4,7 +4,7 @@ SM.WhatsNew.Sources = [
   {
     date: '2022-07-19',
     header: `Streaming CKL Archive Export Option`,
-    body: `<p>This option bring users better performance when exporting large numbers of .ckl files. The application will generate the exact same .ckl files whether or not this option is selected, they are just delivered to the user in a different way.</p>
+    body: `<p>This option bring users better performance when exporting large numbers of .ckl files. The application will generate the exact same .ckl files whether or not this option is selected, they are just delivered to the client in a different way.</p>
     <p><b>Note:</b> This feature is being offered in an early "experimental" capacity to determine if it serves users needs appropriately. Modifications and improvements to the feature may be made in the future. </p> 
     <p>In the <b>Collection Management</b> workspace, click "Export CKLs..." and select the "Use streaming API" checkbox:</p>
     <p><img src="img/whatsnew/2022-07-19-streaming-archive.png"/></p>
