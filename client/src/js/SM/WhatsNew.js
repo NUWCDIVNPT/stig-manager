@@ -2,15 +2,44 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-07-19',
+    header: `Streaming CKL Archive Export Option`,
+    body: `<p>This option bring users better performance when exporting large numbers of .ckl files. The application will generate the exact same .ckl files whether or not this option is selected, they are just delivered to the client in a different way.</p>
+    <p><b>Note:</b> This feature is being offered in an early "experimental" capacity to determine if it serves users needs appropriately. Please report any unexpected behavior. Modifications and improvements to the feature may be made in the future. </p> 
+    <p>In the <b>Collection Management</b> workspace, click "Export CKLs..." and select the "Use streaming API" checkbox:</p>
+    <p><img src="img/whatsnew/2022-07-19-streaming-archive.png"/></p>
+    `
+  },  
+  {
+    date: '2022-07-18',
+    header: `Enhanced Options for Creating and Altering STIG-Asset Assignments`,
+    body: `<p>Quickly create new STIG-Asset assignments based on an existing set of assignments:</p>
+    <p>In the <b>Collection Management</b> workspace, select a STIG and click the "Modify..." button or double-click the STIG:</p>
+    <p><img src="img/whatsnew/2022-07-18-STIG-assignment-modify.png"/></p>
+    <p>A STIG Assignments window will pop up. Click the pull-down button now available in the BenchmarkId selection box. 
+    <p>You will be presented with a list of available STIGs. Scroll to the STIG you want, or start typing to filter the list. Filtering now applies anywhere in the benchmarkId:</p>
+    <p />
+    <p><img src="img/whatsnew/2022-07-18-STIG-assignment-pulldown.png"/></p>
+    <p>Select your desired STIG, make any required Asset changes with the "Assign Assets" button, and hit "Save."  
+    <p>A <b>NEW</b> set of STIG-Asset Assignments will be created with the STIG you selected.</p>
+    `
+  },
+  {
     date: '2022-07-14',
-    header: `Checkbox Selection for Multi-select Grids `,
+    header: `Checkbox Selection for Multi-select Grids`,
     body: `<p>In the <b>Collection Review</b> and <b>Collection Management</b> workspaces, grid rows can be selected with checkboxes.  Selecting the checkbox at the top of the column, or using the CTRL-A keyboard shortcut, will select all rows in the grid.</p>
     <p><img src="img/whatsnew/2022-07-15-selection-checkboxes.png"/></p>
     `
   },
   {
+    date: '2022-07-14',
+    header: `Review Detail and Comment Fields Now Capped at 32767 Characters`,
+    body: `<p>For better performance and to align with character limits enforced in Excel and the next version of Evaluate-STIG, Review Detail and Comment text fields are now capped at 32767 characters.</p>
+    `
+  },  
+  {
     date: '2022-07-11',
-    header: `Enhanced User lists in the Collection Grant interface`,
+    header: `Enhanced User Lists in the Collection Grant Interface`,
     body: `<p>In the Collection Grants interface, the grid and dropdown lists now show the username and display name.</p>
     <p><img src="img/whatsnew/2022-07-11-A.png"/></p>
     <p>When selecting a User from the dropdown list, it is possible to filter the list on a string that appears anywhere in either the username or display name.</p>
