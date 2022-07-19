@@ -669,7 +669,8 @@ async function exportCklArchiveStreaming(collectionId, checklists, multiStig) {
       updateProgress(0, `Fetched: ${formatBytes(receivedLength, 1)}`)
     }
     const blob = new Blob(chunks)
-    saveAs(blob, `${collectionId}.zip`)
+    const collectionApi = SM.Cache.CollectionMap.get(collectionId)
+    saveAs(blob, `${collectionApi.name}.zip`)
   }
   catch (e) {
     alert(`${e.message}\n${e.stack}`)
