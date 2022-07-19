@@ -883,6 +883,40 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/ckl-archive':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    post:
+      tags:
+        - Collection
+      summary: Return a ZIP archive containing CKLs for the supplied Assets and STIGs
+      operationId: postCklArchiveByCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/AssetStigSelection'
+      responses:
+        '200':
+          description: CklArchive response
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -3120,6 +3154,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StigGrantProjected'          
+    AssetStigSelection:
+      type: object
+      additionalProperties: false
+      required:
+        - assetId
+      properties:
+        assetId:
+          $ref: '#/components/schemas/StringUuid'
+        benchmarkIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/String255'
     AssetUpdate:
       additionalProperties: false
       properties:
