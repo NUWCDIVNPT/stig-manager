@@ -417,7 +417,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'r.severity',
       `cast(COUNT(scap.ruleId) > 0 as json) as "autoCheckAvailable"`,
       `result.api as "result"`,
-      `review.resultEngine`,
+      `CASE WHEN review.resultEngine = 0 THEN NULL ELSE review.resultEngine as resultEngine`,
       `review.autoResult`,
       `status.api as "status"`
     ]

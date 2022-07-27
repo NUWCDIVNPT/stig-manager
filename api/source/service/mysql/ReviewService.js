@@ -264,7 +264,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                 'result', result.api,
-                'resultEngine', rh.resultEngine,
+                'resultEngine', CASE WHEN rh.resultEngine = 0 THEN NULL ELSE rh.resultEngine,
                 'detail', COALESCE(LEFT(rh.detail,32767),''),
                 'comment', COALESCE(LEFT(rh.comment,32767),''),
                 'autoResult', cast(rh.autoResult is true as json),
@@ -398,7 +398,7 @@ exports.exportReviews = async function (includeHistory = false) {
     'CAST(r.assetId as char) as assetId',
     'r.ruleId',
     'result.api as "result"',
-    'r.resultEngine',
+    'CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine as resultEngine',
     'LEFT(r.detail,32767) as detail',
     'LEFT(r.comment,32767) as comment',
     'CAST(r.userId as char) as userId',
@@ -427,7 +427,7 @@ exports.exportReviews = async function (includeHistory = false) {
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
                 'result', result.api,
-                'resultEngine', rh.resultEngine,
+                'resultEngine', CASE WHEN rh.resultEngine = 0 THEN NULL ELSE rh.resultEngine,
                 'detail', LEFT(rh.detail,32767),
                 'comment', LEFT(rh.comment,32767),
                 'userId', CAST(rh.userId as char),
@@ -563,7 +563,7 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject, resetC
         statusTs,
         statusId,
         touchTs,
-        resultEngine
+        CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine
       FROM
         review 
       WHERE
