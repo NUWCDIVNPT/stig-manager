@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "4a6451ab-3eb6-484c-9c02-68d488454257",
+		"_postman_id": "e928c328-f636-4e82-840d-0e3ce01094b7",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "17450853"
+		"_exporter_id": "9301046"
 	},
 	"item": [
 		{
@@ -16067,6 +16067,515 @@
 									]
 								}
 							]
+						}
+					]
+				},
+				{
+					"name": "resultEngine tests",
+					"item": [
+						{
+							"name": "Import and overwrite application data (as elevated Admin) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"Commit successful\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{appDataFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/op/appdata?elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"op",
+										"appdata"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Review - freshRuleId - review may or may not exist",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=rule&projection=history&projection=stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "rule",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "history",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testFreshRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PUT Review: no resultEngine - check response does not include \"resultEngine\": 0",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"let userId = pm.environment.get(\"userId\");\r",
+											"console.log(\"user: \" + user);\r",
+											"console.log(\"userId: \" + userId)\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 201 for all users but collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(201);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 201) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"const respData = pm.response.json()\r",
+											"const reqData = JSON.parse(pm.request.body.raw)\r",
+											"const expectedReview = {\r",
+											"  assetId: \"42\",\r",
+											"  assetName: \"Collection_X_lvl1_asset-1\",\r",
+											"  assetLabelIds: [\r",
+											"    \"755b8a28-9a68-11ec-b1bc-0242ac110002\",\r",
+											"    \"5130dc84-9a68-11ec-b1bc-0242ac110002\"\r",
+											"    ],\r",
+											"  ruleId: pm.environment.get(\"testFreshRuleId\"),\r",
+											"  result: reqData.result,\r",
+											"  resultEngine: null,\r",
+											"  detail: reqData.detail,\r",
+											"  autoResult: false,\r",
+											"  comment: \"\",\r",
+											"  userId: userId,\r",
+											"  username: user,\r",
+											"  ts: respData.ts,\r",
+											"  touchTs: respData.ts,\r",
+											"  status: {\r",
+											"      ts: respData.ts,\r",
+											"      text: null,\r",
+											"      user: {\r",
+											"          userId: userId,\r",
+											"          username: user\r",
+											"      },\r",
+											"      label: reqData.status\r",
+											"  }\r",
+											"}\r",
+											"\r",
+											"// created now being returned, but don't know what value it will be. response validation will verify that the property exists.\r",
+											"\r",
+											"// delete respData.created;\r",
+											"\r",
+											"pm.test(\"Response matches expected response\", function () {\r",
+											"    try {\r",
+											"        pm.expect(respData).to.eql(expectedReview)\r",
+											"    }\r",
+											"    catch (e) {\r",
+											"        e.message = `actual: ${JSON.stringify(e.actual)}, expected: ${JSON.stringify(e.expected)}`\r",
+											"        throw(e)\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"test\",\n    \"comment\": null,\n    \"status\": \"saved\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "rule",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "history",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testFreshRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Review - freshRuleId - review may or may not exist Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=rule&projection=history&projection=stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "rule",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "history",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testFreshRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import one or more Reviews from a JSON body",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"const expectedResponse = {\r",
+											"    rejected: [],\r",
+											"    affected: {\r",
+											"        updated: 1,\r",
+											"        inserted: 1\r",
+											"    }\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Response as expected\", function () {\r",
+											"    pm.expect(jsonData).to.eql(expectedResponse);\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n    \"ruleId\": \"{{testRuleId}}\",\n    \"result\": \"pass\",\n    \"detail\": \"test\\nvisible to lvl1\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n    },\n    {\n    \"ruleId\": \"{{testFreshRuleId}}\",\n    \"result\": \"pass\",\n    \"detail\": \"test\",\n    \"comment\": \"sure\",\n    \"status\": \"saved\"\n    }\n]"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId"
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
