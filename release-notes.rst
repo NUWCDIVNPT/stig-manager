@@ -1,3 +1,11 @@
+1.2.12
+-----
+
+Changes:
+
+  - (API) Hotfix addressing issue #721: API is incorrectly storing and returning a JSON zero (0) instead of null for resultEngine. 
+
+
 1.2.11
 -----
 
