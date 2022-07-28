@@ -278,7 +278,8 @@ function modulePathResolver( handlersPath, route, apiDoc ) {
 }
 
 function buildResponseValidationConfig() {
-  if ( config.settings.responseValidation == "logOnly" ){
+  if ( config.settings.responseValidation === "true" ) { return true }
+  if ( config.settings.responseValidation === "logOnly" ){
     return {
         onError: (error, body, req) => {
           logger.writeError('rest', 'responseValidation', {

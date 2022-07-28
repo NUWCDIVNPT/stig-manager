@@ -51,6 +51,7 @@ jobs:
           -e STIGMAN_DB_PORT=3306 \
           -e STIGMAN_DB_PASSWORD=stigman \
           -e STIGMAN_API_AUTHORITY=http://localhost:8080/auth/realms/stigman \
+          -e STIGMAN_DEV_RESPONSE_VALIDATION=true \
           stig-manager
       -
         name: Install Newman reporter
