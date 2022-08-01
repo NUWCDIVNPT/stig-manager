@@ -75,7 +75,7 @@
     if (!parsed.CHECKLIST[0].STIGS) throw (new Error("No STIGS element"))
   
     const comments = parsed['__comment']
-    const resultEngineCommon = comments.length ? processRootXmlComments(comments) : null
+    const resultEngineCommon = comments?.length ? processRootXmlComments(comments) : null
   
     let returnObj = {}
     returnObj.target = processAsset(parsed.CHECKLIST[0].ASSET[0])
