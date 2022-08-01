@@ -1,3 +1,11 @@
+1.2.13
+-----
+
+Changes:
+
+  - (UI) Hotfix addressing issue where CKL serializer was failing when parsing CKL with no root XML comment.
+
+
 1.2.12
 -----
 
