@@ -164,7 +164,7 @@ jobs:
         name: Extract response validation logs
         working-directory: ./logs
         run: |
-          jq -s 'map(select(.type=="responseValidation")|{method:.data.request.method,url:.data.request.url,errors:.data.error.errors,body:.data.body})' api-log.json > response-validation.json
+          jq -s 'map(select(.type=="responseValidationX")|{method:.data.request.method,url:.data.request.url,errors:.data.error.errors,body:.data.body})' api-log.json > response-validation.json
           exit $(jq '. | length' response-validation.json)
       - 
         name: Upload response validation logs on failure
