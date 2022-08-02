@@ -118,7 +118,7 @@ jobs:
           path: ./test/api/newman
       -
         name: Extract API log artifact for upload
-        id: api-log
+        id: api-log-extract
         if: ${{ always() }}
         working-directory: ./test/api
         run: |
@@ -126,6 +126,7 @@ jobs:
       - 
         name: Upload API log
         uses: actions/upload-artifact@v2
+        id: api-log-upload
         if: ${{ always() }}
         with:
           name: api-log
@@ -157,11 +158,11 @@ jobs:
         name: Download API logs
         uses: actions/download-artifact@v2
         with:
-          name: api-logs
-          path: ./api-logs
+          name: api-log
+          path: ./logs
       -
         name: Extract response validation logs
-        working-directory: ./api-logs
+        working-directory: ./logs
         run: |
           jq -s 'map(select(.type=="responseValidation")|{method:.data.request.method,url:.data.request.url,errors:.data.error.errors,body:.data.body})' api-log.json > response-validation.json
           exit $(jq '. | length' response-validation.json)
@@ -171,7 +172,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: response-validation.json
-          path: ./api-logs/response-validation.json
+          path: ./logs/response-validation.json
 
           
           
