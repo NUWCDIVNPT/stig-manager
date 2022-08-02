@@ -1101,8 +1101,8 @@ from
 		  json_object(
         'ts', DATE_FORMAT(rh.ts, '%Y-%m-%dT%TZ'),
         'result', result.api,
-        'detail', COALESCE(LEFT(rh.detail,32767), ''),
-        'comment', COALESCE(LEFT(rh.comment,32767), ''),
+        'detail', LEFT(rh.detail,32767),
+        'comment', LEFT(rh.comment,32767),
         'autoResult', rh.autoResult = 1,
         'status', JSON_OBJECT(
           'label', status.api,

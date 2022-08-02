@@ -51,7 +51,7 @@ jobs:
           -e STIGMAN_DB_PORT=3306 \
           -e STIGMAN_DB_PASSWORD=stigman \
           -e STIGMAN_API_AUTHORITY=http://localhost:8080/auth/realms/stigman \
-          -e STIGMAN_DEV_RESPONSE_VALIDATION=true \
+          -e STIGMAN_DEV_RESPONSE_VALIDATION=logOnly \
           stig-manager
       -
         name: Install Newman reporter
@@ -116,20 +116,62 @@ jobs:
         with:
           name: newman-htmlextra
           path: ./test/api/newman
-      - name: Collect docker logs on failure
+      -
+        name: Extract API log artifact for upload
+        id: api-log
+        if: ${{ always() }}
+        working-directory: ./test/api
+        run: |
+          docker logs stig-manager-api > api-log.json
+      - 
+        name: Upload API log
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: api-log
+          path: ./test/api/api-log.json
+      - 
+        name: Collect all docker logs on failure
         if: ${{ cancelled() || failure() }}
         uses: jwalton/gh-docker-logs@v1
         with:
           dest: './logs'
-      - name: Tar logs
+      - 
+        name: Tar logs
         if: ${{ cancelled() || failure() }}
         run: tar cvzf ./logs.tgz ./logs
-      - name: Upload logs to GitHub
+      - 
+        name: Upload logs to GitHub
         if: ${{ cancelled() || failure() }}
         uses: actions/upload-artifact@master
         with:
           name: logs.tgz
           path: ./logs.tgz
+  response_validation:
+    name: Response validation
+    needs: 
+      - test_api
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Download API logs
+        uses: actions/download-artifact@v2
+        with:
+          name: api-logs
+          path: ./api-logs
+      -
+        name: Extract response validation logs
+        working-directory: ./api-logs
+        run: |
+          jq -s 'map(select(.type=="responseValidation")|{method:.data.request.method,url:.data.request.url,errors:.data.error.errors,body:.data.body})' api-log.json > response-validation.json
+          exit $(jq '. | length' response-validation.json)
+      - 
+        name: Upload response validation logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@master
+        with:
+          name: response-validation.json
+          path: ./api-logs/response-validation.json
 
           
           
