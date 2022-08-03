@@ -4940,6 +4940,8 @@ components:
       description: A query parameter that identifies an Asset
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1        
         items:
           type: string
     AssetIdPath:
@@ -4963,6 +4965,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -4975,6 +4979,8 @@ components:
       description: A query parameter that identifies a STIG
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
     BenchmarkIdPath:
@@ -5005,6 +5011,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1    
         items:
           type: string
           enum:
@@ -5025,6 +5033,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5064,6 +5074,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5081,6 +5093,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5106,6 +5120,8 @@ components:
       description: Aggregate the findings on this property
       schema:
         type: string
+        uniqueItems: true
+        minLength: 1
         enum:
           - ruleId
           - groupId
@@ -5118,6 +5134,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5147,6 +5165,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5171,6 +5191,8 @@ components:
       description: A query parameter that specifies a Label
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           $ref: '#/components/schemas/LabelId'
     MetadataKeyPath:
@@ -5187,6 +5209,8 @@ components:
       description: A query parameter that specifies metadata key:value pairs to select matching Objects
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           pattern: '^([\w\.]+\:.*?)$'
           type: string
@@ -5233,6 +5257,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5248,6 +5274,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5260,6 +5288,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5324,6 +5354,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1
         items:
           type: string
           enum:
@@ -5393,6 +5425,8 @@ components:
       explode: true
       schema:
         type: array
+        uniqueItems: true
+        minLength: 1        
         items:
           type: string
           enum:
