@@ -30,7 +30,7 @@ jobs:
         run: |
           python3 -m http.server 8080 &
       -
-        name: Run MySQL
+        name: Run MySQL container
         id: mysql-run
         run: |
           docker run -d --name stig-manager-db \
@@ -41,7 +41,7 @@ jobs:
           -e MYSQL_PASSWORD=stigman \
           mysql:8.0.21
       -
-        name: Run from image
+        name: Run STIG Manager container
         id: api-run
         run: |
           docker run -d --name stig-manager-api \
@@ -51,6 +51,7 @@ jobs:
           -e STIGMAN_DB_PORT=3306 \
           -e STIGMAN_DB_PASSWORD=stigman \
           -e STIGMAN_API_AUTHORITY=http://localhost:8080/auth/realms/stigman \
+          -e STIGMAN_DEV_RESPONSE_VALIDATION=logOnly \
           stig-manager
       -
         name: Install Newman reporter
@@ -108,27 +109,70 @@ jobs:
           set -o pipefail
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport.html | grep -A18 '┌─────'
       -       
-        name: Upload artifact
+        name: Upload Newman artifact
         id: artifact-upload
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
           name: newman-htmlextra
           path: ./test/api/newman
-      - name: Collect docker logs on failure
+      -
+        name: Extract API container log
+        id: api-log-extract
+        if: ${{ always() }}
+        working-directory: ./test/api
+        run: |
+          docker logs stig-manager-api > api-log.json
+      - 
+        name: Upload API log artifact
+        uses: actions/upload-artifact@v2
+        id: api-log-upload
+        if: ${{ always() }}
+        with:
+          name: api-log
+          path: ./test/api/api-log.json
+      - 
+        name: Collect all container logs on failure
         if: ${{ cancelled() || failure() }}
         uses: jwalton/gh-docker-logs@v1
         with:
           dest: './logs'
-      - name: Tar logs
+      - 
+        name: Tar container logs
         if: ${{ cancelled() || failure() }}
         run: tar cvzf ./logs.tgz ./logs
-      - name: Upload logs to GitHub
+      - 
+        name: Upload container logs artifact
         if: ${{ cancelled() || failure() }}
         uses: actions/upload-artifact@master
         with:
           name: logs.tgz
           path: ./logs.tgz
+  response_validation:
+    name: Response validation
+    needs: 
+      - test_api
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Download API log artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: api-log
+          path: ./logs
+      -
+        name: Test for response validation messages
+        working-directory: ./logs
+        run: |
+          jq -s 'map(select(.type=="responseValidation")|{method:.data.request.method,url:.data.request.url,errors:.data.error.errors,body:.data.body})' api-log.json > response-validation.json
+          exit $(jq '. | length' response-validation.json)
+      - 
+        name: Upload response validation artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@master
+        with:
+          name: response-validation
+          path: ./logs/response-validation.json
 
           
           
