@@ -498,13 +498,10 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
     
     connection = await dbUtils.pool.getConnection()
     await connection.query('START TRANSACTION')
-
     let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
-    await dbUtils.pool.query(sqlDelete, binds);
-
+    await connection.query(sqlDelete, binds);
     await dbUtils.updateStatsAssetStig( connection, { ruleId, assetId })
     await connection.commit()
-
     return (rows[0]);
   }
   catch (err) {

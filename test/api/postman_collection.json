@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "e928c328-f636-4e82-840d-0e3ce01094b7",
+		"_postman_id": "a6d57a4b-c56a-4131-a281-af470200d43b",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "9301046"
+		"_exporter_id": "17450853"
 	},
 	"item": [
 		{
@@ -16184,8 +16184,8 @@
 											"    return;\r",
 											"}\r",
 											"else {\r",
-											"    pm.test(\"Status code is 200\", function () {\r",
-											"        pm.response.to.have.status(200);\r",
+											"    pm.test(\"Status code is 204\", function () {\r",
+											"        pm.response.to.have.status(204);\r",
 											"    });\r",
 											"}\r",
 											"if (pm.response.code !== 200) {\r",
