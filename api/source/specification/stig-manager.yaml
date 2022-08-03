@@ -1343,6 +1343,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReviewAssetRuleRead'
+        '204':
+          description: No Content
         default:
           description: unexpected error
           content:

@@ -120,7 +120,7 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
 }
 
 module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule (req, res, next) {
-try {
+  try {
     let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
@@ -130,7 +130,7 @@ try {
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject)
-        res.json(response)
+        res.status(response ? 204 : 200).json(response)
       }
       else {
         throw new SmError.PrivilegeError()
