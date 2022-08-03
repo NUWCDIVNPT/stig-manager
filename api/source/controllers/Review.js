@@ -130,7 +130,7 @@ module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule 
       const userHasRule = await Review.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await Review.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject)
-        res.status(response ? 204 : 200).json(response)
+        res.status(response ? 200 : 204).json(response)
       }
       else {
         throw new SmError.PrivilegeError()
