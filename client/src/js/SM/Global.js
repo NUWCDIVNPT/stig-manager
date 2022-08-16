@@ -67,7 +67,7 @@ SM.ResultTipTpl = new Ext.XTemplate(
 <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;result&gt;`
 )
 SM.DetailTipText = `<b>Detail</b><br>A description of how the evaluator or evaluation tool determined the result.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;FINDING_DETAILS&gt;<br>
-<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;message&gt;`
+<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;check&gt;&lt;check-content&gt;&lt;sm:detail&gt;`
 
 SM.DetailTipTpl = new Ext.XTemplate(
     '<b>Detail</b><br>A description of how the evaluator or evaluation tool determined the result.<br><br>',
@@ -78,11 +78,11 @@ SM.DetailTipTpl = new Ext.XTemplate(
     `<tpl if="required == 'always'">required to submit a review.<br></tpl>`,
     `<tpl if="required == 'findings'">required to submit a finding.<br></tpl>`,
     `<tpl if="required == 'optional'">optional.<br></tpl>`,
-    `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;FINDING_DETAILS&gt;<br><b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;message&gt;`
+    `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;FINDING_DETAILS&gt;<br><b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;check&gt;&lt;check-content&gt;&lt;sm:detail&gt;`
 )
 
 SM.CommentTipText = `<b>Comment</b><br>Additional comment by the evaluator or evaluation tool.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
-<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata comment&gt;`
+<b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;check&gt;&lt;check-content&gt;&lt;sm:comment&gt;`
 
 SM.CommentTipTpl = new Ext.XTemplate(
     '<b>Comment</b><br>Additional comment by the evaluator or evaluation tool.<br><br>',
@@ -94,7 +94,7 @@ SM.CommentTipTpl = new Ext.XTemplate(
     `<tpl if="required == 'findings'">required to submit a finding.<br></tpl>`,
     `<tpl if="required == 'optional'">optional.<br></tpl>`,
     `<br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;<br>
-    <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;metadata comment&gt;`
+    <b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;check&gt;&lt;check-content&gt;&lt;sm:comment&gt;`
 )
 
 SM.RenderResult = {
