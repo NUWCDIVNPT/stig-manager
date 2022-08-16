@@ -1,5 +1,6 @@
 'use strict';
 const dbUtils = require('./utils')
+const config = require('../../utils/config')
 
 let _this = this
 
@@ -563,6 +564,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
         ASSET: {
           ROLE: 'None',
           ASSET_TYPE: 'Computing',
+          MARKING: config.settings.setClassification,
           HOST_NAME: null,
           HOST_IP: null,
           HOST_MAC: null,
@@ -752,6 +754,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
       const stigDataRef = [
         ['Vuln_Num', 'groupId' ],
         ['Severity',  'severity' ],
+        ['Weight',  'weight' ],
         ['Group_Title',  'groupTitle' ],
         ['Rule_ID',  'ruleId' ],
         ['Rule_Ver',  'version' ],
@@ -816,6 +819,218 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
     }
   }
 
+}
+
+exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr = 'latest', includeCheckContent = true) {
+    // queries and query methods
+  const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
+  const sqlGetChecklist =`SELECT 
+    g.groupId,
+    g.title as "groupTitle",
+    r.ruleId,
+    r.title as "ruleTitle",
+    r.severity,
+    r.weight,
+    r.version,
+    c.checkId,
+    c.content as "checkContent",
+    result.api as "result",
+    review.ts,
+    LEFT(review.detail,32767) as "detail",
+    LEFT(review.comment,32767) as "comment",
+    review.resultEngine
+  FROM
+    revision rev 
+    left join rev_group_map rg on rev.revId = rg.revId
+    left join \`group\` g on rg.groupId = g.groupId 
+    left join rev_group_rule_map rgr on rg.rgId = rgr.rgId 
+    left join rule r on rgr.ruleId = r.ruleId 
+    left join rev_group_rule_check_map rgrc on rgr.rgrId = rgrc.rgrId
+    left join \`check\` c on rgrc.checkId = c.checkId
+    left join review on r.ruleId = review.ruleId and review.assetId = ?
+    left join result on review.resultId = result.resultId 
+    left join status on review.statusId = status.statusId 
+  WHERE
+    rev.revId = ?
+  order by
+    substring(g.groupId from 3) + 0 asc
+  `
+  async function getBenchmarkRevision(connection, benchmarkId, revisionStr) {
+    let revisionStrResolved
+    // Benchmark, calculate revId
+    const sqlGetRevision = revisionStr === 'latest' ?
+      `select
+        cr.benchmarkId, 
+        s.title, 
+        cr.revId, 
+        cr.description, 
+        cr.version, 
+        cr.release, 
+        cr.benchmarkDate,
+        cr.status,
+        cr.statusDate
+      from
+        current_rev cr 
+        left join stig s on cr.benchmarkId = s.benchmarkId
+      where
+        cr.benchmarkId = ?`
+    :
+    `select
+        r.benchmarkId,
+        s.title,
+        r.revId,
+        r.description,
+        r.version,
+        r.release,
+        r.benchmarkDate,
+        r.status,
+        r.statusDate
+      from 
+        stig s 
+        left join revision r on s.benchmarkId=r.benchmarkId
+      where
+        r.revId = ?`  
+
+    let result, revId
+    if (revisionStr === 'latest') {
+      ;[result] = await connection.query(sqlGetRevision, [benchmarkId])
+      revId = result[0].revId
+      revisionStrResolved = `V${result[0].version}R${result[0].release}`
+    }
+    else {
+      let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+      revId = `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+      ;[result] = await connection.query(sqlGetRevision, [revId])
+      revisionStrResolved = revisionStr
+    }
+    result[0].revisionStr = revisionStrResolved
+    return result[0]
+  }
+
+  function prefixObjectProperties(prefix, obj) {
+    for (const k in obj)
+      {
+          if (typeof obj[k] == "object" && obj[k] !== null) {
+            prefixObjectProperties(prefix, obj[k])
+          }
+          if (!Array.isArray(obj)) {
+            obj[`${prefix}:${k}`] = obj[k]
+            delete obj[k] 
+          }
+      }
+  }
+
+  function generateTargetFacts({metadata, ...assetFields}) {
+    const fact = []
+    for (const field in assetFields) {
+      if (assetFields[field]) {
+        fact.push({
+          '@_name': `tag:stig-manager@users.noreply.github.com,2020:asset:${field}`,
+          '@_type': 'string',
+          '#text': assetFields[field]
+        })  
+      }
+    }
+    const re = /^urn:/
+    for (const key in metadata) {
+      if (re.test(key)) {
+        fact.push({
+          '@_name': key,
+          '@_type': 'string',
+          '#text': metadata[key] || ''
+        })
+      }
+      else {
+        fact.push({
+          '@_name': `tag:stig-manager@users.noreply.github.com,2020:asset:metadata:${encodeURI(key)}`,
+          '@_type': 'string',
+          '#text': metadata[key] || ''
+        })
+      }
+    }
+    return {fact}
+  }
+
+  // reuse a connection for multiple SELECT queries
+  const connection = await dbUtils.pool.getConnection()
+  // target
+  const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
+  // benchmark
+  const revision = await getBenchmarkRevision(connection, benchmarkId, revisionStr)
+  // checklist
+  const [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revision.revId])
+  // release connection
+  await connection.release()
+
+
+  // scaffold xccdf object
+  const xccdfJs = {
+    Benchmark: {
+      "@_xmlns": "http://checklists.nist.gov/xccdf/1.2",
+      "@_xmlns:dc": "http://purl.org/dc/elements/1.1/",
+      "@_xmlns:sm": "http://github.com/nuwcdivnpt/stig-manager",
+      "@_id": `xccdf_mil.disa.stig_benchmark_${revision.benchmarkId}`,
+      "status": {
+        "@_date": revision.statusDate,
+        "#text": revision.status
+      },
+      "title": revision.title,
+      "description": revision.description,
+      "version": revision.revisionStr,
+      "metadata": {
+        "dc:creator": "DISA",
+        "dc:publisher": "STIG Manager OSS"
+      },
+      "Group": [],
+      TestResult: {
+        "@_id": `xccdf_mil.navy.nuwcdivnpt.stig-manager_testresult_${revision.benchmarkId}`,
+        "@_test-system": `cpe:/a:nuwcdivnpt:stig-manager:${config.version}`,
+        "@_end-time": new Date().toISOString(),
+        "@_version": "1.0",
+        "title": "",
+        "target": resultGetAsset[0].name,
+        "target-address": resultGetAsset[0].ip,
+        "target-facts": generateTargetFacts(resultGetAsset[0]),
+        "rule-result": [],
+        "score": "1.0"
+      } 
+    }
+  }  
+
+  // iterate through checklist query results
+  for (const r of resultGetChecklist) {
+    xccdfJs["Benchmark"]["Group"].push({
+      "@_id": `xccdf_mil.disa.stig_group_${r.groupId}`,
+      "title": r.groupTitle,
+      "Rule": {
+        "@_id": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
+        "@_weight": r.weight,
+        "@_severity": r.severity || undefined,
+        "title": r.ruleTitle,
+        "check": {
+          "@_system": r.checkId,
+          "check-content": r.checkContent
+        }
+      }
+    })
+    if (r.resultEngine) {
+      prefixObjectProperties('sm', r.resultEngine)
+    }
+    xccdfJs["Benchmark"]["TestResult"]["rule-result"].push({
+      result: r.result || "notchecked",
+      "@_idref": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
+      "@_time": r.ts?.toISOString(),
+      "check": {
+        "@_system": r.checkId,
+        "check-content": {
+          "sm:detail": r.detail || undefined,
+          "sm:comment": r.comment || undefined,
+          "sm:resultEngine": r.resultEngine || undefined
+        }
+      }
+    })
+  }
+  return ({assetName: resultGetAsset[0].name, xccdfJs, revisionStrResolved: revision.revisionStr})
 }
 
 exports.createAsset = async function(body, projection, elevate, userObject) {
@@ -906,6 +1121,9 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
       const benchmark = revisionStr === 'latest' ? benchmarkId : `${benchmarkId}-${revisionStr}`
       const cklObject = await _this.cklFromAssetStigs(assetId, [benchmark], elevate, userObject)
       return (cklObject)
+    case 'xccdf':
+      const xccdfObject = await _this.xccdfFromAssetStig(assetId, benchmarkId, revisionStr)
+      return (xccdfObject)
   }
 }
 
