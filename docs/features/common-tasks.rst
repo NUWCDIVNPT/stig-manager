@@ -41,7 +41,7 @@ To help advance through the RMF process, Collection Owners (often RMF Validators
 Check out the :ref:`Collection Review Workspace` portion of the User Guide for more information. 
 
 
-Analyze Findings and Generate a POA&M
+Analyze Findings and generate a POA&M
 ==============================================
 
 The Findings Report provides a roll-up of every "Open" Evaluation in a Collection, and allows you to drill down into the contributing Asset Reviews.  A POA&M-style spreadsheet of these Findings can also be exported.
@@ -49,7 +49,7 @@ The Findings Report provides a roll-up of every "Open" Evaluation in a Collectio
 Check the User Guide for more information about the :ref:`Findings Report`.
 
 
-Check Evaluation Progress
+Check evaluation progress
 ==============================
 
 The :ref:`Status Report` allows Users to gauge the work involved and the progress made towards evaluating every Asset and STIG in their Collection.  
@@ -73,7 +73,7 @@ To the System
 Adding a user to STIG Manager will be dependent on the way your Organization has configured your Authentication. Check out the :ref:`Adding Users` portion of the Setup Guide for more information. 
 
 
-Export Accepted Results
+Export Results
 ===============================
 
 Your process may vary, but many processes have a goal of getting all Reviews in a Collection into an Accepted status. 
@@ -96,6 +96,20 @@ If you have Manage or Owner access to a Collection, you can create labels in you
 
 Check out the :ref:`Labels <labels-tab>` section of the user guide for a further description of this feature. 
 
+
+Create a new set of STIG Assignments based on an existing set
+===================================================================================
+
+You can assign a new STIG to a set of Assets that already have a particular STIG assigned to them. You might do this if you have a set of Assets assigned a Windows STIG, and want to assign all those Assets the Windows Defender STIG, or if the latest DISA STIG release changed the Benchmark ID of a STIG to something new (for example, from **MS_**\ WINDOWS_10_STIG to WINDOWS_10_STIG). 
+
+From the Manage Collection interface:
+   #. In the lower right panel, select the STIG you want to base the new set of assignments off of and click the "Modify..." button.
+   #. From the resulting STIG Assignments pop-up, select the pull-down button from the STIG Selector.
+   #. Scroll and/or filter to find the STIG you want, and select it.
+   #. Select any other desired Assets for assignment. 
+   #. Click "Save".
+
+A new set of Assignments will be created for the new STIG. 
 
 
 Update STIGs
