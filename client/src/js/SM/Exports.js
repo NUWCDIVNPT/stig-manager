@@ -465,15 +465,59 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
       iconCls: 'sm-export-icon',
       disabled: false,
       handler: function () {
-        const streamingApi = streamingCb.checked
+        const streamingApi = streamingApiCheckbox.getValue()
 
         let checklists = streamingApi ? navTree.getCheckedForStreaming() : navTree.getChecked()
-        let multickl = cb.checked
+        let multickl = formatComboBox.getValue() === 'ckl-multi'
         
         appwindow.close()
         
-        const exportFn = streamingApi ? exportCklArchiveStreaming : exportCklArchive
+        let exportFn
+        if (formatComboBox.getValue() === 'xccdf') {
+          exportFn = streamingApi ? exportXccdfArchiveStreaming : exportXccdfArchive
+        }
+        else {
+          exportFn = streamingApi ? exportCklArchiveStreaming : exportCklArchive
+        }
         exportFn(streamingApi ? collectionId : collectionName, checklists, multickl)
+      }
+    })
+
+    const streamingApiCheckbox = new Ext.form.Checkbox({
+      boxLabel: ` Use streaming API<span class="sm-navtree-sprite" style="font-size: 9px; font-weight: bold;">experimental</span>`,
+      checked: localStorage.getItem('exportArchiveStreaming') == '1',
+      hideLabel: true,
+      listeners: {
+        check: function (cb, checked) {
+          localStorage.setItem('exportArchiveStreaming', checked ? '1' : '0')
+        }
+      }
+    })
+
+    const formatComboBox = new Ext.form.ComboBox({
+      mode: 'local',
+      width: 110,
+      fieldLabel: "Format",
+      forceSelection: true,
+      autoSelect: true,
+      editable: false,
+      store: new Ext.data.SimpleStore({
+        fields: ['displayStr', 'valueStr'],
+        data: [
+          ['CKL', 'ckl-mono'],
+          ['CKL (multi-STIG)', 'ckl-multi'],
+          ['XCCDF', 'xccdf']
+        ]
+      }),
+      valueField:'valueStr',
+      displayField:'displayStr',
+      value: localStorage.getItem('exportFormat') || 'ckl-mono',
+      monitorValid: false,
+      triggerAction: 'all',
+      listeners: {
+        select: function (combo, record, index) {
+          localStorage.setItem('exportFormat', combo.getValue())
+        }
       }
     })
 
@@ -499,7 +543,7 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
     // Form window
     /******************************************************/
     appwindow = new Ext.Window({
-      title: 'Export CKL archive',
+      title: 'Export archive',
       cls: 'sm-dialog-window sm-round-panel',
       modal: true,
       hidden: true,
@@ -527,18 +571,14 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
       ],
       fbar: [
         { 
-          xtype: 'panel',
+          xtype: 'form',
+          labelWidth: 50,
+          bodyStyle: 'padding:0 5px 0 15px;',
           border: false,
-          html: `<div class="sm-dialog-panel-text" style="padding:12px; display: flex; flex-flow: column;">
-          <label style="padding: 5px 0px;">
-          <input type="checkbox" name="multi-ckl" id="multi-ckl" style="vertical-align: -2px;"/>
-          Export multi-STIG CKLs (one file per Asset).
-          </label>
-          <label>
-          <input type="checkbox" name="streaming" id="streaming-cb" style="vertical-align: -2px;"/>
-          Use streaming API<span class="sm-navtree-sprite" style="font-size: 9px; font-weight: bold;">experimental</span>
-          </label>
-          </div>`
+          items: [
+            formatComboBox,
+            streamingApiCheckbox
+          ]
         },
         '->',
         exportButton
@@ -551,8 +591,6 @@ async function showExportCklFiles(collectionId, collectionName, treebase = 'asse
 
     })
     appwindow.show(document.body)
-    const cb = appwindow.getEl().dom.querySelector('#multi-ckl')
-    const streamingCb = appwindow.getEl().dom.querySelector('#streaming-cb')
   }
   catch (e) {
     if (typeof e === 'object') {
@@ -672,14 +710,90 @@ async function exportCklArchive(collectionName, checklists, multiStig) {
   }
 }
 
+async function exportXccdfArchive(collectionName, checklists, multiStig) {
+
+  async function getXccdf(checklists, zip) {
+    const entries = Object.entries(checklists)
+    let fetched = 0
+    let cklCount = entries.length
+    for (const [assetId, { assetName, benchmarkIds = [] }] of entries) {
+      if (benchmarkIds.length === 0) {
+        const result = await Ext.Ajax.requestPromise({
+          url: `${STIGMAN.Env.apiBase}/assets/${assetId}/stigs`,
+          method: 'GET'
+        })
+        const apiAssetStigs = JSON.parse(result.response.responseText)
+        benchmarkIds.push(...apiAssetStigs.map( assetStig => assetStig.benchmarkId))
+      }
+      cklCount += benchmarkIds.length
+    }
+    for (const [assetId, { assetName, benchmarkIds = [] }] of entries) {
+      for (const benchmarkId of benchmarkIds) {
+        updateProgress(fetched / cklCount, `Fetching CKL for ${assetName}/${benchmarkId}`)
+        updateStatusText(`Fetching checklist for ${assetName}/${benchmarkId}: `, true)
+        await window.oidcProvider.updateToken(10)
+        const url = `${STIGMAN.Env.apiBase}/assets/${assetId}/checklists/${benchmarkId}/latest?format=xccdf`
+        let response = await fetch(url, {
+          method: 'GET',
+          headers: new Headers({
+            'Authorization': `Bearer ${window.oidcProvider.token}`
+          })
+        })
+        const contentDispo = response.headers.get("content-disposition")
+        if (contentDispo) {
+          //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+          const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+          console.log(filename)
+          const blob = await response.blob()
+          updateStatusText(`[OK]`)
+          fetched++
+          zip.file(filename, blob)
+        }
+        else {
+          updateStatusText(`Error: missing 'Content-Disposition'`)
+        }
+      }
+    }
+  }
+
+  try {
+    const zip = new JSZip()
+    initProgress("Exporting checklists", "Initializing...")
+
+    await getXccdf(checklists, zip)
+
+    updateProgress(1, 'Generating Zip archive...')
+    updateStatusText('Generating Zip archive...')
+    const blob = await zip.generateAsync({
+      type: "blob",
+      compression: "DEFLATE",
+      compressionOptions: {
+        level: 6
+      }
+    }, (metadata) => {
+      updateProgress(metadata.percent / 100, `Compressing ${metadata.currentFile}`)
+    })
+    updateProgress(1, 'Done')
+    updateStatusText('Done')
+
+    saveAs(blob, `${collectionName}.zip`)
+  }
+  catch (e) {
+    alert(`${e.message}\n${e.stack}`)
+  }
+}
+
 async function exportCklArchiveStreaming(collectionId, checklists, multiStig) {
 
   function formatBytes(a,b=2,k=1024){with(Math){let d=floor(log(a)/log(k));return 0==a?"0 Bytes":parseFloat((a/pow(k,d)).toFixed(max(0,b)))+" "+["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"][d]}}
 
   try {
     initProgress("Exporting checklists", "Initializing...")
+    updateStatusText(`The streaming API is experimental.
+    Progress messages are not available. The final size of the archive is unknown during streaming.
+    When the stream has finished you will be prompted to save the data to disk.`, true)
     await window.oidcProvider.updateToken(10)
-    const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/ckl-archive?mode=${multiStig ? 'multi' : 'mono'}`
+    const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/ckl?mode=${multiStig ? 'multi' : 'mono'}`
     let response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -702,12 +816,56 @@ async function exportCklArchiveStreaming(collectionId, checklists, multiStig) {
     }
     const blob = new Blob(chunks)
     const collectionApi = SM.Cache.CollectionMap.get(collectionId)
+    updateStatusText(`\n\nStreaming is complete.`, true)
+
     saveAs(blob, `${collectionApi.name}.zip`)
   }
   catch (e) {
     alert(`${e.message}\n${e.stack}`)
   }
 }
+
+async function exportXccdfArchiveStreaming(collectionId, checklists) {
+
+  function formatBytes(a,b=2,k=1024){with(Math){let d=floor(log(a)/log(k));return 0==a?"0 Bytes":parseFloat((a/pow(k,d)).toFixed(max(0,b)))+" "+["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"][d]}}
+
+  try {
+    initProgress("Exporting checklists", "Initializing...")
+    updateStatusText(`The streaming API is experimental.
+    Progress messages are not available. The final size of the archive is unknown during streaming.
+    When the stream has finished you will be prompted to save the data to disk.`, true)
+    await window.oidcProvider.updateToken(10)
+    const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/xccdf`
+    let response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.oidcProvider.token}`
+      },
+      body: JSON.stringify(checklists)
+    })
+    const reader = response.body.getReader()
+    let receivedLength = 0; // received that many bytes at the moment
+    let chunks = []; // array of received binary chunks (comprises the body)
+    while(true) {
+      const {done, value} = await reader.read()
+      if (done) {
+        break
+      }
+      chunks.push(value)
+      receivedLength += value.length
+      updateProgress(0, `Fetched: ${formatBytes(receivedLength, 1)}`)
+    }
+    const blob = new Blob(chunks)
+    const collectionApi = SM.Cache.CollectionMap.get(collectionId)
+    updateStatusText(`\n\nStreaming is complete.`, true)
+    saveAs(blob, `${collectionApi.name}.zip`)
+  }
+  catch (e) {
+    alert(`${e.message}\n${e.stack}`)
+  }
+}
+
 
 
 

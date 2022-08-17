@@ -209,8 +209,14 @@ async function addCollectionReview ( params ) {
 							{
 								text: 'CKL (Zip archive)',
 								iconCls: 'sm-export-icon',
-								tooltip: 'Download an archive with a checklist in DISA STIG Viewer format for each asset in the collection',
+								tooltip: 'Download an archive with results in DISA STIG Viewer format for each asset in the collection',
 								handler: exportCkls
+							},
+							{
+								text: 'XCCDF (Zip archive)',
+								iconCls: 'sm-export-icon',
+								tooltip: 'Download an archive with results in XCCDF format for each asset in the collection',
+								handler: exportXccdfs
 							}
 						]
 					}
@@ -265,6 +271,52 @@ async function addCollectionReview ( params ) {
 			}
 		}
 		
+		async function exportXccdfs () {
+			try {
+				const zip = new JSZip()
+				initProgress("Exporting checklists", "Initializing...")
+				let fetched = 0
+				const assetCount = apiAssets.length
+				for (const apiAsset of apiAssets) {
+					updateProgress(fetched/assetCount, `Fetching XCCDF for ${apiAsset.name}`)
+					updateStatusText (`Fetching checklist for ${apiAsset.name}: `, true)
+					await window.oidcProvider.updateToken(10)
+					const url = `${STIGMAN.Env.apiBase}/assets/${apiAsset.assetId}/checklists/${leaf.benchmarkId}/${groupGrid.sm_revisionStr}?format=xccdf`
+					let response = await fetch( url, {
+					  method: 'GET',
+					  headers: new Headers({
+						'Authorization': `Bearer ${window.oidcProvider.token}`
+					  })
+					})
+					const contentDispo = response.headers.get("content-disposition")
+					//https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
+					const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+					console.log(filename)
+					const blob = await response.blob()
+					updateStatusText (`Fetched ${filename}`)
+					fetched++
+					zip.file( filename, blob )
+				}
+				updateProgress(1, 'Generating Zip archive...')
+				updateStatusText('Generating Zip archive...')
+				const blob = await zip.generateAsync({
+					type:"blob",
+					compression: "DEFLATE",
+					compressionOptions: {
+						level: 6
+					}
+				}, (metadata) => {
+					updateProgress(metadata.percent/100, `Compressing ${metadata.currentFile}`)
+				})
+				updateProgress(1, 'Done')
+				updateStatusText('Done')
+				saveAs(blob, `${apiCollection.name}-${leaf.benchmarkId}.zip`)
+			}
+			catch (e) {
+				alert (`${e.message}\n${e.stack}`)
+			}
+		}
+
 		/******************************************************/
 		// Group grid statistics string
 		/******************************************************/

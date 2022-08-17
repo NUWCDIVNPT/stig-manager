@@ -210,18 +210,19 @@ paths:
     get:
       tags:
         - Asset
-      summary: Return JSON summary or a CKL file for an Asset and STIG
+      summary: Return JSON summary, or CKL file, or XCCDF file for an Asset and STIG
       operationId: getChecklistByAssetStig
       parameters:
         - name: format
           in: query
-          description: The format of the response. Default if missing is 'json'
+          description: The format of the response. Default is 'json'
           schema:
             type: string
             default: json
             enum:
               - json
               - ckl
+              - xccdf
       responses:
         '200':
           description: A JSON array of Checklist summary items or a CKL
@@ -232,8 +233,10 @@ paths:
                 items:
                   $ref: '#/components/schemas/ChecklistAssetStig'
             application/xml:
-              schema:
-                $ref: '#/components/schemas/ChecklistCkl'
+                schema:
+                  oneOf:
+                    - $ref: '#/components/schemas/ChecklistCkl'
+                    - $ref: '#/components/schemas/ChecklistXccdf'
         default:
           description: unexpected error
           content:
@@ -883,17 +886,18 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/collections/{collectionId}/ckl-archive':
+  '/collections/{collectionId}/archive/ckl':
     post:
       tags:
         - Collection
-      summary: Return a ZIP archive containing CKLs for the supplied Assets and STIGs
+      summary: EXPERIMENTAL - Return a ZIP archive containing CKLs for the supplied Assets and STIGs
       operationId: postCklArchiveByCollection
       parameters:
        - $ref: '#/components/parameters/CollectionIdPath'
        - $ref: '#/components/parameters/CklModeQuery'
       requestBody:
         required: true
+        description: EXPERIMENTAL - This schema is likely to change in a future release
         content:
           application/json:
             schema:
@@ -904,6 +908,41 @@ paths:
       responses:
         '200':
           description: CklArchive response
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/archive/xccdf':
+    post:
+      tags:
+        - Collection
+      summary: EXPERIMENTAL - Return a ZIP archive containing XCCDF results for the supplied Assets and STIGs
+      operationId: postXccdfArchiveByCollection
+      parameters:
+       - $ref: '#/components/parameters/CollectionIdPath'
+      requestBody:
+        required: true
+        description: EXPERIMENTAL - This schema is likely to change in a future release
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/AssetStigSelection'
+      responses:
+        '200':
+          description: XccdfArchive response
           content:
             application/zip:
               schema:
@@ -3466,6 +3505,14 @@ components:
         - accepted
         - rejected
         - null
+    ChecklistXccdf:
+      type: object
+      description: |
+        An XCCDF document with TestResult. Note: OAS 3.x cannot represent the actual XML schema
+      xml:
+        name: Benchmark
+        namespace: 'http://checklists.nist.gov/xccdf/1.2'
+      additionalProperties: true
     ClientErrorDuplicateAsset:
       type: object
       additionalProperties: false

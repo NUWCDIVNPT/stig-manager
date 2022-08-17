@@ -7,7 +7,7 @@ const AssetSvc = require(`../service/${config.database.type}/AssetService`)
 const Serialize = require(`../utils/serializers`)
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
-const archiver = require('archiver')
+const Archiver = require('archiver')
 const J2X = require("fast-xml-parser").j2xParser
 const he = require('he')
 
@@ -569,52 +569,11 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
     const collectionId = getCollectionIdAndCheckPermission(req)
     const mode = req.query.mode
     const assetStigSelections = req.body
-    const assetStigArguments = []
     
     // process body array into service arguments
-    for (const assetStigSel of assetStigSelections) {
-      const assetId = assetStigSel.assetId
-      // MUST VERIFY assetId IS IN collectionId!
-      let requestedBenchmarkIds = assetStigSel.benchmarkIds
-        // If this user has no grants permitting access to the asset, the response will be undefined
-      const assetResponse = await AssetSvc.getAsset(assetId, ['stigs'], false, req.userObject )
-      if (!assetResponse) {
-        throw new SmError.PrivilegeError()
-      }
-      const assetName = assetResponse.name
+    const assetStigArguments = await assetStigsToArgs (assetStigSelections, mode, req.userObject)
 
-      if (assetResponse.collection.collectionId !== collectionId) {
-        continue // hmm... really?
-      }
-      const availableBenchmarkIds = assetResponse.stigs.map( r => r.benchmarkId )
-      if (availableBenchmarkIds.length === 0) {
-        continue // hmm... really?
-      }
-      if (!requestedBenchmarkIds) {
-        requestedBenchmarkIds = availableBenchmarkIds
-      }
-      else if (!requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))) {
-        throw new SmError.ClientError('Asset is not mapped to all requested benchmarkIds')
-      }
-      if (mode === 'mono') {
-        for (const benchmarkId of requestedBenchmarkIds) {
-          assetStigArguments.push({
-            assetId,
-            assetName,
-            benchmarkIds: [benchmarkId]
-          })
-        }
-      }
-      else {
-        assetStigArguments.push({
-          assetId,
-          assetName,
-          benchmarkIds: requestedBenchmarkIds
-        })
-      }
-    }
-
-    let defaultOptions = {
+    const j2x = new J2X({
       attributeNamePrefix : "@_",
       attrNodeName: "@", //default is false
       textNodeName : "#text",
@@ -628,19 +587,17 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
         return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
       },
       attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
-    }
-    const j2x = new J2X(defaultOptions)
+    })
 
-
-    const zip = archiver('zip', {level: 9})
-    // const zip = archiver('tar', {gzip: true, gzipOptions:{level: 9}})
-    res.attachment('archive-name.zip')
+    const zip = Archiver('zip', {level: 9})
+    // const zip = Archiver('tar', {gzip: true, gzipOptions:{level: 9}})
+    res.attachment('ckl.zip')
     zip.pipe(res)
     for (const args of assetStigArguments) {
       const response = await AssetSvc.cklFromAssetStigs(args.assetId, args.benchmarkIds)
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
       xml += j2x.parse(response.cklJs)
-      const filename = mode === 'mono' ? `${args.assetName}-${args.benchmarkIds[0]}.ckl` : args.assetName
+      const filename = mode === 'mono' ? `${args.assetName}-${args.benchmarkIds[0]}-${response.revisionStrResolved}.ckl` : `${args.assetName}.ckl`
       zip.append(xml, {name: filename})
     }
     zip.finalize()
@@ -648,4 +605,93 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
   catch (err) {
     next(err)
   }
+}
+
+module.exports.postXccdfArchiveByCollection = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req)
+    const assetStigSelections = req.body
+    
+    // process body array into service arguments
+    const assetStigArguments = await assetStigsToArgs (assetStigSelections, 'mono', req.userObject)
+
+    const j2x = new J2X({
+      attributeNamePrefix : "@_",
+      textNodeName : "#text",
+      ignoreAttributes : false,
+      cdataTagName: "__cdata",
+      cdataPositionChar: "\\c",
+      format: true,
+      indentBy: "  ",
+      supressEmptyNode: true,
+      tagValueProcessor: a => {
+        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
+      },
+      attrValueProcessor: a => he.encode(a, {isAttributeValue: true, useNamedReferences: true})
+    })
+
+    const zip = Archiver('zip', {level: 9})
+    res.attachment('xccdf.zip')
+    zip.pipe(res)
+    for (const args of assetStigArguments) {
+      const response = await AssetSvc.xccdfFromAssetStig(args.assetId, args.benchmarkIds[0])
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>
+      <!-- STIG Manager ${config.version} -->
+      <!-- Classification: ${config.settings.setClassification} -->\n`
+      xml += j2x.parse(response.xccdfJs)
+      const filename = `${args.assetName}-${args.benchmarkIds[0]}-${response.revisionStrResolved}-xccdf.xml`
+      zip.append(xml, {name: filename})
+    }
+    zip.finalize()
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+// for the archive streaming endpoints
+async function assetStigsToArgs (assetStigSelections, mode = 'mono', userObject) {
+  const assetStigArguments = []
+  for (const assetStigSel of assetStigSelections) {
+    const assetId = assetStigSel.assetId
+    // MUST VERIFY assetId IS IN collectionId!
+    let requestedBenchmarkIds = assetStigSel.benchmarkIds
+      // If this user has no grants permitting access to the asset, the response will be undefined
+    const assetResponse = await AssetSvc.getAsset(assetId, ['stigs'], false, userObject )
+    if (!assetResponse) {
+      throw new SmError.PrivilegeError()
+    }
+    const assetName = assetResponse.name
+
+    // if (assetResponse.collection.collectionId !== collectionId) {
+    //   continue // hmm... really?
+    // }
+    const availableBenchmarkIds = assetResponse.stigs.map( r => r.benchmarkId )
+    if (availableBenchmarkIds.length === 0) {
+      continue // hmm... really?
+    }
+    if (!requestedBenchmarkIds) {
+      requestedBenchmarkIds = availableBenchmarkIds
+    }
+    else if (!requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))) {
+      throw new SmError.ClientError('Asset is not mapped to all requested benchmarkIds')
+    }
+    if (mode === 'mono') {
+      for (const benchmarkId of requestedBenchmarkIds) {
+        assetStigArguments.push({
+          assetId,
+          assetName,
+          benchmarkIds: [benchmarkId]
+        })
+      }
+    }
+    else {
+      assetStigArguments.push({
+        assetId,
+        assetName,
+        benchmarkIds: requestedBenchmarkIds
+      })
+    }
+  }
+  return assetStigArguments
 }

@@ -197,63 +197,96 @@ async function addReview( params ) {
       },
       '-',
       {
-        text: 'Export CKL',
+        text: 'Export to file',
         iconCls: 'sm-export-icon',
-        tooltip: 'Download this checklist in DISA STIG Viewer format',
-        handler: async function (item, eventObject) {
-          try {
-            document.body.style.cursor = 'wait'
-            let ckl = await item.getCkl(leaf)
-            item.downloadBlob(ckl.blob, ckl.filename)
-            document.body.style.cursor = 'default'
-          }
-          catch (e) {
-            alert(e.message)
-          }
-        },
-        getCkl: function (leaf) {
-          return new Promise( async (resolve, reject) => {
-            var xhr = new XMLHttpRequest()
-            var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
-            xhr.open('GET', url)
-            xhr.responseType = 'blob'
-            await window.oidcProvider.updateToken(10)
-            xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
-            xhr.onload = function () {
-              if (this.status >= 200 && this.status < 300) {
-                var contentDispo = this.getResponseHeader('Content-Disposition')
-                //https://stackoverflow.com/questions/23054475/javascript-regex-for-extracting-filename-from-content-disposition-header/39800436
-                var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
-                resolve({
-                  blob: xhr.response,
-                  filename: fileName
-                })
-              } else {
-                reject({
-                  status: this.status,
-                  message: xhr.statusText
+        tooltip: 'Download this checklist in CKL or XCCDF format',
+        hideOnClick: false,
+        menu: {
+          items: [
+            {
+              text: 'CKL',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download this checklist in DISA STIG Viewer format',
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  let ckl = await item.getCkl(leaf)
+                  saveAs(ckl.blob, ckl.filename)
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  alert(e.message)
+                }
+              },
+              getCkl: function (leaf) {
+                return new Promise( async (resolve, reject) => {
+                  var xhr = new XMLHttpRequest()
+                  var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
+                  xhr.open('GET', url)
+                  xhr.responseType = 'blob'
+                  await window.oidcProvider.updateToken(10)
+                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
+                  xhr.onload = function () {
+                    if (this.status >= 200 && this.status < 300) {
+                      var contentDispo = this.getResponseHeader('Content-Disposition')
+                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                      resolve({
+                        blob: xhr.response,
+                        filename: fileName
+                      })
+                    } else {
+                      reject({
+                        status: this.status,
+                        message: xhr.statusText
+                      })
+                    }
+                  }
+                  xhr.onerror = function () {
+                    reject({
+                      status: this.status,
+                      message: xhr.responseText
+                    })
+                  }
+                  xhr.send()
                 })
               }
-            }
-            xhr.onerror = function () {
-              reject({
-                status: this.status,
-                message: xhr.responseText
-              })
-            }
-            xhr.send()
-          })
-        },
-        downloadBlob: function (blob, filename) {
-          let a = document.createElement('a')
-          a.style.display = "none"
-          let url = window.URL.createObjectURL(blob)
-          a.href = url
-          a.download = filename
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url)
+            },
+            {
+              text: 'XCCDF',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download this checklist in XCCDF format',
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  await item.getXccdf(leaf)
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  alert(e.message)
+                }
+              },
+              getXccdf: async function (leaf) {
+                await window.oidcProvider.updateToken(10)
+                const url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=xccdf`
+                let response = await fetch(url, {
+                  method: 'GET',
+                  headers: new Headers({
+                    'Authorization': `Bearer ${window.oidcProvider.token}`
+                  })
+                })
+                const contentDispo = response.headers.get("content-disposition")
+                if (contentDispo) {
+                  const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                  console.log(filename)
+                  const blob = await response.blob()
+                  saveAs(blob, filename)
+                }
+                else {
+                  throw new Error('No Content-Disposition header')
+                }           
+              }
+            }      
+          ]
         }
       },
       {
