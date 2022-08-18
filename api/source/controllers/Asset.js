@@ -294,12 +294,33 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           tagValueProcessor: a => {
             return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
           },
-          attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
+          attrValueProcessor: a=> he.encode(a, {isAttributeValue: true, useNamedReferences: true})
         }
         const j2x = new J2X(defaultOptions)
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += j2x.parse(response.cklJs)
         writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
+      }
+      else if (format === 'xccdf') {
+        let defaultOptions = {
+          attributeNamePrefix : "@_",
+          // attrNodeName: "@", //default is false
+          textNodeName : "#text",
+          ignoreAttributes : false,
+          cdataTagName: "__cdata", //default is false
+          cdataPositionChar: "\\c",
+          format: true,
+          indentBy: "  ",
+          supressEmptyNode: true,
+          tagValueProcessor: a => {
+            return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
+          },
+          attrValueProcessor: a => he.encode(a, {isAttributeValue: true, useNamedReferences: true})
+        }
+        const j2x = new J2X(defaultOptions)
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+        xml += j2x.parse(response.xccdfJs)
+        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
       }
     }
     else {

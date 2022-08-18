@@ -2,6 +2,14 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-08-17',
+    header: `XCCDF Export Option`,
+    body: `<p>This new feature allows users to export their review data in the XCCDF format. Look for this option wherever checklist result exports are offered: The Asset Review workspace, the Collection Review workspace, and the Collection Management workspace.   
+    <p>For example, from the <b>Collection Management</b> workspace, click "Export Results..." and select the desired format from the pulldown menu:</p>
+    <p><img src="img/whatsnew/2022-08-17-xxcdf-archive.png"/></p>
+    `
+  },    
+  {
     date: '2022-07-19',
     header: `Streaming CKL Archive Export Option`,
     body: `<p>This option bring users better performance when exporting large numbers of .ckl files. The application will generate the exact same .ckl files whether or not this option is selected, they are just delivered to the client in a different way.</p>

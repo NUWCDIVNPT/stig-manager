@@ -386,7 +386,14 @@
       tagValueProcessor: valueProcessor,
       commentPropName: "__comment",
       isArray: (name, jpath, isLeafNode, isAttribute) => {
-        return name === 'override' || name === 'target-address'
+        const arrayElements = [
+          'override',
+          'overrides',
+          'target',
+          'target-address',
+          'fact'
+        ]
+        return arrayElements.includes(name)
       }
     }
     const parser = new XMLParser(parseOptions)  
@@ -404,11 +411,9 @@
     if (scapBenchmarkMap && scapBenchmarkMap.has(benchmarkId)) {
       benchmarkId = scapBenchmarkMap.get(benchmarkId)
     }
-    let target = processTargetFacts(parsed.Benchmark.TestResult['target-facts'].fact)
-    target.name = parsed.Benchmark.TestResult.target || target.name
-    target.ip = parsed.Benchmark.TestResult['target-address']?.[0] || target.ip
+    const target = processTarget(parsed.Benchmark.TestResult)
     if (!target.name) {
-      throw (new Error('No host_name fact'))
+      throw (new Error('No value for <target>'))
     }
 
     // resultEngine info
@@ -428,7 +433,7 @@
 
     // Return object
     return ({
-      target: target,
+      target,
       checklists: [{
         benchmarkId: benchmarkId,
         revisionStr: null,
@@ -484,63 +489,72 @@
 
       let resultEngine
       if (resultEngineCommon) {
-        // build the resultEngine value
-        resultEngine = {
-          time: new Date(ruleResult.time), 
-          ...resultEngineCommon
+        if (resultEngineCommon.product === 'stig-manager') {
+          resultEngine = ruleResult.check?.['check-content']?.resultEngine
         }
-        // handle check-content-ref, if it exists
-        const checkContentHref = ruleResult?.check?.['check-content-ref']?.href?.replace('#scap_mil.disa.stig_comp_','')
-        const checkContentName = ruleResult?.check?.['check-content-ref']?.name?.replace('oval:mil.disa.stig.','')
-        if (checkContentHref || checkContentName) {
-          resultEngine.checkContent = {
-            location: checkContentHref,
-            component: checkContentName
+        else {
+          // build the resultEngine value
+          resultEngine = {
+            time: new Date(ruleResult.time).toISOString(), 
+            ...resultEngineCommon
           }
-        }
-        
-        if (ruleResult.override?.length) { //overrides
-          const overrides = []
-          for (const override of ruleResult.override) {
-            overrides.push({
-              authority: override.authority,
-              oldResult: override['old-result'],
-              newResult: override['new-result'],
-              remark: override['remark']
-            })
+          // handle check-content-ref, if it exists
+          const checkContentHref = ruleResult?.check?.['check-content-ref']?.href?.replace('#scap_mil.disa.stig_comp_','')
+          const checkContentName = ruleResult?.check?.['check-content-ref']?.name?.replace('oval:mil.disa.stig.','')
+          if (checkContentHref || checkContentName) {
+            resultEngine.checkContent = {
+              location: checkContentHref,
+              component: checkContentName
+            }
           }
-          if (overrides.length) {
-            resultEngine.overrides = overrides
-          }  
+          
+          if (ruleResult.override?.length) { //overrides
+            const overrides = []
+            for (const override of ruleResult.override) {
+              overrides.push({
+                authority: override.authority,
+                oldResult: override['old-result'],
+                newResult: override['new-result'],
+                remark: override['remark']
+              })
+            }
+            if (overrides.length) {
+              resultEngine.overrides = overrides
+            }  
+          }
         }
       }
 
-      const replacementText = `Result was reported by product "${resultEngine?.product}" version ${resultEngine?.version} at ${resultEngine?.time?.toISOString()} using check content "${resultEngine?.checkContent?.location}"`
+      const replacementText = `Result was reported by product "${resultEngine?.product}" version ${resultEngine?.version} at ${resultEngine?.time} using check content "${resultEngine?.checkContent?.location}"`
 
-      let detail
-      switch (importOptions.emptyDetail) {
-        case 'ignore':
-          detail= null
-          break
-        case 'import':
-          detail = ''
-          break
-        case 'replace':
-          detail = replacementText
-          break
+      let detail = ruleResult.check?.['check-content']?.detail
+      if (!detail) {
+        switch (importOptions.emptyDetail) {
+          case 'ignore':
+            detail= null
+            break
+          case 'import':
+            detail = ''
+            break
+          case 'replace':
+            detail = replacementText
+            break
+        }
       }
 
-      let comment
-      switch (importOptions.emptyComment) {
-        case 'ignore':
-          comment = null
-          break
-        case 'import':
-          comment = ''
-          break
-        case 'replace':
-          comment = replacementText
-          break
+      let comment = ruleResult.check?.['check-content']?.comment
+      if (!comment) {
+        switch (importOptions.emptyComment) {
+          case 'ignore':
+            comment = null
+            break
+          case 'import':
+            comment = ''
+            break
+          case 'replace':
+            comment = replacementText
+            break
+        }
       }
 
       const review = {
@@ -599,25 +613,46 @@
       return status
     }
 
-    function processTargetFacts(facts) {
-      let target = {}
-      facts.forEach(fact => {
-        if (fact['#text']) {
-          let name = fact.name.replace('urn:scap:fact:asset:identifier:', '')
-          name = name.replace('urn:xccdf:fact:', '')
-          name = name === 'ipv4' ? 'ip' : name
-          target[name] = fact['#text'] 
+    function processTargetFacts(targetFacts) {
+      if (!targetFacts) return {}
+
+      const asset = { metadata: {} }
+      const reTagAsset = /^tag:stig-manager@users.noreply.github.com,2020:asset:(.*)/
+      const reMetadata = /^metadata:(.*)/
+
+      for (const targetFact of targetFacts) {
+        const matchesTagAsset = targetFact['name'].match(reTagAsset)
+        if (!matchesTagAsset) {
+          asset.metadata[targetFact['name']] = targetFact['#text']
+          continue
         }
-      })
-      const {ip, host_name, fqdn, mac, ...metadata} = target
+        const property = matchesTagAsset[1]
+        const matchesMetadata = property.match(reMetadata)
+        if (matchesMetadata) {
+          asset.metadata[decodeURI(matchesMetadata[1])] = targetFact['#text']
+        }
+        else {
+          let value = targetFact['#text']
+          if (property === 'noncomputing') {
+            value = value === 'true'
+          }
+          if (['name','description','fqdn','ip','mac','noncomputing'].includes(property)) {
+            asset[property] = value
+          }
+        }
+      }
+      return asset
+    }
+
+    function processTarget(testResult) {
+      const assetFromFacts = processTargetFacts(testResult['target-facts']?.fact)
       return {
-        name: host_name,
+        name: testResult.target[0],
         description: '',
-        ip: ip,
-        mac: mac,
-        fqdn: fqdn,
+        ip: testResult['target-address']?.[0] || '',
         noncomputing: false,
-        metadata: metadata
+        metadata: {},
+        ...assetFromFacts
       }
     }
   }

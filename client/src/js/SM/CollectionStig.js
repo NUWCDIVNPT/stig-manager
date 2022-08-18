@@ -183,7 +183,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         ]
         const exportCklBtn = new Ext.Button({
             iconCls: 'sm-export-icon',
-            text: 'Export CKLs...',
+            text: 'Export results...',
             disabled: true,
             handler: function() {
                 showExportCklFiles( me.collectionId, me.collectionName, 'stig', me.getSelectionModel().getSelections().map( r => r.data )  );            
