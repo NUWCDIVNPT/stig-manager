@@ -199,7 +199,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
   
     async function getStig( benchmarkId, revisionStr) {
       let result = await Ext.Ajax.requestPromise({
-        url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules?projection=checks&projection=fixes&projection=detail`,
+        url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules`,
         method: 'GET',
         params: {
           projection: ['checks','fixes','detail']
