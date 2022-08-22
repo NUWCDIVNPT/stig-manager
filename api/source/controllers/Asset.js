@@ -298,7 +298,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         }
         const j2x = new J2X(defaultOptions)
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-        xml += j2x.parse(response.cklJs)
+        xml += j2x.parse(response.xmlJs)
         writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
       }
       else if (format === 'xccdf') {
@@ -319,7 +319,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         }
         const j2x = new J2X(defaultOptions)
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-        xml += j2x.parse(response.xccdfJs)
+        xml += j2x.parse(response.xmlJs)
         writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
       }
     }
@@ -354,7 +354,9 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
       throw new SmError.ClientError('Asset is not mapped to all requested benchmarkIds')
     }
 
-    let cklObject = await Asset.getChecklistByAsset(assetId, requestedBenchmarkIds, 'ckl', false, req.userObject )
+    const stigs = requestedBenchmarkIds.map( benchmarkId => ({benchmarkId, revisionStr: 'latest'}) )
+
+    let cklObject = await Asset.getChecklistByAsset(assetId, stigs, 'ckl', false, req.userObject )
     let parseOptions = {
       attributeNamePrefix : "@_",
       attrNodeName: "@", //default is false
@@ -372,7 +374,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
     }
     const j2x = new J2X(parseOptions)
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
-    xml += j2x.parse(cklObject.cklJs)
+    xml += j2x.parse(cklObject.xmlJs)
     writer.writeInlineFile(res, xml, `${cklObject.assetName}.ckl`, 'application/xml')
   }
   catch (err) {

@@ -110,7 +110,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
                 'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
                 'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
                 'title', st.title,
-                'ruleCount', cr.ruleCount)
+                'ruleCount', cr.ruleCount,
+                'revisionStrs', (select json_arrayagg(concat('V', rev2.version, 'R', rev2.release)) from revision rev2 where rev2.benchmarkId = cr.benchmarkId ))
             else null end 
       order by cr.benchmarkId),
           ''),
@@ -555,11 +556,11 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   return (rows)
 }
 
-exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmarks, elevate, userObject) {
+exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, elevate, userObject) {
   let connection
   try {
     let revisionStrResolved // Will hold specific revision string value, as opposed to "latest" 
-    const cklJs = {
+    const xmlJs = {
       CHECKLIST: {
         ASSET: {
           ROLE: 'None',
@@ -660,24 +661,22 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
 
     // ASSET
     const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
-    cklJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
-    cklJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
-    cklJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
-    cklJs.CHECKLIST.ASSET.HOST_MAC = resultGetAsset[0].mac
-    cklJs.CHECKLIST.ASSET.ASSET_TYPE = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
-    cklJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.cklRole ?? 'None'
-    cklJs.CHECKLIST.ASSET.TECH_AREA = resultGetAsset[0].metadata.cklTechArea ?? null
-    cklJs.CHECKLIST.ASSET.WEB_OR_DATABASE = resultGetAsset[0].metadata.cklHostName ?  'true' : 'false'
-    cklJs.CHECKLIST.ASSET.WEB_DB_SITE = resultGetAsset[0].metadata.cklWebDbSite ?? null
-    cklJs.CHECKLIST.ASSET.WEB_DB_INSTANCE = resultGetAsset[0].metadata.cklWebDbInstance ?? null
+    xmlJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
+    xmlJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
+    xmlJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
+    xmlJs.CHECKLIST.ASSET.HOST_MAC = resultGetAsset[0].mac
+    xmlJs.CHECKLIST.ASSET.ASSET_TYPE = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
+    xmlJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.cklRole ?? 'None'
+    xmlJs.CHECKLIST.ASSET.TECH_AREA = resultGetAsset[0].metadata.cklTechArea ?? null
+    xmlJs.CHECKLIST.ASSET.WEB_OR_DATABASE = resultGetAsset[0].metadata.cklHostName ?  'true' : 'false'
+    xmlJs.CHECKLIST.ASSET.WEB_DB_SITE = resultGetAsset[0].metadata.cklWebDbSite ?? null
+    xmlJs.CHECKLIST.ASSET.WEB_DB_INSTANCE = resultGetAsset[0].metadata.cklWebDbInstance ?? null
     
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
-    for (const benchmark of benchmarks) {
-      const regex = /^(?<benchmarkId>\S+?)(-(?<revisionStr>V\d+R\d+(\.\d+)?))?$/
-      const found = benchmark.match(regex)
-      const revisionStr = found.groups.revisionStr || 'latest'
+    for (const stigItem of stigs) {
+      const revisionStr = stigItem.revisionStr || 'latest'
       revisionStrResolved = revisionStr
-      const benchmarkId = found.groups.benchmarkId
+      const benchmarkId = stigItem.benchmarkId
       
       let sqlGetBenchmarkId
       if (revisionStr === 'latest') {
@@ -775,7 +774,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
         // STIGViewer bug requires using Security_Override_Guidance instead of Severity_Override_Guidance
       ]
   
-      // let vulnArray = cklJs.CHECKLIST.STIGS.iSTIG.VULN
+      // let vulnArray = xmlJs.CHECKLIST.STIGS.iSTIG.VULN
       const vulnArray = iStigJs.VULN
       for (const r of resultGetChecklist) {
         const vulnObj = {
@@ -809,9 +808,9 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, benchmark
         }
         vulnArray.push(vulnObj)        
       }
-      cklJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
+      xmlJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
     }
-    return ({assetName: resultGetAsset[0].name, cklJs, revisionStrResolved})
+    return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved})
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -964,7 +963,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
 
 
   // scaffold xccdf object
-  const xccdfJs = {
+  const xmlJs = {
     Benchmark: {
       "@_xmlns": "http://checklists.nist.gov/xccdf/1.2",
       "@_xmlns:dc": "http://purl.org/dc/elements/1.1/",
@@ -999,7 +998,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
 
   // iterate through checklist query results
   for (const r of resultGetChecklist) {
-    xccdfJs["Benchmark"]["Group"].push({
+    xmlJs["Benchmark"]["Group"].push({
       "@_id": `xccdf_mil.disa.stig_group_${r.groupId}`,
       "title": r.groupTitle,
       "Rule": {
@@ -1016,7 +1015,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
     if (r.resultEngine) {
       prefixObjectProperties('sm', r.resultEngine)
     }
-    xccdfJs["Benchmark"]["TestResult"]["rule-result"].push({
+    xmlJs["Benchmark"]["TestResult"]["rule-result"].push({
       result: r.result || "notchecked",
       "@_idref": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
       "@_time": r.ts?.toISOString(),
@@ -1030,7 +1029,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
       }
     })
   }
-  return ({assetName: resultGetAsset[0].name, xccdfJs, revisionStrResolved: revision.revisionStr})
+  return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
 }
 
 exports.createAsset = async function(body, projection, elevate, userObject) {
@@ -1118,8 +1117,11 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
       }, elevate, userObject)
       return (rows)
     case 'ckl':
-      const benchmark = revisionStr === 'latest' ? benchmarkId : `${benchmarkId}-${revisionStr}`
-      const cklObject = await _this.cklFromAssetStigs(assetId, [benchmark], elevate, userObject)
+      const stig = {
+        benchmarkId,
+        revisionStr
+      }
+      const cklObject = await _this.cklFromAssetStigs(assetId, [stig], elevate, userObject)
       return (cklObject)
     case 'xccdf':
       const xccdfObject = await _this.xccdfFromAssetStig(assetId, benchmarkId, revisionStr)

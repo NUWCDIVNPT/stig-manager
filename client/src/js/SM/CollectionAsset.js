@@ -129,7 +129,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     for (const btn of [deleteBtn, transferBtn]) {
                         btn.setDisabled(!hasSelection)
                     }
-                    exportCklBtn.setDisabled(!(hasSelection && someSelectionsHaveStigs))
+                    exportBtn.setDisabled(!(hasSelection && someSelectionsHaveStigs))
                     SM.SetCheckboxSelModelHeaderState(sm)
                 }
             }
@@ -255,12 +255,12 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderPctAllHigh
 			}
         ]
-        const exportCklBtn = new Ext.Button({
+        const exportBtn = new Ext.Button({
             iconCls: 'sm-export-icon',
             text: 'Export results...',
             disabled: true,
             handler: function() {
-                showExportCklFiles( me.collectionId, me.collectionName, 'asset', me.getSelectionModel().getSelections().map( r => r.data ) )            
+                SM.Exports.showExportTree( me.collectionId, me.collectionName, 'asset', me.getSelectionModel().getSelections().map( r => r.data ) )            
             }
         })
         const deleteBtn = new Ext.Button(                    {
@@ -409,7 +409,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         }
                     },
                     '-',
-                    exportCklBtn,
+                    exportBtn,
                     '-',
                     deleteBtn,
                     '-',
