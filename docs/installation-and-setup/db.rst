@@ -45,6 +45,11 @@ STIG Manager requires a database schema, and the use of an account with SuperUse
 
 The above steps are sufficient for a username/password setup, but it is highly recommended that you configure MySQL to use TLS connections.
 
+.. note::
+   Suggested DB configuration options:
+    - ``sort_buffer_size`` - set to at least 64mb (Increasing the sort_buffer_size from the default of 256k may only be required if you have very large detail/comment text fields)
+
+
 Configure MySQL for TLS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

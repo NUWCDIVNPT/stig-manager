@@ -4,7 +4,7 @@ Terminology and Concepts
 ===================================
 
 
-This is a glossary with definition terms for thing like :term:`Asset`:
+This is a glossary with definitions for terms like :term:`Asset`:
 
 
 .. glossary::
@@ -59,6 +59,9 @@ This is a glossary with definition terms for thing like :term:`Asset`:
 
     Finding
         See :term:`Review` 
+    
+    Grant
+        See :term:`User`
 
     Package
         An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections. 
@@ -93,12 +96,12 @@ This is a glossary with definition terms for thing like :term:`Asset`:
 
         For each Collection they are granted access to, Users can have one of 4 Access Levels, providing differing levels of access to your Collection: 
 		
-        .. list-table:: The 4 Access Level grants provide differing levels of access to your Collection: 
+        .. list-table:: The 4 Grant Access Levels provide differing levels of access to your Collection: 
             :widths: 20 70
             :header-rows: 1
             :class: tight-table
 
-            * - Access Level
+            * - Grant Access Level
               - Description
             * - Restricted
               - Can review specific STIGs on specific Assets only.    
