@@ -23,7 +23,7 @@ These pages describe how to deploy STIG Manager.
 	db
 	logging
 	reverse-proxy
-	permissions-model
+	data-and-permissions
 	environment-variables
 	securing
 

@@ -264,7 +264,7 @@ The Log Panel displays a record of the Review as it has changed over time.
 Asset Review Workspace
 ====================================
 The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's Log, and Feedback.
-Users can also import results from .ckl or XCCDF formats, and export their results as .ckl checklists.
+Users can also import and export results in .ckl or XCCDF checklist formats.
 
 .. thumbnail:: /assets/images/asset-review.png
       :width: 50% 
@@ -280,7 +280,7 @@ The Checklist Panel presents a list of the Rules associated with the selected ST
 
 From the Checklist menu in the Menu Bar, the User can:
    * Toggle between Rule and Group displays of the Checklist Panel.
-   * Export a .ckl representation of this Assets STIG results.
+   * Export a .ckl or XCCDF representation of this Assets STIG results.
    * Import STIG results for this Asset in .ckl or XCCDF form.
    * Switch between Revisions of the STIG being displayed.
 
@@ -482,7 +482,7 @@ From this Workspace, the User can:
    * Alter the Name, Description, Settings, and Metadata associated with the Collection
    * Add/Modify/Remove User Grants in the Collection
    * Batch import CKL or XCCDF files to automatically scaffold or add to their Collection
-   * Batch export CKL files for external tools such as eMASS
+   * Batch export CKL or XCCDF files for external tools such as eMASS
    * Add/Modify/Remove Assets in the Collection 
    * Create and Apply Labels to Assets in the Collection. 
    * Transfer Assets to another Collection
@@ -817,9 +817,9 @@ The user is presented with the log of the import. Select an item in the top grid
 Export CKLs by Asset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The "Export CKLs..." button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection. 
+The "Export Results..." button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection. 
 
-One multi-STIG .ckl file will be generated for every unique Asset selected. The package of .ckl files will be presented as a .zip file.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
+The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files will be generated for every Asset selected. The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
 
 .. thumbnail:: /assets/images/checklist-archive-export-asset.png
@@ -914,12 +914,12 @@ Select "Change assigned Assets..." or double-click a STIG to change what Assets 
 .. _export-by-stig:
 
 
-Export CKLs by STIG
+Export CKL or XCCDF Files by STIG
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The "Export CKLs..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection. 
+The "Export Results..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection. 
 
-One multi-STIG .ckl file will be generated for every unique Asset selected. The package of :term:`ckl` files will be presented as a .zip file.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
+The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files will be generated for every Asset selected. The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
 
 .. thumbnail:: /assets/images/checklist-archive-export-stig.png
@@ -938,47 +938,14 @@ One multi-STIG .ckl file will be generated for every unique Asset selected. The 
 |
 
 
-.. _ckl-processing:
+.. _ckl-processing-brief:
 
 A Note on .CKL Processing
 =================================
 
-When the STIG Manager Client imports data from :term:`.ckl files <ckl>`, in the simplest case it will attempt to match (and, in some instances, create) the Asset specified in the .ckl's ``<HOST_NAME>`` element.  However, if the ``<ASSET><WEB_OR_DATABASE>`` element in the .ckl has a value of ``true``, special processing is invoked. This processing will attempt to match the ``<HOST_NAME>``, ``<WEB_DB_SITE>`` and ``<WEB_DB_INSTANCE>`` values in the .ckl with Asset metadata when identifying the Asset.  When the STIG Manager Client creates Assets from .ckls with these elements populated, it will populate the same Asset metadata according to the table below. 
+When the STIG Manager Client imports data from :term:`.ckl files <ckl>`, in the simplest case it will attempt to match (and, in some instances, create) the Asset specified in the .ckl's ``<HOST_NAME>`` element.  However, if the ``<ASSET><WEB_OR_DATABASE>`` element in the .ckl has a value of ``true``, special processing is invoked. This processing will attempt to match the ``<HOST_NAME>``, ``<WEB_DB_SITE>`` and ``<WEB_DB_INSTANCE>`` values in the .ckl with Asset metadata when identifying the Asset. 
 
-Conversely, when STIG Manager produces a .ckl file from an Asset that has the below metadata values set, it will populate the appropriate .ckl elements. 
-
-The following metadata properties are used when the value of ``<ASSET><WEB_OR_DATABASE>``  is ``true``:
-
-.. list-table:: **CKL elements map to STIG Manager Asset metadata**
-   :widths: 20 20 60
-   :header-rows: 1
-   :class: tight-table
-
-   * - ``<ASSET>`` Child Element
-     - Asset metadata
-     - Note
-   * - ``<WEB_OR_DATABASE>``
-     - ``cklWebOrDatabase``    
-     - When set to true, invokes additional processing using the below elements and metadata     
-   * - ``<HOST_NAME>``
-     - ``cklHostName``    
-     - This value will populate the ``<HOST_NAME>`` element of a ckl, as opposed to the Asset name in other cases.
-   * - ``<WEB_DB_SITE>``
-     - ``cklWebDbSite``
-     - No specific purpose for STIG Manager, other than contributing to Asset identification 
-   * - ``<WEB_DB_INSTANCE>``
-     - ``cklWebDbInstance``          
-     - No specific purpose for STIG Manager, other than contributing to Asset identification 
-
-   
-If the importer needs to create an Asset, it will set this metadata and set the initial Asset name to ``<HOST_NAME>-[<WEB_DB_SITE> | "NA"]-[<WEB_DB_INSTANCE> | "NA"]``. The Asset name is not meaningful (to STIG Manager) and it can be changed by the user later, if required.
-
-
-.. thumbnail:: /assets/images/asset-metadata-and-ckl-elements.png
-      :width: 75% 
-      :show_caption: True
-      :title: Corresponding Asset Metadata and .ckl elements
-
+See the :ref:`ckl-processing` section of this Documentation for more information. 
 
 |
 

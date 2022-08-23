@@ -25,12 +25,6 @@ Tested with:
 - MySQL provided by mysql:latest image on Docker Hub
 
 
-Hardware Requirements
---------------------------
-
-Relatively lightweight, but hardware requirements are still being determined. 
-
-
 
 Dependencies
 ======================================
