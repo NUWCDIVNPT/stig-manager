@@ -80,7 +80,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 selectionchange: function (sm) {
                     modifyBtn.setDisabled(sm.getCount() !== 1)
                     deleteBtn.setDisabled(sm.getCount() !== 1)
-                    exportCklBtn.setDisabled(!sm.hasSelection())
+                    exportBtn.setDisabled(!sm.hasSelection())
                     SM.SetCheckboxSelModelHeaderState(sm)
                 }
             }
@@ -181,12 +181,12 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderPctAllHigh
 			}
         ]
-        const exportCklBtn = new Ext.Button({
+        const exportBtn = new Ext.Button({
             iconCls: 'sm-export-icon',
             text: 'Export results...',
             disabled: true,
             handler: function() {
-                showExportCklFiles( me.collectionId, me.collectionName, 'stig', me.getSelectionModel().getSelections().map( r => r.data )  );            
+                SM.Exports.showExportTree( me.collectionId, me.collectionName, 'stig', me.getSelectionModel().getSelections().map( r => r.data )  );            
             }
         })
         const modifyBtn = new Ext.Button({
@@ -261,7 +261,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                         }
                     },
                     '-',
-                    exportCklBtn,
+                    exportBtn,
                     '-',
                     deleteBtn,
                     '-',

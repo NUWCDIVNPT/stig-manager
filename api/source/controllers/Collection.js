@@ -567,40 +567,14 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
 module.exports.postCklArchiveByCollection = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req)
-    const mode = req.query.mode
-    const assetStigSelections = req.body
-    
-    // process body array into service arguments
-    const assetStigArguments = await assetStigsToArgs (assetStigSelections, mode, req.userObject)
-
-    const j2x = new J2X({
-      attributeNamePrefix : "@_",
-      attrNodeName: "@", //default is false
-      textNodeName : "#text",
-      ignoreAttributes : true,
-      cdataTagName: "__cdata", //default is false
-      cdataPositionChar: "\\c",
-      format: true,
-      indentBy: "  ",
-      supressEmptyNode: false,
-      tagValueProcessor: a => {
-        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-      },
-      attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
+    const mode = req.query.mode || 'mono'
+    const parsedRequest = await processAssetStigRequests (req.body, collectionId, mode, req.userObject)
+    await postArchiveByCollection({
+      format: `ckl-${mode}`,
+      req,
+      res,
+      parsedRequest
     })
-
-    const zip = Archiver('zip', {level: 9})
-    // const zip = Archiver('tar', {gzip: true, gzipOptions:{level: 9}})
-    res.attachment('ckl.zip')
-    zip.pipe(res)
-    for (const args of assetStigArguments) {
-      const response = await AssetSvc.cklFromAssetStigs(args.assetId, args.benchmarkIds)
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-      xml += j2x.parse(response.cklJs)
-      const filename = mode === 'mono' ? `${args.assetName}-${args.benchmarkIds[0]}-${response.revisionStrResolved}.ckl` : `${args.assetName}.ckl`
-      zip.append(xml, {name: filename})
-    }
-    zip.finalize()
   }
   catch (err) {
     next(err)
@@ -610,88 +584,176 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
 module.exports.postXccdfArchiveByCollection = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req)
-    const assetStigSelections = req.body
-    
-    // process body array into service arguments
-    const assetStigArguments = await assetStigsToArgs (assetStigSelections, 'mono', req.userObject)
-
-    const j2x = new J2X({
-      attributeNamePrefix : "@_",
-      textNodeName : "#text",
-      ignoreAttributes : false,
-      cdataTagName: "__cdata",
-      cdataPositionChar: "\\c",
-      format: true,
-      indentBy: "  ",
-      supressEmptyNode: true,
-      tagValueProcessor: a => {
-        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-      },
-      attrValueProcessor: a => he.encode(a, {isAttributeValue: true, useNamedReferences: true})
+    const parsedRequest = await processAssetStigRequests (req.body, collectionId, 'mono', req.userObject)
+    await postArchiveByCollection({
+      format: 'xccdf',
+      req,
+      res,
+      parsedRequest
     })
-
-    const zip = Archiver('zip', {level: 9})
-    res.attachment('xccdf.zip')
-    zip.pipe(res)
-    for (const args of assetStigArguments) {
-      const response = await AssetSvc.xccdfFromAssetStig(args.assetId, args.benchmarkIds[0])
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>
-      <!-- STIG Manager ${config.version} -->
-      <!-- Classification: ${config.settings.setClassification} -->\n`
-      xml += j2x.parse(response.xccdfJs)
-      const filename = `${args.assetName}-${args.benchmarkIds[0]}-${response.revisionStrResolved}-xccdf.xml`
-      zip.append(xml, {name: filename})
-    }
-    zip.finalize()
   }
   catch (err) {
     next(err)
   }
 }
 
+async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRequest}) {
+  const j2x = new J2X({
+    attributeNamePrefix : "@_",
+    textNodeName : "#text",
+    ignoreAttributes : format.startsWith('ckl-'),
+    cdataTagName: "__cdata",
+    cdataPositionChar: "\\c",
+    format: true,
+    indentBy: "  ",
+    supressEmptyNode: format === 'xccdf',
+    tagValueProcessor: a => {
+      return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
+    },
+    attrValueProcessor: a => he.encode(a, {isAttributeValue: true, useNamedReferences: true})
+  })
+  const zip = Archiver('zip', {zlib: {level: 9}})
+  res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : 'XCCDF'}.zip`)
+  zip.pipe(res)
+  const manifest = {
+    started: new Date().toISOString(),
+    finished: '',
+    errorCount: 0,
+    errors: [],
+    memberCount: 0,
+    members: [],
+    requestParams: {
+      collection: parsedRequest.collection,
+      assetStigs: req.body
+    }
+  }
+
+  zip.on('error', function (e) {
+    manifest.errors.push({message: e.message, stack: e.stack})
+    manifest.errorCount += 1
+  })
+  for (const arg of parsedRequest.assetStigArguments) {
+    try {
+      const response = format.startsWith('ckl-') ?
+        await AssetSvc.cklFromAssetStigs(arg.assetId, arg.stigs) :
+        await AssetSvc.xccdfFromAssetStig(arg.assetId, arg.stigs[0].benchmarkId, arg.stigs[0].revisionStr)
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+      xml += j2x.parse(response.xmlJs)
+      let filename = arg.assetName
+      if (format === 'ckl-mono' || format === 'xccdf') {
+        filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
+      }
+      filename += `${format === 'xccdf' ? '-xccdf.xml' : '.ckl'}`
+      zip.append(xml, {name: filename})
+      manifest.members.push(filename)
+      manifest.memberCount += 1
+
+    }
+    catch (e) {
+      arg.error = {message: e.message, stack: e.stack}
+      manifest.errors.push(arg)
+      manifest.errorCount += 1
+    }
+  }
+  manifest.finished = new Date().toISOString()
+  manifest.members.sort((a,b) => a.localeCompare(b))
+  zip.append(JSON.stringify(manifest, null, 2), {name: '_manifest.json'})
+  await zip.finalize()
+}
+
 // for the archive streaming endpoints
-async function assetStigsToArgs (assetStigSelections, mode = 'mono', userObject) {
+async function processAssetStigRequests (assetStigRequests, collectionId, mode = 'mono', userObject) {
   const assetStigArguments = []
-  for (const assetStigSel of assetStigSelections) {
-    const assetId = assetStigSel.assetId
-    // MUST VERIFY assetId IS IN collectionId!
-    let requestedBenchmarkIds = assetStigSel.benchmarkIds
-      // If this user has no grants permitting access to the asset, the response will be undefined
+  let collectionName
+  for (const requested of assetStigRequests) {
+    const assetId = requested.assetId
+    
+    // Try to fetch asset as this user.
     const assetResponse = await AssetSvc.getAsset(assetId, ['stigs'], false, userObject )
+    // Does user have a grant permitting access to the asset?
     if (!assetResponse) {
       throw new SmError.PrivilegeError()
     }
+    // Is asset a member of collectionId?
+    if (assetResponse.collection.collectionId !== collectionId) {
+      throw new SmError.UnprocessableError(`Asset id ${assetId} is not a member of Collection id ${collectionId}.`)
+    }
+    if (!collectionName) { collectionName = assetResponse.collection.name } // will be identical for other assets
+    // Does the asset have STIG mappings?
+    if (assetResponse.stigs.length === 0) {
+      throw new SmError.UnprocessableError(`Asset id ${assetId} has no STIG mappings.`)
+    }
+
+    // create Map of the asset's mapped STIGs
+    const availableRevisionsMap = new Map()
+    for (const stig of assetResponse.stigs) {
+      availableRevisionsMap.set(stig.benchmarkId, stig.revisionStrs)
+    }
+
+    // create Map of the requested STIGs for the asset
+    const requestedRevisionsMap = new Map()
+    if (!requested.stigs) {
+      // request doesn't specify STIGs, so include all mapped STIGs and their current revision strings
+      for (const stig of assetResponse.stigs) {
+        requestedRevisionsMap.set(stig.benchmarkId, [stig.lastRevisionStr])
+      } 
+    }
+    else {
+      // request includes specific STIGs
+      for (const stig of requested.stigs) {
+        if (typeof stig === 'string' && availableRevisionsMap.has(stig)) {
+          // array member is a benchmarkId string that matches an available STIG mapping
+          const revisions = requestedRevisionsMap.get(stig) ?? []
+          revisions.push('latest')
+          requestedRevisionsMap.set(stig, revisions)
+        }
+        else if ((stig.revisionStr === 'latest' && availableRevisionsMap.has(stig.benchmarkId)) || availableRevisionsMap.get(stig.benchmarkId)?.includes(stig.revisionStr)) {
+          // array member is an object that matches an available STIG/Revision mapping
+          const revisions = requestedRevisionsMap.get(stig.benchmarkId) ?? []
+          revisions.push(stig.revisionStr)
+          requestedRevisionsMap.set(stig.benchmarkId, revisions)
+        }
+        else {
+          throw new SmError.UnprocessableError(`Asset id ${assetId} is not mapped to ${JSON.stringify(stig)}.`)
+        }
+      }
+    }
+
+    // For generating individual filenames
     const assetName = assetResponse.name
 
-    // if (assetResponse.collection.collectionId !== collectionId) {
-    //   continue // hmm... really?
-    // }
-    const availableBenchmarkIds = assetResponse.stigs.map( r => r.benchmarkId )
-    if (availableBenchmarkIds.length === 0) {
-      continue // hmm... really?
-    }
-    if (!requestedBenchmarkIds) {
-      requestedBenchmarkIds = availableBenchmarkIds
-    }
-    else if (!requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))) {
-      throw new SmError.ClientError('Asset is not mapped to all requested benchmarkIds')
-    }
     if (mode === 'mono') {
-      for (const benchmarkId of requestedBenchmarkIds) {
-        assetStigArguments.push({
-          assetId,
-          assetName,
-          benchmarkIds: [benchmarkId]
-        })
+      // XCCDF and mono CKLs
+      for (const entry of requestedRevisionsMap) {
+        for (const revisionStr of entry[1]) {
+          assetStigArguments.push({
+            assetId,
+            assetName,
+            stigs: [{benchmarkId: entry[0], revisionStr}]
+          }) 
+        }
       }
     }
     else {
+      // multi-STIG CKLs
+      const stigsParam = []
+      for (const entry of requestedRevisionsMap) {
+        for (const revisionStr of entry[1]) {
+          stigsParam.push({benchmarkId: entry[0], revisionStr})
+        }
+      }
       assetStigArguments.push({
         assetId,
         assetName,
-        benchmarkIds: requestedBenchmarkIds
+        stigs: stigsParam
       })
     }
   }
-  return assetStigArguments
+  return {
+    collection: {
+      collectionId,
+      name: collectionName,
+    },
+    assetStigArguments
+  }
 }
