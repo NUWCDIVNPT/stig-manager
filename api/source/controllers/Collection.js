@@ -618,8 +618,10 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
   const manifest = {
     started: new Date().toISOString(),
     finished: '',
+    errorCount: 0,
     errors: [],
-    items: [],
+    memberCount: 0,
+    members: [],
     requestParams: {
       collection: parsedRequest.collection,
       assetStigs: req.body
@@ -628,6 +630,7 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
 
   zip.on('error', function (e) {
     manifest.errors.push({message: e.message, stack: e.stack})
+    manifest.errorCount += 1
   })
   for (const arg of parsedRequest.assetStigArguments) {
     try {
@@ -642,15 +645,18 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
       }
       filename += `${format === 'xccdf' ? '-xccdf.xml' : '.ckl'}`
       zip.append(xml, {name: filename})
-      manifest.items.push(filename)
+      manifest.members.push(filename)
+      manifest.memberCount += 1
+
     }
     catch (e) {
       arg.error = {message: e.message, stack: e.stack}
       manifest.errors.push(arg)
+      manifest.errorCount += 1
     }
   }
   manifest.finished = new Date().toISOString()
-  manifest.items.sort((a,b) => a.localeCompare(b))
+  manifest.members.sort((a,b) => a.localeCompare(b))
   zip.append(JSON.stringify(manifest, null, 2), {name: '_manifest.json'})
   await zip.finalize()
 }

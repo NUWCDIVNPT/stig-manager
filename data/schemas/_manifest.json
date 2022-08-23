@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://github.com/NUWCDIVNPT/stig-manager/blob/main/data/schemas/_manifest.json",
+  "type": "object",
+  "required": [
+      "started",
+      "finished",
+      "errorCount",
+      "errors",
+      "memberCount",
+      "members",
+      "requestParams"
+  ],
+  "properties": {
+      "started": {
+          "type": "string",
+          "format": "date-time"
+      },
+      "finished": {
+          "type": "string",
+          "format": "date-time"
+      },
+      "errorCount": {
+          "type": "integer"
+      },
+      "errors": {
+          "type": "array",
+          "items": {
+              "type": "object",
+              "required": [
+                  "assetId",
+                  "assetName",
+                  "stigs",
+                  "error"
+              ],
+              "properties": {
+                  "assetId": {
+                      "type": "string"
+                  },
+                  "assetName": {
+                      "type": "string"
+                  },
+                  "stigs": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "required": [
+                              "benchmarkId",
+                              "revisionStr"
+                          ],
+                          "properties": {
+                              "benchmarkId": {
+                                  "type": "string"
+                              },
+                              "revisionStr": {
+                                  "type": "string"
+                              }
+                          }
+                      }
+                  },
+                  "error": {
+                      "type": "object",
+                      "required": [
+                          "message",
+                          "stack"
+                      ],
+                      "properties": {
+                          "message": {
+                              "type": "string"
+                          },
+                          "stack": {
+                              "type": "string"
+                          }
+                      }
+                  }
+              }
+          }
+      },
+      "memberCount": {
+          "type": "integer"
+      },
+      "members": {
+          "type": "array",
+          "items": {
+              "type": "string"
+          }
+      },
+      "requestParams": {
+          "type": "object",
+          "required": [
+              "collection",
+              "assetStigs"
+          ],
+          "properties": {
+              "collection": {
+                  "type": "object",
+                  "required": [
+                      "collectionId",
+                      "name"
+                  ],
+                  "properties": {
+                      "collectionId": {
+                          "type": "string"
+                      },
+                      "name": {
+                          "type": "string"
+                      }
+                  }
+              },
+              "assetStigs": {
+                  "type": "array",
+                  "items": {
+                      "type": "object",
+                      "required": [
+                          "assetId",
+                          "stigs"
+                      ],
+                      "properties": {
+                          "assetId": {
+                              "type": "string"
+                          },
+                          "stigs": {
+                              "type": "array",
+                              "items": {
+                                  "oneOf": [{
+                                      "type": "string"
+                                  },
+                                  {
+                                      "type": "object",
+                                      "required": [
+                                          "benchmarkId",
+                                          "revisionStr"
+                                      ],
+                                      "properties": {
+                                          "benchmarkId": {
+                                              "type": "string"
+                                          },
+                                          "revisionStr": {
+                                              "type": "string"
+                                          }
+                                      }
+                                  }]
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
