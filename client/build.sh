@@ -77,6 +77,10 @@ cp -r $SrcDir/img $DistDir
 echo "Preparing HTML resources"
 cp -r $SrcDir/index.html $DistDir/index.html
 
+# Service Worker
+echo "Preparing Service Worker resources"
+cp -r $SrcDir/serviceWorker.js $DistDir/serviceWorker.js
+
 # JS
 echo "Preparing JavaScript resources"
 mkdir $DistDir/js
@@ -88,6 +92,7 @@ uglifyjs \
 'js/SM/Global.js' \
 'js/SM/EventDispatcher.js' \
 'js/SM/Cache.js' \
+'js/SM/ServiceWorker.js' \
 'js/SM/TipContent.js' \
 'js/SM/Ajax.js' \
 'js/SM/Warnings.js' \
