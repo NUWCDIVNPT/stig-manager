@@ -3832,6 +3832,27 @@ components:
               type: integer
             high:
               type: integer
+        result:
+          type: object
+          properties:
+            notchecked:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            notapplicable:
+              $ref: '#/components/schemas/CollectionStatusCount'                 
+            pass:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            fail:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            unknown:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            error:
+              $ref: '#/components/schemas/CollectionStatusCount'              
+            notselected:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            informational:
+              $ref: '#/components/schemas/CollectionStatusCount'   
+            fixed:
+              $ref: '#/components/schemas/CollectionStatusCount'                 
         status:
           type: object
           properties:
@@ -3849,7 +3870,7 @@ components:
       properties:
         total:
           type: integer
-        auto:
+        resultEngine:
           type: integer
     CollectionStatusSettings:
       type: object

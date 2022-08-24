@@ -383,25 +383,57 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
     ) as rules`,
     'sa.minTs',
     'sa.maxTs',
+
     `json_object(
       'low', sa.lowCount,
-        'medium', sa.mediumCount,
-        'high', sa.highCount
+      'medium', sa.mediumCount,
+      'high', sa.highCount
     ) as findings`,
+
     `json_object(
       'saved', json_object(
-        'total', sa.savedManual + sa.savedAuto,
-            'auto', sa.savedAuto),
+        'total', sa.saved,
+        'resultEngine', sa.savedResultEngine),
       'submitted', json_object(
-          'total', sa.submittedManual + sa.submittedAuto,
-            'auto', sa.submittedAuto),
+        'total', sa.submitted,
+        'resultEngine', sa.submittedResultEngine),
       'rejected', json_object(
-          'total', sa.rejectedManual + sa.rejectedAuto,
-            'auto', sa.rejectedAuto),
+        'total', sa.rejected,
+        'resultEngine', sa.rejectedResultEngine),
       'accepted', json_object(
-          'total', sa.acceptedManual + sa.acceptedAuto,
-            'auto', sa.acceptedAuto)
-    ) as status`           
+        'total', sa.accepted,
+        'resultEngine', sa.acceptedResultEngine)
+    ) as status`,     
+
+    `json_object(
+      'notchecked', json_object(
+        'total', sa.notchecked ,
+        'resultEngine', sa.notcheckedResultEngine),
+      'notapplicable', json_object(
+        'total', sa.notapplicable ,
+        'resultEngine', sa.notapplicableResultEngine),
+      'pass', json_object(
+        'total', sa.pass,
+        'resultEngine', sa.passResultEngine),
+      'fail', json_object(
+        'total', sa.fail,
+        'resultEngine', sa.failResultEngine),
+      'unknown', json_object(
+        'total', sa.unknown,
+        'resultEngine', sa.unknownResultEngine),
+      'error', json_object(
+        'total', sa.error ,
+        'resultEngine', sa.errorResultEngine),
+      'notselected', json_object(
+        'total', sa.notselected,
+        'resultEngine', sa.notselectedResultEngine),
+      'informational', json_object(
+        'total', sa.informational,
+        'resultEngine', sa.informationalResultEngine),
+      'fixed', json_object(
+        'total', sa.fixed ,
+        'resultEngine', sa.fixedResultEngine)               
+    ) as result`               
   ]
   let joins = [
     'collection c',
@@ -856,10 +888,10 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     'st.title',
     'cr.ruleCount',
     'COUNT(a.assetId) as assetCount',
-    'CAST(SUM(sa.acceptedManual) + SUM(sa.acceptedAuto) AS SIGNED) as acceptedCount',
-    'CAST(SUM(sa.rejectedManual) + SUM(sa.rejectedAuto) AS SIGNED) as rejectedCount',
-    'CAST(SUM(sa.submittedManual) + SUM(sa.submittedAuto) AS SIGNED) as submittedCount',
-    'CAST(SUM(sa.savedManual) + SUM(sa.savedAuto) AS SIGNED) as savedCount',
+    'SUM(sa.accepted) as acceptedCount',
+    'SUM(sa.rejected) as rejectedCount',
+    'SUM(sa.submitted) as submittedCount',
+    'SUM(sa.saved) as savedCount',
     `LEAST(MIN(minTs), MIN(maxTs)) as minTs`,
     `GREATEST(MAX(minTs), MAX(maxTs)) as maxTs`
   ]
