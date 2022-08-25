@@ -123,8 +123,6 @@ const upMigration = [
 
 ]
 
-// STILL NEEDS UPDATE STATS QUERY
-
 
 
 const downMigration = [
