@@ -1,8 +1,8 @@
 Ext.ns('SM.ServiceWorker')
 
-SM.ServiceWorker.getDownloadUrl = async function (request) {
-  const messageChannel = new MessageChannel()
+SM.ServiceWorker.getDownloadUrl = function (request) {
   if (navigator.serviceWorker?.controller) {
+    const messageChannel = new MessageChannel()
     navigator.serviceWorker.controller.postMessage({
       type: 'proxy-url-request',
       request
@@ -15,7 +15,5 @@ SM.ServiceWorker.getDownloadUrl = async function (request) {
       }
     })
   }
-  else {
-    return null
-  }
+  return null
 }
