@@ -1471,3 +1471,151 @@ exports.putAssetsByCollectionLabelId = async function (collectionId, labelId, as
     }
   }
 }
+
+exports.getUnreviewedAssetsByCollection = async function (params) {
+  const rows = await queryUnreviewedByCollection({ grouping: 'asset', ...params})
+  return (rows)
+}
+
+exports.getUnreviewedRulesByCollection = async function (params) {
+  const rows = await queryUnreviewedByCollection({ grouping: 'rule', ...params})
+  return (rows)
+}
+
+async function queryUnreviewedByCollection ({
+  grouping,
+  collectionId,
+  benchmarkId,
+  assetId,
+  ruleId,
+  severities,
+  labelIds,
+  labelNames,
+  projections,
+  userObject
+}) {
+  let columns, groupBy, orderBy
+  switch (grouping) {
+    case 'asset':
+      columns = [
+        'CAST(a.assetId as char) as assetId',
+        'a.name',
+        `coalesce(
+          (select
+            json_arrayagg(json_object(
+              'labelId', BIN_TO_UUID(cl2.uuid,1),
+              'name', cl2.name
+              ))
+          from
+            collection_label_asset_map cla2
+            left join collection_label cl2 on cla2.clId = cl2.clId
+          where
+            cla2.assetId = a.assetId),
+          json_array()) as labels`,
+        `json_arrayagg(json_object(
+          'result', result.api,
+          'ruleId', rgr.ruleId,
+          'groupId', rg.groupId,
+          ${projections.includes('ruleTitle') ? "'ruleTitle', rule.title," : ''}
+          ${projections.includes('groupTitle') ? "'groupTitle', `group`.title," : ''}
+          'severity', rule.severity,
+          'benchmarkId', cr.benchmarkId
+        )) as unreviewed`       
+      ]
+      groupBy = [
+        'a.assetId',
+        'a.name'
+      ]
+      orderBy = [
+        'a.name'
+      ]
+      break
+    case 'rule':
+      const projectionMap = projections.map( p => `${p === 'groupTitle' ? '`group`' : 'rule'}.${p}`)
+      columns = [
+        'rgr.ruleId',
+        'rg.groupId',
+        'cr.benchmarkId',
+        'rule.severity',
+        ...projectionMap,
+        `json_arrayagg(json_object(
+          'result', result.api,
+          'assetId', CAST(a.assetId as char),
+          'name', a.name,
+          'labels', coalesce(
+            (select
+              json_arrayagg(json_object(
+                'labelId', BIN_TO_UUID(cl2.uuid,1),
+                'name', cl2.name
+                ))
+            from
+              collection_label_asset_map cla2
+              left join collection_label cl2 on cla2.clId = cl2.clId
+            where
+              cla2.assetId = a.assetId),
+            json_array())
+        )) as unreviewed`
+      ]
+      groupBy = [
+        'rgr.ruleId',
+        'rg.groupId',
+        'cr.benchmarkId',
+        'rule.severity',
+        ...projectionMap
+      ]
+      orderBy = [
+        'rgr.ruleId'
+      ]
+  }
+  const joins = [
+    'asset a',
+    'left join collection_label_asset_map cla on cla.assetId = a.assetId',
+    'left join collection_label cl on cla.clId = cl.clId',
+    'left join collection_grant cg on a.collectionId = cg.collectionId',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join user_stig_asset_map usa on sa.saId = usa.saId',
+    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
+    'left join rev_group_map rg on cr.revId = rg.revId',
+    'left join `group` on rg.groupId = `group`.groupId',
+	  'left join rev_group_rule_map rgr on rg.rgId = rgr.rgId',
+    'left join rule on rgr.ruleId = rule.ruleId',
+	  'left join review r on (a.assetId = r.assetId and rgr.ruleId = r.ruleId)',
+    'left join result on r.resultId = result.resultId'
+  ]
+  const predicates = {
+    statements: [
+      'a.collectionId = ?',
+      '(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)',
+      '(r.reviewId is null or r.resultId not in (2,3,4))',
+    ],
+    binds: [collectionId, userObject.userId]
+  }
+  if (assetId) {
+    predicates.statements.push('a.assetId = ?')
+    predicates.binds.push(assetId)
+  }
+  if (labelIds?.length) {
+    predicates.statements.push('cl.uuid IN ?')
+    const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+    predicates.binds.push([uuidBinds])
+  }
+  if (labelNames?.length) {
+    predicates.statements.push('cl.name IN ?')
+    predicates.binds.push([labelNames])
+  }
+  if (benchmarkId) {
+    predicates.statements.push('cr.benchmarkId = ?')
+    predicates.binds.push(benchmarkId)
+  }
+  if (ruleId) {
+    predicates.statements.push('rgr.ruleId = ?')
+    predicates.binds.push(ruleId)
+  }
+  if (severities?.length) {
+    predicates.statements.push('rule.severity IN ?')
+    predicates.binds.push([severities])
+  }
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy})
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows)
+}
