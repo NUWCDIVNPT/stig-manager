@@ -463,7 +463,7 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
     let appwindow
 
     const exportButton = new Ext.Button({
-      text: 'Export',
+      text: 'Download',
       iconCls: 'sm-export-icon',
       disabled: false,
       handler: function () {
@@ -528,7 +528,7 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
     // Form window
     /******************************************************/
     appwindow = new Ext.Window({
-      title: 'Export archive',
+      title: 'Export results',
       cls: 'sm-dialog-window sm-round-panel',
       modal: true,
       hidden: true,
@@ -601,14 +601,21 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
 
   try {
     await window.oidcProvider.updateToken(10)
-    let response = await fetch(url[format], {
+    const fetchInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${window.oidcProvider.token}`
       },
-      body: JSON.stringify(checklists)
-    })
+      body: JSON.stringify(checklists)     
+    }
+    const href = await SM.ServiceWorker.getDownloadUrl({ url: url[format], ...fetchInit })
+    if (href) {
+      window.location = href
+      return
+    }
+
+    let response = await fetch(url[format], fetchInit)
     const contentDisposition = response.headers.get("content-disposition")
     if (!response.ok) {
       const body = await response.text()
@@ -617,7 +624,7 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
     if (!contentDisposition) {
       throw new Error(`No Content-Disposition header in Response`)
     }
-    initProgress("Exporting checklists", "Initializing...")
+    initProgress("Downloading checklists", "Initializing...")
     updateStatusText(`When the stream has finished you will be prompted to save the data to disk. The final size of the archive is unknown during streaming.`, true)
     const filename = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
     const reader = response.body.getReader()

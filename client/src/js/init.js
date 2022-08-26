@@ -88,6 +88,7 @@ function loadScripts() {
         'js/SM/Global.js',
         'js/SM/EventDispatcher.js',
         'js/SM/Cache.js',
+        'js/SM/ServiceWorker.js',
         'js/SM/TipContent.js',
         'js/SM/Ajax.js',
         'js/SM/Warnings.js',
