@@ -2144,6 +2144,70 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/unreviewed/assets':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/AssetIdQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+      - $ref: '#/components/parameters/RuleSeverityQuery'
+      - $ref: '#/components/parameters/UnreviewedAssetsProjectionQuery'
+    get:
+      tags:
+        - Collection
+      summary: EXPERIMENTAL - Return the Assets in the specified Collection with unreviewed Rules 
+      operationId: getUnreviewedAssetsByCollection
+      responses:
+        '200':
+          description: UnreviewedAsset response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnreviewedAsset'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/unreviewed/rules':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/RuleIdQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/BenchmarkIdQuery'
+      - $ref: '#/components/parameters/RuleSeverityQuery'
+      - $ref: '#/components/parameters/UnreviewedRulesProjectionQuery'
+    get:
+      tags:
+        - Collection
+      summary: EXPERIMENTAL - Return the Rules in the specified Collection with unreviewed Assets 
+      operationId: getUnreviewedRulesByCollection
+      responses:
+        '200':
+          description: UnreviewedRules response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnreviewedRule'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   /op/appdata:
     get:
       tags:
@@ -3511,6 +3575,18 @@ components:
         - informational
         - fixed
         - null
+    ChecklistResultUnreviewed:
+      description: The Review result
+      type: string
+      nullable: true
+      enum:
+        - notchecked
+        - unknown
+        - error
+        - notselected
+        - informational
+        - fixed
+        - null
     ChecklistStatus:
       type: string
       nullable: true
@@ -4128,6 +4204,17 @@ components:
           $ref: '#/components/schemas/StringHexColor'
         uses:
           type: integer
+    LabelBasic:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - labelId
+      properties:
+        labelId:
+          $ref: '#/components/schemas/LabelId'
+        name:
+          $ref: '#/components/schemas/LabelName'
     LabelCreate:
       type: object
       additionalProperties: false
@@ -4874,6 +4961,94 @@ components:
       type: string
       maxLength: 36
       nullable: true
+    UnreviewedAsset:
+      type: object
+      required:
+        - assetId
+        - name
+        - labels
+        - unreviewed
+      additionalProperties: false
+      properties:
+        assetId:
+          $ref: '#/components/schemas/StringUuid'
+        name:
+          $ref: '#/components/schemas/String255'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasic'
+        unreviewed:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnreviewedAssetItem'
+    UnreviewedAssetItem:
+      type: object
+      required:
+        - result
+        - ruleId
+        - groupId
+        - benchmarkId
+      additionalProperties: false
+      properties:
+        result:
+          $ref: '#/components/schemas/ChecklistResultUnreviewed'
+        ruleId:
+          $ref: '#/components/schemas/String255'
+        ruleTitle:
+          $ref: '#/components/schemas/StringMax'
+        groupId:
+          $ref: '#/components/schemas/String255'
+        groupTitle:
+          $ref: '#/components/schemas/StringMax'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        benchmarkId:
+          $ref: '#/components/schemas/String255'
+    UnreviewedRule:
+      type: object
+      required:
+        - ruleId
+        - groupId
+        - benchmarkId
+        - unreviewed
+      additionalProperties: false
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/String255'
+        ruleTitle:
+          $ref: '#/components/schemas/StringMax'
+        groupId:
+          $ref: '#/components/schemas/String255'
+        groupTitle:
+          $ref: '#/components/schemas/StringMax'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        benchmarkId:
+          $ref: '#/components/schemas/String255'
+        unreviewed:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnreviewedRuleItem'
+    UnreviewedRuleItem:
+      type: object
+      required:
+        - result
+        - assetId
+        - name
+        - labels
+      additionalProperties: false
+      properties:
+        result:
+          $ref: '#/components/schemas/ChecklistResultUnreviewed'
+        assetId:
+          $ref: '#/components/schemas/StringUuid'
+        name:
+          $ref: '#/components/schemas/String255'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasic'
     User:
       type: object
       required:
@@ -5273,13 +5448,23 @@ components:
     LabelIdQuery:
       name: labelId
       in: query
-      description: A query parameter that specifies a Label
+      description: Selects Assets by labelId
       schema:
         type: array
         uniqueItems: true
         minLength: 1
         items:
           $ref: '#/components/schemas/LabelId'
+    LabelNameQuery:
+      name: labelName
+      in: query
+      description: Selectes Assets by label name
+      schema:
+        type: array
+        uniqueItems: true
+        minLength: 1
+        items:
+          $ref: '#/components/schemas/LabelName'
     MetadataKeyPath:
       name: key
       in: path
@@ -5448,6 +5633,19 @@ components:
             - ccis
             - checks
             - fixes
+    RuleSeverityQuery:
+      name: severity
+      in: query
+      description: Selects Rules with the specified severity
+      style: form
+      explode: true
+      schema:
+        type: array
+        uniqueItems: true
+        minLength: 1
+        maxLength: 2
+        items:
+          $ref: '#/components/schemas/RuleSeverity'
     StartDateQuery:
       name: startDate
       in: query
@@ -5466,6 +5664,32 @@ components:
           type: string
           enum:
             - restrictedUserAccess
+    UnreviewedAssetsProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the `unreviewed` objects.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - ruleTitle
+            - groupTitle
+    UnreviewedRulesProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - ruleTitle
+            - groupTitle
     UserAccessLevelQuery:
       name: accessLevel
       in: query

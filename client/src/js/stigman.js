@@ -29,6 +29,9 @@ Ext.Ajax.disableCaching = false
 async function start () {
 	let timer
 	try {
+		if ('serviceWorker' in navigator) {
+			await navigator.serviceWorker.register('serviceWorker.js')
+		}
 		timer = setTimeout(() => {
 			Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration..."
 		}, 250)
