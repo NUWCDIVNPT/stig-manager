@@ -3821,8 +3821,13 @@ components:
           type: string
           format: date-time
           nullable: true
-        rules:
-          $ref: '#/components/schemas/CollectionStatusCount'
+        rules:  
+          type: object
+          properties:
+            total:
+              type: integer
+            auto:
+              type: integer
         findings:
           type: object
           properties:
