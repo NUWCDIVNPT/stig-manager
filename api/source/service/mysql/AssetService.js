@@ -47,10 +47,10 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       'stigCount', COUNT(sa.benchmarkId),
       'stigAssignedCount', COUNT(distinct usa.saId),
       'ruleCount', SUM(cr.ruleCount),
-      'acceptedCount', SUM(sa.acceptedManual) + SUM(sa.acceptedAuto),
-      'rejectedCount', SUM(sa.rejectedManual) + SUM(sa.rejectedAuto),
-      'submittedCount', SUM(submittedManual) + SUM(submittedAuto),
-      'savedCount', SUM(savedManual) + SUM(savedAuto),
+      'acceptedCount', SUM(sa.accepted),
+      'rejectedCount', SUM(sa.rejected),
+      'submittedCount', SUM(sa.submitted),
+      'savedCount', SUM(sa.saved),
       'minTs', DATE_FORMAT(LEAST(MIN(minTs), MIN(maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
       'maxTs', DATE_FORMAT(GREATEST(MAX(minTs), MAX(maxTs)),'%Y-%m-%dT%H:%i:%sZ')
       ) as "statusStats"`)
