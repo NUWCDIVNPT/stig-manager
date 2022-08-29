@@ -1,3 +1,17 @@
+1.2.14
+-----
+
+Changes:
+
+
+  - (App) Added a service worker to handle streaming downloads. 
+  - (API) Added new endpoints to return datasets related to "unreviewed" rules for Assets. 
+  - (API) Enhance request body for archive endpoints. 
+  - (API) XCCDF export and parser changes
+  - (OAS) Updates to OAS to better define acceptable requests. 
+  - (API/OAS) Updates to pre-calculated statistics for STIG/Assets. Now includes totals for every possible result and status state, as well as totals for those states with "resultEngine" data.  
+
+
 1.2.13
 -----
 
