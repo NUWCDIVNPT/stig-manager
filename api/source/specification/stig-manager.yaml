@@ -2352,7 +2352,7 @@ paths:
     post:
       tags:
         - STIG
-      summary: Import a STIG or SCAP Benchmark
+      summary: Import a STIG Benchmark
       operationId: importBenchmark
       requestBody:
         required: true

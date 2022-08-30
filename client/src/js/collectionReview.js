@@ -87,10 +87,11 @@ async function addCollectionReview ( params ) {
 			},{
 				name:'severity',
 				type:'string'
-			},{
-				name:'autoCheckAvailable',
-				type:'boolean'
 			}
+			// ,{
+			// 	name:'autoCheckAvailable',
+			// 	type:'boolean'
+			// }
 		]);
 
 
@@ -262,18 +263,18 @@ async function addCollectionReview ( params ) {
 		var getStatsString = function (store) {
 			let assetCount = apiAssets.length
 			var totalChecks = store.getCount();
-			var checksManual = 0;
-			var checksSCAP = 0;
-			store.data.each(function(item, index, totalItems ) {
-				switch (item.data.autoCheckAvailable) {
-					case false:
-						checksManual++;
-						break;
-					case true:
-						checksSCAP++;
-						break;
-				}
-			});
+			// var checksManual = 0;
+			// var checksSCAP = 0;
+			// store.data.each(function(item, index, totalItems ) {
+			// 	switch (item.data.autoCheckAvailable) {
+			// 		case false:
+			// 			checksManual++;
+			// 			break;
+			// 		case true:
+			// 			checksSCAP++;
+			// 			break;
+			// 	}
+			// });
 			var totalWord = ' checks';
 			if (totalChecks == 1) {
 				totalWord = ' check';
@@ -283,7 +284,7 @@ async function addCollectionReview ( params ) {
 				assetWord = ' asset';
 			}
 			
-			return assetCount + assetWord + ' assigned ' + totalChecks + totalWord + ' (' + checksManual + ' Manual, ' + checksSCAP + ' SCAP)';
+			return assetCount + assetWord + ' assigned ' + totalChecks + totalWord;
 		};
 
 		/******************************************************/
@@ -340,12 +341,12 @@ async function addCollectionReview ( params ) {
 						groupStore.filter(view.getFilterFns())  
 					}
 				},		
-				getRowClass: function (record,index) {
-					var autoCheckAvailable = record.get('autoCheckAvailable');
-					if (autoCheckAvailable === true) {
-						return 'sm-scap-grid-item';
-					}
-				},
+				// getRowClass: function (record,index) {
+				// 	var autoCheckAvailable = record.get('autoCheckAvailable');
+				// 	if (autoCheckAvailable === true) {
+				// 		return 'sm-scap-grid-item';
+				// 	}
+				// },
 				onColumnSplitterMoved : function(cellIndex, width) {
 					// override that does NOT set userResized and calls autoExpand()
 					// this.userResized = true;

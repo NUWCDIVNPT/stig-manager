@@ -745,7 +745,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                     },
                     {
                       id: 'stig-admin',
-                      text: 'STIG and SCAP Benchmarks',
+                      text: 'STIG Benchmarks',
                       leaf: true,
                       iconCls: 'sm-stig-icon'
                     },

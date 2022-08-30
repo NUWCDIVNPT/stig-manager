@@ -85,11 +85,12 @@ async function addReview( params ) {
     {
       name: 'reviewComplete',
       type: 'boolean'
-    },
-    {
-      name: 'autoCheckAvailable',
-      type: 'boolean'
     }
+    // ,
+    // {
+    //   name: 'autoCheckAvailable',
+    //   type: 'boolean'
+    // }
   ]);
 
 
@@ -345,12 +346,12 @@ async function addReview( params ) {
     holdPosition: true, // HACK to be used with override
     deferEmptyText: false,
     lastHide: new Date(),
-    getRowClass: function (record, index) {
-      var autoCheckAvailable = record.get('autoCheckAvailable');
-      if (autoCheckAvailable === true) {
-        return 'sm-scap-grid-item';
-      } 
-    },
+    // getRowClass: function (record, index) {
+    //   var autoCheckAvailable = record.get('autoCheckAvailable');
+    //   if (autoCheckAvailable === true) {
+    //     return 'sm-scap-grid-item';
+    //   } 
+    // },
     onColumnSplitterMoved : function(cellIndex, width) {
       // override that does NOT set userResized and calls autoExpand()
       // this.userResized = true;
