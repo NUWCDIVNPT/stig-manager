@@ -24,7 +24,4 @@ self.onfetch = (event) => {
     const {url, ...init} = requests[key]
     event.respondWith(fetch(url, init));
   } 
-  else {
-    event.respondWith(fetch(event.request));
-  }
 }
