@@ -9,9 +9,7 @@ const STIG = require(`../service/${config.database.type}/STIGService`)
 
 
 const compilationURL = 'https://public.cyber.mil/stigs/compilations/'
-const scapURL = 'https://public.cyber.mil/stigs/scap/'
 const stigMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*)" target=.*'
-const scapMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*enchmark.zip)" target=.*'
 const logComponent = 'initData'
 
 let localCompilationFile = '/home/csmig/dev/STIG-samples/U_SRG-STIG_Library_2021_10v2.zip'
@@ -43,29 +41,6 @@ exports.fetchCompilation = async function fetchCompilation() {
   catch (e) {
     logger.writeError(logComponent, logType, { message: e.message, stack: e.stack})
     throw(e)          
-  }
-}
-
-exports.fetchScap = async function fetchScap() {
-  const logType = 'scap'
-  try {
-    logger.writeInfo(logComponent, logType, { message: `Retreiving list of available SCAP Benchmarks`, url: scapURL})      
-    let html = await got(scapURL);
-    html = html.body.toString()
-    let matches = [ ...html.matchAll(scapMatchString)]
-    logger.writeDebug(logComponent, logType, { message: `Parsed list of SCAP Benchmarks`, total: matches?.length })      
-    for (const [index, match] of matches.entries()) {
-      if (match[1]) {
-        logger.writeInfo(logComponent, logType, { message: `Downloading ${match[1]}`, seq: index+1 })      
-        const data = await got(match[1])
-        logger.writeDebug(logComponent, logType, { message: `Processing ${match[1]}`, seq: index+1 })      
-        await processZip(data.rawBody)
-      }
-    }
-  }
-  catch (e) {
-    logger.writeError(logComponent, logType, { message: e.message, stack: e.stack})
-    throw(e)      
   }
 }
 
@@ -105,12 +80,7 @@ async function processZip (f) {
         continue
       }
       let response
-      if (benchmark.scap) {
-        response = await STIG.insertScapBenchmark(benchmark, xmlData)
-      }
-      else {
-        response = await STIG.insertManualBenchmark(benchmark, xmlData)
-      }
+      response = await STIG.insertManualBenchmark(benchmark, xmlData)
       logger.writeInfo(logComponent, logType, { message: `imported`, member: xml })      
     }
     for (let x=0, l=zipMembers.length; x<l; x++) {

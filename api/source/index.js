@@ -231,15 +231,6 @@ async function startServer(app) {
         logger.writeError('index', 'starting', {message:'failed to import STIGs'});
       }
     }
-
-    if (config.init.importScap && isNewDb) {
-      try {
-        logger.writeInfo('index', 'starting', {message: 'begin to import SCAP benchmarks'})
-        await smFetch.fetchScap()
-      }
-      catch (e) {
-        logger.writeError('index', 'starting', {message:'failed to import SCAP benchmarks'});
-      }
     }
 
     // Set/change classification if indicated

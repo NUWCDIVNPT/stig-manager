@@ -67,7 +67,6 @@ let config = {
     },
     init: {
         importStigs: process.env.STIGMAN_INIT_IMPORT_STIGS === "true",
-        importScap: process.env.STIGMAN_INIT_IMPORT_SCAP === "true"
     },
     swaggerUi: {
         enabled: process.env.STIGMAN_SWAGGER_ENABLED === "true", 

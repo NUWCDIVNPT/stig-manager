@@ -21,12 +21,7 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
       throw new SmError.ClientError(err.message)
     }
     let response
-    if (benchmark.scap) {
-      response = await STIG.insertScapBenchmark(benchmark, xmlData)
-    }
-    else {
-      response = await STIG.insertManualBenchmark(benchmark, xmlData)
-    }
+    response = await STIG.insertManualBenchmark(benchmark, xmlData)
     res.json(response)
   }
   catch(err) {
