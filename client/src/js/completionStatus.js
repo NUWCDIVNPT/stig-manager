@@ -20,7 +20,6 @@ function addCompletionStatus( params) {
 				'assetLabelIds',
 				{name:'benchmarkId',type:'string'},
 	
-				// {name:'rulesAuto', type:'int', mapping: 'rules.auto'},
 				{name:'rulesTotal', type:'int', mapping: 'rules.total'},
 				
 

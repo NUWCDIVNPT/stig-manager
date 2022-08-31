@@ -88,10 +88,6 @@ async function addCollectionReview ( params ) {
 				name:'severity',
 				type:'string'
 			}
-			// ,{
-			// 	name:'autoCheckAvailable',
-			// 	type:'boolean'
-			// }
 		]);
 
 
@@ -263,18 +259,6 @@ async function addCollectionReview ( params ) {
 		var getStatsString = function (store) {
 			let assetCount = apiAssets.length
 			var totalChecks = store.getCount();
-			// var checksManual = 0;
-			// var checksSCAP = 0;
-			// store.data.each(function(item, index, totalItems ) {
-			// 	switch (item.data.autoCheckAvailable) {
-			// 		case false:
-			// 			checksManual++;
-			// 			break;
-			// 		case true:
-			// 			checksSCAP++;
-			// 			break;
-			// 	}
-			// });
 			var totalWord = ' checks';
 			if (totalChecks == 1) {
 				totalWord = ' check';
