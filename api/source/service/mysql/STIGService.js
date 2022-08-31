@@ -15,7 +15,6 @@ exports.queryStigs = async function ( inPredicates ) {
       `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
       `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`,
       `cr.ruleCount`,
-      // `cr.ovalCount as autoCount`,
       `JSON_ARRAYAGG(concat('V',revision.version,'R',revision.release)) as revisionStrs`
     ]
     let joins = [
@@ -743,8 +742,6 @@ exports.insertManualBenchmark = async function (b) {
       ruleCount,
       checkCount,
       fixCount
-      // ,
-      // ovalCount
       )
       SELECT 
         revId,
@@ -761,8 +758,6 @@ exports.insertManualBenchmark = async function (b) {
         ruleCount,
         checkCount,
         fixCount
-        // ,
-        // ovalCount
       FROM
         v_current_rev
       WHERE
@@ -854,8 +849,6 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
         ruleCount,
         checkCount,
         fixCount
-        // ,
-        // ovalCount
         )
       SELECT 
         revId,
@@ -872,8 +865,6 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
         ruleCount,
         checkCount,
         fixCount
-        // ,
-        // ovalCount
       FROM
         v_current_rev
       WHERE
