@@ -379,7 +379,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
     'sa.benchmarkId',
     `json_object(
       'total', cr.ruleCount,
-      'auto', cr.ovalCount
+      // 'auto', cr.ovalCount
     ) as rules`,
     'sa.minTs',
     'sa.maxTs',
@@ -719,7 +719,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       'left join `group` g on rg.groupId=g.groupId',
       'left join rev_group_rule_map rgr on rg.rgId=rgr.rgId',
       'left join rule rules on rgr.ruleId=rules.ruleId',
-      'left join rule_oval_map scap on rgr.ruleId=scap.ruleId',
+      // 'left join rule_oval_map scap on rgr.ruleId=scap.ruleId',
       'left join review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
     ]
 
@@ -765,7 +765,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
         ,r.groupId
         ,r.groupTitle
         ,r.severity
-        ,cast(r.autoCheckAvailable is true as json) as autoCheckAvailable
+        // ,cast(r.autoCheckAvailable is true as json) as autoCheckAvailable
         ,json_object(
           'results', json_object(
             'pass', sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
@@ -790,7 +790,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
           ,g.title as groupTitle
           ,r.resultId
           ,r.statusId
-          ,CASE WHEN COUNT(scap.ruleId) = 0 THEN 0 ELSE 1 END as "autoCheckAvailable"
+          // ,CASE WHEN COUNT(scap.ruleId) = 0 THEN 0 ELSE 1 END as "autoCheckAvailable"
         from
           ${joins.join('\n')}
         where
@@ -811,7 +811,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
         ,r.severity
         ,r.groupId
         ,r.groupTitle
-        ,r.autoCheckAvailable
+        // ,r.autoCheckAvailable
       order by
         substring(r.groupId from 3) + 0
     `
