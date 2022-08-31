@@ -231,7 +231,6 @@ async function startServer(app) {
         logger.writeError('index', 'starting', {message:'failed to import STIGs'});
       }
     }
-    }
 
     // Set/change classification if indicated
     if (config.settings.setClassification) {
