@@ -1,13 +1,60 @@
 const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
-  `DROP TABLE IF EXISTS review_reject_string_map`
-  ,
-  `DROP TABLE IF EXISTS reject_string`
-  ,
-  `DROP TABLE IF EXISTS rev_xml_map`
-  ,  
-  `DROP TABLE IF EXISTS rule_oval_map`
+`ALTER TABLE current_rev
+  DROP COLUMN ovalCount
+`,  
+`
+ALTER VIEW v_current_rev AS
+select 
+	rr.revId AS revId,
+	rr.benchmarkId AS benchmarkId,
+	rr.version AS version,
+	rr.release AS \`release\`,
+	rr.benchmarkDate AS benchmarkDate,
+	rr.benchmarkDateSql AS benchmarkDateSql,
+	rr.status AS status,
+	rr.statusDate AS statusDate,
+	rr.description AS description,
+	rr.active AS active,
+	rr.groupCount AS groupCount,
+	rr.ruleCount AS ruleCount,
+	rr.checkCount AS checkCount,
+	rr.fixCount AS fixCount
+ from (
+ select 
+	 r.revId AS revId,
+	 r.benchmarkId AS benchmarkId,
+	 r.version AS version,
+	 r.release AS \`release\`,
+	 r.benchmarkDate AS benchmarkDate,
+	 r.benchmarkDateSql AS benchmarkDateSql,
+	 r.status AS status,
+	 r.statusDate AS statusDate,
+	 r.description AS description,
+	 r.active AS active,
+	 r.groupCount AS groupCount,
+	 r.ruleCount AS ruleCount,
+	 r.checkCount AS checkCount,
+	 r.fixCount AS fixCount,
+	row_number() OVER (
+		PARTITION BY r.benchmarkId 
+        ORDER BY 
+			FIELD(status, 'draft', 'accepted') desc,
+			(r.version + 0) desc,
+			(r.release + 0) desc )  AS rn 
+    from 
+		revision r) rr where (rr.rn = 1);
+
+`,
+`DROP TABLE IF EXISTS review_reject_string_map`
+,
+`DROP TABLE IF EXISTS reject_string`
+,
+`DROP TABLE IF EXISTS rev_xml_map`
+,  
+`DROP TABLE IF EXISTS rule_oval_map`
+
 ]
 
 
@@ -52,8 +99,55 @@ const downMigration = [
   PRIMARY KEY (rxId),
   UNIQUE KEY uidx_rxm_revId (revId)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ `,
  `
-
+ALTER TABLE current_rev
+ ADD COLUMN ovalCount int
+ `,
+ `
+ ALTER VIEW v_current_rev AS
+select 
+	rr.revId AS revId,
+	rr.benchmarkId AS benchmarkId,
+	rr.version AS version,
+	rr.release AS \`release\`,
+	rr.benchmarkDate AS benchmarkDate,
+	rr.benchmarkDateSql AS benchmarkDateSql,
+	rr.status AS status,
+	rr.statusDate AS statusDate,
+	rr.description AS description,
+	rr.active AS active,
+	rr.groupCount AS groupCount,
+	rr.ruleCount AS ruleCount,
+	rr.checkCount AS checkCount,
+	rr.fixCount AS fixCount
+ from (
+ select 
+	 r.revId AS revId,
+	 r.benchmarkId AS benchmarkId,
+	 r.version AS version,
+	 r.release AS \`release\`,
+	 r.benchmarkDate AS benchmarkDate,
+	 r.benchmarkDateSql AS benchmarkDateSql,
+	 r.status AS status,
+	 r.statusDate AS statusDate,
+	 r.description AS description,
+	 r.active AS active,
+	 r.groupCount AS groupCount,
+	 r.ruleCount AS ruleCount,
+	 r.checkCount AS checkCount,
+	 r.fixCount AS fixCount,
+	 (select count(distinct ro.ruleId) from rule_oval_map ro where ro.ruleId IN (
+     SELECT rgr.ruleId from rev_group_map rg inner join rev_group_rule_map rgr on rg.rgId = rgr.rgId WHERE rg.revId = r.revId)) AS ovalCount,   
+	row_number() OVER (
+		PARTITION BY r.benchmarkId 
+        ORDER BY 
+			FIELD(status, 'draft', 'accepted') desc,
+			(r.version + 0) desc,
+			(r.release + 0) desc )  AS rn 
+    from 
+		revision r) rr where (rr.rn = 1)
+`
 ]
 
 const migrationHandler = new MigrationHandler(upMigration, downMigration)
