@@ -399,7 +399,7 @@
     const parser = new XMLParser(parseOptions)  
     let parsed = parser.parse(data)
 
-    // Baic sanity checks
+    // Basic sanity checks
     if (!parsed.Benchmark) throw (new Error("No Benchmark element"))
     if (!parsed.Benchmark.TestResult) throw (new Error("No TestResult element"))
     if (!parsed.Benchmark.TestResult['target']) throw (new Error("No target element"))

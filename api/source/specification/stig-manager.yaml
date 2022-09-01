@@ -2352,7 +2352,7 @@ paths:
     post:
       tags:
         - STIG
-      summary: Import a STIG or SCAP Benchmark
+      summary: Import a STIG Benchmark
       operationId: importBenchmark
       requestBody:
         required: true
@@ -3435,8 +3435,6 @@ components:
           $ref: '#/components/schemas/ResultEngine'
         autoResult:
           type: boolean
-        autoCheckAvailable:
-          type: boolean
         status:
           $ref: '#/components/schemas/ChecklistStatus'
     ChecklistCkl:
@@ -3531,8 +3529,6 @@ components:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-        autoCheckAvailable:
-          type: boolean
         counts:
           type: object
           additionalProperties: false
@@ -3901,8 +3897,6 @@ components:
           type: object
           properties:
             total:
-              type: integer
-            auto:
               type: integer
         findings:
           type: object
@@ -4881,8 +4875,6 @@ components:
           format: date
           nullable: true
         ruleCount:
-          type: integer
-        autoCount:
           type: integer
         revisionStrs:
           type: array

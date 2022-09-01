@@ -79,7 +79,6 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
       //   dateFormat: 'Y-m-d'
       // },
       'ruleCount',
-      'autoCount',
       'revisionStrs'
     ])
 
@@ -178,15 +177,8 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
         align: "center",
         dataIndex: 'ruleCount',
         sortable: true
-      },
-      { 	
-        header: "SCAP Rules",
-        width: 150,
-        align: "center",
-        dataIndex: 'autoCount',
-        sortable: true,
-        renderer: (v) => v ? v : '--'
       }
+
     ]
   
     const store = new Ext.data.JsonStore({

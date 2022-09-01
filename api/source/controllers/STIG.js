@@ -1,7 +1,7 @@
 'use strict';
 
 const config = require('../utils/config');
-const { SmError } = require('../utils/error');
+const SmError = require('../utils/error');
 const parsers = require('../utils/parsers.js')
 const STIG = require(`../service/${config.database.type}/STIGService`)
 
@@ -22,7 +22,7 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
     }
     let response
     if (benchmark.scap) {
-      response = await STIG.insertScapBenchmark(benchmark, xmlData)
+      throw new SmError.UnprocessableError('SCAP Benchmarks are not imported.')
     }
     else {
       response = await STIG.insertManualBenchmark(benchmark, xmlData)

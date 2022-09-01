@@ -417,7 +417,6 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'g.groupId',
       'g.title as "groupTitle"',
       'r.severity',
-      `cast(COUNT(scap.ruleId) > 0 as json) as "autoCheckAvailable"`,
       `result.api as "result"`,
       `CASE WHEN review.resultEngine = 0 THEN NULL ELSE review.resultEngine END as resultEngine`,
       `review.autoResult`,
@@ -431,8 +430,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'left join rule r on rgr.ruleId=r.ruleId',
       'left join review on r.ruleId = review.ruleId and review.assetId = :assetId',
       'left join result on review.resultId=result.resultId',
-      'left join status on review.statusId=status.statusId',
-      'left join rule_oval_map scap on r.ruleId=scap.ruleId'
+      'left join status on review.statusId=status.statusId'
     ]
     const predicates = {
       statements: [],

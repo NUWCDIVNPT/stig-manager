@@ -83,7 +83,7 @@ Create Assets in your Collection
 
 
 .. note::
-   Assets and their STIG attachments can also be created automatically in bulk by importing STIG Viewer .ckl or XCCDF files using the "Import CKL or SCAP..." button. :ref:`More info about the Collection Builder function can be found in the User Guide.<Collection Builder>`
+   Assets and their STIG attachments can also be created automatically in bulk by importing STIG Viewer .ckl or XCCDF files using the "Import CKL or XCCDF..." button. :ref:`More info about the Collection Builder function can be found in the User Guide.<Collection Builder>`
 
 Attach STIGs to Assets in your Collection
 ============================================
@@ -162,7 +162,7 @@ Evaluate an Asset for STIG compliance
 
    * You will now be presented with the Evaluation tab for that STIG on that Asset, which contains several panels. The first Rule in the STIG will be selected for you. 
 
-      * The **STIG Checklist panel** on the left lists every rule in the STIG, their evaluation status, and some other helpful info. Click a Rule to load that Rules information, and start a Review of it. The green highlighting indicates there is an automated check (SCAP) for that rule known to STIG Manager. It does NOT indicate that results for that rule have necessarily been imported. 
+      * The **STIG Checklist panel** on the left lists every rule in the STIG, their evaluation status, and some other helpful info. Click a Rule to load that Rules information, and start a Review of it.
       * The **Rule Content panel** in the center contains the selected Rule's info such as the Rule Title, Manual Checks, Fix info, and associated CCIs.
       * The **Review Resources panel** in the top right contains other Reviews you have performed for the selected Rule against other assets, a history of this Review's status, and any Feedback you have received about this Review from the Collection Owner. Reviews from "Other Assets" can be dragged and dropped onto the current assets Review.
       * The **Review panel** in the lower right is where you will actually log your Evaluation of the Rule.  It contains fields to record Review Results, Detail, and Comments.  This panel also indicates who last modified the Review in the "Attributions" box. 

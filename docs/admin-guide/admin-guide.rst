@@ -65,7 +65,7 @@ Last Claims
 
 ------------------------------
 
-STIG and SCAP Benchmarks Admin Panel
+STIG Benchmarks Admin Panel
 -----------------------------------------
 This panel lists every STIG that has been loaded into STIG Manager and allows App Managers to import new STIGs into STIG Manager.
 The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.

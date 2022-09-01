@@ -193,10 +193,9 @@ It is likely you will have to set at least some of these Environment Variables, 
     - STIGMAN_SWAGGER_AUTHORITY
     - STIGMAN_SWAGGER_REDIRECT
 
-STIG Manager can be configured to download and import the latest STIG library on first startup. These options require access to `https://public.cyber.mil <https://public.cyber.mil/stigs/>`_ to complete. STIGs can also be imported manually. Enable this function by setting these Variables to "true":
+STIG Manager can be configured to download and import the latest STIG library on first startup. These options require access to `https://public.cyber.mil <https://public.cyber.mil/stigs/>`_ to complete. STIGs can also be imported manually. Enable this function by setting this Variable to "true":
 
   * STIGMAN_INIT_IMPORT_STIGS
-  * STIGMAN_INIT_IMPORT_SCAP
 
 
 Additional Suggested Configuration
