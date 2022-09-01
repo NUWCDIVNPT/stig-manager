@@ -325,12 +325,7 @@ async function addCollectionReview ( params ) {
 						groupStore.filter(view.getFilterFns())  
 					}
 				},		
-				// getRowClass: function (record,index) {
-				// 	var autoCheckAvailable = record.get('autoCheckAvailable');
-				// 	if (autoCheckAvailable === true) {
-				// 		return 'sm-scap-grid-item';
-				// 	}
-				// },
+
 				onColumnSplitterMoved : function(cellIndex, width) {
 					// override that does NOT set userResized and calls autoExpand()
 					// this.userResized = true;
