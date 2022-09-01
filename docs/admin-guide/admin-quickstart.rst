@@ -8,7 +8,7 @@ STIGMan Application Manager (Administrator) Walkthrough
 This Application Manager Walkthrough will walk you through typical responsibilities for a STIG Manager User with the App Manager role (often called "admin" for short and labeled that way in Keycloak). This Walkthrough assumes you are familiar with the terms and features specified in the :ref:`user-guide-doc`.
 Beyond the permissions granted to normal Users, App Managers have the ability to:
 
-   * Update STIGs and SCAP Benchmarks in STIG Manager
+   * Update STIG Benchmarks in STIG Manager
    * Alter Collections to which they have not been specifically granted access
    * Alter User Grants
    * Export and Import Application Data (Experimental feature for now.)
@@ -28,7 +28,7 @@ App Managers in STIG Manager have access to 4 additional App Management tabs tha
 .. _stig-import:
 .. _stig-updates:
 
-STIG and SCAP Benchmarks
+STIG Benchmarks
 ============================
 
 
@@ -36,13 +36,12 @@ This tab shows you a list of STIGs known to this instance of STIG Manager along 
 
 .. rubric:: Importing and Updating STIGs
 
-DISA releases new versions of many of their STIGs and SCAP files every Quarter.  They also occasionally release them off this schedule. Keep an eye on DISA's  `https://public.cyber.mil/stigs/ <https://public.cyber.mil/stigs/>`_ and `https://cyber.mil/stigs/ <https://cyber.mil/stigs/>`_ sites for updates. 
+DISA releases new versions of many of their STIGs every Quarter.  They also occasionally release them off this schedule. Keep an eye on DISA's  `https://public.cyber.mil/stigs/ <https://public.cyber.mil/stigs/>`_ and `https://cyber.mil/stigs/ <https://cyber.mil/stigs/>`_ sites for updates. 
 
 These updates must be brought into STIG Manager if you wish the updates to be reflected in STIG Manager's reports and presentation. STIGs must be mported by someone with Application Manager privileges in the STIG Manager instance:
 
 #. Download the STIGs you want to update from `DISA. <https://public.cyber.mil/stigs/>`_
-#. Upload the .zip files to STIG Manager via "Import STIGs" button in the ``Application Management -> STIG and SCAP Benchmarks`` workspace accessed via the Navigation Tree.
-#. If you import SCAP files in XCCDF format as well, the potential automated checks will be highlighted when viewing Checklists. 
+#. Upload the .zip files to STIG Manager via "Import STIGs" button in the ``Application Management -> STIG Benchmarks`` workspace accessed via the Navigation Tree.
 #. The import may run for several minutes. When finished, the workspace will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to users to assign to their Assets and for evaluations.
 
 .. note::

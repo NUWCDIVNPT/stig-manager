@@ -70,7 +70,7 @@ Migrating to STIG Manager is easy because it can use your existing artifacts to 
 Workspaces for Understanding and Tracking Your Evaluation Data
 -------------------------------------------------------------------------------------
 
-The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets or whether an automated check is available, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection. 
+The STIG Manager Client provides efficient workspaces for creating Collections of Assets and their associated STIGs, and assigning specific Users to evaluate those STIGs. User tasking can be managed in real time by granting Collection roles with varying levels of access, down to individual STIGs on specific Assets. Users have access to efficient STIG Review workspaces that provide resources to guide their evaluations, such as their previous answers for other Assets, as well as allow them to evaluate multiple Assets at once.  Every User gets real time reports and statistics about their progress and the status of their Reviews, scoped to their level of access in each Collection. 
 
 
 .. raw:: html
@@ -89,7 +89,7 @@ STIG Manager supports customizable Review Requirements that allow designated Col
 Reporting on Findings and Evaluation Status
 ---------------------------------------------------
 
-Reports adjust as new STIGs are assigned, results imported, or when new DISA STIG revesions are imported, to provide information on the status and progress of evaluations.
+Reports adjust as new STIGs are assigned, results imported, or when new DISA STIG revisions are imported, to provide information on the status and progress of evaluations.
 
 The Collection Configuration workspace provides real-time totals for level of work required as changes to Assets and STIGs are made.
 
@@ -159,7 +159,7 @@ STIG Manager is ready to support a life-cycle approach to RMF. Your most current
   Evaluate, validate, and check status of an entire Package at once. Track exactly when an Evaluation was last performed, both from automated, imported results and manual entries. 
 
 
-  Import SCAP results or .ckl files using STIG Manager's convenient interface to build a Collection of Assets, and get a handle on their current Evaluation Status. 
+  Import XCCDF results or .ckl files using STIG Manager's convenient interface to build a Collection of Assets, and get a handle on their current Evaluation Status. 
 
 
   Manual STIGs, and STIGs with incomplete automation can be completed right in STIG Manager's UI, either individually or as a group. Convenient references, such as Evaluations for other Assets in the Collection and a history of Rule Evaluations are easily accessible. IF applicable, Reviews for other Assets can be dragged and dropped right into another Assets Evaluation. 

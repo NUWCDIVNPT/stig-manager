@@ -726,8 +726,8 @@ Click the Create Asset button to create an Asset manually. Enter relevant Asset 
 
 .. _Collection Builder:
 
-Import CKL or SCAP to Build or Update Your Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Import CKL or XCCDF files to Build or Update Your Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 STIG Manager lets you populate your entire Collection from scratch or add to an existing Collection with a bulk import of .ckl and XCCDF files. This feature will create any new Assets you submit files for, and assign them the STIGs specified in the imported files.  If the Asset already exists, the newly imported STIGs will be assigned to them. The User can also choose whether or not to import the Reviews in the imported files, or just create the Assets and STIG Assignments.
 
@@ -744,7 +744,7 @@ Collection Builder Process
 ++++++++++++++++++++++++++++++++++++
 
 
-From the Collection Management workspace, click the "Import CKL or SCAP..." button at the top of the Assets panel .
+From the Collection Management workspace, click the "Import CKL or XCCDF..." button at the top of the Assets panel .
 
 .. thumbnail:: /assets/images/collection-builder-files.png
       :width: 50% 
