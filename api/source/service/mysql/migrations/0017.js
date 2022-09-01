@@ -1,9 +1,8 @@
 const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
-`ALTER TABLE current_rev
-  DROP COLUMN ovalCount
-`,  
+	`ALTER TABLE current_rev DROP COLUMN ovalCount`,  
+	`ALTER TABLE revision DROP COLUMN ovalCount`,  
 `
 ALTER VIEW v_current_rev AS
 select 
@@ -47,12 +46,9 @@ select
 		revision r) rr where (rr.rn = 1);
 
 `,
-`DROP TABLE IF EXISTS review_reject_string_map`
-,
-`DROP TABLE IF EXISTS reject_string`
-,
-`DROP TABLE IF EXISTS rev_xml_map`
-,  
+`DROP TABLE IF EXISTS review_reject_string_map`,
+`DROP TABLE IF EXISTS reject_string`,
+`DROP TABLE IF EXISTS rev_xml_map`,  
 `DROP TABLE IF EXISTS rule_oval_map`
 
 ]
@@ -100,10 +96,8 @@ const downMigration = [
   UNIQUE KEY uidx_rxm_revId (revId)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
  `,
- `
-ALTER TABLE current_rev
- ADD COLUMN ovalCount int
- `,
+ `ALTER TABLE current_rev ADD COLUMN ovalCount int`,
+ `ALTER TABLE revision ADD COLUMN ovalCount int`,
  `
  ALTER VIEW v_current_rev AS
 select 

@@ -80,7 +80,12 @@ async function processZip (f) {
         continue
       }
       let response
-      response = await STIG.insertManualBenchmark(benchmark, xmlData)
+      if (benchmark.scap) {
+        logger.writeWarning(logComponent, logType, { message: `Did not import SCAP benchmark`, member: xml })      
+      }
+      else {
+        response = await STIG.insertManualBenchmark(benchmark, xmlData)
+      }
       logger.writeInfo(logComponent, logType, { message: `imported`, member: xml })      
     }
     for (let x=0, l=zipMembers.length; x<l; x++) {
