@@ -425,3 +425,29 @@ module.exports.WRITE_ACTION = {
   REPLACE: 1,
   UPDATE: 2
 }
+
+module.exports.retryOnDeadlock = async function (fn, statusObj = {}) {
+  const retryFunction = async function (bail) {
+    try {
+      return await fn()
+    }
+    catch (e) {
+      if (e.code === 'ER_LOCK_DEADLOCK') {
+        throw(e)
+      }
+      bail(e)
+    }
+  }
+  statusObj.retries = 0
+  return await retry(retryFunction, {
+    retries: 15,
+    factor: 1,
+    minTimeout: 200,
+    maxTimeout: 200,
+    onRetry: () => {
+      ++statusObj.retries
+    }
+  })
+}
+
+

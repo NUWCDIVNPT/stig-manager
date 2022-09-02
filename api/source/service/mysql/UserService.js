@@ -116,7 +116,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   }
 }
 
-exports.addOrUpdateUser = async function (writeAction, userId, body, projection, elevate, userObject) {
+exports.addOrUpdateUser = async function (writeAction, userId, body, projection, elevate, userObject, svcStatus = {}) {
   let connection 
   try {
     // CREATE: userId will be null
@@ -139,62 +139,65 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION');
+    async function transaction () {
+      await connection.query('START TRANSACTION');
 
-    // Process scalar properties
-    let binds
-    if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
-      // INSERT into user_data
-      binds = {...userFields}
-      let sqlInsert =
-        `INSERT INTO
-            user_data
-            ( username )
-          VALUES
-            (:username )`
-      let [result] = await connection.query(sqlInsert, binds)
-      userId = result.insertId
-    }
-    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      binds = {
-        userId: userId,
-        values: userFields
-      }
-      if (Object.keys(binds.values).length > 0) {
-        let sqlUpdate =
-          `UPDATE
+      // Process scalar properties
+      let binds
+      if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
+        // INSERT into user_data
+        binds = {...userFields}
+        let sqlInsert =
+          `INSERT INTO
               user_data
-            SET
-              :values
-            WHERE
-              userid = :userId`
-        await connection.query(sqlUpdate, binds)
+              ( username )
+            VALUES
+              (:username )`
+        let [result] = await connection.query(sqlInsert, binds)
+        userId = result.insertId
       }
-    }
-    else {
-      throw('Invalid writeAction')
-    }
-
-    // Process grants if present
-    if (collectionGrants) {
-      if ( writeAction !== dbUtils.WRITE_ACTION.CREATE ) {
-        // DELETE from collection_grant
-        let sqlDeleteCollGrant = 'DELETE FROM collection_grant where userId = ?'
-        await connection.query(sqlDeleteCollGrant, [userId])
+      else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+        binds = {
+          userId: userId,
+          values: userFields
+        }
+        if (Object.keys(binds.values).length > 0) {
+          let sqlUpdate =
+            `UPDATE
+                user_data
+              SET
+                :values
+              WHERE
+                userid = :userId`
+          await connection.query(sqlUpdate, binds)
+        }
       }
-      if (collectionGrants.length > 0) {
-        let sqlInsertCollGrant = `
-          INSERT INTO 
-            collection_grant (userId, collectionId, accessLevel)
-          VALUES
-            ?`      
-        binds = collectionGrants.map( grant => [userId, grant.collectionId, grant.accessLevel])
-        // INSERT into collection_grant
-        await connection.query(sqlInsertCollGrant, [ binds] )
+      else {
+        throw('Invalid writeAction')
       }
+  
+      // Process grants if present
+      if (collectionGrants) {
+        if ( writeAction !== dbUtils.WRITE_ACTION.CREATE ) {
+          // DELETE from collection_grant
+          let sqlDeleteCollGrant = 'DELETE FROM collection_grant where userId = ?'
+          await connection.query(sqlDeleteCollGrant, [userId])
+        }
+        if (collectionGrants.length > 0) {
+          let sqlInsertCollGrant = `
+            INSERT INTO 
+              collection_grant (userId, collectionId, accessLevel)
+            VALUES
+              ?`      
+          binds = collectionGrants.map( grant => [userId, grant.collectionId, grant.accessLevel])
+          // INSERT into collection_grant
+          await connection.query(sqlInsertCollGrant, [ binds] )
+        }
+      }
+      // Commit the changes
+      await connection.commit()
     }
-    // Commit the changes
-    await connection.commit()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     await connection.rollback()
@@ -224,9 +227,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
  * projection List Additional properties to include in the response.  (optional)
  * returns List
  **/
-exports.createUser = async function(body, projection, elevate, userObject) {
+exports.createUser = async function(body, projection, elevate, userObject, svcStatus = {}) {
   try {
-    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject, svcStatus)
     return (row)
   }
   finally {}
@@ -307,9 +310,9 @@ exports.getUsers = async function(username, usernameMatch, projection, elevate, 
   }
 }
 
-exports.replaceUser = async function( userId, body, projection, elevate, userObject ) {
+exports.replaceUser = async function( userId, body, projection, elevate, userObject, svcStatus = {} ) {
   try {
-    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject, svcStatus)
     return (row)
   } 
   catch (err) {
@@ -317,9 +320,9 @@ exports.replaceUser = async function( userId, body, projection, elevate, userObj
   }
 }
 
-exports.updateUser = async function( userId, body, projection, elevate, userObject ) {
+exports.updateUser = async function( userId, body, projection, elevate, userObject, svcStatus = {} ) {
   try {
-    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.UPDATE, userId, body, projection, elevate, userObject)
+    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.UPDATE, userId, body, projection, elevate, userObject, svcStatus)
     return (row)
   } 
   catch (err) {

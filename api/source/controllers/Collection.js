@@ -19,7 +19,7 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const body = req.body
     if ( elevate || req.userObject.privileges.canCreateCollection ) {
       try {
-        const response = await CollectionSvc.createCollection( body, projection, req.userObject)
+        const response = await CollectionSvc.createCollection( body, projection, req.userObject, res.svcStatus)
         res.status(201).json(response)
       }
       catch (err) {
@@ -249,7 +249,7 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
   }
 }
 
-module.exports.replaceCollection = async function updateCollection (req, res, next) {
+module.exports.replaceCollection = async function replaceCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
     const collectionId = req.params.collectionId
@@ -257,7 +257,7 @@ module.exports.replaceCollection = async function updateCollection (req, res, ne
     const body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      const response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject)
+      const response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
       res.json(response)
     }
     else {
@@ -279,7 +279,7 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
     if ( collectionGrant && collectionGrant.accessLevel >= 3 ) {
       const collectionResponse = await CollectionSvc.getCollection(collectionId, ['grants'], false, req.userObject )
       if (collectionResponse.grants.filter( grant => grant.accessLevel === 1 && grant.user.userId === userId).length > 0) {
-        const setResponse = await CollectionSvc.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, req.userObject ) 
+        const setResponse = await CollectionSvc.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, res.svcStatus ) 
         const getResponse = await CollectionSvc.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
         res.json(getResponse)    
       }
@@ -304,7 +304,7 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
     const body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
-      let response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject)
+      let response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
       res.json(response)
     }
     else {
@@ -551,7 +551,7 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
     let collection = await CollectionSvc.getCollection( collectionId, ['assets'], false, req.userObject)
     let collectionAssets = collection.assets.map( a => a.assetId)
     if (assetIds.every( a => collectionAssets.includes(a))) {
-      await CollectionSvc.putAssetsByCollectionLabelId( collectionId, labelId, assetIds )
+      await CollectionSvc.putAssetsByCollectionLabelId( collectionId, labelId, assetIds, res.svcStatus )
       const response = await CollectionSvc.getAssetsByCollectionLabelId( collectionId, req.params.labelId, req.userObject )
       res.json(response)
     }

@@ -18,7 +18,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
 
     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
       try {
-        let asset = await Asset.createAsset( body, projection, elevate, req.userObject)
+        let asset = await Asset.createAsset( body, projection, elevate, req.userObject, res.svcStatus)
         res.status(201).json(asset)
       }
       catch (err) {
@@ -435,7 +435,8 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
       body,
       projection,
       transferring,
-      req.userObject
+      req.userObject,
+      res.svcStatus
     )
     res.json(response)
   }
@@ -640,7 +641,8 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
       body,
       projection,
       transferring,
-      req.userObject
+      req.userObject,
+      res.svcStatus
     )
     res.json(response)
   }

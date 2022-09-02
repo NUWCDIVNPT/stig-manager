@@ -525,14 +525,13 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   return (rows)
 }
 
-exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId, userId, stigAssets, projection, userObject) {
+exports.setStigAssetsByCollectionUser = async function(collectionId, userId, stigAssets, svcStatus = {}) {
   let connection // available to try, catch, and finally blocks
   try {
-    // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION');
-    if (writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+    async function transaction () {
+      await connection.query('START TRANSACTION');
       const sqlDelete = `DELETE FROM 
         user_stig_asset_map
       WHERE
@@ -541,21 +540,21 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
           SELECT saId from stig_asset_map left join asset using (assetId) where asset.collectionId = ?
         )`
         await connection.execute(sqlDelete, [userId, collectionId])
-
-    }
-    if (stigAssets.length > 0) {
-      // Get saIds
-      const bindsInsertSaIds = [ userId ]
-      const predicatesInsertSaIds = []
-      for (const stigAsset of stigAssets) {
-        bindsInsertSaIds.push(stigAsset.benchmarkId, stigAsset.assetId)
-        predicatesInsertSaIds.push('(benchmarkId = ? AND assetId = ?)')
+      if (stigAssets.length > 0) {
+        // Get saIds
+        const bindsInsertSaIds = [ userId ]
+        const predicatesInsertSaIds = []
+        for (const stigAsset of stigAssets) {
+          bindsInsertSaIds.push(stigAsset.benchmarkId, stigAsset.assetId)
+          predicatesInsertSaIds.push('(benchmarkId = ? AND assetId = ?)')
+        }
+        let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
+        sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
+        let [result] = await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
       }
-      let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
-      sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
-      let [result] = await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
+      await connection.commit()
     }
-    await connection.commit()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -570,7 +569,7 @@ exports.updateOrReplaceUserStigAssets = async function(writeAction, collectionId
   }
 }
 
-exports.addOrUpdateCollection = async function(writeAction, collectionId, body, projection, userObject) {
+exports.addOrUpdateCollection = async function(writeAction, collectionId, body, projection, userObject, svcStatus = {}) {
   // CREATE: collectionId will be null
   // REPLACE/UPDATE: collectionId is not null
   let connection // available to try, catch, and finally blocks
@@ -587,78 +586,81 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION');
+    async function transaction () {
+      await connection.query('START TRANSACTION');
 
-    // Process scalar properties
-    let binds =  { ...collectionFields}
-    if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
-      // INSERT into collections
-      let sqlInsert =
-      `INSERT INTO
-          collection
-          (name, description, settings, metadata)
-        VALUES
-          (:name, :description, :settings, :metadata)`
-      let [rows] = await connection.execute(sqlInsert, binds)
-      collectionId = rows.insertId
-    }
-    else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
-      if (Object.keys(binds).length > 0) {
-        // UPDATE into collections
-        let sqlUpdate =
-        `UPDATE
+      // Process scalar properties
+      let binds =  { ...collectionFields}
+      if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
+        // INSERT into collections
+        let sqlInsert =
+        `INSERT INTO
             collection
-          SET
-            ?
-          WHERE
-            collectionId = ?`
-        await connection.query(sqlUpdate, [collectionFields, collectionId])
+            (name, description, settings, metadata)
+          VALUES
+            (:name, :description, :settings, :metadata)`
+        let [rows] = await connection.execute(sqlInsert, binds)
+        collectionId = rows.insertId
       }
-    }
-    else {
-      throw ( {status: 500, message: 'Invalid writeAction'} )
-    }
-
-    // Process grants
-    if (grants && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-      // DELETE from collection_grant
-      let sqlDeleteGrants = 'DELETE FROM collection_grant where collectionId = ?'
-      await connection.execute(sqlDeleteGrants, [collectionId])
-    }
-    if (grants && grants.length > 0) {
-      // INSERT into collection_grant
-      let sqlInsertGrants = `
-        INSERT INTO 
-        collection_grant (collectionId, userId, accessLevel)
-        VALUES
-          ?`      
-      let binds = grants.map(i => [collectionId, i.userId, i.accessLevel])
-      await connection.query(sqlInsertGrants, [binds])
-    }
-
-    // Process labels
-    if (labels && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-      // DELETE from collection_grant
-      let sqlDeleteLabels = 'DELETE FROM collection_label where collectionId = ?'
-      await connection.execute(sqlDeleteLabels, [collectionId])
-    }
-    if (labels && labels.length > 0) {
-      // INSERT into collection_label
-      let sqlInsertLabels = `
-        INSERT INTO 
-        collection_label (collectionId, name, description, color, uuid)
-        VALUES
-          ?`      
-      const binds = labels.map(i => [collectionId, i.name, i.description, i.color, {
-        toSqlString: function () {
-          return `UUID_TO_BIN(UUID(),1)`
+      else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
+        if (Object.keys(binds).length > 0) {
+          // UPDATE into collections
+          let sqlUpdate =
+          `UPDATE
+              collection
+            SET
+              ?
+            WHERE
+              collectionId = ?`
+          await connection.query(sqlUpdate, [collectionFields, collectionId])
         }
-      }])
-      await connection.query(sqlInsertLabels, [binds])
+      }
+      else {
+        throw ( {status: 500, message: 'Invalid writeAction'} )
+      }
+  
+      // Process grants
+      if (grants && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+        // DELETE from collection_grant
+        let sqlDeleteGrants = 'DELETE FROM collection_grant where collectionId = ?'
+        await connection.execute(sqlDeleteGrants, [collectionId])
+      }
+      if (grants && grants.length > 0) {
+        // INSERT into collection_grant
+        let sqlInsertGrants = `
+          INSERT INTO 
+          collection_grant (collectionId, userId, accessLevel)
+          VALUES
+            ?`      
+        let binds = grants.map(i => [collectionId, i.userId, i.accessLevel])
+        await connection.query(sqlInsertGrants, [binds])
+      }
+  
+      // Process labels
+      if (labels && writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+        // DELETE from collection_grant
+        let sqlDeleteLabels = 'DELETE FROM collection_label where collectionId = ?'
+        await connection.execute(sqlDeleteLabels, [collectionId])
+      }
+      if (labels && labels.length > 0) {
+        // INSERT into collection_label
+        let sqlInsertLabels = `
+          INSERT INTO 
+          collection_label (collectionId, name, description, color, uuid)
+          VALUES
+            ?`      
+        const binds = labels.map(i => [collectionId, i.name, i.description, i.color, {
+          toSqlString: function () {
+            return `UUID_TO_BIN(UUID(),1)`
+          }
+        }])
+        await connection.query(sqlInsertLabels, [binds])
+      }
+  
+      // Commit the changes
+      await connection.commit()
     }
-
-    // Commit the changes
-    await connection.commit()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     await connection.rollback()
@@ -679,8 +681,8 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
  * body CollectionAssign  (optional)
  * returns List
  **/
-exports.createCollection = async function(body, projection, userObject) {
-  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject)
+exports.createCollection = async function(body, projection, userObject, svcStatus = {}) {
+  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.CREATE, null, body, projection, userObject, svcStatus)
   return (row)
 }
 
@@ -941,13 +943,8 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
  * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
-exports.replaceCollection = async function( collectionId, body, projection, userObject) {
-  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.REPLACE, collectionId, body, projection, userObject)
-  return (row)
-}
-
-exports.setStigAssetsByCollectionUser = async function (collectionId, userId, stigAssets, userObject) {
-  let row = await _this.updateOrReplaceUserStigAssets(dbUtils.WRITE_ACTION.REPLACE, collectionId, userId, stigAssets, userObject)
+exports.replaceCollection = async function( collectionId, body, projection, userObject, svcStatus = {}) {
+  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.REPLACE, collectionId, body, projection, userObject, svcStatus)
   return (row)
 }
 
@@ -958,8 +955,8 @@ exports.setStigAssetsByCollectionUser = async function (collectionId, userId, st
  * collectionId Integer A path parameter that identifies a Collection
  * returns CollectionInfo
  **/
-exports.updateCollection = async function( collectionId, body, projection, userObject) {
-  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.UPDATE, collectionId, body, projection, userObject)
+exports.updateCollection = async function( collectionId, body, projection, userObject, svcStatus = {}) {
+  let row = await _this.addOrUpdateCollection(dbUtils.WRITE_ACTION.UPDATE, collectionId, body, projection, userObject, svcStatus)
   return (row)
 }
 
@@ -1451,40 +1448,43 @@ group by
   return rows
 }
 
-exports.putAssetsByCollectionLabelId = async function (collectionId, labelId, assetIds) {
+exports.putAssetsByCollectionLabelId = async function (collectionId, labelId, assetIds, svcStatus = {}) {
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
-    await connection.query('START TRANSACTION')
+    async function transaction() {
+      await connection.query('START TRANSACTION')
 
-    const sqlGetClId = `select clId from collection_label where uuid = UUID_TO_BIN(?,1)`
-    const [clIdRows] = await connection.query( sqlGetClId, [ labelId ] )
-    const clId = clIdRows[0].clId
-
-    let sqlDelete = `
-    DELETE FROM 
-      collection_label_asset_map
-    WHERE 
-      clId = ?`
-    if (assetIds.length > 0) {
-      sqlDelete += ' and assetId NOT IN ?'
-    }  
-    await connection.query( sqlDelete, [ clId, [assetIds] ] )
-    // Push any bind values
-    const binds = []
-    for (const assetId of assetIds) {
-      binds.push([clId, assetId])
+      const sqlGetClId = `select clId from collection_label where uuid = UUID_TO_BIN(?,1)`
+      const [clIdRows] = await connection.query( sqlGetClId, [ labelId ] )
+      const clId = clIdRows[0].clId
+  
+      let sqlDelete = `
+      DELETE FROM 
+        collection_label_asset_map
+      WHERE 
+        clId = ?`
+      if (assetIds.length > 0) {
+        sqlDelete += ' and assetId NOT IN ?'
+      }  
+      await connection.query( sqlDelete, [ clId, [assetIds] ] )
+      // Push any bind values
+      const binds = []
+      for (const assetId of assetIds) {
+        binds.push([clId, assetId])
+      }
+      if (binds.length > 0) {
+        let sqlInsert = `
+        INSERT IGNORE INTO 
+          collection_label_asset_map (clId, assetId)
+        VALUES
+          ?`
+        await connection.query(sqlInsert, [ binds ])
+      }
+      // Commit the changes
+      await connection.commit()
     }
-    if (binds.length > 0) {
-      let sqlInsert = `
-      INSERT IGNORE INTO 
-        collection_label_asset_map (clId, assetId)
-      VALUES
-        ?`
-      await connection.query(sqlInsert, [ binds ])
-    }
-    // Commit the changes
-    await connection.commit()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
