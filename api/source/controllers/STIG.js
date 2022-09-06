@@ -25,7 +25,7 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
       throw new SmError.UnprocessableError('SCAP Benchmarks are not imported.')
     }
     else {
-      response = await STIG.insertManualBenchmark(benchmark, xmlData)
+      response = await STIG.insertManualBenchmark(benchmark, res.svcStatus)
     }
     res.json(response)
   }
@@ -45,7 +45,7 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
 
     }
     else {
-      await STIG.deleteRevisionByString(benchmarkId, revisionStr, req.userObject)
+      await STIG.deleteRevisionByString(benchmarkId, revisionStr, res.svcStatus)
       res.json(response)
     }
   }
@@ -58,7 +58,7 @@ module.exports.deleteStigById = async function deleteStigById (req, res, next) {
   if ( req.userObject.privileges.canAdmin ) {
     try {
       let benchmarkId = req.params.benchmarkId
-      let response = await STIG.deleteStigById(benchmarkId, req.userObject)
+      let response = await STIG.deleteStigById(benchmarkId, req.userObject, res.svcStatus)
       res.json(response)
     }
     catch (err) {

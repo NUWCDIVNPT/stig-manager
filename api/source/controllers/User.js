@@ -23,7 +23,7 @@ module.exports.createUser = async function createUser (req, res, next) {
         }
       }
       try {
-        let response = await User.createUser(body, projection, elevate, req.userObject)
+        let response = await User.createUser(body, projection, elevate, req.userObject, res.svcStatus)
         res.status(201).json(response)
       }
       catch (err) {
@@ -134,7 +134,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
         }
       }
 
-      let response = await User.replaceUser(userId, body, projection, elevate, req.userObject)
+      let response = await User.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
       res.json(response)
     }
     else {
@@ -164,7 +164,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
         }
       }
 
-      let response = await User.replaceUser(userId, body, projection, elevate, req.userObject)
+      let response = await User.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
       res.json(response)
     }
     else {

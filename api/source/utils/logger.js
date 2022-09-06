@@ -90,6 +90,7 @@ function requestLogger (req, res, next) {
   req._startTime = undefined
   res._startAt = undefined
   res._startTime = undefined
+  res.svcStatus = {}
 
   // Response body handling for privileged requests
   let responseBody = undefined
@@ -111,26 +112,28 @@ function requestLogger (req, res, next) {
     writeInfo('rest', 'request', serializeRequest(req))
   }
 
-  function logResponse (err, response) {
+  function logResponse () {
     if (config.log.mode === 'combined') {
       writeInfo(req.component || 'rest', 'transaction', {
-        request: serializeRequest(response.req),
+        request: serializeRequest(res.req),
         response: {
           date: res._startTime,
-          status: response.statusCode,
-          headers: response.getHeaders(),
-          errorBody: response.errorBody,
+          status: res.statusCode,
+          headers: res.getHeaders(),
+          errorBody: res.errorBody,
           responseBody
         },
+        retries: res.svcStatus?.retries,
         durationMs: Number(res._startTime - req._startTime)
       })  
     }
     else {
       writeInfo(req.component || 'rest', 'response', {
-        requestId: response.req.requestId,
-        status: response.statusCode,
-        headers: response.getHeaders(),
-        errorBody: response.errorBody
+        requestId: res.req.requestId,
+        status: res.statusCode,
+        headers: res.getHeaders(),
+        errorBody: res.errorBody,
+        retries: res.svcStatus?.retries,
       })  
     }
   }

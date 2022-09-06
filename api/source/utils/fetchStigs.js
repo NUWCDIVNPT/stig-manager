@@ -84,7 +84,7 @@ async function processZip (f) {
         logger.writeWarning(logComponent, logType, { message: `Did not import SCAP benchmark`, member: xml })      
       }
       else {
-        response = await STIG.insertManualBenchmark(benchmark, xmlData)
+        response = await STIG.insertManualBenchmark(benchmark)
       }
       logger.writeInfo(logComponent, logType, { message: `imported`, member: xml })      
     }

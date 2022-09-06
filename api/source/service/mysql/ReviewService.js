@@ -486,7 +486,7 @@ exports.exportReviews = async function (includeHistory = false) {
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, userObject) {
+exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, userObject, svcStatus = {}) {
   let connection
   try {
     let binds = {
@@ -497,11 +497,14 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
     let rows = await _this.getReviews(projection, binds, userObject);
     
     connection = await dbUtils.pool.getConnection()
-    await connection.query('START TRANSACTION')
-    let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
-    await connection.query(sqlDelete, binds);
-    await dbUtils.updateStatsAssetStig( connection, { ruleId, assetId })
-    await connection.commit()
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
+      await connection.query(sqlDelete, binds);
+      await dbUtils.updateStatsAssetStig( connection, { ruleId, assetId })
+      await connection.commit()
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
     return (rows[0]);
   }
   catch (err) {
@@ -518,40 +521,31 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
 
 }
 
-exports.putReviewByAssetRule = async function(assetId, ruleId, review, userObject, resetCriteria) {
-  review.ruleId = ruleId
-  const affected = await _this.putReviewsByAsset(assetId, [review], userObject, resetCriteria)
-  return affected.inserted ? 'created' : affected.updated ? 'updated' : 'error'
-}
-
-
-exports.putReviewsByAsset = async function( assetId, reviews, userObject, resetCriteria, tryInsert = true) {
+exports.putReviewsByAsset = async function ({
+    assetId, 
+    reviews, 
+    userObject, 
+    resetCriteria, 
+    tryInsert = true, 
+    svcStatus = {}
+  }) {
   let connection
   try {
-    const affected = {
-      updated: 0,
-      inserted: 0
-    }
-    const sqlHistory = `
-    INSERT INTO review_history (
-      reviewId,
-      resultId,
-      detail,
-      comment,
-      autoResult,
-      ts,
-      userId,
-      statusText,
-      statusUserId,
-      statusTs,
-      statusId,
-      touchTs,
-      resultEngine
-    ) SELECT 
+    connection = await dbUtils.pool.getConnection()
+    await connection.query(writeQueries.dropIncoming)
+    await connection.query(writeQueries.createIncomingForPost, [ JSON.stringify(reviews) ])
+
+    async function transaction () {
+      const affected = {
+        updated: 0,
+        inserted: 0
+      }
+      const sqlHistory = `
+      INSERT INTO review_history (
         reviewId,
         resultId,
-        LEFT(detail,32767) as detail,
-        LEFT(comment,32767) as comment,
+        detail,
+        comment,
         autoResult,
         ts,
         userId,
@@ -560,33 +554,46 @@ exports.putReviewsByAsset = async function( assetId, reviews, userObject, resetC
         statusTs,
         statusId,
         touchTs,
-        CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
-      FROM
-        review 
-      WHERE
-        assetId = ?
-        and ruleId IN ?
-        and reviewId IS NOT NULL
-      FOR UPDATE    
-    `
-    connection = await dbUtils.pool.getConnection()
-    await connection.query(writeQueries.dropIncoming)
-    await connection.query(writeQueries.createIncomingForPost, [ JSON.stringify(reviews) ])
-    await connection.query('START TRANSACTION')
-    const historyRules = reviews.map( r => r.ruleId )
-    await connection.query(sqlHistory, [ assetId, [historyRules] ])
-    const [resultUpdate] = await connection.query(writeQueries.updateReviews(resetCriteria), {userId: userObject.userId, assetId})
-    affected.updated = resultUpdate.affectedRows
-    if (tryInsert) {
-      const [resultInsert] = await connection.query(writeQueries.insertReviews, {userId: userObject.userId, assetId})
-      affected.inserted = resultInsert.affectedRows
+        resultEngine
+      ) SELECT 
+          reviewId,
+          resultId,
+          LEFT(detail,32767) as detail,
+          LEFT(comment,32767) as comment,
+          autoResult,
+          ts,
+          userId,
+          statusText,
+          statusUserId,
+          statusTs,
+          statusId,
+          touchTs,
+          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+        FROM
+          review 
+        WHERE
+          assetId = ?
+          and ruleId IN ?
+          and reviewId IS NOT NULL
+        FOR UPDATE    
+      `
+      await connection.query('START TRANSACTION')
+      const historyRules = reviews.map( r => r.ruleId )
+      await connection.query(sqlHistory, [ assetId, [historyRules] ])
+      const [resultUpdate] = await connection.query(writeQueries.updateReviews(resetCriteria), {userId: userObject.userId, assetId})
+      affected.updated = resultUpdate.affectedRows
+      if (tryInsert) {
+        const [resultInsert] = await connection.query(writeQueries.insertReviews, {userId: userObject.userId, assetId})
+        affected.inserted = resultInsert.affectedRows
+      }
+      await dbUtils.updateStatsAssetStig(connection, {
+        assetId: assetId,
+        rules: historyRules
+      })
+      await connection.commit()
+      return affected
     }
-    await dbUtils.updateStatsAssetStig(connection, {
-      assetId: assetId,
-      rules: historyRules
-    })
-    await connection.commit()
-    return (affected)
+    return await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch(err) {
     if (typeof connection !== 'undefined') {

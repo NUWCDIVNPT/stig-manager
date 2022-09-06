@@ -414,7 +414,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
 }
 
 
-exports.insertManualBenchmark = async function (b) {
+exports.insertManualBenchmark = async function (b, svcStatus = {}) {
   function dmlObjectFromBenchmarkData (b) {
     let dml = {
       stig: {
@@ -696,58 +696,43 @@ exports.insertManualBenchmark = async function (b) {
     let pp = dbUtils.pool
     connection = await pp.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION')
+    async function transaction () {
+      await connection.query('START TRANSACTION')
 
-    tableOrder = [
-      'stig',
-      'revision',
-      'group',
-      'rule',
-      'check',
-      'fix',
-      'revGroupMap',
-      'revGroupRuleMap',
-      'revGroupRuleCheckMap',
-      'revGroupRuleFixMap',
-      'ruleCciMap'
-    ]
-
-    for (const table of tableOrder) {
-      hrstart = process.hrtime()
-      if (Array.isArray(dml[table].binds)) {
-        if (dml[table].binds.length === 0) { continue }
-        ;[result] = await connection.query(dml[ table ].sql, [ dml[ table ].binds ])
+      tableOrder = [
+        'stig',
+        'revision',
+        'group',
+        'rule',
+        'check',
+        'fix',
+        'revGroupMap',
+        'revGroupRuleMap',
+        'revGroupRuleCheckMap',
+        'revGroupRuleFixMap',
+        'ruleCciMap'
+      ]
+  
+      for (const table of tableOrder) {
+        hrstart = process.hrtime()
+        if (Array.isArray(dml[table].binds)) {
+          if (dml[table].binds.length === 0) { continue }
+          ;[result] = await connection.query(dml[ table ].sql, [ dml[ table ].binds ])
+        }
+        else {
+          ;[result] = await connection.query(dml[ table ].sql, dml[ table ].binds)
+        }
+        hrend = process.hrtime(hrstart)
+        stats[table] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       }
-      else {
-        ;[result] = await connection.query(dml[ table ].sql, dml[ table ].binds)
-      }
-      hrend = process.hrtime(hrstart)
-      stats[table] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    }
-
-    // Update current_rev
-    let sqlDeleteCurrentRev = 'DELETE from current_rev where benchmarkId = ?'
-    let sqlUpdateCurrentRev = `INSERT INTO current_rev (
-      revId,
-      benchmarkId,
-      \`version\`, 
-      \`release\`, 
-      benchmarkDate,
-      benchmarkDateSql,
-      status,
-      statusDate,
-      description,
-      active,
-      groupCount,
-      ruleCount,
-      checkCount,
-      fixCount
-      )
-      SELECT 
+  
+      // Update current_rev
+      let sqlDeleteCurrentRev = 'DELETE from current_rev where benchmarkId = ?'
+      let sqlUpdateCurrentRev = `INSERT INTO current_rev (
         revId,
         benchmarkId,
-        \`version\`,
-        \`release\`,
+        \`version\`, 
+        \`release\`, 
         benchmarkDate,
         benchmarkDateSql,
         status,
@@ -757,51 +742,68 @@ exports.insertManualBenchmark = async function (b) {
         groupCount,
         ruleCount,
         checkCount,
-        fixCount
-      FROM
-        v_current_rev
-      WHERE
-        v_current_rev.benchmarkId = ?`
-    hrstart = process.hrtime()
-    ;[result] = await connection.query(sqlDeleteCurrentRev, [ dml.stig.binds.benchmarkId ])
-    ;[result] = await connection.query(sqlUpdateCurrentRev, [ dml.stig.binds.benchmarkId ])
-    hrend = process.hrtime(hrstart)
-    stats['currentRev'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    // update current_group_rule
-    let sqlDeleteCurrentGroupRule = 'DELETE FROM current_group_rule WHERE benchmarkId = ?'
-    let sqlInsertCurrentGroupRule = `INSERT INTO current_group_rule (groupId, ruleId, benchmarkId)
-      SELECT rg.groupId,
-        rgr.ruleId,
-        cr.benchmarkId
-      from
-        current_rev cr
-        left join rev_group_map rg on rg.revId=cr.revId
-        left join rev_group_rule_map rgr on rgr.rgId=rg.rgId
-      where
-        cr.benchmarkId = ?
-      order by
-        rg.groupId,rgr.ruleId,cr.benchmarkId`
-    hrstart = process.hrtime()
-    ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
-    ;[result] = await connection.query(sqlInsertCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
-    hrend = process.hrtime(hrstart)
-    stats['currentGroupRule'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    // Stats
-    hrstart = process.hrtime() 
-    await dbUtils.updateStatsAssetStig( connection, {
-      benchmarkId: dml.stig.binds.benchmarkId
-    } )
-    hrend = process.hrtime(hrstart)
-    stats.stats = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-      
-    hrend = process.hrtime(totalstart)
-    stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-    // await connection.rollback()
-    await connection.commit()
-    return (stats)
+        fixCount)
+        SELECT 
+          revId,
+          benchmarkId,
+          \`version\`,
+          \`release\`,
+          benchmarkDate,
+          benchmarkDateSql,
+          status,
+          statusDate,
+          description,
+          active,
+          groupCount,
+          ruleCount,
+          checkCount,
+          fixCount
+        FROM
+          v_current_rev
+        WHERE
+          v_current_rev.benchmarkId = ?`
+      hrstart = process.hrtime()
+      ;[result] = await connection.query(sqlDeleteCurrentRev, [ dml.stig.binds.benchmarkId ])
+      ;[result] = await connection.query(sqlUpdateCurrentRev, [ dml.stig.binds.benchmarkId ])
+      hrend = process.hrtime(hrstart)
+      stats['currentRev'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+  
+      // update current_group_rule
+      let sqlDeleteCurrentGroupRule = 'DELETE FROM current_group_rule WHERE benchmarkId = ?'
+      let sqlInsertCurrentGroupRule = `INSERT INTO current_group_rule (groupId, ruleId, benchmarkId)
+        SELECT rg.groupId,
+          rgr.ruleId,
+          cr.benchmarkId
+        from
+          current_rev cr
+          left join rev_group_map rg on rg.revId=cr.revId
+          left join rev_group_rule_map rgr on rgr.rgId=rg.rgId
+        where
+          cr.benchmarkId = ?
+        order by
+          rg.groupId,rgr.ruleId,cr.benchmarkId`
+      hrstart = process.hrtime()
+      ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
+      ;[result] = await connection.query(sqlInsertCurrentGroupRule, [ dml.stig.binds.benchmarkId ])
+      hrend = process.hrtime(hrstart)
+      stats['currentGroupRule'] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+  
+      // Stats
+      hrstart = process.hrtime() 
+      await dbUtils.updateStatsAssetStig( connection, {
+        benchmarkId: dml.stig.binds.benchmarkId
+      } )
+      hrend = process.hrtime(hrstart)
+      stats.stats = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+        
+      hrend = process.hrtime(totalstart)
+      stats.totalTime = `Completed in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+  
+      // await connection.rollback()
+      await connection.commit()
+      return (stats)
+    }
+    return await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -823,7 +825,7 @@ exports.insertManualBenchmark = async function (b) {
  * revisionStr String A path parameter that identifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns Revision
  **/
-exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userObject) {
+exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcStatus = {}) {
 
   let dmls = [
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
@@ -848,8 +850,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
         groupCount,
         ruleCount,
         checkCount,
-        fixCount
-        )
+        fixCount)
       SELECT 
         revId,
         benchmarkId,
@@ -896,29 +897,32 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION')
+    async function transaction () {
+      await connection.query('START TRANSACTION')
 
-    // note if this is the current revision
-    const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
-    const isCurrentRev = !!crRows.length
-    
-    // re-materialize current_rev and current_group_rule if we're deleteing the current revision
-    if (isCurrentRev) {
-      dmls = dmls.concat(currentRevDmls)
+      // note if this is the current revision
+      const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
+      const isCurrentRev = !!crRows.length
+      
+      // re-materialize current_rev and current_group_rule if we're deleteing the current revision
+      if (isCurrentRev) {
+        dmls = dmls.concat(currentRevDmls)
+      }
+  
+      for (const sql of dmls) {
+       await connection.query(sql, binds)
+      }
+  
+      // re-calculate review statistics if we've affected current_rev
+      // NOTE: for performance we could skip this if the only revision has 
+      // been deleted (STIG itself is now deleted)
+      if (isCurrentRev) {
+        await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
+      }
+  
+      await connection.commit()
     }
-
-    for (const sql of dmls) {
-     await connection.query(sql, binds)
-    }
-
-    // re-calculate review statistics if we've affected current_rev
-    // NOTE: for performance we could skip this if the only revision has 
-    // been deleted (STIG itself is now deleted)
-    if (isCurrentRev) {
-      await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
-    }
-
-    await connection.commit()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch(err) {
     if (typeof connection !== 'undefined') {
@@ -940,7 +944,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, userOb
  * benchmarkId String A path parameter that indentifies a STIG
  * returns STIG
  **/
-exports.deleteStigById = async function(benchmarkId, userObject) {
+exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {}) {
 
   let dmls = [
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId",
@@ -964,15 +968,18 @@ exports.deleteStigById = async function(benchmarkId, userObject) {
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
-    await connection.query('START TRANSACTION')
+    async function transaction () {
+      await connection.query('START TRANSACTION')
 
-    for (const sql of dmls) {
-      await connection.query(sql, binds)
+      for (const sql of dmls) {
+        await connection.query(sql, binds)
+      }
+   
+      await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
+   
+      await connection.commit()  
     }
- 
-    await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
- 
-    await connection.commit()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
     return (rows[0])
   }
   catch (err) {
