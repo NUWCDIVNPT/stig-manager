@@ -1,7 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../../utils/config.js')
-const Security = require('../../utils/accessLevels')
+const MyController = require('../../controllers/Collection')
 
 const _this = this
 
@@ -17,7 +17,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
       'c.description',
-      'c.settings',
+      `JSON_MERGE_PATCH('${JSON.stringify(MyController.defaultSettings)}', c.settings) as settings`,
       'c.metadata'
     ]
     let joins = [
@@ -579,9 +579,8 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
     if ('metadata' in collectionFields) {
       collectionFields.metadata = JSON.stringify(collectionFields.metadata)
     }
-    if ('settings' in collectionFields) {
-      collectionFields.settings = JSON.stringify(collectionFields.settings)
-    }
+    // Merge default settings with any provided settings
+    collectionFields.settings = JSON.stringify({...MyController.defaultSettings, ...collectionFields.settings})
   
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
@@ -1274,7 +1273,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
 exports.getCollectionSettings = async function ( collectionId ) {
   let sql = `
     select
-      settings
+      JSON_MERGE_PATCH('${JSON.stringify(MyController.defaultSettings)}', settings) as settings
     from 
       collection
     where 

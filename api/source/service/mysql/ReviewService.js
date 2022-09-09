@@ -527,7 +527,8 @@ exports.putReviewsByAsset = async function ({
     userObject, 
     resetCriteria, 
     tryInsert = true, 
-    svcStatus = {}
+    svcStatus = {},
+    maxHistory = 5
   }) {
   let connection
   try {
@@ -540,7 +541,25 @@ exports.putReviewsByAsset = async function ({
         updated: 0,
         inserted: 0
       }
-      const sqlHistory = `
+      const sqlHistoryPrune = `
+      with historyRecs AS (
+        select
+          rh.historyId,
+          ROW_NUMBER() OVER (PARTITION BY r.assetId, r.ruleId ORDER BY rh.historyId DESC) as rowNum
+        from
+          review_history rh
+          left join review r using (reviewId)
+        where
+          assetId = ?
+          and ruleId IN ?)
+      delete review_history
+      FROM 
+         review_history
+         left join historyRecs on review_history.historyId = historyRecs.historyId 
+      WHERE 
+         historyRecs.rowNum > ? - 1
+      `
+      const sqlHistory = `  
       INSERT INTO review_history (
         reviewId,
         resultId,
@@ -579,7 +598,12 @@ exports.putReviewsByAsset = async function ({
       `
       await connection.query('START TRANSACTION')
       const historyRules = reviews.map( r => r.ruleId )
-      await connection.query(sqlHistory, [ assetId, [historyRules] ])
+      if (maxHistory !== -1) {
+        await connection.query(sqlHistoryPrune, [ assetId, [historyRules], maxHistory ])
+      }
+      if (maxHistory !== 0) {
+        await connection.query(sqlHistory, [ assetId, [historyRules] ])
+      }
       const [resultUpdate] = await connection.query(writeQueries.updateReviews(resetCriteria), {userId: userObject.userId, assetId})
       affected.updated = resultUpdate.affectedRows
       if (tryInsert) {
