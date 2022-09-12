@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0895f99a-ad58-45ff-8d4b-5b7b55103e61",
+		"_postman_id": "340dd800-3ae4-4598-aa1b-a689116279c8",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -23010,36 +23010,227 @@
 							}
 						}
 					]
-				}
-			],
-			"description": "These tests should be self contained, provide their own authorization, and repopulate test data if required.",
+				},
+				{
+					"name": "Regression Tests",
+					"item": [
+						{
+							"name": "gh-756",
+							"item": [
+								{
+									"name": "assign a benchmark used in test Collection in scrap Collection",
 			"event": [
 				{
-					"listen": "prerequest",
+											"listen": "test",
 					"script": {
-						"type": "text/javascript",
 						"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an array with expected length\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('array');\r",
+													"    pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+													"    pm.expect(jsonData).to.have.lengthOf(1);\r",
+													"\r",
+													"});\r",
+													"\r",
 							""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[\n    \"{{scrapAsset}}\"\n    ]\n"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?elevate={{elevated}}&projection=restrictedUserAccess",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"stigs",
+												":benchmarkId",
+												"assets"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												},
+												{
+													"key": "projection",
+													"value": "restrictedUserAccess",
+													"description": "Additional properties to include in the response.\n"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "{{scrapCollection}}",
+													"description": "(Required) A path parameter that indentifies a Collection"
+												},
+												{
+													"key": "benchmarkId",
+													"value": "{{testBenchmark}}",
+													"description": "(Required) A path parameter that indentifies a STIG"
+												}
 						]
 					}
 				},
+									"response": []
+								},
+								{
+									"name": "Verify that test collection still has expected benchmark assignments",
+									"event": [
 				{
 					"listen": "test",
 					"script": {
-						"type": "text/javascript",
 						"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an array\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('array');\r",
+													"});\r",
+													"\r",
+													"let testBenchmark = pm.environment.get(\"testBenchmark\");\r",
+													"\r",
+													"\r",
+													"// let stigKeys = [\r",
+													"//     \"title\",\r",
+													"//     \"ruleCount\",\r",
+													"//     \"benchmarkId\",\r",
+													"//     \"lastRevisionDate\",\r",
+													"//     \"lastRevisionStr\",\r",
+													"//     \"assetCount\",\r",
+													"//     \"acceptedCount\",\r",
+													"//     \"rejectedCount\",\r",
+													"//     \"submittedCount\",\r",
+													"//     \"savedCount\",\r",
+													"//     \"minTs\",\r",
+													"//     \"maxTs\"\r",
+													"// ]\r",
+													"\r",
+													"// let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"let returnedStigs = [];\r",
+													"\r",
+													"pm.test(\"Response has requested properties and values\", function () {\r",
+													"    for (let stig of jsonData){\r",
+													"        // pm.expect(stig).to.have.all.keys(stigKeys);\r",
+													"        returnedStigs.push(stig.benchmarkId)\r",
+													"        console.log(stig.benchmarkId)\r",
+													"\r",
+													"    };\r",
+													"    pm.expect(returnedStigs).to.include(testBenchmark);\r",
+													"\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
 							""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/stigs",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"stigs"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "{{testCollection}}",
+													"description": "(Required) A path parameter that indentifies a Collection"
+												}
 						]
 					}
+									},
+									"response": []
 				}
 			]
-		},
-		{
-			"name": "History Tests",
-			"item": [
-				{
-					"name": "LoadTestData",
-					"item": []
+						}
+					]
 				}
 			],
 			"description": "These tests should be self contained, provide their own authorization, and repopulate test data if required.",
