@@ -14,8 +14,8 @@ These pages describe how to use STIG Manager.
 
 
 .. toctree::
-	:numbered: 4
-	:maxdepth: 2
+	:numbered: 5
+	:maxdepth: 3
 	:caption: Contents:
 
 

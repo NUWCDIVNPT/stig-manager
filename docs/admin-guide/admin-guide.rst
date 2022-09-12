@@ -90,7 +90,7 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 Application Data Panel
 ------------------------------------
-This panel allows App Managers to download a representation of all data STIGMan manages, minus the Review History and STIGs.
+This panel allows App Managers to download a representation of all data STIGMan manages, minus the actual DISA Reference STIGs themselves.
 This same data can also be imported, but be aware that if data is moved to a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.
 
 .. warning::
