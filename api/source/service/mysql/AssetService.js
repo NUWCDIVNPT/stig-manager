@@ -1155,15 +1155,17 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
       await connection.query('START TRANSACTION')
 
       let sqlDeleteBenchmarks = `
-      DELETE FROM 
+      DELETE stig_asset_map FROM 
         stig_asset_map
-      WHERE 
-        benchmarkId = ?`
+        left join asset on stig_asset_map.assetId = asset.assetId
+      WHERE
+        asset.collectionId = ?
+        and stig_asset_map.benchmarkId = ?`
       if (assetIds.length > 0) {
-        sqlDeleteBenchmarks += ' and assetId NOT IN ?'
+        sqlDeleteBenchmarks += ' and stig_asset_map.assetId NOT IN ?'
       }  
       // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
-      await connection.query( sqlDeleteBenchmarks, [ benchmarkId, [assetIds] ] )
+      await connection.query( sqlDeleteBenchmarks, [ collectionId, benchmarkId, [assetIds] ] )
       
       // Push any bind values
       let binds = []
