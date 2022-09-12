@@ -12870,8 +12870,392 @@
 									]
 								},
 								{
-									"name": "Review History - Delete",
+									"name": "Review History - Delete and verify pruning",
 									"item": [
+										{
+											"name": "test history prune",
+											"item": [
+												{
+													"name": "Import and overwrite application data (as elevated Admin)",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 403\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let response = pm.response.text();\r",
+																	"console.log(response)\r",
+																	"\r",
+																	"pm.test(\"Body contains string\",() => {\r",
+																	"  pm.expect(response).to.include(\"Commit successful\");\r",
+																	"});"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"auth": {
+															"type": "oauth2",
+															"oauth2": [
+																{
+																	"key": "accessToken",
+																	"value": "{{token.stigmanadmin}}",
+																	"type": "string"
+																}
+															]
+														},
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "multipart/form-data"
+															}
+														],
+														"body": {
+															"mode": "formdata",
+															"formdata": [
+																{
+																	"key": "importFile",
+																	"type": "file",
+																	"src": "./{{formDataFiles}}/{{appDataFile}}"
+																}
+															]
+														},
+														"url": {
+															"raw": "{{baseUrl}}/op/appdata?elevate=true",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"op",
+																"appdata"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "true",
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Set collection history max reviews to 2",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "PATCH",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"settings\": {\n        \"history\": {\n            \"maxReviews\": 2\n        }\n    },  \n  \"grants\": [\n     {\n       \"userId\": \"1\",\n       \"accessLevel\": 4\n     },\n     {\n             \"userId\": \"21\",\n         \"accessLevel\": 2\n     },\n     {\n             \"userId\": \"44\",\n         \"accessLevel\": 3\n     },\n     {\n             \"userId\": \"45\",\n         \"accessLevel\": 4\n     }\n    ]\n}"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "{{elevated}}",
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																},
+																{
+																	"key": "projection",
+																	"value": "assets",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "grants",
+																	"description": "Additional properties to include in the response.\n"
+																},
+																{
+																	"key": "projection",
+																	"value": "owners"
+																},
+																{
+																	"key": "projection",
+																	"value": "statistics"
+																},
+																{
+																	"key": "projection",
+																	"value": "stigs"
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}",
+																	"description": "(Required) A path parameter that indentifies a Collection"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "Post review, triggering history prune.",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 200\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"// let jsonData = pm.response.json();\r",
+																	"// const expectedResponse = {\r",
+																	"//     rejected: [],\r",
+																	"//     affected: {\r",
+																	"//         updated: 0,\r",
+																	"//         inserted: 1\r",
+																	"//     }\r",
+																	"// }\r",
+																	"\r",
+																	"// pm.test(\"Response matches request\", function () {\r",
+																	"//     pm.expect(jsonData).to.eql(expectedResponse);\r",
+																	"// })\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "[\n    {\n    \"ruleId\": \"{{testRuleId}}\",\n    \"result\": \"pass\",\n    \"detail\": \"test\\nvisible to lvl1\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n    }\n]"
+														},
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"reviews",
+																":assetId"
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
+													"name": "History stats - rule-asset - check history is pruned to 2",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"//direct history access limited to lvl2 and above.\r",
+																	"if (user == \"bizarroLvl1\" ||  user == \"lvl1\" ||  user == \"collectioncreator\") {\r",
+																	"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1, lvl1\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"\r",
+																	"pm.test(\"Status code is 200\", function () {\r",
+																	"    pm.response.to.have.status(200);\r",
+																	"});\r",
+																	"\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"let jsonData = pm.response.json();\r",
+																	"\r",
+																	"pm.test(\"Response JSON is an object\", function () {\r",
+																	"    pm.expect(jsonData).to.be.an('object');\r",
+																	"});\r",
+																	"\r",
+																	"\r",
+																	"if (user == \"lvl2\" ) {//lvl2 could not change collection settings, so history incremented\r",
+																	"    pm.test(\"Response has array of asset history count objects\", function () {\r",
+																	"        pm.expect(jsonData.collectionHistoryEntryCount).to.eql(3);\r",
+																	"    });\r",
+																	"}\r",
+																	"else { //other users that made it this far could change collection settings, so history was pruned\r",
+																	"    pm.test(\"Response has array of asset history count objects\", function () {\r",
+																	"        pm.expect(jsonData.collectionHistoryEntryCount).to.eql(2);\r",
+																	"    });\r",
+																	"\r",
+																	"\r",
+																	"}\r",
+																	"\r",
+																	""
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"method": "GET",
+														"header": [],
+														"url": {
+															"raw": "{{baseUrl}}/collections/:collectionId/review-history/stats?assetId={{testAsset}}&ruleId={{testRuleId}}",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"collections",
+																":collectionId",
+																"review-history",
+																"stats"
+															],
+															"query": [
+																{
+																	"key": "startDate",
+																	"value": "2020-08-12",
+																	"disabled": true
+																},
+																{
+																	"key": "endDate",
+																	"value": "2021-08-12",
+																	"disabled": true
+																},
+																{
+																	"key": "assetId",
+																	"value": "{{testAsset}}"
+																},
+																{
+																	"key": "ruleId",
+																	"value": "{{testRuleId}}"
+																},
+																{
+																	"key": "status",
+																	"value": "",
+																	"disabled": true
+																},
+																{
+																	"key": "projection",
+																	"value": "asset",
+																	"disabled": true
+																}
+															],
+															"variable": [
+																{
+																	"key": "collectionId",
+																	"value": "{{testCollection}}"
+																}
+															]
+														}
+													},
+													"response": []
+												}
+											]
+										},
 										{
 											"name": "Import and overwrite application data (as elevated Admin)",
 											"event": [
@@ -13113,7 +13497,7 @@
 											"response": []
 										},
 										{
-											"name": "Import and overwrite application data (as elevated Admin)",
+											"name": "Import and overwrite application data (as elevated Admin) Copy",
 											"event": [
 												{
 													"listen": "test",
@@ -13714,7 +14098,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ],\n    \"labels\": [\n        {\n            \"name\": \"TEST\",\n            \"description\": \"Collection label description\",\n            \"color\": \"ffffff\"\n        }\n    ]\n}\n"
+									"raw": "{\n    \"name\": \"TEST\",\n    \"description\": \"Collection TEST description\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        },\n        \"history\": {\n            \"maxReviews\": 11\n        }\n  },\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"grants\": [\n        {\n                \"userId\": \"1\",\n                \"accessLevel\": 4\n        }\n    ],\n    \"labels\": [\n        {\n            \"name\": \"TEST\",\n            \"description\": \"Collection label description\",\n            \"color\": \"ffffff\"\n        }\n    ]\n}\n"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/collections?elevate={{elevated}}&projection=grants&projection=labels",
@@ -22946,8 +23330,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status is 400 \", function () {",
-											"    pm.response.to.have.status(400);",
+											"pm.test(\"Status is 201 \", function () {",
+											"    pm.response.to.have.status(201);",
 											"});",
 											""
 										],

@@ -544,8 +544,8 @@ Collection Settings Tab
 If you have the proper Grant to a Collection, you can modify settings that affect the behavior of this Collection and its Reviews. 
 
 
-.. rubric:: Review Fields 
-   :class: rubric
+Review Fields 
+++++++++++++++++++++++++++++++++++++
 
 
 If you have the proper Grant to this Collection, you can set the fields that will be required for Reviews to be Submitted in this Collection. 
@@ -558,8 +558,8 @@ The default Settings for Review Submission in Collections are:
       - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
  
 
-.. rubric:: Review Status 
-   :class: rubric
+Review Status 
+++++++++++++++++++++++++++++++++++++
 
 
 Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject reviews. The Grant levels required to do this can also be selected. 
@@ -580,12 +580,28 @@ The default Settings for Review Status are:
 
 |
 
+Review History
+++++++++++++++++++++++++++++++++++++
+
+Every time an individual Review for an Asset changes, a History record of its previous state is recorded.  For each Collection, Owners and Managers can now limit how many of these History records they keep for for each Review, or turn Review History off entirely
+
+By default, the number of History records is capped at 15 for each Review. 
+
+.. thumbnail:: /assets/images/collection-manage-review-history-setting.png 
+      :width: 50% 
+      :show_caption: True
+      :title: Review history setting
+
+
+|
+
 
 .. _import-options:
 
 
-.. rubric:: Import Options
-   :class: rubric
+Import Options
+++++++++++++++++++++++++++++++++++++
+
 
 The options described below allow you to have fine-grained control over how the reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all users importing results from files into STIG Manager.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
 

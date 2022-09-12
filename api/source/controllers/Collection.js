@@ -11,6 +11,26 @@ const Archiver = require('archiver')
 const J2X = require("fast-xml-parser").j2xParser
 const he = require('he')
 
+module.exports.defaultSettings = {
+  fields: {
+    detail: {
+      enabled: 'always',
+      required: 'always'
+    },
+    comment: {
+      enabled: 'findings',
+      required: 'findings'
+    }
+  },
+  status: {
+    canAccept: true,
+    resetCriteria: 'result',
+    minAcceptGrant: 3
+  },
+  history: {
+    maxReviews: 15
+  }
+}
 
 module.exports.createCollection = async function createCollection (req, res, next) {
   try {

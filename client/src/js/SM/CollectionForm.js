@@ -621,6 +621,11 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
             border: true,
             autoHeight: true
         })
+        const settingsHistoryFields = new SM.Collection.HistorySettings.HistoryFields({
+            iconCls: 'sm-history-icon',
+            border: true,
+            autoHeight: true
+        })
         const grantGrid = new SM.UserGrantsGrid({
             iconCls: 'sm-users-icon',
 			showAccessBtn: false,
@@ -645,7 +650,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 padding: 10,
                 items: [
                     settingsReviewFields,
-                    settingsStatusFields
+                    settingsStatusFields,
+                    settingsHistoryFields
                 ]
             },
             metadataGrid,
@@ -666,6 +672,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 metadataGrid.setValue(apiCollection.metadata)
                 settingsReviewFields.setValues(apiCollection.settings.fields)
                 settingsStatusFields.setValues(apiCollection.settings.status)
+                settingsHistoryFields.setValues(apiCollection.settings.history)
                 grantGrid.setValue(apiCollection.grants)
                 labelGrid.setValue(apiCollection.labels)
             },
@@ -691,7 +698,8 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 })
                 o.settings = {
                     fields: settingsReviewFields.serialize(),
-                    status: settingsStatusFields.serialize()
+                    status: settingsStatusFields.serialize(),
+                    history: settingsHistoryFields.serialize()
                 }
                 delete o.commentEnabled
                 delete o.commentRequired
@@ -700,6 +708,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
                 delete o.canAccept
                 delete o.minAcceptGrant
                 delete o.resetCriteria
+                delete o.maxReviews
                 delete o['undefined']
 
                 o.metadata = o.metadata ?? metadataGrid.getValue()
@@ -767,20 +776,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.Collection.CreateForm.superclass.initComponent.call(this);
-    },
-    serializeFieldSettings: function (o) {
-        return {
-            comment: {
-                enabled: o.commentEnabled,
-                required: o.commentRequired
-            },
-            detail: {
-                enabled: o.detailEnabled,
-                required: o.detailRequired
-            }
-        }        
-    },
-    serializeStatusSettings: ({canAccept,minAcceptGrant,resetCriteria}) => ({canAccept,minAcceptGrant,resetCriteria})
+    }
 })
 
 SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
@@ -816,7 +812,8 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
         async function updateSettings() {
             const apiCollection =  await apiPatchSettings({
                 fields: settingsReviewFields.serialize(),
-                status: settingsStatusFields.serialize()                    
+                status: settingsStatusFields.serialize(),
+                history: settingsHistoryFields.serialize()                 
             })
             return apiCollection
         }
@@ -979,6 +976,21 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 try {
                     const apiCollection = await updateSettings()
                     SM.Dispatcher.fireEvent('statussettingschanged', _this.apiCollection.collectionId, apiCollection.settings.status)
+                    SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
+                }
+                catch (e) {
+                    alert(e.message)
+                }
+            }
+        })
+        const settingsHistoryFields = new SM.Collection.HistorySettings.HistoryFields({
+            iconCls: 'sm-history-icon',
+            historySettings: _this.apiCollection?.settings?.history,
+            border: true,
+            autoHeight: true,
+            onFieldsUpdate: async function (fieldset) {
+                try {
+                    const apiCollection = await updateSettings()
                     SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                 }
                 catch (e) {
@@ -1200,6 +1212,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                     items: [
                                         settingsReviewFields,
                                         settingsStatusFields,
+                                        settingsHistoryFields,
                                         settingsImportOptions
                                     ]
                                 },
@@ -1603,6 +1616,80 @@ SM.Collection.StatusSettings.StatusFields = Ext.extend(Ext.form.FieldSet, {
         SM.Collection.StatusSettings.StatusFields.superclass.initComponent.call(this);
     }
 })
+
+Ext.ns('SM.Collection.HistorySettings')
+SM.Collection.HistorySettings.MaxReviewsComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        let config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false
+        }
+        let _this = this
+        let data = [
+            [0, 'disabled']
+        ]
+        for (let limit = 1; limit < 51; limit++) {
+            data.push([limit, `capped at ${limit}`])
+        }
+        data.push([-1, 'unlimited'])
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display']
+        })
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.HistorySettings.MaxReviewsComboBox.superclass.initComponent.call(this)
+        this.store.loadData(data)
+    }
+})
+SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
+    initComponent: function () {
+        const _this = this
+        _this.historySettings = _this.historySettings ?? {
+            maxReviews: -1
+        }
+        const maxReviewsComboBox = new SM.Collection.HistorySettings.MaxReviewsComboBox({
+            name: 'maxReviews',
+            fieldLabel: 'Asset/Rule history records are', 
+            width: 125,
+            value: _this.historySettings.maxReviews,
+            listeners: {
+                select: onComboSelect
+            }
+        })
+
+        _this.serialize = function () {
+            const output = {}
+            const items = [
+                maxReviewsComboBox
+            ]
+            for (const item of items) {
+                output[item.name] = item.getValue()
+            }
+            return output
+        }
+
+        _this.setValues = function (values) {
+            maxReviewsComboBox.setValue(values.maxReviews || -1)
+        }
+
+        function onComboSelect(item, record, index) {
+            _this.onFieldsUpdate && _this.onFieldsUpdate(_this, item, record)
+        }
+
+        let config = {
+            title: _this.title || 'Review history',
+            labelWidth: 200,
+            items: [
+                maxReviewsComboBox      
+            ]
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Collection.HistorySettings.HistoryFields.superclass.initComponent.call(this);
+    }
+})
+
 SM.getContrastYIQ = function (hexcolor){
 	var r = parseInt(hexcolor.substr(0,2),16);
 	var g = parseInt(hexcolor.substr(2,2),16);

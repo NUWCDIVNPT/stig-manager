@@ -2,6 +2,17 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-09-12',
+    header: `Review History Pruning`,
+    body: `<p>Every time an individual Review for an Asset changes, a History record of its previous state is recorded.  With the release of this new feature, Collection Owners and Managers can now limit how many of these History records they keep for for each Review, or turn Review History off entirely.</p>
+    
+    <p>By default, STIG Manager caps history at 15 records for each Review.</p>
+       
+    <p>To find this new Collection Setting, from the <b>Collection Management</b> workspace, click the "Settings" tab. Use the pulldown to select your desired value:</p>
+    <p><img src="img/whatsnew/2022-09-12-review-history-setting.png"/></p>
+    `
+  },      
+  {
     date: '2022-08-17',
     header: `XCCDF Export Option`,
     body: `<p>This new feature allows users to export their review data in the XCCDF format. Look for this option wherever checklist result exports are offered: The Asset Review workspace, the Collection Review workspace, and the Collection Management workspace.   
