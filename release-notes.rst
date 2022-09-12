@@ -1,8 +1,19 @@
-1.2.14
+1.2.15
 -----
 
 Changes:
 
+  - (API/App) Auto-prune review history records using value specified in new Collection Setting. 
+  - (API) hotfix: stig-asset update preserves existing mappings 
+  - (API) Retry transactions on deadlock
+  - (API/App/OAS) Remove special treatment for SCAP data, as all resultEngines are represented with equal prominence. 
+  - (App) Limit service worker interceptions 
+
+
+1.2.14
+-----
+
+Changes:
 
   - (App) Added a service worker to handle streaming downloads. 
   - (API) Added new endpoints to return datasets related to "unreviewed" rules for Assets. 
