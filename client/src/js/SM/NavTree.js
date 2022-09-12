@@ -1029,7 +1029,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
             title: 'Create Collection',
             modal: true,
             width: 460,
-            height:560,
+            height:630,
             layout: 'fit',
             plain: false,
             // bodyStyle:'padding:5px;',

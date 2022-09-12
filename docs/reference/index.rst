@@ -122,7 +122,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
                 * Import new STIGs into STIG Manager, as well as Delete them.
                 * Create and Alter Collections, and view their metadata.
                 * Create and Alter Users, and view their metadata.
-                * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager (except Review History)
+                * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager
                 * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Administrative interface.
 
 

@@ -721,7 +721,34 @@ paths:
       tags:
         - Collection
       summary: Create a Collection
-      description: ''
+      description: |
+        The `settings` property is optional and can be partially provided.
+        - If `settings` is not provided, the Collection will be created with the default settings.
+        - If a partial `settings` object is provided, the Collection will be created with settings merged from the provided object and the default settings.
+        
+        The default settings are:
+        ```
+         {
+            fields: {
+              detail: {
+                enabled: 'always',
+                required: 'always'
+              },
+              comment: {
+                enabled: 'findings',
+                required: 'findings'
+              }
+            },
+            status: {
+              canAccept: true,
+              resetCriteria: 'result',
+              minAcceptGrant: 3
+            },
+            history: {
+              maxReviews: 15
+            }
+          }
+        ```
       operationId: createCollection
       parameters:
         - $ref: '#/components/parameters/CollectionProjectionQuery'
@@ -786,7 +813,10 @@ paths:
       tags:
         - Collection
       summary: Merge provided properties with a Collection
-      description: ''
+      description: |
+        The `settings` property can be partially provided. If a partial `settings` object is provided, the Collection settings will be updated to the provided object merged with the **default** settings. This sets exisiting property values not specified in the partial object to their default values.
+        
+        The default settings are found in the description of `POST /collection`
       operationId: updateCollection
       requestBody:
         required: true
@@ -814,6 +844,8 @@ paths:
       tags:
         - Collection
       summary: Set all properties of a Collection
+      description: |
+        See the description of path `POST /collections` for notes about the `settings` property
       operationId: replaceCollection
       requestBody:
         required: true
@@ -3667,7 +3699,6 @@ components:
       type: object
       required:
         - name
-        - settings
         - metadata
         - grants
       additionalProperties: false
@@ -3765,6 +3796,17 @@ components:
               type: string
         accessLevel:
           type: integer
+    CollectionHistorySettings:
+      type: object
+      additionalProperties: false
+      required:
+        - maxReviews
+      properties:
+        maxReviews:
+          type: integer
+          minimum: -1
+          maximum: 50
+          example: 5
     CollectionProjected:
       type: object
       required:
@@ -3846,14 +3888,13 @@ components:
     CollectionSettings:
       type: object
       additionalProperties: false
-      required:
-        - fields
-        - status
       properties:
         fields:
           $ref: '#/components/schemas/CollectionFieldSettings'
         status:
           $ref: '#/components/schemas/CollectionStatusSettings'
+        history:
+          $ref: '#/components/schemas/CollectionHistorySettings'
     CollectionStatistics:
       type: object
       required:
