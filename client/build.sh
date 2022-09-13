@@ -36,6 +36,7 @@ ext/resources/images/default/grid/hmenu-asc.gif
 ext/resources/images/default/grid/hmenu-desc.gif
 ext/resources/images/default/grid/columns.gif
 ext/resources/images/default/grid/grid-split.gif
+ext/resources/images/default/grid/grid3-special-col-bg.gif
 ext/resources/images/default/menu/menu.gif
 ext/resources/images/default/tree/loading.gif
 ext/resources/images/gray/button/btn.gif
@@ -46,6 +47,7 @@ ext/resources/images/gray/form/trigger.gif
 ext/resources/images/gray/form/clear-trigger.gif
 ext/resources/images/gray/grid/col-move-bottom.gif
 ext/resources/images/gray/grid/col-move-top.gif
+ext/resources/images/gray/grid/grid3-special-col-sel-bg.gif
 ext/resources/images/gray/grid/sort_asc.gif
 ext/resources/images/gray/grid/sort_desc.gif
 ext/resources/images/gray/menu/group-checked.gif
@@ -57,6 +59,8 @@ ext/resources/images/gray/panel/white-top-bottom.gif
 ext/resources/images/gray/qtip/tip-anchor-sprite.gif
 ext/resources/images/gray/qtip/tip-sprite.gif
 ext/resources/images/gray/tabs/tab-close.gif
+ext/resources/images/gray/tabs/scroll-left.gif
+ext/resources/images/gray/tabs/scroll-right.gif
 ext/resources/images/gray/window/icon-question.gif
 ext/ux/fileuploadfield/css/fileuploadfield.css"
 tar cf - -C $SrcDir --files-from <(echo "${ExtResources}") | tar xf - -C $DistDir
