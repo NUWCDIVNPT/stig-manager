@@ -43,16 +43,21 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
   // PROJECTIONS
   if (inProjection.includes('statusStats')) {
-    columns.push(`json_object(
-      'stigCount', COUNT(sa.benchmarkId),
-      'stigAssignedCount', COUNT(distinct usa.saId),
-      'ruleCount', SUM(cr.ruleCount),
-      'acceptedCount', SUM(sa.accepted),
-      'rejectedCount', SUM(sa.rejected),
-      'submittedCount', SUM(sa.submitted),
-      'savedCount', SUM(sa.saved),
-      'minTs', DATE_FORMAT(LEAST(MIN(minTs), MIN(maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
-      'maxTs', DATE_FORMAT(GREATEST(MAX(minTs), MAX(maxTs)),'%Y-%m-%dT%H:%i:%sZ')
+    columns.push(`(select json_object(
+      'stigCount', COUNT(sa2.benchmarkId),
+      'ruleCount', SUM(cr2.ruleCount),
+      'acceptedCount', SUM(sa2.accepted),
+      'rejectedCount', SUM(sa2.rejected),
+      'submittedCount', SUM(sa2.submitted),
+      'savedCount', SUM(sa2.saved),
+      'minTs', DATE_FORMAT(LEAST(MIN(sa2.minTs), MIN(sa2.maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
+      'maxTs', DATE_FORMAT(GREATEST(MAX(sa2.minTs), MAX(sa2.maxTs)),'%Y-%m-%dT%H:%i:%sZ')
+      )
+      from
+		    stig_asset_map sa2
+        left join current_rev cr2 on sa2.benchmarkId = cr2.benchmarkId
+	    where
+        FIND_IN_SET(sa2.saId, GROUP_CONCAT(sa.saId))
       ) as "statusStats"`)
   }
   if (inProjection.includes('stigGrants')) {

@@ -3269,8 +3269,6 @@ components:
           properties:
             stigCount:
               type: integer
-            stigAssignedCount:
-              type: integer
             ruleCount:
               type: integer
               nullable: true
