@@ -52,6 +52,8 @@ Required and optional components of a STIG Manager OSS deployment:
   An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.
 **MySQL Database**  (Always Required)
   A stateful data storage capability that supports mutual TLS authentication and secure data at rest. 
+
+  
 -------------------------------
 
 
