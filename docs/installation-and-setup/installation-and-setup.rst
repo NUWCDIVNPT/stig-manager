@@ -53,7 +53,7 @@ Required and optional components of a STIG Manager OSS deployment:
 **MySQL Database**  (Always Required)
   A stateful data storage capability that supports mutual TLS authentication and secure data at rest. 
 
-  
+
 -------------------------------
 
 
@@ -180,7 +180,7 @@ Procedure
 
 .. _deploy-with-binaries:
 
-Deployment Precomipled Binaries
+Deployment Precompiled Binaries
 ----------------------------------
 
 STIG Manager can be deployed with the binaries made available `with each release. <https://github.com/NUWCDIVNPT/stig-manager/releases>`_

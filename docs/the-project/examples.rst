@@ -41,7 +41,7 @@ Based on the latest `NodeJS LTS alpine Linux base image: <https://hub.docker.com
 Iron Bank Image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Iron Bank images are hardended images produced by a Department of Defense effort and `available to the public here. <https://repo1.dso.mil/>`_
+Iron Bank images are hardened images produced by a Department of Defense effort and `available to the public here. <https://repo1.dso.mil/>`_
 
 The Image we make available on Docker Hub is based on the `latest image available here. <https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/-/tree/master>`_
 
