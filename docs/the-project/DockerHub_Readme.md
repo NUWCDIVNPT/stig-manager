@@ -53,14 +53,14 @@ services:
   api:
     image: nuwcdivnpt/stig-manager:latest
     environment:
-      - STIGMAN_OIDC_PROVIDER=http://auth:8080/auth/realms/stigman
+      - STIGMAN_OIDC_PROVIDER=http://auth:8080/realms/stigman
       - STIGMAN_CLASSIFICATION=U
       - STIGMAN_DB_HOST=db
       - STIGMAN_DB_PASSWORD=stigman
       - STIGMAN_INIT_IMPORT_STIGS=true
       - STIGMAN_INIT_IMPORT_SCAP=true
       # Change envvar below if non-localhost browsers will access the API
-      - STIGMAN_CLIENT_OIDC_PROVIDER=http://localhost:8080/auth/realms/stigman
+      - STIGMAN_CLIENT_OIDC_PROVIDER=http://localhost:8080/realms/stigman
     init: true
     ports:
       - "54000:54000"
