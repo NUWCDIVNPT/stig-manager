@@ -14,14 +14,13 @@ In either case, you will have to set Keycloak environment variable `PROXY_ADDRES
 
 
 
-STIG Manager with nginx for TLS
----------------------------------------
+STIG Manager with nginx for TLS and CAC Authentication
+-------------------------------------------------------------------
 
 The STIG Manager OSS team provides a repository on GitHub with a sample nginx deployment, with a configuration file that may be useful to those setting up a Production deployment:
 
 
-https://github.com/NUWCDIVNPT/stig-manager-docker-compose/tree/main/tls/nginx
-
+https://github.com/NUWCDIVNPT/stigman-orchestration
 
 
 ------------------------------------------

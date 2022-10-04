@@ -33,7 +33,7 @@ STIGMan OSS
 alpine Image
 ~~~~~~~~~~~~~
 
-Based on the latest `NodeJS 14 alpine Linux base image: <https://hub.docker.com/_/node/>`_
+Based on the latest `NodeJS LTS alpine Linux base image: <https://hub.docker.com/_/node/>`_
 
 `STIGMan OSS based on alpine linux <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
@@ -41,11 +41,11 @@ Based on the latest `NodeJS 14 alpine Linux base image: <https://hub.docker.com/
 Iron Bank Image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Iron Bank images are hardended images produced by a Department of Defense effort and `available to the public here. <https://repo1.dso.mil/>`_
+Iron Bank images are hardened images produced by a Department of Defense effort and `available to the public here. <https://repo1.dso.mil/>`_
 
-The Image we make available on Docker Hub is based on the `latest image available here. <https://repo1.dso.mil/dsop/opensource/nodejs/nodejs14/-/tree/master>`_
+The Image we make available on Docker Hub is based on the `latest image available here. <https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/-/tree/master>`_
 
-`STIGMan OSS based on Iron Bank NodeJS 14 (RHEL UBI) <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
+`STIGMan OSS based on Iron Bank NodeJS LTS (RHEL UBI) <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
 
 Keycloak
@@ -59,20 +59,13 @@ MySQL
 The standard `MySQL Image available on Docker Hub <https://hub.docker.com/_/mysql>`_ will work, when started with Environment Variables specified in the Sample Orchestration below. 
 
 
-Sample Orchestration
-=============================
 
 
-`<https://github.com/NUWCDIVNPT/stig-manager-docker-compose>`_
+STIG Manager Orchestration with nginx, Keycloak, and CAC Authentication
+=============================================================================
 
+The STIG Manager OSS team maintains a repository on GitHub with a sample orchestration that includes nginx and Keycloak implementing TLS and CAC Authentication: `<https://github.com/NUWCDIVNPT/stigman-orchestration>`_
 
-STIG Manager with nginx for TLS
-======================================
-
-The STIG Manager OSS team maintains a repository on GitHub with a sample nginx deployment, with a configuration file that may be useful to those setting up STIG Manager with a reverse proxy:
-
-
-https://github.com/NUWCDIVNPT/stig-manager-docker-compose/tree/main/tls/nginx
 
 
 

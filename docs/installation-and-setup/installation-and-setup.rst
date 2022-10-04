@@ -4,13 +4,16 @@
 STIG Manager OSS Setup and Technical Information
 ########################################################## 
 
-The STIG Manager open-source project provides an API and Web Client. The project is ideal for deployment as containerized service components that are part of a fully orchestrated individual or enterprise STIG Manager web application, but can also be run from source code in a Node.js runtime environment. 
+The STIG Manager open-source project provides an API and Web Client. The project is ideal for deployment as containerized service components that are part of a fully orchestrated individual or enterprise STIG Manager web application, but can also be run from source code in a Node.js runtime environment, or precompiled binaries. 
 
 Several deployment approaches are described in this document:
 
 - :ref:`Deploy our sample Docker Compose orchestration<deploy-docker-compose>`
+- :ref:`Deploy our sample Docker Compose orchestration with CAC Authentication and nginx proxy <deploy-docker-compose-CAC>`
 - :ref:`Deploy with Individual Containers <deploy-container>`
 - :ref:`Deploy from Source Code in Node.js runtime environment <deploy-from-source>`
+- :ref:`Deploy precompiled binaries <deploy-with-binaries>`
+
 
 A STIG Manager deployment requires at least two other mandatory services, which are freely available but must be provided and configured by the those deploying the STIG Manager instance:
   - An OpenID Connect (OIDC) Provider
@@ -18,10 +21,12 @@ A STIG Manager deployment requires at least two other mandatory services, which 
 
 A sample orchestration, which includes the STIGMan API, Web Client, a Keycloak container, and a MySQL container, is available on our Docker Hub page. Follow the `Quick Start Orchestration instructions on Docker Hub. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
+Another sample orchestration, which includes the STIGMan API, Web Client, Keycloak container, MySQL container, and nginx proxy that implements CAC authentication is available from our STIGMan Orchestration repository. Please see the `guide provided in our STIGMan Orchestration repository. <https://github.com/NUWCDIVNPT/stigman-orchestration>`_
+
 The STIG Manager application is often deployed at the enterprise level with orchestration platforms such as Kubernetes or OpenShift. However, containerization allows STIG Manager deployments to be readily scaled up or down and it can be orchestrated on a single laptop with tools such as docker-compose.
 
 .. note::
-  Containerized deployments of STIG manager are highly recommended because they offer improved security, scalability, portability, and maintenance. If absolutely necessary, it is possible to deploy the STIG Manager API in legacy environments from source code, but this is not recommended for secure deployments and is not fully documented. 
+  Containerized deployments of STIG manager are highly recommended because they offer improved security, scalability, portability, and maintenance, but they are not required. It is entirely possible to deploy the STIG Manager API and some or all supporting applications in a traditional manner from source code or installers.  In almost all cases, the same configuration options documented here or elsewhere would apply. 
 
 
 
@@ -46,7 +51,8 @@ Required and optional components of a STIG Manager OSS deployment:
 **OIDC Provider**  (Always Required)
   An authentication service that manages user accounts and issues OAuth2 JWT tokens to the Web Client which authorize access to the API. We routinely test using Red Hat Keycloak and fully support Keycloak as an OIDC Provider of choice. More limited testing has been done using authentication services from Okta and Azure AD.
 **MySQL Database**  (Always Required)
-  A stateful data storage capability that supports mutual TLS authentication and secure data at rest. We support MySQL 8.0.14 and above.
+  A stateful data storage capability that supports mutual TLS authentication and secure data at rest. 
+
 
 -------------------------------
 
@@ -66,6 +72,19 @@ Requirements
 - `Docker <https://www.docker.com/get-started>`_
 
 To quickly establish a demonstration instance of STIG Manager, follow the `Quick Start Orchestration instructions on Docker Hub. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
+
+
+.. _deploy-docker-compose-CAC:
+
+Deploy our Sample Docker Compose Orchestration with CAC Authentication and nginx Proxy
+--------------------------------------------------------------------------------------------
+
+Requirements
+~~~~~~~~~~~~~~
+
+- `Please see the guide provided in our STIGMan Orchestration repository. <https://github.com/NUWCDIVNPT/stigman-orchestration>`_
+
+To quickly establish a demonstration instance of STIG Manager with CAC Authentication and nginx proxy, follow the `guide provided in our STIGMan Orchestration repository. <https://github.com/NUWCDIVNPT/stigman-orchestration>`_
 
 
 .. _deploy-container:
@@ -129,7 +148,7 @@ STIG Manager can be deployed from source if the proper Node.js runtime is provid
 Requirements
 ~~~~~~~~~~~~~~
 
-- `Node.js 16.13+ <https://nodejs.org/en/>`_
+- `Node.js LTS <https://nodejs.org/en/>`_
 - :ref:`OIDC Authentication Provider <keycloak>`
 - :ref:`mySQL`
 - `git <https://git-scm.com/downloads>`_ *(recommended)*
@@ -158,6 +177,42 @@ Procedure
 
 .. note::
   It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying from source, to monitor the app and keep it running.
+
+.. _deploy-with-binaries:
+
+Deployment Precompiled Binaries
+----------------------------------
+
+STIG Manager can be deployed with the binaries made available `with each release. <https://github.com/NUWCDIVNPT/stig-manager/releases>`_
+
+
+Requirements
+~~~~~~~~~~~~~~
+
+- `Precompiled Binaries <https://github.com/NUWCDIVNPT/stig-manager/releases>`_
+- :ref:`OIDC Authentication Provider <keycloak>`
+- :ref:`mySQL`
+
+
+Procedure
+~~~~~~~~~~~~~~~~~~~~~
+
+
+#. Download the `precompiled binaries <https://github.com/NUWCDIVNPT/stig-manager/releases>`_
+#. Install and configure the Authentication and Database requirements. Sample configuration instructions for these requirements can be found here:
+
+   - :ref:`keycloak`
+   - :ref:`mySQL`
+
+   *Make note of the address and ports these servers are using (as well as any other values that differ from the defaults). Set the appropriate* :ref:`Environment Variables` *to these values so STIG Manager will be able to reach them*
+
+#. Set Environment Variables as appropriate for your environment. Windows cmd example: ``set STIGMAN_DB_HOST=10.0.0.6``
+#. Run the downloaded binaries. 
+
+
+.. note::
+  It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying from source or binaries, to monitor the app and keep it running.
+
 
 
 Common Configuration Variables
