@@ -97,6 +97,7 @@ uglifyjs \
 'js/SM/EventDispatcher.js' \
 'js/SM/Cache.js' \
 'js/SM/ServiceWorker.js' \
+'js/SM/State.js' \
 'js/SM/TipContent.js' \
 'js/SM/Ajax.js' \
 'js/SM/Warnings.js' \

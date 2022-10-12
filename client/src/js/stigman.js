@@ -61,6 +61,7 @@ async function loadApp () {
 			showDelay: 500,      // Show ms after entering target
 			trackMouse: false
 		});
+		Ext.state.Manager.setProvider(new SM.State.LocalStorageProvider())
 	
 		// Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration...";
 		let result = await Ext.Ajax.requestPromise({
