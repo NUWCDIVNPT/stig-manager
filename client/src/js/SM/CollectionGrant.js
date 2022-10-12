@@ -199,6 +199,7 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         const collectionSelectionField = new SM.CollectionSelectionField({
             submitValue: false,
             grid: this,
+            maxHeight: 150,
             filteringStore: grantStore,
             getListParent: function() {
                 return this.grid.editor.el;
