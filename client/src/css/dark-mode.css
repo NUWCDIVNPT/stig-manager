@@ -1334,7 +1334,7 @@ a.x-menu-item {
     background-color: transparent;
 }
 .ext-el-mask {
-    background-color: rgb(53, 57, 59);
+    background-color: rgb(0 0 0 / 65%);
 }
 .ext-el-mask-msg {
     border-color: rgb(39, 76, 124);
@@ -2631,7 +2631,7 @@ body.x-body-masked .x-window-plain .x-window-mc {
     background-image: url("../ext/resources/images/default/window/icon-error.gif");
 }
 .ext-el-mask {
-    background-color: rgb(53, 57, 59);
+    background-color: rgb(0 0 0 / 65%);
 }
 .ext-el-mask-msg {
     border-color: rgb(77, 83, 86);
