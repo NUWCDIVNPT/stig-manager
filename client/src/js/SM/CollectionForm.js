@@ -1708,6 +1708,17 @@ SM.Collection.LabelArrayTpl = new Ext.XTemplate(
     `${SM.Collection.LabelSpriteHtml} `,
     '</tpl>'
 )
+
+SM.Collection.LabelSpritesByCollectionLabelId = function (collectionId, labelIds) {
+    const labels = []
+    for (const labelId of labelIds) {
+      const label = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+      if (label) labels.push(label)
+    }
+    labels.sort((a, b) => a.name.localeCompare(b.name))
+    return SM.Collection.LabelArrayTpl.apply(labels)
+}
+
 SM.Collection.LabelEditTpl = new Ext.XTemplate(
     '<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color:#{color};">{[SM.he(values.name)]}</span><img class="sm-label-edit-color" src="img/color-picker.svg" width="12" height="12">'
 )
@@ -2119,10 +2130,10 @@ SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
             items,
             listeners: {
                 itemclick: this.onItemClick,
-                hide: function (menu) {
-                    const labelIds = menu.getCheckedLabelIds()
-                    this.fireEvent('applied', labelIds)
-                }
+                // hide: function (menu) {
+                //     const labelIds = menu.getCheckedLabelIds()
+                //     this.fireEvent('applied', labelIds)
+                // }
             }    
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))

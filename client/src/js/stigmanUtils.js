@@ -28,9 +28,9 @@ function renderPctAllHigh ( v, m, r, ri, ci, s ) {
 	return markup
 }
 
-function renderDurationToNow(date, md) {
-	if (!date) {
-		return '-'
+function durationToNow(date, ago = false) {
+	if (!(date instanceof Date)) {
+		date = new Date(date)
 	}
 	let d = Math.abs(date - new Date()) / 1000 // delta
 	const r = {} // result
@@ -49,6 +49,20 @@ function renderDurationToNow(date, md) {
 			d -= r[key] * s[key];
 	})
 	let durationStr = r.day > 0 ? `${r.day} d` : r.hour > 0 ? `${r.hour} h` : r.minute > 0 ? `${r.minute} m` : `now`
+	if (ago && durationStr !== 'now') {
+		durationStr += ' ago'
+	}
+	return durationStr
+}
+
+function renderDurationToNow(date, md = {}) {
+	if (!date) {
+		return '-'
+	}
+	if (!(date instanceof Date)) {
+		date = new Date(date)
+	}
+	const durationStr = durationToNow(date)
 	let dateFormatted = Ext.util.Format.date(date,'Y-m-d H:i T')
 	md.attr = ` ext:qwidth=130 ext:qtip="${dateFormatted}"`;
 	return durationStr 

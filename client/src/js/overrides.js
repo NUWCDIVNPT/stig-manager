@@ -77,11 +77,14 @@ Ext.getBody = function () {
 }
 Ext.LoadMask.prototype.onBeforeLoad = function() {
     if(!this.disabled){
-        if (!this.store.smMaskDelay) {
+        if (this.store.smMaskDelay) {
             this.smTask = new Ext.util.DelayedTask(function () {
                 this.el.mask(this.msg, this.msgCls)
             }, this)
             this.smTask.delay(this.store.smMaskDelay)
+        }
+        else {
+            this.el.mask(this.msg, this.msgCls)
         }
     }
 }

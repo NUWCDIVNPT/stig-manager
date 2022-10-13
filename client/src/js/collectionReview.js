@@ -922,7 +922,8 @@ async function addCollectionReview ( params ) {
 		});
 
 		function showAcceptBtn () {
-			const grantCondition =  leaf.collectionGrant >= apiStatusSettings.minAcceptGrant
+			const collectionGrant = curUser.collectionGrants.find(i => i.collection.collectionId === leaf.collectionId).accessLevel
+			const grantCondition =  collectionGrant >= apiStatusSettings.minAcceptGrant
 			const settingsCondition = apiStatusSettings.canAccept
 			return grantCondition && settingsCondition 
 		}

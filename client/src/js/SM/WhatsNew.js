@@ -2,6 +2,17 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2022-10-12',
+    header: `New Metrics Report Replaces Status Report`,
+    body: `<p>The old Status Report has been replaced with a shiny new Metrics Report!</p>
+    
+    <p>Available to all users from the NavTree, the new Metrics Report provides a much easier to digest view of the overall Status and Evaluation progress of your entire Collection, as well as metrics export options and various pivoted presentations of your Collection's assessment statistics.</p>
+    
+    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#metrics-report-workspace">STIG Manager Documentation for more details about this new feature!</a></p>
+    <p><img src="img/whatsnew/2022-10-12-metrics-report1.png"/></p>
+    `
+  },        
+  {
     date: '2022-09-12',
     header: `Review History Pruning`,
     body: `<p>Every time an individual Review for an Asset changes, a History record of its previous state is recorded.  With the release of this new feature, Collection Owners and Managers can now limit how many of these History records they keep for for each Review, or turn Review History off entirely.</p>

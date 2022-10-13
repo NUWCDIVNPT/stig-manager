@@ -52,9 +52,9 @@ Check the User Guide for more information about the :ref:`Findings Report`.
 Check evaluation progress
 ==============================
 
-The :ref:`Status Report` allows Users to gauge the work involved and the progress made towards evaluating every Asset and STIG in their Collection.  
+The :ref:`Metrics Report` allows Users to gauge the work involved and the progress made towards evaluating every Asset and STIG in their Collection.  
 
-The :ref:`Status Report` also tallies the number of "Open" findings and their severity. 
+The :ref:`Metrics Report` also tallies the number of "Open" findings and their severity. 
 
 
 Add Users
