@@ -1,3 +1,13 @@
+1.2.16
+-----
+
+Changes:
+
+  - (API/App) New Metrics Report replaces old Status Report; additional API endpoints added to support this feature.
+  - (App) Various changes to UI for look/feel tuning.
+  - (App) Local storage state provider added to preserve some user configuration of views across sessions.
+
+
 1.2.15
 -----
 
