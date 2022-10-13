@@ -130,11 +130,11 @@ SM.CollectionNodeConfig = function (collection) {
       leaf: true
     },
     {
-      id: `${collection.collectionId}-findings-status-node`,
-      text: 'Status',
+      id: `${collection.collectionId}-collection-metrics-node`,
+      text: 'Metrics',
       collectionId: collection.collectionId,
       collectionName: collection.name,
-      action: 'collection-status',
+      action: 'collection-metrics',
       iconCls: 'sm-report-icon',
       leaf: true
     }
@@ -806,6 +806,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
                       checkchange: function (node, checked) {
                         document.querySelector("link[href='css/dark-mode.css']").disabled = !checked
                         localStorage.setItem('darkMode', checked ? '1' : '0')
+                        SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light')
                       }
                     }
                   }
@@ -1061,6 +1062,25 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               collectionName: n.attributes.collectionName,
               treePath: n.getPath()
             })
+          }
+        }
+        if (n.attributes.action == 'collection-metrics') {
+          tab = Ext.getCmp('main-tab-panel').getItem('metricsTab-' + n.attributes.collectionId)       
+          if (tab) {
+            // Detect double click
+            if (e.browserEvent.detail === 2) {
+              tab.makePermanent()
+            }
+            tab.show()
+          } else {
+            const initialLabelIds = this.getCollectionNode(n.attributes.collectionId).attributes.labelsMenu.getCheckedLabelIds()
+            const addCollectionMetricsOptions = {
+              collectionId: n.attributes.collectionId,
+              collectionName: n.attributes.collectionName,
+              treePath: n.getPath(),
+              initialLabelIds
+            }
+            SM.Metrics.addCollectionMetricsTab(addCollectionMetricsOptions)
           }
         }
 

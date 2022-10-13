@@ -1,3 +1,210 @@
+:root {
+	--metrics-status-chart-assessed-light:
+	hsl(230deg 41% 86%);
+	--metrics-status-chart-submitted-light:
+	hsl(92deg 44% 77%);
+	--metrics-status-chart-accepted-light:
+	hsl(146deg 60% 69%);
+	--metrics-status-chart-unassessed-light:
+	hsl(0deg 0% 93%);
+	--metrics-status-chart-unsaved-light:
+	hsl(0deg 0% 93%);
+	--metrics-status-chart-rejected-light:
+	hsl(13deg 69% 75%);
+
+	--metrics-status-chart-assessed-dark:
+	hsl(204deg 91% 25%);
+	--metrics-status-chart-submitted-dark:
+	hsl(87deg 41% 25%);
+	--metrics-status-chart-accepted-dark:
+	hsl(146deg 90% 25%);
+	--metrics-status-chart-unassessed-dark:
+	hsl(0 0% 18% / 1);
+	--metrics-status-chart-unsaved-dark:
+	hsl(0deg 0% 18%);
+	--metrics-status-chart-rejected-dark:
+	hsl(5deg 90% 25%);
+}
+
+.sm-metrics-no-assessments-body {
+	color: #bbb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: inherit;
+    width: inherit;
+}
+
+.sm-metrics-progress-parent {
+	text-align: center;
+	/* color: #111; */
+}
+
+.sm-metrics-progress-child {
+	display: inline-block;
+	width: 73px;
+	/* height: 37px; */
+	border-radius: 5px;
+	/* background-color: #eeeeee; */
+	/* border:  1px solid #bbbbbb; */
+	/* padding: 0px 6px; */
+	margin: 0px 9px;
+	vertical-align: middle;
+	/* box-shadow: 1px 1px 5px #bbbbbb; */
+}
+.sm-metrics-progress-label {
+	font-weight: 600;
+	padding-bottom: 4px;
+	/* font-size:larger; */
+}
+
+
+.sm-metrics-progress-child .sm-metrics-progress-thermometer-wrap {
+	height: 20px;
+	line-height: 20px;
+	font-weight: 600;
+}
+.sm-metrics-progress-child .sm-cell-thermometer-bg {
+	height: 100%;
+}
+.sm-metrics-progress-child .sm-cell-mercury-high {
+	height: 100%;
+}
+.sm-metrics-progress-child .sm-cell-mercury-medium {
+	height: 100%;
+}
+.sm-metrics-progress-child .sm-cell-mercury-low {
+	height: 100%;
+}
+
+.sm-metrics-status-table {
+	padding-top: 10px;
+}
+
+.sm-metrics-status-pct {
+	text-align:center;
+	font-size:large;
+	font-weight: 600;
+}
+
+.sm-metrics-status-table .sm-metrics-total {
+	font-weight: 600;
+}
+.sm-metrics-status-table .sm-metrics-total td{
+	font-weight: 600;
+	border-top: 1px solid #bbbbbb;
+}
+.sm-metrics-status-table tr {
+	height: 19px;
+}
+.sm-metrics-status-table td {
+	padding-left: 4px;
+	padding-right: 4px;
+}
+.sm-metrics-status-table .sm-metrics-value {
+	text-align: right;
+	padding-left: 10px;
+}
+
+.sm-metrics-status-table .sm-metrics-label {
+	border: 1px solid #bbbbbb;
+	border-radius: 3px;
+}
+
+.sm-metrics-status-table .sm-metrics-assessed {
+	background-color: var(--metrics-status-chart-assessed-light);
+}
+.sm-metrics-status-table .sm-metrics-submitted {
+	background-color: var(--metrics-status-chart-submitted-light);
+}
+.sm-metrics-status-table .sm-metrics-accepted {
+	background-color: var(--metrics-status-chart-accepted-light);
+}
+.sm-metrics-status-table .sm-metrics-unassessed {
+	background-color: var(--metrics-status-chart-unassessed-light);
+}
+.sm-metrics-status-table .sm-metrics-unsaved {
+	background-color: var(--metrics-status-chart-unsaved-light);
+}
+.sm-metrics-status-table .sm-metrics-rejected {
+	background-color: var(--metrics-status-chart-rejected-light);
+}
+
+.sm-metrics-refresh-parent {
+	padding-right: 20px;
+	text-align:right;
+	font-style:italic;
+}
+
+.sm-metrics-count-parent {
+	text-align: center;
+	color: #111;
+}
+.sm-metrics-count-child {
+	display: inline-block;
+	cursor: default;
+	width: 61px;
+	height: 36px;
+	border-radius: 5px;
+	background-color: #eeeeee;
+	border:  1px solid #bbbbbb;
+	padding: 4px 12px;
+	margin: 0px 12px;
+	vertical-align: middle;
+	/* box-shadow: 1px 1px 5px #bbbbbb; */
+	line-height: 18px;
+}
+.sm-metrics-count-label {
+	font-weight: 600;
+	font-size:larger;
+	
+}
+.sm-metrics-count-value {
+	font-weight: 800;
+	font-size:large
+}
+
+.sm-metrics-findings-count-cell {
+	border-radius: 5px;
+	outline:  1px solid #bbb;
+	outline-offset: -1px;
+	width: 35px;
+	font-weight: 600;
+	color: rgb(17,17,17);
+	margin:0 auto;
+}
+.sm-metrics-high-box {
+	background-color: hsl(13deg 68% 75%);
+}
+.sm-metrics-medium-box {
+	background-color: hsl(38 100% 78% / 1)
+}
+.sm-metrics-low-box {
+	background-color: hsl(230deg 41% 86%);
+}
+.sm-metrics-age-box {/* background-color: hsl(290deg 41% 94%); */}
+.sm-metrics-inventory-box {
+	background-color: hsl(21deg 41% 86%);
+}
+
+.sm-metrics-overview-panel .x-panel-body{
+	background-color: hsl(0 0% 95% / 1);
+}
+.sm-round-inner-panel {
+	border-radius: 6px;
+	overflow: hidden;
+	margin: 12px;
+}
+
+.sm-round-inner-panel .x-panel-body {
+	background-color: #fff;
+	border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.sm-metric-agg-panel .x-layout-split {
+	background-color:#eee
+}
 .sm-combo-list-icon {
 	padding-left: 20px;
 	background-position: left;
@@ -406,21 +613,30 @@ a.x-grid3-hd-btn:hover {
 	color: hsl(0deg 0% 33%);
 }
 .sm-cell-thermometer-bg {
-	background-color: #f5f5f5;
-	margin-left: 34px;
+	background-color: #eee;
+	border-radius: 3px;
+	/* height: 15px; */
+	/* margin-left: 29px; */
+	outline: solid 1px #bbb;
+	outline-offset: 0px;
 }
 .sm-cell-thermometer-text {
 	float: left;
-	width: 30px;
+	margin-left: 4px;
+	font-style: italic;
+	font-weight: 600;
+	/* width: 30px; */
 }
 .sm-cell-mercury-low {
 	background-color: #c3deab;
 }
 .sm-cell-mercury-medium {
 	background-color: hsl(230deg 40% 86%);
+	/* box-shadow: 0px 0px 0px 1px red inset; */
 }
 .sm-cell-mercury-high {
 	background-color: #eba795;
+	height: 15px;
 }
 
 
@@ -901,6 +1117,15 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 	background-image: none;
 	padding: 5px 3px 4px 8px;
 } 
+
+.sm-round-inner-panel .x-panel-header {
+	background-color: hsl(0deg 0% 90%);
+	background-image: none;
+	overflow:hidden;
+	border-radius: 6px 6px 0px 0px;
+	padding: 5px 3px 4px 8px;
+} 
+
 
 .sm-home-widget-body {
 	background-color: #dedede;

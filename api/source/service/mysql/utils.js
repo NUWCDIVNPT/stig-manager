@@ -291,6 +291,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        sa.benchmarkId,
        min(review.ts) as minTs,
        max(review.ts) as maxTs,  
+       max(review.touchTs) as maxTouchTs,  
        
        sum(CASE WHEN review.statusId = 0 THEN 1 ELSE 0 END) as saved,
        sum(CASE WHEN review.resultEngine is not null and review.statusId = 0 THEN 1 ELSE 0 END) as savedResultEngine,
@@ -339,6 +340,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
     inner join source on sam.assetId = source.assetId and source.benchmarkId = sam.benchmarkId
     set sam.minTs = source.minTs,
         sam.maxTs = source.maxTs,
+        sam.maxTouchTs = source.maxTouchTs,
         sam.saved = source.saved,
         sam.savedResultEngine = source.savedResultEngine,
         sam.submitted = source.submitted,
@@ -384,8 +386,10 @@ module.exports.uuidToSqlString  = function (uuid) {
   }
 }
 
-module.exports.makeQueryString = function ({columns, joins, predicates, groupBy, orderBy}) {
-  return `SELECT
+module.exports.makeQueryString = function ({ctes = [], columns, joins, predicates, groupBy, orderBy}) {
+  const query = `
+${ctes.length ? 'WITH ' + ctes.join(',  \n') : ''}
+SELECT
   ${columns.join(',\n  ')}
 FROM
   ${joins.join('\n  ')}
@@ -393,6 +397,7 @@ ${predicates?.statements.length ? 'WHERE\n  ' + predicates.statements.join(' and
 ${groupBy?.length ? 'GROUP BY\n  ' + groupBy.join(',\n  ') : ''}
 ${orderBy?.length ? 'ORDER BY\n  ' + orderBy.join(',\n  ') : ''}
 `
+  return query
 }
 
 module.exports.CONTEXT_ALL = 'all'

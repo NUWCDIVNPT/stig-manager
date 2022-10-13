@@ -345,6 +345,7 @@ function getCollectionIdAndCheckPermission(request, minimumAccessLevel = Securit
   }
   return collectionId
 }
+module.exports.getCollectionIdAndCheckPermission = getCollectionIdAndCheckPermission
 
 module.exports.getCollectionMetadata = async function (req, res, next) {
   try {

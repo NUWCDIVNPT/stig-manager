@@ -1967,6 +1967,354 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+
+  '/collections/{collectionId}/metrics/detail':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return unaggregated Asset/STIG metrics for the specified Collection
+      operationId: getMetricsDetailByCollection
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsDetailUnagg'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/detail/asset':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return metrics for the specified Collection aggregated by Asset
+      operationId: getMetricsDetailByCollectionAggAsset
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsDetailAggAsset'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/detail/collection':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return aggregated metrics for the specified Collection
+      operationId: getMetricsDetailByCollectionAgg
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsDetailAggCollection'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/detail/label':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return metrics for the specified Collection aggregated by Label
+      operationId: getMetricsDetailByCollectionAggLabel
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsDetailAggLabel'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/detail/stig':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return metrics for the specified Collection aggregated by STIG
+      operationId: getMetricsDetailByCollectionAggStig
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsDetailAggStig'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+
+  '/collections/{collectionId}/metrics/summary':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return unaggregated Asset/STIG metrics for the specified Collection
+      operationId: getMetricsSummaryByCollection
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsSummaryUnagg'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/summary/asset':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return metrics for the specified Collection aggregated by Asset
+      operationId: getMetricsSummaryByCollectionAggAsset
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsSummaryAggAsset'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/summary/collection':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return aggregated metrics for the specified Collection
+      operationId: getMetricsSummaryByCollectionAgg
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsSummaryAggCollection'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/summary/label':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return metrics for the specified Collection aggregated by Label
+      operationId: getMetricsSummaryByCollectionAggLabel
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsSummaryAggLabel'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/metrics/summary/stig':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/AssetIdArrayQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return metrics for the specified Collection aggregated by STIG
+      operationId: getMetricsSummaryByCollectionAggStig
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsSummaryAggStig'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/review-history':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -2062,11 +2410,11 @@ paths:
     get:
       tags:
         - Collection
-      summary: Return the status statistics for the specified Collection
+      summary: DEPRECATED - targeted for removal soon, please use the Metrics endpoints
       operationId: getStatusByCollection
       responses:
         '200':
-          description: CollectionStatus response
+          description: Metrics response
           content:
             application/json:
               schema:
@@ -3139,6 +3487,19 @@ components:
           type: string
         name:
           type: string
+    AssetLabels:
+      type: object
+      required:
+        - assetId
+        - name
+        - labels
+      additionalProperties: false
+      properties:
+        assetId:
+          $ref: '#/components/schemas/String255'
+        name:
+          $ref: '#/components/schemas/String255'
+
     AssetBasicProjected:
       type: object
       required:
@@ -3572,7 +3933,7 @@ components:
                   type: integer
                 notapplicable:
                   type: integer
-                other:
+                unassessed:
                   type: integer
             statuses:
               type: object
@@ -3981,6 +4342,9 @@ components:
     CollectionStatusCount:
       type: object
       additionalProperties: false
+      required:
+        - total
+        - resultEngine
       properties:
         total:
           type: integer
@@ -4264,6 +4628,8 @@ components:
           $ref: '#/components/schemas/StringHexColor'
     LabelId:
       $ref: '#/components/schemas/StringUuid'
+    LabelIdNullable:
+      $ref: '#/components/schemas/StringUuidNullable'
     LabelName:
       type: string
       minLength: 1
@@ -4285,7 +4651,290 @@ components:
     MetadataKey:
       type: string
     MetadataValue:
-      type: string
+      type: string   
+    MetricsUnagg:
+      type: object
+      required:
+        - assetId
+        - name
+        - labels
+        - benchmarkId
+      properties:
+        assetId:
+          type: string
+        name:
+          type: string
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasic'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+    MetricsDetailUnagg:
+      allOf:
+        - $ref: '#/components/schemas/MetricsUnagg'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummaryUnagg:
+      allOf:
+        - $ref: '#/components/schemas/MetricsUnagg'
+        - $ref: '#/components/schemas/MetricsSummary'       
+    MetricsAggAsset:
+      type: object
+      required:
+        - assetId
+        - name
+        - labels
+        - benchmarkIds
+      properties:
+        assetId:
+          type: string
+        name:
+          type: string
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasic'
+        benchmarkIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenchmarkId'
+    MetricsDetailAggAsset:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggAsset'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummaryAggAsset:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggAsset'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsAggCollection:
+      type: object
+      required:
+        - collectionId
+        - name
+        - checklists
+        - assets
+        - stigs
+      properties:
+        collectionId:
+          type: string
+        name:
+          type: string
+        checklists:
+          type: integer
+        assets:
+          type: integer
+        stigs:
+          type: integer
+    MetricsDetailAggCollection:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggCollection'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummaryAggCollection:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggCollection'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsAggLabel:
+      type: object
+      required:
+        - labelId
+        - name
+        - assets
+      properties:
+        labelId:
+          $ref: '#/components/schemas/LabelIdNullable'
+        name:
+          type: string
+          nullable: true
+        assets:
+          type: integer
+    MetricsDetailAggLabel:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggLabel'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummaryAggLabel:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggLabel'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsAggStig:
+      type: object
+      required:
+        - benchmarkId
+        - assets
+      properties:
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        assets:
+          type: integer
+    MetricsDetailAggStig:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggStig'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummaryAggStig:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggStig'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsDetail:
+      type: object
+      required:
+        - metrics
+      properties:
+        metrics:
+          type: object
+          additionalProperties: false
+          required:
+            - assessments
+            - assessed
+            - minTs
+            - maxTs
+            - maxTouchTs
+            - results
+            - statuses
+            - findings
+          properties:
+            assessments:
+              type: integer
+            assessed:
+              type: integer
+            minTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            maxTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            maxTouchTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            results:
+              type: object
+              additionalProperties: false
+              required:
+                - notchecked
+                - notapplicable
+                - pass
+                - fail
+                - unknown
+                - error
+                - notselected
+                - informational
+                - fixed
+              properties:
+                notchecked:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                notapplicable:
+                  $ref: '#/components/schemas/CollectionStatusCount'                 
+                pass:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                fail:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                unknown:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                error:
+                  $ref: '#/components/schemas/CollectionStatusCount'              
+                notselected:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                informational:
+                  $ref: '#/components/schemas/CollectionStatusCount'   
+                fixed:
+                  $ref: '#/components/schemas/CollectionStatusCount'                 
+            statuses:
+              type: object
+              properties:
+                saved:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                submitted:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                rejected:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                accepted:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+            findings:
+              type: object
+              additionalProperties: false
+              required:
+                - low
+                - medium
+                - high
+              properties:
+                low:
+                  type: integer
+                medium:
+                  type: integer
+                high:
+                  type: integer
+    MetricsSummary:
+      type: object
+      # additionalProperties: false
+      required:
+        - metrics
+      properties:
+        metrics:
+          type: object
+          additionalProperties: false
+          required:
+            - assessments
+            - assessed
+            - minTs
+            - maxTs
+            - maxTouchTs
+            - results
+            - statuses
+            - findings
+          properties:
+            assessments:
+              type: integer
+            assessed:
+              type: integer
+            minTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            maxTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            maxTouchTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            results:
+              type: object
+              additionalProperties: false
+              required:
+                - pass
+                - fail
+                - notapplicable
+                - unassessed
+              properties:
+                pass:
+                  type: integer
+                fail:
+                  type: integer
+                notapplicable:
+                  type: integer
+                unassessed:
+                  type: integer
+            statuses:
+              type: object
+              additionalProperties: false
+              required:
+                - saved
+                - submitted
+                - accepted
+                - rejected
+              properties:
+                saved:
+                  type: integer
+                submitted:
+                  type: integer
+                accepted:
+                  type: integer
+                rejected:
+                  type: integer
+            findings:
+              type: object
+              additionalProperties: false
+              required:
+                - low
+                - medium
+                - high
+              properties:
+                low:
+                  type: integer
+                medium:
+                  type: integer
+                high:
+                  type: integer
     ResultEngine:
       type: object
       nullable: true
@@ -4990,7 +5639,7 @@ components:
       readOnly: true
     StringUuidNullable:
       type: string
-      maxLength: 36
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
       nullable: true
     UnreviewedAsset:
       type: object
@@ -5357,6 +6006,17 @@ components:
       description: A query parameter that identifies a Collection
       schema:
         type: string
+    CollectionIdArrayQuery:
+      name: collectionId
+      required: false
+      in: query
+      description: A query parameter that identifies a Collection
+      schema:
+        type: array
+        uniqueItems: true
+        minLength: 1
+        items:
+          type: string
     CollectionProjectionQuery:
       name: projection
       in: query
@@ -5486,6 +6146,14 @@ components:
         minLength: 1
         items:
           $ref: '#/components/schemas/LabelId'
+    LabelMatchQuery:
+      name: labelMatch
+      in: query
+      description: Selectes Assets without labels
+      schema:
+        type: string
+        enum:
+          - 'null'
     LabelNameQuery:
       name: labelName
       in: query
@@ -5515,6 +6183,16 @@ components:
         items:
           pattern: '^([\w\.]+\:.*?)$'
           type: string
+    MetricsFormatQuery:
+      name: format
+      in: query
+      description: The format of the response body
+      schema:
+        type: string
+        default: 'json'
+        enum:
+          - json
+          - csv
     NameQuery:
       name: name
       in: query
@@ -5783,6 +6461,7 @@ components:
     oauth:
       type: openIdConnect
       openIdConnectUrl: http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration
+
 # supported oauth scopes:
 # - stig-manager
 # - 'stig-manager:op'

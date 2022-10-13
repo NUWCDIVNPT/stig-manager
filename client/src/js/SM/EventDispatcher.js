@@ -21,4 +21,5 @@ SM.Dispatcher.addEvents(
     'labeldeleted',
     'labelfilter',
     'importoptionschanged',
+    'themechanged'
 )

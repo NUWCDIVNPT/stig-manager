@@ -165,11 +165,11 @@ The Findings Report provides a way to engage with all "Open" findings in a Colle
 See :ref:`Findings Report` for more info.
 
 
-Status Report
+Metrics Report
 ++++++++++++++++++
-The Status Report provides a way to judge progress and status of all Reviews in a Collection.
+The Metrics Report provides a way to judge progress and status of all Reviews in a Collection.
 
-See :ref:`Status Report` for more info.
+See :ref:`Metrics Report` for more info.
 
 ===================================
 
@@ -446,25 +446,237 @@ This section of the Report can be exported on its own.
 ===========================================
 
 .. index::
-   single: Status Report
+   single: Metrics Report
 
-.. _Status Report:
+.. _Metrics Report:
 
-Status Report
-===================
-Provides a view of the overall Status and Evaluation progress of the entire Collection.
-
-This report can be grouped by Asset or by STIG using the Grouping options at the top of the panel.
-
-This report consists of the total number of Checks associated with each Asset or STIG across the Collection, depending on how it is grouped.  The report also lists the number of Checks with no Evaluation at all, Checks that have been Saved, Submitted, Rejected, and Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
-
-This report can be exported as a .csv using the Down-Arrow button at the bottom of the panel.
+Metrics Report Workspace
+==============================
+The Metrics Report provides a view of the overall Status and Evaluation progress of an entire Collection, as well as metrics export options and various pivoted presentations of a Collection's assessment statistics.
 
 
-.. thumbnail:: /assets/images/status-report.png
+.. note::
+      **For the purposes of this report, only Reviews with Not a Finding, Not Applicable, or Open Results are considered "Assessed." Those Reviews that are "Saved" with a Result other than those three do not contribute to the tallies presented here.**
+
+
+.. thumbnail:: /assets/images/metrics-report-collection-with-nav.png
       :width: 50% 
       :show_caption: True
-      :title: Status Report
+      :title: Metrics Report
+
+|
+
+Overview Panel
+-----------------
+
+On the left, the "Overview" panel provides top-level summary information about your Collection:
+
+      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up in a "Assessed," "Submitted," or "Accepted" status. Percentages for each status are also presented. 
+      - **Inventory** - Total number of Assets, unique STIGs, and checklists (STIGs assigned to Assets) in this Collection. 
+      - **Findings** - Total number of "Open" Findings in a Collection, broken down by Severity Category.
+      - **Review Ages** - The age of the oldest Review in a Collection and the newest Review in a Collection. Whenever Review *content* (Result or commentary) is modified, its timestamp is updated, and this is used to calculate the ages presented here as "oldest" and "newest." The "Updated" block represents the last time the *Status* of a Review changed (ie. when a Saved, Submitted, Accepted, or Rejected status was applied).
+      - **Export Metrics** - Various ways to export the data presented in this report. See below for more details. 
+
+.. note::
+      The Metrics Report inherits any Label filtering you have applied at the Navtree level, and presents the filtered metrics accordingly.     
+      
+      .. thumbnail:: /assets/images/metrics-report-collection-with-nav-filters.png
+            :width: 50% 
+            :show_caption: True
+            :title: Metrics Report Filtering
+
+
+Metrics Export Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This panel provides various ways to export the metrics that STIG Manager maintains about your Collection:
+
+      - Grouped By: - The data presented in this report can be exported using several different grouping options:
+            - **Collection** - Will produce an entry with one line, aggregating all metrics data for every Asset/STIG in a Collection together.
+            - **Asset** - Will produce one entry per Asset in a Collection, tallying all the metrics data for all STIGs assigned to that Asset.
+            - **STIG** - Will produce one entry per unique STIG in a Collection, tallying metrics data for all Assets that are assigned that STIG.
+            - **Label** - Will produce one entry per Label in a Collection, tallying the metrics data for each Asset that has been assigned that Label, and all of those Asset's assigned STIGs. *Note:* Because Assets can be assigned more than one Label, individual Assets can contribute to more than one Label entry, and the total Asset count may total more than the number of Assets in a Collection. 
+            - **Ungrouped** - Will produce an entry for each STIG assigned to each Asset in the Collection. 
+      - Style: - The granularity of the metrics data exported:
+            - **Summary** - Presents data fields found to be relevant for the most common use cases.  See the table below for field descriptions. 
+            - **Detail** - Very granular data, providing counts for all supported Result values, and subtotals for Reviews that were performed by an automated tool. See the table below for field descriptions. 
+      - Format: - Data format of the download: 
+            - **CSV** - Comma-Separated Values, suitable for manipulation in a spreadsheet editor.
+            - **JSON** - JavaScript Object Notation - Useful for most other, non-spreadsheet, applications. 
+
+
+Available Metrics Data Fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The table below describes the fields that are included in the exports available from the Metrics Report interface.  
+
+
+  .. list-table:: STIG Manager Metrics Data Fields, and the Report Styles that Include Them.
+   :widths: 20 70 10 10
+   :header-rows: 1
+   :class: tight-table
+
+   * - Data Field
+     - Description
+     - Summary
+     - Detail
+   * - assessments
+     - Total number of required Evaluations assigned to this item (ie. total number of Rules in all assigned STIGs). 
+     - **X**
+     - **X**
+   * - assessed
+     - Total number of Reviews that have been marked "pass," "fail," or "notapplicable."
+     - **X**
+     - **X**
+   * - minTs
+     - Date of the Evaluation of the oldest Review in the Collection. 
+     - **X**
+     - **X**
+   * - maxTs
+     - Date of the Evaluation of the newest Review in the Collection. 
+     - **X**
+     - **X**
+   * - maxTouch
+     - Date of the last time the *Status* of a Review in a Collection was changed (ie. when a review was last saved, submitted, accepted, or rejected). 
+     - **X**
+     - **X**
+   * - low
+     - Number of failed Reviews for rules with a Severity 3 category. 
+     - **X**
+     - **X**
+   * - medium
+     - Number of failed Reviews for rules with a Severity 2 category. 
+     - **X**
+     - **X**
+   * - high
+     - Number of failed Reviews for rules with a Severity 1 category. 
+     - **X**
+     - **X**
+   * - saved
+     - Total number of Reviews with a "saved" status. 
+     - **X**
+     - **X**
+   * - savedResultEngine
+     - Number of Reviews with a "saved" status that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - submitted
+     - Total number of Reviews with a "submitted" status. 
+     - **X**
+     - **X**
+   * - submittedResultEngine
+     - Number of Reviews with a "submitted" status that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - accepted
+     - Total number of Reviews with a "accepted" status. 
+     - **X**
+     - **X**
+   * - acceptedResultEngine
+     - Number of Reviews with a "accepted" status that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - rejected
+     - Total number of Reviews with a "rejected" status. 
+     - **X**
+     - **X**
+   * - rejectedResultEngine
+     - Number of Reviews with a "rejected" status that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - pass
+     - Total number of Reviews with a "pass" result. 
+     - **X**
+     - **X**
+   * - passResultEngine
+     - Number of Reviews with a "pass" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - fail
+     - Total number of Reviews with a "fail" result. 
+     - **X**
+     - **X**
+   * - failResultEngine
+     - Number of Reviews with a "fail" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - notapplicable
+     - Total number of Reviews with a "notapplicable" result. 
+     - **X**
+     - **X**
+   * - notapplicableResultEngine
+     - Number of Reviews with a "notapplicable" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - unassessed
+     - Total number of Reviews with a result that is NOT "pass", "fail", or "notapplicable". 
+     - **X**
+     -      
+   * - notchecked
+     - Total number of Reviews with a "notchecked" result. 
+     - 
+     - **X**
+   * - notcheckedResultEngine
+     - Number of Reviews with a "notchecked" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - unknown
+     - Total number of Reviews with a "unknown" result. 
+     - 
+     - **X**
+   * - unknownResultEngine
+     - Number of Reviews with a "unknown" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - error
+     - Total number of Reviews with a "error" result. 
+     - 
+     - **X**
+   * - errorResultEngine
+     - Number of Reviews with a "error" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - notselected
+     - Total number of Reviews with a "notselected" result. 
+     - 
+     - **X**
+   * - notselectedResultEngine
+     - Number of Reviews with a "notselected" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - informational
+     - Total number of Reviews with a "informational" result. 
+     - 
+     - **X**
+   * - informationalResultEngine
+     - Number of Reviews with a "informational" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+   * - fixed
+     - Total number of Reviews with a "fixed" result. 
+     - 
+     - **X**
+   * - fixedResultEngine
+     - Number of Reviews with a "fixed" result that were evaluated by an automated tool. 
+     - 
+     - **X**
+
+
+
+Aggregations Panel
+------------------------
+
+The Aggregations Panel provides various ways to navigate the Metrics data maintained by STIG Manager. This data can be presented aggregated by Asset, Labels, or STIGs by selecting the appropriate tab. Each panel allows you to drill down to the individual Assets or STIGs in those groupings. Each panel can also be exported individually as a .csv using the down-arrow icon at the bottom of each panel.
+
+Each panel of the report presents the total number of Checks associated with each Asset or STIG across the Collection, depending on how it was grouped and what filters have been applied.  The report also lists the number of Checks with no Evaluation at all, and Checks that have been Saved, Submitted, Rejected, or Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
+
+Double-click on an item in the bottom-most panel (an individual Asset or STIG) to open up a new tab with the relevant Asset Review Workspace. 
+
+
+.. thumbnail:: /assets/images/metrics-report-collection.png
+      :width: 50% 
+      :show_caption: True
+      :title: Metrics Report
 
 
 ================================
