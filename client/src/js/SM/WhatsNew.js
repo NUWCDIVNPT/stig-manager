@@ -154,7 +154,7 @@ SM.WhatsNew.BodyTpl = new Ext.XTemplate(
     `<hr style="margin-left:20px;margin-right:20px;" />`,
     `<div class="sm-whats-new sm-home-widget-text">`,
       `<div class=sm-home-widget-subtitle>{header}<div style="font-size:70%; font-style:italic;">({date})</div></div> `,
-      `{body}`,
+      `<div style="width:800px;">{body}</div>`,
     `</div>`,
   `</tpl>`
 )
@@ -195,7 +195,7 @@ SM.WhatsNew.addTab = function (params) {
 SM.WhatsNew.showDialog = function (lastDate) {
   const vpSize = Ext.getBody().getViewSize()
   let height = vpSize.height * 0.75
-  let width = vpSize.width * 0.33 <= 960 ? vpSize.width * 0.33 : 960
+  let width = 850
   
   const panel = new Ext.Panel({
     border: false,
