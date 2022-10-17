@@ -682,11 +682,11 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": []
         },
         {
-          "benchmarkId": "Windows_10_STIG",
+          "benchmarkId": "Windows_10_STIG_TEST",
           "userIds": []
         }
       ],
@@ -707,13 +707,13 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": [
             "85"
           ]
         },
         {
-          "benchmarkId": "Windows_10_STIG",
+          "benchmarkId": "Windows_10_STIG_TEST",
           "userIds": [
             "86"
           ]
@@ -733,13 +733,13 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": [
             "85"
           ]
         },
         {
-          "benchmarkId": "Windows_10_STIG",
+          "benchmarkId": "Windows_10_STIG_TEST",
           "userIds": []
         }
       ],
@@ -757,7 +757,7 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": []
         }
       ],
@@ -775,7 +775,7 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": []
         }
       ],
@@ -793,7 +793,7 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": [
             "85"
           ]
@@ -826,11 +826,11 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": []
         },
         {
-          "benchmarkId": "Windows_10_STIG",
+          "benchmarkId": "Windows_10_STIG_TEST",
           "userIds": []
         }
       ],
@@ -848,15 +848,15 @@
       "metadata": {},
       "stigGrants": [
         {
-          "benchmarkId": "RHEL_7_STIG",
+          "benchmarkId": "RHEL_7_STIG_TEST",
           "userIds": []
         },
         {
-          "benchmarkId": "VPN_SRG",
+          "benchmarkId": "VPN_SRG_TEST",
           "userIds": []
         },
         {
-          "benchmarkId": "Windows_10_STIG",
+          "benchmarkId": "Windows_10_STIG_TEST",
           "userIds": []
         }
       ],
