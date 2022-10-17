@@ -1230,8 +1230,8 @@ async function addReview( params ) {
       let fvalues = fp.getForm().getFieldValues(false, false) // dirtyOnly=false, getDisabled=true
       let jsonData = {
         result: fvalues.result,
-        detail: fvalues.detail || null,
-        comment: fvalues.comment || null,
+        detail: fvalues.detail,
+        comment: fvalues.comment,
         resultEngine: fp.resultChanged() ? null : fvalues.resultEngine
       }
       let result, reviewFromApi
@@ -1261,7 +1261,7 @@ async function addReview( params ) {
             params: {
               projection: 'history'
             },
-            jsonData: jsonData
+            jsonData
           })
           reviewFromApi = JSON.parse(result.response.responseText)
           break
@@ -1274,7 +1274,7 @@ async function addReview( params ) {
             params: {
               projection: 'history'
             },
-            jsonData: jsonData
+            jsonData
           })
           reviewFromApi = JSON.parse(result.response.responseText)
           break
@@ -1287,7 +1287,7 @@ async function addReview( params ) {
             params: {
               projection: 'history'
             },
-            jsonData: jsonData
+            jsonData
           })
           reviewFromApi = JSON.parse(result.response.responseText)
           break
