@@ -235,7 +235,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     'left join asset on r.assetId = asset.assetId',
     'left join collection c on asset.collectionId = c.collectionId',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
+    'inner join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
     'left join user_stig_asset_map usa on sa.saId = usa.saId'
   ]
 
