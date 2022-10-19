@@ -20,8 +20,8 @@
     "assetMatchString": "asset",
     "metadataKey": "pocName",
     "metadataValue": "poc2Patched",
-    "stigs.valid": "[\"VPN_SRG\",\"Windows_10_STIG\"]",
-    "testBenchmark": "VPN_SRG",
+    "stigs.valid": "[\"VPN_SRG_TEST\",\"Windows_10_STIG_TEST\"]",
+    "testBenchmark": "VPN_SRG_TEST",
     "testRev": "V1R1",
     "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NzAzOTQzNDcsImlhdCI6MTYwNTYzMTQxMiwiYXV0aF90aW1lIjoxNjA1NTk0MzQ3LCJqdGkiOiJkYWY4Yjc0MS03M2QxLTRlYmEtOTZhZi1mODU1YWIwYmQyMjYiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiJlYjk2NWQxNS1hYTc4LTQzZmMtYTJhNi0zZDg2MjU4YzFlZWMiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6IjczOTM3YmUzLTRjY2MtNGZhNy04MjAyLTQ1Njg1NTIzZGQyYyIsInNlc3Npb25fc3RhdGUiOiI1YWMyYTkzOC0xMDc0LTRlNmEtOGM0Yi1lODNlNGU3ZDc2M2IiLCJhY3IiOiIwIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImNyZWF0ZV9jb2xsZWN0aW9uIiwiYWRtaW4iLCJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJ2aWV3LXVzZXJzIiwicXVlcnktZ3JvdXBzIiwicXVlcnktdXNlcnMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHN0aWctbWFuYWdlcjpjb2xsZWN0aW9uIHN0aWctbWFuYWdlcjpzdGlnOnJlYWQgc3RpZy1tYW5hZ2VyOnVzZXI6cmVhZCBzdGlnLW1hbmFnZXI6b3Agc3RpZy1tYW5hZ2VyOnVzZXIgc3RpZy1tYW5hZ2VyOnN0aWciLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6InN0aWdtYW5hZG1pbiJ9.IOk6RLhBwX8o29dmAC7QeSzr86B5w8C8gkyetn5uOhhgh-aEjWJSqLk74WvLjwfKnYgonfAMm-gbdiACFwMd7u7O5wNUNV5EQO8-6JKSUYyTvujS5NMY7rO-QtgskvKWvB8Vyrm33DvcUon-Kh_6LeSujcNczadN6oDbe-j1A1w",
     "checklistLength": "81",
@@ -35,7 +35,7 @@
     "testCollectionInvalid": "83",
     "scrapLvl1": "86",
     "scrapAdmin": "87",
-    "scrapBenchmark": "RHEL_7_STIG"
+    "scrapBenchmark": "RHEL_7_STIG_TEST"
   },
   {
     "Test Case Description": " lvl1, not elevated, etc.",
@@ -60,8 +60,8 @@
     "scrapAsset": "34",
     "metadataKey": "pocName",
     "metadataValue": "poc2Patched",
-    "stigs.valid": "[\"VPN_SRG\"]",
-    "testBenchmark": "VPN_SRG",
+    "stigs.valid": "[\"VPN_SRG_TEST\"]",
+    "testBenchmark": "VPN_SRG_TEST",
     "testRev": "V1R1",
     "checklistLength": "81",
     "testUserId": "1",
@@ -72,7 +72,7 @@
     "testCollectionInvalid": "83",
     "scrapLvl1": "86",
     "scrapAdmin": "87",
-    "scrapBenchmark": "RHEL_7_STIG"
+    "scrapBenchmark": "RHEL_7_STIG_TEST"
   },
   {
     "Test Case Description": " lvl2, not elevated, etc.",
@@ -95,8 +95,8 @@
     "assetMatchString": "asset",
     "metadataKey": "pocName",
     "metadataValue": "poc2Patched",
-    "stigs.valid": "[\"VPN_SRG\",\"Windows_10_STIG\"]",
-    "testBenchmark": "VPN_SRG",
+    "stigs.valid": "[\"VPN_SRG_TEST\",\"Windows_10_STIG_TEST\"]",
+    "testBenchmark": "VPN_SRG_TEST",
     "testRev": "V1R1",
     "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NzA0MzMxMzksImlhdCI6MTYwNTYzMzIwMCwiYXV0aF90aW1lIjoxNjA1NjMzMTM5LCJqdGkiOiJjMTg1ZDk5YS03MjUwLTQwNmUtODdlNC0zNzJmZjI5NjI5ODMiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiJjNGM4NmE0NC00MzBmLTRiODgtYTRjYS1jOTAyY2U3MjRkZDgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6IjEzMjNmYWIzLTZkZmUtNDIzNC04ODZiLTdmY2Y3YTNkYzA4ZSIsInNlc3Npb25fc3RhdGUiOiI2OGVkYmNiZi1iOTgzLTQwOTItYTQwNy05NGVhZWJkZmJkYTAiLCJhY3IiOiIwIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJyZWFsbS1tYW5hZ2VtZW50Ijp7InJvbGVzIjpbInZpZXctdXNlcnMiLCJxdWVyeS1ncm91cHMiLCJxdWVyeS11c2VycyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgc3RpZy1tYW5hZ2VyOmNvbGxlY3Rpb24gc3RpZy1tYW5hZ2VyOnN0aWc6cmVhZCBzdGlnLW1hbmFnZXI6dXNlcjpyZWFkIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJKdXN0aWNlIE1vb3JlIiwicHJlZmVycmVkX3VzZXJuYW1lIjoibHZsMiIsImdpdmVuX25hbWUiOiJKdXN0aWNlIiwiZmFtaWx5X25hbWUiOiJNb29yZSIsImVtYWlsIjoidXNlcjAyQG5vLmVtYWlsIn0.UosqFNURDGVwaMwVCxdNCLuL-6Vght70yL_bOk9DiOwkmNJqz8h7eAUF4OXqDE6XfzD9sVOk4O5mQ1ukeEhU3_9bRMjeMjO_i362rIc1OassJo3AqxXYFg8lz_HCkC73tI9Ldgng89mgs5N4I-C32pIs9xnPP5khDc7qMQGcnl0",
     "checklistLength": "81",
@@ -106,7 +106,7 @@
     "testRuleId": "SV-106179r1_rule",
     "scrapLvl1": "86",
     "scrapAdmin": "87",
-    "scrapBenchmark": "RHEL_7_STIG"
+    "scrapBenchmark": "RHEL_7_STIG_TEST"
   },
   {
     "Test Case Description": " lvl3, not elevated, etc.",
@@ -129,8 +129,8 @@
     "assetMatchString": "asset",
     "metadataKey": "pocName",
     "metadataValue": "poc2Patched",
-    "stigs.valid": "[\"VPN_SRG\",\"Windows_10_STIG\"]",
-    "testBenchmark": "VPN_SRG",
+    "stigs.valid": "[\"VPN_SRG_TEST\",\"Windows_10_STIG_TEST\"]",
+    "testBenchmark": "VPN_SRG_TEST",
     "testRev": "V1R1",
     "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NzA0MzMyNjAsImlhdCI6MTYwNTYzMzI2MSwiYXV0aF90aW1lIjoxNjA1NjMzMjYwLCJqdGkiOiI5NzkxN2E0NS00YTAyLTQyZDYtYjkzYi03NmYwYzc1YjYzZWEiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiI5ZTJkMzNlMC1iMGZhLTQyMTMtODc5MC0wZDExZTI0OWY5OTYiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6IjA2NGVmYzU5LWIzZWItNDk0NC1hNGM1LTczN2FlZTkyN2ExZSIsInNlc3Npb25fc3RhdGUiOiJmNWZjMzE3MC02MzljLTRhMmYtYjhmMy05NDliOWRhNjA4OTgiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJyZWFsbS1tYW5hZ2VtZW50Ijp7InJvbGVzIjpbInZpZXctdXNlcnMiLCJxdWVyeS1ncm91cHMiLCJxdWVyeS11c2VycyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgc3RpZy1tYW5hZ2VyOmNvbGxlY3Rpb24gc3RpZy1tYW5hZ2VyOnN0aWc6cmVhZCBzdGlnLW1hbmFnZXI6dXNlcjpyZWFkIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJSb3J5IE1hcnNoYWxsIiwicHJlZmVycmVkX3VzZXJuYW1lIjoibHZsMyIsImdpdmVuX25hbWUiOiJSb3J5IiwiZmFtaWx5X25hbWUiOiJNYXJzaGFsbCIsImVtYWlsIjoidXNlcjAzQG5vLmVtYWlsIn0.cv1G1E4PyrX8xBQJF7wP4IL4zeUztzhMs7vSEmeiHCrR3tPyXfVJpOGwkREg-oat1J8m_U-rONSyIezcgwxp_iASR_2DYCyJa88Z79h7_AyWWetUttlmrlbHyBrlirnknTrBMXSsZa580h0-fdB9oEAJ2SMwb5KpwPOKF-e1O5k",
     "checklistLength": "81",
@@ -140,7 +140,7 @@
     "testRuleId": "SV-106179r1_rule",
     "scrapLvl1": "86",
     "scrapAdmin": "87",
-    "scrapBenchmark": "RHEL_7_STIG"
+    "scrapBenchmark": "RHEL_7_STIG_TEST"
   },
   {
     "Test Case Description": " lvl4, not elevated, etc.",
@@ -163,8 +163,8 @@
     "assetMatchString": "asset",
     "metadataKey": "pocName",
     "metadataValue": "poc2Patched",
-    "stigs.valid": "[\"VPN_SRG\",\"Windows_10_STIG\"]",
-    "testBenchmark": "VPN_SRG",
+    "stigs.valid": "[\"VPN_SRG_TEST\",\"Windows_10_STIG_TEST\"]",
+    "testBenchmark": "VPN_SRG_TEST",
     "testRev": "V1R1",
     "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NzA0MzM1NDMsImlhdCI6MTYwNTYzMzU0MywiYXV0aF90aW1lIjoxNjA1NjMzNTQzLCJqdGkiOiIxMjFlN2Y4OS00ZmZmLTRmYjQtOTJiZi1hNjM1NTA1OTkxYzEiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiI5MThjOTM1YS0wZjliLTRhYWItOTA5ZS0zZWI5OTVhZTI2OWQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6ImEwNmUzZGIzLTYwYjktNGJlNy04Zjc0LWM5YmQ5YzZmYzZkOSIsInNlc3Npb25fc3RhdGUiOiJiOTNlNWE5MS1iYmVlLTQ5YTQtODc3ZC0xZTVhMDRkN2E2ZTkiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJyZWFsbS1tYW5hZ2VtZW50Ijp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyIsInF1ZXJ5LXVzZXJzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBzdGlnLW1hbmFnZXI6Y29sbGVjdGlvbiBzdGlnLW1hbmFnZXI6c3RpZzpyZWFkIHN0aWctbWFuYWdlcjp1c2VyOnJlYWQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlJheWxlZSBBdGtpbnNvbiIsInByZWZlcnJlZF91c2VybmFtZSI6Imx2bDQiLCJnaXZlbl9uYW1lIjoiUmF5bGVlIiwiZmFtaWx5X25hbWUiOiJBdGtpbnNvbiIsImVtYWlsIjoidXNlcjA0QG5vLmVtYWlsIn0.kA1_9S6Tbz4UI3Wu3Dc27nK1m6EqMnWeHQtqLNzmEspEXoF8XhKF-Hc6bacO7wGGZ5LAJ1XlwFdJLDYF8YA6YIpCtMQ8Dn8-G2BNcew-fXkaUaQQrLWhjQgD34rI43Qm8DRyCVnMcqBBYpzM6nDmgl_lzSxYRs-K8wi-t2DJoZg",
     "checklistLength": "81",
@@ -174,7 +174,7 @@
     "testRuleId": "SV-106179r1_rule",
     "scrapLvl1": "86",
     "scrapAdmin": "87",
-    "scrapBenchmark": "RHEL_7_STIG"
+    "scrapBenchmark": "RHEL_7_STIG_TEST"
   },
   {
     "Test Case Description": " collectionCreator, not elevated, etc.",
@@ -198,7 +198,7 @@
     "metadataKey": "pocName",
     "metadataValue": "poc2Patched",
     "stigs.valid": "[]",
-    "testBenchmark": "VPN_SRG",
+    "testBenchmark": "VPN_SRG_TEST",
     "testRev": "V1R1",
     "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE2NzA0MzM2NzYsImlhdCI6MTYwNTYzMzY3NiwiYXV0aF90aW1lIjoxNjA1NjMzNjc2LCJqdGkiOiI3ZmRmNDVhZi02NTliLTRhMGUtODZiNi02MmIzMTdhYTVkNTkiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiJlMzY2YzU3My1iYzllLTQ4NmMtYTVhZS1iMzY1NzU2NGUxMDUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6IjU4NGM0NDRlLWI3MWEtNDU4My1iNGFlLTkwMjNjZWQwYTA4YyIsInNlc3Npb25fc3RhdGUiOiJlM2EyZTU2YS0yM2EzLTQ0NjItYjU0OS1kNDBhMDRjOGRkMWEiLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImNyZWF0ZV9jb2xsZWN0aW9uIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy11c2VycyIsInF1ZXJ5LWdyb3VwcyIsInF1ZXJ5LXVzZXJzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBzdGlnLW1hbmFnZXI6Y29sbGVjdGlvbiBzdGlnLW1hbmFnZXI6c3RpZzpyZWFkIHN0aWctbWFuYWdlcjp1c2VyOnJlYWQiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJDYXJsIFNtaWdpZWxza2kiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJjb2xsZWN0aW9uY3JlYXRvciIsImdpdmVuX25hbWUiOiJDYXJsIiwiZmFtaWx5X25hbWUiOiJTbWlnaWVsc2tpIiwiZW1haWwiOiJjb2xsZWN0aW9uY3JlYXRvckBnbWFpbC5jb20ifQ.kCu4385sZVqtc4mwzNrCu0jTJA7cfR8Us_wxyeOwoTvfbbQhAS5UxuiU4VuOyqf2BO6-KhXTkt2X6yT3fspWKgoxE1rt9r0bmRefjtgIKItaowzq8Yw-dfTCupOWj8RGWZD2j0O-i7GhiRPtNB9nlic6PQeE8NDNqPBMZ9Lk9J0",
     "checklistLength": "81",
@@ -208,6 +208,6 @@
     "testRuleId": "SV-106179r1_rule",
     "scrapLvl1": "86",
     "scrapAdmin": "87",
-    "scrapBenchmark": "RHEL_7_STIG"
+    "scrapBenchmark": "RHEL_7_STIG_TEST"
   }
 ]

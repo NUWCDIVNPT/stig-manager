@@ -7592,8 +7592,8 @@
 													"\r",
 													"        pm.expect(cklVulns).to.be.an('array');\r",
 													"\r",
-													"        // Right now, only VPN_SRG has a checklist length\r",
-													"        if (currentStigId == 'VPN_SRG') {\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
 													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
 													"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
 													"        }\r",
@@ -7737,8 +7737,8 @@
 													"\r",
 													"        pm.expect(cklVulns).to.be.an('array');\r",
 													"\r",
-													"        // Right now, only VPN_SRG has a checklist length\r",
-													"        if (currentStigId == 'VPN_SRG') {\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
 													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
 													"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
 													"        }\r",
@@ -7865,8 +7865,8 @@
 													"\r",
 													"        pm.expect(cklVulns).to.be.an('array');\r",
 													"\r",
-													"        // Right now, only VPN_SRG has a checklist length\r",
-													"        if (currentStigId == 'VPN_SRG') {\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
 													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
 													"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
 													"        }\r",
@@ -8009,8 +8009,8 @@
 													"\r",
 													"        pm.expect(cklVulns).to.be.an('array');\r",
 													"\r",
-													"        // Right now, only VPN_SRG has a checklist length\r",
-													"        if (currentStigId == 'VPN_SRG') {\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
 													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
 													"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
 													"        }\r",
@@ -8033,7 +8033,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId/checklists/?benchmarkId={{testBenchmark}}&benchmarkId=Windows_10_STIG",
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/?benchmarkId={{testBenchmark}}&benchmarkId=Windows_10_STIG_TEST",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -8050,7 +8050,7 @@
 												},
 												{
 													"key": "benchmarkId",
-													"value": "Windows_10_STIG"
+													"value": "Windows_10_STIG_TEST"
 												}
 											],
 											"variable": [
@@ -23229,7 +23229,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}\n"
+													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}\n"
 												},
 												"url": {
 													"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -23739,7 +23739,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+											"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -23838,7 +23838,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -24046,7 +24046,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"labelIds\": [\"{{testLabel}}\"],\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\"\n    ]\n}"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"labelIds\": [\"{{testLabel}}\"],\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=stigs",
@@ -24146,7 +24146,7 @@
 																	"      },\r",
 																	"      label: reqData.status\r",
 																	"  },\r",
-																	"  stigs: [\"VPN_SRG\"],\r",
+																	"  stigs: [\"VPN_SRG_TEST\"],\r",
 																	"  rule: {\r",
 																	"    title: \"The VPN Gateway must ensure inbound and outbound traffic is configured with a security policy in compliance with information flow control policies.\",\r",
 																	"    ruleId: \"SV-106179r1_rule\",\r",
@@ -26873,7 +26873,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+									"raw": "{\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -26992,7 +26992,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+									"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -27185,7 +27185,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -27301,7 +27301,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG\",\n        \"Windows_10_STIG\",\n        \"RHEL_7_STIG\"\n    ]\n}"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
@@ -29615,7 +29615,7 @@
 								},
 								{
 									"key": "benchmarkId",
-									"value": "Windows_10_STIG",
+									"value": "Windows_10_STIG_TEST",
 									"description": "(Required) A path parameter that indentifies a STIG"
 								},
 								{
@@ -31945,8 +31945,8 @@
 											"\r",
 											"        pm.expect(cklVulns).to.be.an('array');\r",
 											"\r",
-											"        // Right now, only VPN_SRG has a checklist length\r",
-											"        if (currentStigId == 'VPN_SRG') {\r",
+											"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+											"        if (currentStigId == 'VPN_SRG_TEST') {\r",
 											"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
 											"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
 											"\r",
@@ -32023,7 +32023,7 @@
 										},
 										{
 											"key": "benchmarkId",
-											"value": "VPN_SRG",
+											"value": "VPN_SRG_TEST",
 											"description": "(Required) A path parameter that indentifies a STIG"
 										},
 										{

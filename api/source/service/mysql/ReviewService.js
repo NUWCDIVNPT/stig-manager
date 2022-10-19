@@ -245,7 +245,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     groupBy.push(`r.metadata`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`json_arrayagg(sa.benchmarkId) as "stigs"`)
+    columns.push(`cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+
   }
   if (inProjection.includes('rule')) {
     columns.push(`json_object(
