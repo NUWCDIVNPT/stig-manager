@@ -619,6 +619,7 @@ module.exports.postXccdfArchiveByCollection = async function (req, res, next) {
 }
 
 async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRequest}) {
+  req.noCompression = true
   const j2x = new J2X({
     attributeNamePrefix : "@_",
     textNodeName : "#text",
