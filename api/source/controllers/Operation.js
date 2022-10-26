@@ -81,6 +81,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
 
 module.exports.replaceAppData = async function replaceAppData (req, res, next) {
   try {
+    req.noCompression = true
     let elevate = req.query.elevate
     let appdata
     if ( elevate ) {

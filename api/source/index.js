@@ -21,6 +21,7 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const cors = require('cors');
+const compression = require('compression')
 const auth = require('./utils/auth')
 const swaggerUi = require('swagger-ui-express')
 const jsyaml = require('js-yaml');
@@ -66,8 +67,15 @@ app.use(cors())
 
 app.use( logger.requestLogger )
 
-// compress all responses
-// app.use(compression())
+// compress responses
+app.use(compression({
+  filter: (req, res) => {
+    if (req.noCompression) {
+      return false
+    }
+    return compression.filter(req, res)
+  }
+}))
 
 const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
 app.use( "/api", openApiMiddleware ({
