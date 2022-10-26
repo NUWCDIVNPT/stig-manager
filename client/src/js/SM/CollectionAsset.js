@@ -35,47 +35,53 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             {name: 'ip', type: 'string'},
             {name: 'mac', type: 'string'},
             {name: 'noncomputing', type: 'boolean'},
-            {name: 'labelIds'},
             {
-                name: 'ruleCount',
-                type: 'integer',
-                mapping: 'statusStats.ruleCount'
+                name: 'labelIds',
+                convert: (v, r) => r.labels.map((label)=>label.labelId) 
             },
             {
-                name: 'stigCount',
+                name: 'assessments',
                 type: 'integer',
-                mapping: 'statusStats.stigCount'
+                mapping: 'metrics.assessments'
+            },
+            {
+                name: 'stigCount', 
+                convert: (v, r) => r.benchmarkIds.length
+            },
+            {
+                name: 'assessedPct',
+                convert: (v, r) => r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0
             },
             {
                 name: 'savedPct',
-                convert: (v, r) => r.statusStats.ruleCount ? ((r.statusStats.savedCount + r.statusStats.submittedCount + r.statusStats.acceptedCount + r.statusStats.rejectedCount)/r.statusStats.ruleCount) * 100 : 0
+                convert: (v, r) => r.metrics.assessments ? ((r.metrics.statuses.saved + r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0
             },
             {
                 name: 'submittedPct',
-                convert: (v, r) => r.statusStats.ruleCount ?((r.statusStats.submittedCount + r.statusStats.acceptedCount + r.statusStats.rejectedCount)/r.statusStats.ruleCount) * 100 : 0
+                convert: (v, r) => r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0
             },
             {
                 name: 'acceptedPct',
-                convert: (v, r) => r.statusStats.ruleCount ? (r.statusStats.acceptedCount/r.statusStats.ruleCount) * 100 : 0
+                convert: (v, r) => r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0
             },
             {
                 name: 'rejectedPct',
-                convert: (v, r) => r.statusStats.ruleCount ? (r.statusStats.rejectedCount/r.statusStats.ruleCount) * 100 : 0
-            },
-            {
-                name: 'stigUnassignedCount',
-                type: 'integer',
-                convert: (v, r) => r.statusStats.stigCount - r.statusStats.stigAssignedCount
+                convert: (v, r) => r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0
             },
             {
                 name: 'minTs',
                 type: 'date',
-                mapping: 'statusStats.minTs'
+                mapping: 'metrics.minTs'
             },
             {
                 name: 'maxTs',
                 type: 'date',
-                mapping: 'statusStats.maxTs'
+                mapping: 'metrics.maxTs'
+            },
+            {
+                name: 'maxTouchTs',
+                type: 'date',
+                mapping: 'metrics.maxTouchTs'
             },
             {name: 'metadata'}
         ])
@@ -99,10 +105,6 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             smMaskDelay: 250,
             proxy: this.proxy,
-            baseParams: {
-                collectionId: this.collectionId,
-                projection: ['statusStats']
-            },
             root: '',
             fields: fieldsConstructor,
             idProperty: 'assetId',
@@ -147,7 +149,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
             {
                 header: "Labels",
-                width: 120,
+                width: 220,
                 dataIndex: 'labelIds',
                 sortable: false,
                 filter: {
@@ -162,7 +164,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         if (label) labels.push(label)
                     }
                     labels.sort((a,b) => a.name.localeCompare(b.name))
-                    metadata.attr = 'style="white-space:normal;"'
+                    metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
                     return SM.Collection.LabelArrayTpl.apply(labels)
                 }
             },
@@ -179,6 +181,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
 				header: "IP",
 				width: 100,
                 dataIndex: 'ip',
+                hidden: true,
 				sortable: true,
                 renderer: SM.styledEmptyRenderer
 			},
@@ -202,7 +205,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             { 	
 				header: "Rules",
 				width: 50,
-				dataIndex: 'ruleCount',
+				dataIndex: 'assessments',
 				align: "center",
 				sortable: true
 			},
@@ -223,9 +226,9 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderDurationToNow
             },
             { 	
-				header: "Saved",
+				header: "Assessed",
 				width: 100,
-				dataIndex: 'savedPct',
+				dataIndex: 'assessedPct',
 				align: "center",
 				sortable: true,
                 renderer: renderPct
@@ -320,14 +323,20 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                           let result = await Ext.Ajax.requestPromise({
                               url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
                               method: 'PATCH',
-                              params: {
-                                  projection: ['stigs', 'statusStats']
-                              },
                               jsonData: {
                                   collectionId: item.collectionId
                               }
                           })
+                          let returnedAsset = JSON.parse(result.response.responseText)
+                          result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary/asset`,
+                            method: 'GET',
+                            params: {
+                                assetId: thisRecord.data.assetId
+                            }
+                          })
                           let apiAsset = JSON.parse(result.response.responseText)
+                          apiAsset.collection = returnedAsset.collection
                           me.store.remove(thisRecord)
                           SM.Dispatcher.fireEvent('assetdeleted', {...apiAsset, ...{collection: {collectionId: me.collectionId}}})
                           SM.Dispatcher.fireEvent('assetcreated', apiAsset)
@@ -359,17 +368,23 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const config = {
             layout: 'fit',
-            loadMask: true,
+            loadMask: {msg:null, msgCls:null},
             store: assetStore,
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   
             }),
             sm,
-            view: new SM.ColumnFilters.GridView({
+            view: new SM.ColumnFilters.GridViewBuffered({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
                 forceFit: true,
                 autoExpandColumn: assetColumnId,
+                // custom row height
+                rowHeight: 21,
+                borderHeight: 2,
+                // render rows as they come into viewable area.
+                scrollDelay: false,
+                
                 listeners: {
                     filterschanged: function (view, item, value) {
                       assetStore.filter(view.getFilterFns())  
@@ -1063,7 +1078,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
         let assetPropsFormPanel = new SM.AssetProperties({
             id: 'dev-test',
             padding: '10px 15px 10px 15px',
-            initialCollectionId: initialCollectionId,
+            initialCollectionId,
             btnHandler: async function(){
                 try {
                     if (assetPropsFormPanel.getForm().isValid()) {
@@ -1075,13 +1090,19 @@ async function showAssetProps( assetId, initialCollectionId ) {
                         let result = await Ext.Ajax.requestPromise({
                             url: url,
                             method: method,
-                            params: {
-                                projection: ['stigs', 'statusStats']
-                            },
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values
                         })
+                        const returnedAsset = JSON.parse(result.response.responseText)
+                        result = await Ext.Ajax.requestPromise({
+                            url: `${STIGMAN.Env.apiBase}/collections/${initialCollectionId}/metrics/summary/asset`,
+                            method: 'GET',
+                            params: {
+                                assetId: returnedAsset.assetId
+                            }
+                          })
                         const apiAsset = JSON.parse(result.response.responseText)
+                        apiAsset.collection = returnedAsset.collection
                         const event = assetId ? 'assetchanged' : 'assetcreated'
                         SM.Dispatcher.fireEvent(event, apiAsset)
                         appwindow.close()

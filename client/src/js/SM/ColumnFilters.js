@@ -1,317 +1,323 @@
 Ext.ns('SM.ColumnFilters')
 
-SM.ColumnFilters.GridView = Ext.extend(Ext.grid.GridView, {
-  constructor: function (config) {
-    // Ext.apply(this, config);
-    this.addEvents(
-      'filterschanged',
-      'columnfiltered',
-      'columnunfiltered'
-    ) 
-    SM.ColumnFilters.GridView.superclass.constructor.call(this, config);
-  },
-  handleHdDown: function (e, target) {
-    // Modifies superclass method to support lastHide
-
-    if (target.className == 'x-grid3-hd-checker') {
-      return
-    }
-    e.stopEvent()
-    if (!this.lastHide || this.lastHide.getElapsed() > 100) {
-      var colModel  = this.cm,
-      header    = this.findHeaderCell(target),
-      index     = this.getCellIndex(header),
-      sortable  = colModel.isSortable(index),
-      menu      = this.hmenu,
-      menuItems = menu.items,
-      menuCls   = this.headerMenuOpenCls,
-      sep;
+function extend (extended = Ext.grid.GridView) {
+  return Ext.extend(extended, {
+    constructor: function (config) {
+      // Ext.apply(this, config);
+      this.addEvents(
+        'filterschanged',
+        'columnfiltered',
+        'columnunfiltered'
+      ) 
+      SM.ColumnFilters.GridView.superclass.constructor.call(this, config);
+    },
+    handleHdDown: function (e, target) {
+      // Modifies superclass method to support lastHide
   
-      this.hdCtxIndex = index;
-      
-      Ext.fly(header).addClass(menuCls);
-      if (this.hideSortIcons) {
-          menuItems.get('asc').setVisible(sortable);
-          menuItems.get('desc').setVisible(sortable);
-          sep = menuItems.get('sortSep');
-          if (sep) {
-              sep.setVisible(sortable);    
-          }
-      } else {
-          menuItems.get('asc').setDisabled(!sortable);
-          menuItems.get('desc').setDisabled(!sortable);
+      if (target.className == 'x-grid3-hd-checker') {
+        return
       }
-      
-      menu.on('hide', function() {
-          Ext.fly(header).removeClass(menuCls);
-          this.lastHide = new Date()
-      }, this, {single:true});
-      
-      // menu.show(target, 'tl-bl?');    
-      menu.showAt(e.xy);    
-    }
-  },
-  onDataChange : function(){
-    SM.ColumnFilters.GridView.superclass.onDataChange.call(this)
-    this.setColumnFilteredStyle()
-  },
-  setColumnFilteredStyle: function () {
-    const colCount = this.cm.getColumnCount()
-    for (let i = 0; i < colCount; i++) {
-      const td = this.getHeaderCell(i)
-      td.getElementsByTagName("a")[0].style.height = td.classList.contains('x-grid3-td-checker') ? 0 : (td.firstChild.offsetHeight - 1) + 'px'
-      if (this.cm.config[i].filtered) {
-        td.classList.add('sm-grid3-col-filtered')
+      e.stopEvent()
+      if (!this.lastHide || this.lastHide.getElapsed() > 100) {
+        var colModel  = this.cm,
+        header    = this.findHeaderCell(target),
+        index     = this.getCellIndex(header),
+        sortable  = colModel.isSortable(index),
+        menu      = this.hmenu,
+        menuItems = menu.items,
+        menuCls   = this.headerMenuOpenCls,
+        sep;
+    
+        this.hdCtxIndex = index;
+        
+        Ext.fly(header).addClass(menuCls);
+        if (this.hideSortIcons) {
+            menuItems.get('asc').setVisible(sortable);
+            menuItems.get('desc').setVisible(sortable);
+            sep = menuItems.get('sortSep');
+            if (sep) {
+                sep.setVisible(sortable);    
+            }
+        } else {
+            menuItems.get('asc').setDisabled(!sortable);
+            menuItems.get('desc').setDisabled(!sortable);
+        }
+        
+        menu.on('hide', function() {
+            Ext.fly(header).removeClass(menuCls);
+            this.lastHide = new Date()
+        }, this, {single:true});
+        
+        // menu.show(target, 'tl-bl?');    
+        menu.showAt(e.xy);    
       }
-      else {
-        td.classList.remove('sm-grid3-col-filtered')
-      }  
-    }
-  },
-  getFilterFns: function () {
-    const hmenu = this.hmenu
-    const stringItems = hmenu.filterItems.stringItems
-    const selectItems = hmenu.filterItems.selectItems
-    const conditions = {}
-    const filterFns = []
-
-    // // iterate the menu items and set the condition(s) for each dataIndex
-    for (const stringItem of stringItems) {
-      const dataIndex = stringItem.filter.dataIndex
-      const value = stringItem.getValue()
-      if (value) {
-        conditions[dataIndex] = value
+    },
+    onDataChange : function(){
+      SM.ColumnFilters.GridView.superclass.onDataChange.call(this)
+      this.setColumnFilteredStyle()
+    },
+    setColumnFilteredStyle: function () {
+      const colCount = this.cm.getColumnCount()
+      for (let i = 0; i < colCount; i++) {
+        const td = this.getHeaderCell(i)
+        td.getElementsByTagName("a")[0].style.height = td.classList.contains('x-grid3-td-checker') ? 0 : (td.firstChild.offsetHeight - 1) + 'px'
+        if (this.cm.config[i].filtered) {
+          td.classList.add('sm-grid3-col-filtered')
+        }
+        else {
+          td.classList.remove('sm-grid3-col-filtered')
+        }  
       }
-    }
-    for (const selectItem of selectItems) {
-      if (!selectItem.checked) {
-        const dataIndex = selectItem.filter.dataIndex
-        conditions[dataIndex] = []
-        for (const valueItem of selectItem.valueItems) {
-          if (valueItem.checked === true) {
-            conditions[dataIndex].push(valueItem.filter.value)
+    },
+    getFilterFns: function () {
+      const hmenu = this.hmenu
+      const stringItems = hmenu.filterItems.stringItems
+      const selectItems = hmenu.filterItems.selectItems
+      const conditions = {}
+      const filterFns = []
+  
+      // // iterate the menu items and set the condition(s) for each dataIndex
+      for (const stringItem of stringItems) {
+        const dataIndex = stringItem.filter.dataIndex
+        const value = stringItem.getValue()
+        if (value) {
+          conditions[dataIndex] = value
+        }
+      }
+      for (const selectItem of selectItems) {
+        if (!selectItem.checked) {
+          const dataIndex = selectItem.filter.dataIndex
+          conditions[dataIndex] = []
+          for (const valueItem of selectItem.valueItems) {
+            if (valueItem.checked === true) {
+              conditions[dataIndex].push(valueItem.filter.value)
+            }
           }
         }
       }
-    }
-    // create a function for each dataIndex
-    for (const dataIndex of Object.keys(conditions)) {
-        filterFns.push({
-          fn: function (record) {
-            const value = record.data[dataIndex]
-            if (Array.isArray(value)) { 
-            // the record data is an Array of values
+      // create a function for each dataIndex
+      for (const dataIndex of Object.keys(conditions)) {
+          filterFns.push({
+            fn: function (record) {
+              const value = record.data[dataIndex]
+              if (Array.isArray(value)) { 
+              // the record data is an Array of values
+                if (Array.isArray(conditions[dataIndex])) {
+                  if (conditions[dataIndex].includes('') && value.length === 0) return true
+                  return value.some( v => conditions[dataIndex].includes(v))
+                }
+              }
+  
+              // the record data is a scalar value (we're missing object handling?)
               if (Array.isArray(conditions[dataIndex])) {
-                if (conditions[dataIndex].includes('') && value.length === 0) return true
-                return value.some( v => conditions[dataIndex].includes(v))
+                return conditions[dataIndex].includes(value) 
+              }
+              else {
+                // match case-insensitive condition anywhere in value
+                const a = value.toLowerCase()
+                const b = conditions[dataIndex].toLowerCase()
+                return a.indexOf(b) > -1
               }
             }
-
-            // the record data is a scalar value (we're missing object handling?)
-            if (Array.isArray(conditions[dataIndex])) {
-              return conditions[dataIndex].includes(value) 
-            }
-            else {
-              // match case-insensitive condition anywhere in value
-              const a = value.toLowerCase()
-              const b = conditions[dataIndex].toLowerCase()
-              return a.indexOf(b) > -1
-            }
-          }
-        })  
-    }
-    return filterFns.length ? filterFns : null
-  },
-  onFilterChange: function (item, value) {
-    switch (item.filter.type) {
-      case 'string':
-        item.column.filtered = !!(item.getValue())
-        break
-      case 'values':
-        const hmenuItems = this.hmenu.items.items
-        const hmenuPeers = hmenuItems.filter( i => i.filter?.type === 'values' && i.filter?.dataIndex === item.filter.dataIndex)
-        const hmenuPeersChecked = hmenuPeers.map( i => i.checked)
-        item.column.filtered = hmenuPeersChecked.includes(false)
-        break
-      case 'selectall':
-        item.column.filtered = !(!!value)
-        break
-    }
-    this.fireEvent('filterschanged', this, item, value)
-  },
-  afterRenderUI: function () {
-    const _this = this
-    const dynamicColumns = []
-
-    SM.ColumnFilters.GridView.superclass.afterRenderUI.call(this)
-
-    const hmenu = this.hmenu
-    hmenu.filterItems = {
-      stringItems: [],
-      selectItems: []
-    }
-    // disables keyboard navigation, needed to support left-right arrow in search input
-    hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
-    const itemSeparator = hmenu.addItem('-')
-
-    const itemLabel = hmenu.addItem({
-      hideOnClick : false,
-      activeClass: '',
-      text: 'FILTER',
-      iconCls: 'sm-menuitem-filter-icon',
-      cls: 'sm-menuitem-filter-label'
-    })
-
-    // (Re)build the dynamic value items
-    function buildDynamicValues (records, isLoading) {
-      // iterate the dynamic menu items, save their current values if not loading, and remove them
-      const cVals = {}
-      for (const selectAllItem of hmenu.filterItems.selectItems) {
-        const dataIndex = selectAllItem.filter.dataIndex
-        ;(cVals[dataIndex] = cVals[dataIndex] || []).selectAllChecked = selectAllItem.checked
-        for (const valueItem of selectAllItem.valueItems) {
-          if (valueItem.checked && !isLoading) {
-            cVals[dataIndex].push(valueItem.filter.value)
-          }      
-          hmenu.remove(valueItem)
-        }
-        hmenu.remove(selectAllItem)
+          })  
       }
-      hmenu.filterItems.selectItems = []
-      
-      // iterate the dynamic columns and create menu items, restoring saved values if not loading
-      for (const col of dynamicColumns) {
-        if (isLoading) col.filtered = false
-        const itemConfigs = []
-        // get unique values for this column from the record set
-        // const uniqueSet = new Set(records.flatMap( r => Array.isArray(r.data[col.dataIndex] ? ).flat())
-        const uniqueSet = new Set(records.flatMap( r => r.data[col.dataIndex] ? (r.data[col.dataIndex].length ? r.data[col.dataIndex] : '') : r.data[col.dataIndex] ))
-        const uniqueArray = [...uniqueSet].sort(col.filter.comparer)
-        const cValue = cVals[col.dataIndex]
-        for ( const value of uniqueArray ) {
-          itemConfigs.push({
-            text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
+      return filterFns.length ? filterFns : null
+    },
+    onFilterChange: function (item, value) {
+      switch (item.filter.type) {
+        case 'string':
+          item.column.filtered = !!(item.getValue())
+          break
+        case 'values':
+          const hmenuItems = this.hmenu.items.items
+          const hmenuPeers = hmenuItems.filter( i => i.filter?.type === 'values' && i.filter?.dataIndex === item.filter.dataIndex)
+          const hmenuPeersChecked = hmenuPeers.map( i => i.checked)
+          item.column.filtered = hmenuPeersChecked.includes(false)
+          break
+        case 'selectall':
+          item.column.filtered = !(!!value)
+          break
+      }
+      this.fireEvent('filterschanged', this, item, value)
+    },
+    afterRenderUI: function () {
+      const _this = this
+      const dynamicColumns = []
+  
+      SM.ColumnFilters.GridView.superclass.afterRenderUI.call(this)
+  
+      const hmenu = this.hmenu
+      hmenu.filterItems = {
+        stringItems: [],
+        selectItems: []
+      }
+      // disables keyboard navigation, needed to support left-right arrow in search input
+      hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
+      const itemSeparator = hmenu.addItem('-')
+  
+      const itemLabel = hmenu.addItem({
+        hideOnClick : false,
+        activeClass: '',
+        text: 'FILTER',
+        iconCls: 'sm-menuitem-filter-icon',
+        cls: 'sm-menuitem-filter-label'
+      })
+  
+      // (Re)build the dynamic value items
+      function buildDynamicValues (records, isLoading) {
+        // iterate the dynamic menu items, save their current values if not loading, and remove them
+        const cVals = {}
+        for (const selectAllItem of hmenu.filterItems.selectItems) {
+          const dataIndex = selectAllItem.filter.dataIndex
+          ;(cVals[dataIndex] = cVals[dataIndex] || []).selectAllChecked = selectAllItem.checked
+          for (const valueItem of selectAllItem.valueItems) {
+            if (valueItem.checked && !isLoading) {
+              cVals[dataIndex].push(valueItem.filter.value)
+            }      
+            hmenu.remove(valueItem)
+          }
+          hmenu.remove(selectAllItem)
+        }
+        hmenu.filterItems.selectItems = []
+        
+        // iterate the dynamic columns and create menu items, restoring saved values if not loading
+        for (const col of dynamicColumns) {
+          if (isLoading) col.filtered = false
+          const itemConfigs = []
+          // get unique values for this column from the record set
+          // const uniqueSet = new Set(records.flatMap( r => Array.isArray(r.data[col.dataIndex] ? ).flat())
+          const uniqueSet = new Set(records.flatMap( r => r.data[col.dataIndex] ? (r.data[col.dataIndex].length ? r.data[col.dataIndex] : '') : r.data[col.dataIndex] ))
+          const uniqueArray = [...uniqueSet].sort(col.filter.comparer)
+          const cValue = cVals[col.dataIndex]
+          for ( const value of uniqueArray ) {
+            itemConfigs.push({
+              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
+              xtype: 'menucheckitem',
+              column: col,
+              hideOnClick: false,
+              // checked: isLoading ? true : cVals[col.dataIndex] ? cVals[col.dataIndex].includes(value) : false,
+              checked: isLoading ? true : cValue ? cValue.selectAllChecked || cValue.includes(value) : false,
+              filter: {
+                dataIndex: col.dataIndex,
+                type: 'values',
+                value
+              },
+              listeners: {
+                checkchange: function (item, value) {
+                  item.selectAllItem.onValueItemChanged()
+                  _this.onFilterChange(item, value)
+                }
+              }
+            })
+          }
+          // add the Select All item
+          const selectAllItem = hmenu.addItem({
+            text: '<i>(Select All)</i>',
             xtype: 'menucheckitem',
             column: col,
             hideOnClick: false,
-            // checked: isLoading ? true : cVals[col.dataIndex] ? cVals[col.dataIndex].includes(value) : false,
-            checked: isLoading ? true : cValue ? cValue.selectAllChecked || cValue.includes(value) : false,
+            checked: isLoading ? true : cValue.selectAllChecked,
             filter: {
               dataIndex: col.dataIndex,
-              type: 'values',
-              value
+              type: 'selectall'
+            },
+            valueItems: [],
+            onValueItemChanged: function () {
+              const state = this.valueItems.every( i => i.checked )
+              this.setChecked(state, true)
             },
             listeners: {
-              checkchange: function (item, value) {
-                item.selectAllItem.onValueItemChanged()
-                _this.onFilterChange(item, value)
+              checkchange: function (item, checked) {
+                for (const valueItem of item.valueItems) {
+                  valueItem.setChecked(checked, true)
+                }
+                _this.onFilterChange(item, checked)
               }
             }
           })
+          // add the child items
+          for (const itemConfig of itemConfigs) {
+            itemConfig.selectAllItem = selectAllItem
+            const valueItem = hmenu.addItem(itemConfig)
+            selectAllItem.valueItems.push(valueItem)
+          }
+          hmenu.filterItems.selectItems.push(selectAllItem)
         }
-        // add the Select All item
-        const selectAllItem = hmenu.addItem({
-          text: '<i>(Select All)</i>',
-          xtype: 'menucheckitem',
-          column: col,
-          hideOnClick: false,
-          checked: isLoading ? true : cValue.selectAllChecked,
-          filter: {
-            dataIndex: col.dataIndex,
-            type: 'selectall'
-          },
-          valueItems: [],
-          onValueItemChanged: function () {
-            const state = this.valueItems.every( i => i.checked )
-            this.setChecked(state, true)
-          },
-          listeners: {
-            checkchange: function (item, checked) {
-              for (const valueItem of item.valueItems) {
-                valueItem.setChecked(checked, true)
-              }
-              _this.onFilterChange(item, checked)
+      }
+  
+      this.grid.store.on('load', function (store, records, opt) {
+        buildDynamicValues(store.data.items, true)
+        for (const stringItem of hmenu.filterItems.stringItems) {
+          stringItem.setValue('')
+          stringItem.column.filtered = false
+        }
+        _this.setColumnFilteredStyle() 
+      })
+      this.grid.store.on('update', function (store, record) {
+        buildDynamicValues(store.snapshot ? store.snapshot.items : store.data.items, false)
+      })
+  
+  
+      // Hide menuitems not associated with the clicked column
+      hmenu.on('beforeshow', function (menu) {
+        const dataIndex = _this.cm.config[_this.hdCtxIndex].dataIndex
+        let showSep = false
+        for (const menuitem of menu.items.items) {
+          if (menuitem.filter) {
+            const isVisible = menuitem.filter.dataIndex === dataIndex
+            if (isVisible) showSep = true
+            menuitem.setVisible(isVisible)
+          }
+        }
+        itemSeparator.setVisible(showSep)    
+        itemLabel.setVisible(showSep)    
+      })
+  
+      for (const col of this.cm.config) {
+        switch (col.filter?.type) {
+          case 'string':
+            if (col.renderer) {
+              col.configRenderer = col.renderer
+              col.renderer = SM.ColumnFilters.Renderers.highlighterShim
             }
-          }
-        })
-        // add the child items
-        for (const itemConfig of itemConfigs) {
-          itemConfig.selectAllItem = selectAllItem
-          const valueItem = hmenu.addItem(itemConfig)
-          selectAllItem.valueItems.push(valueItem)
-        }
-        hmenu.filterItems.selectItems.push(selectAllItem)
-      }
-    }
-
-    this.grid.store.on('load', function (store, records, opt) {
-      buildDynamicValues(store.data.items, true)
-      for (const stringItem of hmenu.filterItems.stringItems) {
-        stringItem.setValue('')
-        stringItem.column.filtered = false
-      }
-      _this.setColumnFilteredStyle() 
-    })
-    this.grid.store.on('update', function (store, record) {
-      buildDynamicValues(store.snapshot ? store.snapshot.items : store.data.items, false)
-    })
-
-
-    // Hide menuitems not associated with the clicked column
-    hmenu.on('beforeshow', function (menu) {
-      const dataIndex = _this.cm.config[_this.hdCtxIndex].dataIndex
-      let showSep = false
-      for (const menuitem of menu.items.items) {
-        if (menuitem.filter) {
-          const isVisible = menuitem.filter.dataIndex === dataIndex
-          if (isVisible) showSep = true
-          menuitem.setVisible(isVisible)
-        }
-      }
-      itemSeparator.setVisible(showSep)    
-      itemLabel.setVisible(showSep)    
-    })
-
-    for (const col of this.cm.config) {
-      switch (col.filter?.type) {
-        case 'string':
-          if (col.renderer) {
-            col.configRenderer = col.renderer
-            col.renderer = SM.ColumnFilters.Renderers.highlighterShim
-          }
-          const stringItem = hmenu.add(new SM.ColumnFilters.SearchTextField({
-            emptyText: "Contains...",
-            height: 24,
-            column: col,
-            filter: { dataIndex: col.dataIndex, type: 'string'},
-            enableKeyEvents: true,
-            hideParent: true,
-            listeners: {
-              input: function (item, e) {
-                _this.onFilterChange(item, item.value)
-              },
-              keyup: function (item, e) {
-                const k = e.getKey()
-                if (k == e.RETURN) {
-                    e.stopEvent();
-                    hmenu.hide(true)
+            const stringItem = hmenu.add(new SM.ColumnFilters.SearchTextField({
+              emptyText: "Contains...",
+              height: 24,
+              column: col,
+              filter: { dataIndex: col.dataIndex, type: 'string'},
+              enableKeyEvents: true,
+              hideParent: true,
+              listeners: {
+                input: function (item, e) {
+                  _this.onFilterChange(item, item.value)
+                },
+                keyup: function (item, e) {
+                  const k = e.getKey()
+                  if (k == e.RETURN) {
+                      e.stopEvent();
+                      hmenu.hide(true)
+                  }
                 }
               }
-            }
-          }))
-          hmenu.filterItems.stringItems.push(stringItem)
-          break
-        case 'values':
-          // calculate 
-          console.log(`Column ${col.header} Type values `)
-          dynamicColumns.push(col)
-          break
+            }))
+            hmenu.filterItems.stringItems.push(stringItem)
+            break
+          case 'values':
+            // calculate 
+            console.log(`Column ${col.header} Type values `)
+            dynamicColumns.push(col)
+            break
+        }
       }
+      
+      buildDynamicValues(this.grid.store.data.items, true)
     }
-    
-    buildDynamicValues(this.grid.store.data.items, true)
-  }
-})
+  })
+}
+
+SM.ColumnFilters.GridView = extend(Ext.grid.GridView)
+SM.ColumnFilters.GridViewBuffered = extend(Ext.ux.grid.BufferView)
+
 
 SM.ColumnFilters.SearchTextField = Ext.extend(Ext.form.TextField, {
   initComponent: function () {

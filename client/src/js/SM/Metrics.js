@@ -7,7 +7,7 @@ Chart.defaults.font = {
 
 SM.Metrics.Renderers = {
   severityCount: function (v, md) {
-    return v === 0 ? '' : `<div class="sm-metrics-findings-count-cell sm-metrics-${this.dataIndex}-box">${v}</div>`
+    return v === 0 ? '' : `<div class="sm-metrics-findings-count-cell sm-metrics-${this.scope?.dataIndex}-box">${v}</div>`
   }
 }
 
@@ -246,7 +246,7 @@ SM.Metrics.AggGrid = Ext.extend(Ext.grid.GridPanel, {
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
-              metadata.attr = 'style="white-space:normal;"'
+              metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
               return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
             }
           },
@@ -408,7 +408,7 @@ SM.Metrics.AggGrid = Ext.extend(Ext.grid.GridPanel, {
 
     const config = {
       layout: 'fit',
-      loadMask: true,
+      loadMask: {msg:null, msgCls:null},
       store,
       sm: new Ext.grid.RowSelectionModel({
         singleSelect: true
@@ -416,10 +416,15 @@ SM.Metrics.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       cm: new Ext.grid.ColumnModel({
         columns
       }),
-      view: new SM.ColumnFilters.GridView({
+      view: new SM.ColumnFilters.GridViewBuffered({
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,
+        // custom row height
+        rowHeight: 21,
+        borderHeight: 2,
+        // render rows as they come into viewable area.
+        scrollDelay: false,
         autoExpandColumn,
         listeners: {
           filterschanged: function (view, item, value) {
@@ -507,7 +512,7 @@ SM.Metrics.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
-              metadata.attr = 'style="white-space:normal;"'
+              metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
               return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
             }
           }
@@ -580,15 +585,20 @@ SM.Metrics.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
     
     const config = {
       layout: 'fit',
-      loadMask: true,
+      loadMask: {msg:null, msgCls:null},
       store,
       cm: new Ext.grid.ColumnModel({
         columns
       }),
-      view: new SM.ColumnFilters.GridView({
+      view: new SM.ColumnFilters.GridViewBuffered({
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,
+        // custom row height
+        rowHeight: 21,
+        borderHeight: 2,
+        // render rows as they come into viewable area.
+        scrollDelay: false,
         autoExpandColumn,
         listeners: {
           filterschanged: function (view, item, value) {
@@ -1586,7 +1596,7 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
       try {
         if (srcCollectionId === collectionId) {
           currentLabelIds = srcLabelIds
-          apiMetricsCollection = await getMetricsAggCollection(collectionId, currentLabelIds)
+          let apiMetricsCollection = await getMetricsAggCollection(collectionId, currentLabelIds)
           updateOverviewTitle()
           overviewPanel.updateMetrics(apiMetricsCollection)
           currentBaseParams = currentLabelIds.length ? { labelId: currentLabelIds } : undefined
@@ -1605,6 +1615,7 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
     async function updateData (onlyRefreshView = false) {
       try {
         console.log(`${collectionName}: executing updateData(${onlyRefreshView})`)
+        let apiMetricsCollection
         if (!onlyRefreshView) {
           console.log(`${collectionName}: cancelling refreshView timer, id ${refreshViewTimer}`)
           clearTimeout(refreshViewTimer)

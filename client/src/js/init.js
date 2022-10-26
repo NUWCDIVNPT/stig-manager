@@ -88,6 +88,7 @@ function loadScripts() {
         "js/chart.min.js",
         "js/stigmanUtils.js",
         'js/SM/Global.js',
+        'js/BufferView.js',
         'js/SM/EventDispatcher.js',
         'js/SM/Cache.js',
         'js/SM/ServiceWorker.js',
