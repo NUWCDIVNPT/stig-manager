@@ -404,6 +404,9 @@ const baseCols = {
     'cast(a.assetId as char) as assetId',
     'a.name',
     sqlLabels,
+    'a.ip',
+    'a.fqdn',
+    'a.mac',
     'case when count(sa.benchmarkId) > 0 THEN json_arrayagg(sa.benchmarkId) ELSE json_array() END as benchmarkIds'
   ],
   collection: [

@@ -4694,6 +4694,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelBasic'
+        fqdn:
+          type: string
+          nullable: true
+          maxLength: 255
+        ip:
+          type: string
+          nullable: true
+          maxLength: 255
+        mac:
+          type: string
+          nullable: true
+          maxLength: 255
+        noncomputing:
+          type: boolean
         benchmarkIds:
           type: array
           items:

@@ -45,7 +45,7 @@ async function addCollectionManager( params ) {
 			collectionId: collectionId,
 			collectionName: collectionName,
 			apiFieldSettings: apiFieldSettings,
-			url: `${STIGMAN.Env.apiBase}/assets`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary/asset`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
 			title: 'Assets',
