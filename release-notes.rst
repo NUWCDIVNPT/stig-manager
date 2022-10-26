@@ -1,3 +1,15 @@
+1.2.17
+-----
+
+Changes:
+
+  - (App) Added buffered views for Grids with poor performance when displaying very large Collection data.
+  - (API) Adjustment to Metrics endpoints so that they serve data formerly returned from the statusStats projection.
+  - (Fix) The two changes above comprise a hotfix addressing poor performance in some areas with very large Collections. 
+  - (API) Compression enabled for API responses where appropriate.
+  - (Tests) Adjusted STIGs used in tests to avoid collisions with standard benchmarkIds. 
+
+
 1.2.16
 -----
 
