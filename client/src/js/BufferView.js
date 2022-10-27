@@ -70,13 +70,10 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 		return Ext.isBorderBox ? (this.rowHeight + this.borderHeight) : this.rowHeight;
 	},
 
-	getCalculatedRowHeight : function(){
-		return this.rowHeight + this.borderHeight;
+	getCalculatedRowHeight: function () {
+		return this.scroller.dom.scrollHeight === this.scroller.dom.clientHeight ?
+		this.rowHeight + this.borderHeight : this.scroller.dom.scrollHeight / this.ds.getCount();
 	},
-	// getCalculatedRowHeight: function () {
-	// 	return this.scroller.dom.scrollHeight === this.scroller.dom.clientHeight ?
-	// 	this.rowHeight + this.borderHeight : this.scroller.dom.scrollHeight / this.ds.getCount();
-	// },
 
 	getVisibleRowCount : function(){
 		var rh = this.getCalculatedRowHeight(),
