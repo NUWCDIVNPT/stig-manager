@@ -873,6 +873,51 @@ async function addReview( params ) {
     emptyText: 'No other assets to display'
   });
 
+  otherGrid.rowTipTpl = new Ext.XTemplate(
+    '<tpl if="data.detail">',
+    '<p><b>Detail:</b> {[SM.TruncateRecordProperty(values, "detail")]}</p>',
+    '</tpl>',
+    '<tpl if="data.comment">',
+    '<p><b>Comment:</b> {[SM.TruncateRecordProperty(values, "comment")]}</p>',
+    '</tpl>'
+  )
+
+  otherGrid.on('render', function (grid) {
+    const store = grid.getStore()  
+    const view = grid.getView() 
+    grid.tip = new Ext.ToolTip({
+      target: view.mainBody,   
+      delegate: '.x-grid3-row',
+      trackMouse: true,
+      renderTo: document.body,
+      constrainPosition: true,
+      onMouseMove: function (e) { //override built-in method
+        var t = this.delegate ? e.getTarget(this.delegate) : this.triggerElement = true;
+        if (t) {
+          this.targetXY = e.getXY();
+          if (t === this.triggerElement) {
+            if (!this.hidden && this.trackMouse) {
+              // call showAt() instead of setPagePosition()
+              Ext.ToolTip.superclass.showAt.call(this, this.getTargetXY())
+            }
+          } else {
+            this.hide();
+            this.lastActive = new Date(0);
+            this.onTargetOver(e);
+          }
+        } else if (!this.closable && this.isVisible()) {
+          this.hide();
+        }
+      },
+      listeners: {
+        beforeshow: function updateTipBody(tip) {
+          const rowIndex = view.findRowIndex(tip.triggerElement)
+          tip.body.dom.innerHTML = grid.rowTipTpl.apply(store.getAt(rowIndex))
+        }
+      }
+    })
+  })
+
   /******************************************************/
   // END Other Grid
   /******************************************************/
