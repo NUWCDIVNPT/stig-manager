@@ -117,7 +117,7 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 					p.id = c.id;
 					p.css = i === 0 ? 'x-grid3-cell-first ' : (i == last ? 'x-grid3-cell-last ' : '');
 					p.attr = p.cellAttr = "";
-					p.value = c.renderer(r.data[c.name], p, r, rowIndex, i, ds);
+					p.value = c.renderer.call(c.scope || c, r.data[c.name], p, r, rowIndex, i, ds);
 					p.style = c.style;
 					if (p.value === undefined || p.value === "") {
 						p.value = "&#160;";
