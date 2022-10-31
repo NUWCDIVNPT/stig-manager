@@ -37,7 +37,6 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     'left join collection c on a.collectionId = c.collectionId',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId'
   ]
 
@@ -103,7 +102,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   }
   if (inProjection.includes('stigs')) {
     //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
-    // joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
+    joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
     joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
     columns.push(`cast(
       concat('[', 
@@ -178,9 +177,9 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   predicates.binds.push(userObject.userId)
 
   const groupBy = [
-    'a.assetId', 'a.name', 'a.fqdn', 'a.collectionId', 'a.description', 'a.ip', 'a.mac', 'a.noncomputing', 'c.collectionId', 'c.name'     
+    'a.assetId'     
   ]
-  const orderBy = ['a.name']
+  const orderBy = []
 
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
