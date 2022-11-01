@@ -815,7 +815,7 @@ async function addCollectionReview ( params ) {
 					dataIndex: 'detail',
 					renderer: function (v) {
 						v = v?.length > SM.TruncateLimit ? v.slice(0,SM.TruncateLimit) + '...' : SM.styledEmptyRenderer(v)
-						return columnWrap.apply(this, arguments)
+						return v
 					},
 					sortable: true,
 					filter: {
@@ -851,7 +851,7 @@ async function addCollectionReview ( params ) {
 					dataIndex: 'comment',
 					renderer: function (v) {
 						v = v?.length > SM.TruncateLimit ? v.slice(0,SM.TruncateLimit) + '...' : SM.styledEmptyRenderer(v)
-						return columnWrap.apply(this, arguments)
+						return v
 					},
 					filter: {
 						type: 'string'
