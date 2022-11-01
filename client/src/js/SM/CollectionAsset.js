@@ -329,7 +329,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                           })
                           let returnedAsset = JSON.parse(result.response.responseText)
                           result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary/asset`,
+                            url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metrics/summary/asset`,
                             method: 'GET',
                             params: {
                                 assetId: thisRecord.data.assetId
