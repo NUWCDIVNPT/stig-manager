@@ -246,12 +246,10 @@ function extend (extended = Ext.grid.GridView) {
       }
   
       this.grid.store.on('load', function (store, records, opt) {
-        buildDynamicValues(store.data.items, true)
-        for (const stringItem of hmenu.filterItems.stringItems) {
-          stringItem.setValue('')
-          stringItem.column.filtered = false
-        }
-        _this.setColumnFilteredStyle() 
+        buildDynamicValues(store.data.items, false)
+        _this.setColumnFilteredStyle()
+        _this.fireEvent('filterschanged', _this)
+
       })
       this.grid.store.on('update', function (store, record) {
         buildDynamicValues(store.snapshot ? store.snapshot.items : store.data.items, false)
