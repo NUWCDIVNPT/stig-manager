@@ -7,7 +7,7 @@ Chart.defaults.font = {
 
 SM.Metrics.Renderers = {
   severityCount: function (v, md) {
-    return v === 0 ? '' : `<div class="sm-metrics-findings-count-cell sm-metrics-${this.scope?.dataIndex}-box">${v}</div>`
+    return v === 0 ? '' : `<div class="sm-metrics-findings-count-cell sm-metrics-${this.dataIndex}-box">${v}</div>`
   }
 }
 
