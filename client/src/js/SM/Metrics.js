@@ -1456,7 +1456,7 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
     const { collectionId, collectionName, treePath, initialLabelIds } = options
     let currentBaseParams = initialLabelIds.length ? { labelId: initialLabelIds } : undefined
     let currentLabelIds = initialLabelIds
-    let lastApiRefresh
+    let lastApiRefresh, lastApiMetricsCollection
     const updateDataDelay = 300000
     const updateOverviewTitleDelay = 60000
     let updateDataTimer, refreshViewTimer, updateOverviewTitleInterval
@@ -1480,7 +1480,8 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
         params
       })
       lastApiRefresh = new Date()
-      return JSON.parse(results.response.responseText)
+      lastApiMetricsCollection = JSON.parse(results.response.responseText)
+      return lastApiMetricsCollection
     }
     
     const overviewPanel = new SM.Metrics.OverviewPanel({
@@ -1615,7 +1616,7 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
     async function updateData (onlyRefreshView = false) {
       try {
         console.log(`${collectionName}: executing updateData(${onlyRefreshView})`)
-        let apiMetricsCollection
+        let apiMetricsCollection = lastApiMetricsCollection
         if (!onlyRefreshView) {
           console.log(`${collectionName}: cancelling refreshView timer, id ${refreshViewTimer}`)
           clearTimeout(refreshViewTimer)
