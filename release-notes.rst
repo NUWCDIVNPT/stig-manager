@@ -1,3 +1,17 @@
+1.2.18
+-----
+
+Changes:
+
+  - (App) Added tooltips to display "Other Assets" review content. 
+  - (App) Preserve column filters when loading grid data.
+  - (Fix) Addressed a bug causing an alert when viewing metrics with fresh reviews.
+  - (Fix) Addressed a bug preventing Assets from being transferred to other Collections. 
+  - (Fix) Addressed a bug preventing new Reviews from being manually changed when no commentary is provided by the user.
+  - (Fix) Addressed a bug causing text to wrap instead of being truncated in the Collection Review workspace.
+  - (Fix) Addressed a bug that could cause display issues for buffered grids at certain zoom levels.
+  - (API) Addressed performance issue when querying Assets from large Collections by removing unnecessary grouping clauses.
+
 1.2.17
 -----
 
