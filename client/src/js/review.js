@@ -1263,7 +1263,7 @@ async function addReview( params ) {
       // })
       // masktask.delay(100)
 
-      let fvalues = fp.getForm().getFieldValues(false, false) // dirtyOnly=false, getDisabled=true
+      let fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
       let jsonData = {
         result: fvalues.result,
         detail: fvalues.detail,
