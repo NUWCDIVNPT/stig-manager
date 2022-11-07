@@ -241,5 +241,6 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 	layout: function(){
 		Ext.ux.grid.BufferView.superclass.layout.call(this);
 		this.update();
-	}
+	},
+	isBufferView: true
 });

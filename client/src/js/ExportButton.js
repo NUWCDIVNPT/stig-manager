@@ -159,22 +159,44 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 		
 		// Process all the records in the grid's store
 		let recordCount = store.getCount();
-		for (let x=0; x < recordCount; x++){
-			// rowCells[] is an array of <td> children of the first <tr> element of a row
-			let rowCells = view.getRow(x).getElementsByTagName('tr')[0].cells;
+		for (let rowIndex = 0; rowIndex < recordCount; rowIndex++){
 			// rowArray[] will hold data for a single CSV row
 			let rowArray = [`(${appConfig.classification})`];
-			// Iterate across the included column indexes 
-			for (let x=0; x < ci.length; x++){
-				// Try to find the first child element with an 'exportvalue' attribute
-				let ev = rowCells[ci[x]].querySelector('[exportvalue]');
-				if (ev != null) {
-					// An element with an 'exportvalue' attribute was found was found. The CSV data will be the value of 'exportvalue'
-					rowArray.push('"' + ev.getAttribute('exportvalue') + '"');
-				} else {
-					// No element with an 'exportvalue' attribute was found was found. The CSV data will be the quoted and escaped textContent of the <td>'s firstChild
-					let value = '"' + rowCells[ci[x]].firstChild.textContent.replace(/"/g,'""').trim() + '"';
-					rowArray.push(value);
+
+			if (view.isBufferView) {
+				let r = store.data.items[rowIndex]
+				// Iterate across the included column indexes 
+				for (let x=0; x < ci.length; x++) {
+					const c = columns[ci[x]]
+					const p = {}
+					const rendered = c.renderer.call(c.scope || c, r.data[c.dataIndex], p, r, rowIndex, x, store)
+					const exportvalue = p.attr?.match(/exportvalue="(.*)"/)?.[1]
+					if (exportvalue) {
+						rowArray.push('"' + exportvalue + '"');
+					}
+					else {
+						const templateEl = document.createElement('template')
+						templateEl.innerHTML = rendered
+						const value = '"' + templateEl.content.textContent.replace(/"/g,'""').trim() + '"'
+						rowArray.push(value)
+					}
+				}	
+			}
+			else {
+				// rowCells[] is an array of <td> children of the first <tr> element of a row
+				let rowCells = view.getRow(rowIndex).getElementsByTagName('tr')[0].cells;
+				// Iterate across the included column indexes 
+				for (let x=0; x < ci.length; x++){
+					// Try to find the first child element with an 'exportvalue' attribute
+					let ev = rowCells[ci[x]].querySelector('[exportvalue]');
+					if (ev != null) {
+						// An element with an 'exportvalue' attribute was found was found. The CSV data will be the value of 'exportvalue'
+						rowArray.push('"' + ev.getAttribute('exportvalue') + '"');
+					} else {
+						// No element with an 'exportvalue' attribute was found was found. The CSV data will be the quoted and escaped textContent of the <td>'s firstChild
+						let value = '"' + rowCells[ci[x]].firstChild.textContent.replace(/"/g,'""').trim() + '"';
+						rowArray.push(value);
+					}
 				}
 			}
 			// Comma separate the row data and append to the CSV 
@@ -183,7 +205,7 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 		
 		return csv;	
 	},
-	
+
 	storeToCsv: function (store) {
 		let csv = "";
 		
