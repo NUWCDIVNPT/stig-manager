@@ -125,12 +125,7 @@
         // get benchmarkId
         let stigIdElement = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'stigid' )[0]
         checklist.benchmarkId = stigIdElement.SID_DATA.replace('xccdf_mil.disa.stig_benchmark_', '')
-        // get revision
-        const stigVersion = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'version' )[0].SID_DATA
-        let stigReleaseInfo = iStig.STIG_INFO[0].SI_DATA.filter( d => d.SID_NAME === 'releaseinfo' )[0].SID_DATA
-        const stigRelease = stigReleaseInfo.match(/Release:\s*(.+?)\s/)[1]
-        const stigRevisionStr = `V${stigVersion}R${stigRelease}`
-        checklist.revisionStr = stigRevisionStr
+        // STIG Revision (Version and Release) string validation check no longer performed here, due to inconsistency in the way other tools populate the releaseinfo element. 
   
         if (checklist.benchmarkId) {
           let x = processVuln(iStig.VULN)
