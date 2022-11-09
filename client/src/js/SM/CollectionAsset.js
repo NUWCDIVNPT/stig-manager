@@ -368,7 +368,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const config = {
             layout: 'fit',
-            loadMask: {msg:null, msgCls:null},
+            loadMask: {msg:''},
             store: assetStore,
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   

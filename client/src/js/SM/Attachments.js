@@ -243,7 +243,7 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
           fileUploadField
         ]
       }),
-      loadMask: true,
+      loadMask: {msg: ''},
       autoExpandColumn: `name-${nonce}`,
       emptyText: 'No attachments to display',
       listeners: {

@@ -17,7 +17,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           loader: new Ext.tree.TreeLoader({
             directFn: me.loadTree
           }),
-          loadMask: 'Loading...',
+          loadMask: {msg: ''},
           listeners: {
             click: function (node) {
               me.treeClick(me, node)

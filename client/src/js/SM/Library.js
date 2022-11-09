@@ -241,7 +241,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
       bbar,
       autoExpandColumn: ruleTitleColumnId,
       stripeRows: true,
-      loadMask: true
+      loadMask: {msg: ''}
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     SM.Library.ChecklistGrid.superclass.initComponent.call(this);

@@ -191,7 +191,35 @@ Ext.override(Ext.Window, {
     cls: 'sm-round-panel',
     frame: false,
     resizable: false,
-    shadow: false
+    shadow: false,
+    // private
+    onRender : function(ct, position){
+        Ext.Window.superclass.onRender.call(this, ct, position);
+
+        if(this.plain){
+            this.el.addClass('x-window-plain');
+        }
+
+        // this element allows the Window to be focused for keyboard events
+        this.focusEl = this.el.createChild({
+                    tag: 'a', href:'#', cls:'x-dlg-focus',
+                    tabIndex:'-1', html: '&#160;'});
+        this.focusEl.swallowEvent('click', true);
+
+        this.proxy = this.el.createProxy('x-window-proxy');
+        this.proxy.enableDisplayMode('block');
+
+        if(this.modal){
+            this.mask = this.container.createChild({cls:'ext-el-mask-modal'}, this.el.dom);
+            this.mask.enableDisplayMode('block');
+            this.mask.hide();
+            this.mon(this.mask, 'click', this.focus, this);
+        }
+        if(this.maximizable){
+            this.mon(this.header, 'dblclick', this.toggleMaximize, this);
+        }
+    },
+
 })
 
 // Form.getFieldValues
@@ -1056,5 +1084,98 @@ Ext.override(Ext.data.JsonStore, {
             })
         })
     }
+
+})
+
+// replace the Ext.Element.mask() method
+Ext.Element.addMethods({
+        /**
+     * Puts a mask over this element to disable user interaction. Requires core.css.
+     * This method can only be applied to elements which accept child nodes.
+     * @param {String} msg (optional) A message to display in the mask
+     * @param {String} msgCls (optional) A css class to apply to the msg element
+     * @return {Element} The mask element
+     */
+    mask : function(msg, msgCls) {
+        var me  = this,
+            dom = me.dom,
+            dh  = Ext.DomHelper,
+            EXTELMASKMSG = "ext-el-mask-msg",
+            XMASKED = "x-masked",
+            XMASKEDRELATIVE = "x-masked-relative",
+            el,
+            mask,
+            data = Ext.Element.data;
+
+        if (el = data(dom, 'maskMsgDiv')) {
+            el.innerHTML = msg
+            return
+        }
+
+        if (!/^body/i.test(dom.tagName) && me.getStyle('position') == 'static') {
+            me.addClass(XMASKEDRELATIVE);
+        }
+        if (el = data(dom, 'maskMsg')) {
+            el.remove();
+        }
+        if (el = data(dom, 'mask')) {
+            el.remove();
+        }
+
+        mask = dh.append(dom, {cls : "ext-el-mask"}, true);
+        data(dom, 'mask', mask);
+
+        me.addClass(XMASKED);
+        mask.setDisplayed(true);
+        
+        if (typeof msg == 'string') {
+            // change the tag to <span> instead of <div>, to support CSS-only spinner
+            const cn = msg ? [{tag:'div'},{tag:'span'}] : {tag:'span'}
+            var mm = dh.append(dom, {cls : EXTELMASKMSG, cn}, true);
+            data(dom, 'maskMsg', mm);
+            mm.dom.className = msgCls ? EXTELMASKMSG + " " + msgCls : EXTELMASKMSG;
+            if (msg) {
+                mm.dom.firstChild.innerHTML = msg;
+                data(dom, 'maskMsgDiv', mm.dom.firstChild);
+            }
+            mm.setDisplayed(true);
+            // Don't calculate centering, let CSS take care of it
+            // mm.center(me);
+        }
+        
+        // ie will not expand full height automatically
+        if (Ext.isIE && !(Ext.isIE7 && Ext.isStrict) && me.getStyle('height') == 'auto') {
+            mask.setSize(undefined, me.getHeight());
+        }
+        
+        return mask;
+    },
+    /**
+     * Removes a previously applied mask.
+     */
+    unmask : function() {
+        const data = Ext.Element.data
+        const me = this,
+        dom = me.dom,
+        mask = data(dom, 'mask'),
+        maskMsg = data(dom, 'maskMsg'),
+        maskMsgDiv = data(dom, 'maskMsgDiv'),
+        XMASKED = "x-masked",
+        XMASKEDRELATIVE = "x-masked-relative";
+
+        if (mask) {
+            if (maskMsg) {
+                maskMsg.remove();
+                data(dom, 'maskMsg', undefined);
+                if (maskMsgDiv) {
+                    data(dom, 'maskMsgDiv', undefined);
+                }
+            }
+            
+            mask.remove();
+            data(dom, 'mask', undefined);
+            me.removeClass([XMASKED, XMASKEDRELATIVE]);
+        }
+    },
 
 })

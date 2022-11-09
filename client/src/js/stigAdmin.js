@@ -11,7 +11,7 @@ function addStigAdmin( params ) {
 		margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 		region: 'center',
 		stripeRows:true,
-		loadMask: true
+		loadMask: {msg: ''}
 	})
 
 	var thisTab = Ext.getCmp('main-tab-panel').add({

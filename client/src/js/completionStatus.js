@@ -99,7 +99,7 @@ function addCompletionStatus( params) {
 			{header: "Cat 3",width:10,dataIndex:'lowCount',sortable:true,align:'right',renderer:renderCat23,summaryType: 'sum'}
 			
 		],
-		loadMask: true,
+		loadMask: {msg: ''},
 		stripeRows: true,
 		view: new Ext.grid.GroupingView({
 			enableGrouping:true,

@@ -169,7 +169,7 @@ function addUserAdmin(params ) {
 				text: 'Pre-register User',
 				disabled: !(curUser.privileges.canAdmin),
 				handler: function() {
-					Ext.getBody().mask('Loading form...');
+					Ext.getBody().mask('');
 					showUserProps(0);            
 				}
 			},
@@ -259,7 +259,7 @@ function addUserAdmin(params ) {
 		]
 		}),
 		width: '50%',
-		loadMask: true
+		loadMask: {msg: ''}
 	})
 
 	const onUserChanged = function (apiUser) {

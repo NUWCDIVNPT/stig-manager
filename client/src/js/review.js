@@ -548,7 +548,7 @@ async function addReview( params ) {
 
     ],
     autoExpandColumn: 'ruleTitle' + idAppend,
-    loadMask: true,
+    loadMask: {msg: ''},
     tbar: new Ext.Toolbar({
       items: [
         {
@@ -868,7 +868,7 @@ async function addReview( params ) {
 			}
     ],
     // width: 300,
-    loadMask: true,
+    loadMask: {msg: ''},
     autoExpandColumn: 'target' + idAppend,
     emptyText: 'No other assets to display'
   });
@@ -1042,28 +1042,47 @@ async function addReview( params ) {
 
 
   async function handleGroupSelectionForAsset (groupGridRecord, collectionId, assetId, idAppend, benchmarkId, revisionStr) {
+    let maskTimer
     try {
+      maskTimer = setTimeout(() => {
+        reviewTab.contentPanel.bwrap.mask('')
+        reviewForm.bwrap.mask('')
+        resourcesPanel.bwrap.mask('') 
+      }, 250)
+
+      const requests = [
+        Ext.Ajax.requestPromise({
+          url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
+          method: 'GET',
+          params: {
+            projection: ['detail','ccis','checks','fixes']
+          }
+        }),
+        Ext.Ajax.requestPromise({
+          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
+          method: 'GET',
+          params: {
+            rules: 'all',
+            ruleId: groupGridRecord.data.ruleId
+          }
+        }),
+        Ext.Ajax.requestPromise({
+          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
+          method: 'GET',
+          params: { 
+            projection: ['history', 'metadata']
+          }
+        })      
+      ]
+
+      const [contentReq, reviewsReq, historyMetaReq] = await Promise.all(requests)
+
       // CONTENT
-      let contentReq = await Ext.Ajax.requestPromise({
-        url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${groupGridRecord.data.ruleId}`,
-        method: 'GET',
-        params: {
-          projection: ['detail','ccis','checks','fixes']
-        }
-      })
       let content = JSON.parse(contentReq.response.responseText)
       reviewTab.contentPanel.update(content)
       reviewTab.contentPanel.setTitle('Rule for Group ' + SM.he(groupGridRecord.data.groupId))
   
       // REVIEW
-      let reviewsReq = await Ext.Ajax.requestPromise({
-        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
-        method: 'GET',
-        params: {
-          rules: 'all',
-          ruleId: groupGridRecord.data.ruleId
-        }
-      })
       let reviews = JSON.parse(reviewsReq.response.responseText)
       let review = reviews.filter(review => review.assetId == assetId)[0] || {}
       let otherReviews = reviews.filter(review => review.assetId != assetId)
@@ -1084,13 +1103,6 @@ async function addReview( params ) {
   
       // Log, Feedback 
   
-      let historyMetaReq = await Ext.Ajax.requestPromise({
-        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
-        method: 'GET',
-        params: { 
-          projection: ['history', 'metadata']
-        }
-      })
       let reviewProjected = JSON.parse(historyMetaReq.response.responseText || '""')
       if (! reviewProjected) {
         historyData.store.removeAll()
@@ -1127,7 +1139,14 @@ async function addReview( params ) {
       else {
         alert (e)
       }
-    }	
+    }
+    finally {
+      clearTimeout(maskTimer)
+      reviewTab.contentPanel.bwrap.unmask()
+      reviewForm.bwrap.unmask()
+      resourcesPanel.bwrap.unmask()
+
+    }
   }	
   
   /******************************************************/

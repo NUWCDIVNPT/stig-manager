@@ -225,7 +225,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         let config = {
             layout: 'fit',
-            loadMask: {msg: null,msgCls: null},
+            loadMask: {msg: ''},
             store: store,
             cm: new Ext.grid.ColumnModel ({
                 columns: columns   
@@ -436,7 +436,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                 }    
             ],
             border: true,
-            loadMask: true,
+            loadMask: {msg: ''},
             stripeRows: true,
             sm: sm,
             view: new SM.ColumnFilters.GridView({
