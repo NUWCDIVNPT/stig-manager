@@ -408,9 +408,8 @@ SM.Metrics.AggGrid = Ext.extend(Ext.grid.GridPanel, {
 
     const config = {
       layout: 'fit',
-      loadMask: {msg:null, msgCls:null},
       store,
-      sm: new Ext.grid.RowSelectionModel({
+      sm: this.sm || new Ext.grid.RowSelectionModel({
         singleSelect: true
       }),
       cm: new Ext.grid.ColumnModel({
@@ -435,17 +434,9 @@ SM.Metrics.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       bbar: new Ext.Toolbar({
         items: [
           {
-            xtype: 'tbbutton',
-            grid: this,
-            iconCls: 'icon-refresh',
-            tooltip: 'Reload the metrics',
-            width: 20,
-            handler: this.reloadBtnHandler ?? function (btn) {
-              const savedSmMaskDelay = btn.grid.store.smMaskDelay
-              btn.grid.store.smMaskDelay = 0
-              btn.grid.store.reload();
-              btn.grid.store.smMaskDelay = savedSmMaskDelay
-            }
+            xtype: 'sm-reload-store-button',
+            store,
+            handler: this.reloadBtnHandler
           }, {
             xtype: 'tbseparator'
           }, {
@@ -585,7 +576,6 @@ SM.Metrics.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
     
     const config = {
       layout: 'fit',
-      loadMask: {msg:null, msgCls:null},
       store,
       cm: new Ext.grid.ColumnModel({
         columns
@@ -609,17 +599,9 @@ SM.Metrics.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
       bbar: new Ext.Toolbar({
         items: [
           {
-            xtype: 'tbbutton',
-            grid: this,
-            iconCls: 'icon-refresh',
-            tooltip: 'Reload the metrics',
-            width: 20,
-            handler: this.reloadBtnHandler ?? function (btn) {
-              const savedSmMaskDelay = btn.grid.store.smMaskDelay
-              btn.grid.store.smMaskDelay = 0
-              btn.grid.store.reload();
-              btn.grid.store.smMaskDelay = savedSmMaskDelay
-            }
+            xtype: 'sm-reload-store-button',
+            store,
+            handler: this.reloadBtnHandler
           }, {
             xtype: 'tbseparator'
           }, {
@@ -1497,7 +1479,7 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
     })
 
     const updateOverviewTitle = () => {
-      console.log(`${collectionName}: Executing updateOverviewTitle with ${currentLabelIds} and ${lastApiRefresh}`)
+      // console.log(`${collectionName}: Executing updateOverviewTitle with ${currentLabelIds} and ${lastApiRefresh}`)
       const overviewTitle = overviewTitleTpl.apply({
         labels: SM.Collection.LabelSpritesByCollectionLabelId(collectionId, currentLabelIds),
         lastApiRefresh
@@ -1581,11 +1563,11 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
       ],
       listeners: {
         beforehide: (panel) => {
-            console.log(`${collectionName}: hide tab ${panel.id}`)
+            // console.log(`${collectionName}: hide tab ${panel.id}`)
             cancelTimers()
         },
         beforeshow: (panel) => {
-            console.log(`${collectionName}: show tab ${panel.id}`)
+            // console.log(`${collectionName}: show tab ${panel.id}`)
             updateData()
         }
 
@@ -1615,24 +1597,24 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
     // handle periodic updates
     async function updateData (onlyRefreshView = false) {
       try {
-        console.log(`${collectionName}: executing updateData(${onlyRefreshView})`)
+        // console.log(`${collectionName}: executing updateData(${onlyRefreshView})`)
         let apiMetricsCollection = lastApiMetricsCollection
         if (!onlyRefreshView) {
-          console.log(`${collectionName}: cancelling refreshView timer, id ${refreshViewTimer}`)
+          // console.log(`${collectionName}: cancelling refreshView timer, id ${refreshViewTimer}`)
           clearTimeout(refreshViewTimer)
-          console.log(`${collectionName}: cancelling updateData timer, id ${updateDataTimer}`)
+          // console.log(`${collectionName}: cancelling updateData timer, id ${updateDataTimer}`)
           clearTimeout(updateDataTimer)
           updateDataTimer = refreshViewTimer = null
           apiMetricsCollection = await getMetricsAggCollection(collectionId, currentLabelIds)
           updateDataTimer = setTimeout(updateData, updateDataDelay)
-          console.log(`${collectionName}: set updateData timer in ${updateDataDelay}, id ${updateDataTimer}`)
+          // console.log(`${collectionName}: set updateData timer in ${updateDataDelay}, id ${updateDataTimer}`)
         }
-        console.log(`${collectionName}: cancelling updateOverviewTitle interval, id ${updateOverviewTitleInterval}`)
+        // console.log(`${collectionName}: cancelling updateOverviewTitle interval, id ${updateOverviewTitleInterval}`)
         clearInterval(updateOverviewTitleInterval)
         updateOverviewTitleInterval = null
         updateOverviewTitle()
         updateOverviewTitleInterval = setInterval(updateOverviewTitle, updateOverviewTitleDelay)
-        console.log(`${collectionName}: set updateOverviewTitle interval every ${updateOverviewTitleDelay}, id ${updateOverviewTitleInterval}`)
+        // console.log(`${collectionName}: set updateOverviewTitle interval every ${updateOverviewTitleDelay}, id ${updateOverviewTitleInterval}`)
 
         overviewPanel.updateMetrics(apiMetricsCollection)
         const activePanel = aggTabPanel.getActiveTab()
@@ -1643,7 +1625,7 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
         const refreshDelay = calcRefreshDelay(apiMetricsCollection.metrics.maxTouchTs)
         if (refreshDelay < updateDataDelay) {
           refreshViewTimer = setTimeout(updateData, refreshDelay, true)
-          console.log(`${collectionName}: set refreshView timer in ${refreshDelay}, id ${refreshViewTimer}`)
+          // console.log(`${collectionName}: set refreshView timer in ${refreshDelay}, id ${refreshViewTimer}`)
         }
       }
       catch (e) {
@@ -1651,11 +1633,11 @@ SM.Metrics.addCollectionMetricsTab = async function (options) {
       }
     }
     function cancelTimers () {
-      console.log(`${collectionName}: cancelling refreshView timer, id ${refreshViewTimer}`)
+      // console.log(`${collectionName}: cancelling refreshView timer, id ${refreshViewTimer}`)
       clearTimeout(refreshViewTimer)
-      console.log(`${collectionName}: cancelling updateData timer, id ${updateDataTimer}`)
+      // console.log(`${collectionName}: cancelling updateData timer, id ${updateDataTimer}`)
       clearTimeout(updateDataTimer)
-      console.log(`${collectionName}: cancelling updateOverview interval, id ${updateOverviewTitleInterval}`)
+      // console.log(`${collectionName}: cancelling updateOverview interval, id ${updateOverviewTitleInterval}`)
       clearInterval(updateOverviewTitleInterval)
       refreshViewTimer = updateDataTimer = updateOverviewTitleInterval = null
     }

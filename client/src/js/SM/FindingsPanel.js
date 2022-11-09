@@ -322,7 +322,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 		}
 
 		const config = {
-			loadMask: true,
+			loadMask: {msg: ''},
 			stripeRows: true,
 			store: store,
 			colModel: colModel,
@@ -530,7 +530,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 		})
 
 		const config = {
-			loadMask: true,
+			loadMask: {msg: ''},
 			stripeRows: true,
 			plugins: expander,
 			store,

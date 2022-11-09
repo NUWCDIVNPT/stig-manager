@@ -807,10 +807,64 @@ body {
   border-radius: 3px
 }
 .ext-el-mask {
-  background-color: rgb(0 0 0 / 35%);
-  backdrop-filter: blur(1px) saturate(50%);
-  opacity: 1
+	background-color: rgb(0 0 0 / 0%);
+	backdrop-filter: blur(3px) grayscale();
+	animation: fadein 0.25s;
+	animation-fill-mode: forwards;
 }
+@keyframes fadein {
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+.ext-el-mask-modal {
+	background-color: rgb(0 0 0 / 50%);
+	backdrop-filter: blur(3px) grayscale();
+	animation: fadein 0.25s;
+	animation-fill-mode: forwards;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+.ext-el-mask-msg {
+	background-image: none;
+	background-color: unset;
+	border:  none;
+	top: 50%;
+	left: 50%;
+	text-align:  center;
+}
+
+.ext-el-mask-msg div {
+    background-color: #dedede;
+    border:  none;
+    color: #010101;
+    font-weight: 600;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.ext-el-mask-msg span {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #888;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+@keyframes rotation {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+} 
 .sm-round-panel .x-window-header {
   color: #111;
   font-weight: 700;
@@ -1071,6 +1125,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .icon-refresh {
   background: url(../img/reload.svg) 0 0/16px 16px
+}
+.icon-loading
+{
+	background:url(../img/loading.gif);
+	background-size: 16px 16px;
+	background-repeat: no-repeat;
 }
 .icon-add {
   background: url(../img/add.svg) 0 0/16px 16px

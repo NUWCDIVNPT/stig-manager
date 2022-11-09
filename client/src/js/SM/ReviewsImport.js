@@ -493,7 +493,7 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
         let config = {
             layout: 'fit',
             isFormField: true,
-            loadMask: true,
+            loadMask: {msg: ''},
             store: store,
             columns: columns,
             view: new SM.ColumnFilters.GridView({
@@ -1286,7 +1286,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const config = {
             isFormField: true,
-            loadMask: true,
+            loadMask: {msg: ''},
             store: store,
             columns: columns,
             viewConfig: {

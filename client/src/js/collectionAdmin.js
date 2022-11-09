@@ -243,7 +243,7 @@ function addCollectionAdmin( params ) {
       ]
     }),
     width: '50%',
-    loadMask: true
+    loadMask: {msg: ''}
   })
 
   // These handlers reload the entire store and should be revisited
