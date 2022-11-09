@@ -1,3 +1,13 @@
+1.2.19
+-----
+
+Changes:
+
+  - (Fix) Fixed an issue preventing export of grid data with buffered views. 
+  - (App) Various CSS and UI optimizations and enhancements.
+  - (App) Accept .ckl file imports with untraditional releaseinfo data.
+  - (App) Disable submit option if review does not have a valid compliance result.
+
 1.2.18
 -----
 
