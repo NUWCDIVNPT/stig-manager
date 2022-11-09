@@ -1257,6 +1257,7 @@ async function addCollectionReview ( params ) {
 
 		function isReviewComplete (result, rcomment, acomment) {
 			if (!result) return false
+			if (result !== 'pass' && result !== 'fail' && result !== 'notapplicable') return false
       if (apiFieldSettings.detail.required === 'always' && !rcomment) return false
       if (apiFieldSettings.detail.required === 'findings' 
         && result === 'fail'
