@@ -3,6 +3,589 @@ const dbUtils = require('./utils')
 
 let _this = this
 
+function cteReviewGen(obj) {
+  const cte = `SELECT
+  jtresult.resultId,
+  TRIM(jt.detail) as detail,
+  TRIM(jt.comment) as comment,
+  jt.resultEngine,
+  jt.metadata,
+  jtstatus.statusId,
+  jt.statusText
+  FROM
+  JSON_TABLE(
+    @review,
+    "$"
+    COLUMNS(
+    result VARCHAR(255) PATH "$.result",
+    detail MEDIUMTEXT PATH "$.detail" NULL ON EMPTY,
+    comment MEDIUMTEXT PATH "$.comment",
+    resultEngine JSON PATH "$.resultEngine" DEFAULT '0' ON EMPTY,
+    metadata JSON PATH "$.metadata",
+    statusLabel VARCHAR(255) PATH "$.status.label",
+    statusText VARCHAR(255) PATH "$.status.text"
+    )
+  ) as jt
+  left join result jtresult on (jtresult.api = jt.result)
+  left join status jtstatus on (jtstatus.api = jt.statusLabel)`
+  return `cteReview AS (${cte})`
+}
+
+function cteAssetGen({assetIds, benchmarkIds, labelIds, labelNames}) {
+  let cte
+  if (assetIds?.length) {
+    const json = JSON.stringify(assetIds)
+    const sql = `select jtAssets.assetId
+  from
+    json_table(
+      ?,
+      '$[*]'
+      COLUMNS (assetId INT PATH '$') 
+    ) as jtAssets`
+    cte = dbUtils.pool.format(sql,[json])
+  }
+  else if (benchmarkIds?.length) {
+    const sql = `select distinct assetId 
+    from
+      asset a
+      left join collection_grant cg on a.collectionId = cg.collectionId
+      left join stig_asset_map sa using (assetId)
+      left join user_stig_asset_map usa on sa.saId = usa.saId
+    where
+      a.collectionId = @collectionId 
+      and cg.userId = @userId 
+      and (CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)
+      and sa.benchmarkId IN ?`
+    cte = dbUtils.pool.format(sql,[[benchmarkIds]])
+  }
+  return `cteAsset AS (${cte})`
+}
+
+function cteRuleGen({ruleIds, benchmarkIds}) {
+  let cte
+  if (ruleIds?.length) {
+    const json = JSON.stringify(ruleIds)
+    const sql = `select jtRules.ruleId
+  from
+    json_table(
+      ?,
+      '$[*]'
+      COLUMNS (ruleId VARCHAR(255) PATH '$') 
+    ) as jtRules`
+    cte = dbUtils.pool.format(sql,[json])
+  }
+  else if (benchmarkIds?.length) {
+    const sql = `select ruleId from current_group_rule where benchmarkId IN ?`
+    cte = dbUtils.pool.format(sql,[[benchmarkIds]])
+  }
+  return `cteRule AS (${cte})`
+}
+
+function cteGrantGen() {
+  const cte = `select
+  distinct a.assetId,
+  rgr.ruleId 
+from 
+  asset a
+  left join collection_grant cg on a.collectionId = cg.collectionId
+  left join stig_asset_map sa using (assetId)
+  left join user_stig_asset_map usa on sa.saId = usa.saId
+  left join revision rev using (benchmarkId)
+  left join rev_group_map rg using (revId)
+  left join rev_group_rule_map rgr using (rgId)
+where 
+  cg.collectionId =  @collectionId
+  and a.assetId IN (select assetId from cteAsset)
+  and rgr.ruleId IN (select ruleId from cteRule)
+  and cg.userId = @userId 
+  and (CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)`
+  
+  return `cteGrant AS (${cte})`
+}
+
+function cteCollectionSettingGen () {
+  const cte = `SELECT 
+  c.settings->>"$.fields.detail.required" as detailRequired,
+  c.settings->>"$.fields.comment.required" as commentRequired,
+  c.settings->>"$.status.canAccept" as canAccept,
+  c.settings->>"$.status.resetCriteria" as resetCriteria,
+  c.settings->>"$.status.minAcceptGrant" as minAcceptGrant
+FROM
+  collection c
+where
+  collectionId = @collectionId`
+  return `cteCollectionSetting AS (${cte})`
+}
+
+const mergeFilterOperators = {
+  contains: 'LIKE',
+  beginsWith: 'LIKE',
+  endsWith: 'LIKE',
+  equals: '=',
+  notequal: '!=',
+  greaterThan: '>',
+  lessThan: '<',
+}
+
+function genFilter(filter) {
+  let {field, condition = 'equals', value} = filter
+  if (field === 'result') {
+    field = 'resultId'
+    value = dbUtils.REVIEW_RESULT_API[value]
+  }
+  if (field === 'status' || field === 'statusLabel') {
+    field = 'statusId'
+    value = dbUtils.REVIEW_STATUS_API[value]
+  }
+
+  value = field === 'userId' || field === 'statusUserId' ? parseInt(value) : value
+
+  const sqlOperator = mergeFilterOperators[condition]
+  const isDateValue =  (field === 'ts' || field === 'touchTs' || field === 'statusTs')
+  let sqlValue
+  if (isDateValue) {
+    sqlValue = dbUtils.pool.escape(new Date(value))
+  }
+  else if (condition === 'contains') {
+    sqlValue = dbUtils.pool.escape(`%${value}%`)
+  }
+  else if (condition === 'beginsWith') {
+    sqlValue = dbUtils.pool.escape(`${value}%`)
+  }
+  else if (condition === 'endsWith') {
+    sqlValue = dbUtils.pool.escape(`%${value}`)
+  }
+  else {
+    sqlValue = dbUtils.pool.escape(value)
+  }
+  return `review.${field} ${sqlOperator} ${sqlValue}`
+}
+
+function cteCandidateGen ({skipGrantCheck = false, action, updateFilters}) {
+  let sqlFilterPredicates, sqlPredicates
+  if (updateFilters) {
+    sqlFilterPredicates = updateFilters.map( filter => genFilter(filter)).join(' AND ')
+  }
+
+  if (action === 'insert') {
+    sqlPredicates = `review.reviewId is null`
+  }
+  else if (action === 'update') {
+    sqlPredicates = sqlFilterPredicates || 'review.reviewId is not null'
+  }
+  else if (action === 'merge') {
+    sqlPredicates = `${sqlFilterPredicates ? `review.reviewId is null OR (${sqlFilterPredicates})` : ''}`
+  }
+  const cte = `
+select
+  ${!skipGrantCheck ? 'CASE WHEN cteGrant.assetId is not null then 1 else null end' : '1'} as granted,
+  review.reviewId,
+  cteAsset.assetId,
+  cteRule.ruleId,
+  
+  COALESCE(cteReview.resultId, review.resultId) as resultId,
+  COALESCE(cteReview.detail, review.detail, '') as detail,
+  COALESCE(cteReview.comment, review.comment, '') as comment,
+  COALESCE(cteReview.metadata, review.metadata, '{}') as metadata,
+  
+  CASE WHEN cteReview.resultEngine != 0 -- resultEngine present
+    THEN cteReview.resultEngine
+    ELSE
+    CASE WHEN cteReview.resultId is null or cteReview.resultId = review.resultId
+      THEN review.resultEngine
+      ELSE NULL
+    END
+  END as resultEngine,
+    
+  CASE WHEN cteReview.statusId is not null
+    THEN cteReview.statusId
+    ELSE
+      CASE WHEN review.reviewId is null
+          or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
+          or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
+        THEN 0
+        ELSE review.statusId
+      END
+  END as statusId,
+    
+  CASE WHEN cteReview.statusId is not null or review.reviewId is null
+    THEN cteReview.statusText
+    ELSE
+      CASE WHEN (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
+          or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
+        THEN 'Review change triggered status update'
+        ELSE review.statusText
+      END
+  END as statusText,
+    
+  CASE WHEN cteReview.statusId is not null 
+      or review.reviewId is null
+      or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
+      or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
+    THEN UTC_TIMESTAMP()
+    ELSE review.statusTs
+  END as statusTs,
+  
+  CASE WHEN cteReview.statusId is not null 
+      or review.reviewId is null
+      or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
+      or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
+    THEN @userId
+    ELSE review.statusUserId
+  END as statusUserId,
+    
+  CASE WHEN cteReview.resultId is not null
+      or cteReview.detail is not null
+      or cteReview.comment is not null
+      or review.reviewId is null
+    THEN @userId
+    ELSE review.userId
+  END as userId,
+    
+  CASE WHEN cteReview.resultId is not null
+      or cteReview.detail is not null
+      or cteReview.comment is not null
+      or review.reviewId is null
+    THEN UTC_TIMESTAMP()
+    ELSE review.ts
+  END as ts
+
+from
+  cteAsset
+  CROSS JOIN cteRule
+  LEFT JOIN cteReview on true
+  ${!skipGrantCheck ? 'LEFT JOIN cteGrant on (cteAsset.assetId = cteGrant.assetId and cteRule.ruleId = cteGrant.ruleId)' : ''}
+  LEFT JOIN review on (cteAsset.assetId = review.assetId and cteRule.ruleId = review.ruleId)
+  LEFT JOIN cteCollectionSetting on true
+  LEFT JOIN review rChangedResult on (
+    rChangedResult.reviewId = review.reviewId 
+    and rChangedResult.statusId != 0
+    and rChangedResult.resultId != cteReview.resultId
+  )
+  LEFT JOIN review rChangedAny on (
+    rChangedAny.reviewId = review.reviewId 
+    and rChangedAny.statusId != 0
+    and (rChangedAny.resultId != cteReview.resultId or rChangedAny.detail != cteReview.detail or rChangedAny.comment != cteReview.comment)
+  )
+  ${sqlPredicates ? `WHERE ${sqlPredicates}` : ''}
+  `
+  return `cteCandidate AS (${cte})`
+}
+
+exports.postReviewBatch = async function ({
+  source, 
+  assets, 
+  rules,
+  action,
+  updateFilters,
+  dryRun,
+  collectionId, 
+  userId,
+  svcStatus,
+  historyMaxReviews,
+  skipGrantCheck = false
+}) {
+  const { performance } = require('node:perf_hooks');
+
+  performance.mark('beforeCteGen');
+
+  const cteReview = cteReviewGen()
+  const cteAsset = cteAssetGen(assets)
+  const cteRule = cteRuleGen(rules)
+  let cteGrant
+  if (!skipGrantCheck) {
+    cteGrant = cteGrantGen()
+  }
+  const cteCollectionSetting = cteCollectionSettingGen()
+  const cteCandidate = cteCandidateGen({skipGrantCheck, action, updateFilters})
+  const sqlTempTable = `
+CREATE TEMPORARY TABLE IF NOT EXISTS validated_reviews (
+  INDEX idx_reviewId (reviewId),
+  INDEX id_error (error)
+)
+WITH
+${cteReview},
+${cteAsset},
+${cteRule},
+${!skipGrantCheck ? `${cteGrant},` : ''}
+${cteCollectionSetting},
+${cteCandidate}
+select
+  cteCandidate.reviewId, 
+  cteCandidate.assetId, 
+  cteCandidate.ruleId, 
+  cteCandidate.resultId, 
+  cteCandidate.detail, 
+  cteCandidate.comment, 
+  cteCandidate.resultEngine, 
+  cteCandidate.metadata, 
+  cteCandidate.statusId, 
+  cteCandidate.statusText,
+  cteCandidate.statusUserId,
+  cteCandidate.statusTs,
+  cteCandidate.userId,
+  cteCandidate.ts,
+  CASE WHEN cteCandidate.granted IS NULL
+    THEN 
+      'no grant for this asset/ruleId'
+    ELSE
+      CASE WHEN (cteCandidate.reviewId IS NULL AND cteCandidate.resultId IS NULL)
+        THEN 
+          'cannot insert null result'
+        ELSE
+          CASE WHEN cteCandidate.statusId > 0 -- submitted, rejected, accepted
+            THEN
+              CASE WHEN (cteCandidate.resultId NOT IN (2,3,4))
+                THEN
+                  'status is not allowed for the result'
+                ELSE
+                  CASE WHEN (cteCollectionSetting.detailRequired = 'always' AND cteCandidate.detail = '')
+                    THEN 
+                      'detail is empty and detail.required = always'
+                    ELSE
+                      CASE WHEN (cteCollectionSetting.commentRequired = 'always' AND cteCandidate.comment = '')
+                        THEN 
+                          'comment is empty and comment.required = always'
+                        ELSE
+                          CASE WHEN cteCandidate.resultId = 4 -- fail
+                            THEN
+                              CASE WHEN (cteCollectionSetting.detailRequired = 'findings' AND cteCandidate.detail = '')
+                                THEN 
+                                  'detail is empty and detail.required = findings'
+                                ELSE
+                                  CASE WHEN (cteCollectionSetting.commentRequired = 'findings' AND cteCandidate.comment = '')
+                                    THEN 
+                                      'comment is empty and comment.required = findings '
+                                  END
+                              END
+                          END
+                      END
+                  END
+              END
+          END
+      END
+	END as error
+from
+  cteCandidate
+  LEFT JOIN cteCollectionSetting on true`
+  const sqlHistoryPrune = `
+  with historyRecs AS (
+    select
+      rh.historyId,
+      ROW_NUMBER() OVER (PARTITION BY r.assetId, r.ruleId ORDER BY rh.historyId DESC) as rowNum
+    from
+      review_history rh
+      left join review r using (reviewId)
+    where
+      reviewId IN (SELECT reviewId from validated_reviews where error is null and reviewId is not null)
+  )
+  delete review_history
+  FROM 
+     review_history
+     left join historyRecs on review_history.historyId = historyRecs.historyId 
+  WHERE 
+     historyRecs.rowNum > ? - 1
+  `
+  const sqlHistory = `  
+  INSERT INTO review_history (
+    reviewId,
+    resultId,
+    detail,
+    comment,
+    autoResult,
+    ts,
+    userId,
+    statusText,
+    statusUserId,
+    statusTs,
+    statusId,
+    touchTs,
+    resultEngine
+  ) SELECT 
+      reviewId,
+      resultId,
+      LEFT(detail,32767) as detail,
+      LEFT(comment,32767) as comment,
+      autoResult,
+      ts,
+      userId,
+      statusText,
+      statusUserId,
+      statusTs,
+      statusId,
+      touchTs,
+      CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+    FROM
+      review 
+    WHERE
+      reviewId IN (SELECT reviewId from validated_reviews where error is null and reviewId is not null)
+    FOR UPDATE    
+  `
+  const sqlInsertReviews = `
+  insert into review (
+    assetId,
+    ruleId,
+    resultId,
+    resultEngine,
+    detail,
+    comment,
+    metadata,
+    statusId,
+    statusText,
+    statusUserId,
+    statusTs,
+    userId,
+    ts)
+  select 
+    assetId,
+    ruleId,
+    resultId,
+    resultEngine,
+    detail,
+    comment,
+    metadata,
+    statusId,
+    statusText,
+    statusUserId,
+    statusTs,
+    userId,
+    ts
+  from
+    validated_reviews vr
+  where
+    error is null and reviewId is null 
+  `
+  const sqlUpdateReviews = `
+  update
+    review r
+    inner join validated_reviews vr on (r.reviewId = vr.reviewId and vr.error is null)
+  set
+    r.resultId = vr.resultId,
+    r.resultEngine = vr.resultEngine,
+    r.detail = vr.detail,
+    r.comment = vr.comment,
+    r.metadata = vr.metadata,
+    r.statusId = vr.statusId,
+    r.statusText = vr.statusText,
+    r.statusUserId = vr.statusUserId,
+    r.statusTs = vr.statusTs,
+    r.userId = vr.userId,
+    r.ts = vr.ts
+  `
+  performance.mark('afterCteGen');
+
+  performance.measure('CteGen', 'beforeCteGen', 'afterCteGen')
+
+  let connection
+  try {
+    performance.mark('beforeGetConnection')
+    connection = await dbUtils.pool.getConnection()
+    performance.mark('afterGetConnection')
+    performance.measure('GetConnection', 'beforeGetConnection', 'afterGetConnection')
+
+    connection.config.namedPlaceholders = false
+
+    const sqlVariables = `set @collectionId = ${parseInt(collectionId)}, @userId = ${parseInt(userId)}, @review = '${JSON.stringify(source.review)}'`
+    await connection.query(sqlVariables)
+    performance.mark('beforeTempTable')
+    await connection.query(sqlTempTable)
+    performance.mark('afterTempTable')
+    performance.measure('TempTable', 'beforeTempTable', 'afterTempTable')
+
+    
+    let validationErrors = []
+    let [table] = await connection.query('select * from validated_reviews')
+    let [counts] = await connection.query(`select
+    coalesce(sum(case when error is not null then 1 else 0 end),0) as failedValidations,
+    coalesce(sum(case when error is null and reviewId is null then 1 else 0 end),0) as inserts,
+    coalesce(sum(case when error is null and reviewId is not null then 1 else 0 end),0) as updates
+    from validated_reviews`)
+    if (counts[0].failedValidations) {
+      ;[validationErrors] = await connection.query('select CAST(assetId AS CHAR) as assetId, ruleId, error from validated_reviews where error is not null LIMIT 50')
+    }
+    performance.mark('afterCounts')
+    performance.measure('Counts', 'afterTempTable', 'afterCounts')
+
+    // return {inserted: 0, updated: 0, errors:[]}
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+
+      if (counts[0].updates) {
+        if (historyMaxReviews !== -1) {
+          performance.mark('beforeHistoryPrune')
+          await connection.query(sqlHistoryPrune, [ historyMaxReviews ])
+          performance.mark('afterHistoryPrune')
+          performance.measure('HistoryPrune', 'beforeHistoryPrune', 'afterHistoryPrune')
+
+
+        }
+        if (historyMaxReviews !== 0) {
+          performance.mark('beforeHistory')
+          await connection.query(sqlHistory)
+          performance.mark('afterHistory')
+          performance.measure('History', 'beforeHistory', 'afterHistory')
+
+        }
+        performance.mark('beforeUpdateReviews')
+        await connection.query(sqlUpdateReviews) 
+        performance.mark('afterUpdateReviews')
+        performance.measure('UpdateReviews', 'beforeUpdateReviews', 'afterUpdateReviews')
+
+      }
+      if (counts[0].inserts) {
+        await connection.query(sqlInsertReviews) 
+      }
+      const statsParams = {
+        collectionId
+      }
+      if (assets.assetIds) {
+        statsParams.assetIds = assets.assetIds
+      }
+      else if (assets.benchmarkIds) {
+        statsParams.assetBenchmarkIds = assets.benchmarkIds
+      }
+      if (rules.ruleIds) {
+        statsParams.rules = rules.ruleIds
+      }
+      else if (rules.benchmarkIds) {
+        statsParams.benchmarkIds = rules.benchmarkIds
+      }
+      performance.mark('beforeUpdateStats')
+      dbUtils.updateStatsAssetStig(connection, statsParams)
+      performance.mark('afterUpdateStats')
+      performance.measure('UpdateStats', 'beforeUpdateStats', 'afterUpdateStats')
+
+
+      performance.mark('beforeCommit')
+      await connection.commit()
+      performance.mark('afterCommit')
+      performance.measure('Commit', 'beforeCommit', 'afterCommit')
+
+     
+    }
+
+    if (!dryRun) {
+      await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    }
+    if (dryRun) {
+      return {willInsert: counts[0].inserts, willUpdate: counts[0].updates, willFailValidation: counts[0].failedValidations, validationErrors}
+    }
+    return {inserted: counts[0].inserts, updated: counts[0].updates, failedValidation: counts[0].failedValidations, validationErrors}
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }    
+    throw ( {status: 500, message: err.message, stack: err.stack} ) ;
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.query('DROP TEMPORARY TABLE IF EXISTS validated_reviews')
+      await connection.release()
+    }
+  }
+}
+
 const writeQueries = {
   dropIncoming: 'DROP TEMPORARY TABLE IF EXISTS incoming',
   createIncomingForPost: `

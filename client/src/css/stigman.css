@@ -1865,3 +1865,18 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-weight: 800;
   src: local('Open Sans ExtraBold Italic'),local('OpenSans-ExtraBoldItalic'),url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2'),url('../fonts/open-sans-v15-latin-800italic.woff') format('woff')
 }
+.sm-line-clamp-wrap .x-grid3-cell-inner {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+.sm-line-height-up {
+  background-image: url(../img/line-height-up.svg);
+  background-size: 16px 16px;
+}
+.sm-line-height-down {
+  background-image: url(../img/line-height-down.svg);
+  background-size: 16px 16px;
+}
