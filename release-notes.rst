@@ -1,3 +1,11 @@
+1.2.20
+-----
+
+Changes:
+
+  - (Fix) Resolved an issue that could prevent Asset Review Workspace tabs from opening. 
+  - (Ops) Explicitly including csv-stringify module in pkg build config.
+
 1.2.19
 -----
 
