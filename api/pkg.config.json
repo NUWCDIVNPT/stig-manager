@@ -3,7 +3,7 @@
     "bin": "./source/index.js",
     "pkg": {
         "scripts": ["./source/controllers/**/*.js", "./source/service/**/*.js"],
-        "assets": ["../client/dist/**/*", "../docs/_build/html", "./source/service/**/*.sql"],
+        "assets": ["../client/dist/**/*", "../docs/_build/html", "./source/service/**/*.sql", "./source/node_modules/csv-stringify/**/*"],
         "targets": [ "node16-win", "node16-linuxstatic" ],
         "outputPath": "./bin"
     }
