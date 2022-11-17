@@ -126,7 +126,7 @@ async function addReview( params ) {
         groupGrid.totalText.setText(getStatsString(store));
       },
       datachanged: function (store) {
-        groupGrid.totalText.setText(getStatsString(store));
+        groupGrid?.totalText.setText(getStatsString(store));
       },
       exception: function (misc) {
         var ourView = groupGrid.getView();
