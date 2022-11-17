@@ -488,6 +488,7 @@ from
     const sqlVariables = `set @collectionId = ${parseInt(collectionId)}, @userId = ${parseInt(userId)}, @review = '${JSON.stringify(source.review)}'`
     await connection.query(sqlVariables)
     performance.mark('beforeTempTable')
+    await connection.query('select @@collation_connection')
     await connection.query(sqlTempTable)
     performance.mark('afterTempTable')
     performance.measure('TempTable', 'beforeTempTable', 'afterTempTable')
