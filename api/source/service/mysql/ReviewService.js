@@ -287,7 +287,7 @@ exports.postReviewBatch = async function ({
 }) {
   const { performance } = require('node:perf_hooks');
 
-  performance.mark('beforeCteGen');
+  // performance.mark('beforeCteGen');
 
   const cteReview = cteReviewGen()
   const cteAsset = cteAssetGen(assets)
@@ -472,26 +472,26 @@ from
     r.userId = vr.userId,
     r.ts = vr.ts
   `
-  performance.mark('afterCteGen');
+  // performance.mark('afterCteGen');
 
-  performance.measure('CteGen', 'beforeCteGen', 'afterCteGen')
+  // performance.measure('CteGen', 'beforeCteGen', 'afterCteGen')
 
   let connection
   try {
-    performance.mark('beforeGetConnection')
+    // performance.mark('beforeGetConnection')
     connection = await dbUtils.pool.getConnection()
-    performance.mark('afterGetConnection')
-    performance.measure('GetConnection', 'beforeGetConnection', 'afterGetConnection')
+    // performance.mark('afterGetConnection')
+    // performance.measure('GetConnection', 'beforeGetConnection', 'afterGetConnection')
 
     connection.config.namedPlaceholders = false
 
     const sqlVariables = `set @collectionId = ${parseInt(collectionId)}, @userId = ${parseInt(userId)}, @review = '${JSON.stringify(source.review)}'`
     await connection.query(sqlVariables)
-    performance.mark('beforeTempTable')
+    // performance.mark('beforeTempTable')
     await connection.query("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'")
     await connection.query(sqlTempTable)
-    performance.mark('afterTempTable')
-    performance.measure('TempTable', 'beforeTempTable', 'afterTempTable')
+    // performance.mark('afterTempTable')
+    // performance.measure('TempTable', 'beforeTempTable', 'afterTempTable')
 
     
     let validationErrors = []
@@ -504,33 +504,32 @@ from
     if (counts[0].failedValidations) {
       ;[validationErrors] = await connection.query('select CAST(assetId AS CHAR) as assetId, ruleId, error from validated_reviews where error is not null LIMIT 50')
     }
-    performance.mark('afterCounts')
-    performance.measure('Counts', 'afterTempTable', 'afterCounts')
+    // performance.mark('afterCounts')
+    // performance.measure('Counts', 'afterTempTable', 'afterCounts')
 
-    // return {inserted: 0, updated: 0, errors:[]}
     async function transaction () {
       await connection.query('START TRANSACTION')
 
       if (counts[0].updates) {
         if (historyMaxReviews !== -1) {
-          performance.mark('beforeHistoryPrune')
+          // performance.mark('beforeHistoryPrune')
           await connection.query(sqlHistoryPrune, [ historyMaxReviews ])
-          performance.mark('afterHistoryPrune')
-          performance.measure('HistoryPrune', 'beforeHistoryPrune', 'afterHistoryPrune')
+          // performance.mark('afterHistoryPrune')
+          // performance.measure('HistoryPrune', 'beforeHistoryPrune', 'afterHistoryPrune')
 
 
         }
         if (historyMaxReviews !== 0) {
-          performance.mark('beforeHistory')
+          // performance.mark('beforeHistory')
           await connection.query(sqlHistory)
-          performance.mark('afterHistory')
-          performance.measure('History', 'beforeHistory', 'afterHistory')
+          // performance.mark('afterHistory')
+          // performance.measure('History', 'beforeHistory', 'afterHistory')
 
         }
-        performance.mark('beforeUpdateReviews')
+        // performance.mark('beforeUpdateReviews')
         await connection.query(sqlUpdateReviews) 
-        performance.mark('afterUpdateReviews')
-        performance.measure('UpdateReviews', 'beforeUpdateReviews', 'afterUpdateReviews')
+        // performance.mark('afterUpdateReviews')
+        // performance.measure('UpdateReviews', 'beforeUpdateReviews', 'afterUpdateReviews')
 
       }
       if (counts[0].inserts) {
@@ -551,16 +550,16 @@ from
       else if (rules.benchmarkIds) {
         statsParams.benchmarkIds = rules.benchmarkIds
       }
-      performance.mark('beforeUpdateStats')
+      // performance.mark('beforeUpdateStats')
       dbUtils.updateStatsAssetStig(connection, statsParams)
-      performance.mark('afterUpdateStats')
-      performance.measure('UpdateStats', 'beforeUpdateStats', 'afterUpdateStats')
+      // performance.mark('afterUpdateStats')
+      // performance.measure('UpdateStats', 'beforeUpdateStats', 'afterUpdateStats')
 
 
-      performance.mark('beforeCommit')
+      // performance.mark('beforeCommit')
       await connection.commit()
-      performance.mark('afterCommit')
-      performance.measure('Commit', 'beforeCommit', 'afterCommit')
+      // performance.mark('afterCommit')
+      // performance.measure('Commit', 'beforeCommit', 'afterCommit')
 
      
     }
