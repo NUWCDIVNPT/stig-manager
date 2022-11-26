@@ -1,6 +1,9 @@
 /*!
  * Based on original code from: Ext JS Library 3.4.0
  * Copyright(c) 2006-2011 Sencha Inc.
+ * 
+ * Modified for STIG Manager OSS
+ * Caches pre-rendered rows in a document-fragment for quick assignment to the DOM
  */
 Ext.ns('Ext.ux.grid');
 
@@ -43,6 +46,7 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 	 * cache.
 	 */
 	cleanDelay: 500,
+
 	lineClamp: 1,
 
 	initTemplates: function () {
@@ -105,8 +109,6 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 		};
 	},
 
-	cellBodiesMarkupCache: [],
-
 	doRender: function (cs, rs, ds, startRow, colCount, stripe) {
 		var ts = this.templates,
 			ct = ts.cell,
@@ -123,7 +125,7 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 			p = {},
 			rp = { tstyle, lineClamp: this.lineClamp },
 			r;
-		this.rowInnerMarkupCache = []
+		const rowInnerMarkupBuffer = []
 		for (var j = 0, len = rs.length; j < len; j++) {
 			r = rs[j]; cb = [];
 			var rowIndex = (j + startRow),
@@ -161,11 +163,19 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 			}
 			rp.alt = alt.join(" ");
 			rp.cells = cb.join("")
-			this.rowInnerMarkupCache[rowIndex] = ri.apply(rp)
+			// save the row inner markup 
+			rowInnerMarkupBuffer[rowIndex] = ri.apply(rp)
+			// add either [row div + nothing] or [row div + row inner] to the return buffer
 			buf[buf.length] = !visible ? ts.rowHolder.apply(rp) : rt.apply(rp);
 		}
+		
+		// set the content of a <template> to the row inner markups
+		this.rowInnerTemplateEl = document.createElement('template')
+		this.rowInnerTemplateEl.innerHTML = rowInnerMarkupBuffer.join('')
+		
 		return buf.join("");
 	},
+	
 	refreshRow: function (record) {
 		var store = this.ds,
 			colCount = this.cm.getColumnCount(),
@@ -242,10 +252,10 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 		this.fly(row).addClass(cls).setStyle(rowParams.tstyle);
 		rowParams.cells = colBuffer.join("");
 		row.innerHTML = this.templates.rowInner.apply(rowParams);
-		this.rowInnerMarkupCache[rowIndex] = row.innerHTML
+		this.rowInnerTemplateEl.content.children[rowIndex].innerHTML = row.innerHTML
+
 		this.fireEvent('rowupdated', this, rowIndex, record);
 	},
-
 
 	isRowRendered: function (index) {
 		var row = this.getRow(index);
@@ -257,7 +267,6 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 		this.update();
 	},
 
-	// a (optionally) buffered method to update contents of gridview
 	update: function () {
 		if (this.scrollDelay) {
 			if (!this.renderTask) {
@@ -282,14 +291,128 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 			for (var i = vr.first; i <= vr.last; i++) {
 				// if row is NOT rendered and is visible, render it
 				if (!this.isRowRendered(i) && (row = this.getRow(i))) {
-					row.innerHTML = this.rowInnerMarkupCache[i];
+					row.innerHTML = this.rowInnerTemplateEl.content.children[i].outerHTML;
 				}
 			}
 			this.clean();
 		}
 	},
 
-	// a buffered method to clean rows
+	updateAllColumnWidths: function () {
+		var totalWidth = this.getTotalWidth(),
+			colCount = this.cm.getColumnCount(),
+			rows = this.getRows(),
+			rowCount = rows.length,
+			widths = [],
+			row, rowFirstChild, trow, i, j;
+
+		const rowInnerCache = this.rowInnerTemplateEl?.content?.children
+
+		for (i = 0; i < colCount; i++) {
+			widths[i] = this.getColumnWidth(i);
+			this.getHeaderCell(i).style.width = widths[i];
+		}
+
+		this.updateHeaderWidth();
+
+		for (i = 0; i < rowCount; i++) {
+			row = rows[i];
+			row.style.width = totalWidth;
+			rowFirstChild = row.firstChild;
+
+			if (rowFirstChild) {
+				rowFirstChild.style.width = totalWidth;
+				trow = rowFirstChild.rows[0];
+
+				for (j = 0; j < colCount; j++) {
+					trow.childNodes[j].style.width = widths[j];
+				}
+			}
+
+			// BufferView extends to update the cache's <template> element
+			let rowInnerCached = rowInnerCache?.[i]
+			if (rowInnerCached) {
+				rowInnerCached.style.width = totalWidth
+				trow = rowInnerCached.rows[0];
+				for (j = 0; j < colCount; j++) {
+					trow.childNodes[j].style.width = widths[j];
+				}
+			}
+		}
+
+		this.onAllColumnWidthsUpdated(widths, totalWidth);
+	},
+
+	updateColumnWidth: function (column, width) {
+		var columnWidth = this.getColumnWidth(column),
+			totalWidth = this.getTotalWidth(),
+			headerCell = this.getHeaderCell(column),
+			nodes = this.getRows(),
+			nodeCount = nodes.length,
+			row, i, firstChild;
+		
+		const rowInnerCache = this.rowInnerTemplateEl?.content?.children
+
+		this.updateHeaderWidth();
+		headerCell.style.width = columnWidth;
+
+		for (i = 0; i < nodeCount; i++) {
+			row = nodes[i];
+			firstChild = row.firstChild;
+
+			row.style.width = totalWidth;
+			if (firstChild) {
+				firstChild.style.width = totalWidth;
+				firstChild.rows[0].childNodes[column].style.width = columnWidth;
+			}
+
+			// BufferView extends to update the cache's <template> element
+			let rowInnerCached = rowInnerCache?.[i]
+			if (rowInnerCached) {
+				rowInnerCached.style.width = totalWidth
+				rowInnerCached.rows[0].childNodes[column].style.width = columnWidth
+			}
+		}
+
+		this.onColumnWidthUpdated(column, columnWidth, totalWidth);
+	},
+
+	updateColumnHidden: function (col, hidden) {
+		var totalWidth = this.getTotalWidth(),
+			display = hidden ? 'none' : '',
+			headerCell = this.getHeaderCell(col),
+			nodes = this.getRows(),
+			nodeCount = nodes.length,
+			row, rowFirstChild, i;
+
+		const rowInnerCache = this.rowInnerTemplateEl?.content?.children
+
+		this.updateHeaderWidth();
+		headerCell.style.display = display;
+
+		for (i = 0; i < nodeCount; i++) {
+			row = nodes[i];
+			row.style.width = totalWidth;
+			rowFirstChild = row.firstChild;
+
+			if (rowFirstChild) {
+				rowFirstChild.style.width = totalWidth;
+				rowFirstChild.rows[0].childNodes[col].style.display = display;
+			}
+
+			// BufferView extends to update the cache's <template> element
+			let rowInnerCached = rowInnerCache?.[i]
+			if (rowInnerCached) {
+				rowInnerCached.style.width = totalWidth
+				rowInnerCached.rows[0].childNodes[col].style.display = display
+			}
+		}
+
+		this.onColumnHiddenUpdated(col, hidden, totalWidth);
+		delete this.lastViewWidth; //recalc
+		this.layout();
+	},
+
 	clean: function () {
 		if (!this.cleanTask) {
 			this.cleanTask = new Ext.util.DelayedTask(this.doClean, this);
