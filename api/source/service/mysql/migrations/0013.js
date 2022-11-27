@@ -15,7 +15,8 @@ const upMigration = [
       FOREIGN KEY (collectionId)
       REFERENCES collection (collectionId)
       ON DELETE CASCADE
-      ON UPDATE CASCADE)
+      ON UPDATE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   `,
   `CREATE TABLE collection_label_asset_map (
     claId int NOT NULL AUTO_INCREMENT,

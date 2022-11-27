@@ -609,7 +609,6 @@ CREATE TABLE `user_stig_asset_map` (
 
 DROP TABLE IF EXISTS `v_current_rev`;
 /*!50001 DROP VIEW IF EXISTS `v_current_rev`*/;
-SET @saved_cs_client     = @@character_set_client;
 /*!50001 CREATE VIEW `v_current_rev` AS SELECT 
  1 AS `revId`,
  1 AS `benchmarkId`,
@@ -626,7 +625,6 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `checkCount`,
  1 AS `fixCount`,
  1 AS `ovalCount`*/;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Final view structure for view `v_current_rev`
