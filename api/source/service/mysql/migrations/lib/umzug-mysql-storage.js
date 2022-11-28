@@ -9,7 +9,7 @@ module.exports = class MyStorage {
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
       updatedAt DATETIME ON UPDATE CURRENT_TIMESTAMP, 
       name VARCHAR(128) 
-    )`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`)
     this.hasMigrationTable = true
   }
 

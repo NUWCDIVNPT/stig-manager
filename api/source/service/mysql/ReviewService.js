@@ -7,14 +7,14 @@ const writeQueries = {
   dropIncoming: 'DROP TEMPORARY TABLE IF EXISTS incoming',
   createIncomingForPost: `
   CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
-    ruleId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    ruleId varchar(255),
     resultId int,
     resultEngine json,
-    detail mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-    comment mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+    detail mediumtext,
+    comment mediumtext,
     autoResult json,
     statusId int,
-    statusText varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    statusText varchar(255),
     PRIMARY KEY (ruleId)
   ) 
     SELECT
@@ -41,8 +41,8 @@ const writeQueries = {
           statusText VARCHAR(255) PATH "$.status.text"
         )
       ) as jt
-      left join result jtresult on (jtresult.api COLLATE utf8mb4_unicode_ci = jt.result COLLATE utf8mb4_unicode_ci)
-      left join status jtstatus on (jtstatus.api COLLATE utf8mb4_unicode_ci = jt.statusLabel COLLATE utf8mb4_unicode_ci)
+      left join result jtresult on (jtresult.api = jt.result)
+      left join status jtstatus on (jtstatus.api = jt.statusLabel)
   `,
   insertReviews: `
   insert into review (
