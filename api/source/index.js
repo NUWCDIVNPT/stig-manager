@@ -1,5 +1,15 @@
 'use strict';
 
+const { PerformanceObserver, performance } = require('node:perf_hooks');
+const obs = new PerformanceObserver((items) => {
+  const entries = items.getEntries()
+  for (const entry of entries) {
+    console.log(`${entry.name}: ${entry.duration}`)
+    performance.clearMeasures(entry.name)
+  }
+});
+obs.observe({ type: 'measure' });
+
 const startTime = process.hrtime.bigint()
 const logger = require('./utils/logger')
 const smErrors = require('./utils/error')
