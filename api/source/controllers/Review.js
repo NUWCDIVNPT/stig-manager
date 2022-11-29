@@ -9,10 +9,6 @@ const Security = require('../utils/accessLevels')
 
 const _this = this
 
-function isReviewSavable (review) {
-  return !!review.result
-}
-
 function isReviewSubmittable ( fieldSettings, review ) {
   if (review.result !== 'pass' && review.result !== 'fail' && review.result !== 'notapplicable') return false
 
@@ -97,48 +93,6 @@ async function normalizeAndValidateReviews( reviews, collectionId, assetId, user
   }
   return {permitted, rejected, statusSettings, fieldSettings, historySettings}
 }
-
-async function normalizeAndValidateReviews2( reviews, collectionId, userObject ) {
-  const collectionSettings = await CollectionService.getCollectionSettings(collectionId)
-  const fieldSettings = collectionSettings.fields
-  const statusSettings = collectionSettings.status
-  const collectionGrant = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-  const permitted = { assetIds: [], ruleIds: []}, rejected = []
-  for (const review of reviews) {
-    normalizeReview(review)
-    if (!review.status || review.status.label === 'saved') {
-      permitted.assetIds.push(review.assetId)
-      permitted.ruleIds.push(review.ruleId)
-      continue
-    }
-    if (!isReviewSubmittable(fieldSettings, review)) {
-      rejected.push({
-        assetId: review.assetId,
-        ruleId: review.ruleId,
-        reason: 'Requested status is not consistent with Collection Review field settings'
-      })
-      continue
-    }
-    if (review.status.label === 'submitted') {
-      permitted.assetIds.push(review.assetId)
-      permitted.ruleIds.push(review.ruleId)
-      continue
-    }
-    // if we got this far, review.status.label is either 'accepted' or 'rejected'
-    if (statusSettings.canAccept === true && collectionGrant.accessLevel >= statusSettings.minAcceptGrant) {
-      permitted.assetIds.push(review.assetId)
-      permitted.ruleIds.push(review.ruleId)
-      continue
-    }
-    rejected.push({
-      assetId: review.assetId,
-      ruleId: review.ruleId,
-      reason: `Requested status is not permitted by Collection Review status settings`
-    })
-  }
-  return [permitted, rejected, statusSettings, fieldSettings]
-}
-
 
 module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res, next) {
   try {

@@ -25,7 +25,6 @@ function getPoolConfig() {
     port: config.database.port,
     user: config.database.username,
     database: config.database.schema,
-    charset: 'utf8mb4_0900_ai_ci',
     decimalNumbers: true,
     charset: 'utf8mb4_0900_ai_ci',
     typeCast: function (field, next) {
