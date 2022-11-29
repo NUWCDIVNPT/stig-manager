@@ -257,7 +257,7 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
  * @param {string} param1.benchmarkId
  * @param {string[]} param1.rules
  */
-module.exports.updateStatsAssetStig = async function(connection, { collectionId, assetId, benchmarkId, rules }) {
+module.exports.updateStatsAssetStig = async function(connection, { collectionId, assetId, assetIds, assetBenchmarkIds, benchmarkId, benchmarkIds, rules }) {
   if (!connection) { throw ('Connection required')}
   // Handle optional predicates, 
   let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
@@ -277,9 +277,21 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
     predicates.push('a.assetId = ?')
     binds.push(assetId)
   }
+  if (assetIds) {
+    predicates.push('a.assetId IN ?')
+    binds.push([assetIds])
+  }
+  if (assetBenchmarkIds) {
+    predicates.push(`a.assetId IN (select assetId from stig_asset_map where benchmarkId in ?)`)
+    binds.push([assetBenchmarkIds])
+  }
   if (benchmarkId) {
     predicates.push('sa.benchmarkId = ?')
     binds.push(benchmarkId)
+  }
+  if (benchmarkIds) {
+    predicates.push('sa.benchmarkId IN ?')
+    binds.push([benchmarkIds])
   }
   if (predicates.length > 0) {
     whereClause = `where  ${predicates.join(' and ')}`

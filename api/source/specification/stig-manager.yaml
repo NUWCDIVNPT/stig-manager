@@ -1182,6 +1182,126 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+    post:
+      tags:
+        - Review
+      summary: Insert, update, or merge a complete or partial Review to multiple Assets and Rules
+      description: |
+
+        Applies a complete or partial Review to multiple target Asset/Rule pairs. Depending on the Review properties supplied, new Reviews may be created, existing Reviews may be updated, or both operations may occur (similar to an SQL merge).
+        
+        ## Caution
+
+        **It is possible to send a request which will place the database under considerable load and take many seconds (or minutes) to complete. To determine if a request affects a large set of Reviews, clients are strongly encouraged to send a "preflight" request with the `dryRun` option enabled.**
+        
+        ## Request Validation
+        
+        The overall request is validated as follows:
+        
+        - conformance with the OAS schema for `ReviewBatch`
+        - the requesting user has been granted access to the {collectionId}
+        
+        ## Request body
+        
+        **source** *(required)*
+        
+          The Review source is applied to the product of `assets` x `rules` (see below). It MUST contain at least one of the properties `result`, `detail`, `comment`, `resultEngine`, `metadata` or `status`.
+        - Multiple properties can be specified.
+        - a string value for the `status` property is normalized to `{ label: <string>, text: null }`
+        
+        
+        **assets** *(required)*
+        
+        The target Assets, which are specified as either:
+          - an array of `assetId`
+          - an array of `benchmarkId` where target Assets are calculated as the list of distinct Assets assigned at least one of the given STIGs, taking into account the requesting User's collection grant.
+        
+        **rules** *(required)*
+        
+        The target Rules, which are specified as either:
+          - an array of `ruleId`
+          - an array of `benchmarkId` where target Rules are calculated as the list of distinct Rules from all available revisions of the given STIGs.
+        
+        **action** *(optional)*
+        
+        Constrains the data action to be taken. If present, the value MUST be one of `insert`, `update`, or `merge`.
+        
+          - `insert`: only create new Reviews, do not update existing Reviews
+          - `update`: only update existing Reviews, do not create new Reviews
+          - `merge`: create new Reviews and update existing Reviews
+        
+        If not present, the default value is:
+          
+          - `merge` if the source Review includes `result`
+          - `update` if the source Review does not include `result`   
+        
+        New Reviews cannot be created when `source` does not include `result`. In that case, specifying either the `insert` or `merge` value is an error. 
+        
+        **updateFilters** *(optional)*
+        
+        Limits the Reviews to be updated, based on an array of filtering objects. If present, updates are applied to Reviews from the product `assets` x `rules` that pass each of the filters (filters are combined with logical AND). If not present, updates are applied to each Review from the product `assets` x `rules`. 
+        
+        Filtering objects specify a Review `field` , a `condition`, and a `value`. See the schema defintion for further details. 
+        
+        **dryRun** *(optional)*
+        
+        If present with a `true` value, performs all processing and vaidation logic without actually changing any data. Useful to verify what a given request would do and to reveal any validation errors. The default value is `false`.
+        
+        ## Review candidates
+        
+        Candidate Reviews are created by cross joining the source Review with the product of `assets` x `rules` and applying the resulting rows to existing Reviews (if any) in accordance with the Collection settings.
+        
+        **For updated Reviews** 
+        
+        In general, an absent source Review property will retain existing values except as below.
+        
+        - an absent `status` property will either retain the existing value or update the `status` value to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
+        - an absent `resultEngine` property will either retain the existing value or update the `resultEngine` value to `null`. If applying the source Review changes an existing `result`, the `resultEngine` value will be set to `null`.
+        
+        **For new Reviews**
+        
+        - an absent `detail` or `comment` property will set the candidate value to the empty string.
+        - an absent `status` property will set the candidate value to `{ label: "saved", text: null }`.
+        - an absent `resutEngine` property will set the candidate value to `null`.
+        - an absent `metadata` property will set the candidate value to `{}`
+        
+        ## Candidate validation
+        
+        Each candidate Review is permitted or rejected as follows:
+        
+        - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then **reject** the Review.
+        - If `status.label` has value `saved`, then permit the Review.
+        - If the Review would not be submittable according to the Collection settings, then **reject** the Review
+        - If the value of `status.label` is `submitted`, then **permit** the Review.
+        - If the value of `status.label` is `accepted` or `rejected` AND the Collection settings allow Reviews to be Accepted or Rejected, then **permit** the Review.
+        - If `status.label` has value `accepted` or `rejected` AND the Collection settings prohibit Reviews from being Accepted or Rejected, then **reject** the Review.
+
+      operationId: postReviewBatch
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewBatch'
+      responses:
+        '200':
+          description: ReviewBatchResponse response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReviewBatchResponse'
+                  - $ref: '#/components/schemas/ReviewBatchResponseDryRun'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'      
   '/collections/{collectionId}/reviews/{assetId}':
     get:
       tags:
@@ -3577,6 +3697,8 @@ components:
           type: string
         name:
           type: string
+    AssetId:
+      $ref: '#/components/schemas/StringIntId'
     AssetProjected:
       type: object
       required:
@@ -5065,8 +5187,6 @@ components:
           $ref: '#/components/schemas/CommentaryString'
         comment:
           $ref: '#/components/schemas/CommentaryString'
-        autoResult:
-          type: boolean
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
         metadata:
@@ -5164,6 +5284,281 @@ components:
             type: string
         rule:
           $ref: '#/components/schemas/RuleAbbr'
+    ReviewAssetWrite:
+      type: object
+      required:
+        - ruleId
+        - result
+        - detail
+        - comment
+        - autoResult
+      additionalProperties: false
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/String255'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/StringMaxNullable'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
+        autoResult:
+          type: boolean
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
+    ReviewBatch:
+      type: object
+      required:
+        - source
+        - assets
+        - rules
+      additionalProperties: false
+      properties:
+        source:
+          $ref: '#/components/schemas/ReviewBatchSource'
+        assets:
+          $ref: '#/components/schemas/ReviewBatchAssetsCriteria'
+        rules:
+          $ref: '#/components/schemas/ReviewBatchRulesCriteria'
+        action:
+          $ref: '#/components/schemas/ReviewBatchAction'
+        updateFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewBatchFilter'
+        dryRun:
+          type: boolean
+          default: false
+    ReviewBatchAction:
+      type: string
+      enum:
+        - insert
+        - update
+        - merge
+    ReviewBatchAssetsCriteria:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewBatchCriteria_AssetIds'
+        - $ref: '#/components/schemas/ReviewBatchCriteria_BenchmarkIds'
+    ReviewBatchRulesCriteria:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewBatchCriteria_RuleIds'
+        - $ref: '#/components/schemas/ReviewBatchCriteria_BenchmarkIds'
+    ReviewBatchCriteria_AssetIds:
+      type: object
+      required:
+        - assetIds
+      additionalProperties: false
+      properties:
+        assetIds:
+          type: array
+          minItems: 1
+          maxItems: 2500
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/AssetId'
+    ReviewBatchCriteria_BenchmarkIds:
+      type: object
+      required:
+        - benchmarkIds
+      additionalProperties: false
+      properties:
+        benchmarkIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/BenchmarkId'
+    ReviewBatchCriteria_RuleIds:
+      type: object
+      required:
+        - ruleIds
+      additionalProperties: false
+      properties:
+        ruleIds:
+          type: array
+          minItems: 1
+          maxItems: 500
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/String255'
+    ReviewBatchFilter:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewBatchFilter_String'
+        - $ref: '#/components/schemas/ReviewBatchFilter_Result'
+        - $ref: '#/components/schemas/ReviewBatchFilter_Status'
+        - $ref: '#/components/schemas/ReviewBatchFilter_Date'
+        - $ref: '#/components/schemas/ReviewBatchFilter_User'
+    ReviewBatchFilter_String:
+      type: object
+      required:
+        - field
+        - value
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          enum:
+            - detail
+            - comment
+            - statusText
+        condition:
+          type: string
+          default: 'equals'
+          enum:
+            - equals
+            - contains
+            - beginsWith
+            - endsWith
+        value:
+          type: string
+    ReviewBatchFilter_Date:
+      type: object
+      required:
+        - field
+        - value
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          enum:
+            - ts
+            - statusTs
+            - touchTs
+        condition:
+          type: string
+          default: 'equals'
+          enum:
+            - equals
+            - lessThan
+            - greaterThan
+        value:
+          $ref: '#/components/schemas/StringDateTime'
+    ReviewBatchFilter_Result:
+      type: object
+      required:
+        - field
+        - value
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          enum:
+            - result
+        condition:
+          type: string
+          default: 'equals'
+          enum:
+            - equals
+            - notequal
+        value:
+          $ref: '#/components/schemas/ReviewResult'
+    ReviewBatchFilter_Status:
+      type: object
+      required:
+        - field
+        - value
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          enum:
+            - statusLabel
+            - status
+        condition:
+          type: string
+          default: 'equals'
+          enum:
+            - equals
+            - notequal
+        value:
+          $ref: '#/components/schemas/ReviewStatusLabel'
+    ReviewBatchFilter_User:
+      type: object
+      required:
+        - field
+        - value
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+          enum:
+            - userId
+            - statusUserId
+        condition:
+          type: string
+          default: 'equals'
+          enum:
+            - equals
+            - notequal
+        value:
+          $ref: '#/components/schemas/StringIntId'
+          
+      
+    ReviewBatchSource:
+      type: object
+      required:
+        - review
+      additionalProperties: false
+      properties:
+        review:
+          $ref: '#/components/schemas/ReviewAssetRulePatch'
+    
+    ReviewBatchResponseDryRun:
+      type: object
+      required:
+      - willInsert
+      - willUpdate
+      - willFailValidation
+      - validationErrors
+      additionalProperties: false
+      properties:
+        willInsert:
+          type: integer
+        willUpdate:
+          type: integer
+        willFailValidation:
+          type: integer
+        validationErrors:
+          type: array
+          items:
+            type: object
+            properties:
+              assetId:
+                $ref: '#/components/schemas/AssetId'
+              ruleId:
+                $ref: '#/components/schemas/String255'
+              error:
+                $ref: '#/components/schemas/String255'
+     
+    ReviewBatchResponse:
+      type: object
+      required:
+        - inserted
+        - updated
+        - failedValidation
+        - validationErrors
+      additionalProperties: false
+      properties:
+        inserted:
+          type: integer
+        updated:
+          type: integer
+        failedValidation:
+          type: integer
+        validationErrors:
+          type: array
+          items:
+            type: object
+            properties:
+              assetId:
+                $ref: '#/components/schemas/AssetId'
+              ruleId:
+                $ref: '#/components/schemas/String255'
+              error:
+                $ref: '#/components/schemas/String255'
     ReviewHistory:
       type: object
       required:
@@ -5637,6 +6032,23 @@ components:
       type: string
       pattern: "^[a-fA-F0-9]{6}$"
       example: "aa33cc"
+    StringIntId:
+      type: string
+      minLength: 1
+      maxLength: 10
+      pattern: "^[0-9]{1,6}$"
+    StringIntIdReadOnly:
+      type: string
+      minLength: 1
+      maxLength: 10
+      pattern: "^[0-9]{1,6}$"
+      readOnly: true
+    StringIntIdNullable:
+      type: string
+      minLength: 1
+      maxLength: 10
+      pattern: "^[0-9]{1,6}$"
+      nullable: true
     StringMax:
       type: string
       maxLength: 16777215
@@ -6474,7 +6886,7 @@ components:
   securitySchemes:
     oauth:
       type: openIdConnect
-      openIdConnectUrl: http://localhost:8080/auth/realms/stigman/.well-known/openid-configuration
+      openIdConnectUrl: http://localhost:8080/realms/stigman/.well-known/openid-configuration
 
 # supported oauth scopes:
 # - stig-manager
