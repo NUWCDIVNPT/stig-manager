@@ -574,7 +574,6 @@ module.exports.postReviewBatch = async function (req, res, next) {
   try {
     const { performance } = require('node:perf_hooks');
   
-    performance.mark('A')
     const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     const collectionSettings = await CollectionService.getCollectionSettings(collectionId)
@@ -615,8 +614,6 @@ module.exports.postReviewBatch = async function (req, res, next) {
         rules.benchmarkIds.every( i => assets.benchmarkIds.includes(i))
     }
 
-    performance.mark('B')
-    performance.measure('AtoB', 'A', 'B')
     const result = await ReviewService.postReviewBatch({
       source, 
       assets, 
