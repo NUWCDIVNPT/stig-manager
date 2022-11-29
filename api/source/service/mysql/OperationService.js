@@ -333,7 +333,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       ])
     }
     dml.reviewHistory.insertBinds = JSON.stringify(historyRecords)
-
     return dml
   }
 
@@ -396,12 +395,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     for (const table of tableOrder) {
       if (dml[table].insertBinds.length > 0) {
         hrstart = process.hrtime()
-
-        let i, j, bindchunk, chunk = 5000;
-        for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
-          res.write(`Inserting: ${table} chunk: ${i}\n`)
-          bindchunk = dml[table].insertBinds.slice(i,i+chunk);
-          ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
+        if (typeof dml[table].insertBinds === 'string') { // reviewHistory
+          ;[result] = await connection.query(dml[table].sqlInsert, [dml[table].insertBinds])
+        }
+        else {
+          let i, j, bindchunk, chunk = 5000;
+          for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
+            res.write(`Inserting: ${table} chunk: ${i}\n`)
+            bindchunk = dml[table].insertBinds.slice(i,i+chunk);
+            ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
+          } 
         }
         hrend = process.hrtime(hrstart)
         stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
