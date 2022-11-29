@@ -1190,6 +1190,10 @@ paths:
 
         Applies a complete or partial Review to multiple target Asset/Rule pairs. Depending on the Review properties supplied, new Reviews may be created, existing Reviews may be updated, or both operations may occur (similar to an SQL merge).
         
+        ## Caution
+
+        **It is possible to send a request which will place the database under considerable load and take many seconds (or minutes) to complete. To determine if a request affects a large set of Reviews, clients are strongly encouraged to send a "preflight" request with the `dryRun` option enabled.**
+        
         ## Request Validation
         
         The overall request is validated as follows:
