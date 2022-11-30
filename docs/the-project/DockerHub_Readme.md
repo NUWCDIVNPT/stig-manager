@@ -58,9 +58,14 @@ services:
       - STIGMAN_DB_HOST=db
       - STIGMAN_DB_PASSWORD=stigman
       - STIGMAN_INIT_IMPORT_STIGS=true
-      - STIGMAN_INIT_IMPORT_SCAP=true
       # Change envvar below if non-localhost browsers will access the API
       - STIGMAN_CLIENT_OIDC_PROVIDER=http://localhost:8080/realms/stigman
+      # Customize the Welcome widget on the Home tab
+      # - STIGMAN_CLIENT_WELCOME_IMAGE=<client-relative-url-to-your-logo>
+      - STIGMAN_CLIENT_WELCOME_TITLE=Deployment Information
+      - STIGMAN_CLIENT_WELCOME_MESSAGE=Your deployment's Support process can be described here. You can provide a link below.
+      - STIGMAN_CLIENT_WELCOME_LINK=http://link_to_help_pages
+
     init: true
     ports:
       - "54000:54000"
