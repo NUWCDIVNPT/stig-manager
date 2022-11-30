@@ -117,10 +117,6 @@ SM.BatchReview.showDialog = function (fieldSettings, initialResult) {
   })
 }
 
-SM.BatchReview.post = function ({collectionId, body}) {
-
-}
-
 SM.BatchReview.ResponsePanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
     const _this = this
