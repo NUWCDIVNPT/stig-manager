@@ -682,6 +682,34 @@ async function addCollectionReview ( params ) {
 		const sm = new Ext.grid.CheckboxSelectionModel ({
 			singleSelect: false,
 			checkOnly: false,
+			// override selectRow to suspend events when clearing existing selections > 1
+			selectRow: function (index, keepExisting, preventViewNotify) {
+				if (this.isLocked() || (index < 0 || index >= this.grid.store.getCount()) || (keepExisting && this.isSelected(index))) {
+					return;
+				}
+				var r = this.grid.store.getAt(index);
+				if (r && this.fireEvent('beforerowselect', this, index, keepExisting, r) !== false) {
+					if (!keepExisting || this.singleSelect) {
+						if (this.selections.length > 1) {
+							this.suspendEvents(false);
+							this.clearSelections();
+							this.resumeEvents();
+						}
+						else {
+							this.clearSelections();
+						}
+					}
+					this.selections.add(r);
+					this.last = this.lastActive = index;
+					if (!preventViewNotify) {
+						this.grid.getView().onRowSelect(index);
+					}
+					if (!this.silent) {
+						this.fireEvent('rowselect', this, index, r);
+						this.fireEvent('selectionchange', this);
+					}
+				}
+			},
 			listeners: {
 				selectionchange: function (sm) {
 					if (sm.getCount() == 1) { //single row selected
@@ -692,7 +720,6 @@ async function addCollectionReview ( params ) {
 					} else {
 						historyData.store.removeAll();
 						historyData.grid.disable();
-						setRejectButtonState();
 						batchEditBtn.enable()
 
 					}
@@ -946,6 +973,29 @@ async function addCollectionReview ( params ) {
 			}
 		})
 
+		const lineIncrementBtn = new Ext.Button({
+			iconCls: 'sm-line-height-up',
+			tooltip: 'Increase row height',
+			handler: function (btn) {
+				const newLineClamp = reviewsGrid.view.lineClamp + 1
+				const newRowHeight = (15*newLineClamp)+6
+				reviewsGrid.view.changeRowHeight(newRowHeight, newLineClamp)
+				lineDecrementBtn.setDisabled(newLineClamp <= 1)
+				btn.setDisabled(newLineClamp >= 10)
+			}
+		})
+		const lineDecrementBtn = new Ext.Button({
+			iconCls: 'sm-line-height-down',
+			tooltip: 'Decrease row height',
+			handler: function (btn) {
+				const newLineClamp = reviewsGrid.view.lineClamp - 1
+				const newRowHeight = (15*newLineClamp)+6
+				reviewsGrid.view.changeRowHeight(newRowHeight, newLineClamp)
+				btn.setDisabled(newLineClamp <= 1)
+				lineIncrementBtn.setDisabled(newLineClamp >= 10)
+			}
+		})
+
 		var reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
@@ -1079,7 +1129,8 @@ async function addCollectionReview ( params ) {
 				emptyText: 'No data to display.',
 				deferEmptyText:false,
 				// custom row height
-				rowHeight: 21,
+				rowHeight: (15*3)+6,
+				lineClamp: 3,
 				borderHeight: 2,
 				// render rows as they come into viewable area.
 				scrollDelay: false,
@@ -1125,6 +1176,22 @@ async function addCollectionReview ( params ) {
 						}
 					},
 					{
+						xtype: 'tbspacer', 
+						width: 10
+					},
+					{
+						xtype: 'tbbutton',
+						disabled: true,
+						iconCls: 'sm-rejected-icon',
+						id: 'reviewsGrid-rejectButton' + idAppend,
+						text: 'Reject...',
+						hidden: !showAcceptBtn(),
+						handler: function (btn) {
+							var selModel = reviewsGrid.getSelectionModel();
+							handleStatusChange (reviewsGrid,selModel,'rejected');
+						}
+					},
+					{
 						xtype: 'tbseparator',
 						hidden: !showAcceptBtn()
 					},
@@ -1140,7 +1207,8 @@ async function addCollectionReview ( params ) {
 						}
 					},
 					{
-						xtype: 'tbseparator'
+						xtype: 'tbspacer', 
+						width: 10
 					},
 					{
 						xtype: 'tbbutton',
@@ -1154,7 +1222,11 @@ async function addCollectionReview ( params ) {
 						}
 					},
 					'-',
-					batchEditBtn
+					batchEditBtn,
+					'->',
+					lineDecrementBtn,
+					{xtype: 'tbspacer', width: 10},
+					lineIncrementBtn
 				]
 			}),
 			bbar: new Ext.Toolbar({
@@ -1273,71 +1345,61 @@ async function addCollectionReview ( params ) {
 		function setReviewsGridButtonStates() {
 			const sm = reviewsGrid.getSelectionModel();
 			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
+			const rejectBtn = Ext.getCmp('reviewsGrid-rejectButton' + idAppend);
 			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
 			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend);
-			const feedbackPanel = Ext.getCmp('feedback-panel' + idAppend);
 			const resourcesTabPanel = Ext.getCmp('resources-tab-panel' + idAppend);
 
 			const selections = sm.getSelections();
 			const selLength = selections.length;
-			let approveBtnEnabled = true;
-			let submitBtnEnabled = true;
-			let unsubmitBtnEnabled = true;
-			let rejectFormEnabled = true;
+			let approveBtnEnabled = rejectBtnEnabled = submitBtnEnabled = unsubmitBtnEnabled = true;
 
 			if (selLength === 0) {
-				approveBtnEnabled = false
-				submitBtnEnabled = false
-				unsubmitBtnEnabled = false
-				rejectFormEnabled = false
+				approveBtnEnabled = rejectBtnEnabled = submitBtnEnabled = unsubmitBtnEnabled = false
 			}
 			else if (selLength === 1) {
 				const selection = selections[0]
 				if (!selection.data.status) { // a review doesn't exist
-					approveBtnEnabled = false
-					submitBtnEnabled = false
-					unsubmitBtnEnabled = false
-					rejectFormEnabled = false
+					approveBtnEnabled = rejectBtnEnabled = submitBtnEnabled = unsubmitBtnEnabled = false
 				}
 				else {
 					const status = selection.data.status
 					switch (status) {
 						case 'saved': // in progress
-							approveBtnDisabled = true;
 							if (isReviewComplete(
 								selection.data.result,
 								selection.data.detail,
 								selection.data.comment
 								)) {
 									approveBtnEnabled = false
+									rejectBtnEnabled = false
 									submitBtnEnabled = true
 									unsubmitBtnEnabled = false
-									rejectFormEnabled = false
 				
 							} else {
 								approveBtnEnabled = false
 								submitBtnEnabled = false
 								unsubmitBtnEnabled = false
-								rejectFormEnabled = false
+								rejectBtnEnabled = false
 							}
 							break
 						case 'submitted':
 							approveBtnEnabled = true
 							submitBtnEnabled = false
 							unsubmitBtnEnabled = true
-							rejectFormEnabled = true
+							rejectBtnEnabled = true
 							break
 						case 'rejected':
 							approveBtnEnabled = true
 							submitBtnEnabled = true
 							unsubmitBtnEnabled = true
-							rejectFormEnabled = true
+							rejectBtnEnabled = true
 							break
 						case 'accepted':
 							approveBtnEnabled = false
 							submitBtnEnabled = false
 							unsubmitBtnEnabled = true
-							rejectFormEnabled = false
+							rejectBtnEnabled = false
 							break
 					}
 				}
@@ -1376,17 +1438,13 @@ async function addCollectionReview ( params ) {
 				approveBtnEnabled = (counts.submitted || counts.rejected) && (!counts.unsaved && !counts.saved && !counts.savedComplete)  && (counts.accepted !== selLength)
 				submitBtnEnabled = (counts.savedComplete || counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved) && (counts.submitted !== selLength)
 				unsubmitBtnEnabled = (counts.submitted || counts.accepted || counts.rejected) && (!counts.unsaved && !counts.saved)
-				rejectFormEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
+				rejectBtnEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
 		
 			}
 			approveBtn.setDisabled(!approveBtnEnabled);
+			rejectBtn.setDisabled(!rejectBtnEnabled);
 			submitBtn.setDisabled(!submitBtnEnabled);
 			unsubmitBtn.setDisabled(!unsubmitBtnEnabled);
-			feedbackPanel.setDisabled(!rejectFormEnabled);
-			const tab = resourcesTabPanel.getActiveTab()
-			if (!rejectFormEnabled && tab.itemId === 'reject') {
-				resourcesTabPanel.setActiveTab('history')
-			}
 		};
 
 		async function handleBatchEdit(grid) {
@@ -1399,77 +1457,161 @@ async function addCollectionReview ( params ) {
 			}
 
 			const review = await SM.BatchReview.showDialog(apiFieldSettings, initialResult)
-
-			const ruleId = grid.currentChecklistRecord.data.ruleId
-			const updatedReviews = []
+			const ruleIds = [grid.currentChecklistRecord.data.ruleId]
+			const assetIds = []
 			for (i = 0, l = records.length; i < l; i++) {
-				Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
 				if (review.resultEngine && review.result !== records[i].data.result) {
 					review.resultEngine = null
 				}
-				try {
-					const result = await Ext.Ajax.requestPromise({
-						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${records[i].data.assetId}/${ruleId}`,
-						method: 'PUT',
-						jsonData: review
-					})
-					updatedReviews.push(JSON.parse(result.response.responseText))
-				}
-				catch (e) {
-					console.log(e)
+				assetIds.push(records[i].data.assetId)
+			}
+			const jsonData = {
+				source: {
+					review
+				},
+				assets: {
+					assetIds
+				},
+				rules: {
+					ruleIds
 				}
 			}
 
-			reviewsStore.loadData(updatedReviews, true)
+			grid.bwrap.mask(`Updating ${records.length} reviews`)
+			const updatedReviews = []
+			try {
+				const result = await Ext.Ajax.requestPromise({
+					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
+					method: 'POST',
+					jsonData
+				})
+				updatedReviews.push(JSON.parse(result.response.responseText))
+			}
+			catch (e) {
+				grid.bwrap.unmask()
+				alert(e)
+			}
+
+			// ugly code follows
+			const record = groupGrid.getSelectionModel().getSelected()
+			await getReviews(leaf.collectionId, record)
 			
 			// hack to reselect the records
 			const sm =reviewsGrid.getSelectionModel()
 			sm.onRefresh()
 			sm.fireEvent('selectionchange', sm)
 
-			Ext.getBody().unmask()
 			grid.updateGroupStore(grid)
 			setReviewsGridButtonStates()
 		}
+
+		function promptForStatusText () {
+			return new Promise ((resolve, reject) => {
+				const textArea = new Ext.form.TextArea({
+					emptyText: 'Provide feedback explaining this rejection.',
+				})
+				function handler (btn) {
+					if (btn.action === 'reject') {
+						const value = textArea.getValue()
+						fpwindow.close()
+						resolve(value)
+					}
+					fpwindow.close()
+					reject()
+				}
+				const fpwindow = new Ext.Window({
+					title: `Reject Reviews`,
+					modal: true,
+					resizable: false,
+					closable: false,
+					width: 300,
+					height: 200,
+					layout: 'fit',
+					plain: true,
+					bodyStyle: 'padding:5px;',
+					buttonAlign: 'right',
+					items: [
+						textArea
+					],
+					buttons: [
+						{
+							text: 'Cancel',
+							action: 'cancel',
+							handler
+						},
+						{
+							text: 'Reject with this feedback',
+							action: 'reject',
+							iconCls: 'sm-rejected-icon',
+							handler
+						}
+					]
+				})
+				fpwindow.show()
+	
+			})
+
+		}
 		
-		async function handleStatusChange (grid,sm,status) {
+		async function handleStatusChange (grid, sm, status) {
 			try {
-				const selections = sm.getSelections()
-				const results = []
-				let i, l
-				for (i = 0, l = selections.length; i < l; i++) {
-					const record = selections[i]
-					Ext.getBody().mask(`Updating ${i+1}/${l} Reviews`)
+				if (status === 'rejected') {
 					try {
-						const result = await Ext.Ajax.requestPromise({
-							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
-							method: 'PATCH',
-							jsonData: {
-								status: status
-							}
-						})
-						results.push({
-							success: true,
-							result: result
-						})
+						const text = await promptForStatusText()
+						status = {label: status, text}
 					}
 					catch (e) {
-						results.push({
-							success: false,
-							result: e
-						})
+						return
 					}
+				}
+				const selections = sm.getSelections()
+				if (selections.length === 1) {
+					const record = selections[0]
+					const result = await Ext.Ajax.requestPromise({
+						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+						method: 'PATCH',
+						jsonData: {
+							status
+						}
+					})
+				}
+				if (selections.length > 1) {
+					const ruleIds = [selections[0].data.ruleId]
+					const assetIds = selections.map( record => record.data.assetId)
+					const review = {status}
+					const jsonData = {
+						source: {
+							review
+						},
+						assets: {
+							assetIds
+						},
+						rules: {
+							ruleIds
+						}
+					}
+					grid.bwrap.mask(`Updating ${selections.length} reviews`)
+					const updatedReviews = []
+					const result = await Ext.Ajax.requestPromise({
+						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
+						method: 'POST',
+						jsonData
+					})
+					updatedReviews.push(JSON.parse(result.response.responseText))
 				}
 
-				for (i=0, l=selections.length; i < l; i++) {
-					if (results[i].success) {
-						selections[i].data.status = status
-						selections[i].commit()
-					}
-				}
 				if (selections.length === 1) {
 					loadResources(selections[0])
 				}
+				// ugly code follows
+				const record = groupGrid.getSelectionModel().getSelected()
+				await getReviews(leaf.collectionId, record)
+				
+				// hack to reselect the records
+				const reviewsGridSm = reviewsGrid.getSelectionModel()
+				reviewsGridSm.onRefresh()
+				reviewsGridSm.fireEvent('selectionchange', sm)
+
 				grid.updateGroupStore(grid)
 				setReviewsGridButtonStates()
 			}
@@ -1477,7 +1619,7 @@ async function addCollectionReview ( params ) {
 				alert(e.message)
 			}
 			finally {
-				Ext.getBody().unmask()
+				grid.bwrap.unmask()
 			}
 		};
 
@@ -1532,12 +1674,7 @@ async function addCollectionReview ( params ) {
 					}
 					apiReview.history.push(currentReview)
 					Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
-	
-					// Reject text
-					const rejectFp = Ext.getCmp('rejectFormPanel' + idAppend)
-					rejectFp.getForm().setValues(apiReview)
-					setRejectButtonState()
-	
+		
 					// Attachments
 				attachmentsGrid.loadArtifacts()	
 				}
@@ -1570,115 +1707,6 @@ async function addCollectionReview ( params ) {
   /******************************************************/
   // END Attachments Panel
   /******************************************************/
-
-	/******************************************************/
-	// START Resources Panel/Feedback
-	/******************************************************/
-
-		var rejectOtherPanel = new Ext.Panel ({
-			layout: 'fit',
-			id: 'rejectOtherPanel' + idAppend,
-			title: 'Rejected review feedback',
-			bodyCssClass: 'sm-background-blue',
-			padding: '5',
-			flex: 50,
-			items: [{
-				xtype: 'textarea',
-				id: 'rejectTextArea' + idAppend,
-				enableKeyEvents: true,
-				emptyText: 'Provide feedback explaining this rejection.',
-				name: 'rejectText',
-				listeners: {
-					keyup: setRejectButtonState
-				}
-			}]
-		});
-		
-		var rejectFormPanel = new Ext.form.FormPanel({
-			baseCls: 'x-plain',
-			id: 'rejectFormPanel' + idAppend,
-			cls: 'sm-background-blue',
-			labelWidth: 95,
-			monitorValid: false,
-			items: [
-			{
-				layout: 'hbox',
-				anchor: '100% -1',
-				padding: '10',
-				baseCls: 'x-plain',
-				border: false,
-				layoutConfig: {
-					align: 'stretch'
-				},
-				items: [rejectOtherPanel]
-			}],
-			buttons: [{
-				text: 'Reject review with this feedback',
-				disabled: true,
-				id: 'rejectSubmitButton' + idAppend,
-				iconCls: 'sm-rejected-icon',
-				reviewsGrid: reviewsGrid,
-				hidden: !showAcceptBtn(),
-				handler: handleRejections
-			}]
-		});
-		
-		async function handleRejections() {
-			try {
-				Ext.getBody().mask('Rejecting')
-				const status = 'rejected'
-				const values = rejectFormPanel.getForm().getFieldValues()
-				const selections = reviewsGrid.getSelectionModel().getSelections()
-				const requests = []
-				for (const record of selections) {
-					requests.push(
-						Ext.Ajax.requestPromise({
-							url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
-							method: 'PATCH',
-							jsonData: {
-								status: {
-									label: status,
-									text: values.rejectText
-								}
-							}
-						})
-					)
-				}
-				let results = await Promise.allSettled(requests)
-				for (i=0, l=selections.length; i < l; i++) {
-					if (results[i].status === 'fulfilled') {
-						selections[i].data.status = status
-						selections[i].commit()
-					}
-				}
-				reviewsGrid.updateGroupStore(reviewsGrid)
-				setReviewsGridButtonStates()
-				Ext.getBody().unmask()
-			}
-			catch (e) {
-				alert(e.message)
-			}
-			finally {
-
-			}
-
-		}
-
-		function setRejectButtonState () {
-			var btn = Ext.getCmp('rejectSubmitButton' + idAppend);
-			var text = Ext.getCmp('rejectTextArea' + idAppend);
-			var reviewsCount = reviewsGrid.getSelectionModel().getCount();
-			if (reviewsCount > 1) {
-				btn.setText("Reject " + reviewsCount + " reviews with this feedback");
-			} else {
-				btn.setText("Reject review with this feedback");
-			}
-			if (!text.getValue()) {
-				btn.disable();
-			} else {
-				btn.enable();
-			}
-		}
 
 	/******************************************************/
 	// END Resources Panel
@@ -1736,28 +1764,20 @@ async function addCollectionReview ( params ) {
 						collapsible: false,
 						activeTab: 'history',
 						items: [
-						{
-							title: 'History',
-							itemId: 'history',
-							layout: 'fit',
-							id: 'history-tab' + idAppend,
-							items: historyData.grid
-						},
-						{
-							title: 'Attachments',
-							id: 'attachment-panel' + idAppend,
-							layout: 'fit',
-							items: attachmentsGrid
-						},
-						{
-							title: 'Reject',
-							itemId: 'reject',
-							iconCls: 'sm-rejected-icon',
-							disabled: true,
-							id: 'feedback-panel' + idAppend,
-							layout: 'fit',
-							items: rejectFormPanel
-						}]
+							{
+								title: 'History',
+								itemId: 'history',
+								layout: 'fit',
+								id: 'history-tab' + idAppend,
+								items: historyData.grid
+							},
+							{
+								title: 'Attachments',
+								id: 'attachment-panel' + idAppend,
+								layout: 'fit',
+								items: attachmentsGrid
+							}
+						]
 					}
 				]
 			}

@@ -75,8 +75,8 @@ SM.BatchReview.showDialog = function (fieldSettings, initialResult) {
           fpwindow.close()
           resolve({
             result: values.result,
-            detail: values.detail === '' ? null : values.detail.trim(),
-            comment: values.comment === '' ? null : values.comment.trim()
+            detail: values.detail === '' ? undefined : values.detail.trim(),
+            comment: values.comment === '' ? undefined : values.comment.trim()
           })
         }
       })
@@ -116,3 +116,30 @@ SM.BatchReview.showDialog = function (fieldSettings, initialResult) {
     }
   })
 }
+
+SM.BatchReview.ResponsePanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+    const config = {}
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.BatchReview.ResponseCounts = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+    const config = {}
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.BatchReview.ResponseErrors = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+    const config = {}
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})

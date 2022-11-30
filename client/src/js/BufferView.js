@@ -136,7 +136,7 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 				p.id = c.id;
 				p.css = i === 0 ? 'x-grid3-cell-first ' : (i == last ? 'x-grid3-cell-last ' : '');
 				p.attr = p.cellAttr = "";
-				if (this.lineClamp > 1) {
+				if (this.lineClamp !== 'undefined') {
 					p.attr += ` style="-webkit-line-clamp: ${this.lineClamp};"`
 				}
 				p.value = c.renderer.call(c.scope || c, typeof r.data[c.name] === 'string' ? SM.he(r.data[c.name]) : r.data[c.name], p, r, rowIndex, i, ds);
@@ -463,11 +463,46 @@ Ext.ux.grid.BufferView = Ext.extend(Ext.grid.GridView, {
 
 	isBufferView: true,
 
+	doUpdateRowHeight: function () {
+		let	colCount = this.cm.getColumnCount(),
+			rows = this.getRows(),
+			rowCount = rows.length,
+			rh = `${this.getStyleRowHeight()}px`,
+			row, rowFirstChild, trow, i, j;
+
+		const rowInnerCache = this.rowInnerTemplateEl?.content?.children
+
+		for (i = 0; i < rowCount; i++) {
+			row = rows[i]
+			row.style.height = rh
+			rowFirstChild = row.firstChild
+
+			if (rowFirstChild) {
+				rowFirstChild.style.height = rh
+				trow = rowFirstChild.rows[0]
+				for (j = 0; j < colCount; j++) {
+					trow.childNodes[j].childNodes[0].style['-webkit-line-clamp'] = this.lineClamp
+				}
+			}
+
+			// BufferView extends to update the cache's <template> element
+			let rowInnerCached = rowInnerCache?.[i]
+			if (rowInnerCached) {
+				rowInnerCached.style.height = rh
+				trow = rowInnerCached.rows[0]
+				for (j = 0; j < colCount; j++) {
+					trow.childNodes[j].childNodes[0].style['-webkit-line-clamp'] = this.lineClamp
+				}
+			}
+		}
+	},
+
 	changeRowHeight: function (rowHeight, lineClamp) {
 		this.rowHeight = rowHeight
-		this.lineClamp = lineClamp ? lineClamp : this.lineClamp
+		this.lineClamp = lineClamp ? lineClamp : this.lineClamp		
 		const scrollTopPct = this.scroller.dom.scrollTop / this.scroller.dom.scrollHeight
-		this.refresh()
+		this.doUpdateRowHeight()
+		this.doUpdate()
 		this.scroller.dom.scrollTop = this.scroller.dom.scrollHeight * scrollTopPct
 	}
 });
