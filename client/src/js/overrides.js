@@ -78,10 +78,10 @@ Ext.getBody = function () {
 Ext.LoadMask.prototype.onBeforeLoad = function() {
     if(!this.disabled){
         if (this.store.smMaskDelay) {
-            this.smTask = new Ext.util.DelayedTask(function () {
-                this.el.mask(this.msg, this.msgCls)
-            }, this)
-            this.smTask.delay(this.store.smMaskDelay)
+            if (this.smTask) {
+                clearTimeout(this.smTask)
+            }
+            this.smTask = setTimeout(this.el.mask.bind(this.el), this.store.smMaskDelay, this.msg, this.msgCls)
         }
         else {
             this.el.mask(this.msg, this.msgCls)
@@ -90,7 +90,7 @@ Ext.LoadMask.prototype.onBeforeLoad = function() {
 }
 Ext.LoadMask.prototype.onLoad = function() {
     if (this.smTask) {
-        this.smTask.cancel()
+        clearTimeout(this.smTask)
     }
     this.el.unmask(this.removeMask);
 }

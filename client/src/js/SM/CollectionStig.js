@@ -617,7 +617,6 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
                             jsonData: values.assets
                         })
                         const apiStigAssets = JSON.parse(result.response.responseText)
-                        parentGrid.getStore().reload()
                         SM.Dispatcher.fireEvent('stigassetschanged', btn.collectionId, values.benchmarkId, apiStigAssets)
                         appwindow.close()
                     }
