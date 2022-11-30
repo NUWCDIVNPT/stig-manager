@@ -1881,3 +1881,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-image: url(../img/line-height-down.svg);
   background-size: 16px 16px;
 }
+.x-tool.x-tool-logout {
+  background-image: url(../img/logout.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+}
+.x-tool.x-tool-logout:hover {
+  filter: brightness(125%)
+}

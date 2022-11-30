@@ -519,7 +519,7 @@
 
         kc.createLogoutUrl = function(options) {
             var url = kc.endpoints.logout()
-                + '?redirect_uri=' + encodeURIComponent(adapter.redirectUri(options, false));
+                + '';
 
             return url;
         }

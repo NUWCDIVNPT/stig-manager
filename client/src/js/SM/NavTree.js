@@ -427,7 +427,14 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
           autoScroll: true,
           split: true,
           collapsible: true,
-          title: `<span onclick="window.oidcProvider.logout()">${curUser.displayName === 'USER' ? SM.he(curUser.username) : SM.he(curUser.displayName)} - Logout</span>`,
+          collapseFirst: false,
+          tools: [
+            {
+              id: 'logout',
+              handler: window.oidcProvider.logout
+            },
+          ],
+          title: `${curUser.displayName === 'USER' ? SM.he(curUser.username) : SM.he(curUser.displayName)}`,
           bodyStyle: 'padding:5px;',
           width: me.width || 300,
           minSize: 220,
@@ -1105,7 +1112,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
     },
     treeRender: function (tree) {
       new Ext.ToolTip({
-          target: tree.header,
+          target: tree.header.dom.querySelector(`.${tree.headerTextCls}`),
           showDelay: 1000,
           dismissDelay: 0,
           width: 600,
