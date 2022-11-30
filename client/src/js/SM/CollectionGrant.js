@@ -276,6 +276,16 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
 
             }
         })
+
+        const tbar = new SM.RowEditorToolbar({
+            itemString: 'Grant',
+            editor: this.editor,
+            gridId: this.id,
+            deleteProperty: 'collectionId',
+            newRecord: this.newRecordConstructor
+        })
+        tbar.delButton.disable()
+
         const config = {
             isFormField: true,
             submitValue: true,
@@ -292,6 +302,7 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 singleSelect: true,
                 listeners: {
                     selectionchange: function (sm) {
+                        tbar.delButton.setDisabled(!sm.hasSelection())
                     }
                 }
             }),
@@ -303,14 +314,7 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            tbar: new SM.RowEditorToolbar({
-                itemString: 'Grant',
-                editor: this.editor,
-                gridId: this.id,
-                deleteProperty: 'userId',
-                newRecord: this.newRecordConstructor
-            }),
-
+            tbar,
             getValue: function() {
                 let grants = []
                 grantStore.data.items.forEach((i) => {
