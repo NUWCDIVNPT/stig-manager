@@ -92,7 +92,7 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
           `</div>`,
           `<div class='sm-home-widget-text'>`,
             `<div class=sm-home-widget-image-text-wrap>`,
-              `<img src="${STIGMAN.Env.welcome.image ? STIGMAN.Env.welcome.image : 'img/navy.svg'}" style="max-width:100%;max-height:100%;"/>`,
+              `<img src=${STIGMAN.Env.welcome.image ? `"${STIGMAN.Env.welcome.image}" onerror="this.onerror=null;this.src='img/navy.svg';"` : '"img/navy.svg"'} style="max-width:100%;max-height:100%;"/>`,
             `</div>`,
             `<b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States Defense Information Systems Agency (DISA). The software is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">an open source project</a> maintained by the Naval Sea Systems Command (NAVSEA) of the United States Navy.`,
           `</div>`, 
