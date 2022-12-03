@@ -868,6 +868,7 @@ SM.AppNavTree = Ext.extend(Ext.tree.TreePanel, {
               params
             })
             let apiCollectionAssets = JSON.parse(result.response.responseText)
+            apiCollectionAssets.sort((a,b) => a.name.localeCompare(b.name))
             let content = apiCollectionAssets.map(asset => SM.AssetNodeConfig(collectionId, asset))
             cb(content, { status: true })
             return
