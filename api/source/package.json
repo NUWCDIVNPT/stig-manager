@@ -24,7 +24,7 @@
     "got": "^11.8.5",
     "he": "^1.2.0",
     "js-yaml": "^4.1.0",
-    "jsonpath-plus": "^6.0.1",
+    "jsonpath-plus": "^7.2.0",
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.7.1",
     "jwks-rsa": "^2.0.4",
