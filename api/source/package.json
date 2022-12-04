@@ -36,7 +36,7 @@
     "semver": "^7.3.4",
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
-    "uuid": "^8.3.2",
+    "uuid": "^9.0.0",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
 }
