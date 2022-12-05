@@ -247,9 +247,18 @@ function addUserAdmin(params ) {
 				handler: function(btn){
 					userGrid.getStore().reload();
 				}
-			},{
+			},
+			{
 				xtype: 'tbseparator'
 			},
+			{
+				xtype: 'exportbutton',
+				hasMenu: false,
+				gridBasename: 'User-Info',
+				exportType: 'grid',
+				iconCls: 'sm-export-icon',
+				text: 'CSV'
+			},	
 			{
 				xtype: 'tbfill'
 			},{
