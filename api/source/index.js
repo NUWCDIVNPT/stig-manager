@@ -135,7 +135,7 @@ async function run() {
     }
     // Read and modify OpenAPI specification
     let spec = fs.readFileSync(apiSpecPath, 'utf8')
-    let oasDoc = jsyaml.safeLoad(spec)
+    let oasDoc = jsyaml.load(spec)
     // Replace with config values
     oasDoc.info.version = config.version
     oasDoc.servers[0].url = config.swaggerUi.server

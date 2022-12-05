@@ -6607,7 +6607,7 @@ components:
         uniqueItems: true
         minLength: 1
         items:
-          pattern: '^([\w\.]+\:.*?)$'
+          pattern: '^([\w\.]+:.*?)$'
           type: string
     MetricsFormatQuery:
       name: format

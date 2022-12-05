@@ -19,15 +19,15 @@
     "cors": "^2.8.5",
     "csv-stringify": "^6.2.0",
     "express": "^4.18.2",
-    "express-openapi-validator": "^4.13.8",
+    "express-openapi-validator": "^5.0.0",
     "fast-xml-parser": "^3.17.4",
     "got": "^11.8.5",
     "he": "^1.2.0",
-    "js-yaml": "^3.14.0",
-    "jsonpath-plus": "^6.0.1",
+    "js-yaml": "^4.1.0",
+    "jsonpath-plus": "^7.2.0",
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.7.1",
-    "jwks-rsa": "^2.0.4",
+    "jwks-rsa": "^3.0.0",
     "lodash": "^4.17.21",
     "multer": "1.4.5-lts.1",
     "mysql2": "^2.2.5",
@@ -36,7 +36,7 @@
     "semver": "^7.3.4",
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
-    "uuid": "^8.3.2",
+    "uuid": "^9.0.0",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
 }
