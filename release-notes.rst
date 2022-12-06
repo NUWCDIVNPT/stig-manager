@@ -1,3 +1,23 @@
+1.2.21
+-----
+
+Changes:
+
+  - (App) Added CSV export button to User App Admin panel. (#856)
+  - (App/Fix) Sort Assets in NavTree when building tree node (#855)
+  - (API) Updates to node package dependencies (#845)
+  - (App) Added a distinct logout button to navtree header (#844)
+  - (App) Collection review workspace enhancements, batch editing uses new API endpoints for better performance (#835)
+  - (App/Fix) Resolved overly persistent stig grid reload mask (#836)
+  - (App/Fix) Fallback to navy logo on img error (#839)
+  - (App/Fix) Enabled User grant delete button from User Admin interface (#840)
+  - (App) Added sourcemap to support client debugging (#841)
+  - (API/Fix) Fixed issue preventing AppData from loading reviewHistory > 5000 characters (#830)
+  - (API) Added endpoints for batch POST of reviews (#832)
+  - (App) Render rows to a markup cache in BufferView for better performance (#831)
+  - (API) Refactor migrations; avoid mysql2 bugs by removing charset/collation directives (#829)
+  - (Ops) Removed unused Docker-compose file envvars (#842)
+
 1.2.20
 -----
 
