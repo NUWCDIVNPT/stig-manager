@@ -36035,6 +36035,264 @@
 			"name": "STIGS",
 			"item": [
 				{
+					"name": "LoadTestData",
+					"item": [
+						{
+							"name": "Import a new STIG - VPN  (as admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{vpnStig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - Win 10  (as admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{win10Stig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - RHEL 7 (as admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{rhel7Stig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import and overwrite application data (as elevated Admin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{appDataFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/op/appdata?elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"op",
+										"appdata"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "stigs GET",
 					"item": [
 						{
