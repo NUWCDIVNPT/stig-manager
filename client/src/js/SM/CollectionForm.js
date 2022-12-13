@@ -370,7 +370,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 },
                 remove: function (store, record, index) {
                     totalTextCmp.setText(store.getCount() + ' records');
-                    store.grid.fireEvent('grantschanged', store.grid)
+                    store.grid.fireEvent('grantsremoved', store.grid)
                 }
             }
         })
@@ -396,7 +396,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'userId',
                 sortable: true,
                 renderer: function (v, m, r) {
-                    return `<div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">${r.data.displayName}</span><br>${r.data.username}</div>`
+                    return `<div class="x-combo-list-item sm-users-icon sm-combo-list-icon"><span style="font-weight:600;">${r.data.displayName ?? ''}</span><br>${r.data.username ?? ''}</div>`
                 },
                 editor: userSelectionField
             },
@@ -438,9 +438,13 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 afteredit: function (editor, changes, record, index) {
                     // "Save" the record by reconfiguring the store's data collection
                     // Corrects the bug where new records don't deselect when clicking away
-                    let mc = record.store.data
-                    let generatedId = record.id
+
+                    const userComboBoxRecord = editor.userSelectionField.store.getById(record.data.userId)
+                    const mc = record.store.data
+                    const generatedId = record.id
                     record.id = record.data.userId
+                    record.data.username = userComboBoxRecord.data.username
+                    record.data.displayName = userComboBoxRecord.data.displayName
                     record.phantom = false
                     record.dirty = false
                     delete mc.map[generatedId]
@@ -630,7 +634,12 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
             iconCls: 'sm-users-icon',
 			showAccessBtn: false,
 			title: 'Grants',
-			border: true
+			border: true,
+            listeners: {
+				grantschanged: grid => {
+                    grid.getView().refresh()
+				}
+			}
 		})
         const labelGrid = new SM.Collection.LabelsGrid({
 			collectionId: 0,
@@ -1025,6 +1034,24 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             }
         }
 
+        const grantHandler = async grid => {
+            try {
+                let data = grid.getValue()
+                let result = await Ext.Ajax.requestPromise({
+                    url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}?projection=grants`,
+                    method: 'PATCH',
+                    jsonData: {
+                        grants: data
+                    }
+                })
+                let collection = JSON.parse(result.response.responseText)
+                grid.setValue(collection.grants)
+            }
+            catch (e) {
+                alert ('Grants save failed')
+            }
+        }
+
         const grantGrid = new SM.UserGrantsGrid({
 			collectionId: _this.apiCollection.collectionId,
             iconCls: 'sm-users-icon',
@@ -1036,23 +1063,8 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 			title: 'Grants',
 			border: true,
 			listeners: {
-				grantschanged: async grid => {
-                    try {
-                        let data = grid.getValue()
-                        let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}?projection=grants`,
-                            method: 'PATCH',
-                            jsonData: {
-                                grants: data
-                            }
-                        })
-                        let collection = JSON.parse(result.response.responseText)
-                        grid.setValue(collection.grants)
-                    }
-                    catch (e) {
-                        alert ('Grants save failed')
-                    }
-				}
+				grantschanged: grantHandler,
+                grantsremoved: grantHandler
 			}
 		})
 		grantGrid.setValue(_this.apiCollection.grants)
