@@ -1,3 +1,15 @@
+// override top-ancestor initComponent to normalize the 'stateful' property
+// since other framework code checks 'if (this.stateful !== false)'
+Ext.Component.prototype.initComponent = function(){
+    if(this.listeners){
+        this.on(this.listeners);
+        delete this.listeners;
+    }
+    this.enableBubble(this.bubbleEvents);
+    // an absent property is explicitly set to false
+    this.stateful = !!this.stateful
+};
+
 Ext.override(Ext.grid.EditorGridPanel, {
     initEvents : function(){
         Ext.grid.EditorGridPanel.superclass.initEvents.call(this);
