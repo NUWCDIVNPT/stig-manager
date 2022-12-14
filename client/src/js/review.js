@@ -462,6 +462,18 @@ async function addReview( params ) {
         } 
       },
       {
+        id: 'stigId' + idAppend,
+        header: "STIG Id",
+        width: 100,
+        dataIndex: 'stigId',
+        hidden: true,
+        sortable: true,
+        align: 'left',
+        filter: {
+          type: 'string'
+        }
+      },
+      {
         id: 'groupId' + idAppend,
         header: "Group",
         width: 95,
@@ -505,18 +517,6 @@ async function addReview( params ) {
         dataIndex: 'ruleTitle',
         renderer: columnWrap,
         sortable: true,
-        filter: {
-          type: 'string'
-        }
-      },
-      {
-        id: 'stigId' + idAppend,
-        header: "STIG Id",
-        width: 100,
-        dataIndex: 'stigId',
-        hidden: true,
-        sortable: true,
-        align: 'left',
         filter: {
           type: 'string'
         }

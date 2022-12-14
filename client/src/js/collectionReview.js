@@ -362,6 +362,19 @@ async function addCollectionReview ( params ) {
 					}	
 				},
 				{ 	
+					id:'stigId' + idAppend,
+					header: "STIG Id",
+					width: 105,
+					dataIndex: 'stigId',
+					sortable: true,
+					hidden: true,
+					hideable: true,
+					align: 'left',
+					filter: {
+						type: 'string'
+					}	
+				},
+				{ 	
 					id:'groupId' + idAppend,
 					header: "Group",
 					width: 85,
@@ -409,19 +422,6 @@ async function addCollectionReview ( params ) {
 					hidden: false,
 					hideable: false,
 					sortable: true,
-					filter: {
-						type: 'string'
-					}	
-				},
-				{ 	
-					id:'stigId' + idAppend,
-					header: "STIG Id",
-					width: 105,
-					dataIndex: 'stigId',
-					sortable: true,
-					hidden: true,
-					hideable: true,
-					align: 'left',
 					filter: {
 						type: 'string'
 					}	
