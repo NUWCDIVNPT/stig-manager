@@ -152,6 +152,7 @@ SM.RuleContentTpl = new Ext.XTemplate(
         `<tpl if="severity == 'medium'">CAT 2</tpl>`,
         `<tpl if="severity == 'low'">CAT 3</tpl>`, 
       '</span>',
+      '<div class="sm-content-stigid">{version}</div>',
     '</div>',
     '<div class=cs-home-header-sub>{[SM.he(values.title)]}</div>',
     '<div class=cs-home-body-title>Manual Check',
