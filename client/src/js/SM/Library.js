@@ -8,6 +8,11 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
     const title = this.stigTitle
     const fields = [
       {
+        name: 'version',
+        type: 'string',
+        sortType: sortGroupId
+      },
+      {
         name: 'groupId',
         type: 'string',
         sortType: sortGroupId
@@ -88,7 +93,15 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         }	
       },
       {
-        header: "Group",
+        header: "STIG Id",
+        width: 150,
+        dataIndex: 'version',
+        sortable: true,
+        align: 'left',
+        filter: {type:'string'}
+      },
+      {
+        header: "Group Id",
         width: 75,
         dataIndex: 'groupId',
         sortable: true,

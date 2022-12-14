@@ -3940,7 +3940,7 @@ components:
           type: string
         groupTitle:
           type: string
-        stigId:
+        version:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'
@@ -4042,7 +4042,7 @@ components:
           type: string
         groupTitle:
           type: string
-        stigId:
+        version:
           type: string
         severity:
           $ref: '#/components/schemas/RuleSeverity'

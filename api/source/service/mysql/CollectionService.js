@@ -763,7 +763,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
         ,r.ruleTitle
         ,r.groupId
         ,r.groupTitle
-        ,r.version as stigId
+        ,r.version
         ,r.severity
         ,json_object(
           'results', json_object(

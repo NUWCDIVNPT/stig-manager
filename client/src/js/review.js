@@ -61,7 +61,7 @@ async function addReview( params ) {
       type: 'string'
     },
     {
-      name: 'stigId',
+      name: 'version',
       type: 'string'
     },
     {
@@ -368,6 +368,7 @@ async function addReview( params ) {
   })
 
   var groupGrid = new Ext.grid.GridPanel({
+    stateful: true,
     cls: 'sm-round-panel',
     margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
     border: false,
@@ -462,10 +463,10 @@ async function addReview( params ) {
         } 
       },
       {
-        id: 'stigId' + idAppend,
+        id: 'version' + idAppend,
         header: "STIG Id",
         width: 100,
-        dataIndex: 'stigId',
+        dataIndex: 'version',
         hidden: true,
         sortable: true,
         align: 'left',
