@@ -1894,3 +1894,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-weight: normal;
   color: #808080;
 }
+.sm-direction-rtl {
+  direction: rtl;
+}

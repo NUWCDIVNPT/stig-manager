@@ -470,6 +470,10 @@ async function addReview( params ) {
         hidden: true,
         sortable: true,
         align: 'left',
+        renderer: (v, attrs) => {
+          attrs.css = 'sm-direction-rtl'
+          return v
+        },
         filter: {
           type: 'string'
         }

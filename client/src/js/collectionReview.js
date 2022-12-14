@@ -372,6 +372,10 @@ async function addCollectionReview ( params ) {
 					hidden: true,
 					hideable: true,
 					align: 'left',
+					renderer: (v, attrs) => {
+						attrs.css = 'sm-direction-rtl'
+						return v
+					},	
 					filter: {
 						type: 'string'
 					}	
