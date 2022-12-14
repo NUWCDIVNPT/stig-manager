@@ -61,6 +61,10 @@ async function addReview( params ) {
       type: 'string'
     },
     {
+      name: 'stigId',
+      type: 'string'
+    },
+    {
       name: 'severity',
       type: 'string',
       sortType: sortSeverity
@@ -501,6 +505,18 @@ async function addReview( params ) {
         dataIndex: 'ruleTitle',
         renderer: columnWrap,
         sortable: true,
+        filter: {
+          type: 'string'
+        }
+      },
+      {
+        id: 'stigId' + idAppend,
+        header: "STIG Id",
+        width: 100,
+        dataIndex: 'stigId',
+        hidden: true,
+        sortable: true,
+        align: 'left',
         filter: {
           type: 'string'
         }
