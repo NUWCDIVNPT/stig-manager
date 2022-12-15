@@ -485,8 +485,8 @@ from
 
     connection.config.namedPlaceholders = false
 
-    const sqlVariables = `set @collectionId = ${parseInt(collectionId)}, @userId = ${parseInt(userId)}, @review = '${JSON.stringify(source.review)}'`
-    await connection.query(sqlVariables)
+    const sqlVariables = `set @collectionId = ?, @userId = ?, @review = ?`
+    await connection.query(sqlVariables, [parseInt(collectionId), parseInt(userId), JSON.stringify(source.review)])
     // performance.mark('beforeTempTable')
     await connection.query(sqlTempTable)
     // performance.mark('afterTempTable')
