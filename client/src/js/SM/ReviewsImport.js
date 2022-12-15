@@ -721,7 +721,7 @@ SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox
             helpText: SM.TipContent.ImportOptions.AutoStatus
         }
         const data = [
-            ['null', 'Null'],
+            ['null', 'Keep Existing'],
             ['saved', 'Saved'],
             ['submitted', 'Submitted']
         ]
