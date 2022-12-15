@@ -1,3 +1,16 @@
+1.2.22
+-----
+
+Changes:
+
+  - (App/API) Added support for display of additional Rule property "Version" (aka "STIG Id" aka "Rule_Ver") information in checklists, STIG Library, and Rule Content Panel (#871)
+  - (API/Fix) Resolved issue preventing certain characters from being added to Review text fields (#874)
+  - (App/Fix) Resolved issue preventing new user grants from being properly handled in windowed panel (#869)
+  - (App) Prevent display grids from preserving state until specifically invoked (#865)
+  - (App) Adjusted label for "Null" Status import option for better clarity (#878)
+  - (App) Added UI indication and disabled Reject button when provided Status Text is longer than defined in specification (#876)
+  - (Test) Updated expired test user tokens  (#864)
+
 1.2.21
 -----
 
