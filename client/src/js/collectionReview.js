@@ -1509,6 +1509,21 @@ async function addCollectionReview ( params ) {
 			return new Promise ((resolve, reject) => {
 				const textArea = new Ext.form.TextArea({
 					emptyText: 'Provide feedback explaining this rejection.',
+					maxLength: 255,
+					listeners: {
+						valid: () => {
+							submitBtn.enable()
+						},
+						invalid: () => {
+							submitBtn.disable()
+						}
+					}
+				})
+				const submitBtn = new Ext.Button({
+					text: 'Reject with this feedback',
+					action: 'reject',
+					iconCls: 'sm-rejected-icon',
+					handler
 				})
 				function handler (btn) {
 					if (btn.action === 'reject') {
@@ -1539,12 +1554,7 @@ async function addCollectionReview ( params ) {
 							action: 'cancel',
 							handler
 						},
-						{
-							text: 'Reject with this feedback',
-							action: 'reject',
-							iconCls: 'sm-rejected-icon',
-							handler
-						}
+						submitBtn
 					]
 				})
 				fpwindow.show()
