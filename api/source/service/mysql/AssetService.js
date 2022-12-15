@@ -421,6 +421,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'CAST(:assetId as char) as "assetId"',
       'r.ruleId',
       'r.title as "ruleTitle"',
+      'r.version',
       'g.groupId',
       'g.title as "groupTitle"',
       'r.severity',

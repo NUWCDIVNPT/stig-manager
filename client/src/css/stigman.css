@@ -714,14 +714,14 @@ body {
   color: #fcfcfc;
   font: bold 14px Open Sans,helvetica,sans-serif;
   position: relative;
-  top: -3px;
+  top: 5px;
   background-color: #6f93db;
   padding: 1px 4px;
   border: 1px solid #c1c1c1;
   border-radius: 3px;
-  margin-left: 12px;
   user-select: none;
-  display: inline-block
+  display: inline-block;
+  float:  right;
 }
 .sm-navtree-sprite {
   color: #fcfcfc!important;
@@ -1888,4 +1888,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .x-tool.x-tool-logout:hover {
   filter: brightness(125%)
+}
+.sm-content-stigid {
+  font-size: 10px;
+  font-weight: normal;
+  color: #808080;
+}
+.sm-direction-rtl {
+  direction: rtl;
 }

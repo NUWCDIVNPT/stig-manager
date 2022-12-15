@@ -763,6 +763,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
         ,r.ruleTitle
         ,r.groupId
         ,r.groupTitle
+        ,r.version
         ,r.severity
         ,json_object(
           'results', json_object(
@@ -784,6 +785,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
           ,rgr.ruleId
           ,rules.title as ruleTitle
           ,rules.severity
+          ,rules.version
           ,rg.groupId
           ,g.title as groupTitle
           ,r.resultId
@@ -797,6 +799,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
           ,rgr.ruleId
           ,rules.title
           ,rules.severity
+          ,rules.version
           ,rg.groupId
           ,g.title
           ,r.resultId
@@ -808,6 +811,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
         ,r.severity
         ,r.groupId
         ,r.groupTitle
+        ,r.version
       order by
         substring(r.groupId from 3) + 0
     `

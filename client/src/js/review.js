@@ -61,6 +61,10 @@ async function addReview( params ) {
       type: 'string'
     },
     {
+      name: 'version',
+      type: 'string'
+    },
+    {
       name: 'severity',
       type: 'string',
       sortType: sortSeverity
@@ -364,6 +368,7 @@ async function addReview( params ) {
   })
 
   var groupGrid = new Ext.grid.GridPanel({
+    stateful: true,
     cls: 'sm-round-panel',
     margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
     border: false,
@@ -456,6 +461,22 @@ async function addReview( params ) {
           renderer: renderSeverity,
           comparer: SM.ColumnFilters.CompareFns.severity
         } 
+      },
+      {
+        id: 'version' + idAppend,
+        header: "STIG Id",
+        width: 100,
+        dataIndex: 'version',
+        hidden: true,
+        sortable: true,
+        align: 'left',
+        renderer: (v, attrs) => {
+          attrs.css = 'sm-direction-rtl'
+          return v
+        },
+        filter: {
+          type: 'string'
+        }
       },
       {
         id: 'groupId' + idAppend,

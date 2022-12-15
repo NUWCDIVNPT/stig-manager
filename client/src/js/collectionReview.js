@@ -78,6 +78,9 @@ async function addCollectionReview ( params ) {
 			},{	
 				name:'ruleId',
 				type: 'string'
+			},{	
+				name:'version',
+				type: 'string'
 			},{
 				name:'groupTitle',
 				type: 'string'
@@ -131,7 +134,7 @@ async function addCollectionReview ( params ) {
 					Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
 				},
 				datachanged: function(store) {
-					Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
+					Ext.getCmp('groupGrid-totalText' + idAppend)?.setText(getStatsString(store));
 				},
 				exception: function(misc) {
 					var ourView = groupGrid.getView();
@@ -283,6 +286,8 @@ async function addCollectionReview ( params ) {
 		})
 
 		var groupGrid = new Ext.grid.GridPanel({
+			stateful: true,
+			stateId: `collection-review-grid-${leaf.collectionId}-${leaf.benchmarkId}`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
 			border: false,
@@ -356,6 +361,23 @@ async function addCollectionReview ( params ) {
 						type: 'values',
 						comparer: SM.ColumnFilters.CompareFns.severity,
 						renderer: SM.ColumnFilters.Renderers.severity
+					}	
+				},
+				{ 	
+					id:'version' + idAppend,
+					header: "STIG Id",
+					width: 105,
+					dataIndex: 'version',
+					sortable: true,
+					hidden: true,
+					hideable: true,
+					align: 'left',
+					renderer: (v, attrs) => {
+						attrs.css = 'sm-direction-rtl'
+						return v
+					},	
+					filter: {
+						type: 'string'
 					}	
 				},
 				{ 	
