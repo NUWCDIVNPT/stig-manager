@@ -9,8 +9,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
     const fields = [
       {
         name: 'version',
-        type: 'string',
-        sortType: sortGroupId
+        type: 'string'
       },
       {
         name: 'groupId',
@@ -98,6 +97,10 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         dataIndex: 'version',
         sortable: true,
         align: 'left',
+        renderer: (v, attrs) => {
+          attrs.css = 'sm-direction-rtl'
+          return v
+        },	
         filter: {type:'string'}
       },
       {
