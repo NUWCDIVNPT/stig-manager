@@ -823,7 +823,7 @@ These import setting preferences can be locked for your Collection, or you can a
 If possible, set Review status to:
   This setting allows you to set a "Goal" status for your review of Accepted, Submitted, Saved, OR, for existing reviews, to leave the status as it was, if possible. 
 
-  - **Null**: Leave the Status as it is.
+  - **Keep Existing**: Keep the existing Status, if possible. New reviews are set to "Saved" status. The resulting Status will also take into consideration the "Reset to Saved" configuration that is set in the Review Status section of Collection Settings. 
   - **Accepted**: If importing user has the proper grant, set Review to "Accepted." If they cannot Accept, Reviews will be set to "Submitted." If review does not meet Submit requirements, Review will be set to "Saved."
   - **Submitted**: Set Review to "Submitted" status. If review does not meet Submit requirements, Review will be set to Saved.
   - **Saved**:(**default setting**) Set Reviews to "Saved" status.

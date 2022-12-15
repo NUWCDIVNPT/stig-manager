@@ -3,7 +3,7 @@ Ext.ns('SM.TipContent')
 Ext.ns('SM.TipContent.ImportOptions')
 
 SM.TipContent.ImportOptions.AutoStatus = `Choose the "Goal" status for imported reviews.
-<br><br><b>Null:</b> Keep existing status, if possible. New reviews are set to "Saved" status.
+<br><br><b>Keep Existing:</b> Keep existing status, if possible. New reviews are set to "Saved" status. The resulting Status will also take into consideration the "Reset to Saved" configuration that is set in the Review Status section of Collection Settings. 
 <br><br><b>Saved:</b> Set Reviews to "Saved" status.
 <br><br><b>Submitted:</b> Set Review to "Submitted" status. If review does not meet Submit requirements, Review will be set to Saved.
 <br><br><b>Accepted:</b> If importing user has the proper grant, set Review to "Accepted". If they cannot Accept, Reviews will be set to "Submitted." If review does not meet Submit requirements, Review will be set to "Saved."
