@@ -2165,8 +2165,8 @@ class TaskObject {
         const matchedByCklHostname = this.mappedCklHostnames.get(target.metadata.cklHostName.toLowerCase())
         if (!matchedByCklHostname) return null
         const matchedByAllCklMetadata = matchedByCklHostname.find(
-            asset => asset.metadata.cklWebDbInstance === target.metadata.cklWebDbInstance
-                && asset.metadata.cklWebDbSite === target.metadata.cklWebDbSite)
+            asset => asset.metadata.cklWebDbInstance?.toLowerCase() === target.metadata.cklWebDbInstance?.toLowerCase()
+                && asset.metadata.cklWebDbSite?.toLowerCase() === target.metadata.cklWebDbSite?.toLowerCase())
         if (!matchedByAllCklMetadata) return null
         return matchedByAllCklMetadata
     }
@@ -2877,12 +2877,12 @@ async function showImportResultFile(params) {
                 const apiAsset = JSON.parse(apiAssetResponse.response.responseText)
                 let assetMatches = false
                 if (r.target.metadata.cklHostName || apiAsset.metadata.cklHostName) {
-                    assetMatches = apiAsset.metadata.cklHostName === r.target.metadata.cklHostName
-                    && apiAsset.metadata.cklWebDbSite === r.target.metadata.cklWebDbSite
-                    && apiAsset.metadata.cklWebDbInstance === r.target.metadata.cklWebDbInstance
+                    assetMatches = apiAsset.metadata.cklHostName?.toLowerCase() === r.target.metadata.cklHostName?.toLowerCase()
+                    && apiAsset.metadata.cklWebDbSite?.toLowerCase() === r.target.metadata.cklWebDbSite?.toLowerCase()
+                    && apiAsset.metadata.cklWebDbInstance?.toLowerCase() === r.target.metadata.cklWebDbInstance?.toLowerCase()
                 } 
                 else {
-                    assetMatches = r.target.name === apiAsset.name
+                    assetMatches = r.target.name.toLowerCase() === apiAsset.name.toLowerCase()
                 }
                 if (!assetMatches) {
                     let errorStr
