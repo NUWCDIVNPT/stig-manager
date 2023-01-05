@@ -2701,7 +2701,7 @@ async function showImportResultFiles(collectionId) {
             }
 
             async function importReviewArray(collectionId, assetId, reviewArray) {
-                if (reviewArray.length < 1) { //Don't try to POST reviews if the review Array is empty.
+                if (!reviewArray?.length) { //Don't try to POST reviews if the review Array is empty.
                     return {
                         inserted: 0,
                         updated: 0,
@@ -3030,7 +3030,7 @@ async function showImportResultFile(params) {
             }
 
             async function importReviewArray(reviewArray) {
-                if (reviewArray.length < 1) { //Don't try to POST reviews if the review Array is empty.
+                if (!reviewArray?.length) { //Don't try to POST reviews if the review Array is empty.
                     return {
                         inserted: 0,
                         updated: 0,
