@@ -2701,20 +2701,29 @@ async function showImportResultFiles(collectionId) {
             }
 
             async function importReviewArray(collectionId, assetId, reviewArray) {
-                let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}`
-                let result = await Ext.Ajax.requestPromise({
-                    url: url,
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                    jsonData: reviewArray
-                })
-                const apiReviews = JSON.parse(result.response.responseText)
-                return {
-                    inserted: apiReviews.affected.inserted,
-                    updated: apiReviews.affected.updated,
-                    rejected: apiReviews.rejected
+                if (!reviewArray?.length) { //Don't try to POST reviews if the review Array is empty.
+                    return {
+                        inserted: 0,
+                        updated: 0,
+                        rejected: []
+                    }                    
                 }
-            }
+                else{
+                    let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}`
+                    let result = await Ext.Ajax.requestPromise({
+                        url: url,
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                        jsonData: reviewArray
+                    })
+                    const apiReviews = JSON.parse(result.response.responseText)
+                    return {
+                        inserted: apiReviews.affected.inserted,
+                        updated: apiReviews.affected.updated,
+                        rejected: apiReviews.rejected
+                    }
+                }
+            } 
         }
     }
     catch (e) {
@@ -3021,18 +3030,27 @@ async function showImportResultFile(params) {
             }
 
             async function importReviewArray(reviewArray) {
-                let url = `${STIGMAN.Env.apiBase}/collections/${params.collectionId}/reviews/${params.assetId}`
-                let result = await Ext.Ajax.requestPromise({
-                    url: url,
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                    jsonData: reviewArray
-                })
-                apiReviews = JSON.parse(result.response.responseText)
-                return {
-                    inserted: apiReviews.affected.inserted,
-                    updated: apiReviews.affected.updated,
-                    rejected: apiReviews.rejected
+                if (!reviewArray?.length) { //Don't try to POST reviews if the review Array is empty.
+                    return {
+                        inserted: 0,
+                        updated: 0,
+                        rejected: []
+                    }           
+                }
+                else{                
+                    let url = `${STIGMAN.Env.apiBase}/collections/${params.collectionId}/reviews/${params.assetId}`
+                    let result = await Ext.Ajax.requestPromise({
+                        url: url,
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                        jsonData: reviewArray
+                    })
+                    apiReviews = JSON.parse(result.response.responseText)
+                    return {
+                        inserted: apiReviews.affected.inserted,
+                        updated: apiReviews.affected.updated,
+                        rejected: apiReviews.rejected
+                    }
                 }
             }
         }
