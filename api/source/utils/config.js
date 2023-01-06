@@ -42,7 +42,7 @@ let config = {
     http: {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
         port: process.env.STIGMAN_API_PORT || 54000,
-        maxJsonBody: process.env.STIGMAN_API_MAX_JSON_BODY || "5242880",
+        maxJsonBody: process.env.STIGMAN_API_MAX_JSON_BODY || "31457280",
         maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824"
     },
     database: {
