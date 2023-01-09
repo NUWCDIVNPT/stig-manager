@@ -12,6 +12,39 @@
   --metrics-status-chart-unsaved-dark: hsl(0deg 0% 18%);
   --metrics-status-chart-rejected-dark: hsl(5deg 90% 25%)
 }
+
+.sm-grid-cell-with-toolbar {
+	position: relative;
+}
+.sm-grid-cell-with-toolbar .sm-dynamic-width {
+	margin-right: 0px;
+}
+.sm-grid-cell-with-toolbar .sm-info {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.sm-grid-cell-with-toolbar .sm-static-width {
+	position: absolute;
+	visibility: hidden;
+	top: 0;
+	right: 0;
+	width: 18px;
+}
+.x-grid3-row-over .sm-grid-cell-with-toolbar .sm-dynamic-width {
+	margin-right: 28px;
+}
+.x-grid3-row-over .sm-grid-cell-with-toolbar .sm-static-width {
+	visibility: visible;
+	filter: grayscale(100%) brightness(125%);
+}
+
+.x-grid3-row-over .sm-grid-cell-with-toolbar .sm-static-width:hover {
+	scale: 125%;
+	filter: brightness(100%);
+}
+
+
 .sm-metrics-no-assessments-body {
   color: #bbb;
   display: flex;
@@ -720,7 +753,6 @@ body {
   border: 1px solid #c1c1c1;
   border-radius: 3px;
   user-select: none;
-  display: inline-block;
   float:  right;
 }
 .sm-navtree-sprite {
@@ -1865,6 +1897,56 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-weight: 800;
   src: local('Open Sans ExtraBold Italic'),local('OpenSans-ExtraBoldItalic'),url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2'),url('../fonts/open-sans-v15-latin-800italic.woff') format('woff')
 }
+.x-tool.x-tool-label {
+  background-image: url(../img/label.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
+.x-tool.x-tool-manage {
+  background-image: url(../img/gear.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
+.x-tool.x-tool-report {
+  background-image: url(../img/grid.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
+.x-tool.x-tool-logout {
+  background-image: url(../img/logout.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 15px;
+}
+.x-tool.x-tool-toggle.x-tool-collapse-west {
+  background-image: url(../img/collapse-left.svg);
+  background-repeat: no-repeat;
+  background-size: 10px 10px;
+  background-position: 2px 3px;
+}
+.x-tool.x-tool-expand-west {
+  background-image: url(../img/collapse-right.svg);
+  background-repeat: no-repeat;
+  background-size: 10px 10px;
+  background-position: 4px 4px;
+}
+.x-tool:hover {
+  filter: brightness(50%)
+}
 .sm-line-clamp-wrap .x-grid3-cell-inner {
   overflow: hidden;
   display: -webkit-box;
@@ -1880,14 +1962,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-line-height-down {
   background-image: url(../img/line-height-down.svg);
   background-size: 16px 16px;
-}
-.x-tool.x-tool-logout {
-  background-image: url(../img/logout.svg);
-  background-repeat: no-repeat;
-  background-size: 14px 14px;
-}
-.x-tool.x-tool-logout:hover {
-  filter: brightness(125%)
 }
 .sm-content-stigid {
   font-size: 10px;
