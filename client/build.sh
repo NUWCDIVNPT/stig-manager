@@ -133,7 +133,6 @@ uglifyjs \
 'SM/TransferAssets.js' \
 'SM/Library.js' \
 'SM/StigRevision.js' \
-'SM/Metrics.js' \
 'library.js' \
 'userAdmin.js' \
 'collectionAdmin.js' \

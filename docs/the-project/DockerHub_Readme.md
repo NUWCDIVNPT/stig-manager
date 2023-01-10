@@ -12,14 +12,14 @@ Built from the current HEAD of our `main` branch:
   - `nuwcdivnpt/stig-manager:latest`
     - uses the `node:lts-alpine` base image
   - `nuwcdivnpt/stig-manager:latest-ironbank`
-    - uses the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/)
+    - uses the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs18/)
 
 
 Built from a point release tag on our `main` branch:
   - `nuwcdivnpt/stig-manager:s<point-release>`
     - uses the `node:lts-alpine` base image
   - `nuwcdivnpt/stig-manager:<point-release>-ironbank`
-    - uses the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/)
+    - uses the [Iron Bank Node.js base image](https://repo1.dso.mil/dsop/opensource/nodejs/nodejs18/)
   - For example, `nuwcdivnpt/stig-manager:1.2.7` or `nuwcdivnpt/stig-manager:1.2.7-ironbank`
 
 ## Quick Start Orchestration

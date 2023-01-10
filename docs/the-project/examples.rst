@@ -43,7 +43,7 @@ Iron Bank Image
 
 Iron Bank images are hardened images produced by a Department of Defense effort and `available to the public here. <https://repo1.dso.mil/>`_
 
-The Image we make available on Docker Hub is based on the `latest image available here. <https://repo1.dso.mil/dsop/opensource/nodejs/nodejs16/-/tree/master>`_
+The Image we make available on Docker Hub is based on the `latest image available here. <https://repo1.dso.mil/dsop/opensource/nodejs/nodejs18/-/tree/master>`_
 
 `STIGMan OSS based on Iron Bank NodeJS LTS (RHEL UBI) <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 

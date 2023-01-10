@@ -30,7 +30,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
 .. code-block:: JSON
    :caption: The decoded data payload of a sample JWT, with some relevant claims highlighted.
    :name: A Decoded JWT
-   :emphasize-lines: 17,18,19,20,21,22,23,40,42
+   :emphasize-lines: 18,19,20,40,42
 
     {
       "exp": 1695154418,
@@ -117,8 +117,8 @@ The **Scopes** specified in the JWT control access to API endpoints as specified
 
 .. _keycloak:
 
-Authentication - RedHat Keycloak 11+
----------------------------------------
+Authentication Example - RedHat Keycloak 19+
+-------------------------------------------------------
 
 The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAUth2 JSON Web Tokens (JWTs) issued by the IdP. User roles are extracted from token claims, endpoint access is controlled by token scope. 
 Keycloak is readily available, actively maintained by a major OSS vendor, supports Identity Brokering and User Federation, and is used by major DoD projects such as Air Force Iron Bank.
@@ -130,12 +130,12 @@ A sample Docker-compose orchestration, using a Keycloak image configured as spec
 Keycloak Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following items in the Keycloak installation must be created and configured appropriately, and their values passed to STIG Manager in the appropriate Environment Variable: 
+The configuration offered below is just one way to create a Keycloak Realm that will authenticate Users for the STIGMan API and Client. The following items in the Keycloak installation must be created and configured appropriately, and their values passed to STIG Manager in the appropriate Environment Variable: 
 
 * Keycloak Realm - suggested value: stigman
 * Client ID - suggested value: stig-manager
 
-Required Keycloak settings for the "stigman" realm:
+Keycloak settings for the "stigman" realm:
 
 * Configure->Roles->Realm Roles - Add the following roles:
 
@@ -195,6 +195,7 @@ Other suggested Keycloak settings for the stig-manager client:
   * Refresh Token Max Reuse: 0
   * Client or SSO Session Idle: 10 minutes
   * The "preferred_username" claim in the token should hold the username you intend to be used in STIG Manager (this is the default setting). If changed, use `STIGMAN_JWT_USER_CLAIM` to specify.
+  * Set "OAuth 2.0 Device Authorization Grant Enabled" to "On."
 
 For other settings, the default Keycloak settings should work.
 

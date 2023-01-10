@@ -9,11 +9,11 @@ STIG Manager User Guide
 
 .. rubric:: The STIG Manager User Interface
 
-This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This assumes the suggested setup, in which most Users have the Collection Creator privilege.
+This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This guide assumes the suggested setup, in which most Users have the Collection Creator privilege. This guide also assumes that the user has some familiarity with the terms and data associated with STIGs and tools commonly used in their evaluation. For more info about the data STIG Manager manages and the terms and concepts used to describe it, check out our :ref:`glossary <terminology>` or :ref:`data and permissions document <data-and-permissions>`.
 
 Please see the :ref:`admin-guide-doc` for Administrative functions.
 
-
+The videos below may be useful in getting familiar with STIG Manager's layout and functions, though they may not be as up to date as this documentation.
 
 
 .. raw:: html
@@ -26,22 +26,33 @@ Please see the :ref:`admin-guide-doc` for Administrative functions.
 
   <iframe width="560" height="315" src="https://www.youtube.com/embed/ZwVJ0eO2d_I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-When first logging into STIG Manager, the User is presented with the Navigation tree in the leftmost panel and the Content Panel to the right. When workspaces are selected from the Navigation Tree, the workspace will appear in a tab in the Content Panel to the right. 
+------------------------------------
 
+|
 
 .. rubric:: Overall Organization
    :class: rubric3
 
-The STIG Manager UI is composed of two main elements, the Navigation Tree on the left, and the Content Panel to the right. Click the arrow or double-click the node name to expand that branch.  End nodes (those without an arrow) will open a tab in the Content Panel. 
+When first logging into STIG Manager, the User is presented with the Navigation Tree in the leftmost panel and the Content Panel to the right. Clicking on a Collection in the Nav Tree will open up the corresponding Collection Dashboard in the Content space to the right. 
 
+Use the Navigation tree to navigate **between** different Collections, as well as the STIG Library, User Interface Preferences, and Application Management functions. Use the Collection Dashboard to navigate to different workspaces **within** a Collection.  
+
+
+.. thumbnail:: /assets/images/nav-tree-and-collection-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: Navigation Tree and Collection Dashboard
+
+
+|
 
 Content Panel
 =====================
 The Home tab is always available in the Content Panel. 
-The Content Panel will be populated with tabs opened by clicking on nodes in the Navigation Tree.
+The Content Panel will be populated with tabs opened by clicking on a Collection in the Navigation Tree or opening up Workspaces from the Collection Dashboard.
 
 .. note::
-   When a Review Workspace tab is opened with a single-click on a Navigation Tree Node, it opens in a Preview tab in the Content Panel. This tab will be replaced by the next tab that is opened. To make this tab permanent, double-click on the tab title at the top of the Content Panel, or edit the workspace's contents. Opening a tab with a double-click on the Navigation Tree node will open the tab in a permanent state. 
+   When a Review Workspace tab is opened from the Collection Dashboard, it opens in a Preview tab in the Content Panel. This tab will be replaced by the next tab that is opened. To make this tab permanent, double-click on the tab title at the top of the Content Panel.
 
 .. index::
    single: Home Panel
@@ -66,13 +77,11 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
 
 Navigation Tree
 ====================
-The Navigation Tree (Nav Tree) is in the leftmost panel of the STIG Manager app. The User can navigate all their accessible data via this interface. The Nav Tree presents a list of User's accessible Collections, and Administrative functions for those with Administrator privileges. 
+The Navigation Tree (Nav Tree) is in the leftmost panel of the STIG Manager app. The User can find all their accessible Collections via this interface, as well as the installed STIG Library and Interface Options. The Nav Tree also offers Application Management functions for those with App Management privileges. 
 
-At the top of the Navigation Tree panel is the Users Name and a logout link. Hover over the User to view their Authentication Token information. 
+At the top of the Navigation Tree panel is the Users Name and a logout button. Hover over the User to view their Authentication Token information. 
 
-Double-click on nodes (or single-click on the arrows) to expand that node. A single click on leaf nodes (those without arrows) will open the appropriate workspace in the Content Panel to the right.
-
-The components of the Navigation Tree are described below. 
+Clicking on a Collection will open up the Collection Dashboard in the Content Panel to the right. If you are a Collection's Owner or Manager, a gear icon will also appear next to that Collection in the Nav Tree. Click it to jump directly to the Manage Collection Workspace.
 
 .. thumbnail:: /assets/images/nav-tree.png
       :width: 25% 
@@ -81,31 +90,10 @@ The components of the Navigation Tree are described below.
 
 |
 
-The Assets and STIGS you see in the NavTree can be filtered by clicking on the Label icon next to every Collection:
-
-.. thumbnail:: /assets/images/navtree-label-filter-button.png
-      :width: 25% 
-      :show_caption: True
-      :title: Navigation Tree Label Button
-
-|
-
-Click the button, select one or more Labels and then click off the menu, or hit "Apply":
-
-.. thumbnail:: /assets/images/navtree-label-filter.png
-      :width: 25% 
-      :show_caption: True
-      :title: Navigation Tree Label Filter
-
-Only Assets with your selected Labels will be displayed. 
-
-
-----------------------------
-
 .. index::
    single: Collection Node
 
-Collections Node
+Collections 
 ----------------------
 The Collection Node lists all the Collections accessible to the User, as well as the *+Create Collection...* option, for those with that privilege.
 
@@ -118,373 +106,106 @@ If you have the Collection Creator privilege, this option will appear. Click thi
       :show_caption: True
       :title: Create Collection popup
 
+| 
 
--------------------------
-
-Manage
-~~~~~~~~~~~~~~
-If you have :term:`Manager or Owner Collection Grants <User>` on a Collection, you will have the option to :ref:`manage <manage-collection-workspace>` that collection. This will allow you to add Assets, STIG Assignments, and Users to the Collection.
+Manage Collection
+~~~~~~~~~~~~~~~~~~~~~
+If you have :term:`Manager or Owner Collection Grants <User>` on a Collection, you will have a gear icon next to :ref:`manage <manage-collection-workspace>` that Collection. This will allow you to add Assets, STIG Assignments, and Users to the Collection.
 
 See :ref:`manage-collection-workspace` for more info.
 
-
-STIGs
-~~~~~~~
-Opening the STIGs Node of the Collection provides a list of every STIG that is assigned to at least one Asset in this Collection that the User has access to. It also provides the *Collection Review* option.
-
-Collection Review
-++++++++++++++++++++++
-The Collection Review node provides access to the :ref:`Collection Review Workspace`, from which the User can review ALL the assets they have access to for the STIG selected.
-
-See :ref:`Collection Review Workspace` for more info.
-
-STIG-Asset List
-+++++++++++++++++++
-Clicking on a STIG expands that node into the the STIG-Asset list. This provides a list of all Assets that have been assigned that STIG, and that the User has access to.
-
-Click on an Asset to access the :ref:`Asset Review Workspace` for that STIG-Asset.
-
-
-Assets
-~~~~~~~~~
-Opening the Assets Node of the Collection provides a list of every Asset that the User has been granted access to in the Collection.
-
-Asset-STIG List
-++++++++++++++++++++++
-Clicking on a particular Asset expands a list of every STIG the User has access to that has been assigned to that Asset. 
-
-Click on a STIG to access the :ref:`Asset Review Workspace` for that Asset-STIG.
-
-
-Reports
-~~~~~~~~~
-Findings Report
-+++++++++++++++++
-The Findings Report provides a way to engage with all "Open" findings in a Collection, and generate a precursor POA&M from them.
-
-See :ref:`Findings Report` for more info.
-
-
-Metrics Report
-++++++++++++++++++
-The Metrics Report provides a way to judge progress and status of all Reviews in a Collection.
-
-See :ref:`Metrics Report` for more info.
-
-===================================
-
-.. index::
-   single: Collection Review
-
-.. _Collection Review Workspace:
-
-Collection Review Workspace
-==============================
-The Collection Review Workspace allows the user to assess all the Assets they have access to that have been assigned the selected STIG.
-
-.. thumbnail:: /assets/images/collection-review.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Review Workspace
-
-
--------------------------------
-
-
-Checklist with Review Summary Panel
----------------------------------------
-This checklist provides a list of Rules for the selected STIG, and a summary of the Evaluations associated with every Asset in the Collection.  Select a Rule in this Panel to see and assess the individual Assets in the Reviews Panel to the right.
-
-
-Menu Bar functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-From the Menu, some Options.
-By default, the most current STIG is displayed. The User can also select older revisions of the STIG, if they have been imported into the system by an Admin.
-
-.. thumbnail:: /assets/images/asset-review-stig-revisions.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIG Revision Selection
-
-
-Columns
-~~~~~~~~~~~~~~
-The columns in this panel represent the Rule Severity Category, Rule Id, Rule Title, and aggregated Review Columns for Open (O), Not a Finding (NF), Not Applicable (NA), Not Reviewed (NR), Submitted, Rejected, and Accepted.
-
-
-Rule Info Panel
 -------------------------
-This Panel provides the Rule Info for the selected Rule in the panel above. 
-
-Reviews Panel
-----------------
-This panel provides a list of the Reviews for the selected Rule for every Asset in the Collection.
-The Reviews can be Submitted, Accepted, and modified from this panel. 
-
-Menu Bar functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Accept (for Collection Managers or Owners only) and Submit actions are available. These actions will apply to any Assets selected. Multiple assets can be selected with Shift-Click or Ctrl-Click. 
 
 
-Review Actions
-~~~~~~~~~~~~~~~~~~~~~~~
-Double-click on any part of the Review Evaluation for an Asset to change them.  
+STIG Library 
+----------------------
+
+The STIG Library node offers a browsable view of the contents of all the Reference STIGs and the various Revisions stored in the STIG Manager App.
 
 
-Resources Panel
--------------------
-This Panel provides access to the Feedback, Attachments, and Log tabs.
-
-Feedback 
-~~~~~~~~~~~~~~~~~
-The Feedback function allows Users to see any Feedback submitted about their review, and, if they are a Collection Owner, to reject, with feedback, any review in their Collection.
-
-Collection Owner Abilities
-++++++++++++++++++++++++++++++
-If the User is an Owner of the Collection, they will also have the option to Accept or Reject reviews.
-Reviews can be Accepted with the button at the top of the Reviews Panel, or Rejected with the Feedback function at the bottom of this workspace.
-
-
-Attachments tab
-~~~~~~~~~~~~~~~~~
-The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
-
-
-Log Tab
-~~~~~~~~~~~~~~~~~~~~
-The Log Panel displays a record of the Review as it has changed over time.
-
-================================
-
-.. index::
-   single: Asset Review
-
-.. _Asset Review Workspace:
-
-Asset Review Workspace
-====================================
-The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's Log, and Feedback.
-Users can also import and export results in .ckl or XCCDF checklist formats.
-
-.. thumbnail:: /assets/images/asset-review.png
+.. thumbnail:: /assets/images/stig-library.png
       :width: 50% 
       :show_caption: True
-      :title: Asset Review Workspace
-
-
--------------------------------
-
-Checklist Panel
--------------------
-The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, Result origin, and :term:`Review Status <Review>`.  The "gear" column in the checklist panel provides information about the Result stored in STIG Manager. The "user" icon indicates the Review was performed manually. The "gear" icon indicates an automated tool evaluated the Review. The arrow icon indicates an automated tool produced the result with the help of User input, such as an XCCDF Override or an Evaluate STIG Answer File. 
-
-From the Checklist menu in the Menu Bar, the User can:
-   * Toggle between Rule and Group displays of the Checklist Panel.
-   * Export a .ckl or XCCDF representation of this Assets STIG results.
-   * Import STIG results for this Asset in .ckl or XCCDF form.
-   * Switch between Revisions of the STIG being displayed.
-
-
-The menu bar also supports a variety of status and Title filters.
-
-.. note::
-   STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the individual Reviews are stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
-
-.. note::
-   STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
-
-Rule Info Panel
--------------------
-The Rule Info Panel provides the text of the Rule. 
-It also provides information about the Controls associated with this Rule, including CCI, AP Acronym, and RMF Control.
-
-
-Review Resources Panel
-------------------------
-This Panel provides resources that may be useful in performing the Rule's Evaluation.
-
-
-Other Assets tab
-~~~~~~~~~~~~~~~~~
-The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset's Review Panel below.
-
-Attachments tab
-~~~~~~~~~~~~~~~~~
-The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
-
-.. thumbnail:: /assets/images/attachments-hover-crop.png
-      :width: 25% 
-      :show_caption: True
-      :title: Attachments Tab
-
-.. thumbnail:: /assets/images/attachments-preview-crop.png
-      :width: 25% 
-      :show_caption: True
-      :title: Attachment Preview
+      :title: STIG Library
 
 |
 
-Feedback tab
-~~~~~~~~~~~~~~~~~~
-If this Review has been Rejected, Feedback provided by the Collection Owner is displayed here.
-
-Log tab
-~~~~~~~~~~~~~~~~~
-This Log tab displays how this Review has changed over time.
 
 
-Review Panel
+Interface 
+----------------------
+This Node offers User Interface options, like Dark Mode, and a view of all available "What's New" pop-up messages.  
+
+.. thumbnail:: /assets/images/nav-tree-interface-options.png
+      :width: 50% 
+      :show_caption: True
+      :title: User Interface Options
+
+|
+
+
+__________________________________
+
+
+.. index::
+   single: Collection Dashboard
+
+.. _collection dashboard:
+
+Collection Dashboard 
+====================
+
+The Collection Dashboard provides a view of the overall Status and Evaluation progress of an entire Collection, as well as metrics export options and various pivoted presentations of a Collection's assessment statistics.
+
+This Panel also allows you to open up individual Asset or STIG Review Workspaces, as well as the Findings Report and Collection Management Workspace. 
+
+
+.. _assessment note:
+
+.. note::
+      **For the purposes of this report, only Reviews with Not a Finding, Not Applicable, or Open Results are considered "Assessed." Those Reviews that are "Saved" with a Result other than those three do not contribute to the tallies presented here. In order to be Submitted or Accepted, a Review must have one of those 3 Results.**
+
+
+.. thumbnail:: /assets/images/collection-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: The Collection Dashboard
+
+|
+
+The components of the Collection Dashboard are described below. 
+
+
+Collection Overview 
 ----------------------------
-The Review panel contains the Evaluation and any required details or commentary for this Review.
 
-Evaluation
-~~~~~~~~~~~~~~~~~~
-The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA), Informational (I), and Not Reviewed (NR).  The colored sprites next to the Result provide additional information about the source of the Result. 
+The Collection Overview section at the left of the Collection Dashboard provides high-level statistics about the Collection. 
 
+The Assets and STIGS presented in the Collection Dashboard can be filtered by clicking on the Label icon at the top of the Collection Overview Panel. Only those Assets with at least one of the selected Labels will contribute to the metrics summaries presented in this panel. 
 
-Reviews can be set to Saved or Submitted statuses from this interface. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
-
-The requirements for a Review to be set to "Submitted" status can be configured in the Collection Management Workspace by Collection Owners and Managers. These requirements will be displayed in this interface if you hover over the ``(?)`` icon next to each field label. 
-
-The default Settings for Reviews in Collections are:
-      - Always display the Detail field.
-      - Require text in the Detail field in order to Submit. 
-      - Display the Comment field for "Findings only".
-      - Require text in the Comment field for "Findings only" in order to Submit.
-      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
-
-
-.. thumbnail:: /assets/images/review-requirements-popup.png
-      :width: 50% 
+.. thumbnail:: /assets/images/collection-panel-overview.png
+      :width: 25% 
       :show_caption: True
-      :title: Review Requirements
-
+      :title: Collection Overview
 
 |
 
 
-Attributions
-~~~~~~~~~~~~~~~
-- Reviewed: The User and Timestamp associated with the last change to this Reviews content.
-- Last Status Change: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected) are tracked separately and displayed here.
-
-.. thumbnail:: /assets/images/review-eval-panel.png
-      :width: 50% 
-      :show_caption: True
-      :title: Review Evaluation Panel with Attributions
-
-|
-
-Save, Save/Submit, and Accept Buttons
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, to Submit the Review, or to Accept the Review (if they have the proper Collection Grant).  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
-
-Automated ResultEngine Information
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  The origin of Reviews (Automated, Manual, Override/Answer File) is indicated in the "gear" checklist column, and with colored informational sprites next to the Result in the Review Evaluation Panel. Hover over the sprites for more info. 
-
-
-.. thumbnail:: /assets/images/asset-review-autoresult.png
-      :width: 50% 
-      :show_caption: True
-      :title: Asset Review Workspace with Automated Results indicated.
-
-
-.. thumbnail:: /assets/images/asset-review-autoresult-with-override.png
-      :width: 50% 
-      :show_caption: True
-      :title: Review Panel with Overidden Automated Result.      
-
-|
-
-.. ATTENTION:: 
-      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the "Automated" badge with a "Manual" one next to the Result, and the absence of the gear symbol for that rule in the Checklist panel. 
-
-
-==============================
-
-.. index::
-   single: Findings Report
-
-.. _Findings Report:
-
-Findings Report Workspace
-=====================================
-The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.
-
-.. thumbnail:: /assets/images/findings-report.png
-      :width: 50% 
-      :show_caption: True
-      :title: Findings Report
-
-
--------------------------------
-
-Aggregated Findings
---------------------------
-The Aggregated Findings Panel provides a view of all Rule Ids that have at least one "Open" Evaluation in a Collection. By default this view is aggregated by Group ID, and includes the columns: Severity Category, Group ID, Group Title, Number of Assets, and relevant STIG.
-
-Menu Bar
-~~~~~~~~~~~~
-The Menu Bar allows the User to aggregate this view by Group ID, Rule ID, or CCI.  It also allows the User to filter the list by STIG. 
-
-Export a .csv or POA&M 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-At the bottom of this panel are Export and Generate POA&M... buttons.  The Export button exports a .csv file, and the POA&M button will ask the User to set a few options and will then produce a pre-populated POA&M file.
-
-
-
-Individual Findings
------------------------
-Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
-Information about the Asset, Rule, Last Changed Date, and applicable STIG or STIGs can be found in the default columns, with additional Review info in the expanding Rows.
-
-This section of the Report can be exported on its own.
-
-
-===========================================
-
-.. index::
-   single: Metrics Report
-
-.. _Metrics Report:
-
-Metrics Report Workspace
-==============================
-The Metrics Report provides a view of the overall Status and Evaluation progress of an entire Collection, as well as metrics export options and various pivoted presentations of a Collection's assessment statistics.
-
-
-.. note::
-      **For the purposes of this report, only Reviews with Not a Finding, Not Applicable, or Open Results are considered "Assessed." Those Reviews that are "Saved" with a Result other than those three do not contribute to the tallies presented here.**
-
-
-.. thumbnail:: /assets/images/metrics-report-collection-with-nav.png
-      :width: 50% 
-      :show_caption: True
-      :title: Metrics Report
-
-|
-
-Overview Panel
------------------
-
-On the left, the "Overview" panel provides top-level summary information about your Collection:
-
-      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up in a "Assessed," "Submitted," or "Accepted" status. Percentages for each status are also presented. 
-      - **Inventory** - Total number of Assets, unique STIGs, and checklists (STIGs assigned to Assets) in this Collection. 
-      - **Findings** - Total number of "Open" Findings in a Collection, broken down by Severity Category.
+      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up with an "Assessed," "Submitted," or "Accepted" status (The "Assessed" proportion here is the number of Reviews that have been "Saved" with :ref:`a valid Assessment Result <assessment note>`). 
+      - **Inventory** - Total number of Assets, unique STIGs, and checklists (STIGs assigned to Assets) in this Collection. If you are a Manager or Owner for this Collection, you will see a "Manage" button on the right of this box's header. Click it to open the  :ref:`manage-collection-workspace`.
+      - **Findings** - Total number of "Open" Findings in a Collection, broken down by Severity Category. Click the "Details" button on the right of this box's header to open the Findings Report. The Findings Report provides a way to engage with all "Open" findings in a Collection, and generate a precursor POA&M from them. See :ref:`Findings Report` for more info.
       - **Review Ages** - The age of the oldest Review in a Collection and the newest Review in a Collection. Whenever Review *content* (Result or commentary) is modified, its timestamp is updated, and this is used to calculate the ages presented here as "oldest" and "newest." The "Updated" block represents the last time the *Status* of a Review changed (ie. when a Saved, Submitted, Accepted, or Rejected status was applied).
       - **Export Metrics** - Various ways to export the data presented in this report. See below for more details. 
 
 .. note::
-      The Metrics Report inherits any Label filtering you have applied at the Navtree level, and presents the filtered metrics accordingly.     
+      Any filters applied to the Collection Overview panel carry forward to the presentation of STIGs, Assets, and Labels tabs on the right of the Collection Dashboard. 
       
-      .. thumbnail:: /assets/images/metrics-report-collection-with-nav-filters.png
-            :width: 50% 
+      .. thumbnail:: /assets/images/collection-panel-filters.png
+            :width: 25% 
             :show_caption: True
-            :title: Metrics Report Filtering
+            :title: Collection Dashboard Filtering
 
+|
 
 Metrics Export Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -506,9 +227,9 @@ This panel provides various ways to export the metrics that STIG Manager maintai
 
 
 Available Metrics Data Fields
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++++++++++++++++++++++++
 
-The table below describes the fields that are included in the exports available from the Metrics Report interface.  
+The table below describes the fields that are included in the exports available from the Collection Dashboard Metrics Export interface.  
 
 
   .. list-table:: STIG Manager Metrics Data Fields, and the Report Styles that Include Them.
@@ -661,25 +382,380 @@ The table below describes the fields that are included in the exports available 
      - 
      - **X**
 
+|
+
+_______________________________________
 
 
-Aggregations Panel
-------------------------
+Collection Checklist Navigation 
+---------------------------------------
 
-The Aggregations Panel provides various ways to navigate the Metrics data maintained by STIG Manager. This data can be presented aggregated by Asset, Labels, or STIGs by selecting the appropriate tab. Each panel allows you to drill down to the individual Assets or STIGs in those groupings. Each panel can also be exported individually as a .csv using the down-arrow icon at the bottom of each panel.
+The right side of the Collection Dashboard provides various ways to navigate the Checklist data maintained by STIG Manager, as well as many useful Metrics. This data can be presented aggregated by Asset, Labels, or STIGs by selecting the appropriate tab. Each panel allows you to drill down to the individual Assets or STIGs in those groupings. Each panel can also be exported individually as a .csv using the down-arrow icon at the bottom of each panel.
 
-Each panel of the report presents the total number of Checks associated with each Asset or STIG across the Collection, depending on how it was grouped and what filters have been applied.  The report also lists the number of Checks with no Evaluation at all, and Checks that have been Saved, Submitted, Rejected, or Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
-
-Double-click on an item in the bottom-most panel (an individual Asset or STIG) to open up a new tab with the relevant Asset Review Workspace. 
+Each tab and grid of the Collection Dashboard presents the total number of Checks associated with each Asset or STIG across the Collection, depending on how it was grouped and what filters have been applied.  The grids also list the number of Checks with no Evaluation at all, and Checks that have been Saved, Submitted, Rejected, or Accepted as a way to gauge overall Evaluation progress of the Collection.  The total number of "Open" Severity Category 1, 2, and 3 Rules is also displayed to give an indication of the vulnerability status of the Collection.
 
 
-.. thumbnail:: /assets/images/metrics-report-collection.png
+
+.. thumbnail:: /assets/images/collection-panel-checklist-navigation.png
       :width: 50% 
       :show_caption: True
-      :title: Metrics Report
+      :title: Checklists in the STIGs tab of the Collection Dashboard
 
+
+|
+
+
+STIGs Tab
+-------------------------
+
+The STIGs tab on the right of the Collection Dashboard provides a list of every STIG that is assigned to at least one Asset in this Collection (that the User has access to). 
+
+
+Double-clock a STIG, or click the Shield icon when hovering over a STIG, to access to the :ref:`Collection Review Workspace`, from which the User can review ALL the assets they have access to for the STIG selected.
+
+See :ref:`Collection Review Workspace` for more info.
+
+Asset Checklists by STIG
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clicking on a STIG will load the Assets that have been assigned that STIG in the bottom grid. Double-click on an Asset, or click on the Shield icon, to access the :ref:`Asset Review Workspace` for that STIG-Asset.
+
+
+
+Assets Tab
+----------------------
+
+The Assets Tab on the right of the Collection Dashboard provides a list of every Asset that the User has been granted access to in the Collection.
+
+.. thumbnail:: /assets/images/collection-panel-assets.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklists in the Assets tab of the Collection Dashboard
+
+
+|
+
+
+STIG Checklists by Asset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clicking on a particular Asset will load the bottom grid with a list of every STIG the User has access to that has been assigned to that Asset. 
+
+Double-click on a STIG, or click on the Shield icon, to access the :ref:`Asset Review Workspace` for that STIG-Asset.
+
+Labels Tab
+----------------------
+
+The Labels Tab on the right of the Collection Dashboard provides a list of every Label that has been assigned to an Asset that the User has been granted access to in the Collection.
+
+.. thumbnail:: /assets/images/collection-panel-labels.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklists in the Labels tab of the Collection Dashboard
+
+
+|
+
+
+Assets by Label
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clicking on a particular Label will populate the Assets grid with a list of every Asset the User has access to that has been assigned the selected Label. 
+
+
+STIG Checklists by Asset and Label
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clicking on a particular Asset will load the bottom grid with a list of every STIG the User has access to that has been assigned to that Asset. 
+
+Double-click on a STIG, or click on the Shield icon, to access the :ref:`Asset Review Workspace` for that STIG-Asset.
+
+
+
+
+
+===================================
+
+.. index::
+   single: Collection Review
+
+.. _Collection Review Workspace:
+
+Collection Review Workspace
+==============================
+The Collection Review Workspace allows the user to assess all the Assets they have access to that have been assigned the selected STIG. It can be accessed by clicking the Shield icon or double-clicking on a STIG in the STIGs Tab of the Collection Dashboard. 
+
+.. thumbnail:: /assets/images/collection-review.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Review Workspace
+
+
+-------------------------------
+
+
+Checklist with Review Summary Panel
+---------------------------------------
+This checklist provides a list of Rules for the selected STIG, and a summary of the Evaluations associated with every Asset in the Collection.  Select a Rule in this Panel to see and assess the individual Assets in the Reviews Panel to the right.
+
+
+Menu Bar functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+From the Menu, some Options.
+By default, the most current STIG is displayed. The User can also select older revisions of the STIG, if they have been imported into the system by an Admin.
+
+.. thumbnail:: /assets/images/collection-review-stig-revisions.png
+      :width: 50% 
+      :show_caption: True
+      :title: STIG Revision Selection
+
+|
+
+
+Columns
+~~~~~~~~~~~~~~
+The columns in this panel represent the Rule Severity Category, Rule Id, Rule Title, and aggregated Review Columns for Open (O), Not a Finding (NF), Not Applicable (NA), Not Reviewed (NR), Submitted, Rejected, and Accepted. Additional Columns and filtering options are available by clicking the column headers. 
+
+
+Rule Info Panel
+-------------------------
+This Panel provides the Rule Info for the selected Rule in the panel above. 
+
+Reviews Panel
+----------------
+This panel provides a list of the Reviews for the selected Rule for every Asset in the Collection.
+The Reviews can be Submitted, Accepted, and modified from this panel. 
+
+
+
+Menu Bar functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Accept/Reject (for Collection Managers or Owners only) and Submit/Unsubmit actions are available. These actions will apply to any Assets selected. Multiple assets can be selected with Shift-Click, Ctrl-Click, or the checkboxes, and edited as a group by clicking one of the Status buttons, or the "Batch Edit..." button.
+
+Review Actions
+~~~~~~~~~~~~~~~~~~~~~~~
+Double-click on the Result, Detail, or Comment parts of the Review Evaluation for an Asset to change that field.  
+
+
+Batch Editing
+--------------------
+Select more than one Review with Shift-Click, Ctrl-Click, or the checkboxes, and click the "Batch Edit..." button to open the Batch Editing interface.
+
+.. thumbnail:: /assets/images/collection-review-batch-edit.png
+      :width: 50% 
+      :show_caption: True
+      :title: Edit Multiple Reviews at Once with Batch Editing
+
+|
+
+
+Resources Panel
+-------------------
+This Panel provides access to the Attachments and Log tabs for the Review on the selected Asset.
+
+Attachments Tab
+~~~~~~~~~~~~~~~~~
+The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
+
+
+Log Tab
+~~~~~~~~~~~~~~~~~~~~
+The Log Panel displays a record of the Review as it has changed over time.
 
 ================================
+
+.. index::
+   single: Asset Review
+
+.. _Asset Review Workspace:
+
+Asset Review Workspace
+====================================
+The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's Log, and Status Text.
+Users can also import and export results in .ckl or XCCDF checklist formats. 
+It can be accessed by clicking the Shield icon or double-clicking on an Asset in the STIGs or Assets Tabs of the Collection Dashboard. 
+
+
+.. thumbnail:: /assets/images/asset-review.png
+      :width: 50% 
+      :show_caption: True
+      :title: Asset Review Workspace
+
+|
+
+
+-------------------------------
+
+Checklist Panel
+-------------------
+The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the latest version of the STIG is displayed, along with the Severity Category, Rule ID, Rule Title, Evaluation Result, Result origin, and :term:`Review Status <Review>`.  The "gear" column in the checklist panel provides information about the Result stored in STIG Manager. The "user" icon indicates the Review was performed manually. The "gear" icon indicates an automated tool evaluated the Review. The arrow icon indicates an automated tool produced the result with the help of User input, such as an XCCDF Override or an Evaluate STIG Answer File. Additional Columns and filtering options are available by clicking the column headers. 
+
+From the Checklist menu in the Menu Bar, the User can:
+   * Toggle between Rule and Group displays of the Checklist Panel.
+   * Export a .ckl or XCCDF representation of this Assets STIG results.
+   * Import STIG results for this Asset in .ckl or XCCDF form.
+   * Switch between Revisions of the STIG being displayed.
+
+
+The menu bar also supports a variety of status and Title filters.
+
+.. note::
+   STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the individual Reviews are stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
+
+.. note::
+   STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
+
+Rule Info Panel
+-------------------
+The Rule Info Panel provides the text of the Rule. 
+It also provides information about the Controls associated with this Rule, including CCI, AP Acronym, and RMF Control.
+
+
+Review Resources Panel
+------------------------
+This Panel provides resources that may be useful in performing the Rule's Evaluation.
+
+
+Other Assets Tab
+~~~~~~~~~~~~~~~~~
+The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset's Review Panel below.
+
+Attachments Tab
+~~~~~~~~~~~~~~~~~
+The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
+
+.. thumbnail:: /assets/images/attachments-hover-crop.png
+      :width: 25% 
+      :show_caption: True
+      :title: Attachments Tab
+
+|
+
+.. thumbnail:: /assets/images/attachments-preview-crop.png
+      :width: 25% 
+      :show_caption: True
+      :title: Attachment Preview
+
+|
+
+Status Text Tab
+~~~~~~~~~~~~~~~~~~
+If this Review has been Rejected, any feedback that may have been provided by the Collection Owner is displayed here.
+
+Log Tab
+~~~~~~~~~~~~~~~~~
+This Log tab displays how this Review has changed over time.
+
+
+Review Panel
+----------------------------
+The Review panel contains the Evaluation and any required details or commentary for this Review.
+
+Evaluation
+~~~~~~~~~~~~~~~~~~
+The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA), Informational (I), and Not Reviewed (NR).  The colored sprites next to the Result provide additional information about the source of the Result. 
+
+
+Reviews can be set to Saved or Submitted statuses from this interface. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
+
+The requirements for a Review to be set to "Submitted" status can be configured in the Collection Management Workspace by Collection Owners and Managers. These requirements will be displayed in this interface if you hover over the ``(?)`` icon next to each field label. 
+
+The default Settings for Reviews in Collections are:
+      - Always display the Detail field.
+      - Require text in the Detail field in order to Submit. 
+      - Display the Comment field for "Findings only".
+      - Require text in the Comment field for "Findings only" in order to Submit.
+      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
+
+
+.. thumbnail:: /assets/images/review-requirements-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Requirements
+
+
+|
+
+
+Attributions
+~~~~~~~~~~~~~~~
+- Reviewed: The User and Timestamp associated with the last change to this Reviews content.
+- Last Status Change: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected) are tracked separately and displayed here.
+
+.. thumbnail:: /assets/images/review-eval-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Evaluation Panel with Attributions
+
+|
+
+Save, Save/Submit, and Accept Buttons
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The buttons on the bottom of the Review Panel allow the User to simply Save the review for later, to Submit the Review, or to Accept the Review (if they have the proper Collection Grant).  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
+
+Automated "Result Engine" Information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  The origin of Reviews (Automated, Manual, Override/Answer File) is indicated in the "gear" checklist column, and with colored informational sprites next to the Result in the Review Evaluation Panel. Hover over the sprites for more info. 
+
+
+.. thumbnail:: /assets/images/asset-review-autoresult.png
+      :width: 50% 
+      :show_caption: True
+      :title: Asset Review Workspace with Automated Results indicated.
+
+|
+
+.. thumbnail:: /assets/images/asset-review-autoresult-with-override.png
+      :width: 50% 
+      :show_caption: True
+      :title: Review Panel with Overidden Automated Result.      
+
+|
+
+.. ATTENTION:: 
+      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the "Automated" badge with a "Manual" one next to the Result, and the absence of the gear symbol for that rule in the Checklist panel. 
+
+
+==============================
+
+.. index::
+   single: Findings Report
+
+.. _Findings Report:
+
+Findings Report Workspace
+=====================================
+The Findings Report provides a view of all Open Reviews in the Collection that the User has access to.
+
+.. thumbnail:: /assets/images/findings-report.png
+      :width: 50% 
+      :show_caption: True
+      :title: Findings Report
+
+
+-------------------------------
+
+Aggregated Findings
+--------------------------
+The Aggregated Findings Panel provides a view of all Rule Ids that have at least one "Open" Evaluation in a Collection. By default this view is aggregated by Group ID, and includes the columns: Severity Category, Group ID, Group Title, Number of Assets, and relevant STIG.
+
+Menu Bar
+~~~~~~~~~~~~
+The Menu Bar allows the User to aggregate this view by Group ID, Rule ID, or CCI.  It also allows the User to filter the list by STIG. 
+
+Export a .csv or POA&M 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+At the bottom of this panel are Export and Generate POA&M... buttons.  The Export button exports a .csv file, and the POA&M button will ask the User to set a few options and will then produce a pre-populated POA&M file.
+
+
+
+Individual Findings
+-----------------------
+Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
+Information about the Asset, Rule, Last Changed Date, and applicable STIG or STIGs can be found in the default columns, with additional Review info in the expanding Rows.
+
+This section of the Report can be exported on its own.
+
+
+===========================================
+
 
 .. index::
    single: Manage Collection
@@ -718,6 +794,8 @@ This Panel allows Collection Managers and Owners to change the name of the Colle
       :width: 50% 
       :show_caption: True
       :title: Collection Properties
+
+|
 
 .. _grants-panel:
 
@@ -889,6 +967,8 @@ Double-click an existing label to edit it.
       :show_caption: True
       :title: Collection Labels Tab
 
+|      
+
 .. thumbnail:: /assets/images/collection-manage-new-label.png
       :width: 50% 
       :show_caption: True
@@ -902,6 +982,8 @@ When a Label is selected in Label tab of the Collection Properties Panel, the "T
       :width: 50% 
       :show_caption: True
       :title: View the Assets tagged with a Particular Label
+
+|
 
 .. thumbnail:: /assets/images/collection-manage-tag-assets-assign-label-modal.png
       :width: 50% 
@@ -1055,6 +1137,7 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
       :show_caption: True
       :title: Checklist Archive Export by Asset
 
+|
 
 .. thumbnail:: /assets/images/checklist-archive-export-log.png
       :width: 50% 
@@ -1155,7 +1238,7 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
       :show_caption: True
       :title: Checklist Archive Export by STIG
 
-
+|
 
 .. thumbnail:: /assets/images/checklist-archive-export-log.png
       :width: 50% 

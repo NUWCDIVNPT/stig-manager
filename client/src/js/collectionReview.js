@@ -1817,7 +1817,7 @@ async function addCollectionReview ( params ) {
 		
 		let colReviewTab = new Ext.Panel ({
 			id: 'collection-review-tab' + idAppend,
-			iconCls: 'sm-collection-tab-icon',
+			iconCls: 'sm-stig-icon',
 			title: '',
 			collectionId: leaf.collectionId,
 			benchmarkId: leaf.benchmarkId,
