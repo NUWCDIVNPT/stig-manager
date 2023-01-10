@@ -55,12 +55,20 @@ Users can be Unregistered from STIG Manager, which will delete STIGMan's informa
       :show_caption: True
       :title: User Grants Administration
 
+|
 
 User Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Double-click on a User, or select a user and click the "Modify User..." button to view that User's Grants and other information. 
+The pop-up will list the User's email address and other Info, as well a list of all the Collections that User has a grant to. The "Last Claims" box displays the OIDC access token information received the last time the User accessed the application. 
 
-Last Claims
+.. thumbnail:: /assets/images/admin-user-properties.png
+      :width: 50% 
+      :show_caption: True
+      :title: User Properties
+
+|
 
 
 ------------------------------
@@ -88,7 +96,7 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 .. _app-data:
 
-Application Data Panel
+Application Info Panel
 ------------------------------------
 This panel allows App Managers to download a representation of all data STIGMan manages, minus the actual DISA Reference STIGs themselves.
 This same data can also be imported, but be aware that if data is moved to a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.

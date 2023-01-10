@@ -42,7 +42,8 @@ When first accessing STIG Manager, you will be redirected to the Authentication 
 The Navigation Tree
 ======================================
 
-The Nav Tree is located in STIG Managers leftmost panel, and provides Users access to their assigned Collections, Assets, STIGs, Reviews, and Reports. For Users with the appropriate Privileges and Grants, Administrative and Configuration functions are also available.
+The Nav Tree is located in STIG Managers leftmost panel, and provides Users a list of the Collections they have access to, the STIG Library, and User Interface options. For Users with the appropriate Privileges and Grants, Administrative and Configuration functions are also available.
+
 
 Create your first Collection
 ======================================
@@ -59,7 +60,7 @@ By default, most users will have the Collection Creator role, allowing them to c
       :title: Navigation Tree
 
 
-#. You will be prompted for your Collection name, and some other info. Only a Collection name and Owner are required. Your Username will be prepopulated as an owner. Additional Grants, Settings and Metadata can stay as they are at this time. Click "Create" when finished. You will be taken to the Collection Configuration tab for this new Collection. You can access this Collection Configuration tab later using the "Manage" option under your Collection in the Nav Tree.
+#. You will be prompted for your Collection name, and some other info. Only a Collection name and Owner are required. Your Username will be prepopulated as an owner. Additional Grants, Settings and Metadata can stay as they are at this time. Click "Create" when finished. You will be taken to the Collection Configuration tab for this new Collection. You can access this Collection Configuration tab later using the "gear" icon next to your Collection in the Nav Tree, or the "Manage" button from the Collection Dashboard.
 
 
    .. thumbnail:: /assets/images/create-collection-popup.png
@@ -67,6 +68,7 @@ By default, most users will have the Collection Creator role, allowing them to c
       :show_caption: True 
       :alt: Create Collection Popup
       :title: Create Collection Popup
+
 
 
 Create Assets in your Collection
@@ -84,6 +86,7 @@ Create Assets in your Collection
 
 .. note::
    Assets and their STIG attachments can also be created automatically in bulk by importing STIG Viewer .ckl or XCCDF files using the "Import CKL or XCCDF..." button. :ref:`More info about the Collection Builder function can be found in the User Guide.<Collection Builder>`
+
 
 Attach STIGs to Assets in your Collection
 ============================================
@@ -156,9 +159,10 @@ Evaluate an Asset for STIG compliance
 ======================================
 
 
-#. In the Nav Tree, expand Assets in the Collection you just created.
+#. In the Nav Tree, click on the Collection you just created to open the Collection Dashboard.
+#. Select the "Assets" tab on the right of the Collection Dashboard.
 #. Select an Asset to see its associated STIGs.
-#. Select a STIG listed under the Asset.
+#. Double-click on a STIG listed under the Asset, or click the "shield" icon that appears when hovering over that row.
 
    * You will now be presented with the Evaluation tab for that STIG on that Asset, which contains several panels. The first Rule in the STIG will be selected for you. 
 
@@ -183,11 +187,11 @@ Evaluate an Asset for STIG compliance
 Evaluate multiple Assets at once for STIG compliance
 ======================================================
 
-#. In the Nav Tree, expand STIGs in the Collection you just created.
+#. From the Collection Dashboard, select a STIG from the STIGs panel in the Collection you just created.
 
-   * If you select a STIG, you will see a list of Assets that have that STIG assigned to it. Selecting one of these Assets will open the Evaluation tab described in the previous section.
+   * If you select a STIG, you will see a list of Assets that have that STIG assigned to it. Double-clicking on one of these Assets (or clicking the shield icon in that row) will open the Evaluation tab described in the previous section.
 
-#. Expand a specific STIG, and select *Collection Review*. 
+#. Double-click on the STIG you want to evaluate to open up the Collection Review Workspace. 
 
    * The Collection Review tab presents similar information to the Evaluation tab, but in a condensed view that allows you to review this STIG against all Assets you have access to in this Collection at once. 
 
@@ -203,7 +207,7 @@ Evaluate multiple Assets at once for STIG compliance
    * Columns in the STIG Checklist panel will update with Statuses and Results as you review.
 
 #. Once Assets are reviewed appropriately, the "Submit" or "Accept" (for Owners only) buttons in the Asset toolbar become available. Click them to set that Asset's Review status. You can set Status on multiple Assets at once by selecting them with a Shift+Click, and then clicking the appropriate toolbar button.
-#. If you are an Owner of the Collection, you have the option to "Reject" unsatisfactory Reviews. Select a review and then type some feedback in the lower right panel to guide the Evaluator in fixing their Review. Click "Reject review with this feedback." This review will now be set to a Rejected status, and show up in the Evaluators "Rejected Reviews" report for their further action or review. 
+#. If you are an Owner of the Collection, you have the option to "Reject" unsatisfactory Reviews. Select a review and then click the "Reject" button in the top toolbar. Provide some feedback in the popup that will guide the Evaluator in fixing their Review. Click "Reject review with this feedback." This review will now be set to a Rejected status, and show up in the Evaluators "Rejected Reviews" report for their further action or review. 
 #. If you are an Owner of the Collection, and the option is enabled in Collection Settings, you can set Reviews in your Collection to "Accepted."  
 
 STIG Manager Reports
@@ -212,8 +216,7 @@ STIG Manager Reports
 Findings Report
 -------------------
 
-#. In the Nav Tree, expand Reports in the Collection you just created.
-#. Click the Findings report.
+#. From the Collection Dashboard, click the "Details" button in the header of the "Findings" box.
 
    * This report lists every Open review in the Collection. It can be aggregated by Rule, Group, or CCI, and filtered by STIG.
    * From the bottom bar of the Aggregated Findings panel, a .csv and a POAM-like export is available for the Rule and Group aggregations.
@@ -231,25 +234,6 @@ Findings Report
       :title: The Findings report
 
 
-Status Report
--------------------
-
-#. Click the Status report in the Nav Tree.
- 
-   * The Status report provides information about the progress of STIG Evaluations. By default it will list each Asset, and their attached STIGs. 
-
-#. Click the shield icon in the Grouping box in the top left of the Status report. 
-   
-   * The Status report will pivot to list each STIG that is a part of this Collection, and each Asset that has that STIG attached to it.
- 
-#. Click the down arrow in bottom toolbar to export this Status report as a .csv.
-
-
-.. image:: ../assets/images/status-report.png
-   :width: 50% 
-   :show_caption: True
-   :alt: The Status Report
-   :title: The Status report
  
 
 | 

@@ -10,7 +10,7 @@ The STIG Manager project consists of an API and a UI. `The API is designed so th
 Provided Clients
 ======================================
 
-STIG Manager OSS Refernce GUI
+STIG Manager OSS Reference GUI
 ---------------------------------
 A GUI client that makes use of the Project API is available in our Repo.  Its features are described elsewhere in this documentation. 
 

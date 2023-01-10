@@ -47,7 +47,7 @@ These updates must be brought into STIG Manager if you wish the updates to be re
 .. note::
   You can import entire .zip archives of the Quarterly Library Compilations at once, or individual STIGs. 
 
-.. thumbnail:: /assets/images/StigAdmin.png
+.. thumbnail:: /assets/images/admin-stigs.png
    :width: 50% 
    :show_caption: True
    :alt: STIG Management
@@ -71,7 +71,7 @@ By default, STIG Manager displays Checklists and Reviews according to the latest
 |
 
 
-STIG Manager tracks Reviews by their Rule ID, not STIG ID. In most cases, new STIG revisions will have substantially the same ruleset as previous revisions. This means that most of the time, when you update STIGs in STIG Manager, most Assets will carry most of their existing reviews forward and you will not have to start from scratch.
+STIG Manager tracks Reviews by their Rule ID, not STIG ID. In most cases, new STIG revisions will have substantially the same ruleset as previous revisions. This means that most of the time, when you update Reference STIGs in STIG Manager, most Assets will carry most of their existing reviews forward and you will not have to start from scratch.
 
 .. _stig-delete:
 

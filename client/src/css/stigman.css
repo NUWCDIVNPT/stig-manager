@@ -286,11 +286,11 @@
 }
 .x-tree-node-el:hover .sm-tree-toolbar,
 .x-tree-selected .sm-tree-toolbar {
-  display: inline;
-  position: absolute;
-  right: 10px;
-  margin-top: 2px;
-  cursor: pointer
+	display: inline;
+	position: absolute;
+	right: 10px;
+	margin-top: 2px;
+	cursor: pointer
 }
 .x-tree-node-el:not(.x-tree-selected):hover .sm-tree-toolbar {
   opacity: .5
@@ -1388,8 +1388,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-repeat: no-repeat;
   background-size: 16px 16px
 }
-.sm-collection-icon,
-.sm-collection-tab-icon {
+.sm-collection-color-icon {
+	background-image: url(../img/collection-color.svg) !important;
+	 background-repeat: no-repeat;
+	 background-size: 16px 16px;
+}
+ .sm-collection-icon,
+ .sm-collection-tab-icon {
   background-image: url(../img/collection.svg)!important;
   background-repeat: no-repeat;
   background-size: 16px 16px

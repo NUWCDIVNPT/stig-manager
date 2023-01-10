@@ -14,14 +14,14 @@ Software Requirements
 ------------------------
 - Node.js LTS
 - MySql 8.0.21+
-- RedHat Keycloak 19+
+- OIDC Provider (Such as RedHat Keycloak 19+)
 
 
 Tested with:
 
 - Docker 20.10.2
 - NodeJs provided by node:lts-alpine image on Docker Hub
-- NodeJs provided by registry1.dso.mil/ironbank/opensource/nodejs/nodejs16:latest image on Iron Bank
+- NodeJs provided by registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:latest image on Iron Bank
 - MySQL provided by mysql:latest image on Docker Hub
 - RedHat Keycloak 19+
 

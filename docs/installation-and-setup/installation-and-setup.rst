@@ -19,9 +19,10 @@ A STIG Manager deployment requires at least two other mandatory services, which 
   - An OpenID Connect (OIDC) Provider
   - A MySQL database
 
-A sample orchestration, which includes the STIGMan API, Web Client, a Keycloak container, and a MySQL container, is available on our Docker Hub page. Follow the `Quick Start Orchestration instructions on Docker Hub. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
+The project offers two sample container orchestrations that bring up "starter" deployments that could be used as a point of reference for  production deployments:
+  - Our `Quick Start Orchestration instructions on Docker Hub <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_ offers an orchestration for the STIGMan API, Web Client, a Keycloak container, and a MySQL container. Individual container ``docker run`` commands are also offered. 
 
-Another sample orchestration, which includes the STIGMan API, Web Client, Keycloak container, MySQL container, and nginx proxy that implements CAC authentication is available from our STIGMan Orchestration repository. Please see the `guide provided in our STIGMan Orchestration repository. <https://github.com/NUWCDIVNPT/stigman-orchestration>`_
+  - Our `STIGMan Orchestration repository <https://github.com/NUWCDIVNPT/stigman-orchestration>`_ offers an orchestration that includes the STIGMan API, Web Client, Keycloak container, MySQL container, and nginx proxy that implements CAC authentication. 
 
 The STIG Manager application is often deployed at the enterprise level with orchestration platforms such as Kubernetes or OpenShift. However, containerization allows STIG Manager deployments to be readily scaled up or down and it can be orchestrated on a single laptop with tools such as docker-compose.
 

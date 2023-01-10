@@ -2,6 +2,68 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2023-1-10',
+    header: `New Collection Dashboard!`,
+    body: `
+    <p>The original Navigation Tree has been trimmed down, and most navigation now occurs from the new Collection Dashboard!</p>
+
+    <p>All navigation to reports and workspaces within a Collection have been moved to the Collection Dashboard, which is an enhanced version of the Metrics Report released a few months ago.</p>
+    <p>Instead of expanding Collection nodes with potentially thousands of Assets, clicking on a Collection now immediately opens the Collection Dashboard. This Dashboard shows all the same data previously shown in the Metrics Report, but with additional Navigation options and indicators.</p>    
+    <p>The Navigation Tree is now only used to select your working Collection, the STIG library, User Interface options, and Application Management Functions.</p>    
+
+    <p><b>All features previously accessed via the Navigation Tree can now be accessed from the Collection Dashboard:</b></p>
+
+    <ul>
+      <li>
+      <b>Collection Management Workspace</b>: Click on the gear icon in the Inventory box in the Collection Overview panel.
+      </li>
+      <ul>
+        <img src="img/whatsnew/2023-01-09-collection-dash-inventory-management.png"/>
+      </ul>
+
+    <li>
+    <b>Findings Report</b>: Click on the Details icon in the Findings box in the Collection Overview panel.
+    </li>
+    <ul>
+    <p><img src="img/whatsnew/2023-01-09-collection-dash-findings-details.png"/></p>
+    </ul>
+
+
+    <li>
+    <b>Collection Review Workspace</b>: Double-click on a STIG or click the green STIGMan Shield in the STIGs metrics grid.
+    </li>
+    <ul>
+    <p><img src="img/whatsnew/2023-01-09-collection-dash-stig-shield.png"/></p>
+    </ul>
+
+    <li>
+    <b>Asset Review Workspace</b>: Double-click on an Asset or click the green STIGMan Shield in an Asset metrics grid.
+    </li>
+    <ul>
+    <p><img src="img/whatsnew/2023-01-09-collection-dash-asset-shield.png"/></p>
+    </ul>
+
+    </ul>         
+
+
+    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide/user-guide.html#collection-panel">STIG Manager Documentation for more details about this new feature!</a></p>
+  `
+  },       
+  {
+    date: '2023-1-10',
+    header: `New STIG Revision Compare Tool`,
+    body: `
+    <p>Available for preview is a look our Revision Compare tool. Select a STIG, then two Revisions, and the tool will present a list of STIG IDs and how their Rules changed between revisions. Click on Rule to see a detailed comparison of how each field that STIG Manager tracks differs between the two versions.</p>
+    
+    <p><b>The Revision Compare tool is available from the STIG Library node of the Navigation Tree.</b> </p>
+
+
+    <p><img src="img/whatsnew/2023-01-09-stig-compare-tool-crop.png" width="800"/></p>
+
+
+  `
+  },       
+  {
     date: '2022-10-12',
     header: `New Metrics Report Replaces Status Report`,
     body: `<p>The old Status Report has been replaced with a shiny new Metrics Report!</p>
