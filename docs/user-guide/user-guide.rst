@@ -117,24 +117,16 @@ See :ref:`manage-collection-workspace` for more info.
 -------------------------
 
 
-STIG Library Tools
+STIG Library 
 ----------------------
+
 The STIG Library node offers a browsable view of the contents of all the Reference STIGs and the various Revisions stored in the STIG Manager App.
 
-The "Compare Revisions" feature allows you to compare two Revisions of a STIG, and get a report of what exact Rules and fields changed between the two. 
 
 .. thumbnail:: /assets/images/stig-library.png
       :width: 50% 
       :show_caption: True
       :title: STIG Library
-
-|
-
-
-.. thumbnail:: /assets/images/stig-compare-tool.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIG Revision Compare Tool
 
 |
 
@@ -237,7 +229,7 @@ This panel provides various ways to export the metrics that STIG Manager maintai
 Available Metrics Data Fields
 ++++++++++++++++++++++++++++++++++++++++++
 
-The table below describes the fields that are included in the exports available from the Metrics Report interface.  
+The table below describes the fields that are included in the exports available from the Collection Dashboard Metrics Export interface.  
 
 
   .. list-table:: STIG Manager Metrics Data Fields, and the Report Styles that Include Them.
@@ -557,7 +549,7 @@ Resources Panel
 -------------------
 This Panel provides access to the Attachments and Log tabs for the Review on the selected Asset.
 
-Attachments tab
+Attachments Tab
 ~~~~~~~~~~~~~~~~~
 The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
 
@@ -620,11 +612,11 @@ Review Resources Panel
 This Panel provides resources that may be useful in performing the Rule's Evaluation.
 
 
-Other Assets tab
+Other Assets Tab
 ~~~~~~~~~~~~~~~~~
 The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset's Review Panel below.
 
-Attachments tab
+Attachments Tab
 ~~~~~~~~~~~~~~~~~
 The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
 
@@ -632,6 +624,8 @@ The Attachments tab allows Reviewers to attach images that support their assessm
       :width: 25% 
       :show_caption: True
       :title: Attachments Tab
+
+|
 
 .. thumbnail:: /assets/images/attachments-preview-crop.png
       :width: 25% 
@@ -644,7 +638,7 @@ Status Text Tab
 ~~~~~~~~~~~~~~~~~~
 If this Review has been Rejected, any feedback that may have been provided by the Collection Owner is displayed here.
 
-Log tab
+Log Tab
 ~~~~~~~~~~~~~~~~~
 This Log tab displays how this Review has changed over time.
 
@@ -706,6 +700,7 @@ If a Review was imported from a source of automated assessments, such as Evaluat
       :show_caption: True
       :title: Asset Review Workspace with Automated Results indicated.
 
+|
 
 .. thumbnail:: /assets/images/asset-review-autoresult-with-override.png
       :width: 50% 
@@ -799,6 +794,8 @@ This Panel allows Collection Managers and Owners to change the name of the Colle
       :width: 50% 
       :show_caption: True
       :title: Collection Properties
+
+|
 
 .. _grants-panel:
 
@@ -970,6 +967,8 @@ Double-click an existing label to edit it.
       :show_caption: True
       :title: Collection Labels Tab
 
+|      
+
 .. thumbnail:: /assets/images/collection-manage-new-label.png
       :width: 50% 
       :show_caption: True
@@ -983,6 +982,8 @@ When a Label is selected in Label tab of the Collection Properties Panel, the "T
       :width: 50% 
       :show_caption: True
       :title: View the Assets tagged with a Particular Label
+
+|
 
 .. thumbnail:: /assets/images/collection-manage-tag-assets-assign-label-modal.png
       :width: 50% 
@@ -1136,6 +1137,7 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
       :show_caption: True
       :title: Checklist Archive Export by Asset
 
+|
 
 .. thumbnail:: /assets/images/checklist-archive-export-log.png
       :width: 50% 
@@ -1236,7 +1238,7 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
       :show_caption: True
       :title: Checklist Archive Export by STIG
 
-
+|
 
 .. thumbnail:: /assets/images/checklist-archive-export-log.png
       :width: 50% 
