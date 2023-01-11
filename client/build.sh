@@ -121,6 +121,7 @@ uglifyjs \
 'SM/CollectionForm.js' \
 'SM/CollectionAsset.js' \
 'SM/CollectionGrant.js' \
+'SM/CollectionPanel.js' \
 'SM/ColumnFilters.js' \
 'SM/FindingsPanel.js' \
 'SM/Assignments.js' \
