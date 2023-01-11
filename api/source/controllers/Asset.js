@@ -198,7 +198,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
       // Check if the stigGrants projection is forbidden
       if (!elevate) {
         const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === response.collection.collectionId )
-        if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
+        if (collectionGrant && collectionGrant.accessLevel < 3) {
           throw new SmError.PrivilegeError(`User has insufficient privilege to request projection 'stigGrants'.`)
         }
       }
@@ -222,12 +222,12 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let elevate = req.query.elevate
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
 
-    if ( collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
+    if ( collectionGrant || elevate ) {
       // Check if the request includes the stigGrants projection
       if (projection && projection.includes('stigGrants')) {
         // Check if the stigGrants projection is forbidden
         if (!elevate) {
-          if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
+          if (collectionGrant && collectionGrant.accessLevel < 3)  {
             throw new SmError.PrivilegeError()
           }
         }
@@ -391,7 +391,7 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
     let projection = req.query.projection
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
+    if ( elevate || collectionGrant ) {
         let response = await Asset.getAssetsByStig( collectionId, benchmarkId, labelId, projection, elevate, req.userObject )
         res.json(response)
     }

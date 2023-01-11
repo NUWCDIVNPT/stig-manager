@@ -95,7 +95,7 @@ module.exports.getChecklistByCollectionStig = async function getChecklistByColle
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const response = await CollectionSvc.getChecklistByCollectionStig(collectionId, benchmarkId, revisionStr, req.userObject )
       res.json(response)
     }
@@ -115,7 +115,7 @@ module.exports.getCollection = async function getCollection (req, res, next) {
     const elevate = req.query.elevate
     
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
+    if (collectionGrant || elevate ) {
       const response = await CollectionSvc.getCollection(collectionId, projection, elevate, req.userObject )
       res.status(typeof response === 'undefined' ? 204 : 200).json(response)
     }
@@ -156,7 +156,7 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
     const acceptedOnly = req.query.acceptedOnly
     const projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+    if (collectionGrant) {
       const response = await CollectionSvc.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
       res.json(response)
       }
@@ -182,7 +182,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       status: req.query.status
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+    if (collectionGrant) {
       const response = await CollectionSvc.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
         [
           'rulesWithDiscussion',
@@ -194,14 +194,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       
       const po = Serialize.poamObjectFromFindings(response, defaults)
       const xlsx = await Serialize.xlsxFromPoamObject(po)
-      let collectionName
-      if (!collectionGrant && req.userObject.privileges.globalAccess) {
-        const response = await CollectionSvc.getCollection(collectionId, [], false, req.userObject )
-        collectionName = response.name
-      }
-      else {
-        collectionName = collectionGrant.collection.name
-      }
+      let collectionName = collectionGrant.collection.name
       writer.writeInlineFile( res, xlsx, `POAM-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     }
     else {
@@ -219,7 +212,7 @@ module.exports.getStatusByCollection = async function getStatusByCollection (req
     const benchmarkIds = req.query.benchmarkId
     const assetIds = req.query.assetId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+    if (collectionGrant) {
       const response = await CollectionSvc.getStatusByCollection( collectionId, assetIds, benchmarkIds, req.userObject )
       res.json(response)
     }
@@ -256,7 +249,7 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
     const collectionId = req.params.collectionId
     const labelIds = req.query.labelId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant || req.userObject.privileges.globalAccess ) {
+    if (collectionGrant) {
       const response = await CollectionSvc.getStigsByCollection( collectionId, labelIds, false, req.userObject )
       res.json(response)
       }
