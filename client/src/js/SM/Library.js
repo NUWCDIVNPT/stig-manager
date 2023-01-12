@@ -637,6 +637,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
   - severityOverrideGuidance<br>
   - check<br>
   - fix<br>
+  - cci<br>
 `
     const config = {
       layout: 'fit',
@@ -759,6 +760,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     let lhsStr = value.lhs?.ruleId ?? ''
     let rhsStr = value.rhs?.ruleId ?? ''
     thisUnified = Diff.createPatch('ruleId', lhsStr, rhsStr, undefined, undefined, diffOptions)
+
     if (thisUnified) {
       const dataItem = {
         severities: [],
@@ -782,8 +784,8 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
         thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
         if (thisUnified) {
           dataItem.updates.push(prop)
+          fullUnified += thisUnified
         }
-        fullUnified += thisUnified
       }
 
       for (const prop of detailProps) {
@@ -792,8 +794,8 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
         thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
         if (thisUnified) {
           dataItem.updates.push(prop)
+          fullUnified += thisUnified
         }
-        fullUnified += thisUnified
       }
 
       let l = Math.max(value.lhs?.checks.length ?? 0, value.rhs?.checks.length ?? 0)
@@ -804,8 +806,8 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
         thisUnified = Diff.createPatch(propName, lhsStr, rhsStr, undefined, undefined, diffOptions)
         if (thisUnified) {
           dataItem.updates.push(propName)
+          fullUnified += thisUnified
         }
-        fullUnified += thisUnified
       }
 
       l = Math.max(value.lhs?.fixes.length ?? 0, value.rhs?.fixes.length ?? 0)
@@ -816,9 +818,19 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
         thisUnified = Diff.createPatch(propName, lhsStr, rhsStr, undefined, undefined, diffOptions)
         if (thisUnified) {
           dataItem.updates.push(propName)
+          fullUnified += thisUnified
         }
+      }
+
+      // ccis
+      const lCcis = value.lhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b))
+      const rCcis = value.rhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b))
+      thisUnified = Diff.createPatch('cci', JSON.stringify(lCcis), JSON.stringify(rCcis), undefined, undefined, diffOptions)
+      if (thisUnified) {
+        dataItem.updates.push('cci')
         fullUnified += thisUnified
       }
+
       if (fullUnified) {
         dataItem.unified = fullUnified
       }
