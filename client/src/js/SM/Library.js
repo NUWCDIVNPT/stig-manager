@@ -566,7 +566,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
         }
       },
       {
-        header: '<span exportvalue="Comment">Changed properties<i class= "fa fa-question-circle sm-question-circle"></i></span>',
+        header: '<span exportvalue="Changed properties">Changed properties<i class= "fa fa-question-circle sm-question-circle"></i></span>',
         id: 'diff-updated-props',
         width: 200,
         dataIndex: 'updates',
