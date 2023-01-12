@@ -823,8 +823,8 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
       }
 
       // ccis
-      const lCcis = value.lhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b))
-      const rCcis = value.rhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b))
+      const lCcis = value.lhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
+      const rCcis = value.rhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
       thisUnified = Diff.createPatch('cci', JSON.stringify(lCcis), JSON.stringify(rCcis), undefined, undefined, diffOptions)
       if (thisUnified) {
         dataItem.updates.push('cci')
