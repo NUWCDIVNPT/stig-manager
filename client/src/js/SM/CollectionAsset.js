@@ -569,7 +569,8 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 },{
                     name: 'ruleCount',
                     type: 'integer'
-                }
+                },
+                'revisionStrs'
             ],
             autoLoad: this.autoLoad,
             url: this.url || `${STIGMAN.Env.apiBase}/stigs`,
