@@ -60,6 +60,7 @@ SM.NavTree.LibraryNodesConfig = function (stigs) {
   const fmRegEx = /^[f-m]/i
   const nvRegEx = /^[n-v]/i
   const wzRegEx = /^[w-z]/i
+
   const children = [
     {
       id: `library-a-e-folder`,
@@ -86,8 +87,18 @@ SM.NavTree.LibraryNodesConfig = function (stigs) {
       children: stigs.filter( stig => wzRegEx.test(stig.benchmarkId)).map( stig => SM.NavTree.LibraryStigNodeConfig(stig))
     }
   ]
+  const multiRevisionStigs = stigs.filter( stig => stig.revisionStrs.length > 1 )
+  if (multiRevisionStigs.length) {
+    children.unshift({
+      id: 'library-diff-leaf',
+      action: 'stig-diff',
+      text: 'Compare revisions<span class="sm-navtree-sprite">preview</span>',
+      iconCls: 'sm-diff-icon',
+      multiRevisionStigs,
+      leaf: true
+    })
+  }
   return children
-  // return stigs.map( stig => SM.NavTree.LibraryStigNodeConfig(stig))
 }
 
 SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
@@ -293,7 +304,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                   },
                   {
                     id: 'dark-mode',
-                    text: 'Dark mode<span class="sm-navtree-sprite">preview</span>',
+                    text: 'Dark mode',
                     leaf: true,
                     checked: localStorage.getItem('darkMode') == '1',
                     iconCls: 'sm-dark-mode-icon',
@@ -354,6 +365,13 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
         let tab;
         
         if (!n.leaf) {
+          return
+        }
+        if (n.attributes.action === 'stig-diff') {
+          SM.Library.showDiffPanel({
+            multiRevisionStigs: n.attributes.multiRevisionStigs,
+            treePath: n.getPath()
+          })
           return
         }
         if (n.attributes.leafType === 'collection') {

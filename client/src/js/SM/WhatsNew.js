@@ -2,7 +2,7 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
-    date: '2023-1-10',
+    date: '2023-1-11',
     header: `New Collection Dashboard!`,
     body: `
     <p>The original Navigation Tree has been trimmed down, and all navigation to reports and workspaces within a Collection have been moved to the Collection Dashboard. The Dashboard is an enhanced version of the Metrics Report released a few months ago.</p>
@@ -42,9 +42,24 @@ SM.WhatsNew.Sources = [
     </ul>         
 
 
-    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide/user-guide.html#collection-panel">STIG Manager Documentation for more details about this new feature!</a></p>
+    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-dashboard">STIG Manager Documentation for more details about this new feature!</a></p>
   `
   },       
+
+  {
+    date: '2023-1-10',
+    header: `New STIG Revision Compare Tool!`,
+    body: `
+    <p>Now available for preview is our new Revision Compare tool. Select a STIG, then two Revisions, and the tool will present a list of STIG IDs and how their Rules changed between revisions. Click on Rule to see a detailed comparison of how each field that STIG Manager tracks differs between the two versions.</p>
+    
+    <p><b>The Revision Compare tool is available from the STIG Library node of the Navigation Tree.</b> </p>
+
+
+    <p><img src="img/whatsnew/2023-01-09-stig-compare-tool-crop.png" width="800"/></p>
+
+
+  `
+  },     
   
   {
     date: '2022-10-12',

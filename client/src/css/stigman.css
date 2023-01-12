@@ -320,6 +320,14 @@
   margin-left: 3px;
   white-space: nowrap
 }
+.sm-diff-sprite {
+  background-color: hsl(207deg 100% 84%);
+  color: #000;
+}
+.sm-diff-sprite-check {
+  background-color: #F5A3A3;
+  color: #000;
+}
 .x-tip .x-tip-bc,
 .x-tip .x-tip-bl,
 .x-tip .x-tip-br,
@@ -1902,6 +1910,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-weight: 800;
   src: local('Open Sans ExtraBold Italic'),local('OpenSans-ExtraBoldItalic'),url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2'),url('../fonts/open-sans-v15-latin-800italic.woff') format('woff')
 }
+@font-face {
+  font-family: 'Ubuntu Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local(''),
+       url('../fonts/ubuntu-mono-v15-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+}
 .x-tool.x-tool-label {
   background-image: url(../img/label.svg);
   background-repeat: no-repeat;
@@ -1975,4 +1990,30 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-direction-rtl {
   direction: rtl;
+}
+.sm-diff-icon {
+  background-image: url(../img/diff.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}
+
+.sm-diff-ins {
+  background-color: hsl(110 62% 90% / 1);
+}
+.sm-diff-del {
+  background-color: hsl(0deg 60% 85%);
+}
+.sm-diff-rule-ins {
+  background-color: red
+}
+.sm-diff-rule-del {
+  background-color: green
+}
+.sm-toolbar-diff .x-toolbar-ct {
+  height: 100%;
+  margin-left: 3px;
+}
+
+.sm-toolbar-diff .xtb-spacer {
+  width: 12px;
 }
