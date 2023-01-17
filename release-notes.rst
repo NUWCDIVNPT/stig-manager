@@ -1,3 +1,15 @@
+1.3.0
+-----
+
+Changes:
+
+  - (App) New Collection Dashboard replaces much of the navigation previously performed in the Navigation Tree, as well as the separate Metrics report. 
+  - (App) New STIG Revision Compare tool available from STIG Library node in Navigation Tree. 
+  - (App) Addressed issue causing error when empty or undefined review arrays were POSTed.
+  - (API) Increased default value for STIGMAN_API_MAX_JSON_BODY to 30MB.
+  - (App) Updated dependencies to address dependabot-identified vulnerabilities.
+  - (App) Adjusted matching criteria for Assets with website/db extended names. 
+
 1.2.22
 -----
 
