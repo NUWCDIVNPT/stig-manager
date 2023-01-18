@@ -94,6 +94,8 @@ cp $SrcDir/js/Env.js.example $DistDir/js
 cd $SrcDir/js
 uglifyjs \
 'chart.min.js' \
+'diff.js' \
+'diff2html.min.js' \
 'stigmanUtils.js' \
 'SM/Global.js' \
 'BufferView.js' \
