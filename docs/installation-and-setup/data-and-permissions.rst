@@ -22,6 +22,13 @@ Collections are composed of:
 Collections, Assets, and Reviews all support a JSON field called "metadata" for general use that can be used to enhance functionality and associate arbitrary data with those elements. The project is exploring best practices and uses for this feature. Clients that "play nice" with this field would be expected to preserve metadata already there unless they put it there, perhaps in a nested object with their client name as the Key.
 
 
+Reference STIGs
+---------------------------------------------
+
+STIG Manager uses a set of Reference STIGs that it makes available for assignment to Assets, tracks Rule evaluation, and against which it calculates all metrics. 
+These Reference STIGs must be imported and updated periodically as new STIGs are released or updates are made. It is responsibility of a User with the "Application Management" (or "admin") role to import these official STIGs and keep them updated. Usually, these STIGs are released by DISA on a quarterly schedule. 
+
+Wherever the content of a STIG is displayed (STIG Rules, Rule Titles, Rule Descriptions, Fix Texts, Severities, etc.) this data is drawn from the Reference STIG imported by the Application Manager. It is important to note the distinction here between STIG content and "Review" content, which is usually drawn from imported .ckl files or manual results inputted into STIG Manager by Reviewers. This "Review" content only affects the "Review" or "Evaluation" portion of the data displayed in STIG Manager. They cannot change Reference STIG content via .ckl imports. 
 
 
 "Checklists" - .ckl and XCCDF 
@@ -139,13 +146,15 @@ Permissions
 Grants
 ------------------------------------------------
 
-Collection Access is controlled solely by the Grants that Collection Owners and Managers can delegate to other users. 
-See the :term:`User` definition for more info on these grants.
+Individual access to a Collection is controlled solely by the Grants that Collection Owners and Managers can delegate to other users. 
+See the :term:`User` definition for more info on these grants. This is access to Collections is distinct from overall Application access, which is described below. 
 
 
 
-API Endpoints, Scopes, and Privilege Invocation
--------------------------------------------------
+Application Access, API Endpoints, Scopes, and Privilege Invocation
+------------------------------------------------------------------------
+
+Overall access to the STIG Manager application is controlled by the OIDC provider. 
 
 STIG Manager recognizes two "privileges" or "roles" that can be granted to users via configuration in the OIDC provider. 
 
@@ -155,9 +164,9 @@ Users with the **admin** privilege must explicitly invoke the "elevate" paramete
 
 These **privileges** must be present in the token presented to the API in order to be successfully invoked. 
 
-Access to specific endpoints is controlled by the **scopes** present in a user's token. The scopes granted to users can also be configured in the OIDC provider. 
+Access to specific endpoints is controlled by the **scopes** present in a user's token. The scopes granted to users can be configured in the OIDC provider. Certain user types may only need access to certain scopes. For example, an "Application Manager" type user might need access to the ``stig-manager:stig`` scope so that they can update the Reference STIGs in the app, but normal users might only need the ``stig-manager:stig:read`` scope, granting them read-only access to the Reference STIGs.  All configuration of this type is done in the OIDC provider. 
   
-See our :ref:`Authentication and Identity  <authentication>` documentation for more information about how these scopes and privileges interrelate. 
+See our :ref:`Authentication and Identity <authentication>` documentation and our `API Specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ for more information about how these scopes and privileges interrelate. 
 
 
 

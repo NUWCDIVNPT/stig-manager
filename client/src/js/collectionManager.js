@@ -70,7 +70,7 @@ async function addCollectionManager( params ) {
 			id: `${collectionId}-collection-manager-tab`,
 			collectionId: collectionId,
 			collectionName: collectionName,
-			iconCls: 'sm-collection-tab-icon',
+			iconCls: 'sm-setting-icon',
 			sm_tabMode: 'permanent',
 			sm_treePath: treePath,
 			closable: true,

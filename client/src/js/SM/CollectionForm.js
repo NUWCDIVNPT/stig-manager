@@ -1710,7 +1710,13 @@ SM.getContrastYIQ = function (hexcolor){
 	return (yiq >= 128) ? '#080808' : '#f7f7f7';
 }
 
-SM.Collection.LabelSpriteHtml = `<span class=sm-label-sprite style="color:{[SM.getContrastYIQ(values.color)]};background-color: #{color};" ext:qtip="{[SM.he(SM.he(values.description))]}">{[SM.he(values.name)]}</span>`
+SM.Collection.LabelSpriteHtml = `<span class=sm-label-sprite style="color:
+    {[SM.getContrastYIQ(values.color)]};background-color: #{color};" 
+    ext:qtip="{[SM.he(SM.he(values.description))]}">
+    <tpl if="values.isUnlabeled===true"><i></tpl>
+    {[SM.he(values.name)]}
+    <tpl if="values.isUnlabeled===true"></i></tpl>
+    </span>`
 
 SM.Collection.LabelTpl = new Ext.XTemplate(
     SM.Collection.LabelSpriteHtml
@@ -1722,12 +1728,26 @@ SM.Collection.LabelArrayTpl = new Ext.XTemplate(
 )
 
 SM.Collection.LabelSpritesByCollectionLabelId = function (collectionId, labelIds) {
-    const labels = []
+    let labels = []
+    let includeUnlabeled = false
     for (const labelId of labelIds) {
-      const label = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
-      if (label) labels.push(label)
+        if (labelId === null) {
+            includeUnlabeled = true
+        }
+        const label = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+        if (label) labels.push(label)
     }
     labels.sort((a, b) => a.name.localeCompare(b.name))
+    if (includeUnlabeled) {
+        labels = [
+            {
+                color: '000000',
+                name: 'no label',
+                isUnlabeled: true
+            },
+            ...labels
+        ]
+    }
     return SM.Collection.LabelArrayTpl.apply(labels)
 }
 
@@ -2124,32 +2144,16 @@ SM.Collection.LabelsGrid = Ext.extend(Ext.grid.GridPanel, {
 SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     initComponent: function () {
         const _this = this
-
         this.addEvents('applied')
-
-        const items = []
-        if (this.showHeader) {
-            items.push(this.getTextItemConfig())
-        }
-        for (const label of this.initialConfig.labels) {
-            if (label.uses === 0 && this.ignoreUnusedLabels) continue
-            items.push(this.getLabelItemConfig(label))
-        }
-        if (this.showApply) {
-            items.push('-', this.getActionItemConfig())
-        }
         const config = {
-            items,
+            items: [],
             listeners: {
                 itemclick: this.onItemClick,
-                // hide: function (menu) {
-                //     const labelIds = menu.getCheckedLabelIds()
-                //     this.fireEvent('applied', labelIds)
-                // }
             }    
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.Collection.LabelsMenu.superclass.initComponent.call(this)
+        this.refreshItems(this.labels)
     },
     onItemClick: function (item, e) {
         if (item.hideOnClick) { // only the Apply item
@@ -2174,7 +2178,7 @@ SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
             xtype: 'menucheckitem',
             hideOnClick: false,
             text: SM.Collection.LabelTpl.apply(label),
-            labelId: label.labelId,
+            labelId: label?.labelId ?? null,
             label,
             checked,
             listeners: {
@@ -2241,11 +2245,23 @@ SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
         if (this.showHeader) {
             this.addItem(this.getTextItemConfig())
         }
-        labels.sort((a,b) => a.name.localeCompare(b.name))
+        labels.sort((a,b) => {
+            if (a.name === null) return -1 
+            return a.name.localeCompare(b.name)
+        })
         for (const label of labels) {
             if (label.uses === 0 && this.ignoreUnusedLabels) continue
             const checked = labelIdSet.has(label.labelId)
-            this.addItem(this.getLabelItemConfig(label, checked))
+            if (label.labelId === null) {
+                this.addItem(this.getLabelItemConfig({
+                    color: '000000',
+                    name: 'no label',
+                    isUnlabeled: true
+                }, checked))     
+            }
+            else {
+                this.addItem(this.getLabelItemConfig(label, checked))
+            }
         }
         if (this.showApply) {
             this.addItem('-')

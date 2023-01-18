@@ -47,7 +47,7 @@ The above steps are sufficient for a username/password setup, but it is highly r
 
 .. note::
    Suggested DB configuration options:
-    - ``sort_buffer_size`` - set to at least 64mb (Increasing the sort_buffer_size from the default of 256k may only be required if you have very large detail/comment text fields)
+    - ``sort_buffer_size`` - set to at least 2M (2097152), and perhaps up to 64M (Increasing the sort_buffer_size from the default of 256k may only be required if you have very large detail/comment text fields).
 
 
 Configure MySQL for TLS
@@ -79,7 +79,7 @@ Configure STIG Manager to use your MySQL Database
 Specify your MySQL DB with the following Environment Variables:
 
  * *STIGMAN_DB_HOST* - Default: localhost - The database hostname or IP from to the API server
- * *STIGMAN_DB_PORT* - Default: 50001 - The datafbase TCP port relative to the API server
+ * *STIGMAN_DB_PORT* - Default: 50001 - The database TCP port relative to the API server
  * *STIGMAN_DB_USER* - Default: stigman - The user account used to login to the database
  * *STIGMAN_DB_SCHEMA* - Default: stigman - The schema where the STIG Manager object are found
  * *STIGMAN_DB_PASSWORD* - The database user password. Not required if configuring TLS connections, as shown below.

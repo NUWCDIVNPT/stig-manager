@@ -94,6 +94,8 @@ cp $SrcDir/js/Env.js.example $DistDir/js
 cd $SrcDir/js
 uglifyjs \
 'chart.min.js' \
+'diff.js' \
+'diff2html.min.js' \
 'stigmanUtils.js' \
 'SM/Global.js' \
 'BufferView.js' \
@@ -121,6 +123,7 @@ uglifyjs \
 'SM/CollectionForm.js' \
 'SM/CollectionAsset.js' \
 'SM/CollectionGrant.js' \
+'SM/CollectionPanel.js' \
 'SM/ColumnFilters.js' \
 'SM/FindingsPanel.js' \
 'SM/Assignments.js' \
@@ -133,7 +136,6 @@ uglifyjs \
 'SM/TransferAssets.js' \
 'SM/Library.js' \
 'SM/StigRevision.js' \
-'SM/Metrics.js' \
 'library.js' \
 'userAdmin.js' \
 'collectionAdmin.js' \

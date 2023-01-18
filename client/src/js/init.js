@@ -68,6 +68,7 @@ function loadScripts() {
         'ext/ux/fileuploadfield/css/fileuploadfield.css',
         'css/RowEditor.css',
         'css/jsonview.bundle.css',
+        'css/diff2html.min.css',
         'css/dark-mode.css'
     ].forEach(function(href) {
         var link = document.createElement('link');
@@ -86,6 +87,8 @@ function loadScripts() {
         'ext/ext-all-debug-w-comments.js',
         "ext/ux/GroupSummary.js",
         "js/chart.min.js",
+        "js/diff.js",
+        "js/diff2html.min.js",
         "js/stigmanUtils.js",
         'js/SM/Global.js',
         'js/BufferView.js',
@@ -113,6 +116,7 @@ function loadScripts() {
         "js/SM/CollectionForm.js",
         "js/SM/CollectionAsset.js",
         "js/SM/CollectionGrant.js",
+        "js/SM/CollectionPanel.js",
         "js/SM/ColumnFilters.js",
         "js/SM/FindingsPanel.js",
         "js/SM/Assignments.js",
@@ -125,7 +129,6 @@ function loadScripts() {
         "js/SM/TransferAssets.js",
         "js/SM/Library.js",
         "js/SM/StigRevision.js",
-        "js/SM/Metrics.js",
         "js/library.js",
         "js/userAdmin.js",
         "js/collectionAdmin.js",

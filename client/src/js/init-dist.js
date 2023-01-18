@@ -76,6 +76,7 @@ function loadResources() {
         'ext/ux/fileuploadfield/css/fileuploadfield.css',
         'css/RowEditor.css',
         'css/jsonview.bundle.css',
+        'css/diff2html.min.css',
         'css/dark-mode.css'
     ].forEach(function(href) {
         var link = document.createElement('link');

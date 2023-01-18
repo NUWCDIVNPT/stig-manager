@@ -13,8 +13,8 @@
 Build A Collection with .ckl or XCCDF Files
 ===============================================
 
-Create your Collection and go to its Collection Management workspace by selecting the "Manage" node for your Collection in the Nav Tree.
-From here, select the "Import CKL or XCCDF..." button in the Asset Panel, then check out the :ref:`Collection Builder` portion of our User Guide for more info.
+Create your Collection (with the `+Create Collection...` node of the Nav Tree) and go to its Collection Management workspace by clicking the "gear" icon on the node for your Collection in the Nav Tree. You can also Manage your Collection by opening the main Collection Dashboard and clicking the "Manage" button in the Inventory block.
+From the Collection Management Workspace, select the "Import CKL or XCCDF..." button in the Asset Panel, then check out the :ref:`Collection Builder` portion of our User Guide for more info.
 
 
 Review a STIG on an Asset
@@ -52,9 +52,9 @@ Check the User Guide for more information about the :ref:`Findings Report`.
 Check evaluation progress
 ==============================
 
-The :ref:`Metrics Report` allows Users to gauge the work involved and the progress made towards evaluating every Asset and STIG in their Collection.  
+The :ref:`Collection Dashboard` allows Users to gauge the work involved and the progress made towards evaluating every Asset and STIG in their Collection.  
 
-The :ref:`Metrics Report` also tallies the number of "Open" findings and their severity. 
+The :ref:`Collection Dashboard` also tallies the number of "Open" findings and their severity. 
 
 
 Add Users
@@ -112,8 +112,8 @@ From the Manage Collection interface:
 A new set of Assignments will be created for the new STIG. 
 
 
-Update STIGs
-=====================
+Update Reference STIGs
+========================
 
 DISA releases new STIGs every quarter (and often in-between scheduled releases).  STIG Manager will retain older STIG revisions that have been imported as long as the Benchmark ID in the STIG remains the same.  All STIG Assignments made to Assets will be preserved, and will refer to the latest version of the STIG that was imported (unless otherwise pinned to a specific Revision in the Collection [This feature is not yet fully implemented]).
 

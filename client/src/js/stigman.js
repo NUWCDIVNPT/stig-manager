@@ -70,7 +70,7 @@ async function loadApp () {
 		})
 		appConfig = JSON.parse(result.response.responseText);
 		
-		const mainNavTree = new SM.AppNavTree({
+		const mainNavTree = new SM.NavTree.TreePanel({
 			id: 'app-nav-tree',
 			cls: 'sm-round-panel',
 			margins: {top:10, right:5, bottom:10, left:10},

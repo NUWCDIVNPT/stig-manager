@@ -315,7 +315,7 @@ SM.RuleContentTpl = new Ext.XTemplate(
         this.showRefreshIcon = () => _this.setIconClass('icon-refresh')
         this.onBeforeLoad = (store) => {
             const grid = _this.ownerCt?.ownerCt || _this.grid || store.grid
-            const emptyEl = grid?.view.mainBody.dom.querySelector('.x-grid-empty')
+            const emptyEl = grid?.view?.mainBody?.dom?.querySelector('.x-grid-empty')
             if (emptyEl) {
                 emptyEl.innerHTML = `<div class="icon-loading" style="padding-left:20px;">Loading</div>`
             }
@@ -361,3 +361,17 @@ SM.RuleContentTpl = new Ext.XTemplate(
     }
   })
   Ext.reg('sm-reload-store-button', SM.ReloadStoreButton)
+
+  SM.AddPanelToMainTab = function (panel, tabMode = 'permanent') {
+    const tp = Ext.getCmp('main-tab-panel')
+    const ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+    if (ephTabIndex !== -1) {
+      tp.remove(tp.items.itemAt(ephTabIndex))
+      tp.insert(ephTabIndex, panel);
+    } else {
+      tp.add(panel)
+    }
+    panel.sm_tabMode = tabMode
+    panel.updateTitle && panel.updateTitle.call(panel)
+    tp.setActiveTab(panel.id)
+  }

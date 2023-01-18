@@ -301,8 +301,6 @@ function extend (extended = Ext.grid.GridView) {
             hmenu.filterItems.stringItems.push(stringItem)
             break
           case 'values':
-            // calculate 
-            console.log(`Column ${col.header} Type values `)
             dynamicColumns.push(col)
             break
         }
