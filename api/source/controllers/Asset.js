@@ -16,7 +16,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     const body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
 
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       try {
         let asset = await Asset.createAsset( body, projection, elevate, req.userObject, res.svcStatus)
         res.status(201).json(asset)
@@ -55,7 +55,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
       res.json(assetToAffect)
     }
@@ -82,7 +82,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       let response = await Asset.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject )
       res.json(response)
       }
@@ -108,7 +108,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       let response = await Asset.removeStigsFromAsset(assetId, elevate, req.userObject )
       res.json(response)
       }
@@ -136,7 +136,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
 //     }
 //     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
 //     // is the granted accessLevel high enough?
-//     if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+//     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
 //       let response = await Asset.removeUserFromAssetStig(assetId, benchmarkId, userId, elevate, req.userObject )
 //       res.json(response)
 //       }
@@ -163,7 +163,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       let response = await Asset.removeUsersFromAssetStig(assetId, benchmarkId, elevate, req.userObject )
       res.json(response)
       }
@@ -198,7 +198,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
       // Check if the stigGrants projection is forbidden
       if (!elevate) {
         const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === response.collection.collectionId )
-        if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
+        if (collectionGrant?.accessLevel < 3) {
           throw new SmError.PrivilegeError(`User has insufficient privilege to request projection 'stigGrants'.`)
         }
       }
@@ -222,12 +222,12 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let elevate = req.query.elevate
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
 
-    if ( collectionGrant || req.userObject.privileges.globalAccess || elevate ) {
+    if ( collectionGrant || elevate ) {
       // Check if the request includes the stigGrants projection
       if (projection && projection.includes('stigGrants')) {
         // Check if the stigGrants projection is forbidden
         if (!elevate) {
-          if ((collectionGrant && collectionGrant.accessLevel < 3) || req.userObject.privileges.globalAccess ) {
+          if (collectionGrant?.accessLevel < 3)  {
             throw new SmError.PrivilegeError()
           }
         }
@@ -391,7 +391,7 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
     let projection = req.query.projection
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || req.userObject.privileges.globalAccess || collectionGrant ) {
+    if ( elevate || collectionGrant ) {
         let response = await Asset.getAssetsByStig( collectionId, benchmarkId, labelId, projection, elevate, req.userObject )
         res.json(response)
     }
@@ -454,7 +454,7 @@ module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res,
     let projection = req.query.projection
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       let collection = await Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
       let collectionAssets = collection.assets.map( a => a.assetId)
       if (assetIds.every( a => collectionAssets.includes(a))) {
@@ -489,7 +489,7 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       let response = await Asset.attachStigToAsset(assetId, benchmarkId, elevate, req.userObject )
       res.json(response)
       }
@@ -516,7 +516,7 @@ module.exports.attachStigsToAsset = async function attachStigsToAsset (req, res,
     }
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
-    if ( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) ) {
+    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       let response = await Asset.attachStigsToAsset(assetId, body, elevate, req.userObject )
       res.json(response)
       }
@@ -664,7 +664,7 @@ async function getAssetIdAndCheckPermission(request) {
   }
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
   // is the granted accessLevel high enough?
-  if (!( elevate || (collectionGrant && collectionGrant.accessLevel >= 3) )) {
+  if (!( elevate || (collectionGrant?.accessLevel >= 3) )) {
     throw new SmError.PrivilegeError()
   }
   return assetId

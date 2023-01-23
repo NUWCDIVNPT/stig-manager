@@ -749,7 +749,7 @@ const writeQueries = {
 Generalized queries for review(s).
 **/
 exports.getReviews = async function (inProjection = [], inPredicates = {}, userObject) {
-  const context = userObject.privileges.globalAccess ? dbUtils.CONTEXT_ALL : dbUtils.CONTEXT_USER
+  const context = dbUtils.CONTEXT_USER
   const columns = [
     'CAST(r.assetId as char) as assetId',
     'asset.name as "assetName"',
@@ -1236,14 +1236,12 @@ exports.getRulesByAssetUser = async function ( assetId, userObject ) {
         left join rev_group_map rg using (revId)
         left join rev_group_rule_map rgr using (rgId)
       where 
-        a.assetid = ?`
-    binds.push(assetId)
-    if (!userObject.privileges.globalAccess) {
-      sql += `
-      and cg.userId = ?
-      and CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END`
-      binds.push(userObject.userId)
-    }
+        a.assetid = ?
+        and cg.userId = ?
+        and CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END`
+
+    binds.push(assetId, userObject.userId)
+
     let [rows] = await dbUtils.pool.query(sql, binds)
     return new Set(rows.map( row => row.ruleId ))
   }
@@ -1267,14 +1265,10 @@ exports.checkRuleByAssetUser = async function (ruleId, assetId, userObject) {
         left join rev_group_rule_map rgr using (rgId)
       where 
         a.assetId = ?
-        and rgr.ruleId = ?`
-    binds.push(assetId, ruleId)
-    if (!userObject.privileges.globalAccess) {
-      sql += `
-      and cg.userId = ?
-      and CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END`
-      binds.push(userObject.userId)
-    }    
+        and rgr.ruleId = ?
+        and cg.userId = ?
+        and CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END`
+    binds.push(assetId, ruleId, userObject.userId)   
     let [rows] = await dbUtils.pool.query(sql, binds)
     return rows.length > 0
   }

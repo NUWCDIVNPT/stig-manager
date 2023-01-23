@@ -164,30 +164,20 @@ module.exports.parseRevisionStr = function (revisionStr) {
 module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkIds, elevate, userObject) {
   let sql
   let rows
-  if (userObject.privileges.globalAccess) {
-    sql = `select
-      distinct sa.benchmarkId
-    from
-      stig_asset_map sa
-    where
-      sa.assetId = ?`
+  sql = `select
+    distinct sa.benchmarkId
+  from
+    stig_asset_map sa
+    left join asset a on sa.assetId = a.assetId
+    left join collection_grant cg on a.collectionId = cg.collectionId
+    left join user_stig_asset_map usa on sa.saId = usa.saId
+  where
+    cg.userId = ?
+    and sa.assetId = ?
+    and (cg.accessLevel >= 2 or (cg.accessLevel = 1 and usa.userId = cg.userId))`
 
-    ;[rows] = await _this.pool.query(sql, [assetId])
-  } 
-  else {
-    sql = `select
-      distinct sa.benchmarkId
-    from
-      stig_asset_map sa
-      left join asset a on sa.assetId = a.assetId
-      left join collection_grant cg on a.collectionId = cg.collectionId
-      left join user_stig_asset_map usa on sa.saId = usa.saId
-    where
-      cg.userId = ?
-      and sa.assetId = ?
-      and (cg.accessLevel >= 2 or (cg.accessLevel = 1 and usa.userId = cg.userId))`
-    ;[rows] = await _this.pool.query(sql, [userObject.userId, assetId])
-  }
+  ;[rows] = await _this.pool.query(sql, [userObject.userId, assetId])
+
   const availableBenchmarkIds = rows.map( row => row.benchmarkId )
   return requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))   
 }
@@ -197,7 +187,7 @@ module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkId
 // @param userObject Object
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
   const permitted = [], rejected = []
-  if (userObject.privileges.globalAccess || elevate) {
+  if (elevate) {
     permitted = reviews
   }
   else {

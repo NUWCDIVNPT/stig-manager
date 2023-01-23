@@ -745,7 +745,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
 
     // Access control
     const collectionGrant = userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant && collectionGrant.accessLevel === 1) {
+    if (collectionGrant?.accessLevel === 1) {
       predicates.statements.push(`a.assetId in (
         select
             sa.assetId

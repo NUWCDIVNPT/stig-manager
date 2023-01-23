@@ -127,7 +127,6 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
 
     // Handle userFields.privileges object
     if (userFields.hasOwnProperty('privileges')) {
-      userFields.globalAccess = userFields.privileges.globalAccess ? 1 : 0
       userFields.canCreateCollection = userFields.privileges.canCreateCollection ? 1 : 0
       userFields.canAdmin = userFields.privileges.canAdmin ? 1 : 0
       delete userFields.privileges

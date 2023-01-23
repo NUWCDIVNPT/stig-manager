@@ -135,7 +135,7 @@ module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule 
     let ruleId = req.params.ruleId
     let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await ReviewService.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject, res.svcStatus)
@@ -165,7 +165,7 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       let response = await ReviewService.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
@@ -190,7 +190,7 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
     let projection = req.query.projection
     let collectionId = req.params.collectionId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       let response = await ReviewService.getReviews( projection, {
         collectionId: collectionId,
         result: req.query.result,
@@ -221,7 +221,7 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
     let assetId = req.params.assetId
     let projection = req.query.projection
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       let response = await ReviewService.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
@@ -339,7 +339,7 @@ module.exports.getReviewMetadata = async function (req, res, next) {
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await ReviewService.getReviewMetadata( assetId, ruleId, req.userObject)
@@ -365,7 +365,7 @@ module.exports.patchReviewMetadata = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let metadata = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         await ReviewService.patchReviewMetadata( assetId, ruleId, metadata)
@@ -392,7 +392,7 @@ module.exports.putReviewMetadata = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let body = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         await ReviewService.putReviewMetadata( assetId, ruleId, body)
@@ -419,7 +419,7 @@ module.exports.getReviewMetadataKeys = async function (req, res, next) {
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await ReviewService.getReviewMetadataKeys( assetId, ruleId, req.userObject)
@@ -448,7 +448,7 @@ module.exports.getReviewMetadataValue = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let key = req.params.key
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await ReviewService.getReviewMetadataValue( assetId, ruleId, key, req.userObject)
@@ -478,7 +478,7 @@ module.exports.putReviewMetadataValue = async function (req, res, next) {
     let key = req.params.key
     let value = req.body
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await ReviewService.putReviewMetadataValue( assetId, ruleId, key, value)
@@ -505,7 +505,7 @@ module.exports.deleteReviewMetadataKey = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let key = req.params.key
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant || req.userObject.privileges.globalAccess ) {
+    if ( collectionGrant ) {
       const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
       if (userHasRule) {
         let response = await ReviewService.deleteReviewMetadataKey( assetId, ruleId, key, req.userObject)
