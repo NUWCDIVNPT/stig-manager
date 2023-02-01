@@ -848,7 +848,7 @@ on duplicate key update
           ruleBinds.mitigationControl,
           ruleBinds.responsibility,
           ruleBinds.iaControls,
-          0 // ccId
+          1 // ccId
         ])
         if (checks) {
           checks.forEach(check => {
