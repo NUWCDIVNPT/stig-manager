@@ -48,6 +48,7 @@ The above steps are sufficient for a username/password setup, but it is highly r
 .. note::
    Suggested DB configuration options:
     - ``sort_buffer_size`` - set to at least 2M (2097152), and perhaps up to 64M (Increasing the sort_buffer_size from the default of 256k may only be required if you have very large detail/comment text fields).
+    - ``innodb_buffer_pool_size`` -  set to at least 256M (268435456), and perhaps up to 2GB (2147483648)
 
 
 Configure MySQL for TLS
