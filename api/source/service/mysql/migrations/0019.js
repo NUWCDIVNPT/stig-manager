@@ -34,9 +34,9 @@ const upMigration = [
 
   'INSERT INTO check_content (content) SELECT content from `check` c ON DUPLICATE KEY UPDATE content=c.content',
 
-  'ALTER TABLE `check` ADD COLUMN ccId INT NOT NULL DEFAULT 1',
+  'ALTER TABLE `check` ADD COLUMN ccId INT DEFAULT NULL',
 
-  'ALTER TABLE rule ADD COLUMN ccId INT NOT NULL DEFAULT 1',
+  'ALTER TABLE rule ADD COLUMN ccId INT DEFAULT NULL',
 
   'UPDATE `check` SET ccId = (SELECT ccId from check_content WHERE digest = UNHEX(SHA2(`check`.content, 256)))',
 
