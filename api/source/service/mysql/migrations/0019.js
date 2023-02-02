@@ -23,6 +23,60 @@ const upMigration = [
     revision.mediumCount = sq.mediumCount,
     revision.highCount = sq.highCount`,
 
+  `ALTER TABLE current_rev 
+  ADD COLUMN lowCount INT NOT NULL DEFAULT 0,
+  ADD COLUMN mediumCount INT NOT NULL DEFAULT 0,
+  ADD COLUMN highCount INT NOT NULL DEFAULT 0,
+  CHANGE COLUMN ruleCount ruleCount INT GENERATED ALWAYS AS (highCount + mediumCount + lowCount) STORED`,
+  
+  `UPDATE current_rev cr
+  LEFT JOIN revision r using (benchmarkId)
+  SET
+    cr.lowCount = r.lowCount,
+    cr.mediumCount = r.mediumCount,
+    cr.highCount = r.highCount`,
+
+  `ALTER VIEW v_current_rev AS
+  select
+  rr.revId AS revId,
+  rr.benchmarkId AS benchmarkId,
+  rr.\`version\` AS \`version\`,
+  rr.\`release\` AS \`release\`,
+  rr.benchmarkDate AS benchmarkDate,
+  rr.benchmarkDateSql AS benchmarkDateSql,
+  rr.status AS status,
+  rr.statusDate AS statusDate,
+  rr.description AS description,
+  rr.active AS active,
+  rr.groupCount AS groupCount,
+  rr.ruleCount AS ruleCount,
+  rr.lowCount AS lowCount,
+  rr.mediumCount AS mediumCount,
+  rr.highCount AS highCount,
+  rr.checkCount AS checkCount,
+  rr.fixCount AS fixCount from (select r.revId AS revId,
+  r.benchmarkId AS benchmarkId,
+  r.\`version\` AS \`version\`,
+  r.\`release\` AS \`release\`,
+  r.benchmarkDate AS benchmarkDate,
+  r.benchmarkDateSql AS benchmarkDateSql,
+  r.status AS status,
+  r.statusDate AS statusDate,
+  r.description AS description,
+  r.active AS active,
+  r.groupCount AS groupCount,
+  r.ruleCount AS ruleCount,
+  r.lowCount AS lowCount,
+  r.mediumCount AS mediumCount,
+  r.highCount AS highCount,
+  r.checkCount AS checkCount,
+  r.fixCount AS fixCount,
+  row_number() OVER (PARTITION BY r.benchmarkId ORDER BY field(r.status,
+  'draft',
+  'accepted') desc,
+  (r.\`version\` + 0) desc,
+  (r.\`release\` + 0) desc )  AS rn from revision r) rr where (rr.rn = 1)`,
+
   `CREATE TABLE check_content (
   ccId INT NOT NULL AUTO_INCREMENT,
   digest BINARY(32) GENERATED ALWAYS AS (UNHEX(SHA2(content, 256))) STORED,

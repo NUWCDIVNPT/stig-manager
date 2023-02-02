@@ -501,7 +501,9 @@ exports.insertManualBenchmark = async function (b, svcStatus = {}) {
         description,
         active,
         groupCount,
-        ruleCount,
+        lowCount,
+        mediumCount,
+        highCount,
         checkCount,
         fixCount)
         SELECT 
@@ -516,7 +518,9 @@ exports.insertManualBenchmark = async function (b, svcStatus = {}) {
           description,
           active,
           groupCount,
-          ruleCount,
+          lowCount,
+          mediumCount,
+          highCount,
           checkCount,
           fixCount
         FROM
@@ -953,7 +957,9 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
         description,
         active,
         groupCount,
-        ruleCount,
+        lowCount,
+        mediumCount,
+        highCount,
         checkCount,
         fixCount)
       SELECT 
@@ -968,7 +974,9 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
         description,
         active,
         groupCount,
-        ruleCount,
+        lowCount,
+        mediumCount,
+        highCount,
         checkCount,
         fixCount
       FROM
