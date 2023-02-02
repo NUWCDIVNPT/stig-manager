@@ -1384,7 +1384,8 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
       date_format(r.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       r.status,
       r.statusDate,
-      r.description
+      r.description,
+      r.ruleCount
     FROM
       revision r
     WHERE
