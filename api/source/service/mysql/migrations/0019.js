@@ -30,8 +30,6 @@ const upMigration = [
   PRIMARY KEY (ccId),
   UNIQUE INDEX digest_UNIQUE (digest ASC) VISIBLE)`,
 
-  'INSERT INTO check_content (content) VALUES ("")',
-
   'INSERT INTO check_content (content) SELECT content from `check` c ON DUPLICATE KEY UPDATE content=c.content',
 
   'ALTER TABLE `check` ADD COLUMN ccId INT DEFAULT NULL',
