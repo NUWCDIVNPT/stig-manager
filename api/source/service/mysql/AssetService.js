@@ -612,7 +612,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
       result.ckl as "result",
       LEFT(review.detail,32767) as "detail",
       LEFT(review.comment,32767) as "comment",
-      MAX(c.content) as "checkContent",
+      MAX(cc.content) as "checkContent",
       MAX(fix.text) as "fixText",
       group_concat(rcc.cci ORDER BY rcc.cci) as "ccis"
     FROM
@@ -628,6 +628,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
 
       left join rev_group_rule_check_map rgrc on rgr.rgrId = rgrc.rgrId
       left join \`check\` c on rgrc.checkId = c.checkId
+      left join check_content cc on c.ccId = cc.ccId
 
       left join rev_group_rule_fix_map rgrf on rgr.rgrId = rgrf.rgrId
       left join fix on rgrf.fixId = fix.fixId
@@ -838,7 +839,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
     r.weight,
     r.version,
     c.checkId,
-    c.content as "checkContent",
+    cc.content as "checkContent",
     result.api as "result",
     review.ts,
     LEFT(review.detail,32767) as "detail",
@@ -852,6 +853,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
     left join rule r on rgr.ruleId = r.ruleId 
     left join rev_group_rule_check_map rgrc on rgr.rgrId = rgrc.rgrId
     left join \`check\` c on rgrc.checkId = c.checkId
+    left join check_content cc on c.ccId = cc.ccId
     left join review on r.ruleId = review.ruleId and review.assetId = ?
     left join result on review.resultId = result.resultId 
     left join status on review.statusId = status.statusId 

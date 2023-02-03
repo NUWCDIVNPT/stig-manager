@@ -7,26 +7,22 @@ const STIG = require(`../service/${config.database.type}/STIGService`)
 
 module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
   try {
-    let extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
+    const extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
     if (extension.toLowerCase() != 'xml') {
       throw new SmError.ClientError(`File extension .${extension} not supported`)
-
     }
-    let xmlData = req.file.buffer
     let benchmark
     try {
-      benchmark = await parsers.benchmarkFromXccdf(xmlData)
+      benchmark = await parsers.benchmarkFromXccdf(req.file.buffer)
     }
     catch(err){
       throw new SmError.ClientError(err.message)
     }
-    let response
     if (benchmark.scap) {
       throw new SmError.UnprocessableError('SCAP Benchmarks are not imported.')
     }
-    else {
-      response = await STIG.insertManualBenchmark(benchmark, res.svcStatus)
-    }
+    const revision = await STIG.insertManualBenchmark(benchmark, res.svcStatus)
+    const response = await STIG.getRevisionByString(revision.benchmarkId, revision.revisionStr)
     res.json(response)
   }
   catch(err) {
