@@ -2017,3 +2017,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-toolbar-diff .xtb-spacer {
   width: 12px;
 }
+
+.x-selectable, .x-selectable * {
+  user-select: text!important;
+}

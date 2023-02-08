@@ -769,7 +769,7 @@ SM.TabEnhancements = function(){
 // Source: Carl Smigielski
 Ext.override(Ext.grid.GridView,{
     masterTpl: new Ext.Template(
-        '<div class="x-grid3" hidefocus="true">',
+        '<div class="x-grid3 x-selectable" hidefocus="true">',
             '<div class="x-grid3-viewport">',
                 '<div class="x-grid3-header">',
                     '<div class="x-grid3-header-inner">',
