@@ -316,7 +316,6 @@
   top: 0;
   padding: 0 5px!important;
   border-radius: 3px;
-  user-select: none;
   margin-left: 3px;
   white-space: nowrap
 }
@@ -2016,4 +2015,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .sm-toolbar-diff .xtb-spacer {
   width: 12px;
+}
+
+.sm-selectable, .sm-selectable * {
+  user-select: text;
 }

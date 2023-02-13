@@ -786,6 +786,12 @@ Ext.override(Ext.grid.GridView,{
             '<div class="x-grid3-resize-proxy">&#160;</div>',
         '</div>'
     ),
+    cellTpl: new Ext.Template(
+        '<td class="x-grid3-col x-grid3-cell x-grid3-td-{id} {css}" style="{style}" tabIndex="0" {cellAttr}>',
+            '<div class="x-grid3-cell-inner x-grid3-col-{id} sm-selectable" {attr}>{value}</div>',
+        '</td>'
+    ),
+    /**
     doRender : function(columns, records, store, startRow, colCount, stripe) {
         var templates = this.templates,
             cellTemplate = templates.cell,

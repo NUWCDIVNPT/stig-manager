@@ -229,7 +229,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         <div class="sm-dynamic-width">
           <div class="sm-info">${v}</div>
         </div>
-        <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" ext:qtip="Open checklist" src="img/shield-green-check.svg" width="14" height="14"></div>
+        <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" style="user-select: none" ext:qtip="Open checklist" src="img/shield-green-check.svg" width="14" height="14"></div>
       </div>`
     }
 
@@ -525,7 +525,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
         <div class="sm-dynamic-width">
           <div class="sm-info">${v}</div>
         </div>
-        <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" ext:qtip="Open checklist" src="img/shield-green-check.svg" width="14" height="14"></div>
+        <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" style="user-select: none" ext:qtip="Open checklist" src="img/shield-green-check.svg" width="14" height="14"></div>
       </div>`
     }
 
