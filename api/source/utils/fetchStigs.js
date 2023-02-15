@@ -1,11 +1,10 @@
-const got = require('got')
 const JSZip = require("jszip");
 const parsers = require('./parsers')
 const {promises: fs} = require('fs')
 const config = require('./config')
 const logger = require('./logger')
 const STIG = require(`../service/${config.database.type}/STIGService`)
-
+// 'got' is imported dynamically where needed, as it is now an an ECMAScript module.
 
 
 const compilationURL = 'https://public.cyber.mil/stigs/compilations/'
@@ -18,7 +17,8 @@ let localCompilationFile = '/home/csmig/dev/STIG-samples/U_SRG-STIG_Library_2021
 exports.fetchCompilation = async function fetchCompilation() {
   const logType = 'stig'
   try {
-    logger.writeDebug(logComponent, logType, { message: 'Retreiving list of Compilation files from public.cyber.mil'})
+    const { default: got } = await import('../node_modules/got/dist/source/index.js');
+    logger.writeDebug(logComponent, logType, { message: 'Retrieving list of Compilation files from public.cyber.mil'})
     let html = await got(compilationURL)
     html = html.body.toString()
     let matches = html.match(stigMatchString)
