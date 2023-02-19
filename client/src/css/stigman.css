@@ -1253,6 +1253,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   color: #000;
   word-wrap: break-word
 }
+.sm-conjunction {
+  padding: 10px 20px;
+  font-weight: 600;
+  word-wrap: break-word
+}
 .cs-home-body-text pre {
   white-space: pre-wrap;
   font: 11px Open Sans,helvetica,sans-serif

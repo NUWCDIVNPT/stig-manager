@@ -35,12 +35,10 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         sortType: sortSeverity
       },
       {
-        name: 'check',
-        mapping: 'checks[0]?.content'
+        name: 'checks',
       },
       {
-        name: 'fix',
-        mapping: 'fixes[0]?.text'
+        name: 'fixes',
       },
       {
         name: 'discussion',
@@ -141,16 +139,16 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
       {
         header: "Check",
         width: 300,
-        dataIndex: 'check',
-        renderer: columnWrap,
+        dataIndex: 'checks',
+        renderer: columnWrapJoin,
         sortable: true,
         filter: { type: 'string' }
       },
       {
         header: "Fix",
         width: 300,
-        dataIndex: 'fix',
-        renderer: columnWrap,
+        dataIndex: 'fixes',
+        renderer: columnWrapJoin,
         sortable: true,
         filter: { type: 'string' }
       },

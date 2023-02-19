@@ -524,3 +524,15 @@ function columnWrap(val, meta){
 	meta.css = 'sm-col-wrap'
 	return val
 }
+
+function columnWrapJoin(val, meta){
+	//Applies columnWrap renderer; Joins content from an array of objects into a string with a formatted separator string div
+	columnWrap(val, meta)
+	if (val[0]?.hasOwnProperty("checkId")){
+		return val.map(check => check.content).join('<div class=sm-conjunction>AND</div>')
+	}
+	else if (val[0]?.hasOwnProperty("fixId")){
+		return val.map(fix => fix.text).join('<div class=sm-conjunction>AND</div>')
+	}
+	return val
+}
