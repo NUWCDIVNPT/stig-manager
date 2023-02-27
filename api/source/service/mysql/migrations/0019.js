@@ -94,34 +94,6 @@ const upMigration = [
 
   'ALTER TABLE `check` DROP COLUMN content',
 
-  'DROP TEMPORARY TABLE IF EXISTS temp_ruleId_ccId',
-
-  `CREATE TEMPORARY TABLE temp_ruleId_ccId (
-  ruleId varchar(255) NOT NULL,
-  ccId int not null,
-  primary key (ruleId)) as
-WITH cte1 as (select
-	r.ruleId,
-  MAX(rgrc.checkId) as maxCheckId
-from
-  rule r
-  left join rev_group_rule_map rgr using (ruleId)
-  left join rev_group_rule_check_map rgrc using (rgrId)
-group by
-  r.ruleId)
-select 
-  cte1.ruleId,
-  c.ccId 
-from
-  cte1 
-  left join \`check\` c on cte1.maxCheckId = c.checkId
-where
-  c.ccId is not null`,
-
-  'UPDATE rule inner join temp_ruleId_ccId t using (ruleId) set rule.ccId = t.ccId',
-
-  'DROP TEMPORARY TABLE IF EXISTS temp_ruleId_ccId',
-
   'ALTER TABLE `check` ADD INDEX (ccId)',
 
   `ALTER TABLE \`check\` ADD CONSTRAINT fk_check_1 FOREIGN KEY (ccId) REFERENCES check_content (ccId) ON DELETE RESTRICT ON UPDATE RESTRICT`,
@@ -129,7 +101,6 @@ where
   'ALTER TABLE rule ADD INDEX (ccId)',
 
   `ALTER TABLE rule ADD CONSTRAINT fk_rule_1 FOREIGN KEY (ccId) REFERENCES check_content (ccId) ON DELETE RESTRICT ON UPDATE RESTRICT`,
-
 ]
 
 const downMigration = [
