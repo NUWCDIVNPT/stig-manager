@@ -400,37 +400,61 @@
     const parser = new XMLParser(parseOptions)  
     let parsed = parser.parse(data)
 
-    // Basic sanity checks
-    if (!parsed.Benchmark) throw (new Error("No Benchmark element"))
-    if (!parsed.Benchmark.TestResult) throw (new Error("No TestResult element"))
-    if (!parsed.Benchmark.TestResult['target']) throw (new Error("No target element"))
-    // if (!parsed.Benchmark.TestResult['target-facts']) throw (new Error("No target-facts element"))
-    if (!parsed.Benchmark.TestResult['rule-result']) throw (new Error("No rule-result element"))
+    // Basic sanity checks, handle <TestResult> root element with <benchmark> child
+    let benchmarkId, testResult
+    if (!parsed.Benchmark && !parsed.TestResult) throw (new Error("No Benchmark or TestResult element"))
+    if (parsed.Benchmark) {
+      if (!parsed.Benchmark.TestResult) throw (new Error("No Benchmark.TestResult element"))
+      if (!parsed.Benchmark.TestResult['target']) throw (new Error("No Benchmark.TestResult.target element"))
+      if (!parsed.Benchmark.TestResult['rule-result']) throw (new Error("No Benchmark.TestResult.rule-result element"))
+      testResult = parsed.Benchmark.TestResult
+      benchmarkId = parsed.Benchmark.id.replace('xccdf_mil.disa.stig_benchmark_', '')
+    }
+    else {
+      if (!parsed.TestResult['benchmark']) throw (new Error("No TestResult.benchmark element"))
+      if (!parsed.TestResult['target']) throw (new Error("No TestResult.target element"))
+      if (!parsed.TestResult['rule-result']) throw (new Error("No TestResult.rule-result element"))
+      testResult = parsed.TestResult
+      let benchmarkAttr
+      if (testResult.benchmark.id?.startsWith('xccdf_mil.disa.stig_benchmark_')) {
+        benchmarkAttr = testResult.benchmark.id
+      }
+      else if (testResult.benchmark.href?.startsWith('xccdf_mil.disa.stig_benchmark_')){
+        benchmarkAttr = testResult.benchmark.href
+      }
+      else {
+        throw (new Error("TestResult.benchmark has no attribute starting with xccdf_mil.disa.stig_benchmark_"))
+      }
+      benchmarkId = benchmarkAttr.replace('xccdf_mil.disa.stig_benchmark_', '')
+    }
+    let DEFAULT_RESULT_TIME = testResult['end-time'] //required by XCCDF 1.2 rev 4 spec
 
     // Process parsed data
-    let benchmarkId = parsed.Benchmark.id.replace('xccdf_mil.disa.stig_benchmark_', '')
     if (scapBenchmarkMap && scapBenchmarkMap.has(benchmarkId)) {
       benchmarkId = scapBenchmarkMap.get(benchmarkId)
     }
-    const target = processTarget(parsed.Benchmark.TestResult)
+    const target = processTarget(testResult)
     if (!target.name) {
       throw (new Error('No value for <target>'))
     }
 
     // resultEngine info
-    const testSystem = parsed.Benchmark.TestResult['test-system']
+    const testSystem = testResult['test-system']
     // SCC injects a CPE WFN bound to a URN
     const m = testSystem.match(/[c][pP][eE]:\/[AHOaho]?:(.*)/)
     let vendor, product, version
     if (m?.[1]) {
       ;[vendor, product, version] = m[1].split(':')
     }
+    else {
+      ;[product, version] = testSystem.split(':') // e.g. PAAuditEngine:6.5.3
+    }
     const resultEngineTpl = {
       type: 'scap',
       product,
       version
     }
-    const r = processRuleResults(parsed.Benchmark.TestResult['rule-result'], resultEngineTpl)
+    const r = processRuleResults(testResult['rule-result'], resultEngineTpl)
 
     // Return object
     return ({
@@ -495,8 +519,9 @@
         }
         else {
           // build the resultEngine value
+          const timeStr = ruleResult.time ?? DEFAULT_RESULT_TIME
           resultEngine = {
-            time: new Date(ruleResult.time).toISOString(), 
+            time: (timeStr ? new Date(timeStr) : new Date()).toISOString(), 
             ...resultEngineCommon
           }
           // handle check-content-ref, if it exists
