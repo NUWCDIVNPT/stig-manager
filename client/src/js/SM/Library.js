@@ -140,7 +140,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         header: "Check",
         width: 300,
         dataIndex: 'checks',
-        sm_wrapProperty: 'content',
+        sm_joinProperty: 'content',
         renderer: columnWrapJoin,
         sortable: true,
         filter: { type: 'string' }
@@ -149,7 +149,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         header: "Fix",
         width: 300,
         dataIndex: 'fixes',
-        sm_wrapProperty: 'text',
+        sm_joinProperty: 'text',
         renderer: columnWrapJoin,
         sortable: true,
         filter: { type: 'string' }
