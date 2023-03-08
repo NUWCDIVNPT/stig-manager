@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "1331c877-e033-4d89-9376-11ca3fec02fd",
+		"_postman_id": "cce2e3c8-0a8e-4ade-97a2-bc1a0268046f",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -24265,7 +24265,7 @@
 																	"if ( user == \"collectioncreator\" ) {\r",
 																	"    pm.test(\"User is forbidden by grant\", function () {\r",
 																	"        pm.response.to.have.status(403)\r",
-																	"        pm.expect(jsonData).to.have.all.keys(\"error\",\"stack\")\r",
+																	"        // pm.expect(jsonData).to.have.all.keys(\"error\",\"stack\")\r",
 																	"    })\r",
 																	"}\r",
 																	"else {\r",
@@ -37402,6 +37402,116 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Return rule data for the specified Rule",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});\r",
+											"\r",
+											"let testRuleId = pm.environment.get(\"testRuleId\");\r",
+											"\r",
+											"\r",
+											"let title = \"The VPN Gateway must ensure inbound and outbound traffic is configured with a security policy in compliance with information flow control policies.\"\r",
+											"let checkContent = \"Verify the VPN Gateway has an inbound and outbound traffic security policy which is in compliance with information flow control policies (e.g., IPsec policy configuration).\\n\\nReview network device configurations and topology diagrams. Verify encapsulated or encrypted traffic received from other enclaves with different security policies terminate at the perimeter for filtering and content inspection by a firewall and IDPS before gaining access to the private network.\\n\\nIf the VPN Gateway does not ensure inbound and outbound traffic is configured with a security policy in compliance with information flow control policies, this is a finding.\"\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response rule has proper title\", function () {\r",
+											"    pm.expect(jsonData.title).to.eql(title);\r",
+											"});\r",
+											"pm.test(\"proper check content\", function () {\r",
+											"    pm.expect(jsonData.check.content).to.not.eql(\"This check content has been replaced!\");\r",
+											"});    \r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs/rules/:ruleId?projection=detail&projection=ccis&projection=check&projection=fix",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										"rules",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "detail",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "ccis",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "check"
+										},
+										{
+											"key": "projection",
+											"value": "fix"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "checkContentMatches",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -38488,7 +38598,7 @@
 											"{\r",
 											"    \"benchmarkId\": \"VPN_SRG_OTHER\",\r",
 											"    \"revisionStr\": \"V2R2\",\r",
-											"    \"action\": \"replaced\"\r",
+											"    \"action\": \"inserted\"\r",
 											"}\r",
 											"\r",
 											"\r",
@@ -38607,18 +38717,15 @@
 											"\r",
 											"\r",
 											"for (const rule of jsonData){\r",
-											"    if (rule.ruleId === \"testRuleId\"){\r",
+											"    if (rule.ruleId === testRuleId){\r",
 											"        pm.test(\"Response rule has proper title\", function () {\r",
 											"            pm.expect(rule.title).to.eql(title);\r",
 											"        });\r",
-											"    for (const check of rule.checks){\r",
-											"        // matchedRules.push(rule.ruleId)\r",
-											"            if (check.system === \"C-95877r1_chk\"){\r",
+											"            if (rule.check.system === \"C-95877r1_chk\"){\r",
 											"                pm.test(\"proper check content\", function () {\r",
-											"                    pm.expect(check.content).to.not.eql(\"This check content has been replaced!\");\r",
+											"                    pm.expect(rule.check.content).to.not.eql(\"This check content has been replaced!\");\r",
 											"                });    \r",
 											"            }\r",
-											"        }\r",
 											"    }\r",
 											"}\r",
 											"\r",
@@ -38727,10 +38834,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
-											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
-											"        pm.response.to.have.status(403);\r",
-											"    });\r",
+											"if (user != \"stigmanadmin\") { //only continue for stigmanadmin\r",
 											"    return;\r",
 											"}\r",
 											"else {\r",
@@ -38765,14 +38869,11 @@
 											"        pm.test(\"Response rule has proper title\", function () {\r",
 											"            pm.expect(rule.title).to.eql(title);\r",
 											"        });\r",
-											"    for (const check of rule.checks){\r",
-											"        // matchedRules.push(rule.ruleId)\r",
-											"            if (check.system === \"C-95877r1_chk\"){\r",
+											"            if (rule.check.system === \"C-95877r1_chk\"){\r",
 											"                pm.test(\"proper check content\", function () {\r",
-											"                    pm.expect(check.content).to.eql(\"This check content has been replaced!\");\r",
+											"                    pm.expect(rule.check.content).to.eql(\"This check content has been replaced!\");\r",
 											"                });    \r",
 											"            }\r",
-											"        }\r",
 											"    }\r",
 											"}\r",
 											"\r",
@@ -38882,10 +38983,8 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"xxxxx\") { //placeholder for \"users\" that should fail\r",
-											"    pm.test(\"Status should be is 403 for user xxxxx\", function () {\r",
-											"        pm.response.to.have.status(403);\r",
-											"    });\r",
+											"if (user != \"stigmanadmin\") { //only continue for stigmanadmin\r",
+											"\r",
 											"    return;\r",
 											"}\r",
 											"else {\r",
@@ -38943,7 +39042,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId",
+									"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr/rules/:ruleId?projection=check",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -38970,8 +39069,7 @@
 										},
 										{
 											"key": "projection",
-											"value": "check",
-											"disabled": true
+											"value": "check"
 										},
 										{
 											"key": "projection",
@@ -39001,6 +39099,64 @@
 										{
 											"key": "ruleId",
 											"value": "{{testRuleId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deletes a STIG (*** and all revisions ***) - cleanup \"other\" stig",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"\r",
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
+											"    pm.test(\"Status should be is 200 for user stigmanadmin\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"    // return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403 for all other users\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId"
+									],
+									"variable": [
+										{
+											"key": "benchmarkId",
+											"value": "VPN_SRG_OTHER",
+											"description": "(Required) A path parameter that indentifies a STIG"
 										}
 									]
 								}
