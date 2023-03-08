@@ -108,7 +108,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
             * - Full
               - Can review any Asset/STIG in the Collection.
             * - Manage
-              - Everything in the "Full" level.  CCan Add/Remove/Modify Assets, STIGs, and Users with the exception of User "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
+              - Everything in the "Full" level.  Can Add/Remove/Modify Assets, STIGs, and Users with the exception of User "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
             * - Owner
               - Everything in the "Manage" level.  Can Delete the Collection and Add/Remove/Modify Owner Grants.  Responsible for "Accepting"  and "Rejecting" reviews from evaluators.
 
