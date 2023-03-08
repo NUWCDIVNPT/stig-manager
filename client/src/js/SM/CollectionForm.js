@@ -527,7 +527,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         }
                         else{
                             tbar.delButton.setDisabled(true)
-                            _this.accessBtn.setDisabled(true)
+                            _this.accessBtn?.setDisabled(true)
                         }
                 }                    
                 }
