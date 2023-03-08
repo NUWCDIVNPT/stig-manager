@@ -36,11 +36,11 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
       },
       {
         name: 'check',
-        mapping: 'checks[0]?.content'
+        mapping: 'check?.content'
       },
       {
         name: 'fix',
-        mapping: 'fixes[0]?.text'
+        mapping: 'fix?.text'
       },
       {
         name: 'discussion',
@@ -218,7 +218,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules`,
         method: 'GET',
         params: {
-          projection: ['checks', 'fixes', 'detail']
+          projection: ['check', 'fix', 'detail']
         }
       })
       return JSON.parse(result.response.responseText)
@@ -289,38 +289,10 @@ SM.Library.StigPanel = Ext.extend(Ext.Panel, {
       border: false,
       region: 'center'
     })
-    // const ruleContentPanel = new SM.Library.RuleContentPanel({
-    //   cls: 'sm-round-panel',
-    //   margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
-    //   border: false,
-    //   region: 'east',
-    //   split: true,
-    //   collapsible: true,
-    //   width: 400
-    // })
     this.load = async function () {
       await checklistGrid.loadStig(this.benchmarkId)
       await checklistGrid.loadRevisions(this.benchmarkId)
     }
-    async function onRowSelect(cm, index, record) {
-      try {
-        const contentReq = await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/stigs/rules/${record.data.ruleId}`,
-          method: 'GET',
-          params: {
-            projection: ['detail', 'ccis', 'checks', 'fixes']
-          }
-        })
-        let content = JSON.parse(contentReq.response.responseText)
-        // ruleContentPanel.update(content)
-        // ruleContentPanel.setTitle('Rule for Group ' + record.data.groupId)
-      }
-      catch (e) {
-        console.log(e)
-        alert(e.message)
-      }
-    }
-    checklistGrid.getSelectionModel().on('rowselect', onRowSelect)
     const config = {
       iconCls: 'sm-stig-icon',
       closable: true,
@@ -329,8 +301,7 @@ SM.Library.StigPanel = Ext.extend(Ext.Panel, {
         targetCls: 'sm-border-layout-ct'
       },
       items: [
-        checklistGrid,
-        // ruleContentPanel
+        checklistGrid
       ]
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -778,28 +749,22 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
         }
       }
 
-      let l = Math.max(value.lhs?.checks.length ?? 0, value.rhs?.checks.length ?? 0)
-      for (let x = 0; x < l; x++) {
-        lhsStr = value.lhs?.checks[x].content ?? ''
-        rhsStr = value.rhs?.checks[x].content ?? ''
-        const propName = `check${l > 1 ? `-${x}` : ''}`
-        thisUnified = Diff.createPatch(propName, lhsStr, rhsStr, undefined, undefined, diffOptions)
-        if (thisUnified) {
-          dataItem.updates.push(propName)
-          fullUnified += thisUnified
-        }
+      // check
+      lhsStr = value.lhs?.check?.content ?? ''
+      rhsStr = value.rhs?.check?.content ?? ''
+      thisUnified = Diff.createPatch('check', lhsStr, rhsStr, undefined, undefined, diffOptions)
+      if (thisUnified) {
+        dataItem.updates.push('check')
+        fullUnified += thisUnified
       }
 
-      l = Math.max(value.lhs?.fixes.length ?? 0, value.rhs?.fixes.length ?? 0)
-      for (let x = 0; x < l; x++) {
-        lhsStr = value.lhs?.fixes[x].text ?? ''
-        rhsStr = value.rhs?.fixes[x].text ?? ''
-        const propName = `fix${l > 1 ? `-${x}` : ''}`
-        thisUnified = Diff.createPatch(propName, lhsStr, rhsStr, undefined, undefined, diffOptions)
-        if (thisUnified) {
-          dataItem.updates.push(propName)
-          fullUnified += thisUnified
-        }
+      // fix
+      lhsStr = value.lhs?.fix?.text ?? ''
+      rhsStr = value.rhs?.fix?.text ?? ''
+      thisUnified = Diff.createPatch('fix', lhsStr, rhsStr, undefined, undefined, diffOptions)
+      if (thisUnified) {
+        dataItem.updates.push('fix')
+        fullUnified += thisUnified
       }
 
       // ccis
@@ -842,14 +807,14 @@ SM.Library.DiffPanel = Ext.extend(Ext.Panel, {
             url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${lhRevisionStr}/rules`,
             method: 'GET',
             params: {
-              projection: ['checks', 'fixes', 'detail', 'ccis']
+              projection: ['check', 'fix', 'detail', 'ccis']
             }
           }),
           Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${rhRevisionStr}/rules`,
             method: 'GET',
             params: {
-              projection: ['checks', 'fixes', 'detail', 'ccis']
+              projection: ['check', 'fix', 'detail', 'ccis']
             }
           })
         ])

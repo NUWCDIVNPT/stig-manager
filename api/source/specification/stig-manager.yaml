@@ -2854,6 +2854,13 @@ paths:
         - STIG
       summary: Import a STIG Benchmark
       operationId: importBenchmark
+      parameters:
+        - name: clobber
+          in: query
+          description: Should existing Revision data be overwritten
+          schema:
+            type: boolean
+            default: false
       requestBody:
         required: true
         content:
@@ -2870,7 +2877,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Revision'
+                $ref: '#/components/schemas/RevisionPost'
         default:
           description: unexpected error
           content:
@@ -2915,7 +2922,7 @@ paths:
     get:
       tags:
         - STIG
-      summary: Return the defintion and associated checks and fixes for the specified Rule
+      summary: Return the defintion and associated check and fix for the specified Rule
       operationId: getRuleByRuleId
       parameters:
         - $ref: '#/components/parameters/RuleProjectionQuery'
@@ -3922,7 +3929,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        checkId:
+        system:
           type: string
         content:
           type: string
@@ -4689,7 +4696,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        fixId:
+        fixref:
           type: string
         text:
           type: string
@@ -5815,7 +5822,6 @@ components:
         - benchmarkDate
         - status
         - statusDate
-        - description
         - ruleCount
       additionalProperties: false
       properties:
@@ -5837,8 +5843,6 @@ components:
         statusDate:
           type: string
           format: date
-        description:
-          type: string
         ruleCount:
           type: integer
     RevisionBasic:
@@ -5852,6 +5856,24 @@ components:
           $ref: '#/components/schemas/String255'
         revisionStr:
           $ref: '#/components/schemas/RevisionStr'
+    RevisionPost:
+      type: object
+      required:
+        - benchmarkId
+        - revisionStr
+        - action
+      additionalProperties: false
+      properties:
+        benchmarkId:
+          $ref: '#/components/schemas/String255'
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'
+        action:
+          type: string
+          enum:
+            - inserted
+            - preserved
+            - replaced
     RevisionStr:
       type: string
       pattern: ^(V\d{1,3}R\d{1,3}(\.\d{1,3})?|latest)$
@@ -5933,14 +5955,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CciBasic'
-        checks:
-          type: array
-          items:
-            $ref: '#/components/schemas/Check'
-        fixes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Fix'
+        check:
+          $ref: '#/components/schemas/Check'
+        fix:
+          $ref: '#/components/schemas/Fix'
     RuleSeverity:
       type: string
       enum:
@@ -6401,7 +6419,7 @@ components:
     ChecklistProjectionQuery:
       name: projection
       in: query
-      description: Optional properties to return. Selecting "checks" or "fixes" will also select "fullrules"
+      description: Optional properties to return. Selecting "check" or "fix" will also select "fullrules"
       style: form
       explode: true
       schema:
@@ -6413,8 +6431,8 @@ components:
           enum:
             - cci
             - fullrules
-            - checks
-            - fixes
+            - check
+            - fix
     CklModeQuery:
       name: mode
       in: query
@@ -6773,8 +6791,8 @@ components:
           enum:
             - detail
             - ccis
-            - checks
-            - fixes
+            - check
+            - fix
     RuleSeverityQuery:
       name: severity
       in: query

@@ -95,13 +95,13 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         // Traditional STIG has no checks, so check for checks
         if (rule.check) {
           checks = rule.check.map(check => ({
-            checkId: check.system,
+            system: check.system,
             content: isScap? check['check-content-ref'][0] : check['check-content']
           }))
         }
 
         let fixes = rule.fixtext.map(fix => ({
-          fixId: fix.fixref,
+          fixref: fix.fixref,
           text: fix._
         }))
         let idents = rule.ident ? rule.ident.map(ident => ({
@@ -218,6 +218,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       'Aug': '08',
       'August': '08',
       'Sep': '09',
+      'Sept': '09',
       'September': '09',
       'Oct': '10',
       'October': '10',

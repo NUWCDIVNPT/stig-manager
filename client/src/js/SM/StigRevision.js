@@ -383,6 +383,10 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
 Ext.reg('sm-stigrevision-grid', SM.StigRevision.StigGrid)
 
 SM.StigRevision.ImportStigs = function ( grid ) {
+  const clobberCb = new Ext.form.Checkbox({
+    name: 'clobber',
+    boxLabel: 'Replace existing Revisions'
+  })
   const fp = new Ext.FormPanel({
     padding: 10,
     standardSubmit: false,
@@ -406,7 +410,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
           xtype: 'displayfield',
           id: 'infoText1',
           name: 'infoText',
-          html: "Please browse for STIG",
+          html: "Please browse for a STIG archive or XCCDF",
         }]
       },
       {
@@ -420,12 +424,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
           icon: "img/disc_drive.png"
         }
       },
-      {
-        xtype: 'displayfield',
-        id: 'infoText2',
-        name: 'infoText',
-        html: "<i><b>IMPORTANT: Results from the imported file will overwrite any existing results!</b></i>",
-      }
+      clobberCb
     ],
     buttonAlign: 'center',
     buttons: [{
@@ -433,21 +432,29 @@ SM.StigRevision.ImportStigs = function ( grid ) {
       icon: 'img/page_white_get.png',
       tooltip: 'Import the archive',
       formBind: true,
-      handler: async function(){
+      handler: async function () {
         try {
           let input = document.getElementById("form-file-file")
+          const clobber = clobberCb.getValue()
           let file = input.files[0]
           let extension = file.name.substring(file.name.lastIndexOf(".")+1)
           if (extension.toLowerCase() === 'xml') {
+            // let data = await readTextFileAsync(file)
+            // const r = ReviewParser.benchmarkFromXccdf({
+            //   data, 
+            //   XMLParser: fxp.XMLParser,
+            //   valueProcessor: tagValueProcessor
+            // })
+            
             let formEl = fp.getForm().getEl().dom
             let formData = new FormData(formEl)
-            formData.set('replace', 'true')
+            formData.delete('clobber')
             appwindow.close();
             initProgress("Importing file", "Initializing...");
             updateStatusText (file.name)
     
             await window.oidcProvider.updateToken(10)
-            let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
+            let response = await fetch(`${STIGMAN.Env.apiBase}/stigs?clobber=${clobber ? 'true':'false'}`, {
               method: 'POST',
               headers: new Headers({
                 'Authorization': `Bearer ${window.oidcProvider.token}`
@@ -463,7 +470,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
           else if (extension === 'zip') {
             appwindow.close()
             initProgress("Importing file", "Initializing...");
-            await processZip(input.files[0])
+            await processZip(input.files[0], clobber)
             updateStatusText ('Done')
             updateProgress(0, 'Done')
           } else {
@@ -477,7 +484,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
           grid?.getStore()?.reload()
         }
 
-        async function processZip (f) {
+        async function processZip (f, clobber) {
           try {
             let parentZip = new JSZip()
        
@@ -491,11 +498,11 @@ SM.StigRevision.ImportStigs = function ( grid ) {
               let data = await parentZip.files[xml].async("blob")
               let fd = new FormData()
               fd.append('importFile', data, xml)
-              fd.append('replace', 'true')
 
               await window.oidcProvider.updateToken(10)
-              let response = await fetch(`${STIGMAN.Env.apiBase}/stigs`, {
+              let response = await fetch(`${STIGMAN.Env.apiBase}/stigs?clobber=${clobber ? 'true':'false'}`, {
                 method: 'POST',
+                params: { clobber },
                 headers: new Headers({
                   'Authorization': `Bearer ${window.oidcProvider.token}`
                 }),

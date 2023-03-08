@@ -75,7 +75,7 @@ function cteRuleGen({ruleIds, benchmarkIds}) {
     cte = dbUtils.pool.format(sql,[json])
   }
   else if (benchmarkIds?.length) {
-    const sql = `select ruleId from current_group_rule where benchmarkId IN ?`
+    const sql = `select ruleId from v_current_group_rule where benchmarkId IN ?`
     cte = dbUtils.pool.format(sql,[[benchmarkIds]])
   }
   return `cteRule AS (${cte})`
@@ -91,8 +91,7 @@ from
   left join stig_asset_map sa using (assetId)
   left join user_stig_asset_map usa on sa.saId = usa.saId
   left join revision rev using (benchmarkId)
-  left join rev_group_map rg using (revId)
-  left join rev_group_rule_map rgr using (rgId)
+  left join rev_group_rule_map rgr using (revId)
 where 
   cg.collectionId =  @collectionId
   and a.assetId IN (select assetId from cteAsset)
@@ -784,33 +783,18 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     ) as status`
   ]
   const groupBy = [
-    'r.assetId',
+    'r.reviewId',
     'asset.name',
-    'r.ruleId',
-    'rule.severity',
-    'r.resultId',
     'result.api',
-    'r.resultEngine',
-    'r.detail',
-    'r.autoResult',
-    'r.comment',
     'status.api',
-    'r.userId',
     'ud.username',
     'udStatus.username',
-    'r.ts',
-    'r.statusText',
-    'r.statusUserId',
-    'r.statusTs',
-    'r.reviewId'
   ]
   const joins = [
     'review r',
     'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
-    'left join rev_group_map rg on rgr.rgId = rg.rgId',
-    'left join revision on rg.revId = revision.revId',
-    'left join current_rev on rg.revId = current_rev.revId',
-    'left join rule on r.ruleId = rule.ruleId',
+    'left join revision on rgr.revId = revision.revId',
+    'left join current_rev on rgr.revId = current_rev.revId',
     'left join result on r.resultId = result.resultId',
     'left join status on r.statusId = status.statusId',
     'left join user_data ud on r.userId = ud.userId',
@@ -833,11 +817,12 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   }
   if (inProjection.includes('rule')) {
     columns.push(`json_object(
-        'ruleId' , rule.ruleId,
-        'title' , rule.title,
-        'version' , rule.version,
-        'severity' , rule.severity) as "rule"`
+        'ruleId' , rgr.ruleId,
+        'title' , rgr.title,
+        'version' , rgr.version,
+        'severity' , rgr.severity) as "rule"`
     )
+    groupBy.push('rgr.severity','rgr.title','rgr.version','rgr.ruleId')
   }
   if (inProjection.includes('history')) {
     // OVER clauses and subquery needed to order the json_arrayagg
@@ -927,17 +912,18 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     predicates.binds.push(inPredicates.ruleId)
   }
   if (inPredicates.groupId) {
-    predicates.statements.push(`rg.groupId = ?`)
+    predicates.statements.push(`rgr.groupId = ?`)
     predicates.binds.push(inPredicates.groupId)
   }
   if (inPredicates.cci) {
     predicates.statements.push(`r.ruleId IN (
       SELECT
-        ruleId
+        distinct rgr.ruleId
       FROM
-        rule_cci_map
+        rev_group_rule_cci_map rgrcc
+        left join rev_group_rule_map rgr using (rgrId)
       WHERE
-        cci = ?
+        rgrcc.cci = ?
       )` )
       predicates.binds.push(inPredicates.cci)
   }
@@ -1233,8 +1219,7 @@ exports.getRulesByAssetUser = async function ( assetId, userObject ) {
         left join stig_asset_map sa using (assetId)
         left join user_stig_asset_map usa on sa.saId = usa.saId
         left join revision rev using (benchmarkId)
-        left join rev_group_map rg using (revId)
-        left join rev_group_rule_map rgr using (rgId)
+        left join rev_group_rule_map rgr using (revId)
       where 
         a.assetid = ?
         and cg.userId = ?
@@ -1261,8 +1246,7 @@ exports.checkRuleByAssetUser = async function (ruleId, assetId, userObject) {
         left join stig_asset_map sa using (assetId)
         left join user_stig_asset_map usa on sa.saId = usa.saId
         left join revision rev using (benchmarkId)
-        left join rev_group_map rg using (revId)
-        left join rev_group_rule_map rgr using (rgId)
+        left join rev_group_rule_map rgr using (revId)
       where 
         a.assetId = ?
         and rgr.ruleId = ?
