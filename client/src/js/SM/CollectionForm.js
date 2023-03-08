@@ -31,6 +31,7 @@ SM.AccessLevelStrings = [
 SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         let _this = this
+        this.includeOwnerGrant = !!this.includeOwnerGrant
         let config = {
             displayField: 'display',
             valueField: 'value',
@@ -45,12 +46,15 @@ SM.AccessLevelField = Ext.extend(Ext.form.ComboBox, {
                 if (v === "") { return "Blank values not allowed" }
             }
         }
+
         let data = [
             [1, SM.AccessLevelStrings[1]],
             [2, SM.AccessLevelStrings[2]],
-            [3, SM.AccessLevelStrings[3]],
-            [4, SM.AccessLevelStrings[4]],
+            [3, SM.AccessLevelStrings[3]]
         ]
+        if (this.includeOwnerGrant) {
+            data.push([4, SM.AccessLevelStrings[4]])
+        } 
         this.store = new Ext.data.SimpleStore({
             fields: ['value', 'display']
         })
@@ -326,6 +330,7 @@ Ext.reg('sm-user-selection-field', SM.UserSelectionField);
 SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {
         const _this = this
+        this.canModifyOwners = !!this.canModifyOwners
         const newFields = [
             'userId',
             'username',
@@ -387,7 +392,8 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             grid: this,
             getListParent: function() {
                 return this.grid.editor.el;
-            }
+            },
+            includeOwnerGrant: this.canModifyOwners
         })
         const columns = [
             {
@@ -401,7 +407,8 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                 editor: userSelectionField
             },
             {
-                header: "Access Level",
+                // header: "Access Level",
+                header: '<span exportvalue="Access Level">Access Level<i class= "fa fa-question-circle sm-question-circle"></i></span>',
                 width: 50,
                 dataIndex: 'accessLevel',
                 sortable: true,
@@ -460,6 +467,9 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                     editor.grid.fireEvent('grantschanged', editor.grid)
                 },
                 beforeedit: function (editor, rowIndex) {
+                    if (editor.grid.store.getAt(rowIndex).data.accessLevel === 4 && !_this.canModifyOwners) {
+                        return false
+                    }
                     editor.userSelectionField.store.clearFilter()
                     editor.userSelectionField.setDisabled(!!editor.grid.store.getAt(rowIndex).data.userId)
                 }
@@ -501,25 +511,66 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
             sm: new Ext.grid.RowSelectionModel({
                 singleSelect: true,
                 listeners: {
-                    rowselect: function (sm, index, record) {
-                        if (_this.showAccessBtn) {
-                            _this.accessBtn.setDisabled(record.data.accessLevel != 1)
-                        }
-                    },
                     selectionchange: function (sm) {
-                        tbar.delButton.setDisabled(!sm.hasSelection());
-                    }
+                        if (sm.hasSelection()){
+
+                            let record = sm.getSelected()
+                            if (_this.showAccessBtn) {
+                                _this.accessBtn.setDisabled(record.data.accessLevel != 1)
+                            }
+                            if (record.data.accessLevel === 4 && !_this.canModifyOwners){
+                                tbar.delButton.setDisabled(true)
+                            }
+                            else{
+                                tbar.delButton.setDisabled(false)
+                            }                            
+                        }
+                        else{
+                            tbar.delButton.setDisabled(true)
+                            _this.accessBtn?.setDisabled(true)
+                        }
+                }                    
                 }
             }),
             view: new SM.ColumnFilters.GridView({
                 emptyText: this.emptyText || 'No records to display',
                 deferEmptyText: false,
                 forceFit: true,
-                markDirty: false
+                markDirty: false,
+                listeners: {
+                refresh: function (view) {
+                    // Setup the tooltip for column 'accessLevel'
+                    const index = view.grid.getColumnModel().findColumnIndex('accessLevel')
+                    const tipEl = view.getHeaderCell(index).getElementsByClassName('fa')[0]
+                    if (tipEl) {
+                      new Ext.ToolTip({
+                        target: tipEl,
+                        showDelay: 0,
+                        dismissDelay: 0,
+                        maxWidth: 600,
+                        html: SM.TipContent.AccessLevels
+                      })
+                    }
+                  },                 
+                },
             }),
-            listeners: {
-            },
             tbar: tbar,
+            listeners: {
+                viewready: function (grid) {
+                  // Setup the tooltip for column 'accessLevel'
+                  const index = grid.getColumnModel().findColumnIndex('accessLevel')
+                  const tipEl = grid.view.getHeaderCell(index).getElementsByClassName('fa')[0]
+                  if (tipEl) {
+                    new Ext.ToolTip({
+                      target: tipEl,
+                      showDelay: 0,
+                      dismissDelay: 0,
+                      maxWidth: 600,
+                      html: SM.TipContent.AccessLevels
+                    })
+                  }
+                }
+              },   
 
             getValue: function () {
                 let grants = []
@@ -633,6 +684,7 @@ SM.Collection.CreateForm = Ext.extend(Ext.form.FormPanel, {
         const grantGrid = new SM.UserGrantsGrid({
             iconCls: 'sm-users-icon',
 			showAccessBtn: false,
+            canModifyOwners: true,
 			title: 'Grants',
 			border: true,
             listeners: {
@@ -792,6 +844,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
     // SM.Collection.ManagePanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         let _this = this
+        this.canModifyOwners = !!this.canModifyOwners
         async function apiPatchSettings(value) {
             const result = await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
@@ -1048,7 +1101,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 grid.setValue(collection.grants)
             }
             catch (e) {
-                alert ('Grants save failed')
+                Ext.Msg.alert('Error: Grants save failed', SM.CreateAlertBodyFromErrorResponse(e))
             }
         }
 
@@ -1056,6 +1109,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
 			collectionId: _this.apiCollection.collectionId,
             iconCls: 'sm-users-icon',
 			showAccessBtn: true,
+            canModifyOwners: this.canModifyOwners,
 			url: `${STIGMAN.Env.apiBase}/collections/${_this.apiCollection.collectionId}`,
 			baseParams: {
 				projection: 'grants'

@@ -619,26 +619,6 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
       ]
     })
 
-    const tipHtml = `<b>Changes to these rule properties are detected</b><br>
-  - title<br>
-  - groupId<br>
-  - groupTitle<br>
-  - severity<br>
-  - weight<br>
-  - mitigations<br>
-  - documentable<br>
-  - falseNegatives<br>
-  - falsePositives<br>
-  - responsibility<br>
-  - vulnDiscussion<br>
-  - thirdPartyTools<br>
-  - potentialImpacts<br>
-  - mitigationControl<br>
-  - severityOverrideGuidance<br>
-  - check<br>
-  - fix<br>
-  - cci<br>
-`
     const config = {
       layout: 'fit',
       loadMask: { msg: '' },
@@ -670,7 +650,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
                 showDelay: 0,
                 dismissDelay: 0,
                 autoWidth: true,
-                html: tipHtml
+                html: SM.TipContent.RulePropertyDiffs
               })
             }
           }
@@ -689,7 +669,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
               showDelay: 0,
               dismissDelay: 0,
               autoWidth: true,
-              html: tipHtml
+              html: SM.TipContent.RulePropertyDiffs
             })
           }
         }

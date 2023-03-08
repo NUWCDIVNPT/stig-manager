@@ -38,6 +38,9 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const elevate = req.query.elevate
     const body = req.body
     if ( elevate || req.userObject.privileges.canCreateCollection ) {
+      if (!hasUniqueGrants(body.grants)) {
+        throw new SmError.UnprocessableError('Duplicate user in grant array')
+      }  
       try {
         const response = await CollectionSvc.createCollection( body, projection, req.userObject, res.svcStatus)
         res.status(201).json(response)
@@ -265,17 +268,21 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
 module.exports.replaceCollection = async function replaceCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
-    const collectionId = req.params.collectionId
+    const {collectionId, collectionGrant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage, true)
     const projection = req.query.projection
     const body = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      const response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
-      res.json(response)
+    if (!hasUniqueGrants(body.grants)) {
+      throw new SmError.UnprocessableError('Duplicate user in grant array')
     }
-    else {
-      throw new SmError.PrivilegeError()
-    }    
+    const existingGrants = (await CollectionSvc.getCollection(collectionId, ['grants'], false, req.userObject ))
+      ?.grants
+      .map(g => ({userId: g.user.userId, accessLevel: g.accessLevel}))
+
+      if (!elevate && (collectionGrant.accessLevel !== Security.ACCESS_LEVEL.Owner && !requestedOwnerGrantsMatchExisting(body.grants, existingGrants))) {
+        throw new SmError.PrivilegeError('Cannot create or modify owner grants.')
+    }
+    let response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
+    res.json(response)
   }
   catch (err) {
     next(err)
@@ -312,22 +319,55 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
 module.exports.updateCollection = async function updateCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
-    const collectionId = req.params.collectionId
+    const {collectionId, collectionGrant} = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Manage, true)
     const projection = req.query.projection
     const body = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
-      res.json(response)
+    if (body.grants) {
+      if (!hasUniqueGrants(body.grants)) {
+        throw new SmError.UnprocessableError('Duplicate user in grant array')
+      }
+      const existingGrants = (await CollectionSvc.getCollection(collectionId, ['grants'], false, req.userObject ))
+        ?.grants
+        .map(g => ({userId: g.user.userId, accessLevel: g.accessLevel}))
+
+      if (!elevate && (collectionGrant.accessLevel !== Security.ACCESS_LEVEL.Owner && !requestedOwnerGrantsMatchExisting(body.grants, existingGrants))) {
+        throw new SmError.PrivilegeError('Cannot create or modify owner grants.')
+      }
     }
-    else {
-      throw new SmError.PrivilegeError()
-    }    
+    let response = await CollectionSvc.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
+    res.json(response)
   }
   catch (err) {
     next(err)
   }
 }
+
+function hasUniqueGrants(requestedGrants) {
+  const requestedUsers = {}
+  for (const grant of requestedGrants) {
+    if (requestedUsers[grant.userId]) return false
+    requestedUsers[grant.userId] = true
+  }
+  return true
+}
+
+function requestedOwnerGrantsMatchExisting(requestedGrants, existingGrants) {
+  const accumulateOwners = (accumulator, currentValue) => {
+    if (currentValue.accessLevel === Security.ACCESS_LEVEL.Owner) accumulator.push(currentValue.userId)
+    return accumulator
+  }
+  const haveSameSet = (a, b) => {
+    return a.every(item => b.includes(item)) && b.every(item => a.includes(item))
+  }
+  const existingOwners = existingGrants.reduce(accumulateOwners, [])
+  const requestedOwners = requestedGrants.reduce(accumulateOwners, [])
+  
+  if ( existingOwners.length !== requestedOwners.length || !haveSameSet(existingOwners, requestedOwners)) {
+    return false
+  }
+  return true
+}
+
 
 function getCollectionIdAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, allowElevate = false) {
   let collectionId = request.params.collectionId
@@ -338,6 +378,16 @@ function getCollectionIdAndCheckPermission(request, minimumAccessLevel = Securit
   }
   return collectionId
 }
+function getCollectionInfoAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, allowElevate = false) {
+  let collectionId = request.params.collectionId
+  const elevate = request.query.elevate
+  const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+  if (!( (allowElevate && elevate) || (collectionGrant?.accessLevel >= minimumAccessLevel) )) {
+    throw new SmError.PrivilegeError()
+  }
+  return {collectionId, collectionGrant}
+}
+
 module.exports.getCollectionIdAndCheckPermission = getCollectionIdAndCheckPermission
 
 module.exports.getCollectionMetadata = async function (req, res, next) {

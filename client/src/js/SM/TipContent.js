@@ -24,3 +24,35 @@ SM.TipContent.ImportOptions.EmptyComment = `How to handle Reviews with empty com
 <br><br><b>Replaced:</b> Create a static message. This message will become the text for the purposes of meeting submission requirements.
 <br><br><b>Imported:</b> This will have the effect of clearing any existing text.
 `
+
+
+SM.TipContent.AccessLevels = `
+<b>Grant Access Levels</b> <br>
+- <b>Restricted:</b> Can review specific STIGs on specific Assets only. <br>
+- <b>Full:</b> Can review any Asset/STIG in the Collection. <br>
+- <b>Manage:</b> Everything in the "Full" level.  Can Add/Remove/Modify Assets, STIGs, and Users with the exception of User "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators. <br>
+- <b>Owner:</b> Everything in the "Manage" level.  Can Delete the Collection and create new Owner Grants.  Responsible for "Accepting"  and "Rejecting" reviews from evaluators. <br>
+<br>
+* In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the "User access..." button in the Grants panel toolbar. <br>
+`
+
+SM.TipContent.RulePropertyDiffs = `<b>Changes to these rule properties are detected</b><br>
+- title<br>
+- groupId<br>
+- groupTitle<br>
+- severity<br>
+- weight<br>
+- mitigations<br>
+- documentable<br>
+- falseNegatives<br>
+- falsePositives<br>
+- responsibility<br>
+- vulnDiscussion<br>
+- thirdPartyTools<br>
+- potentialImpacts<br>
+- mitigationControl<br>
+- severityOverrideGuidance<br>
+- check<br>
+- fix<br>
+- cci<br>
+`

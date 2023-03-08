@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d35bc17b-a258-43c3-97c0-ab0b599b3448",
+		"_postman_id": "1331c877-e033-4d89-9376-11ca3fec02fd",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -20682,7 +20682,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"always\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n\n  \"description\": null,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"always\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n\n  \"description\": null,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"87\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 												},
 												"url": {
 													"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -21856,7 +21856,7 @@
 														],
 														"body": {
 															"mode": "raw",
-															"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"settings\": {\n        \"history\": {\n            \"maxReviews\": 2\n        }\n    },  \n  \"grants\": [\n     {\n       \"userId\": \"1\",\n       \"accessLevel\": 4\n     },\n     {\n             \"userId\": \"21\",\n         \"accessLevel\": 2\n     },\n     {\n             \"userId\": \"44\",\n         \"accessLevel\": 3\n     },\n     {\n             \"userId\": \"45\",\n         \"accessLevel\": 4\n     }\n    ]\n}"
+															"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"settings\": {\n        \"history\": {\n            \"maxReviews\": 2\n        }\n    }\n}"
 														},
 														"url": {
 															"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -22508,7 +22508,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+											"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 1\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"87\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -22633,7 +22633,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": null,\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+											"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": null,\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"87\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs",
@@ -41617,6 +41617,456 @@
 									""
 								]
 							}
+						}
+					]
+				},
+				{
+					"name": "Verify manager grant restrictions",
+					"item": [
+						{
+							"name": "Merge provided properties with a Collection - make admin a manager",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response has proper projections\", function () {\r",
+											"\r",
+											"    if (pm.request.url.getQueryString().match(/projection=statistics/)) {\r",
+											"        pm.expect(jsonData).to.have.property('statistics');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+											"        pm.expect(jsonData).to.have.property('stigs');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=assets/)) {\r",
+											"        pm.expect(jsonData).to.have.property('assets');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=owners/)) {\r",
+											"        pm.expect(jsonData).to.have.property('owners');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=grants/)) {\r",
+											"        pm.expect(jsonData).to.have.property('grants');\r",
+											"    }            \r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId?projection=grants&projection=owners",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "assets",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "grants",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "owners"
+										},
+										{
+											"key": "projection",
+											"value": "statistics",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{scrapCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Merge provided properties with a Collection - manager attempts to change owner grant",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //previous request made stigmanadmin a manager, they can no longer change owner grants.\r",
+											"    pm.test(\"Status should be is 403 for stigmanAdmin\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 3\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId?projection=grants&projection=owners",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "assets",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "grants",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "owners"
+										},
+										{
+											"key": "projection",
+											"value": "statistics",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{scrapCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Merge provided properties with a Collection - manager can set other manager grants",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //stigmanadmin CAN create/modify manager grants\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"    return;\r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 4\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId?projection=grants&projection=owners",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "assets",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "grants",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "owners"
+										},
+										{
+											"key": "projection",
+											"value": "statistics",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{scrapCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set all properties of a Collection Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //previous request made stigmanadmin a manager, they can no longer change owner grants.\r",
+											"    pm.test(\"Status should be is 403 for stigmanAdmin\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n  \"description\": null,\n    \"settings\": {\n        \"fields\": {\n            \"detail\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            },\n            \"comment\": {\n                \"enabled\": \"always\",\n                \"required\": \"findings\"\n            }\n        },\n        \"status\": {\n            \"canAccept\": true,\n            \"minAcceptGrant\": 2,\n            \"resetCriteria\": \"result\"\n        }\n  },\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"1\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"21\",\n            \"accessLevel\": 2\n        },\n        {\n                \"userId\": \"44\",\n            \"accessLevel\": 3\n        },\n        {\n                \"userId\": \"45\",\n            \"accessLevel\": 3\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId?projection=grants&projection=owners",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "assets",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "grants",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "owners"
+										},
+										{
+											"key": "projection",
+											"value": "statistics",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{scrapCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
