@@ -80,6 +80,9 @@ The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revi
 
 Use the buttons at the top to add new STIGS, delete entire STIGs or specific revisions. STIGs can be imported individually, or as a .zip library of many STIGs.
 
+.. note::
+      By default, if the imported file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
+
 
 .. thumbnail:: /assets/images/admin-stigs.png
       :width: 50% 
