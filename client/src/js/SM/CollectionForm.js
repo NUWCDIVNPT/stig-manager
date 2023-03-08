@@ -465,9 +465,6 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         _this.accessBtn.setDisabled(record.data.accessLevel != 1)
                     }
                     editor.grid.fireEvent('grantschanged', editor.grid)
-                    // if (curUser.userId == record.id && record.data.accessLevel == 3 && record.data.accessLevel != record.modified.accessLevel){
-                    //     // alert('made yourself a manager')
-                    // }
                 },
                 beforeedit: function (editor, rowIndex) {
                     if (editor.grid.store.getAt(rowIndex).data.accessLevel === 4 && !_this.canModifyOwners) {
@@ -550,7 +547,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                         target: tipEl,
                         showDelay: 0,
                         dismissDelay: 0,
-                        autoWidth: true,
+                        maxWidth: 600,
                         html: SM.TipContent.AccessLevels
                       })
                     }
@@ -568,7 +565,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
                       target: tipEl,
                       showDelay: 0,
                       dismissDelay: 0,
-                      autoWidth: true,
+                      maxWidth: 600,
                       html: SM.TipContent.AccessLevels
                     })
                   }
