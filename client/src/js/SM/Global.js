@@ -375,3 +375,22 @@ SM.RuleContentTpl = new Ext.XTemplate(
     panel.updateTitle && panel.updateTitle.call(panel)
     tp.setActiveTab(panel.id)
   }
+
+
+  SM.CreateAlertBodyFromErrorResponse = function(errorResponse) {
+    if (errorResponse?.hasOwnProperty('options')){
+        let alertBody = `request: <br>
+        ${errorResponse.options.method}   ${errorResponse.options.url} <br>
+        response:  <br>
+        status: ${errorResponse.response?.status}`
+        let responseObject = SM.safeJSONParse(errorResponse.response?.responseText)
+        for (const property in responseObject) {
+            alertBody += ` <br> ${property}: ${responseObject[property]}`;
+        }
+        return alertBody
+    }
+    else{
+        return JSON.stringify(errorResponse)
+    }
+
+  }
