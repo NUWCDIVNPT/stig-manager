@@ -1084,7 +1084,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   }
   
   joins.push('LEFT JOIN rev_group_rule_map rgr using (revId)')
-  joins.push('LEFT JOIN rev_group_rule_cci_map rgrcc using (rgrId)')
+  joins.push('INNER JOIN rev_group_rule_cci_map rgrcc using (rgrId)')
   joins.push('LEFT JOIN cci c using (cci)')
   // joins.push('LEFT JOIN cci_reference_map crm using (cci)')
 
