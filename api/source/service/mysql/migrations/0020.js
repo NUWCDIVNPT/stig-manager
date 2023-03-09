@@ -7,7 +7,7 @@ const upMigration = [
 
   // temp table for rule_fix
   `drop table if exists temp_rule_fix`,
-  `create table temp_rule_fix(
+  `create temporary table temp_rule_fix(
 	  rgrId INT PRIMARY KEY,
     fixref varchar(255),
     text TEXT,
