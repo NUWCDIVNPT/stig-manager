@@ -3877,6 +3877,10 @@ components:
             $ref: '#/components/schemas/RevisionBasic'
     CciBasic:
       type: object
+      required:
+        - cci
+        - apAcronym
+        - definition
       additionalProperties: false
       properties:
         cci:
@@ -3885,6 +3889,9 @@ components:
           type: string
         definition:
           type: string
+        control:
+          type: string
+          nullable: true
     CciListItem:
       type: object
       additionalProperties: false
@@ -5923,8 +5930,10 @@ components:
           properties:
             weight:
               type: string
+              nullable: true
             vulnDiscussion:
               type: string
+              nullable: true
             falsePositives:
               type: string
               nullable: true
@@ -5933,6 +5942,7 @@ components:
               nullable: true
             documentable:
               type: string
+              nullable: true
             mitigations:
               type: string
               nullable: true

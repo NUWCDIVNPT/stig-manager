@@ -217,7 +217,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
           json_object(
             'cci', rgrcc.cci,
             'apAcronym', cci.apAcronym,
-            'definition',  cci.definition
+            'definition',  cci.definition,
+            'control', cr.indexDisa
           )
         ) 
         from

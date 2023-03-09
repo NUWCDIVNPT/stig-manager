@@ -68,7 +68,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
     const _this = this
 
     const fields = Ext.data.Record.create([
-      'benchmarkId',
+      {name: 'benchmarkId', type: 'string', sortType: Ext.data.SortTypes.asUCString},
       'title',
       'status',
       'lastRevisionStr',
@@ -385,7 +385,8 @@ Ext.reg('sm-stigrevision-grid', SM.StigRevision.StigGrid)
 SM.StigRevision.ImportStigs = function ( grid ) {
   const clobberCb = new Ext.form.Checkbox({
     name: 'clobber',
-    boxLabel: 'Replace existing Revisions'
+    boxLabel: 'Replace existing Revisions',
+    checked: localStorage.getItem('clobberRevision') == 1
   })
   const fp = new Ext.FormPanel({
     padding: 10,
@@ -436,6 +437,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
         try {
           let input = document.getElementById("form-file-file")
           const clobber = clobberCb.getValue()
+          localStorage.setItem('clobberRevision', clobber ? '1' : '0')
           let file = input.files[0]
           let extension = file.name.substring(file.name.lastIndexOf(".")+1)
           if (extension.toLowerCase() === 'xml') {
