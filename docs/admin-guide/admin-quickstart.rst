@@ -38,10 +38,10 @@ This tab shows you a list of STIGs known to this instance of STIG Manager along 
 
 DISA releases new versions of many of their STIGs every Quarter.  They also occasionally release them off this schedule. Keep an eye on DISA's  `https://public.cyber.mil/stigs/ <https://public.cyber.mil/stigs/>`_ and `https://cyber.mil/stigs/ <https://cyber.mil/stigs/>`_ sites for updates. 
 
-These updates must be brought into STIG Manager if you wish the updates to be reflected in STIG Manager's reports and presentation. STIGs must be mported by someone with Application Manager privileges in the STIG Manager instance:
+These updates must be brought into STIG Manager if you wish the updates to be reflected in STIG Manager's reports and presentation. STIGs must be imported by someone with Application Manager privileges in the STIG Manager instance:
 
 #. Download the STIGs you want to update from `DISA. <https://public.cyber.mil/stigs/>`_
-#. Upload the .zip files to STIG Manager via "Import STIGs" button in the ``Application Management -> STIG Benchmarks`` workspace accessed via the Navigation Tree.
+#. Upload the .zip files to STIG Manager via "Import STIGs" button in the ``Application Management -> STIG Benchmarks`` workspace accessed via the Navigation Tree. By default, if the file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
 #. The import may run for several minutes. When finished, the workspace will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to users to assign to their Assets and for evaluations.
 
 .. note::

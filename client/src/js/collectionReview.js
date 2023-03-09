@@ -1286,7 +1286,7 @@ async function addCollectionReview ( params ) {
 					url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${ruleId}`,
 					method: 'GET',
 					params: {
-						projection: ['detail','ccis','checks','fixes']
+						projection: ['detail','ccis','check','fix']
 					}
 				})
 				let content = JSON.parse(contentReq.response.responseText)

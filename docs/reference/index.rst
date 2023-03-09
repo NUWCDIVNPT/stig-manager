@@ -84,7 +84,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
     	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Rule, the user who set the Status of a Review, and timestamps for those actions are also collected.
 
-      The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
+      The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners (or, optionally, Managers) then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
 
     STIG
         Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
@@ -108,7 +108,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
             * - Full
               - Can review any Asset/STIG in the Collection.
             * - Manage
-              - Everything in the "Full" level.  Can Add/Remove/Modify Assets, STIGs, and Users with the exception of User "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
+              - Everything in the "Full" level.  Can Add/Remove/Modify Assets, STIG assignments, and Users with the exception of User "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
             * - Owner
               - Everything in the "Manage" level.  Can Delete the Collection and Add/Remove/Modify Owner Grants.  Responsible for "Accepting"  and "Rejecting" reviews from evaluators.
 

@@ -62,6 +62,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       localeRange: "", //To support non english character in tag/attribute values.
       parseTrueNumberOnly: false,
       arrayMode: true, //"strict"
+      alwaysCreateTextNode: true, //"strict"
       attrValueProcessor: (val) => tagValueProcessor(val, {isAttributeValue: true}),
       tagValueProcessor: (val) => tagValueProcessor(val)
     }
@@ -91,24 +92,18 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
 
     let groups = bIn.Group.map(group => {
       let rules = group.Rule.map(rule => {
-        let checks
-        // Traditional STIG has no checks, so check for checks
-        if (rule.check) {
-          checks = rule.check.map(check => ({
-            checkId: check.system,
-            content: isScap? check['check-content-ref'][0] : check['check-content']
-          }))
-        }
-
-        let fixes = rule.fixtext.map(fix => ({
-          fixId: fix.fixref,
+        let checks = rule.check ? rule.check.map(check => ({
+            system: check.system,
+            content: isScap? check['check-content-ref']?.[0]?._ : check['check-content']?.[0]?._
+          })) : []
+        let fixes = rule.fixtext ? rule.fixtext.map(fix => ({
+          fixref: fix.fixref,
           text: fix._
-        }))
+        })) : []
         let idents = rule.ident ? rule.ident.map(ident => ({
           ident: ident._,
           system: ident.system
         })) : []
-
         // The description element is often not well-formed XML, so we fallback on extracting content between expected tags
         function parseRuleDescription (d) {
           let parsed = {}
@@ -138,12 +133,12 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           return parsed
         }
 
-        let desc = parseRuleDescription(rule.description)
+        let desc = parseRuleDescription(rule.description?.[0]?._)
 
         return {
           ruleId: rule.id,
-          version: rule.version || null,
-          title: rule.title || null,
+          version: rule.version?.[0]._ || null,
+          title: rule.title?.[0]._ || null,
           severity: rule.severity || null,
           weight: rule.weight || null,
           vulnDiscussion: desc.VulnDiscussion || null,
@@ -162,14 +157,16 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           idents: idents
         }
       })
-      let desc = Parser.parse(group.description, fastparseOptions)
 
-
+      // let desc
+      // if (group.description?.[0]?._) {
+      //   desc = Parser.parse(group.description[0]._, fastparseOptions)
+      // }
 
       return {
         groupId: group.id,
-        title: group.title || null,
-        description: desc.GroupDescription || null,
+        title: group.title[0]._ || null,
+        // description: desc?.GroupDescription || null,
         rules: rules
       }
     })
@@ -179,11 +176,11 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
 
     return {
       benchmarkId: bIn.id,
-      title: bIn.title,
+      title: bIn.title?.[0]._,
       scap: isScap,
       revision: {
-        revisionStr: `V${bIn.version}R${release}`,
-        version: isScap ? bIn.version[0]._ : bIn.version,
+        revisionStr: `V${bIn.version?.[0]._}R${release}`,
+        version: bIn.version?.[0]._,
         release: release,
         releaseInfo: releaseInfo,
         benchmarkDate: benchmarkDate,
@@ -218,6 +215,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       'Aug': '08',
       'August': '08',
       'Sep': '09',
+      'Sept': '09',
       'September': '09',
       'Oct': '10',
       'October': '10',
