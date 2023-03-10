@@ -1,3 +1,21 @@
+1.3.1
+-----
+
+Changes:
+
+
+  - (App/API) Allow users to replace existing STIG Revisions when importing reference benchmarks.
+  - (App) Restrict Collections Managers from creating or altering Owner Grants. (#934)
+  - (App) Parse and import XCCDF with root-level TestResult element (Found in SCAP scan results performed by HBSS or ACAS).
+  - (App/API) Support for importing known forms of non-DISA STIGs (vmWare STIG Readiness Guides).
+  - (App) Made grid text selectable in most places.
+  - (API) Added granular STIG Severity counts to metrics. (#915)
+  - (API) Include controls associated with CCIs in CCI projection responses. 
+  - (API) Updated dependencies identified as vulnerable by Dependabot. (#925) (#918)
+  - (Docs) Various updates to documentation describing feature and behavior changes.
+  - (API) Removed remaining references to unused "global" privilege. (#909)
+  - (App/API/DB) Database and API changes to enable future features, including storing the hash of Rule Check Content and refining STIG Revision and Rule/content associations.
+
 1.3.0
 -----
 
