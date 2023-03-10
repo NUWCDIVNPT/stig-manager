@@ -3,7 +3,7 @@
     "bin": "./source/index.js",
     "pkg": {
         "scripts": ["./source/controllers/**/*.js", "./source/service/**/*.js"],
-        "assets": ["../client/dist/**/*", "../docs/_build/html", "./source/service/**/*.sql", "./source/node_modules/csv-stringify/**/*"],
+        "assets": ["../client/dist/**/*", "../docs/_build/html", "./source/service/**/*.sql", "./source/node_modules/csv-stringify/**/*", "./source/node_modules/swagger-ui-dist/**/*", "./source/node_modules/axios/**/*"],
         "targets": [ "node16-win", "node16-linuxstatic" ],
         "outputPath": "./bin"
     }
