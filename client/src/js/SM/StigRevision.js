@@ -521,7 +521,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
               updateStatusText (`Extracting member ${zip}`)
               let data = await parentZip.files[zip].async("blob")
               updateStatusText (`Processing member ${zip}`)
-              await processZip(data)
+              await processZip(data, clobber)
             }
             updateProgress(0, "")
 
