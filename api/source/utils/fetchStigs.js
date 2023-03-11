@@ -4,8 +4,7 @@ const {promises: fs} = require('fs')
 const config = require('./config')
 const logger = require('./logger')
 const STIG = require(`../service/${config.database.type}/STIGService`)
-// 'got' is imported dynamically where needed, as it is now an an ECMAScript module.
-
+const axios = require('axios')
 
 const compilationURL = 'https://public.cyber.mil/stigs/compilations/'
 const stigMatchString = '<a href="(https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/.*)" target=.*'
@@ -17,25 +16,29 @@ let localCompilationFile = '/home/csmig/dev/STIG-samples/U_SRG-STIG_Library_2021
 exports.fetchCompilation = async function fetchCompilation() {
   const logType = 'stig'
   try {
-    const { default: got } = await import('../node_modules/got/dist/source/index.js');
     logger.writeDebug(logComponent, logType, { message: 'Retrieving list of Compilation files from public.cyber.mil'})
-    let html = await got(compilationURL)
-    html = html.body.toString()
-    let matches = html.match(stigMatchString)
-    if (matches[1]) {
-      logger.writeInfo(logComponent, logType, { message: "download", url: matches[1] })
+    const {data} = await axios.get(compilationURL)
+    let url = data.match(stigMatchString)[1]
+    if (url) {
+      logger.writeInfo(logComponent, logType, { message: "download", url })
 
       let lastProgress = 0
       let progressIncrement = 5
-      const data = await got(matches[1]).on('downloadProgress', progress => {
-          let currentProgress = Math.floor(100 * progress.percent)
+
+      const response = await axios({
+        url,
+        method: 'get',
+        responseType: 'arraybuffer',
+        onDownloadProgress: function ({loaded, progress, total}) {
+          let currentProgress = Math.floor(100 * progress)
           if ((lastProgress + progressIncrement) < currentProgress){
-            logger.writeInfo(logComponent, logType, { message: `download`, url: matches[1], progressPct: currentProgress, totalMb: (progress.total / 1000000).toFixed(2)})
+            logger.writeInfo(logComponent, logType, { message: `download`, url, progressPct: currentProgress, totalMb: (total / 1000000).toFixed(2), loadedMb: (loaded / 1000000).toFixed(2)})
             lastProgress = currentProgress
           }
+        }
       })
       logger.writeDebug(logComponent, logType, { message: `processing`})      
-      await processZip(data.rawBody)
+      await processZip(response.data)
     }
   }
   catch (e) {

@@ -2,12 +2,11 @@ const config = require('./config')
 const logger = require('./logger')
 const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
-// 'got' is imported dynamically where needed, as it is now an an ECMAScript module.
 const retry = require('async-retry')
 const _ = require('lodash')
 const {promisify} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
-const SmError = require('./error');
+const axios = require('axios')
 
 let jwksUri
 let client
@@ -111,8 +110,8 @@ async function initializeAuth() {
     const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
     async function getJwks() {
         logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, attempt: ++initAttempt })
-        const { default: got } = await import('../node_modules/got/dist/source/index.js');
-        const openidConfig = await got(wellKnown).json();
+
+        const openidConfig = (await axios.get(wellKnown)).data
 
         logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, metadata: openidConfig})
         if (!openidConfig.jwks_uri) {
