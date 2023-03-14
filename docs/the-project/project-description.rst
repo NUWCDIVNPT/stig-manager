@@ -1,7 +1,7 @@
 .. project-description:
 
 
-Project Description and Managed Assets
+Project Description and Resources
 ########################################
 
 
@@ -11,13 +11,13 @@ All project materials, including this document, are available from the `Project 
 Purpose
 =====================
 
-Functionally, STIG Manager is an Open Source API and Web client for managing the assessment of Information Systems for compliance with security checklists published by the United States (U.S.) Defense Information Systems Agency (DISA).  STIG Manager supports the RMF process by digesting potentially thousands of individual Assessment files and presenting them as digestible and easily customized reports. By serving as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status, STIG Manager enables a much more efficient and monitorable RMF Process.  
+STIG Manager is an Open Source API and Web app for managing the assessment of Information Systems for compliance with security checklists published by the United States (U.S.) Defense Information Systems Agency (DISA).  STIG Manager supports the RMF process by managing STIG assessments throughout the lifecycle of a system. Data owners can expose assessment data using role-based access controls and track the progress of their assessment teams. By serving as the single source of truth about Assets, STIGs, and their current assessment status, STIG Manager enables an efficient and auditable RMF Process.  
 
-The STIG Manager OSS Project is being developed under a DoD initiative to create and maintain cloud-ready Open Source Software web application with fully-defined API, reference clients, documentation, and other needed resources. 
+The STIG Manager OSS Project is developed under a DoD initiative to create and maintain cloud-ready Open Source software with a fully-defined API, reference clients, documentation, and other needed resources. 
 
-All source code and materials are tracked and available on GitHub in the Project Repository.  The Project Repository is the authoritative source for all project materials.  All project materials are licensed under the `MIT License <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__, with the exception of the client, which is licensed under the `GNU GPL v3 <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__.
+All source code and materials are tracked and available on GitHub in the Project Repository.  The Project repository is the authoritative source for all project materials.  All project materials are licensed under the `MIT License <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__, with the exception of the client, which is licensed under the `GNU GPL v3 <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__.
 
-Project contributors regularly engage and consult with the User community to solicite feedback, ensure that the project is meeting the needs of the User community, and develop ideas for future feature development.
+Project maintainers regularly engage and consult with the user community to solicit feedback, ensure the project is meeting the needs of the user community, and develop ideas for future feature development.
 
 
 Assets and Resources Maintained
@@ -34,7 +34,7 @@ Assets and Resources Maintained
 
 - Web Application 
 
-  - Reference UI client making siginificant use of API endpoints
+  - Reference UI client making significant use of API endpoints
   - STIG Manager: https://github.com/NUWCDIVNPT/stig-manager
 
 - Command Line Utilities
@@ -68,7 +68,7 @@ Assets and Resources Maintained
 		
 **Automated Workflows**
 
-- Comprehensive API endpoint testing spanning all user grants and priveleges
+- Comprehensive API endpoint testing spanning all user grants and privileges
 - API response validation testing
 - Automated delivery to Docker, Iron Bank, and other platforms
 - Security scanning
@@ -113,7 +113,7 @@ Products, Systems, Tools and Methods Used
 
 -  Linux
 -  Docker
--  Open Container Initiagive (OCI) Images
+-  Open Container Initiative (OCI) Images
 -  Cloud-Ready Container Images and Deployment Options
 
 
