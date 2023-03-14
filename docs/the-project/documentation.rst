@@ -1,7 +1,7 @@
 .. _documentation:
 
 
-STIG Manager Documentation
+Documentation
 ########################################
 
 

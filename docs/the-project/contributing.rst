@@ -1,7 +1,7 @@
 .. _contributing:
 
 
-STIG Manager Contribution Guide
+Contribution Guide
 ########################################
 
 

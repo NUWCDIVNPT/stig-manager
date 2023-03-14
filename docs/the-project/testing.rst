@@ -1,7 +1,7 @@
 .. _testing:
 
 
-STIG Manager Testing Guide
+Testing Guide
 ########################################
 
 

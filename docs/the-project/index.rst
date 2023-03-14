@@ -19,6 +19,7 @@ These pages describe the STIG Manager project.
 	:maxdepth: 1
 	:caption: Contents:
 
+	project-description
 	contributing
 	testing
 	documentation
