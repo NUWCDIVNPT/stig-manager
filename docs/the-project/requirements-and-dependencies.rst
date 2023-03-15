@@ -1,7 +1,7 @@
 .. _requirements-and-dependencies:
 
 
-STIG Manager Requirements and Dependencies
+Requirements and Dependencies
 #############################################
 
 STIG Manager is under active development. Only the latest `release <https://github.com/NUWCDIVNPT/stig-manager/releases>`_ will be supported. If you experience any problems, we encourage you to make sure you are running the latest release before creating an issue. 
