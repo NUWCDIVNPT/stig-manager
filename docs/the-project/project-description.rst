@@ -134,15 +134,22 @@ Products, Systems, Tools and Methods Used
 -  DoD Iron Bank
 -  npm
 -  git
+-  ReStructured Text
+-  JSON Structured Logging
 -  ReadTheDocs
 -  Visual Studio Code
 -  XCCDF
--  STIG Viewer features .ckl format
+-  STIG Viewer features 
+-  STIG Viewer .ckl format
 -  RMF Process and requirements
 -  API First development
 -  Agile Development
 -  code.mil guidelines
 -  code.gov guidelines
+-  DoD Software Development and Open Source Software guidelines
+-  18F Open Source Policy guidelines
+-  DoD Enterprise DevSecOps Reference Design (2022) guidelines
+-  Application Security and Development STIG
 
 
 
