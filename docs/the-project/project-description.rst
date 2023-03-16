@@ -17,6 +17,8 @@ The STIG Manager OSS Project is developed under a DoD initiative to create and m
 
 All source code and materials are tracked and available on GitHub in the Project Repository.  The Project repository is the authoritative source for all project materials.  All project materials are licensed under the `MIT License <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__, with the exception of the client, which is licensed under the `GNU GPL v3 <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__.
 
+The Project maintainers and contributors comply with the policies specified in the `Project's CONTRIBUTING.md document and the Developer's Certificate of Origin (DCO). <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md>`__
+
 Project maintainers regularly engage and consult with the user community to solicit feedback, ensure the project is meeting the needs of the user community, and develop ideas for future feature development.
 
 
@@ -59,8 +61,8 @@ Assets and Resources Maintained
 - Documentation
 
   - Continuous Documentation updates included as part of Project Repository
+  - Publicly hosted on ReadTheDocs: https://stig-manager.readthedocs.io/en/latest/the-project/project-description.html
   - Security Policy
-  - Publicly hosted on ReadTheDocs.
   - Deployment guidance
   - Extensive deployment security and STIG assessment guidance to assist in ATO process.
   - User Guides and Tutorials on YouTube
@@ -76,8 +78,8 @@ Assets and Resources Maintained
 
 **Comprehensive Documentation and User Guide Materials**
 
-- Public Documentation website
-- Tutorial videos on Youtube
+- Public Documentation website: https://stig-manager.readthedocs.io
+- Tutorial videos on Youtube: https://www.youtube.com/@stigmanager8057/videos
 
 **Deployment and Developer Resources**
 
