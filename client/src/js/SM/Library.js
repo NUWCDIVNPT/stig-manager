@@ -679,6 +679,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
   }
 
   const ruleProps = [
+    'ruleId',
     'title',
     'groupId',
     'groupTitle',
@@ -707,84 +708,79 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     }
     let fullUnified = ''
 
-    // check if ruleId is changed
-    let lhsStr = value.lhs?.ruleId ?? ''
-    let rhsStr = value.rhs?.ruleId ?? ''
-    thisUnified = Diff.createPatch('ruleId', lhsStr, rhsStr, undefined, undefined, diffOptions)
+    const dataItem = {
+      severities: [],
+      stigId: key,
+      lRuleId: value.lhs?.ruleId,
+      rRuleId: value.rhs?.ruleId,
+      updates: [],
+      unified: ''
+    }
 
+    if (value.lhs?.severity) {
+      dataItem.severities.push(value.lhs.severity)
+    }
+    if (value.rhs?.severity) {
+      dataItem.severities.push(value.rhs.severity)
+    }
+
+    for (const prop of ruleProps) {
+      lhsStr = value.lhs?.[prop] ?? ''
+      rhsStr = value.rhs?.[prop] ?? ''
+      thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
+      if (thisUnified) {
+        dataItem.updates.push(prop)
+        fullUnified += thisUnified
+      }
+    }
+
+    for (const prop of detailProps) {
+      lhsStr = value.lhs?.detail[prop] ?? ''
+      rhsStr = value.rhs?.detail[prop] ?? ''
+      thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
+      if (thisUnified) {
+        dataItem.updates.push(prop)
+        fullUnified += thisUnified
+      }
+    }
+
+    // check
+    lhsStr = value.lhs?.check?.content ?? ''
+    rhsStr = value.rhs?.check?.content ?? ''
+    thisUnified = Diff.createPatch('check', lhsStr, rhsStr, undefined, undefined, diffOptions)
     if (thisUnified) {
-      const dataItem = {
-        severities: [],
-        stigId: key,
-        lRuleId: value.lhs?.ruleId,
-        rRuleId: value.rhs?.ruleId,
-        updates: [],
-        unified: ''
-      }
+      dataItem.updates.push('check')
+      fullUnified += thisUnified
+    }
 
-      if (value.lhs?.severity) {
-        dataItem.severities.push(value.lhs.severity)
-      }
-      if (value.rhs?.severity) {
-        dataItem.severities.push(value.rhs.severity)
-      }
+    // fix
+    lhsStr = value.lhs?.fix?.text ?? ''
+    rhsStr = value.rhs?.fix?.text ?? ''
+    thisUnified = Diff.createPatch('fix', lhsStr, rhsStr, undefined, undefined, diffOptions)
+    if (thisUnified) {
+      dataItem.updates.push('fix')
+      fullUnified += thisUnified
+    }
 
-      for (const prop of ruleProps) {
-        lhsStr = value.lhs?.[prop] ?? ''
-        rhsStr = value.rhs?.[prop] ?? ''
-        thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
-        if (thisUnified) {
-          dataItem.updates.push(prop)
-          fullUnified += thisUnified
-        }
-      }
+    // ccis
+    const lCcis = value.lhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
+    const rCcis = value.rhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
+    thisUnified = Diff.createPatch('cci', JSON.stringify(lCcis), JSON.stringify(rCcis), undefined, undefined, diffOptions)
+    if (thisUnified) {
+      dataItem.updates.push('cci')
+      fullUnified += thisUnified
+    }
 
-      for (const prop of detailProps) {
-        lhsStr = value.lhs?.detail[prop] ?? ''
-        rhsStr = value.rhs?.detail[prop] ?? ''
-        thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
-        if (thisUnified) {
-          dataItem.updates.push(prop)
-          fullUnified += thisUnified
-        }
-      }
-
-      // check
-      lhsStr = value.lhs?.check?.content ?? ''
-      rhsStr = value.rhs?.check?.content ?? ''
-      thisUnified = Diff.createPatch('check', lhsStr, rhsStr, undefined, undefined, diffOptions)
-      if (thisUnified) {
-        dataItem.updates.push('check')
-        fullUnified += thisUnified
-      }
-
-      // fix
-      lhsStr = value.lhs?.fix?.text ?? ''
-      rhsStr = value.rhs?.fix?.text ?? ''
-      thisUnified = Diff.createPatch('fix', lhsStr, rhsStr, undefined, undefined, diffOptions)
-      if (thisUnified) {
-        dataItem.updates.push('fix')
-        fullUnified += thisUnified
-      }
-
-      // ccis
-      const lCcis = value.lhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
-      const rCcis = value.rhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
-      thisUnified = Diff.createPatch('cci', JSON.stringify(lCcis), JSON.stringify(rCcis), undefined, undefined, diffOptions)
-      if (thisUnified) {
-        dataItem.updates.push('cci')
-        fullUnified += thisUnified
-      }
-
-      if (fullUnified) {
-        dataItem.unified = fullUnified
-      }
-      if (value.lhs?.ruleId && !value.rhs?.ruleId) {
-        dataItem.updates = ['rule removed']
-      }
-      if (value.rhs?.ruleId && !value.lhs?.ruleId) {
-        dataItem.updates = ['rule added']
-      }
+    if (fullUnified) {
+      dataItem.unified = fullUnified
+    }
+    if (value.lhs?.ruleId && !value.rhs?.ruleId) {
+      dataItem.updates = ['rule removed']
+    }
+    if (value.rhs?.ruleId && !value.lhs?.ruleId) {
+      dataItem.updates = ['rule added']
+    }
+    if (dataItem.updates.length) {
       data.push(dataItem)
     }
   }
