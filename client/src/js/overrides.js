@@ -791,7 +791,6 @@ Ext.override(Ext.grid.GridView,{
             '<div class="x-grid3-cell-inner x-grid3-col-{id} sm-selectable" {attr}>{value}</div>',
         '</td>'
     ),
-    /**
     doRender : function(columns, records, store, startRow, colCount, stripe) {
         var templates = this.templates,
             cellTemplate = templates.cell,
