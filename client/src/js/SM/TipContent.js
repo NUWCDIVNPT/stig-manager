@@ -37,6 +37,7 @@ SM.TipContent.AccessLevels = `
 `
 
 SM.TipContent.RulePropertyDiffs = `<b>Changes to these rule properties are detected</b><br>
+- ruleId<br>
 - title<br>
 - groupId<br>
 - groupTitle<br>
