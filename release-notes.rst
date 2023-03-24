@@ -3,9 +3,12 @@
 
 Changes:
 
-
+  - (App) Pass clobber parameter when recursing zip file.
+  - (API) Replace dependency `got` with `axios`.
+  - (Docs) Project description, copyright, link updates; Disable failing pdf generation.
   - (App) Restores XSS protections inadvertently removed in 1.3.1.
   - (App) Display STIG Rule differences even if RuleId stayed the same; indicate RuleId change with badge as well as highlighting.
+  - (App) Fix Swagger display issue in binary artifacts.
 
 1.3.1
 -----
