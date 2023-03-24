@@ -1,3 +1,12 @@
+1.3.2
+-----
+
+Changes:
+
+
+  - (App) Restores XSS protections inadvertently removed in 1.3.1.
+  - (App) Display STIG Rule differences even if RuleId stayed the same; indicate RuleId change with badge as well as highlighting.
+
 1.3.1
 -----
 
