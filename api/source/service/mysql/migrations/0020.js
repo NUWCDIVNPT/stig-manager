@@ -50,7 +50,7 @@ const upMigration = [
       group by rgrc.rgrId`,
         
   // populate check_content with multi-check content only. Migration 0019 populated single-check content
-    `insert into check_content(content) select content from temp_rule_check where \`system\` like '%,%'`,
+    `insert ignore into check_content(content) select content from temp_rule_check where \`system\` like '%,%'`,
     
   // update rev_group_rule_map
     `ALTER TABLE rev_group_rule_map DROP COLUMN checks, DROP COLUMN fixes, DROP COLUMN ccis`,
