@@ -29,13 +29,6 @@ const upMigration = [
   ADD COLUMN highCount INT NOT NULL DEFAULT 0,
   CHANGE COLUMN ruleCount ruleCount INT GENERATED ALWAYS AS (highCount + mediumCount + lowCount) STORED`,
   
-  `UPDATE current_rev cr
-  LEFT JOIN revision r using (benchmarkId)
-  SET
-    cr.lowCount = r.lowCount,
-    cr.mediumCount = r.mediumCount,
-    cr.highCount = r.highCount`,
-
   `ALTER VIEW v_current_rev AS
   select
   rr.revId AS revId,
@@ -76,6 +69,44 @@ const upMigration = [
   'accepted') desc,
   (r.\`version\` + 0) desc,
   (r.\`release\` + 0) desc )  AS rn from revision r) rr where (rr.rn = 1)`,
+
+  `DELETE FROM current_rev`,
+  `INSERT INTO current_rev (
+    revId,
+    benchmarkId,
+    \`version\`, 
+    \`release\`, 
+    benchmarkDate,
+    benchmarkDateSql,
+    status,
+    statusDate,
+    description,
+    active,
+    groupCount,
+    lowCount,
+    mediumCount,
+    highCount,
+    checkCount,
+    fixCount)
+    SELECT 
+      revId,
+      benchmarkId,
+      \`version\`,
+      \`release\`,
+      benchmarkDate,
+      benchmarkDateSql,
+      status,
+      statusDate,
+      description,
+      active,
+      groupCount,
+      lowCount,
+      mediumCount,
+      highCount,
+      checkCount,
+      fixCount
+    FROM
+      v_current_rev`,
 
   `CREATE TABLE check_content (
   ccId INT NOT NULL AUTO_INCREMENT,
