@@ -1,3 +1,10 @@
+1.3.3
+-----
+
+Changes:
+
+  - (API/Hotfix) Resolves issue that could lead to inaccurate metrics percentages after Releases 1.3.1 and 1.3.2.
+
 1.3.2
 -----
 
