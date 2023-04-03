@@ -1,3 +1,11 @@
+1.3.3
+-----
+
+Changes:
+
+  - (API/Hotfix) Resolves issue that could lead to inaccurate metrics percentages after Releases 1.3.1 and 1.3.2.
+  - (API/Hotfix) Resolves issue that could cause migration 0020 to fail when populating identical duplicate multi-check content fields.
+
 1.3.2
 -----
 
