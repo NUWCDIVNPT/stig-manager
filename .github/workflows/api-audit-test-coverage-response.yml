@@ -8,7 +8,7 @@ on:
     paths:
       - 'api/source/**'
       - 'test/api/**'
-      - '.github/workflows/coverage.yml'
+      - '.github/workflows/api-audit-test-coverage-response.yml'
 
 env:
   STIGMAN_API_PORT: 64001
