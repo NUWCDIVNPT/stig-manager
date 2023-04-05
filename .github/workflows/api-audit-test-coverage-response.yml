@@ -15,7 +15,7 @@ env:
   STIGMAN_DB_HOST: localhost
   STIGMAN_DB_PORT: 3306
   STIGMAN_DB_PASSWORD: stigman
-  STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman 
+  STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman
   STIGMAN_SWAGGER_ENABLED: true
   STIGMAN_SWAGGER_SERVER: http://localhost:64001/api
   STIGMAN_SWAGGER_REDIRECT: http://localhost:64001/api-docs/oauth2-redirect.html
@@ -46,12 +46,12 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 18 
+          node-version: 18
       - name: coverage directory
-        run: printenv NODE_V8_COVERAGE                
+        run: printenv NODE_V8_COVERAGE
       - name: Install app dependencies
         working-directory: ./api/source
-        run: npm ci        
+        run: npm ci
       - name: Run mock Keycloak
         id: idp-run
         working-directory: ./test/api/mock-keycloak
@@ -79,7 +79,7 @@ jobs:
         run: sh -c 'echo $$ > /tmp/test.pid ; exec c8 -r html node index.js > api-log.json 2>&1' &
       - name: pid file check
         working-directory: ./api/source
-        run: cat /tmp/test.pid         
+        run: cat /tmp/test.pid
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
       - name: Run Newman Collection LoadTestData
@@ -125,12 +125,12 @@ jobs:
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport.html | grep -A18 '┌─────'             
       - name: Kill child pid
         working-directory: ./api/source
-        run: kill -SIGINT $(ps -ef --ppid `cat /tmp/test.pid` -o pid= )       
+        run: kill -SIGINT $(ps -ef --ppid `cat /tmp/test.pid` -o pid= )
       - name: Wait until c8 process ends, or 60 seconds, whichever is shorter.
-        run: timeout 60 tail --pid=`cat /tmp/test.pid` -f /dev/null     
-      - name: run c8 text report 
+        run: timeout 60 tail --pid=`cat /tmp/test.pid` -f /dev/null
+      - name: run c8 text report
         working-directory: ./api/source
-        run: c8 report -r text                         
+        run: c8 report -r text
       - name: Upload Newman artifact
         id: artifact-upload-newman
         uses: actions/upload-artifact@v3
@@ -173,6 +173,4 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: response-validation
-          path: ./logs/response-validation.json          
-
-
+          path: ./logs/response-validation.json
