@@ -1,4 +1,4 @@
-name: Audit, Test, Coverage, and Response Validation
+name: Test Suite
 on:
   workflow_dispatch:
   pull_request:
@@ -159,7 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download API log artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: api-log
           path: ./logs
