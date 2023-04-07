@@ -1,0 +1,57 @@
+name: Build Binary Artifacts and Sign
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/source/**'
+      - 'client/src/**'
+      - 'docs/**'
+      - '.github/workflows/build-client.yml'
+      - '.github/workflows/build-docs.yml'
+      - '.github/workflows/build-binary-artifacts.yml'
+    tags:
+      - 1.**
+jobs:
+  build-binary-artifacts-and-sign:
+    name: Build binary artifacts, sign, export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549 # pin@v5
+        with:
+          gpg_private_key: ${{ secrets.STIGMAN_PRIVATE_KEY }}
+      - name: Get repository metadata
+        id: repo
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const repo = await github.rest.repos.get(context.repo)
+            return repo.data
+      - name: install pkg
+        run: |
+          sudo npm install -g pkg             
+      - name: install uglify
+        run: |
+          sudo npm install -g uglify-js              
+      - name: run build script and sign
+        id: run-the-build-script-and-sign
+        working-directory: ./api
+        run: ./build.sh  --sign
+      - name: Upload builds
+        uses: actions/upload-artifact@v3
+        with:
+          name: binary-artifacts
+          path: ./api/bin/
+      - name: Upload archives
+        uses: actions/upload-artifact@v3
+        with:
+          name: binary-archives
+          path: ./api/dist/

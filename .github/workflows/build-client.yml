@@ -7,23 +7,17 @@ jobs:
     name: builder
     runs-on: ubuntu-latest
     steps:
-      - 
-        name: Check out the repo
+      - name: Check out the repo
         uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
-      - 
-        name: Install uglify-js
+      - name: Install uglify-js
         run: npm install -g uglify-js
-      - 
-        name: Create distribution
+      - name: Create distribution
         working-directory: ./client
         run: ./build.sh
-      - 
-        name: Upload distribution
+      - name: Upload distribution
         uses: actions/upload-artifact@v3
         with:
           name: client-dist
           path: ./client/dist
-      
-
