@@ -1289,7 +1289,6 @@ async function addReview( params ) {
         case 'save and submit':
           jsonData.status = 'submitted'
           method = 'PUT'
-          reviewFromApi = JSON.parse(result.response.responseText)
           break
         case 'save':
           jsonData.status = 'saved'
