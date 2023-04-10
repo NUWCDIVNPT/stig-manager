@@ -9,18 +9,7 @@ SM.CollectionSelectionField = Ext.extend( Ext.form.ComboBox, {
             restful: true,
             url: this.url || `${STIGMAN.Env.apiBase}/collections`,
             method: 'GET',
-            headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            listeners: {
-                exception: function ( proxy, type, action, options, response, arg ) {
-                    let message
-                    if (response.responseText) {
-                        message = response.responseText
-                    } else {
-                        message = "Unknown error"
-                    }
-                    Ext.Msg.alert('Error', message);
-                }
-            }
+            headers: { 'Content-Type': 'application/json;charset=utf-8' }
         })
         const collectionStore = new Ext.data.JsonStore({
             fields: [
@@ -162,18 +151,7 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
             url: this.url,
-            headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            listeners: {
-                exception: function ( proxy, type, action, options, response, arg ) {
-                    let message
-                    if (response.responseText) {
-                        message = response.responseText
-                    } else {
-                        message = "Unknown error"
-                    }
-                    Ext.Msg.alert('Error', message);
-                }
-            }
+            headers: { 'Content-Type': 'application/json;charset=utf-8' }
         })
         const grantStore = new Ext.data.JsonStore({
             grid: this,
@@ -553,7 +531,7 @@ async function showUserProps( userId ) {
                     }
                 }
                 catch (e) {
-                    alert(e.message)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -614,17 +592,8 @@ async function showUserProps( userId ) {
         appwindow.show(document.body);
     }
     catch (e) {
-        if(typeof e === 'object') {
-            if (e instanceof Error) {
-              e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
-            }
-            else {
-              // payload = JSON.stringify(payload, null, 2);
-              e = JSON.stringify(e);
-            }
-          }        
-        alert(e)
         Ext.getBody().unmask()
+        SM.Error.handleError(e)
     }	
 }
 

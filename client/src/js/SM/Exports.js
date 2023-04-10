@@ -108,7 +108,7 @@ SM.Exports.AssetTree = Ext.extend(Ext.tree.TreePanel, {
       }
     }
     catch (e) {
-      Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
+      SM.Error.handleError(e)
     }
   },
   onCheckChange: function (node, checked) {
@@ -342,7 +342,7 @@ SM.Exports.StigTree = Ext.extend(Ext.tree.TreePanel, {
       }
     }
     catch (e) {
-      Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
+      SM.Error.handleError(e)
     }
   },
   onCheckChange: function (node, checked) {
@@ -571,16 +571,8 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
     appwindow.show(document.body)
   }
   catch (e) {
-    if (typeof e === 'object') {
-      if (e instanceof Error) {
-        e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
-      }
-      else {
-        e = JSON.stringify(e);
-      }
-    }
-    alert(e)
     Ext.getBody().unmask()
+    SM.Error.handleError(e)
   }
 }
 
@@ -644,7 +636,7 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
     saveAs(blob, filename)
   }
   catch (e) {
-    alert(e)
+    SM.Error.handleError(e)
   }
 }
 

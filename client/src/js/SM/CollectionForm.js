@@ -345,18 +345,7 @@ SM.UserGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
             url: this.url,
-            headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            listeners: {
-                exception: function (proxy, type, action, options, response, arg) {
-                    let message
-                    if (response.responseText) {
-                        message = response.responseText
-                    } else {
-                        message = "Unknown error"
-                    }
-                    Ext.Msg.alert('Error', message);
-                }
-            }
+            headers: { 'Content-Type': 'application/json;charset=utf-8' }
         })
         const grantStore = new Ext.data.JsonStore({
             grid: this,
@@ -846,30 +835,23 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
         let _this = this
         this.canModifyOwners = !!this.canModifyOwners
         async function apiPatchSettings(value) {
-            const result = await Ext.Ajax.requestPromise({
+            const apiCollection = await Ext.Ajax.requestPromise({
+                responseType: 'json',
                 url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                 method: 'PATCH',
                 jsonData: {
                     settings: value
                 }
             })
-            return result.response.responseText ? JSON.parse(result.response.responseText) : undefined
-        }
-        async function apiGetImportOptions(key, value) {
-            const result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/${key}`,
-                method: 'GET'
-            })
-            return result.response.responseText ? JSON.parse(result.response.responseText) : undefined
+            return apiCollection || undefined
         }
         async function apiPutImportOptions(value) {
-            const result = await Ext.Ajax.requestPromise({
+            await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/importOptions`,
                 method: 'PUT',
                 jsonData: JSON.stringify(value)
             })
             SM.Dispatcher.fireEvent('importoptionschanged', _this.collectionId, value)
-            return result.response.responseText ? JSON.parse(result.response.responseText) : undefined
         }
         async function updateSettings() {
             const apiCollection =  await apiPatchSettings({
@@ -909,7 +891,8 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         return
                     }
                     try {
-                        let result = await Ext.Ajax.requestPromise({
+                        let apiCollection = await Ext.Ajax.requestPromise({
+                            responseType: 'json',
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}`,
                             method: 'PATCH',
                             params: {
@@ -919,12 +902,11 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                                 name: newValue.trim()
                             }
                         })
-                        let apiCollection = JSON.parse(result.response.responseText)
                         SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                     }
                     catch (e) {
-                        alert("Name update failed")
                         field.setValue(oldValue)
+                        SM.Error.handleError(e)
                     }
                 }
             }
@@ -955,7 +937,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     })
                 }
                 catch (e) {
-                    alert(e.mes)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -977,8 +959,8 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         })
                     }
                     catch (e) {
-                        alert("Description update failed")
                         field.setValue(oldValue)
+                        SM.Error.handleError(e)
                     }
                 }
             }
@@ -1005,7 +987,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         grid.store.sort([sortstate])
                     }
                     catch (e) {
-                        alert ('Metadata save failed')
+                        SM.Error.handleError(e)
                     }
                 }
             }
@@ -1025,7 +1007,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                 }
                 catch (e) {
-                    alert(e.message)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -1041,7 +1023,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                 }
                 catch (e) {
-                    alert(e.message)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -1056,7 +1038,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     SM.Dispatcher.fireEvent('collectionchanged', apiCollection)
                 }
                 catch (e) {
-                    alert(e.message)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -1069,7 +1051,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                     await apiPutImportOptions(JSON.stringify(fieldset.getOptions()))
                 }
                 catch (e) {
-                    alert(e.message)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -1101,7 +1083,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 grid.setValue(collection.grants)
             }
             catch (e) {
-                Ext.Msg.alert('Error: Grants save failed', SM.CreateAlertBodyFromErrorResponse(e))
+                SM.Error.handleError(e)
             }
         }
 
@@ -1140,7 +1122,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         SM.Dispatcher.fireEvent('labeldeleted', _this.apiCollection.collectionId, labelId)
                     }
                     catch (e) {
-                        alert ('Label delete failed')
+                        SM.Error.handleError(e)
                     }
 				},
 				labelchanged: async (grid, record) => {
@@ -1159,7 +1141,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         SM.Dispatcher.fireEvent('labelchanged',  _this.apiCollection.collectionId, newlabel)
                     }
                     catch (e) {
-                        alert ('Label update failed')
+                        SM.Error.handleError(e)
                     }
 				},
                 labelcreated: async (grid, record) => {
@@ -1184,7 +1166,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                         
                     }
                     catch (e) {
-                        alert ('Label create failed')
+                        SM.Error.handleError(e)
                     }
                 }
             }
@@ -2408,7 +2390,7 @@ SM.Collection.LabelAssetsForm = Ext.extend(Ext.form.FormPanel, {
             await this.assetsGrid.store.loadPromise()
         }
         catch (e) {
-            alert (e)
+            SM.Error.handleError(e)
         }
     }
 })
@@ -2434,7 +2416,7 @@ SM.Collection.showLabelAssetsWindow = async function ( collectionId, labelId ) {
                     }
                 }
                 catch (e) {
-                    alert(e.stack)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -2476,18 +2458,9 @@ SM.Collection.showLabelAssetsWindow = async function ( collectionId, labelId ) {
         appwindow.show(document.body);
     }
     catch (e) {
-        if(typeof e === 'object') {
-            if (e instanceof Error) {
-              e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
-            }
-            else {
-              // payload = JSON.stringify(payload, null, 2);
-              e = JSON.stringify(e);
-            }
-          }        
-        alert(e)
         Ext.getBody().unmask()
-    }	
+        SM.Error.handleError(e)
+    }
 }
 
 

@@ -257,8 +257,8 @@
 
                     kc.login(options).then(function () {
                         initPromise.setSuccess();
-                    }).catch(function () {
-                        initPromise.setError();
+                    }).catch(function (e) {
+                        initPromise.setError(e);
                     });
                 }
 
@@ -296,8 +296,8 @@
                                     } else {
                                         initPromise.setSuccess();
                                     }
-                                }).catch(function () {
-                                    initPromise.setError();
+                                }).catch(function (e) {
+                                    initPromise.setError(e);
                                 });
                             });
                         } else {
@@ -323,7 +323,7 @@
                     return setupCheckLoginIframe().then(function() {
                         processCallback(callback, initPromise);
                     }).catch(function (e) {
-                        initPromise.setError();
+                        initPromise.setError(e);
                     });
                 } else if (initOptions) {
                     if (initOptions.token && initOptions.refreshToken) {
@@ -339,20 +339,20 @@
                                     } else {
                                         initPromise.setSuccess();
                                     }
-                                }).catch(function () {
-                                    initPromise.setError();
+                                }).catch(function (e) {
+                                    initPromise.setError(e);
                                 });
                             });
                         } else {
                             kc.updateToken(-1).then(function() {
                                 kc.onAuthSuccess && kc.onAuthSuccess();
                                 initPromise.setSuccess();
-                            }).catch(function() {
+                            }).catch(function(e) {
                                 kc.onAuthError && kc.onAuthError();
                                 if (initOptions.onLoad) {
                                     onLoad();
                                 } else {
-                                    initPromise.setError();
+                                    initPromise.setError(e);
                                 }
                             });
                         }
@@ -368,11 +368,11 @@
 
             configPromise.then(function () {
                 check3pCookiesSupported().then(processInit)
-                .catch(function() {
-                    promise.setError();
+                .catch(function(e) {
+                    promise.setError(e);
                 });
-            }).catch(function(a) {
-                promise.setError();
+            }).catch(function(e) {
+                promise.setError(e);
             });
             // Red Hat code incorrectly separated the catch block
 
@@ -581,7 +581,7 @@
                         kc.profile = JSON.parse(req.responseText);
                         promise.setSuccess(kc.profile);
                     } else {
-                        promise.setError();
+                        promise.setError(`Error fetching ${url}`);
                     }
                 }
             }
@@ -606,7 +606,7 @@
                         kc.userInfo = JSON.parse(req.responseText);
                         promise.setSuccess(kc.userInfo);
                     } else {
-                        promise.setError();
+                        promise.setError(`Error fetching ${url}`);
                     }
                 }
             }
@@ -806,7 +806,7 @@
                             scheduleCheckIframe();
                         } else {
                             kc.onAuthError && kc.onAuthError();
-                            promise && promise.setError();
+                            promise && promise.setError(req.responseText);
                         }
                     }
                 };
@@ -822,7 +822,7 @@
                 if (useNonce && (kc.idTokenParsed && kc.idTokenParsed.nonce != oauth.storedNonce)) {
                     logInfo('[OIDCPROVIDER] Invalid nonce, clearing token');
                     kc.clearToken();
-                    promise && promise.setError();
+                    promise && promise.setError('Invalid nonce');
                 } else {
                     if (fulfillPromise) {
                         kc.onAuthSuccess && kc.onAuthSuccess();
@@ -925,7 +925,7 @@
                             setupOidcEndoints(null);
                             promise.setSuccess();
                         } else {
-                            promise.setError();
+                            promise.setError(req.responseText);
                         }
                     }
                 };
@@ -976,7 +976,7 @@
                                     setupOidcEndoints(oidcProviderConfig);
                                     promise.setSuccess();
                                 } else {
-                                    promise.setError();
+                                    promise.setError(`Cannot fetch ${oidcProviderConfigUrl}`);
                                 }
                             }
                         };

@@ -275,7 +275,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
           }
         }
         catch (e) {
-          alert('Error removing STIGs')
+          SM.Error.handleError(e)
         }
         finally {
           Ext.getBody().unmask()
@@ -312,7 +312,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
             }
           }
           catch (e) {
-            alert('Error removing revision(s)')
+            SM.Error.handleError(e)
           }
           finally {
             Ext.getBody().unmask()
@@ -476,11 +476,11 @@ SM.StigRevision.ImportStigs = function ( grid ) {
             updateStatusText ('Done')
             updateProgress(0, 'Done')
           } else {
-            alert(`No handler for ${extension}`)
+            throw new Error(`No handler for ${extension}`)
           }
         }
         catch (e) {
-          alert(e)
+          SM.Error.handleError(e)
         }
         finally {
           grid?.getStore()?.reload()

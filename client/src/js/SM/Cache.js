@@ -3,24 +3,24 @@ Ext.ns('SM.Cache')
 SM.Cache.CollectionMap = new Map()
 
 SM.Cache.getCollections = async function () {
-  const result = await Ext.Ajax.requestPromise({
+  const apiCollections = await Ext.Ajax.requestPromise({
+    responseType: 'json',
     url: `${STIGMAN.Env.apiBase}/collections`,
     method: 'GET',
     params: {
       projection: 'labels'
     }
   })
-  const apiCollections = JSON.parse(result.response.responseText)
   return SM.Cache.seedCollections(apiCollections)
 }
 
 SM.Cache.updateCollectionLabels = async function (collectionId) {
   const collection = SM.Cache.CollectionMap.get(collectionId)
-  let result = await Ext.Ajax.requestPromise({
+  collection.labels = await Ext.Ajax.requestPromise({
+    responseType: 'json',
     url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
     method: 'GET'
   })
-  collection.labels = JSON.parse(result.response.responseText)
   collection.labelMap = new Map()
   for (const label of collection.labels) {
     collection.labelMap.set(label.labelId, label)
@@ -36,14 +36,15 @@ SM.Cache.updateCollectionMetadataKey = function(collectionId, key, value) {
 }
 
 SM.Cache.refreshCollection = async function (collectionId) {
-  let result = await Ext.Ajax.requestPromise({
+  let apiCollection = await Ext.Ajax.requestPromise({
+    responseType: 'json',
     url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
     method: 'GET',
     params: {
       projection: 'labels'
     }
   })
-  const collectionMap = SM.Cache.seedCollections([JSON.parse(result.response.responseText)])
+  const collectionMap = SM.Cache.seedCollections([apiCollection])
   return collectionMap.get(collectionId)
 }
 

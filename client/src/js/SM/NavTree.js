@@ -180,7 +180,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           return JSON.parse(result.response.responseText)
         }
         catch (e) {
-          alert (e.message)
+          SM.Error.handleError(e)
         }
       }
 
@@ -357,7 +357,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           }     
         }
         catch (e) {
-          Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
+          SM.Error.handleError(e)
         }
     },
     treeClick: function (n, e) {
@@ -403,7 +403,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 })
               }
               catch (e) {
-                alert (e.message)
+                SM.Error.handleError(e)
               }
               finally {
                 appwindow.close()

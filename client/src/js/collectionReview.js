@@ -11,20 +11,19 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// 'Global' colAssets array of objects for reviewsGrid
 		/******************************************************/
-		let result = await Ext.Ajax.requestPromise({
+		let apiCollection = await Ext.Ajax.requestPromise({
+			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
 			method: 'GET',
 		  })
-		let apiCollection = JSON.parse(result.response.responseText)
 		let apiFieldSettings = apiCollection.settings.fields
 		let apiStatusSettings = apiCollection.settings.status
 	
-		result = await Ext.Ajax.requestPromise({
+		let apiAssets = await Ext.Ajax.requestPromise({
+			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
 			method: 'GET',
-		  })
-		let apiAssets = JSON.parse(result.response.responseText)
-	
+		  })	
 		let colAssets = apiAssets.map( colAsset => ({
 			assetId: colAsset.assetId,
 			assetName: colAsset.name,
@@ -135,16 +134,6 @@ async function addCollectionReview ( params ) {
 				},
 				datachanged: function(store) {
 					Ext.getCmp('groupGrid-totalText' + idAppend)?.setText(getStatsString(store));
-				},
-				exception: function(misc) {
-					var ourView = groupGrid.getView();
-					var response = misc.events.exception.listeners[1].fn.arguments[4];
-					if (response.status != 0) {
-						ourView.emptyText = 'Load failed: ' + response.responseText;
-					} else {
-						ourView.emptyText = 'HTTP Server Error: ' + response.statusText;
-					}
-					ourView.refresh();
 				}
 			}
 		});
@@ -557,11 +546,11 @@ async function addCollectionReview ( params ) {
 		
 		async function loadRevisionMenu(benchmarkId, activeRevisionStr, idAppend) {
 			try {
-			let result = await Ext.Ajax.requestPromise({
+			let revisions = await Ext.Ajax.requestPromise({
+				responseType: 'json',
 				url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions`,
 				method: 'GET'
 			})
-			let revisions = JSON.parse(result.response.responseText)
 			let revisionObject = getRevisionObj(revisions, activeRevisionStr, idAppend)
 			if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
 				Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
@@ -569,7 +558,7 @@ async function addCollectionReview ( params ) {
 			groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel));
 			}
 			catch (e) {
-			alert(e.message)
+				SM.Error.handleError(e)
 			}
 		}
 		
@@ -1084,7 +1073,7 @@ async function addCollectionReview ( params ) {
 				},
 				afteredit: async function (e) {
 					try {
-						let jsonData = {}, result
+						let jsonData = {}, apiReview
 						if (e.record.data.status) {
 							jsonData[e.field] = e.value
 							// unset autoResult if the result has changed
@@ -1096,10 +1085,11 @@ async function addCollectionReview ( params ) {
 									jsonData.autoResult = false
 								}
 							}
-							result = await Ext.Ajax.requestPromise({
+							apiReview = await Ext.Ajax.requestPromise({
+								responseType: 'json',
 								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
 								method: 'PATCH',
-								jsonData: jsonData
+								jsonData
 							})
 						}
 						else {
@@ -1111,13 +1101,13 @@ async function addCollectionReview ( params ) {
 								autoResult: false,
 								status: 'saved'
 							}
-							result = await Ext.Ajax.requestPromise({
+							apiReview = await Ext.Ajax.requestPromise({
+								responseType: 'json',
 								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
 								method: 'PUT',
-								jsonData: jsonData
+								jsonData
 							})
 						}
-						let apiReview = JSON.parse(result.response.responseText)
 
 						// e.grid.getStore().loadData(apiReview, true)
 						const f = e.grid.store.reader.recordType.prototype.fields
@@ -1137,7 +1127,7 @@ async function addCollectionReview ( params ) {
 	
 					}
 					catch(e) {
-						alert(e.message)
+						SM.Error.handleError(e)
 					}
 
 
@@ -1281,20 +1271,20 @@ async function addCollectionReview ( params ) {
 		async function getContent(benchmarkId, revisionStr, ruleId, groupId) {
 			try {
 				// Content panel
-				let contentPanel = Ext.getCmp('content-panel' + idAppend);
-				let contentReq = await Ext.Ajax.requestPromise({
+				const contentPanel = Ext.getCmp('content-panel' + idAppend);
+				const content = await Ext.Ajax.requestPromise({
+					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${ruleId}`,
 					method: 'GET',
 					params: {
 						projection: ['detail','ccis','check','fix']
 					}
 				})
-				let content = JSON.parse(contentReq.response.responseText)
 				contentPanel.update(content)
 				contentPanel.setTitle('Rule for Group ' + SM.he(groupId));
 			}
 			catch (e) {
-				alert(e.message)
+				SM.Error.handleError(e)
 			}
 		}
 
@@ -1304,7 +1294,8 @@ async function addCollectionReview ( params ) {
 				// Reviews grid
 				reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
 				maskTimer = setTimeout(() => reviewsGrid.bwrap.mask(''), 150)
-				let reviewsReq = await Ext.Ajax.requestPromise({
+				let fetchedReviews = await Ext.Ajax.requestPromise({
+					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 					method: 'GET',
 					params: {
@@ -1312,7 +1303,6 @@ async function addCollectionReview ( params ) {
 						ruleId: record.data.ruleId,
 					}
 				})
-				let fetchedReviews = JSON.parse(reviewsReq.response.responseText)
 				let fetchedReviewsLookup = {}
 				for (const fetchedReview of fetchedReviews) {
 					fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
@@ -1333,7 +1323,7 @@ async function addCollectionReview ( params ) {
 				reviewsExportBtn.gridBasename = `${leaf.benchmarkId}-${record.data.ruleId}`
 			}
 			catch (e) {
-				alert (e.message)
+				SM.Error.handleError(e)
 			}
 			finally {
 				clearTimeout(maskTimer)
@@ -1500,21 +1490,21 @@ async function addCollectionReview ( params ) {
 			}
 
 			grid.bwrap.mask(`Updating ${records.length} reviews`)
-			const updatedReviews = []
 			try {
-				const result = await Ext.Ajax.requestPromise({
+				await Ext.Ajax.requestPromise({
+					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
 					method: 'POST',
 					jsonData
 				})
-				updatedReviews.push(JSON.parse(result.response.responseText))
 			}
 			catch (e) {
+				SM.Error.handleError(e)
+			}
+			finally {
 				grid.bwrap.unmask()
-				alert(e)
 			}
 
-			// ugly code follows
 			const record = groupGrid.getSelectionModel().getSelected()
 			await getReviews(leaf.collectionId, record)
 			
@@ -1599,7 +1589,7 @@ async function addCollectionReview ( params ) {
 				const selections = sm.getSelections()
 				if (selections.length === 1) {
 					const record = selections[0]
-					const result = await Ext.Ajax.requestPromise({
+					await Ext.Ajax.requestPromise({
 						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 						method: 'PATCH',
 						jsonData: {
@@ -1623,13 +1613,12 @@ async function addCollectionReview ( params ) {
 						}
 					}
 					grid.bwrap.mask(`Updating ${selections.length} reviews`)
-					const updatedReviews = []
-					const result = await Ext.Ajax.requestPromise({
+					await Ext.Ajax.requestPromise({
+						responseType: 'json',
 						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
 						method: 'POST',
 						jsonData
 					})
-					updatedReviews.push(JSON.parse(result.response.responseText))
 				}
 
 				if (selections.length === 1) {
@@ -1648,7 +1637,7 @@ async function addCollectionReview ( params ) {
 				setReviewsGridButtonStates()
 			}
 			catch (e) {
-				alert(e.message)
+				SM.Error.handleError(e)
 			}
 			finally {
 				grid.bwrap.unmask()
@@ -1712,7 +1701,7 @@ async function addCollectionReview ( params ) {
 				}
 			}
 			catch (e) {
-				alert (e.message)
+				SM.Error.handleError(e)
 			}
 			finally {
 				activeTab.getEl().unmask()
@@ -1867,10 +1856,10 @@ async function addCollectionReview ( params ) {
 		loadRevisionMenu(leaf.benchmarkId, 'latest', idAppend)
 	}
 	catch (e) {
-		alert (e.message)
+		SM.Error.handleError(e)
 	}
 
-}; //end addReview();
+}
 
 
 function renderOpen(value, metaData, record, rowIndex, colIndex, store) {

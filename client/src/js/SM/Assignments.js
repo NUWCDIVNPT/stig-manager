@@ -60,14 +60,14 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           match = node.match(/^(\d+)-assignment-assets-node$/)
           if (match) {
             let collectionId = match[1]
-            let result = await Ext.Ajax.requestPromise({
+            let apiAssets = await Ext.Ajax.requestPromise({
+              responseType: 'json',
               url: `${STIGMAN.Env.apiBase}/assets`,
               method: 'GET',
               params: {
                 collectionId: collectionId
               }
             })
-            let apiAssets = JSON.parse(result.response.responseText)
             let content = apiAssets.map(asset => ({
               id: `${collectionId}-${asset.assetId}-assignment-assets-asset-node`,
               text: SM.he(asset.name),
@@ -86,14 +86,14 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           if (match) {
             let collectionId = match[1]
             let assetId = match[2]
-            let result = await Ext.Ajax.requestPromise({
+            let apiAsset = await Ext.Ajax.requestPromise({
+              responseType: 'json',
               url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
               method: 'GET',
               params: {
                 projection: 'stigs'
               }
             })
-            let apiAsset = JSON.parse(result.response.responseText)
             let content = apiAsset.stigs.map(stig => ({
               id: `${collectionId}-${assetId}-${stig.benchmarkId}-assignment-leaf`,
               text: SM.he(stig.benchmarkId),
@@ -115,14 +115,14 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           match = node.match(/^(\d+)-assignment-stigs-node$/)
           if (match) {
             let collectionId = match[1]
-            let result = await Ext.Ajax.requestPromise({
+            let apiCollection = await Ext.Ajax.requestPromise({
+              responseType: 'json',
               url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
               method: 'GET',
               params: {
                 projection: 'stigs'
               }
             })
-            let apiCollection = JSON.parse(result.response.responseText)
             let content = apiCollection.stigs.map( stig => ({
               collectionId: collectionId,
               text: SM.he(stig.benchmarkId),
@@ -140,11 +140,11 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           if (match) {
             let collectionId = match[1]
             let benchmarkId = match[2]
-              let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
+              let apiAssets = await Ext.Ajax.requestPromise({
+                responseType: 'json',
+                url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
               method: 'GET'
             })
-            let apiAssets = JSON.parse(result.response.responseText)
             let content = apiAssets.map(asset => ({
               id: `${collectionId}-${benchmarkId}-${asset.assetId}-assignment-leaf`,
               text: SM.he(asset.name),
@@ -163,7 +163,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
         }
         catch (e) {
-          Ext.Msg.alert('Status', 'AJAX request failed in loadTree()');
+          SM.Error.handleError(e)
         }
     },
     treeClick: function (tree, node) {
@@ -186,7 +186,8 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
         //Assigns the whole collection to a user
         //=======================================================================
         try {
-          let result = await Ext.Ajax.requestPromise({
+          let assets = await Ext.Ajax.requestPromise({
+            responseType: 'json',
             url: `${STIGMAN.Env.apiBase}/assets/`,
             method: 'GET',
             params: { 
@@ -195,7 +196,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               projection: 'stigs'
             }
           })
-          let assets = JSON.parse(result.response.responseText)
           let assignments = []
           assets.forEach(asset => {
             asset.stigs.forEach(stig => {
@@ -209,7 +209,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           return assignments
         }
         catch(e) {
-          alert(e.message)
+          SM.Error.handleError(e)
         }
       }
       
@@ -221,7 +221,8 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
         try {
           let assetIdMatches = theNode.id.match(/^\d+-(\d+)-assignment-assets-asset-node$/);
           let assetId = assetIdMatches[1];
-          let result = await Ext.Ajax.requestPromise({
+          let asset = await Ext.Ajax.requestPromise({
+            responseType: 'json',
             url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
             method: 'GET',
             params: { 
@@ -229,7 +230,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               projection: 'stigs'
             }
           })
-          let asset = JSON.parse(result.response.responseText)
           return asset.stigs.map(stig => ({
             benchmarkId: stig.benchmarkId,
             assetName: asset.name,
@@ -237,7 +237,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           }))
         }
         catch(e) {
-          alert(e.message)
+          SM.Error.handleError(e)
         }
       }	
       
@@ -247,8 +247,9 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
         // specific collection to a user.
         //=======================================================
         try {
-          let result = await Ext.Ajax.requestPromise({
+          let assets = await Ext.Ajax.requestPromise({
             url: `${STIGMAN.Env.apiBase}/assets/`,
+            responseType: 'json',
             method: 'GET',
             params: { 
               elevate: `${curUser.privileges.canAdmin}`,
@@ -257,7 +258,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               projection: 'stigs'
             }
           })
-          let assets = JSON.parse(result.response.responseText)
           let assignments = []
           assets.forEach(asset => {
             asset.stigs.forEach(stig => {
@@ -271,7 +271,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           return assignments	
         }
         catch(e) {
-          alert(e.message)
+          SM.Error.handleError(e)
         }
       }
 
@@ -301,7 +301,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
           }
       }
       catch (e) {
-        alert(e.message)
+        SM.Error.handleError(e)
       }
     }
 })
@@ -577,7 +577,7 @@ async function showUserAccess( collectionId, userId ) {
                 })      
               }
               catch (e) {
-                alert(e.message)
+                SM.Error.handleError(e)
               }
               finally {
                 appwindow.close()
@@ -588,11 +588,11 @@ async function showUserAccess( collectionId, userId ) {
       })
       assignmentPanel.appwindow = appwindow
       appwindow.render(document.body)
-      let result = await Ext.Ajax.requestPromise({
+      let apiUserAccess = await Ext.Ajax.requestPromise({
+        responseType: 'json',
           url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/grants/${userId}/access`,
           method: 'GET'
       })
-      let apiUserAccess = JSON.parse(result.response.responseText)
       assignmentPanel.assignmentGrid.setValue(apiUserAccess)
               
       Ext.getBody().unmask();
@@ -607,7 +607,7 @@ async function showUserAccess( collectionId, userId ) {
             e = JSON.stringify(e);
           }
         }        
-      alert(e)
-      Ext.getBody().unmask()
+        SM.Error.handleError(e)
+        Ext.getBody().unmask()
   }	
 } //end showAssetProps
