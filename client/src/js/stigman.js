@@ -66,7 +66,7 @@ async function loadApp () {
 			SM.Error.handleError(new SM.Error.ExtDataProxyError(e))
 		})
 	
-		let appConfig = await Ext.Ajax.requestPromise({
+		STIGMAN.apiConfig = await Ext.Ajax.requestPromise({
 			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/op/configuration`,
 			method: 'GET'
@@ -157,7 +157,7 @@ async function loadApp () {
 			items: [],
 		}
 	
-		let classification = new Classification(appConfig.classification)
+		let classification = new Classification(STIGMAN.apiConfig?.classification)
 		let contentPanel
 		if (classification.showBanner) {
 			contentPanel = new Ext.Panel({
