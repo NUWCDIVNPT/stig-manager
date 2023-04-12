@@ -433,7 +433,9 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     const joins = [
       'current_rev rev',
       'left join rev_group_rule_map rgr using (revId)',
-      'left join review on rgr.ruleId = review.ruleId and review.assetId = :assetId',
+      // 'left join review on rgr.ruleId = review.ruleId and review.assetId = :assetId',
+      'left join rule_version_check_digest rvcd using (ruleId)',
+      'left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = :assetId)',
       'left join result on review.resultId=result.resultId',
       'left join status on review.statusId=status.statusId'
     ]
@@ -458,12 +460,12 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     const groupBy = [
       'rgr.rgrId',
       'result.api',
-      'review.autoResult',
+      'review.reviewId',
       'status.api',
-      'review.ruleId',
-      'review.resultId',
-      'review.detail',
-      'review.comment'
+      // 'review.ruleId',
+      // 'review.resultId',
+      // 'review.detail',
+      // 'review.comment'
     ]
     const orderBy = [
       'substring(rgr.groupId from 3) + 0'
