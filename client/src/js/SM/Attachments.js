@@ -122,13 +122,16 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       }
     }
     const getMetadataFromFile = async function  (file) {
-      const hasher = new asmCrypto.Sha256()
       const dataBuffer = await readArrayBufferAsync(file)
-      const dataArray = new Uint8Array(dataBuffer)
-      const base64 = asmCrypto.bytes_to_base64(dataArray)
-      hasher.process(dataArray)
-      hasher.finish()
-      const shahex = asmCrypto.bytes_to_hex(hasher.result)
+      const base64 = btoa(
+        new Uint8Array(dataBuffer)
+          .reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+      const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer); // hash the message
+      const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array, then regular array.
+      const shahex = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join(""); // convert bytes to hex string
       return {
         attachment: {
           name: file.name,
