@@ -88,18 +88,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
             url: this.url,
-            headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            listeners: {
-                exception: function ( proxy, type, action, options, response, arg ) {
-                    let message
-                    if (response.responseText) {
-                        message = response.responseText
-                    } else {
-                        message = "Unknown error"
-                    }
-                    Ext.Msg.alert('Error', message);
-                }
-            }
+            headers: { 'Content-Type': 'application/json;charset=utf-8' }
         })
         const assetStore = new Ext.data.JsonStore({
             grid: this,
@@ -284,18 +273,18 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                             // Edge case to handle when the selected record was changed (e.g., stats updated) 
                             // while still selected, then is deleted
                             const thisRecord = me.store.getById(assetRecords[i].id)
-                            let result = await Ext.Ajax.requestPromise({
+                            apiAsset = await Ext.Ajax.requestPromise({
+                                responseType: 'json',
                                 url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
                                 method: 'DELETE'
                             })
-                            apiAsset = JSON.parse(result.response.responseText)
                             me.store.remove(thisRecord)
                         }
                         SM.Dispatcher.fireEvent('assetdeleted', apiAsset) //only need the last deleted asset
                     }
                 }
                 catch (e) {
-                    alert(e.stack)
+                    SM.Error.handleError(e)
                 }
                 finally {
                     Ext.getBody().unmask()
@@ -320,22 +309,22 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                           // Edge case to handle when the selected record was changed (e.g., stats updated) 
                           // while still selected, then is transferred
                           const thisRecord = me.store.getById(srcAssets[i].assetId)
-                          let result = await Ext.Ajax.requestPromise({
-                              url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
-                              method: 'PATCH',
-                              jsonData: {
-                                  collectionId: item.collectionId
-                              }
+                          let returnedAsset = await Ext.Ajax.requestPromise({
+                            responseType: 'json',
+                            url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
+                            method: 'PATCH',
+                            jsonData: {
+                                collectionId: item.collectionId
+                            }
                           })
-                          let returnedAsset = JSON.parse(result.response.responseText)
-                          result = await Ext.Ajax.requestPromise({
+                          let apiAsset = await Ext.Ajax.requestPromise({
+                            responseType: 'json',
                             url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/metrics/summary/asset`,
                             method: 'GET',
                             params: {
                                 assetId: thisRecord.data.assetId
                             }
                           })
-                          let apiAsset = JSON.parse(result.response.responseText)
                           apiAsset.collection = returnedAsset.collection
                           me.store.remove(thisRecord)
                           SM.Dispatcher.fireEvent('assetdeleted', {...apiAsset, ...{collection: {collectionId: me.collectionId}}})
@@ -344,7 +333,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     }
                   }
                   catch (e) {
-                      alert(e.stack)
+                    SM.Error.handleError(e)
                   }
                   finally {
                       Ext.getBody().unmask()
@@ -1086,23 +1075,23 @@ async function showAssetProps( assetId, initialCollectionId ) {
                         let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
                         // //TODO: getFieldValues should not return 'undefined' 
                         delete values.undefined
-                        let method = assetId ? 'PUT' : 'POST'
-                        let url = assetId ? `${STIGMAN.Env.apiBase}/assets/${assetId}` : `${STIGMAN.Env.apiBase}/assets`
-                        let result = await Ext.Ajax.requestPromise({
-                            url: url,
-                            method: method,
+                        const method = assetId ? 'PUT' : 'POST'
+                        const url = assetId ? `${STIGMAN.Env.apiBase}/assets/${assetId}` : `${STIGMAN.Env.apiBase}/assets`
+                        const returnedAsset = await Ext.Ajax.requestPromise({
+                            responseType: 'json',
+                            url,
+                            method,
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
                             jsonData: values
                         })
-                        const returnedAsset = JSON.parse(result.response.responseText)
-                        result = await Ext.Ajax.requestPromise({
+                        const apiAsset = await Ext.Ajax.requestPromise({
+                            responseType: 'json',
                             url: `${STIGMAN.Env.apiBase}/collections/${initialCollectionId}/metrics/summary/asset`,
                             method: 'GET',
                             params: {
                                 assetId: returnedAsset.assetId
                             }
                           })
-                        const apiAsset = JSON.parse(result.response.responseText)
                         apiAsset.collection = returnedAsset.collection
                         const event = assetId ? 'assetchanged' : 'assetcreated'
                         SM.Dispatcher.fireEvent(event, apiAsset)
@@ -1110,7 +1099,7 @@ async function showAssetProps( assetId, initialCollectionId ) {
                     }
                 }
                 catch (e) {
-                    alert(e.message)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -1138,14 +1127,14 @@ async function showAssetProps( assetId, initialCollectionId ) {
         // await assetPropsFormPanel.initPanel()
 
         if (assetId) {
-            let result = await Ext.Ajax.requestPromise({
+            let apiAsset = await Ext.Ajax.requestPromise({
+                responseType: 'json',
                 url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
                 params: {
                     projection: ['stigs']
                 },
                 method: 'GET'
             })
-            let apiAsset = JSON.parse(result.response.responseText)
             apiAsset.collectionId = apiAsset.collection.collectionId
             delete apiAsset.collection
             assetPropsFormPanel.getForm().setValues(apiAsset)
@@ -1155,17 +1144,8 @@ async function showAssetProps( assetId, initialCollectionId ) {
         appwindow.show(document.body);
     }
     catch (e) {
-        if(typeof e === 'object') {
-            if (e instanceof Error) {
-              e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
-            }
-            else {
-              // payload = JSON.stringify(payload, null, 2);
-              e = JSON.stringify(e);
-            }
-          }        
-        alert(e)
         Ext.getBody().unmask()
+        SM.Error.handleError(e)
     }	
 } //end showAssetProps
 

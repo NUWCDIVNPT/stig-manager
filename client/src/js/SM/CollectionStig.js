@@ -45,18 +45,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
             url: this.url,
-            headers: { 'Content-Type': 'application/json;charset=utf-8' },
-            listeners: {
-                exception: function ( proxy, type, action, options, response, arg ) {
-                    let message
-                    if (response.responseText) {
-                        message = response.responseText
-                    } else {
-                        message = "Unknown error"
-                    }
-                    Ext.Msg.alert('Error', message);
-                }
-            }
+            headers: { 'Content-Type': 'application/json;charset=utf-8' }
         })
         let store = new Ext.data.JsonStore({
             grid: this,
@@ -219,7 +208,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     })
                 }
                 catch (e) {
-                    alert('Error removing STIG mapping')
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -591,7 +580,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
             await this.stigAssetsGrid.store.loadPromise()
         }
         catch (e) {
-            alert (e)
+            SM.Error.handleError(e)
         }
     }
 })
@@ -622,7 +611,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
                     }
                 }
                 catch (e) {
-                    alert(e.stack)
+                    SM.Error.handleError(e)
                 }
             }
         })
@@ -671,16 +660,7 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
         appwindow.show(document.body);
     }
     catch (e) {
-        if(typeof e === 'object') {
-            if (e instanceof Error) {
-              e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
-            }
-            else {
-              // payload = JSON.stringify(payload, null, 2);
-              e = JSON.stringify(e);
-            }
-          }        
-        alert(e)
         Ext.getBody().unmask()
+        SM.Error.handleError(e)
     }	
 }

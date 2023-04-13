@@ -188,7 +188,7 @@ function addCollectionAdmin( params ) {
           try {
             if (btn == 'yes') {
               Ext.getBody().mask('Deleting collection')
-              let result = await Ext.Ajax.requestPromise({
+              await Ext.Ajax.requestPromise({
                 url: `${STIGMAN.Env.apiBase}/collections/${record.data.collectionId}?elevate=true`,
                 method: 'DELETE'
               })
@@ -196,7 +196,7 @@ function addCollectionAdmin( params ) {
             }
           }
           catch (e) {
-            alert(e.message)
+            SM.Error.handleError(e)
           }
           finally {
             Ext.getBody().unmask()
@@ -306,7 +306,7 @@ async function showCollectionProps(collectionId) {
           })
         }
         catch (e) {
-          alert(e.message)
+          SM.Error.handleError(e)
         }
         finally {
           appwindow.close()
@@ -315,7 +315,8 @@ async function showCollectionProps(collectionId) {
     })
 
     if (collectionId) {
-      let result = await Ext.Ajax.requestPromise({
+      const apiCollection = await Ext.Ajax.requestPromise({
+        responseType: 'json',
         url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
         params: {
           elevate: curUser.privileges.canAdmin,
@@ -323,7 +324,6 @@ async function showCollectionProps(collectionId) {
         },
         method: 'GET'
       })
-      let apiCollection = JSON.parse(result.response.responseText)
 
       fp.setFieldValues(apiCollection)
     }
@@ -345,7 +345,7 @@ async function showCollectionProps(collectionId) {
 
   }
   catch (err) {
-    alert(err.message)
+    SM.Error.handleError(e)
   }
 }
 

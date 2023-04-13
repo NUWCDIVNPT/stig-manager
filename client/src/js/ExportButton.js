@@ -161,7 +161,7 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 		let recordCount = store.getCount();
 		for (let rowIndex = 0; rowIndex < recordCount; rowIndex++){
 			// rowArray[] will hold data for a single CSV row
-			let rowArray = [`(${appConfig.classification})`];
+			let rowArray = [`(${STIGMAN.apiConfig?.classification})`];
 
 			if (view.isBufferView) {
 				let r = store.data.items[rowIndex]
