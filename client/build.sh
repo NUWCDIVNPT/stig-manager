@@ -135,7 +135,6 @@ uglifyjs \
 'SM/ColumnFilters.js' \
 'SM/FindingsPanel.js' \
 'SM/Assignments.js' \
-'SM/asmcrypto.all.es5.js' \
 'SM/Attachments.js' \
 'SM/Exports.js' \
 'SM/Parsers.js' \
