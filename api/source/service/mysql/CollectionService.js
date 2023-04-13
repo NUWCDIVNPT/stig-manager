@@ -312,10 +312,17 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
   }
   if (inProjection.includes('ccis')) {
-    columns.push(`cast(concat('[', group_concat(distinct json_object (
-      'cci', cci.cci,
-      'definition', cci.definition,
-      'apAcronym', cci.apAcronym) order by cci.cci), ']') as json) as "ccis"`)
+    columns.push(`cast(concat('[', 
+    coalesce(
+      group_concat(distinct 
+      case when cci.cci is not null
+      then json_object(
+        'cci', cci.cci,
+        'definition', cci.definition,
+        'apAcronym', cci.apAcronym)
+      else null end order by cci.cci),
+      ''),
+    ']') as json) as "ccis"`)
   }
 
 
