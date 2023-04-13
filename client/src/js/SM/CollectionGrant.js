@@ -186,6 +186,8 @@ SM.CollectionGrantsGrid = Ext.extend(Ext.grid.GridPanel, {
         })
         const accessLevelField = new SM.AccessLevelField({
             submitValue: false,
+            canModifyOwners: true,
+            includeOwnerGrant: true,
             grid: this,
             getListParent: function() {
                 return this.grid.editor.el;
