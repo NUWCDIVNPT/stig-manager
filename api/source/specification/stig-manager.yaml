@@ -4671,12 +4671,15 @@ components:
           type: string
         cci:
           type: string
+          nullable: true
         title:
           type: string
         definition:
-          type: string              
+          type: string
+          nullable: true
         apAcronym:
-          type: string          
+          type: string
+          nullable: true
         severity:
           $ref: '#/components/schemas/RuleSeverity'
         assets:
@@ -4685,6 +4688,7 @@ components:
             $ref: '#/components/schemas/AssetBasic'
         ccis:
           type: array
+          minLength: 0
           items:
             $ref: '#/components/schemas/CciBasic'            
         groups:
