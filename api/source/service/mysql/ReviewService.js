@@ -590,6 +590,8 @@ const writeQueries = {
   createIncomingForPost: `
   CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
     ruleId varchar(255),
+    \`version\` varchar(45),
+    checkDigest binary(32),
     resultId int,
     resultEngine json,
     detail mediumtext,
@@ -601,6 +603,8 @@ const writeQueries = {
   ) 
     SELECT
       jt.ruleId,
+      jtrvcd.version,
+      jtrvcd.checkDigest,
       jtresult.resultId,
       jt.resultEngine,
       jt.detail,
@@ -623,6 +627,7 @@ const writeQueries = {
           statusText VARCHAR(255) PATH "$.status.text"
         )
       ) as jt
+      left join rule_version_check_digest jtrvcd on jtrvcd.ruleId = jt.ruleId
       left join result jtresult on (jtresult.api = jt.result)
       left join status jtstatus on (jtstatus.api = jt.statusLabel)
   `,
@@ -630,6 +635,8 @@ const writeQueries = {
   insert into review (
     assetId,
       ruleId,
+      \`version\`,
+      checkDigest,
       resultId,
       resultEngine,
       detail,
@@ -645,6 +652,8 @@ const writeQueries = {
   select
     :assetId,
     i.ruleId,
+    i.version,
+    i.checkDigest,
     i.resultId,
     CASE WHEN i.resultEngine = 0 THEN NULL ELSE i.resultEngine END,
     COALESCE(i.detail,''),
@@ -665,10 +674,11 @@ const writeQueries = {
   updateReviews: (resetCriteria = 'result') => `
   update 
     incoming i
-    inner join review r on (r.assetId = :assetId and r.ruleId = i.ruleId)
+    inner join review r on (r.assetId = :assetId and r.version = i.version and r.checkDigest = i.checkDigest)
     left join review rChanged on (
       rChanged.assetId = :assetId 
-      and rChanged.ruleId = i.ruleId 
+      and rChanged.version = i.version
+      and rChanged.checkDigest = i.checkDigest 
       and rChanged.statusId != 0 
       and (
         rChanged.resultId != i.resultId
@@ -679,6 +689,10 @@ const writeQueries = {
     r.assetId = :assetId,
 
     r.ruleId = i.ruleId,
+
+    r.version = i.version,
+
+    r.checkDigest = i.checkDigest,
 
     r.resultId = COALESCE(i.resultId, r.resultId),
 
@@ -763,6 +777,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       json_array()
     ) as assetLabelIds`,
     'r.ruleId',
+    `cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json) as ruleIds`,
     'result.api as "result"',
     'CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine END as resultEngine',
     "COALESCE(LEFT(r.detail,32767),'') as detail",
@@ -792,7 +807,9 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   ]
   const joins = [
     'review r',
-    'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
+    'left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)',
+    'left join rule_version_check_digest rvcd2 on (r.version = rvcd2.version and r.checkDigest = rvcd2.checkDigest)',
+    'left join rev_group_rule_map rgr on rvcd.ruleId = rgr.ruleId',
     'left join revision on rgr.revId = revision.revId',
     'left join current_rev on rgr.revId = current_rev.revId',
     'left join result on r.resultId = result.resultId',
@@ -908,7 +925,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     predicates.binds.push(inPredicates.status)
   }
   if (inPredicates.ruleId) {
-    predicates.statements.push('r.ruleId = ?')
+    predicates.statements.push('rvcd.ruleId = ?')
     predicates.binds.push(inPredicates.ruleId)
   }
   if (inPredicates.groupId) {
@@ -916,7 +933,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     predicates.binds.push(inPredicates.groupId)
   }
   if (inPredicates.cci) {
-    predicates.statements.push(`r.ruleId IN (
+    predicates.statements.push(`rvcd.ruleId IN (
       SELECT
         distinct rgr.ruleId
       FROM
