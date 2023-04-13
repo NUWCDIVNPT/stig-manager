@@ -265,9 +265,9 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'inner join current_rev cr on sa.benchmarkId = cr.benchmarkId',
-    'inner join rev_group_rule_map rgr using (revId)',
-    'inner join rev_group_rule_cci_map rgrcc using (rgrId)',
+    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
+    'left join rev_group_rule_map rgr using (revId)',
+    'left join rev_group_rule_cci_map rgrcc using (rgrId)',
     'inner join review rv on (rgr.ruleId = rv.ruleId and a.assetId = rv.assetId and rv.resultId = 4)',
     'left join cci on rgrcc.cci = cci.cci'
   ]
@@ -312,10 +312,17 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
   }
   if (inProjection.includes('ccis')) {
-    columns.push(`cast(concat('[', group_concat(distinct json_object (
-      'cci', cci.cci,
-      'definition', cci.definition,
-      'apAcronym', cci.apAcronym) order by cci.cci), ']') as json) as "ccis"`)
+    columns.push(`cast(concat('[', 
+    coalesce(
+      group_concat(distinct 
+      case when cci.cci is not null
+      then json_object(
+        'cci', cci.cci,
+        'definition', cci.definition,
+        'apAcronym', cci.apAcronym)
+      else null end order by cci.cci),
+      ''),
+    ']') as json) as "ccis"`)
   }
 
 
