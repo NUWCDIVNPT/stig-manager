@@ -252,9 +252,10 @@ select
 from
   cteAsset
   CROSS JOIN cteRule
+  LEFT JOIN rule_version_check_digest rvcd on cteRule.ruleId = rvcd.ruleId
   LEFT JOIN cteReview on true
   ${!skipGrantCheck ? 'LEFT JOIN cteGrant on (cteAsset.assetId = cteGrant.assetId and cteRule.ruleId = cteGrant.ruleId)' : ''}
-  LEFT JOIN review on (cteAsset.assetId = review.assetId and cteRule.ruleId = review.ruleId)
+  LEFT JOIN review on (cteAsset.assetId = review.assetId and rvcd.version = review.version and rvcd.checkDigest = review.checkDigest)
   LEFT JOIN cteCollectionSetting on true
   LEFT JOIN review rChangedResult on (
     rChangedResult.reviewId = review.reviewId 
@@ -667,9 +668,9 @@ const writeQueries = {
     UTC_TIMESTAMP()
     from
       incoming i
-      left join review r on (r.assetId = :assetId and r.ruleId = i.ruleId)
+      left join review r on (r.assetId = :assetId and r.version = i.version and r.checkDigest = i.checkDigest)
     where
-      r.ruleId is null  
+      r.reviewId is null  
   `,
   updateReviews: (resetCriteria = 'result') => `
   update 
@@ -1136,9 +1137,10 @@ exports.putReviewsByAsset = async function ({
         from
           review_history rh
           left join review r using (reviewId)
+          left join rule_version_check_digest rvcd using (ruleId)
         where
-          assetId = ?
-          and ruleId IN ?)
+          r.assetId = ?
+          and rvcd.ruleId IN ?)
       delete review_history
       FROM 
          review_history
@@ -1176,11 +1178,12 @@ exports.putReviewsByAsset = async function ({
           touchTs,
           CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
         FROM
-          review 
+          review r
+          left join rule_version_check_digest rvcd using (ruleId)
         WHERE
-          assetId = ?
-          and ruleId IN ?
-          and reviewId IS NOT NULL
+          r.assetId = ?
+          and rvcd.ruleId IN ?
+          and r.reviewId IS NOT NULL
         FOR UPDATE    
       `
       await connection.query('START TRANSACTION')
