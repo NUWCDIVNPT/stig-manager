@@ -752,59 +752,36 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       predicates.binds.userId = userObject.userId
     }
   
-    const sql = `
-      select
-        innerR.ruleId
-        ,innerR.ruleTitle
-        ,innerR.groupId
-        ,innerR.groupTitle
-        ,innerR.version
-        ,innerR.severity
-        ,json_object(
-          'results', json_object(
-            'pass', sum(CASE WHEN innerR.resultId = 3 THEN 1 ELSE 0 END),
-            'fail', sum(CASE WHEN innerR.resultId = 4 THEN 1 ELSE 0 END),
-            'notapplicable', sum(CASE WHEN innerR.resultId = 2 THEN 1 ELSE 0 END),
-            'other', sum(CASE WHEN innerR.resultId is null OR (innerR.resultId != 2 AND innerR.resultId != 3 AND innerR.resultId != 4) THEN 1 ELSE 0 END)
-          ),
-          'statuses', json_object(
-            'saved', sum(CASE WHEN innerR.statusId = 0 THEN 1 ELSE 0 END),
-            'submitted', sum(CASE WHEN innerR.statusId = 1 THEN 1 ELSE 0 END),
-            'rejected', sum(CASE WHEN innerR.statusId = 2 THEN 1 ELSE 0 END),
-            'accepted', sum(CASE WHEN innerR.statusId = 3 THEN 1 ELSE 0 END)
-          )
-        ) as counts
-      from (
-        select
-          a.assetId
-          ,rgr.ruleId
-          ,rgr.title as ruleTitle
-          ,rgr.severity
-          ,rgr.version
-          ,rgr.groupId
-          ,rgr.groupTitle
-          ,r.resultId
-          ,r.statusId
-        from
-          ${joins.join('\n')}
-        where
-          ${predicates.statements.join(' and ')}
-        group by
-          a.assetId
-          ,rgr.rgrId
-          ,r.resultId
-          ,r.statusId          
-        ) innerR
-      group by
-        innerR.ruleId
-        ,innerR.ruleTitle
-        ,innerR.severity
-        ,innerR.groupId
-        ,innerR.groupTitle
-        ,innerR.version
-      order by
-        substring(innerR.groupId from 3) + 0
-    `
+    const sql = `select
+  rgr.ruleId
+  ,rgr.title as ruleTitle
+  ,rgr.severity
+  ,rgr.\`version\`
+  ,rgr.groupId
+  ,rgr.groupTitle
+  ,json_object(
+    'results', json_object(
+      'pass', sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
+      'fail', sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END),
+      'notapplicable', sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END),
+      'other', sum(CASE WHEN r.resultId is null OR (r.resultId != 2 AND r.resultId != 3 AND r.resultId != 4) THEN 1 ELSE 0 END)
+    ),
+    'statuses', json_object(
+      'saved', sum(CASE WHEN r.statusId = 0 THEN 1 ELSE 0 END),
+      'submitted', sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END),
+      'rejected', sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END),
+      'accepted', sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END)
+    )
+  ) as counts
+from
+  ${joins.join('\n')}
+where
+  ${predicates.statements.join(' and ')}
+group by	
+  rgr.rgrId
+ order by
+  rgr.ruleId
+`
     // Send query
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
