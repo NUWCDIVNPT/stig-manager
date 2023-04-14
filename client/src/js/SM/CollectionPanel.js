@@ -416,18 +416,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
     this.proxy = new Ext.data.HttpProxy({
       restful: true,
       url: `${STIGMAN.Env.apiBase}/collections/${this.collectionId}/metrics/summary/${this.aggregation}`,
-      headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      listeners: {
-        exception: function (proxy, type, action, options, response, arg) {
-          let message
-          if (response.responseText) {
-            message = response.responseText
-          } else {
-            message = "Unknown error"
-          }
-          Ext.Msg.alert('Error', message);
-        }
-      }
+      headers: { 'Content-Type': 'application/json;charset=utf-8' }
     })
     const store = new Ext.data.JsonStore({
       grid: this,
@@ -585,18 +574,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
     this.proxy = new Ext.data.HttpProxy({
       restful: true,
       url: `${STIGMAN.Env.apiBase}/collections/${this.collectionId}/metrics/summary`,
-      headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      listeners: {
-        exception: function (proxy, type, action, options, response, arg) {
-          let message
-          if (response.responseText) {
-            message = response.responseText
-          } else {
-            message = "Unknown error"
-          }
-          Ext.Msg.alert('Error', message);
-        }
-      }
+      headers: { 'Content-Type': 'application/json;charset=utf-8' }
     })
     const store = new Ext.data.JsonStore({
       grid: this,
@@ -1920,7 +1898,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
         }
       }
       catch (e) {
-        alert(e)
+        SM.Error.handleError(e)
       }
     }
 
@@ -1990,6 +1968,6 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     }
   }
   catch (e) {
-    alert(e)
+    SM.Error.handleError(e)
   }
 }

@@ -191,39 +191,20 @@ function addUserAdmin(params ) {
 						fn: async function (btn,text) {
 							try {
 								if (btn == 'yes') {
-									let result = await Ext.Ajax.requestPromise({
+									const apiUser = await Ext.Ajax.requestPromise({
+										responseType: 'json',
 										url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
 										method: 'DELETE'
 									})
-									let apiUser = JSON.parse(result.response.responseText)
 									userStore.remove(user)
 									SM.Dispatcher.fireEvent('userdeleted', apiUser)
 								}
 							}
 							catch (e) {
-								alert(e.message)
+								SM.Error.handleError(e)
 							}
 						}
 					})
-
-
-
-					// Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
-					// 	try {
-					// 		if (btn == 'yes') {
-					// 			let result = await Ext.Ajax.requestPromise({
-					// 				url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
-					// 				method: 'DELETE'
-					// 			})
-					// 			let apiUser = JSON.parse(result.response.responseText)
-					// 			userStore.remove(user)
-					// 			SM.Dispatcher.fireEvent('userdeleted', apiUser)
-					// 		}
-					// 	}
-					// 	catch (e) {
-					// 		alert(e.message)
-					// 	}
-					// });
 				}
 			},
 			'-',

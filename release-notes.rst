@@ -1,3 +1,18 @@
+1.3.4
+-----
+
+Changes:
+
+  - (API/Hotfix) Resolves an issue with missing rule-CCI associations that was causing Findings report miscounts and incomplete Rule Info presentation. 
+  - (API/Hotfix) Resolves issue that could exclude Findings for Rules that did not have an associated CCI.
+  - (App/Hotfix) Removed asmCrypto dependency, replaced with native browser crypto functions.
+  - (App) Added more informative error handling messages. 
+  - (App) Resolved issue preventing Application Managers from creating/modifying Owner grants via the User Admin panel.
+  - (API) Refactored Collection Checklist query to improve performance.
+  - (Workflows) Updated GitHub workflows to generate test coverage reports, build and sign binary artifacts, audit npm dependencies.
+  - (Workflows) The Iron Bank-based image offering on Docker Hub is now based on the Iron Bank Alpine Node image (nodejs18:18-slim), which scans much cleaner than the previously used RHEL UBI. 
+
+
 1.3.3
 -----
 

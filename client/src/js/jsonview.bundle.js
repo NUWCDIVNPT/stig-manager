@@ -29,7 +29,7 @@ var JsonView = (function (exports) {
     var key = params.key,
         value = params.value,
         type = params.type;
-    return "\n    <div class=\"line\">\n      <div class=\"empty-icon\"></div>\n      <div class=\"json-key\">".concat(key, "</div>\n      <div class=\"json-separator\">:</div>\n      <div class=\"json-value json-").concat(type, "\">").concat(type === 'string' ? value.replace(/\n/g,'<br>') : value, "</div>\n    </div>\n  ");
+    return "\n    <div class=\"line\">\n      <div class=\"empty-icon\"></div>\n      <div class=\"json-key\">".concat(key, "</div>\n      <div class=\"json-separator\">:</div>\n      <div class=\"json-value json-").concat(type, "\">").concat(type === 'string' ? SM.he(value).replace(/\n/g,'<br>') : value, "</div>\n    </div>\n  ");
   }
 
   function hideNodeChildren(node) {

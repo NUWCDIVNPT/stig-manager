@@ -676,7 +676,7 @@ SM.RequestAndServePoam = async function (collectionId, params) {
 	}
 	catch (e) {
 		mb.hide()
-		alert(e.message)
+		SM.Error.handleError(e)
 	}
 }
 

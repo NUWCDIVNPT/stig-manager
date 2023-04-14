@@ -1012,7 +1012,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
                 entries = await getAllFileEntries(e.dataTransfer.items, e.currentTarget)
                 if (!entries.length) {
-                    alert('no entries error')
+                   throw new Error('no entries error')
                 }
                 else {
                     const files = _this.store.getRange().map(r=>r.json)
@@ -1023,7 +1023,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
             }
             catch (e) {
-                alert(e)
+                SM.Error.handleError(e)
             }
 
             async function getAllFileEntries(dataTransferItemList, el) {
@@ -1051,7 +1051,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                     return fileEntries
                 }
                 catch (e) {
-                    alert(e)
+                    SM.Error.handleError(e)
                 }
             }
 
@@ -1068,7 +1068,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                     return entries;   
                 }
                 catch (e) {
-                    alert(e)
+                    SM.Error.handleError(e)
                 }
             }
 
@@ -1081,7 +1081,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                         directoryReader.readEntries(resolve, reject)
                     })
                 } catch (e) {
-                    alert(e)
+                    SM.Error.handleError(e)
                 }
             }
 
@@ -1097,7 +1097,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                         }, reject)
                     })
                 } catch (e) {
-                    alert(e)
+                    SM.Error.handleError(e)
                 }
             }
         }
@@ -2425,7 +2425,7 @@ async function showImportResultFiles(collectionId) {
                 }
             }
             catch (e) {
-                alert(e)
+                SM.Error.handleError(e)
             }
         }
 
@@ -2630,7 +2630,7 @@ async function showImportResultFiles(collectionId) {
                         }
                     }
                     catch (e) {
-                        alert(` ERROR (${e.message})`)
+                        SM.Error.handleError(e)
                     }
                     finally {
                         processedCount++
@@ -2643,7 +2643,7 @@ async function showImportResultFiles(collectionId) {
             }
             catch (e) {
                 SM.Dispatcher.fireEvent('assetchanged', {collection:{collectionId}})
-                alert(e.message)
+                SM.Error.handleError(e)
             }
 
             function updateProgress(value, text) {
@@ -2690,12 +2690,8 @@ async function showImportResultFiles(collectionId) {
                     }
                 }
                 catch (e) {
-                    alert(result.response.responseText)
+                    SM.Error.handleError(e)
                 }
-                // if (apiAsset) {
-                //     let event = method === 'POST' ? 'assetcreated' : 'assetchanged'
-                //     SM.Dispatcher.fireEvent(event, apiAsset)
-                // }
 
                 return robj
             }
@@ -2727,16 +2723,8 @@ async function showImportResultFiles(collectionId) {
         }
     }
     catch (e) {
-        if (typeof e === 'object') {
-            if (e instanceof Error) {
-                e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
-            }
-            else {
-                e = JSON.stringify(e)
-            }
-        }
-        alert(e)
         Ext.getBody().unmask()
+        SM.Error.handleError(e)
     }
 }
 
@@ -3018,7 +3006,7 @@ async function showImportResultFile(params) {
                 params.store.reload()
             }
             catch (e) {
-                alert(e.message)
+                SM.Error.handleError(e)
             }
 
             function updateProgress(value, text) {
@@ -3056,18 +3044,8 @@ async function showImportResultFile(params) {
         }
     }
     catch (e) {
-        if (typeof e === 'object') {
-            if (e instanceof Error) {
-                e = JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
-            }
-            else {
-                // payload = JSON.stringify(payload, null, 2)
-                e = JSON.stringify(e)
-            }
-        }
-        alert(e)
         Ext.getBody().unmask()
-
+        SM.Error.handleError(e)
     }
 
 }

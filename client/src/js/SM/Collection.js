@@ -16,16 +16,16 @@ async function addOrUpdateCollection( collectionId, collectionObj, options = {} 
         url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate ?? false}`,
         method = 'POST'
       }
-      let result = await Ext.Ajax.requestPromise({
-        url: url,
-        method: method,
+      let apiCollection = await Ext.Ajax.requestPromise({
+        responseType: 'json',
+        url,
+        method,
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
         params: {
           projection: ['owners', 'statistics', 'labels']
         },
         jsonData: collectionObj
       })
-      let apiCollection = JSON.parse(result.response.responseText)
       // Refresh the curUser global
       await SM.GetUserObject()
       
@@ -34,7 +34,7 @@ async function addOrUpdateCollection( collectionId, collectionObj, options = {} 
       return apiCollection
     }
     catch (e) {
-      alert (e.message)
+      SM.Error.handleError(e)
     }
   }
   

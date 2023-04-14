@@ -7,3 +7,4 @@
 **/test
 **/uploads
 **/docker
+!client/**/node_modules

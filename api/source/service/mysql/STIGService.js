@@ -558,8 +558,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
         drop: 'drop table if exists temp_rule_cci',
         create: `CREATE${tempFlag ? ' TEMPORARY' : ''} TABLE temp_rule_cci (
           ruleId varchar(255) NOT NULL,
-          cci varchar(20),
-          UNIQUE KEY (cci))`
+          cci varchar(20))`
       }
     }
     const dml = {

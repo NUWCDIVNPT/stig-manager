@@ -62,13 +62,15 @@ async function loadApp () {
 			trackMouse: false
 		});
 		Ext.state.Manager.setProvider(new SM.State.LocalStorageProvider())
+		Ext.data.DataProxy.on('exception', function(proxy, type, action, e) {
+			SM.Error.handleError(new SM.Error.ExtDataProxyError(e))
+		})
 	
-		// Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration...";
-		let result = await Ext.Ajax.requestPromise({
+		STIGMAN.apiConfig = await Ext.Ajax.requestPromise({
+			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/op/configuration`,
 			method: 'GET'
 		})
-		appConfig = JSON.parse(result.response.responseText);
 		
 		const mainNavTree = new SM.NavTree.TreePanel({
 			id: 'app-nav-tree',
@@ -155,7 +157,7 @@ async function loadApp () {
 			items: [],
 		}
 	
-		let classification = new Classification(appConfig.classification)
+		let classification = new Classification(STIGMAN.apiConfig?.classification)
 		let contentPanel
 		if (classification.showBanner) {
 			contentPanel = new Ext.Panel({
@@ -209,6 +211,10 @@ async function loadApp () {
 				}
 			}
 		})
+
+		window.addEventListener('error', function (e) {
+			SM.Error.handleError(e)
+		})
 		
 	}
 	catch (e) {
@@ -216,9 +222,5 @@ async function loadApp () {
 	}
 
 } //end loadApp()
-
-function showAbout() {
-	alert(copyrightStr + '\n\n' + licenseStr);
-}
 
 start()

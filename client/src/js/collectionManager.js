@@ -9,14 +9,14 @@ async function addCollectionManager( params ) {
 	
 		let collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collectionId )
 
-		let result = await Ext.Ajax.requestPromise({
+		let apiCollection = await Ext.Ajax.requestPromise({
+			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}`,
 			params: {
 				projection: ['grants', 'labels']
 			},
 			method: 'GET'
 		})
-		let apiCollection = JSON.parse(result.response.responseText)
 		let apiFieldSettings = apiCollection.settings.fields
 
 		function onFieldSettingsChanged (collectionId, fieldSettings) {
@@ -112,11 +112,11 @@ async function addCollectionManager( params ) {
 				stigGrid.getStore().reload()
 				
 				// update labels grid
-				let result = await Ext.Ajax.requestPromise({
+				const labels = await Ext.Ajax.requestPromise({
+					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
 					method: 'GET'
 				})
-				const labels = JSON.parse(result.response.responseText)
 				collectionPanel.labelGrid.setValue(labels)
 			}
 		}
@@ -130,11 +130,11 @@ async function addCollectionManager( params ) {
 			if (eCollectionId === collectionId) {
 				await assetGrid.getStore().reloadPromise()
 				// update labels grid
-				let result = await Ext.Ajax.requestPromise({
+				const labels = await Ext.Ajax.requestPromise({
+					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
 					method: 'GET'
 				})
-				const labels = JSON.parse(result.response.responseText)
 				collectionPanel.labelGrid.setValue(labels)
 			}
 		}
@@ -172,7 +172,7 @@ async function addCollectionManager( params ) {
 		SM.Dispatcher.addListener('fieldsettingschanged', onFieldSettingsChanged)
 	}
 	catch( e) {
-		throw (e)
+		SM.Error.handleError(e)
 	}
 
 }

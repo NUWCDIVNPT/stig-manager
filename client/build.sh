@@ -85,12 +85,18 @@ cp -r $SrcDir/index.html $DistDir/index.html
 echo "Preparing Service Worker resources"
 cp -r $SrcDir/serviceWorker.js $DistDir/serviceWorker.js
 
+# npm
+echo "Preparing npm resources"
+npm --prefix $SrcDir/js/third-party ci
+
 # JS
 echo "Preparing JavaScript resources"
 mkdir $DistDir/js
-cp $SrcDir/js/init-dist.js $DistDir/js/init.js
+cp $SrcDir/js/resources-dist.js $DistDir/js/resources.js
+cp $SrcDir/js/init.js $DistDir/js/init.js
 cp $SrcDir/js/oidcProvider.js $DistDir/js
 cp $SrcDir/js/Env.js.example $DistDir/js
+cp -r $SrcDir/js/third-party $DistDir/js/third-party
 cd $SrcDir/js
 uglifyjs \
 'chart.min.js' \
@@ -98,6 +104,8 @@ uglifyjs \
 'diff2html.min.js' \
 'stigmanUtils.js' \
 'SM/Global.js' \
+'SM/StackTrace.js' \
+'SM/Error.js' \
 'BufferView.js' \
 'SM/EventDispatcher.js' \
 'SM/Cache.js' \
@@ -127,7 +135,6 @@ uglifyjs \
 'SM/ColumnFilters.js' \
 'SM/FindingsPanel.js' \
 'SM/Assignments.js' \
-'SM/asmcrypto.all.es5.js' \
 'SM/Attachments.js' \
 'SM/Exports.js' \
 'SM/Parsers.js' \
