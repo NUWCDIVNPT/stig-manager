@@ -181,6 +181,8 @@ select
   review.reviewId,
   cteAsset.assetId,
   cteRule.ruleId,
+  rvcd.version,
+  rvcd.checkDigest,
   
   COALESCE(cteReview.resultId, review.resultId) as resultId,
   COALESCE(cteReview.detail, review.detail, '') as detail,
@@ -313,7 +315,9 @@ ${cteCandidate}
 select
   cteCandidate.reviewId, 
   cteCandidate.assetId, 
-  cteCandidate.ruleId, 
+  cteCandidate.ruleId,
+  cteCandidate.version,
+  cteCandidate.checkDigest,
   cteCandidate.resultId, 
   cteCandidate.detail, 
   cteCandidate.comment, 
@@ -372,7 +376,7 @@ from
   with historyRecs AS (
     select
       rh.historyId,
-      ROW_NUMBER() OVER (PARTITION BY r.assetId, r.ruleId ORDER BY rh.historyId DESC) as rowNum
+      ROW_NUMBER() OVER (PARTITION BY r.assetId, r.version, r.checkDigest ORDER BY rh.historyId DESC) as rowNum
     from
       review_history rh
       left join review r using (reviewId)
@@ -425,6 +429,8 @@ from
   insert into review (
     assetId,
     ruleId,
+    \`version\`,
+    checkDigest,
     resultId,
     resultEngine,
     detail,
@@ -439,6 +445,8 @@ from
   select 
     assetId,
     ruleId,
+    \`version\`,
+    checkDigest,
     resultId,
     resultEngine,
     detail,
@@ -1087,8 +1095,11 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
     connection = await dbUtils.pool.getConnection()
     async function transaction () {
       await connection.query('START TRANSACTION')
-      let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
-      await connection.query(sqlDelete, binds);
+      let sqlDelete = `DELETE review 
+  FROM review LEFT JOIN rule_version_check_digest rvcd
+  ON (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest)
+  WHERE review.assetId = :assetId AND rvcd.ruleId = :ruleId`
+      await connection.query(sqlDelete, binds)
       await dbUtils.updateStatsAssetStig( connection, { ruleId, assetId })
       await connection.commit()
     }
@@ -1286,9 +1297,10 @@ exports.getReviewMetadataKeys = async function ( assetId, ruleId ) {
       JSON_KEYS(metadata) as keyArray
     from 
       review r
+      left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)
     where 
       r.assetId = ?
-      and r.ruleId = ?`
+      and rvcd.ruleId = ?`
   binds.push(assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].keyArray : []
@@ -1301,9 +1313,10 @@ exports.getReviewMetadata = async function ( assetId, ruleId ) {
         metadata 
       from 
         review r
+        left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)
       where 
         r.assetId = ?
-        and r.ruleId = ?`
+        and rvcd.ruleId = ?`
     binds.push(assetId, ruleId)
     let [rows] = await dbUtils.pool.query(sql, binds)
     return rows.length > 0 ? rows[0].metadata : {}
@@ -1313,12 +1326,13 @@ exports.patchReviewMetadata = async function ( assetId, ruleId, metadata ) {
   const binds = []
   let sql = `
     update
-      review 
+      review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = JSON_MERGE_PATCH(metadata, ?)
+      review.metadata = JSON_MERGE_PATCH(metadata, ?)
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return true
@@ -1329,11 +1343,12 @@ exports.putReviewMetadata = async function ( assetId, ruleId, metadata ) {
   let sql = `
     update
       review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = ?
+      review.metadata = ?
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return true
@@ -1346,9 +1361,10 @@ exports.getReviewMetadataValue = async function ( assetId, ruleId, key ) {
       JSON_EXTRACT(metadata, ?) as value
     from 
       review r
+      left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)
     where 
       r.assetId = ?
-      and r.ruleId = ?`
+      and rvcd.ruleId = ?`
   binds.push(`$."${key}"`, assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""
@@ -1359,11 +1375,12 @@ exports.putReviewMetadataValue = async function ( assetId, ruleId, key, value ) 
   let sql = `
     update
       review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = JSON_SET(metadata, ?, ?)
+      review.metadata = JSON_SET(metadata, ?, ?)
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
   binds.push(`$."${key}"`, value, assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""
@@ -1373,12 +1390,13 @@ exports.deleteReviewMetadataKey = async function ( assetId, ruleId, key ) {
   const binds = []
   let sql = `
     update
-      review 
+      review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = JSON_REMOVE(metadata, ?)
+      review.metadata = JSON_REMOVE(metadata, ?)
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
 binds.push(`$."${key}"`, assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""

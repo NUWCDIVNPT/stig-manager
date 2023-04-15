@@ -198,8 +198,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
                 touchTs DATETIME PATH "$.touchTs",
                 resultEngine JSON PATH "$.resultEngine"
               )
-            ) as jt 
-            LEFT JOIN review r ON (jt.assetId = r.assetId and jt.ruleId = r.ruleId)`,
+            ) as jt
+            LEFT JOIN rule_version_check_digest rvcd ON jt.ruleId = rvcd.ruleId
+            LEFT JOIN review r ON (jt.assetId = r.assetId and rvcd.version = r.version and rvcd.checkDigest = r.checkDigest)`,
         insertBinds: []
       },
       review: {
@@ -207,6 +208,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         sqlInsert: `INSERT IGNORE INTO review (
           assetId,
           ruleId,
+          \`version\`,
+          checkDigest,
           resultId,
           detail,
           comment,
@@ -219,7 +222,46 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           statusTs,
           metadata,
           resultEngine
-        ) VALUES ?`,
+        )
+        SELECT 
+          jt.assetId,
+          jt.ruleId,
+          rvcd.version,
+          rvcd.checkDigest,
+          jt.resultId,
+          jt.detail,
+          jt.comment,
+          jt.userId,
+          jt.autoResult,
+          jt.ts,
+          jt.statusText,
+          jt.statusUserId,
+          jt.statusId,
+          jt.statusTs,
+          jt.metadata,
+          jt.resultEngine
+        FROM
+        JSON_TABLE(
+          ?,
+          "$[*]"
+          COLUMNS(
+            assetId INT PATH "$[0]",
+            ruleId VARCHAR(45) PATH "$[1]",
+            resultId INT PATH "$[2]",
+            detail MEDIUMTEXT PATH "$[3]",
+            comment MEDIUMTEXT PATH "$[4]",
+            autoResult INT PATH "$[5]",
+            ts DATETIME PATH "$[6]",
+            userId INT PATH "$[7]",
+            statusId INT PATH "$[8]",
+            statusText VARCHAR(255) PATH "$[9]",
+            statusUserId INT PATH "$[10]",
+            statusTs DATETIME PATH "$[11]",
+            metadata JSON PATH "$[12]",
+            resultEngine JSON PATH "$[13]"
+          )
+        ) as jt 
+        LEFT JOIN rule_version_check_digest rvcd ON (jt.ruleId = rvcd.ruleId)`,
         insertBinds: []
       }
     }
@@ -296,6 +338,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 
     // Tables: review, review_history
     const historyRecords = []
+    const reviewRecords = []
     for (const review of reviews) {
       for (const h of review.history) {
         historyRecords.push({
@@ -315,23 +358,43 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           resultEngine: JSON.stringify(h.resultEngine)
         })
       }
+      // reviewRecords.push({
+      //   assetId: parseInt(review.assetId),
+      //   ruleId: review.ruleId,
+      //   resultId: dbUtils.REVIEW_RESULT_API[review.result],
+      //   detail: review.detail,
+      //   comment: review.comment,
+      //   autoResult: review.autoResult ? 1 : 0,
+      //   ts: new Date(review.ts),
+      //   userId: parseInt(review.userId),
+      //   statusId: dbUtils.REVIEW_STATUS_API[review.status?.label],
+      //   statusText: review.status?.text,
+      //   statusUserId: parseInt(review.status.userId ?? review.status.user?.userId),
+      //   statusTs: new Date(review.status?.ts),
+      //   metadata: JSON.stringify(review.metadata || {}),
+      //   resultEngine: review.resultEngine ? JSON.stringify(review.resultEngine) : null
+      // })
       dml.review.insertBinds.push([
         parseInt(review.assetId),
         review.ruleId,
         dbUtils.REVIEW_RESULT_API[review.result],
         review.detail,
         review.comment,
-        parseInt(review.userId),
         review.autoResult ? 1 : 0,
         new Date(review.ts),
+        parseInt(review.userId),
+        dbUtils.REVIEW_STATUS_API[review.status?.label],
         review.status?.text,
         parseInt(review.status.userId ?? review.status.user?.userId),
-        dbUtils.REVIEW_STATUS_API[review.status?.label],
         new Date(review.status?.ts),
-        JSON.stringify(review.metadata || {}),
-        review.resultEngine ? JSON.stringify(review.resultEngine) : null
+        // JSON.stringify(review.metadata || {}),
+        review.metadata || {},
+        // review.resultEngine ? JSON.stringify(review.resultEngine) : null
+        review.resultEngine || null
       ])
+
     }
+    // dml.review.insertBinds = reviewRecords
     dml.reviewHistory.insertBinds = JSON.stringify(historyRecords)
     return dml
   }
@@ -403,6 +466,9 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
             res.write(`Inserting: ${table} chunk: ${i}\n`)
             bindchunk = dml[table].insertBinds.slice(i,i+chunk);
+            if (table === 'review') {
+              bindchunk = JSON.stringify(bindchunk)
+            }
             ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
           } 
         }
@@ -432,7 +498,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     res.write(JSON.stringify(stats))
     res.end()
 
-    // return (stats)
+    return (stats)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -446,6 +512,18 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       await connection.release()
     }
   }
+
+    //   // Stats
+    // res.write('Calculating status statistics\n')
+    // // hrstart = process.hrtime();
+    // const statsConn = await dbUtils.pool.getConnection()
+    // const statusStats = await dbUtils.updateStatsAssetStig( statsConn, {} )
+    // // hrend = process.hrtime(hrstart)
+    // // stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    // await statsConn.release()
+    // res.end()
+    // return (stats)
+
 }
 
 exports.getDetails = async function() {
