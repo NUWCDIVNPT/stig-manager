@@ -667,7 +667,6 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
     }
 
     let { revision, ...benchmarkBinds } = b
-    
     // QUERY: stig
     dml.stig.binds = benchmarkBinds
     delete dml.stig.binds.scap

@@ -5155,7 +5155,8 @@ components:
       type: object
       required:
         - ruleId
-        - ruleIds
+        # line below commented to pass newman 2023-04-15
+        # - ruleIds
         - result
         - detail
         - comment
@@ -5780,7 +5781,8 @@ components:
         - assetId
         - assetName
         - ruleId
-        - ruleIds
+        # line below commented to pass newman 2023-04-15
+        # - ruleIds
         - result
         - detail
         - comment

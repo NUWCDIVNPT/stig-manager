@@ -267,8 +267,8 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
     'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
     'left join rev_group_rule_map rgr using (revId)',
-    'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
+    'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
     'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
     'left join cci on rgrcc.cci = cci.cci'
   ]

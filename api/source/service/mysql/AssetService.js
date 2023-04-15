@@ -461,10 +461,6 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'result.api',
       'review.reviewId',
       'status.api',
-      // 'review.ruleId',
-      // 'review.resultId',
-      // 'review.detail',
-      // 'review.comment'
     ]
     const orderBy = [
       'substring(rgr.groupId from 3) + 0'
@@ -818,9 +814,9 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
     review.resultEngine
   FROM
     revision rev 
-    left join rev_group_rule_map rgr on rev.revId = rgr.revId
-    left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
+    left join rev_group_rule_map rgr on rev.revId = rgr.revId 
     left join check_content cc on rgr.checkDigest = cc.digest
+    left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
     left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = ?)
 
     left join result on review.resultId = result.resultId 
