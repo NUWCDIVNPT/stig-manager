@@ -1,6 +1,9 @@
 const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
+
+  // table: rule_version_check_digest
+
   `drop table if exists rule_version_check_digest`,
 
   `CREATE TABLE rule_version_check_digest (
@@ -10,7 +13,7 @@ const upMigration = [
     PRIMARY KEY index1 (ruleId),
     KEY index_vcd (\`version\`, checkDigest)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
-
+  
   `INSERT INTO rule_version_check_digest (ruleId, \`version\`, checkDigest)
   with currentDigest as (
   select
@@ -34,19 +37,59 @@ const upMigration = [
     currentDigest
   where
     rowNum = 1`,
+
+  // table: review
   
   `ALTER TABLE review 
   ADD COLUMN \`version\` VARCHAR(45) DEFAULT NULL AFTER reAuthority,
   ADD COLUMN checkDigest BINARY(32) DEFAULT NULL AFTER \`version\``,
 
   `UPDATE review
-  left join rule_version_check_digest using (ruleId)
+    left join rule_version_check_digest using (ruleId)
   SET
   review.version = rule_version_check_digest.version,
   review.checkDigest = rule_version_check_digest.checkDigest`,
 
   `ALTER TABLE review ADD INDEX idx_vcd (\`version\`, checkDigest)`,
   `ALTER TABLE review ADD INDEX idx_asset_vcd (assetId, \`version\`, checkDigest)`,
+
+  // table: review_preserved
+  // copy duplicate (assetId, version, checkDigest) from review
+
+  `CREATE TABLE review_preserved
+  with ordered_reviews as (select
+  reviewId,
+  assetId,
+  resultId,
+  detail,
+  comment,
+  autoResult,
+  ts,
+  userId,
+  statusId,
+  statusText,
+  statusTs,
+  metadata,
+  resultEngine,
+  \`version\`,
+  checkDigest,
+  ROW_NUMBER() OVER (PARTITION BY assetId, \`version\`, checkDigest ORDER BY touchTs DESC) as rowNum
+  FROM review)
+  select
+  * from
+  ordered_reviews where rowNum > 1`,
+
+  // delete duplicate (assetId, version, checkDigest) from review
+
+  `with ordered_reviews as (
+    select
+    reviewId,
+    ROW_NUMBER() OVER (PARTITION BY assetId, \`version\`, checkDigest ORDER BY touchTs DESC) as rowNum
+    FROM review
+  )
+  delete from review where reviewId IN (select reviewId from ordered_reviews where rowNum > 1)`,
+  
+  // recalculate metrics
 
   `with source as
   ( select
