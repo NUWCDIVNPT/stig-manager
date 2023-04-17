@@ -787,7 +787,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     ) as assetLabelIds`,
     'r.ruleId',
     // line below is commented so newman tests pass 2023-04-15
-    // `cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json) as ruleIds`,
+    `cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json) as ruleIds`,
     'result.api as "result"',
     'CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine END as resultEngine',
     "COALESCE(LEFT(r.detail,32767),'') as detail",
@@ -1145,7 +1145,7 @@ exports.putReviewsByAsset = async function ({
       with historyRecs AS (
         select
           rh.historyId,
-          ROW_NUMBER() OVER (PARTITION BY r.assetId, r.ruleId ORDER BY rh.historyId DESC) as rowNum
+          ROW_NUMBER() OVER (PARTITION BY r.assetId, r.version, r.checkDigest ORDER BY rh.historyId DESC) as rowNum
         from
           review_history rh
           left join review r using (reviewId)
