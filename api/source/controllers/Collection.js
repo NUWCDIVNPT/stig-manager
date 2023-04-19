@@ -874,3 +874,37 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
     assetStigArguments
   }
 }
+
+module.exports.writeDefaultRevisionByCollectionStig = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const benchmarkId = req.query.benchmarkId
+    const revisionStr = req.query.revisionStr
+    const response = await CollectionSvc.writeDefaultRevisionByCollectionStig( {
+      collectionId,
+      benchmarkId,
+      revisionStr,
+      userObject: req.userObject
+    })
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getDefaultRevisionByCollectionStig = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const benchmarkId = req.query.benchmarkId
+    const response = await CollectionSvc.getDefaultRevisionByCollectionStig( {
+      collectionId,
+      benchmarkId,
+      userObject: req.userObject
+    })
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}

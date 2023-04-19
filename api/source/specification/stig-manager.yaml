@@ -2644,6 +2644,57 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/stigs/{benchmarkId}/default':
+    get:
+      tags:
+        - Collection
+      summary: EXPERIMENTAL - Get the default Revision of a STIG for this Collection
+      operationId: getDefaultRevisionByCollectionStig
+      parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      responses:
+        '200':
+          description: Default Revision response
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/stigs/{benchmarkId}/default/{revisionStr}':
+    put:
+      tags:
+        - Collection
+      summary: EXPERIMENTAL - Set the default Revision of a STIG for this Collection
+      operationId: writeDefaultRevisionByCollectionStig
+      parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/RevisionStrPath'
+      responses:
+        '200':
+          description: Default Revision response
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/unreviewed/assets':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'

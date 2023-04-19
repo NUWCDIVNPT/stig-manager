@@ -1623,3 +1623,20 @@ async function queryUnreviewedByCollection ({
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
 }
+
+exports.writeDefaultRevisionByCollectionStig = async function ({collectionId, benchmarkId, revisionStr}) {
+  if (revisionStr === 'latest') {
+    await dbUtils.pool.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
+    return
+  }
+
+  const results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+  const version = results[1]
+  const release = results[2]
+
+  const [revisions] = await dbUtils.pool.query('SELECT revId FROM revision WHERE benchmarkId = ? and version = ? and release = ?', [benchmarkId, version, release])
+  if (revisions[0].revId) {
+    await dbUtils.pool.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
+    VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+  }
+}
