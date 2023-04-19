@@ -392,6 +392,10 @@
 .sm-review-sprite-accepted::after {
   content: "Accepted"
 }
+.sm-review-sprite-rule {
+  background-image: url(../img/shield-green-check.svg);
+  width: auto
+}
 .x-grid3-row-selected {
   background-color: hsl(212deg 14% 85%)!important;
   background-image: none;
