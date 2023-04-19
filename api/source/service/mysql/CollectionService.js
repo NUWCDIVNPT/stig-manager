@@ -1103,6 +1103,7 @@ from
 		json_arrayagg(
 		  json_object(
         'ts', DATE_FORMAT(rh.ts, '%Y-%m-%dT%TZ'),
+        'ruleId', rh.ruleId,
         'result', result.api,
         'detail', COALESCE(LEFT(rh.detail,32767), ''),
         'comment', COALESCE(LEFT(rh.comment,32767), ''),

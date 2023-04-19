@@ -1101,6 +1101,7 @@ async function addReview( params ) {
       if (reviewProjected.history) {
         // append current state of review to history grid
         let currentReview = {
+          ruleId: reviewProjected.ruleId,
           comment: reviewProjected.comment,
           resultEngine: reviewProjected.resultEngine,
           rejectText: reviewProjected.rejectText,
@@ -1325,6 +1326,7 @@ async function addReview( params ) {
       // Update history
       // append current state of review to history grid
       let currentReview = {
+        ruleId: reviewFromApi.ruleId,
         comment: reviewFromApi.comment,
         autoResult: reviewFromApi.autoResult,
         rejectText: reviewFromApi.rejectText,

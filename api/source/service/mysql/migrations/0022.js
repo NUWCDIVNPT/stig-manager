@@ -38,6 +38,9 @@ const upMigration = [
   where
     rowNum = 1`,
 
+  // table: review_history
+  `ALTER TABLE review_history ADD COLUMN ruleId VARCHAR(45) DEFAULT NULL`,
+
   // table: review
   
   `ALTER TABLE review 
@@ -52,6 +55,8 @@ const upMigration = [
 
   `ALTER TABLE review ADD INDEX idx_vcd (\`version\`, checkDigest)`,
   `ALTER TABLE review ADD INDEX idx_asset_vcd (assetId, \`version\`, checkDigest)`,
+  `ALTER TABLE review DROP INDEX INDEX_ASSETID_RULEID`,
+
 
   // table: review_preserved
   // copy duplicate (assetId, version, checkDigest) from review
