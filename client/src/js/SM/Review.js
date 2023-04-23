@@ -274,8 +274,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       allowBlank: true,
       name: 'editStr',
       formatValue: function (v) {
+        const otherRules = v.ruleIds.filter(item => item !== v.ruleId).join('<br>')
         this.setValue(`<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
-        <span class="sm-review-sprite sm-review-sprite-user">${v.username}</span>`)
+        <span class="sm-review-sprite sm-review-sprite-user">${v.username}</span>
+        <span class="sm-review-sprite sm-review-sprite-rule" ${otherRules ? `ext:qtip="${otherRules}" ext:qdmdelay="60000" ext:qwidth="200" ext:qtitle="Also applies to:"` : ''}>${v.ruleId}</span>`)
       }
     })
     const sdf = new Ext.form.DisplayField({

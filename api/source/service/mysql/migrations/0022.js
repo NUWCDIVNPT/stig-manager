@@ -38,28 +38,36 @@ const upMigration = [
   where
     rowNum = 1`,
 
+  // table: review_history
+  `ALTER TABLE review_history ADD COLUMN ruleId VARCHAR(45) DEFAULT NULL`,
+
   // table: review
   
   `ALTER TABLE review 
-  ADD COLUMN \`version\` VARCHAR(45) DEFAULT NULL AFTER reAuthority,
-  ADD COLUMN checkDigest BINARY(32) DEFAULT NULL AFTER \`version\``,
+  ADD COLUMN \`version\` VARCHAR(45) NOT NULL AFTER reAuthority,
+  ADD COLUMN checkDigest BINARY(32) NOT NULL AFTER \`version\``,
 
   `UPDATE review
     left join rule_version_check_digest using (ruleId)
   SET
-  review.version = rule_version_check_digest.version,
-  review.checkDigest = rule_version_check_digest.checkDigest`,
+    review.version = rule_version_check_digest.version,
+    review.checkDigest = rule_version_check_digest.checkDigest
+  WHERE
+    rule_version_check_digest.version IS NOT NULL`,
 
   `ALTER TABLE review ADD INDEX idx_vcd (\`version\`, checkDigest)`,
   `ALTER TABLE review ADD INDEX idx_asset_vcd (assetId, \`version\`, checkDigest)`,
+  `ALTER TABLE review DROP INDEX INDEX_ASSETID_RULEID`,
+
 
   // table: review_preserved
-  // copy duplicate (assetId, version, checkDigest) from review
+  // preserve duplicate (assetId, version, checkDigest) from review
 
   `CREATE TABLE review_preserved
   with ordered_reviews as (select
   reviewId,
   assetId,
+  ruleId,
   resultId,
   detail,
   comment,
@@ -79,7 +87,7 @@ const upMigration = [
   * from
   ordered_reviews where rowNum > 1`,
 
-  // delete duplicate (assetId, version, checkDigest) from review
+    // delete duplicate (assetId, version, checkDigest) from review
 
   `with ordered_reviews as (
     select
@@ -88,6 +96,49 @@ const upMigration = [
     FROM review
   )
   delete from review where reviewId IN (select reviewId from ordered_reviews where rowNum > 1)`,
+
+    // preserve reviews with no version/checkDigest
+
+  `INSERT INTO review_preserved (
+    reviewId,
+    assetId,
+    ruleId,
+    resultId,
+    detail,
+    comment,
+    autoResult,
+    ts,
+    userId,
+    statusId,
+    statusText,
+    statusTs,
+    metadata,
+    resultEngine,
+    \`version\`,
+    checkDigest,
+    rowNum
+  ) SELECT reviewId,
+    assetId,
+    ruleId,
+    resultId,
+    detail,
+    comment,
+    autoResult,
+    ts,
+    userId,
+    statusId,
+    statusText,
+    statusTs,
+    metadata,
+    resultEngine,
+    \`version\`,
+    checkDigest,
+    1
+    FROM review WHERE \`version\`=''`,
+
+    // delete reviews with no version/checkDigest
+
+  `DELETE FROM review WHERE \`version\`=''`,
   
   // recalculate metrics
 

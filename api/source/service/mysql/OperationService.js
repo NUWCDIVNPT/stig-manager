@@ -175,6 +175,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         sqlDelete: `DELETE FROM review_history`,
         sqlInsert: `INSERT INTO review_history (
             reviewId,
+            ruleId,
             resultId,
             detail,
             comment,
@@ -189,6 +190,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           )
           SELECT
             r.reviewId,
+            jt.ruleId,
             jt.resultId,
             jt.detail,
             jt.comment,

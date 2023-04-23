@@ -393,6 +393,7 @@ from
   const sqlHistory = `  
   INSERT INTO review_history (
     reviewId,
+    ruleId,
     resultId,
     detail,
     comment,
@@ -407,6 +408,7 @@ from
     resultEngine
   ) SELECT 
       reviewId,
+      ruleId,
       resultId,
       LEFT(detail,32767) as detail,
       LEFT(comment,32767) as comment,
@@ -859,6 +861,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         (select json_arrayagg(
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
+                'ruleId', rh.ruleId,
                 'result', result.api,
                 'resultEngine', CASE WHEN rh.resultEngine = 0 THEN NULL ELSE rh.resultEngine END,
                 'detail', COALESCE(LEFT(rh.detail,32767),''),
@@ -1023,6 +1026,7 @@ exports.exportReviews = async function (includeHistory = false) {
         (select json_arrayagg(
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
+                'ruleId', rh.ruleId,
                 'result', result.api,
                 'resultEngine', CASE WHEN rh.resultEngine = 0 THEN NULL ELSE rh.resultEngine END,
                 'detail', LEFT(rh.detail,32767),
@@ -1149,7 +1153,7 @@ exports.putReviewsByAsset = async function ({
         from
           review_history rh
           left join review r using (reviewId)
-          left join rule_version_check_digest rvcd using (ruleId)
+          left join rule_version_check_digest rvcd on r.version = rvcd.version and r.checkDigest = rvcd.checkDigest
         where
           r.assetId = ?
           and rvcd.ruleId IN ?)
@@ -1163,6 +1167,7 @@ exports.putReviewsByAsset = async function ({
       const sqlHistory = `  
       INSERT INTO review_history (
         reviewId,
+        ruleId,
         resultId,
         detail,
         comment,
@@ -1176,22 +1181,23 @@ exports.putReviewsByAsset = async function ({
         touchTs,
         resultEngine
       ) SELECT 
-          reviewId,
-          resultId,
-          LEFT(detail,32767) as detail,
-          LEFT(comment,32767) as comment,
-          autoResult,
-          ts,
-          userId,
-          statusText,
-          statusUserId,
-          statusTs,
-          statusId,
-          touchTs,
-          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+          r.reviewId,
+          r.ruleId,
+          r.resultId,
+          LEFT(r.detail,32767) as detail,
+          LEFT(r.comment,32767) as comment,
+          r.autoResult,
+          r.ts,
+          r.userId,
+          r.statusText,
+          r.statusUserId,
+          r.statusTs,
+          r.statusId,
+          r.touchTs,
+          CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine END
         FROM
           review r
-          left join rule_version_check_digest rvcd using (ruleId)
+          left join rule_version_check_digest rvcd on r.version=rvcd.version and r.checkDigest=rvcd.checkDigest
         WHERE
           r.assetId = ?
           and rvcd.ruleId IN ?

@@ -194,6 +194,10 @@ function Sm_HistoryData (idAppend) {
 
 	this.fields = Ext.data.Record.create([
 		{
+			name:'ruleId',
+			type: 'string'
+		},
+		{
 			name:'result',
 			type: 'string'
 		},
@@ -309,6 +313,16 @@ function Sm_HistoryData (idAppend) {
 				align: 'left',
 				xtype: 'datecolumn',
 				format:	'Y-m-d H:i:s T'
+			},
+			{ 
+				id:'ruleId' + idAppend,
+				header: "Rule",
+				width: 140,
+				fixed: true,
+				dataIndex: 'ruleId',
+				// renderer: renderResult,
+				sortable: true,
+				filter: {type:'values', renderer: SM.ColumnFilters.Renderers.result}
 			},
 			{ 
 				id:'result' + idAppend,
