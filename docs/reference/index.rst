@@ -55,7 +55,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
         **Collections can be structured as an RMF Package, but do not need to be.** It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
 
     Evaluation
-        The Result or compliance state, either by a user or automated process, of a Review for a particular RuleId on an Asset. 
+        The Result or compliance state, either by a user or automated process, of a Review for a particular STIG Requirement on an Asset. 
 
     Finding
         See :term:`Review` 
@@ -67,7 +67,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
         An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections. 
 
     Review
-        A Review is the result of an Evaluation of a STIG Rule that a User or automated tool has performed. These Reviews are composed of Review Evaluation Content and Status properties.  Each of these pieces carry an "Attribution" that includes the User that set that Content or Status and a timestamp indicating when they did so.  
+        A Review is the result of an Evaluation of a STIG Requirement that a User or automated tool has performed. These Reviews are composed of Review Evaluation Content and Status properties.  Each of these pieces carry an "Attribution" that includes the User that set that Content or Status and a timestamp indicating when they did so.  
 		
         * Review Evaluation Content - Requirements configured via Collection Settings.
             * Result - Not a Finding, Not Applicable, Open, Informational, or Not Reviewed
@@ -82,7 +82,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
           * In order to be Submitted, the Evaluation must have a Result of "Not A Finding," "Not Applicable," or "Open," and must meet any additional requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
           * In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.
 
-    	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Rule, the user who set the Status of a Review, and timestamps for those actions are also collected.
+    	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Requirement, the user who set the Status of a Review, and timestamps for those actions are also collected.
 
       The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners (or, optionally, Managers) then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
 

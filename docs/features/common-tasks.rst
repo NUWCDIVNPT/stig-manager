@@ -117,7 +117,7 @@ Update Reference STIGs
 
 DISA releases new STIGs every quarter (and often in-between scheduled releases).  STIG Manager will retain older STIG revisions that have been imported as long as the Benchmark ID in the STIG remains the same.  All STIG Assignments made to Assets will be preserved, and will refer to the latest version of the STIG that was imported (unless otherwise pinned to a specific Revision in the Collection [This feature is not yet fully implemented]).
 
-Most STIG updates only change a small fraction of the Rules therein. STIG Manager tracks reviews at the Rule ID level, so in most cases a completely reviewed Asset with a new STIG will still have most of the Reviews already populated and in the same state they were in before the update. 
+Most STIG updates only change a small fraction of the Rules therein. STIG Manager tracks reviews using the Rule Version and Rule Check Content, so in most cases a completely reviewed Asset with a new STIG will still have most of the Reviews already populated and in the same state they were in before the update. 
 
 
 Download the new STIGs from DISA, and upload the STIGs you want to update using the :ref:`STIGS Import interface. <stig-updates>`
