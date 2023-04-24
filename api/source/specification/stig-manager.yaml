@@ -5155,8 +5155,7 @@ components:
       type: object
       required:
         - ruleId
-        # line below commented to pass newman 2023-04-15
-        # - ruleIds
+        - ruleIds
         - result
         - detail
         - comment
@@ -5598,6 +5597,7 @@ components:
         - username
         - ts
         - touchTs
+        - ruleId
       additionalProperties: false
       properties:
         result:
@@ -5620,6 +5620,8 @@ components:
           $ref: '#/components/schemas/StringDateTime'
         touchTs:
           $ref: '#/components/schemas/StringDateTime'
+        ruleId:
+          $ref: '#/components/schemas/String255'
     ReviewHistoryAsset:
       type: object
       required:
@@ -5781,8 +5783,7 @@ components:
         - assetId
         - assetName
         - ruleId
-        # line below commented to pass newman 2023-04-15
-        # - ruleIds
+        - ruleIds
         - result
         - detail
         - comment
