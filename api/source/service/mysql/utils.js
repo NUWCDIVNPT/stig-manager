@@ -253,7 +253,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
   let whereClause = ''
 
   if (rules && rules.length > 0) {
-    predicates.push(`sa.benchmarkId IN (SELECT DISTINCT benchmarkId from v_current_group_rule where ruleId IN ?)`)
+    predicates.push(`sa.benchmarkId IN (SELECT DISTINCT benchmarkId from rev_group_rule_map left join revision using (revId) where ruleId IN ?)`)
     binds.push( [rules] )
   }
 
@@ -303,9 +303,9 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        sum(CASE WHEN review.statusId = 3 THEN 1 ELSE 0 END) as accepted,
        sum(CASE WHEN review.resultEngine is not null and review.statusId = 3 THEN 1 ELSE 0 END) as acceptedResultEngine,
 
-       sum(CASE WHEN review.resultId=4 and cgr.severity='high' THEN 1 ELSE 0 END) as highCount,
-       sum(CASE WHEN review.resultId=4 and cgr.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
-       sum(CASE WHEN review.resultId=4 and cgr.severity='low' THEN 1 ELSE 0 END) as lowCount,
+       sum(CASE WHEN review.resultId=4 and rgr.severity='high' THEN 1 ELSE 0 END) as highCount,
+       sum(CASE WHEN review.resultId=4 and rgr.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
+       sum(CASE WHEN review.resultId=4 and rgr.severity='low' THEN 1 ELSE 0 END) as lowCount,
        
        sum(CASE WHEN review.resultId = 1 THEN 1 ELSE 0 END) as notchecked,
        sum(CASE WHEN review.resultEngine is not null and review.resultId = 1 THEN 1 ELSE 0 END) as notcheckedResultEngine,
@@ -329,8 +329,10 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        from
          asset a
          left join stig_asset_map sa using (assetId)
-         left join v_current_group_rule cgr using (benchmarkId)
-         left join rule_version_check_digest rvcd using (ruleId)
+         left join current_rev cr on sa.benchmarkId = cr.benchmarkId
+         left join collection_rev_map crm on (sa.benchmarkId = crm.benchmarkId and a.collectionId = crm.collectionId)
+         left join rev_group_rule_map rgr on (coalesce(crm.revId, cr.revId) = rgr.revId)
+         left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
          left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
     ${whereClause}
     group by

@@ -878,15 +878,16 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
 module.exports.writeDefaultRevisionByCollectionStig = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
-    const benchmarkId = req.query.benchmarkId
-    const revisionStr = req.query.revisionStr
-    const response = await CollectionSvc.writeDefaultRevisionByCollectionStig( {
+    const benchmarkId = req.params.benchmarkId
+    const revisionStr = req.params.revisionStr
+    await CollectionSvc.writeDefaultRevisionByCollectionStig( {
       collectionId,
       benchmarkId,
       revisionStr,
-      userObject: req.userObject
+      userObject: req.userObject,
+      svcStatus: res.svcStatus
     })
-    res.json(response)
+    res.json({})
   }
   catch (err) {
     next(err)

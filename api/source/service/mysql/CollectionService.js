@@ -1625,19 +1625,43 @@ async function queryUnreviewedByCollection ({
   return (rows)
 }
 
-exports.writeDefaultRevisionByCollectionStig = async function ({collectionId, benchmarkId, revisionStr}) {
-  if (revisionStr === 'latest') {
-    await dbUtils.pool.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
-    return
+exports.writeDefaultRevisionByCollectionStig = async function ({collectionId, benchmarkId, revisionStr, svcStatus = {}}) {
+  let version, release, connection
+  if (revisionStr !== 'latest') {
+    const revisionParts = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    version = revisionParts[1]
+    release = revisionParts[2]
   }
-
-  const results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-  const version = results[1]
-  const release = results[2]
-
-  const [revisions] = await dbUtils.pool.query('SELECT revId FROM revision WHERE benchmarkId = ? and version = ? and release = ?', [benchmarkId, version, release])
-  if (revisions[0].revId) {
-    await dbUtils.pool.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
-    VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+  try {
+    connection = await dbUtils.pool.getConnection()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+  
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      if (revisionStr === 'latest') {
+        await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
+      }
+      else {
+        const [revisions] = await connection.query('SELECT revId FROM revision WHERE benchmarkId = ? and `version` = ? and `release` = ?', [benchmarkId, version, release])
+        if (revisions[0]?.revId) {
+          await connection.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
+          VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+        }
+      }
+      await dbUtils.updateStatsAssetStig(connection, {collectionId, benchmarkId})
+      await connection.commit()
+    }  
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
   }
 }
+

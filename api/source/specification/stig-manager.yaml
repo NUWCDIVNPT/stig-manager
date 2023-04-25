@@ -2644,7 +2644,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/collections/{collectionId}/stigs/{benchmarkId}/default':
+  '/collections/{collectionId}/stigs/{benchmarkId}/default-revision':
     get:
       tags:
         - Collection
@@ -2669,7 +2669,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/collections/{collectionId}/stigs/{benchmarkId}/default/{revisionStr}':
+  '/collections/{collectionId}/stigs/{benchmarkId}/default-revision/{revisionStr}':
     put:
       tags:
         - Collection
