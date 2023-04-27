@@ -3,7 +3,6 @@ const MigrationHandler = require('./lib/MigrationHandler')
 const upMigration = [
 
   // table: rule_version_check_digest
-
   `drop table if exists rule_version_check_digest`,
 
   `CREATE TABLE rule_version_check_digest (
@@ -13,7 +12,7 @@ const upMigration = [
     PRIMARY KEY index1 (ruleId),
     KEY index_vcd (\`version\`, checkDigest)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
-  
+
   `INSERT INTO rule_version_check_digest (ruleId, \`version\`, checkDigest)
   with currentDigest as (
   select
@@ -42,104 +41,36 @@ const upMigration = [
   `ALTER TABLE review_history ADD COLUMN ruleId VARCHAR(45) DEFAULT NULL`,
 
   // table: review
-  
   `ALTER TABLE review 
   ADD COLUMN \`version\` VARCHAR(45) NOT NULL AFTER reAuthority,
   ADD COLUMN checkDigest BINARY(32) NOT NULL AFTER \`version\``,
 
-  `UPDATE review
-    left join rule_version_check_digest using (ruleId)
-  SET
-    review.version = rule_version_check_digest.version,
-    review.checkDigest = rule_version_check_digest.checkDigest
-  WHERE
-    rule_version_check_digest.version IS NOT NULL`,
+  // table: temp_current_reviews
+  `drop table if exists temp_current_reviews`,
 
+  `CREATE TABLE temp_current_reviews (
+  reviewId INT,
+  \`version\` VARCHAR(45) NOT NULL,
+  checkDigest BINARY(32) NOT NULL,
+  PRIMARY KEY (reviewId))`,
+
+  `INSERT INTO temp_current_reviews (reviewId, \`version\`, checkDigest)
+  WITH ordered_reviews AS (
+  SELECT r.reviewId,rvcd.version,rvcd.checkDigest,ROW_NUMBER() OVER (PARTITION BY r.assetId, rvcd.version, rvcd.checkDigest ORDER BY r.touchTs DESC) as rowNum
+  FROM review r INNER JOIN rule_version_check_digest rvcd using (ruleId))
+  ,active_reviews AS (SELECT reviewId, \`version\`, checkDigest from ordered_reviews where rowNum = 1)
+  SELECT reviewId, \`version\`, checkDigest from active_reviews`,
+
+  // update the reviews that are current
+  `UPDATE review r INNER JOIN temp_current_reviews t using (reviewId) SET r.version = t.version, r.checkDigest = t.checkDigest`,
+
+  // index the new columns
   `ALTER TABLE review ADD INDEX idx_vcd (\`version\`, checkDigest)`,
   `ALTER TABLE review ADD INDEX idx_asset_vcd (assetId, \`version\`, checkDigest)`,
   `ALTER TABLE review DROP INDEX INDEX_ASSETID_RULEID`,
 
+  `drop table if exists temp_current_reviews`,
 
-  // table: review_preserved
-  // preserve duplicate (assetId, version, checkDigest) from review
-
-  `CREATE TABLE review_preserved
-  with ordered_reviews as (select
-  reviewId,
-  assetId,
-  ruleId,
-  resultId,
-  detail,
-  comment,
-  autoResult,
-  ts,
-  userId,
-  statusId,
-  statusText,
-  statusTs,
-  metadata,
-  resultEngine,
-  \`version\`,
-  checkDigest,
-  ROW_NUMBER() OVER (PARTITION BY assetId, \`version\`, checkDigest ORDER BY touchTs DESC) as rowNum
-  FROM review)
-  select
-  * from
-  ordered_reviews where rowNum > 1`,
-
-    // delete duplicate (assetId, version, checkDigest) from review
-
-  `with ordered_reviews as (
-    select
-    reviewId,
-    ROW_NUMBER() OVER (PARTITION BY assetId, \`version\`, checkDigest ORDER BY touchTs DESC) as rowNum
-    FROM review
-  )
-  delete from review where reviewId IN (select reviewId from ordered_reviews where rowNum > 1)`,
-
-    // preserve reviews with no version/checkDigest
-
-  `INSERT INTO review_preserved (
-    reviewId,
-    assetId,
-    ruleId,
-    resultId,
-    detail,
-    comment,
-    autoResult,
-    ts,
-    userId,
-    statusId,
-    statusText,
-    statusTs,
-    metadata,
-    resultEngine,
-    \`version\`,
-    checkDigest,
-    rowNum
-  ) SELECT reviewId,
-    assetId,
-    ruleId,
-    resultId,
-    detail,
-    comment,
-    autoResult,
-    ts,
-    userId,
-    statusId,
-    statusText,
-    statusTs,
-    metadata,
-    resultEngine,
-    \`version\`,
-    checkDigest,
-    1
-    FROM review WHERE \`version\`=''`,
-
-    // delete reviews with no version/checkDigest
-
-  `DELETE FROM review WHERE \`version\`=''`,
-  
   // recalculate metrics
 
   `with source as
