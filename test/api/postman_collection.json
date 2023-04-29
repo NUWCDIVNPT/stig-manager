@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cce2e3c8-0a8e-4ade-97a2-bc1a0268046f",
+		"_postman_id": "d04bedde-18e8-4e6b-bbb7-2763ca9f1e9e",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -24146,6 +24146,9 @@
 																	"    \"5130dc84-9a68-11ec-b1bc-0242ac110002\"\r",
 																	"    ],\r",
 																	"  ruleId: pm.environment.get(\"testRuleId\"),\r",
+																	" ruleIds: [\r",
+																	"        pm.environment.get(\"testRuleId\")\r",
+																	"    ],  \r",
 																	"  result: reqData.result,\r",
 																	"  resultEngine: null,\r",
 																	"  detail: reqData.detail,\r",
@@ -25764,6 +25767,9 @@
 											"    \"5130dc84-9a68-11ec-b1bc-0242ac110002\"\r",
 											"    ],\r",
 											"  ruleId: pm.environment.get(\"testFreshRuleId\"),\r",
+											" ruleIds: [\r",
+											"        pm.environment.get(\"testFreshRuleId\")\r",
+											"    ],  \r",
 											"  result: reqData.result,\r",
 											"  resultEngine: null,\r",
 											"  detail: reqData.detail,\r",
@@ -43644,6 +43650,835 @@
 									"response": []
 								}
 							]
+						}
+					]
+				},
+				{
+					"name": "Review Key Change",
+					"item": [
+						{
+							"name": "Import and overwrite application data (as elevated Admin) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"Commit successful\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{appDataFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/op/appdata?elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"op",
+										"appdata"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - with new RuleID matching old content",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{testStigFile-reviewKeyChange}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									],
+									"query": [
+										{
+											"key": "clobber",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return the Review for an Asset and Rule - rule matches on stigId/checkContent",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});\r",
+											"\r",
+											"let testRuleId = pm.environment.get(\"testRuleId\");\r",
+											"\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+											"    // if (jsonData.stigs){\r",
+											"        pm.expect(jsonData.stigs).to.not.be.null;\r",
+											"    // }\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=history/)) {\r",
+											"    pm.expect(jsonData.history).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=rule/)) {\r",
+											"    pm.expect(jsonData?.rule).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=metadata/)) {\r",
+											"    pm.expect(jsonData.metadata).to.exist;\r",
+											"}\r",
+											"pm.test(\"Check if object contains all provided keys\", function () {\r",
+											"    // pm.expect(jsonData).to.have.all.keys(reviewKeys);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check if object contains proper ruleId\", function () {\r",
+											"    pm.expect(jsonData?.ruleId).to.eql(testRuleId);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check if object contains proper ruleIds\", function () {\r",
+											"    pm.expect(jsonData?.ruleIds).to.include(\"SV-106179r1_yyyy\");\r",
+											"    pm.expect(jsonData?.ruleIds).to.include(testRuleId);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check review comment for regex match string\", function () {\r",
+											"    let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+											"    var regex = new RegExp(reviewMatchString);\r",
+											"    pm.expect(jsonData.detail).to.match(regex);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule&projection=metadata",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "history"
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										},
+										{
+											"key": "projection",
+											"value": "rule"
+										},
+										{
+											"key": "projection",
+											"value": "metadata"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "SV-106179r1_yyyy",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PUT Review: stigs and rule projections Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"let userId = pm.environment.get(\"userId\");\r",
+											"console.log(\"user: \" + user);\r",
+											"console.log(\"userId: \" + userId)\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status should be is 403 for all\", function () {\r",
+											"    pm.response.to.have.status(403);\r",
+											"});\r",
+											"return;\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"test\\nvisible to lvl1\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "rule",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "history",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "SV-106179r1_yyyy",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+							},
+							"response": []
+						},
+						{
+							"name": "Set all properties of an Asset - assign new STIG",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Collection_X_lvl1_asset-1\",\n    \"collectionId\": \"{{testCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"VPN_SRG_OTHER\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "statusStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PUT Review: stigs and rule projections- put review to alternate ruleId",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"let userId = pm.environment.get(\"userId\");\r",
+											"console.log(\"user: \" + user);\r",
+											"console.log(\"userId: \" + userId)\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"const respData = pm.response.json()\r",
+											"const reqData = JSON.parse(pm.request.body.raw)\r",
+											"const expectedReview = {\r",
+											"  assetId: \"42\",\r",
+											"  assetName: \"Collection_X_lvl1_asset-1\",\r",
+											"  assetLabelIds: [\r",
+											"        \"755b8a28-9a68-11ec-b1bc-0242ac110002\",\r",
+											"        \"5130dc84-9a68-11ec-b1bc-0242ac110002\"      \r",
+											"  ],\r",
+											"  ruleId: \"SV-106179r1_yyyy\",\r",
+											"  ruleIds: [\r",
+											"    \"SV-106179r1_rule\",\r",
+											"    \"SV-106179r1_yyyy\"\r",
+											"    ],\r",
+											"  result: reqData.result,\r",
+											"  resultEngine: null,\r",
+											"  detail: reqData.detail,\r",
+											"  autoResult: reqData.autoResult,\r",
+											"  comment: reqData.comment,\r",
+											"  userId: userId,\r",
+											"  username: user,\r",
+											"  ts: respData.ts,\r",
+											"  touchTs: respData.ts,\r",
+											"  status: {\r",
+											"      ts: respData.ts,\r",
+											"      text: null,\r",
+											"      user: {\r",
+											"          userId: userId,\r",
+											"          username: user\r",
+											"      },\r",
+											"      label: reqData.status\r",
+											"  },\r",
+											"  stigs: [\"VPN_SRG_OTHER\"],\r",
+											"  rule: {\r",
+											"    title: \"This rule title has been replaced.\",\r",
+											"    ruleId: \"SV-106179r1_yyyy\",\r",
+											"    version: \"SRG-NET-000019-VPN-000040\",\r",
+											"    severity: \"medium\"\r",
+											"  }\r",
+											"}\r",
+											"pm.test(\"Response matches expected response\", function () {\r",
+											"    try {\r",
+											"        pm.expect(respData).to.eql(expectedReview)\r",
+											"    }\r",
+											"    catch (e) {\r",
+											"        e.message = `actual: ${JSON.stringify(e.actual)}, expected: ${JSON.stringify(e.expected)}`\r",
+											"        throw(e)\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"result\": \"pass\",\n    \"detail\": \"test\\nvisible to lvl1\",\n    \"comment\": \"sure\",\n    \"autoResult\": false,\n    \"status\": \"submitted\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "rule",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "history",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "SV-106179r1_yyyy",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+							},
+							"response": []
+						},
+						{
+							"name": "Return the Review for an Asset and Rule - rule matches on stigId/checkContent Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"});\r",
+											"\r",
+											"let testRuleId = pm.environment.get(\"testRuleId\");\r",
+											"\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+											"    pm.expect(jsonData?.stigs).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=history/)) {\r",
+											"    pm.expect(jsonData.history).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=rule/)) {\r",
+											"    pm.expect(jsonData?.rule).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=metadata/)) {\r",
+											"    pm.expect(jsonData.metadata).to.exist;\r",
+											"}\r",
+											"pm.test(\"Check if object contains all provided keys\", function () {\r",
+											"    // pm.expect(jsonData).to.have.all.keys(reviewKeys);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check if object contains proper ruleId\", function () {\r",
+											"    pm.expect(jsonData?.ruleId).to.eql(\"SV-106179r1_yyyy\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check if object contains proper ruleIds\", function () {\r",
+											"    pm.expect(jsonData?.ruleIds).to.include(\"SV-106179r1_yyyy\");\r",
+											"    pm.expect(jsonData?.ruleIds).to.include(testRuleId);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check review comment for regex match string\", function () {\r",
+											"    let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+											"    var regex = new RegExp(reviewMatchString);\r",
+											"    pm.expect(jsonData.detail).to.match(regex);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule&projection=metadata",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "history"
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										},
+										{
+											"key": "projection",
+											"value": "rule"
+										},
+										{
+											"key": "projection",
+											"value": "metadata"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "SV-106179r1_yyyy",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deletes a STIG - cleanup",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"\r",
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\" || user == \"elevated\" ) { \r",
+											"    pm.test(\"Status should be is 200 for user stigmanadmin\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"    // return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403 for all other users\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId"
+									],
+									"variable": [
+										{
+											"key": "benchmarkId",
+											"value": "VPN_SRG_OTHER",
+											"description": "(Required) A path parameter that indentifies a STIG"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}

@@ -841,7 +841,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     groupBy.push(`r.metadata`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+    columns.push(`coalesce(cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ),JSON_ARRAY()) as "stigs"`)
 
   }
   if (inProjection.includes('rule')) {

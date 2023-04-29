@@ -784,7 +784,9 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
   let dmls = [
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
-    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)"
+    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
+    "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
+
 ]
   let currentRevDmls = [
     "DELETE from current_rev where benchmarkId = :benchmarkId",
@@ -893,7 +895,8 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
     "DELETE from stig where benchmarkId = :benchmarkId",
     "DELETE from current_rev where benchmarkId = :benchmarkId",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
-    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)"
+    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
+    "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
   ]
 
   let connection;
