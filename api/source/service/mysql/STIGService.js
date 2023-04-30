@@ -9,44 +9,66 @@ Generalized queries for STIGs
 **/
 exports.queryStigs = async function ( inPredicates ) {
   try {
-    let columns = [
+    const cteColumns = [
       'b.benchmarkId',
       'b.title',
       `cr.status`,
       `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
       `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`,
       `cr.ruleCount`,
-      `JSON_ARRAYAGG(concat('V',revision.version,'R',revision.release)) as revisionStrs`
+      `JSON_ARRAYAGG(
+        json_object(
+        "revisionStr", concat('V',revision.version,'R',revision.release),
+            "revisionDate", revision.benchmarkDateSql
+      )
+    ) OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql DESC) as revisions`,
+    `JSON_ARRAYAGG(concat('V',revision.version,'R',revision.release)) OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql DESC) as revisionStrs`,
+    `ROW_NUMBER() OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql ASC) as rownum`
     ]
-    let joins = [
+    const cteJoins = [
       'stig b',
       'left join current_rev cr on b.benchmarkId = cr.benchmarkId',
       'left join revision on b.benchmarkId = revision.benchmarkId'
     ]
-
     // PREDICATES
-    let predicates = {
+    let ctePredicates = {
       statements: [],
       binds: []
     }
     if (inPredicates.title) {
-      predicates.statements.push("b.title LIKE CONCAT('%',?,'%')")
-      predicates.binds.push( inPredicates.title )
+      ctePredicates.statements.push("b.title LIKE CONCAT('%',?,'%')")
+      ctePredicates.binds.push( inPredicates.title )
     }
     if (inPredicates.benchmarkId) {
-      predicates.statements.push('b.benchmarkId = ?')
-      predicates.binds.push( inPredicates.benchmarkId )
+      ctePredicates.statements.push('b.benchmarkId = ?')
+      ctePredicates.binds.push( inPredicates.benchmarkId )
     }
 
+    const cteSql = `cte AS (${dbUtils.makeQueryString({columns:cteColumns, joins:cteJoins, predicates:ctePredicates, orderBy:['b.benchmarkId']})})`
+
     // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += ' FROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
+    const columns = [
+      'benchmarkId',
+      'title',
+      '`status`',
+      `lastRevisionStr`,
+      `lastRevisionDate`,
+      `ruleCount`,
+      `revisionStrs`,
+      `revisions`
+    ]
+    const joins = [
+      'cte'
+    ]
+    const predicates = {
+      statements: ['rownum = 1']
     }
-    sql += ' group by b.benchmarkId order by b.benchmarkId'
+
+    const sql = dbUtils.makeQueryString({
+      ctes: [cteSql],
+      columns, 
+      joins,
+      predicates})
 
     let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)

@@ -2644,41 +2644,31 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/collections/{collectionId}/stigs/{benchmarkId}/default-revision':
-    get:
+  '/collections/{collectionId}/stigs/{benchmarkId}':
+    post:
       tags:
         - Collection
-      summary: EXPERIMENTAL - Get the default Revision of a STIG for this Collection
-      operationId: getDefaultRevisionByCollectionStig
+      summary: EXPERIMENTAL - Set the default Revision of a STIG and/or the Asset list
+      operationId: writeStigPropsByCollectionStig
       parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
-      responses:
-        '200':
-          description: Default Revision response
-          content:
-            application/json:
-              schema:
-                type: object
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
-  '/collections/{collectionId}/stigs/{benchmarkId}/default-revision/{revisionStr}':
-    put:
-      tags:
-        - Collection
-      summary: EXPERIMENTAL - Set the default Revision of a STIG for this Collection
-      operationId: writeDefaultRevisionByCollectionStig
-      parameters:
-      - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdPath'
-      - $ref: '#/components/parameters/RevisionStrPath'
+      requestBody:
+        required: true
+        description: The STIG properties for this Collection
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                defaultRevisionStr:
+                  $ref: '#/components/schemas/RevisionStr'
+                assetIds:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StringIntId'
       responses:
         '200':
           description: Default Revision response
@@ -4570,6 +4560,12 @@ components:
           type: string
         title:
           type: string
+        defaultRevisionStr:
+          type: string
+        defaultRevisionDate:
+          type: string
+          format: date
+          nullable: true
         lastRevisionStr:
           type: string
         lastRevisionDate:
@@ -5952,6 +5948,9 @@ components:
     RevisionStr:
       type: string
       pattern: ^(V\d{1,3}R\d{1,3}(\.\d{1,3})?|latest)$
+    RevisionStrRaw:
+      type: string
+      pattern: ^(V\d{1,3}R\d{1,3}(\.\d{1,3})?)$
     RuleAbbr:
       type: object
       required:
@@ -6079,7 +6078,19 @@ components:
         revisionStrs:
           type: array
           items:
-           $ref: '#/components/schemas/RevisionStr'     
+           $ref: '#/components/schemas/RevisionStrRaw'
+        revisions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              revisionStr:
+                $ref: '#/components/schemas/RevisionStrRaw'
+              revisionDate:
+                type: string
+                format: date
+                nullable: true
     STIGPostResponse:
       type: object
     StigAsset:

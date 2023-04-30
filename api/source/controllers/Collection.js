@@ -875,35 +875,30 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
   }
 }
 
-module.exports.writeDefaultRevisionByCollectionStig = async function (req, res, next) {
+module.exports.writeStigPropsByCollectionStig = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const benchmarkId = req.params.benchmarkId
-    const revisionStr = req.params.revisionStr
-    await CollectionSvc.writeDefaultRevisionByCollectionStig( {
+    const assetIds = request.body.assetIds
+    const defaultRevisionStr = request.body.defaultRevisionStr
+    if (assetIds?.length) {
+      const collectionHasAssets = await CollectionSvc.doesCollectionIncludeAssets({
+        collectionId,
+        assetIds
+      })
+      if (!collectionHasAssets) {
+        throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
+      }
+    }
+
+    await CollectionSvc.writeStigPropsByCollectionStig( {
       collectionId,
       benchmarkId,
-      revisionStr,
-      userObject: req.userObject,
+      assetIds,
+      defaultRevisionStr,
       svcStatus: res.svcStatus
     })
     res.json({})
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-module.exports.getDefaultRevisionByCollectionStig = async function (req, res, next) {
-  try {
-    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const benchmarkId = req.query.benchmarkId
-    const response = await CollectionSvc.getDefaultRevisionByCollectionStig( {
-      collectionId,
-      benchmarkId,
-      userObject: req.userObject
-    })
-    res.json(response)
   }
   catch (err) {
     next(err)

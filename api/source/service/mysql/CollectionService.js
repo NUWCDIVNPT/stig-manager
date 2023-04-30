@@ -859,6 +859,8 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
 exports.getStigsByCollection = async function( collectionId, labelIds, elevate, userObject ) {
   let columns = [
     'cr.benchmarkId',
+    'CASE WHEN crm.revId IS NOT NULL THEN concat("V", defRev.version, "R", defRev.release) ELSE "latest" END as defaultRevisionStr',
+    `CASE WHEN crm.revId IS NOT NULL THEN date_format(defRev.benchmarkDateSql,'%Y-%m-%d') ELSE date_format(cr.benchmarkDateSql,'%Y-%m-%d') END as defaultRevisionDate`,
     'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
     `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
     'st.title',
@@ -878,6 +880,8 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join current_rev cr on sa.benchmarkId=cr.benchmarkId',
+    'left join collection_rev_map crm on (sa.benchmarkId = crm.benchmarkId and c.collectionId = crm.collectionId)',
+    'left join revision defRev on crm.revId = defRev.revId',
     'left join stig st on cr.benchmarkId=st.benchmarkId'
   ]
 
@@ -908,7 +912,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by cr.benchmarkId, cr.version, cr.release, cr.benchmarkDateSql, st.title, cr.ruleCount '
+  sql += ' group by cr.revId, st.title, defRev.revId, crm.crId'
   sql += ' order by cr.benchmarkId'
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -1625,27 +1629,50 @@ async function queryUnreviewedByCollection ({
   return (rows)
 }
 
-exports.writeDefaultRevisionByCollectionStig = async function ({collectionId, benchmarkId, revisionStr, svcStatus = {}}) {
-  let version, release, connection
-  if (revisionStr !== 'latest') {
-    const revisionParts = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-    version = revisionParts[1]
-    release = revisionParts[2]
-  }
+exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmarkId, defaultRevisionStr, assetIds, svcStatus = {}}) {
   try {
+    let version, release, connection
+    if (defaultRevisionStr) {
+      if (defaultRevisionStr !== 'latest') {
+        const revisionParts = /V(\d+)R(\d+(\.\d+)?)/.exec(defaultRevisionStr)
+        version = revisionParts[1]
+        release = revisionParts[2]
+      }
+    }
     connection = await dbUtils.pool.getConnection()
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
   
     async function transaction () {
       await connection.query('START TRANSACTION')
-      if (revisionStr === 'latest') {
-        await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
+      if (stigProps.defaultRevision) {
+        if (stigProps.defaultRevision === 'latest') {
+          await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
+        }
+        else {
+          const [revisions] = await connection.query('SELECT revId FROM revision WHERE benchmarkId = ? and `version` = ? and `release` = ?', [benchmarkId, version, release])
+          if (revisions[0]?.revId) {
+            await connection.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
+            VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+          }
+        }  
       }
-      else {
-        const [revisions] = await connection.query('SELECT revId FROM revision WHERE benchmarkId = ? and `version` = ? and `release` = ?', [benchmarkId, version, release])
-        if (revisions[0]?.revId) {
-          await connection.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
-          VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+      if (assetIds) {
+        let sqlDeleteStigAsset = `
+        DELETE stig_asset_map FROM 
+          stig_asset_map
+          left join asset on stig_asset_map.assetId = asset.assetId
+        WHERE
+          asset.collectionId = ?
+          and stig_asset_map.benchmarkId = ?${assetIds.length > 0 ? ' and stig_asset_map.assetId NOT IN ?': ''}`
+        
+        // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
+        await connection.query( sqlDeleteStigAsset, [ collectionId, benchmarkId, [assetIds] ] )
+        
+        if (assetIds.length) {
+          const binds = assetIds.map( assetId => [benchmarkId, assetId])
+          // INSERT into stig_asset_map
+          const sqlInsertBenchmarks = `INSERT IGNORE INTO stig_asset_map (benchmarkId, assetId) VALUES ?`
+          await connection.query(sqlInsertBenchmarks, [ binds ])
         }
       }
       await dbUtils.updateStatsAssetStig(connection, {collectionId, benchmarkId})
@@ -1662,6 +1689,26 @@ exports.writeDefaultRevisionByCollectionStig = async function ({collectionId, be
     if (typeof connection !== 'undefined') {
       await connection.release()
     }
+  }
+}
+
+exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) {
+  try {
+    const sql = `select jt.assetId, a.collectionId
+    from 
+    JSON_TABLE(
+      ?,
+      "$[*]"
+      COLUMNS(
+        assetId INT(11) PATH "$"
+      ) ) AS jt
+    left join asset a using (assetId)
+    where a.collectionId != ? or a.collectionId is null`
+    const [rows] = dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
+    return rows.length === 0
+  }
+  catch (e) {
+    return false
   }
 }
 
