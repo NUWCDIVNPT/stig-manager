@@ -173,6 +173,11 @@ module.exports.queryMetrics = async function ({
 
 const sqlMetricsDetail = `json_object(
   'assessments', cr.ruleCount,
+  'assessmentsBySeverity', json_object(
+    'low', cr.lowCount,
+    'medium', cr.mediumCount,
+    'high', cr.highCount
+  ),
   'assessed', sa.pass + sa.fail + sa.notapplicable,
   'minTs', DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ'),
@@ -202,6 +207,11 @@ const sqlMetricsDetail = `json_object(
 ) as metrics`
 const sqlMetricsDetailAgg = `json_object(
   'assessments', coalesce(sum(cr.ruleCount),0),
+  'assessmentsBySeverity', json_object(
+    'low', coalesce(sum(cr.lowCount),0),
+    'medium', coalesce(sum(cr.mediumCount),0),
+    'high', coalesce(sum(cr.highCount),0)
+  ),  
   'assessed', coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0),
   'minTs', DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(MAX(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ'),
@@ -279,6 +289,9 @@ const sqlMetricsSummaryAgg = `json_object(
 ) as metrics`
 const colsMetricsDetail = [
   `cr.ruleCount as assessments`,
+  `cr.lowCount as assessmentsLow`,
+  `cr.mediumCount as assessmentsMedium`,
+  `cr.highCount as assessmentsHigh`,
   `sa.pass + sa.fail + sa.notapplicable as assessed`,
   `DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ') as maxTs`,
@@ -315,6 +328,9 @@ const colsMetricsDetail = [
 ]
 const colsMetricsDetailAgg = [
   `coalesce(sum(cr.ruleCount),0) as assessments`,
+  `coalesce(sum(cr.lowCount),0) as assessmentsLow`,
+  `coalesce(sum(cr.mediumCount),0) as assessmentsMedium`,
+  `coalesce(sum(cr.highCount),0) as assessmentsHigh`,
   `coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0) as assessed`,
   `DATE_FORMAT(min(sa.minTs), '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(max(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ') as maxTs`,
