@@ -694,10 +694,12 @@ The default Settings for Reviews in Collections are:
 
 Attributions
 ~~~~~~~~~~~~~~~
-- Reviewed: The User and Timestamp associated with the last change to this Reviews content.
-- Last Status Change: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected) are tracked separately and displayed here.
 
-.. thumbnail:: /assets/images/review-eval-panel.png
+- Modified: The User and Timestamp associated with the last change to this Reviews content. 
+  - The RuleId that was submitted with the last change to the Review. Hover over this RuleId to view a popup listing the other RuleIds with matching Check Content and STIG Id that this Review also applies to. 
+- Status: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected), and the User that made that change, are tracked separately and displayed here.
+
+.. thumbnail:: /assets/images/review-attributions-panel.png
       :width: 50% 
       :show_caption: True
       :title: Review Evaluation Panel with Attributions
