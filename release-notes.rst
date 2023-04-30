@@ -1,3 +1,14 @@
+1.3.5
+-----
+
+Changes:
+
+  - (API) Review carry-forward feature implemented. Reviews are now associated with a key composed of the calculated digest of Rule Check Content and the Rule Version ("STIG ID"), rather than specific RuleIds. This will allow a much greater proportion of Reviews to apply across changes between STIG Revisions (#957).
+  - (App) Last modified RuleId context now displayed in Attributions Panel, with hover text indicating other applicable RuleIds.
+  - (App) OIDC Library refactor (#775).
+  - (API/App) Assessment counts by severity now included in "Detailed" Metrics exports (#898).
+
+
 1.3.4
 -----
 
@@ -10,7 +21,7 @@ Changes:
   - (App) Resolved issue preventing Application Managers from creating/modifying Owner grants via the User Admin panel.
   - (API) Refactored Collection Checklist query to improve performance.
   - (Workflows) Updated GitHub workflows to generate test coverage reports, build and sign binary artifacts, audit npm dependencies.
-  - (Workflows) The Iron Bank-based image offering on Docker Hub is now based on the Iron Bank Alpine Node image (nodejs18:18-slim), which scans much cleaner than the previously used RHEL UBI. 
+  - (Workflows) The Iron Bank-based image offering on Docker Hub is now based on the Iron Bank Alpine Node image (nodejs18:18-slim), which scans much cleaner than the previously used RHEL UBI. [Reverted]
 
 
 1.3.3
