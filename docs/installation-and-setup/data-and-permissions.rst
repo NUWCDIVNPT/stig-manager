@@ -34,12 +34,12 @@ Wherever the content of a STIG is displayed (STIG Rules, Rule Titles, Rule Descr
 "Checklists" - .ckl and XCCDF 
 ---------------------------------------------
 
-Assets and the STIGs assigned to them are generally presented as Checklists, the lists of Rules and Checks that compose the assigned STIG, and the Reviews that satisfy those Rules. STIG Manager associates Reviews with specific Rules, independent of the STIGs that are assigned to Assets. This allows for different and more useful presentations of the data than when the Reviews are expressed in flat files, such as .ckl or XCCDF files. 
+Assets and the STIGs assigned to them are generally presented as Checklists, the lists of Rules and Checks that compose the assigned STIG, and the Reviews that satisfy those Rules. STIG Manager associates Reviews with specific content of Rules (Rule Version and Rule Check Content), independent of the STIGs that are assigned to Assets. This allows for different and more useful presentations of the data than when the Reviews are expressed in flat files, such as .ckl or XCCDF files. 
 
 It is important to note that STIG Manager does not retain the actual .ckl or XCCDF files that are imported into it in any way. The files are parsed for the information they contain, and that information is stored in the database. Manual edits via the UI and new imports all contribute to the current state of an Assets reviews as presented by the UI and API. NEW .ckl or XCCDF files are generated on demand reflecting the current state of a Collections Assets, STIGs, and reviews. 
 This approach provides several advantages:
 
-- Reviews are associated with specific Rule IDs 
+- Reviews are associated with the specific content of a Rule (Rule Version and Rule Check Content).
 - Review attribution info, status, and metadata can be attached to each individual Review. 
 - Checklists are generated using the **Reference** STIGs imported and maintained by the Application Manager. This alleviates issues with partial checklists, unauthorized overrides, etc.  
 

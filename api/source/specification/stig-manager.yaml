@@ -5155,6 +5155,7 @@ components:
       type: object
       required:
         - ruleId
+        - ruleIds
         - result
         - detail
         - comment
@@ -5166,6 +5167,10 @@ components:
       properties:
         ruleId:
           $ref: '#/components/schemas/String255'
+        ruleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:
@@ -5592,6 +5597,7 @@ components:
         - username
         - ts
         - touchTs
+        - ruleId
       additionalProperties: false
       properties:
         result:
@@ -5614,6 +5620,8 @@ components:
           $ref: '#/components/schemas/StringDateTime'
         touchTs:
           $ref: '#/components/schemas/StringDateTime'
+        ruleId:
+          $ref: '#/components/schemas/String255'
     ReviewHistoryAsset:
       type: object
       required:
@@ -5775,6 +5783,7 @@ components:
         - assetId
         - assetName
         - ruleId
+        - ruleIds
         - result
         - detail
         - comment
@@ -5795,6 +5804,10 @@ components:
             $ref: '#/components/schemas/LabelId'              
         ruleId:
           $ref: '#/components/schemas/String255'
+        ruleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/String255'
         result:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:

@@ -268,7 +268,8 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
     'left join rev_group_rule_map rgr using (revId)',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
-    'inner join review rv on (rgr.ruleId = rv.ruleId and a.assetId = rv.assetId and rv.resultId = 4)',
+    'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
+    'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
     'left join cci on rgrcc.cci = cci.cci'
   ]
 
@@ -721,7 +722,8 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       'left join stig_asset_map sa using (assetId)',
       'left join current_rev rev using (benchmarkId)',
       'left join rev_group_rule_map rgr using (revId)',
-      'left join review r on (rgr.ruleId=r.ruleId and sa.assetId=r.assetId)'
+      'left join rule_version_check_digest rvcd using (ruleId)',
+      'left join review r on (rvcd.version=r.version and rvcd.checkDigest=r.checkDigest and sa.assetId=r.assetId)'
     ]
 
     const predicates = {
@@ -1101,6 +1103,7 @@ from
 		json_arrayagg(
 		  json_object(
         'ts', DATE_FORMAT(rh.ts, '%Y-%m-%dT%TZ'),
+        'ruleId', rh.ruleId,
         'result', result.api,
         'detail', COALESCE(LEFT(rh.detail,32767), ''),
         'comment', COALESCE(LEFT(rh.comment,32767), ''),
@@ -1580,7 +1583,8 @@ async function queryUnreviewedByCollection ({
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
     'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
 	  'left join rev_group_rule_map rgr on cr.revId = rgr.revId',
-	  'left join review r on (a.assetId = r.assetId and rgr.ruleId = r.ruleId)',
+    'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
+	  'left join review r on (a.assetId = r.assetId and rvcd.version = r.version and rvcd.checkDigest = r.checkDigest)',
     'left join result on r.resultId = result.resultId'
   ]
   const predicates = {

@@ -1681,6 +1681,7 @@ async function addCollectionReview ( params ) {
 					//TODO: Set the history (does not set history on handleGroupSelectionForCollection)
 					//append the current state of the review to history
 					let currentReview = {
+						ruleId: apiReview.ruleId,
 						comment: apiReview.comment,
 						resultEngine: apiReview.resultEngine,
 						autoResult: apiReview.autoResult,

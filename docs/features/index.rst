@@ -168,7 +168,7 @@ STIG Manager is ready to support a life-cycle approach to RMF. Your most current
 
 
 
-  STIG Manager tracks Reviews at the Rule level, so that When STIGs are updated, all Rules with unchanged RuleIds are carried forward to the new STIG. 
+  STIG Manager tracks Reviews using the Rule Version and Rule Check Content, so that When STIGs are updated, all Reviews for Rules with unchanged content are carried forward to the new STIG. 
 
 
   Enhance STIG Manager with utilities and clients of your own. STIG Manager was built with a well-documented RESTful API to enable convenient integration with other tools. 
@@ -184,7 +184,7 @@ STIG Manager is ready to support a life-cycle approach to RMF. Your most current
   Targeted Evaluation Efforts
 
 
-  Track Evaluations at the Rule level. When a STIG updates, if the RuleId does not change, that result persists to the new version. 
+  Track Evaluations at the Rule content level. When a STIG updates, if the Rule content does not change, that result persists to the new version. 
 
 
 

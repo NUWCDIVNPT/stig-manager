@@ -181,6 +181,8 @@ select
   review.reviewId,
   cteAsset.assetId,
   cteRule.ruleId,
+  rvcd.version,
+  rvcd.checkDigest,
   
   COALESCE(cteReview.resultId, review.resultId) as resultId,
   COALESCE(cteReview.detail, review.detail, '') as detail,
@@ -254,7 +256,8 @@ from
   CROSS JOIN cteRule
   LEFT JOIN cteReview on true
   ${!skipGrantCheck ? 'LEFT JOIN cteGrant on (cteAsset.assetId = cteGrant.assetId and cteRule.ruleId = cteGrant.ruleId)' : ''}
-  LEFT JOIN review on (cteAsset.assetId = review.assetId and cteRule.ruleId = review.ruleId)
+  LEFT JOIN rule_version_check_digest rvcd on cteRule.ruleId = rvcd.ruleId
+  LEFT JOIN review on (cteAsset.assetId = review.assetId and rvcd.version = review.version and rvcd.checkDigest = review.checkDigest)
   LEFT JOIN cteCollectionSetting on true
   LEFT JOIN review rChangedResult on (
     rChangedResult.reviewId = review.reviewId 
@@ -313,6 +316,8 @@ select
   cteCandidate.reviewId, 
   cteCandidate.assetId, 
   cteCandidate.ruleId, 
+  cteCandidate.version,
+  cteCandidate.checkDigest,
   cteCandidate.resultId, 
   cteCandidate.detail, 
   cteCandidate.comment, 
@@ -371,7 +376,7 @@ from
   with historyRecs AS (
     select
       rh.historyId,
-      ROW_NUMBER() OVER (PARTITION BY r.assetId, r.ruleId ORDER BY rh.historyId DESC) as rowNum
+      ROW_NUMBER() OVER (PARTITION BY r.assetId, r.version, r.checkDigest ORDER BY rh.historyId DESC) as rowNum
     from
       review_history rh
       left join review r using (reviewId)
@@ -388,6 +393,7 @@ from
   const sqlHistory = `  
   INSERT INTO review_history (
     reviewId,
+    ruleId,
     resultId,
     detail,
     comment,
@@ -402,6 +408,7 @@ from
     resultEngine
   ) SELECT 
       reviewId,
+      ruleId,
       resultId,
       LEFT(detail,32767) as detail,
       LEFT(comment,32767) as comment,
@@ -424,6 +431,8 @@ from
   insert into review (
     assetId,
     ruleId,
+    \`version\`,
+    checkDigest,
     resultId,
     resultEngine,
     detail,
@@ -438,6 +447,8 @@ from
   select 
     assetId,
     ruleId,
+    \`version\`,
+    checkDigest,
     resultId,
     resultEngine,
     detail,
@@ -590,6 +601,8 @@ const writeQueries = {
   createIncomingForPost: `
   CREATE TEMPORARY TABLE IF NOT EXISTS incoming (
     ruleId varchar(255),
+    \`version\` varchar(45),
+    checkDigest binary(32),
     resultId int,
     resultEngine json,
     detail mediumtext,
@@ -601,6 +614,8 @@ const writeQueries = {
   ) 
     SELECT
       jt.ruleId,
+      jtrvcd.version,
+      jtrvcd.checkDigest,
       jtresult.resultId,
       jt.resultEngine,
       jt.detail,
@@ -623,6 +638,7 @@ const writeQueries = {
           statusText VARCHAR(255) PATH "$.status.text"
         )
       ) as jt
+      left join rule_version_check_digest jtrvcd on jtrvcd.ruleId = jt.ruleId
       left join result jtresult on (jtresult.api = jt.result)
       left join status jtstatus on (jtstatus.api = jt.statusLabel)
   `,
@@ -630,6 +646,8 @@ const writeQueries = {
   insert into review (
     assetId,
       ruleId,
+      \`version\`,
+      checkDigest,
       resultId,
       resultEngine,
       detail,
@@ -645,6 +663,8 @@ const writeQueries = {
   select
     :assetId,
     i.ruleId,
+    i.version,
+    i.checkDigest,
     i.resultId,
     CASE WHEN i.resultEngine = 0 THEN NULL ELSE i.resultEngine END,
     COALESCE(i.detail,''),
@@ -658,17 +678,18 @@ const writeQueries = {
     UTC_TIMESTAMP()
     from
       incoming i
-      left join review r on (r.assetId = :assetId and r.ruleId = i.ruleId)
+      left join review r on (r.assetId = :assetId and r.version = i.version and r.checkDigest = i.checkDigest)
     where
-      r.ruleId is null  
+      r.reviewId is null  
   `,
   updateReviews: (resetCriteria = 'result') => `
   update 
     incoming i
-    inner join review r on (r.assetId = :assetId and r.ruleId = i.ruleId)
+    inner join review r on (r.assetId = :assetId and r.version = i.version and r.checkDigest = i.checkDigest)
     left join review rChanged on (
       rChanged.assetId = :assetId 
-      and rChanged.ruleId = i.ruleId 
+      and rChanged.version = i.version
+      and rChanged.checkDigest = i.checkDigest 
       and rChanged.statusId != 0 
       and (
         rChanged.resultId != i.resultId
@@ -679,6 +700,10 @@ const writeQueries = {
     r.assetId = :assetId,
 
     r.ruleId = i.ruleId,
+
+    r.version = i.version,
+
+    r.checkDigest = i.checkDigest,
 
     r.resultId = COALESCE(i.resultId, r.resultId),
 
@@ -763,6 +788,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
       json_array()
     ) as assetLabelIds`,
     'r.ruleId',
+    // line below is commented so newman tests pass 2023-04-15
+    `cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json) as ruleIds`,
     'result.api as "result"',
     'CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine END as resultEngine',
     "COALESCE(LEFT(r.detail,32767),'') as detail",
@@ -792,7 +819,9 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   ]
   const joins = [
     'review r',
-    'left join rev_group_rule_map rgr on r.ruleId = rgr.ruleId',
+    'left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)',
+    'left join rule_version_check_digest rvcd2 on (r.version = rvcd2.version and r.checkDigest = rvcd2.checkDigest)',
+    'left join rev_group_rule_map rgr on rvcd.ruleId = rgr.ruleId',
     'left join revision on rgr.revId = revision.revId',
     'left join current_rev on rgr.revId = current_rev.revId',
     'left join result on r.resultId = result.resultId',
@@ -812,7 +841,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     groupBy.push(`r.metadata`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+    columns.push(`coalesce(cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ),JSON_ARRAY()) as "stigs"`)
 
   }
   if (inProjection.includes('rule')) {
@@ -832,6 +861,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
         (select json_arrayagg(
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
+                'ruleId', rh.ruleId,
                 'result', result.api,
                 'resultEngine', CASE WHEN rh.resultEngine = 0 THEN NULL ELSE rh.resultEngine END,
                 'detail', COALESCE(LEFT(rh.detail,32767),''),
@@ -908,7 +938,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     predicates.binds.push(inPredicates.status)
   }
   if (inPredicates.ruleId) {
-    predicates.statements.push('r.ruleId = ?')
+    predicates.statements.push('rvcd.ruleId = ?')
     predicates.binds.push(inPredicates.ruleId)
   }
   if (inPredicates.groupId) {
@@ -916,7 +946,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     predicates.binds.push(inPredicates.groupId)
   }
   if (inPredicates.cci) {
-    predicates.statements.push(`r.ruleId IN (
+    predicates.statements.push(`rvcd.ruleId IN (
       SELECT
         distinct rgr.ruleId
       FROM
@@ -996,6 +1026,7 @@ exports.exportReviews = async function (includeHistory = false) {
         (select json_arrayagg(
               json_object(
                 'ts' , DATE_FORMAT(rh.ts, '%Y-%m-%dT%H:%i:%sZ'),
+                'ruleId', rh.ruleId,
                 'result', result.api,
                 'resultEngine', CASE WHEN rh.resultEngine = 0 THEN NULL ELSE rh.resultEngine END,
                 'detail', LEFT(rh.detail,32767),
@@ -1069,8 +1100,11 @@ exports.deleteReviewByAssetRule = async function(assetId, ruleId, projection, us
     connection = await dbUtils.pool.getConnection()
     async function transaction () {
       await connection.query('START TRANSACTION')
-      let sqlDelete = 'DELETE FROM review WHERE assetId = :assetId AND ruleId = :ruleId;';
-      await connection.query(sqlDelete, binds);
+      let sqlDelete = `DELETE review 
+  FROM review LEFT JOIN rule_version_check_digest rvcd
+  ON (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest)
+  WHERE review.assetId = :assetId AND rvcd.ruleId = :ruleId`
+      await connection.query(sqlDelete, binds)
       await dbUtils.updateStatsAssetStig( connection, { ruleId, assetId })
       await connection.commit()
     }
@@ -1115,13 +1149,14 @@ exports.putReviewsByAsset = async function ({
       with historyRecs AS (
         select
           rh.historyId,
-          ROW_NUMBER() OVER (PARTITION BY r.assetId, r.ruleId ORDER BY rh.historyId DESC) as rowNum
+          ROW_NUMBER() OVER (PARTITION BY r.assetId, r.version, r.checkDigest ORDER BY rh.historyId DESC) as rowNum
         from
           review_history rh
           left join review r using (reviewId)
+          left join rule_version_check_digest rvcd on r.version = rvcd.version and r.checkDigest = rvcd.checkDigest
         where
-          assetId = ?
-          and ruleId IN ?)
+          r.assetId = ?
+          and rvcd.ruleId IN ?)
       delete review_history
       FROM 
          review_history
@@ -1132,6 +1167,7 @@ exports.putReviewsByAsset = async function ({
       const sqlHistory = `  
       INSERT INTO review_history (
         reviewId,
+        ruleId,
         resultId,
         detail,
         comment,
@@ -1145,25 +1181,27 @@ exports.putReviewsByAsset = async function ({
         touchTs,
         resultEngine
       ) SELECT 
-          reviewId,
-          resultId,
-          LEFT(detail,32767) as detail,
-          LEFT(comment,32767) as comment,
-          autoResult,
-          ts,
-          userId,
-          statusText,
-          statusUserId,
-          statusTs,
-          statusId,
-          touchTs,
-          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+          r.reviewId,
+          r.ruleId,
+          r.resultId,
+          LEFT(r.detail,32767) as detail,
+          LEFT(r.comment,32767) as comment,
+          r.autoResult,
+          r.ts,
+          r.userId,
+          r.statusText,
+          r.statusUserId,
+          r.statusTs,
+          r.statusId,
+          r.touchTs,
+          CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine END
         FROM
-          review 
+          review r
+          left join rule_version_check_digest rvcd on r.version=rvcd.version and r.checkDigest=rvcd.checkDigest
         WHERE
-          assetId = ?
-          and ruleId IN ?
-          and reviewId IS NOT NULL
+          r.assetId = ?
+          and rvcd.ruleId IN ?
+          and r.reviewId IS NOT NULL
         FOR UPDATE    
       `
       await connection.query('START TRANSACTION')
@@ -1266,9 +1304,10 @@ exports.getReviewMetadataKeys = async function ( assetId, ruleId ) {
       JSON_KEYS(metadata) as keyArray
     from 
       review r
+      left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)
     where 
       r.assetId = ?
-      and r.ruleId = ?`
+      and rvcd.ruleId = ?`
   binds.push(assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].keyArray : []
@@ -1281,9 +1320,10 @@ exports.getReviewMetadata = async function ( assetId, ruleId ) {
         metadata 
       from 
         review r
+        left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)
       where 
         r.assetId = ?
-        and r.ruleId = ?`
+        and rvcd.ruleId = ?`
     binds.push(assetId, ruleId)
     let [rows] = await dbUtils.pool.query(sql, binds)
     return rows.length > 0 ? rows[0].metadata : {}
@@ -1293,12 +1333,13 @@ exports.patchReviewMetadata = async function ( assetId, ruleId, metadata ) {
   const binds = []
   let sql = `
     update
-      review 
+      review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = JSON_MERGE_PATCH(metadata, ?)
+      review.metadata = JSON_MERGE_PATCH(metadata, ?)
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return true
@@ -1309,11 +1350,12 @@ exports.putReviewMetadata = async function ( assetId, ruleId, metadata ) {
   let sql = `
     update
       review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = ?
+      review.metadata = ?
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return true
@@ -1326,9 +1368,10 @@ exports.getReviewMetadataValue = async function ( assetId, ruleId, key ) {
       JSON_EXTRACT(metadata, ?) as value
     from 
       review r
+      left join rule_version_check_digest rvcd on (r.version = rvcd.version and r.checkDigest = rvcd.checkDigest)
     where 
       r.assetId = ?
-      and r.ruleId = ?`
+      and rvcd.ruleId = ?`
   binds.push(`$."${key}"`, assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""
@@ -1339,11 +1382,12 @@ exports.putReviewMetadataValue = async function ( assetId, ruleId, key, value ) 
   let sql = `
     update
       review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = JSON_SET(metadata, ?, ?)
+      review.metadata = JSON_SET(metadata, ?, ?)
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
   binds.push(`$."${key}"`, value, assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""
@@ -1353,12 +1397,13 @@ exports.deleteReviewMetadataKey = async function ( assetId, ruleId, key ) {
   const binds = []
   let sql = `
     update
-      review 
+      review
+      left join rule_version_check_digest rvcd on (review.version = rvcd.version and review.checkDigest = rvcd.checkDigest)
     set 
-      metadata = JSON_REMOVE(metadata, ?)
+      review.metadata = JSON_REMOVE(metadata, ?)
     where 
-      assetId = ?
-      and ruleId = ?`
+      review.assetId = ?
+      and rvcd.ruleId = ?`
 binds.push(`$."${key}"`, assetId, ruleId)
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0 ? rows[0].value : ""

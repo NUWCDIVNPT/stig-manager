@@ -439,7 +439,8 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
         'checkContent',
         'fixText',
         'revGroupRuleMap',
-        'revGroupRuleCciMap'
+        'revGroupRuleCciMap',
+        'ruleVersionCheckDigest'
       ]
 
       for (const query of queryOrder) {
@@ -607,38 +608,6 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
         sql: `insert ignore into fix_text (\`text\`) VALUES ?`,
         binds: []
       },
-      tempGroupRule: {
-        sql: `insert ignore into temp_group_rule (
-          groupId, 
-          ruleId,
-          \`version\`,
-          title,
-          severity,
-          weight,
-          vulnDiscussion,
-          falsePositives,
-          falseNegatives,
-          documentable,
-          mitigations,
-          severityOverrideGuidance,
-          potentialImpacts,
-          thirdPartyTools,
-          mitigationControl,
-          responsibility,
-          iaControls,
-          checkSystem,
-          check
-          ) VALUES ?`,
-        binds: []
-      },
-      tempRuleCheck: {
-        sql: `insert ignore into temp_rule_check (ruleId, \`system\`, content) VALUES ?`,
-        binds: []
-      },
-      tempRuleFix: {
-        sql: `insert ignore into temp_rule_fix (ruleId, fixref, \`text\`) VALUES ?`,
-        binds: []
-      },
       tempRuleCci: {
         sql: `insert ignore into temp_rule_cci (ruleId, cci) VALUES ?`,
         binds: []
@@ -665,6 +634,36 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           WHERE 
             rgr.revId = :revId`
       },
+      ruleVersionCheckDigest: {
+        sql: `INSERT INTO rule_version_check_digest (ruleId, \`version\`, checkDigest)
+        with currentRuleVersionCheckDigest as (
+        select
+          rgr.ruleId,
+          rgr.version,
+          rgr.checkDigest,
+          rev.benchmarkDateSql,
+          rev.revId,
+          ROW_NUMBER() OVER (PARTITION BY rgr.ruleId ORDER BY rev.benchmarkDateSql DESC) as rowNum
+        from
+          rev_group_rule_map rgr
+          left join revision rev using (revId)
+        where
+          rgr.checkDigest is not null
+          and rev.benchmarkId = ?
+        )
+        select
+          ruleId,
+          \`version\`,
+          checkDigest
+        from
+          currentRuleVersionCheckDigest crvcd 
+        where
+          rowNum = 1
+        ON DUPLICATE KEY UPDATE
+          \`version\`=crvcd.version,
+          checkDigest=crvcd.checkDigest`,
+        binds: []
+      }
     }
 
     let { revision, ...benchmarkBinds } = b
@@ -766,6 +765,9 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
       return binds
     }, dml.revision.binds)
 
+    // QUERY: ruleVersionCheckDigest
+    dml.ruleVersionCheckDigest.binds.push(benchmarkBinds.benchmarkId)
+
     return {ddl, dml}
   }
 }
@@ -782,7 +784,9 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
   let dmls = [
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
-    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)"
+    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
+    "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
+
 ]
   let currentRevDmls = [
     "DELETE from current_rev where benchmarkId = :benchmarkId",
@@ -891,7 +895,8 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
     "DELETE from stig where benchmarkId = :benchmarkId",
     "DELETE from current_rev where benchmarkId = :benchmarkId",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
-    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)"
+    "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
+    "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
   ]
 
   let connection;

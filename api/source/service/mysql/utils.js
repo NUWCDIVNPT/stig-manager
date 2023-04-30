@@ -330,7 +330,8 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
          asset a
          left join stig_asset_map sa using (assetId)
          left join v_current_group_rule cgr using (benchmarkId)
-         left join review on (cgr.ruleId=review.ruleId and review.assetId=sa.assetId)
+         left join rule_version_check_digest rvcd using (ruleId)
+         left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
     ${whereClause}
     group by
       sa.assetId,

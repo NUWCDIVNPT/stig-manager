@@ -36,9 +36,31 @@ exports.setConfigurationItem = async function (key, value) {
 }
 
 exports.replaceAppData = async function (importOpts, appData, userObject, res ) {
-  function dmlObjectFromAppData (appdata) {
+  function queriesFromBenchmarkData(appdata) {
     let {collections, assets, users, reviews} = appdata
 
+    const tempFlag = true
+    const ddl = {
+      tempReview: {
+        drop: 'drop table if exists temp_review',
+        create: `CREATE${tempFlag ? ' TEMPORARY' : ''} TABLE temp_review (
+          assetId INT,
+          ruleId VARCHAR(45),
+          resultId INT,
+          detail MEDIUMTEXT,
+          comment MEDIUMTEXT,
+          userId INT,
+          autoResult INT,
+          ts DATETIME,
+          statusId INT,
+          statusText VARCHAR(255),
+          statusUserId INT,
+          statusTs DATETIME,
+          metadata JSON,
+          resultEngine JSON
+        )`
+      }
+    }
     let dml = {
       preload: [
       ],
@@ -153,6 +175,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         sqlDelete: `DELETE FROM review_history`,
         sqlInsert: `INSERT INTO review_history (
             reviewId,
+            ruleId,
             resultId,
             detail,
             comment,
@@ -167,6 +190,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           )
           SELECT
             r.reviewId,
+            jt.ruleId,
             jt.resultId,
             jt.detail,
             jt.comment,
@@ -198,8 +222,28 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
                 touchTs DATETIME PATH "$.touchTs",
                 resultEngine JSON PATH "$.resultEngine"
               )
-            ) as jt 
-            LEFT JOIN review r ON (jt.assetId = r.assetId and jt.ruleId = r.ruleId)`,
+            ) as jt
+            LEFT JOIN rule_version_check_digest rvcd ON jt.ruleId = rvcd.ruleId
+            LEFT JOIN review r ON (jt.assetId = r.assetId and rvcd.version = r.version and rvcd.checkDigest = r.checkDigest)`,
+        insertBinds: []
+      },
+      tempReview: {
+        sqlInsert: `INSERT IGNORE INTO temp_review(
+          assetId,
+          ruleId,
+          resultId,
+          detail,
+          comment,
+          userId,
+          autoResult,
+          ts,
+          statusId,
+          statusText,
+          statusUserId,
+          statusTs,
+          metadata,
+          resultEngine
+        ) VALUES ?`,
         insertBinds: []
       },
       review: {
@@ -207,6 +251,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         sqlInsert: `INSERT IGNORE INTO review (
           assetId,
           ruleId,
+          \`version\`,
+          checkDigest,
           resultId,
           detail,
           comment,
@@ -219,8 +265,28 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           statusTs,
           metadata,
           resultEngine
-        ) VALUES ?`,
-        insertBinds: []
+        )
+        SELECT 
+          jt.assetId,
+          jt.ruleId,
+          rvcd.version,
+          rvcd.checkDigest,
+          jt.resultId,
+          jt.detail,
+          jt.comment,
+          jt.userId,
+          jt.autoResult,
+          jt.ts,
+          jt.statusText,
+          jt.statusUserId,
+          jt.statusId,
+          jt.statusTs,
+          jt.metadata,
+          jt.resultEngine
+        FROM
+        temp_review jt
+        LEFT JOIN rule_version_check_digest rvcd ON (jt.ruleId = rvcd.ruleId)`,
+        insertBinds: [null] // dummy value so length > 0
       }
     }
 
@@ -315,7 +381,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           resultEngine: JSON.stringify(h.resultEngine)
         })
       }
-      dml.review.insertBinds.push([
+      dml.tempReview.insertBinds.push([
         parseInt(review.assetId),
         review.ruleId,
         dbUtils.REVIEW_RESULT_API[review.result],
@@ -324,16 +390,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         parseInt(review.userId),
         review.autoResult ? 1 : 0,
         new Date(review.ts),
+        dbUtils.REVIEW_STATUS_API[review.status?.label],
         review.status?.text,
         parseInt(review.status.userId ?? review.status.user?.userId),
-        dbUtils.REVIEW_STATUS_API[review.status?.label],
         new Date(review.status?.ts),
         JSON.stringify(review.metadata || {}),
         review.resultEngine ? JSON.stringify(review.resultEngine) : null
       ])
     }
     dml.reviewHistory.insertBinds = JSON.stringify(historyRecords)
-    return dml
+    return {ddl, dml}
   }
 
   let connection
@@ -341,18 +407,25 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
     res.write('Starting import\n')
-    let result, hrstart, hrend, tableOrder, dml, stats = {}
+    let result, hrstart, hrend, tableOrder, stats = {}
     let totalstart = process.hrtime() 
 
     hrstart = process.hrtime() 
-    dml = dmlObjectFromAppData(appData)
+    // dml = dmlObjectFromAppData(appData)
+    const {ddl, dml} = queriesFromBenchmarkData(appData)
     hrend = process.hrtime(hrstart)
     stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     res.write('Parsed appdata\n')
 
-    // Connect to MySQL and start transaction
+    // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
     await connection.query('SET FOREIGN_KEY_CHECKS=0')
+
+    // create temporary tables
+    for (const tempTable of Object.keys(ddl)) {
+      await connection.query(ddl[tempTable].drop)
+      await connection.query(ddl[tempTable].create)
+    }
 
     // Deletes
     tableOrder = [
@@ -388,9 +461,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'assetLabel',
       'stigAssetMap',
       'userStigAssetMap',
+      'tempReview',
       'review',
       'reviewHistory'
     ]
+    stats.tempReview = {}
     await connection.query('SET FOREIGN_KEY_CHECKS=1')
     for (const table of tableOrder) {
       if (dml[table].insertBinds.length > 0) {
@@ -411,20 +486,30 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       }
     }
 
-    // Stats
-    res.write('Calculating status statistics\n')
-    hrstart = process.hrtime();
-    const statusStats = await dbUtils.updateStatsAssetStig( connection, {} )
-    hrend = process.hrtime(hrstart)
-    stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    // // Stats
+    // res.write('Calculating status statistics\n')
+    // hrstart = process.hrtime();
+    // const statusStats = await dbUtils.updateStatsAssetStig( connection, {} )
+    // hrend = process.hrtime(hrstart)
+    // stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
     
-    // Commit
-    hrstart = process.hrtime() 
-    res.write(`Starting commit\n`)
-    await connection.query('COMMIT')
+    // // Commit
+    // hrstart = process.hrtime() 
+    // res.write(`Starting commit\n`)
+    // await connection.query('COMMIT')
     res.write(`Commit successful\n`)
-    hrend = process.hrtime(hrstart)
-    stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    // hrend = process.hrtime(hrstart)
+    // stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+
+        // Stats
+        res.write('Calculating status statistics\n')
+        hrstart = process.hrtime();
+        let statsConn = await dbUtils.pool.getConnection()
+        const statusStats = await dbUtils.updateStatsAssetStig( statsConn, {} )
+        await statsConn.release()
+        hrend = process.hrtime(hrstart)
+        stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+    
 
     // Total time calculation
     hrend = process.hrtime(totalstart)
@@ -432,7 +517,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
     res.write(JSON.stringify(stats))
     res.end()
 
-    // return (stats)
+    return (stats)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
