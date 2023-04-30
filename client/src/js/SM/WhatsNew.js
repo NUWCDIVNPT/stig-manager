@@ -11,8 +11,7 @@ SM.WhatsNew.Sources = [
 
     <p><img src="img/whatsnew/2023-04-25-review-key-differ.png"/></p>
 
-
-    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-dashboard">STIG Manager Documentation for more details about this new feature!</a></p>  
+    <p>There are a very small number of exceptions to this behavior, please see the <a target="_blank" href="docs/user-guide/rule-exceptions.html">STIG Manager Documentation for more details.</a></p>  
 `    
   },
 
