@@ -4988,6 +4988,7 @@ components:
           additionalProperties: false
           required:
             - assessments
+            - assessmentsBySeverity
             - assessed
             - minTs
             - maxTs
@@ -4998,6 +4999,20 @@ components:
           properties:
             assessments:
               type: integer
+            assessmentsBySeverity:
+              type: object
+              additionalProperties: false
+              required:
+                - low
+                - medium
+                - high
+              properties:
+                low:
+                  type: integer
+                medium:
+                  type: integer
+                high:
+                  type: integer                    
             assessed:
               type: integer
             minTs:
@@ -5062,7 +5077,7 @@ components:
                 medium:
                   type: integer
                 high:
-                  type: integer
+                  type: integer            
     MetricsSummary:
       type: object
       # additionalProperties: false

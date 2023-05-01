@@ -2,6 +2,20 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2023-4-27',
+    header: `Reviews now persist across most Rule changes!`,
+    body: `
+    <p>Reviews are now tracked using the specific Check Content and Version ("STIG ID") of a STIG Rule, rather than the RuleId. This new behavior will preserve Reviews when DISA STIG Releases make only minor changes to the Rule text, such as to the description, discussion, or reference elements. <b>Reviews will continue to apply to Rules in new STIG Revisions unless the actual Check Content or STIG ID for a STIG Rule changes.</b></p>
+
+    <ul><li><p>Below is a screenshot of the STIG Comparison tool (Available from the STIG Library node of the Navigation Tree) showing some of the differences between two Revisions of the RHEL 8 STIG. <b>Previously, all Rules in the red box would have required re-evaluation for the new STIG Revision. Now, only the Rule in the yellow box will require re-evaluation, because the actual check for that Rule has changed.</b></p></li></ul>
+
+    <p><img src="img/whatsnew/2023-04-25-review-key-differ.png"/></p>
+
+    <p>There are a very small number of exceptions to this behavior, please see the <a target="_blank" href="docs/user-guide/rule-exceptions.html">STIG Manager Documentation for more details.</a></p>  
+`    
+  },
+
+  {
     date: '2023-1-11',
     header: `New Collection Dashboard!`,
     body: `
