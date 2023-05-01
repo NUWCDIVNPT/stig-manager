@@ -1644,8 +1644,8 @@ exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmar
   
     async function transaction () {
       await connection.query('START TRANSACTION')
-      if (stigProps.defaultRevision) {
-        if (stigProps.defaultRevision === 'latest') {
+      if (defaultRevisionStr) {
+        if (defaultRevisionStr === 'latest') {
           await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
         }
         else {
@@ -1704,7 +1704,8 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
       ) ) AS jt
     left join asset a using (assetId)
     where a.collectionId != ? or a.collectionId is null`
-    const [rows] = dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
+
+    const [rows] = await dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
     return rows.length === 0
   }
   catch (e) {

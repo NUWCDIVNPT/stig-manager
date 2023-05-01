@@ -879,8 +879,8 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
   try {
     const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
     const benchmarkId = req.params.benchmarkId
-    const assetIds = request.body.assetIds
-    const defaultRevisionStr = request.body.defaultRevisionStr
+    const assetIds = req.body.assetIds
+    const defaultRevisionStr = req.body.defaultRevisionStr
     if (assetIds?.length) {
       const collectionHasAssets = await CollectionSvc.doesCollectionIncludeAssets({
         collectionId,
