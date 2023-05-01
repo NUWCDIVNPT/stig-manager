@@ -98,7 +98,15 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 100,
                 dataIndex: 'lastRevisionStr',
                 align: "center",
-                sortable: true
+                sortable: false,
+                renderer: function (v, md, r) {
+                    if (r.data.defaultRevisionStr === 'latest') {
+                        return r.data.lastRevisionStr
+                    }
+                    else {
+                        return `${r.data.defaultRevisionStr}<img src="img/pin.svg" width="12" height="12" style="margin-left: 4px;">`
+                    }
+                }
 			},
             { 	
 				header: "Date",

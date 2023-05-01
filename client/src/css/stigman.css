@@ -1636,6 +1636,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-repeat: no-repeat;
   padding-left: 14px!important
 }
+.sm-cell-pinned {
+  background-image: url(../img/pin.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+}
 .sm-cell-asset {
   background-image: url(../img/target.svg);
   background-repeat: no-repeat;
