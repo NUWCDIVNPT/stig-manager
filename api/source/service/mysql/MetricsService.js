@@ -97,7 +97,9 @@ module.exports.queryMetrics = async function ({
     'granted',
     'left join asset a on granted.assetId = a.assetId',
     'left join stig_asset_map sa on granted.saId = sa.saId',
-    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId'
+    'left join collection_rev_map crm on (granted.collectionId = crm.collectionId and sa.benchmarkId = crm.benchmarkId)',
+    'left join current_rev on sa.benchmarkId = current_rev.benchmarkId',
+    'left join revision cr on coalesce(crm.revId, current_rev.revId) = cr.revId'
   ]
   const groupBy = []
   const orderBy = []
@@ -110,8 +112,8 @@ module.exports.queryMetrics = async function ({
       break
     case 'stig':
       predicates.statements.push('sa.benchmarkId IS NOT NULL')
-      groupBy.push('sa.benchmarkId')
-      orderBy.push('sa.benchmarkId')
+      groupBy.push('cr.revId')
+      orderBy.push('cr.benchmarkId')
       break
     case 'collection':
       joins.push('left join collection c on granted.collectionId = c.collectionId')
@@ -446,6 +448,7 @@ const baseCols = {
   ],
   stig: [
     'cr.benchmarkId',
+    'concat("V", cr.version, "R", cr.release) as revisionStr',
     'count(distinct a.assetId) as assets'
   ],
   label: [
@@ -477,6 +480,7 @@ const baseColsFlat = {
   ],
   stig: [
     'cr.benchmarkId',
+    'concat("V", cr.version, "R", cr.release) as revisionStr',
     'count(distinct a.assetId) as assets'
   ],
   label: [
