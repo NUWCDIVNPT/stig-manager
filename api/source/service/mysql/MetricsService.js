@@ -428,7 +428,8 @@ const baseCols = {
     'cast(a.assetId as char) as assetId',
     'a.name',
     sqlLabels,
-    'cr.benchmarkId'
+    'cr.benchmarkId',
+    'concat("V", cr.version, "R", cr.release) as revisionStr'
   ],
   asset: [
     'cast(a.assetId as char) as assetId',

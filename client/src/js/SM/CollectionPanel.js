@@ -360,6 +360,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       case 'stig':
         fields.push(
           { name: 'benchmarkId', type: 'string' },
+          { name: 'revisionStr', type: 'string' },
           'assets'
         )
         columns.push(
@@ -394,7 +395,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
           const r = grid.getStore().getAt(rowIndex)
           const leaf = {
             collectionId: grid.collectionId,
-            benchmarkId: r.data.benchmarkId
+            benchmarkId: r.data.benchmarkId,
+            revisionStr: r.data.revisionStr
           }
           addCollectionReview({ leaf })
         }
@@ -403,7 +405,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             const r = grid.getStore().getAt(rowIndex)
             const leaf = {
               collectionId: grid.collectionId,
-              benchmarkId: r.data.benchmarkId
+              benchmarkId: r.data.benchmarkId,
+              revisionStr: r.data.revisionStr
             }
             addCollectionReview({ leaf })
           }
@@ -503,6 +506,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
       { name: 'name', type: 'string' },
       { name: 'labelIds', type: 'string', convert: (v, r) => r.labels.map(l => l.labelId) },
       'benchmarkId',
+      'revisionStr',
       ...SM.CollectionPanel.CommonFields
     ]
     const columns = []
@@ -603,6 +607,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
         assetName: r.data.name,
         assetLabelIds: r.data.labelIds,
         benchmarkId: r.data.benchmarkId,
+        revisionStr: r.data.revisionStr,
         stigName: r.data.benchmarkId,
       }
       addReview({ leaf })
@@ -617,6 +622,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
           assetName: r.data.name,
           assetLabelIds: r.data.labelIds,
           benchmarkId: r.data.benchmarkId,
+          revisionStr: r.data.revisionStr,
           stigName: r.data.benchmarkId,
         }
         addReview({ leaf })

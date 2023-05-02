@@ -95,7 +95,7 @@ async function addCollectionReview ( params ) {
 
 		var groupStore = new Ext.data.JsonStore({
 			proxy: new Ext.data.HttpProxy({
-				url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/latest`,
+				url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/${leaf.revisionStr}`,
 				method: 'GET'
 			}),
 			root: '',
@@ -1854,7 +1854,7 @@ async function addCollectionReview ( params ) {
 				assetId: selectedAsset
 			}		
 		});
-		loadRevisionMenu(leaf.benchmarkId, 'latest', idAppend)
+		loadRevisionMenu(leaf.benchmarkId, leaf.revisionStr, idAppend)
 	}
 	catch (e) {
 		SM.Error.handleError(e)
