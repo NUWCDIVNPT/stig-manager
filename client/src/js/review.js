@@ -292,29 +292,45 @@ async function addReview( params ) {
   /******************************************************/
   // Group grid statistics string
   /******************************************************/
-  var getStatsString = function (store) {
-    var totalChecks = store.getCount();
-    var checksO = 0;
-    var checksNF = 0;
-    var checksNA = 0;
-    var checksOther = 0;
-    store.data.each(function (item, index, totalItems) {
-      switch (item.data.result) {
+  function getStatsString(store) {
+    const totalChecks = store.getCount()
+    const stats = store.data.items.reduce((a, c) => {
+      switch (c.data.result) {
         case 'fail':
-          checksO++;
-          break;
+          a.fail++
+          break
         case 'pass':
-          checksNF++;
-          break;
+          a.pass++
+          break
         case 'notapplicable':
-          checksNA++;
-          break;
+          a.notapplicable++
+          break
         default:
-          checksOther++;
-          break;
+          a.other++
+          break
       }
-    });
-    return totalChecks + ' checks (' + checksO + ' Open, ' + checksNF + ' NF, ' + checksNA + ' NA, ' + checksOther + ' NR/Other )';
+      if (c.data.status) a[c.data.status]++
+      return a
+    }, {
+      pass: 0,
+      fail: 0,
+      notapplicable: 0,
+      other: 0,
+      saved: 0,
+      submitted: 0,
+      rejected: 0,
+      approved: 0
+    })
+
+    return `<span class="sm-review-sprite sm-review-sprite-rule" ext:qtip="Checks"> ${totalChecks}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.fail || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.pass || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.na || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.other || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected || '-'}</span>
+    <span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.approved || '-'}</span>`
   };
 
   /******************************************************/
@@ -584,15 +600,11 @@ async function addReview( params ) {
         xtype: 'tbseparator'
       },
       groupExportBtn,
-      {
-        xtype: 'tbseparator'
-      },
+      '->',
       {
         xtype: 'tbtext',
         ref: '../totalText',
-        id: 'groupGrid-totalText' + idAppend,
-        text: '0 rules',
-        width: 80
+        id: 'groupGrid-totalText' + idAppend
       }
     ]
   });

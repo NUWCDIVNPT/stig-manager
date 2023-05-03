@@ -248,20 +248,34 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// Group grid statistics string
 		/******************************************************/
-		var getStatsString = function (store) {
-			let assetCount = apiAssets.length
-			var totalChecks = store.getCount();
-			var totalWord = ' checks';
-			if (totalChecks == 1) {
-				totalWord = ' check';
-			}
-			var assetWord = ' assets';
-			if (assetCount == 1) {
-				assetWord = ' asset';
-			}
-			
-			return assetCount + assetWord + ' assigned ' + totalChecks + totalWord;
-		};
+		function getStatsString (store) {
+			const assetCount = apiAssets.length
+			const totalChecks = store.getCount()
+			const stats = store.data.items.reduce((a, c) => {
+				for (const prop in a) {
+					a[prop] += c.data[prop]
+				}
+				return a
+			}, {
+				approveCnt: 0,
+				naCnt: 0,
+				nfCnt: 0,
+				oCnt: 0,
+				otherCnt: 0,
+				readyCnt: 0,
+				rejectCnt: 0
+			})
+			return `<span class="sm-review-sprite sm-review-sprite-asset" ext:qtip="Assets"> ${assetCount}</span>
+			<span class="sm-review-sprite sm-review-sprite-rule" ext:qtip="Total assessments, ${assetCount} (asset) x ${totalChecks} (check)"> ${totalChecks*assetCount}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.oCnt || '-'}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.nfCnt || '-'}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.naCnt || '-'}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.otherCnt || '-'}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.readyCnt || '-'}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejectCnt || '-'}</span>
+			<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.approveCnt || '-'}</span>
+			`
+		}
 
 		/******************************************************/
 		// The group grid
@@ -316,7 +330,9 @@ async function addCollectionReview ( params ) {
 				deferEmptyText:false,
 				listeners: {
 					filterschanged: function (view, item, value) {
-						groupStore.filter(view.getFilterFns())  
+						groupStore.filter(view.getFilterFns())
+						const statusText = getStatsString(groupStore)
+						Ext.getCmp('groupGrid-totalText' + idAppend).setText(statusText)
 					}
 				},		
 
@@ -524,14 +540,15 @@ async function addCollectionReview ( params ) {
 					xtype: 'tbseparator'
 				},
 				groupExportBtn,
-				{
-					xtype: 'tbseparator'
-				},
+				// {
+				// 	xtype: 'tbseparator'
+				// },
+				'->',
 				{
 					xtype: 'tbtext',
 					id: 'groupGrid-totalText' + idAppend,
 					text: '',
-					width: 80
+					// width: 80
 				}]
 			})
 		});

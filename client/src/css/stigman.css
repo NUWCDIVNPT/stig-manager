@@ -352,7 +352,7 @@
   background-position: 2px 2px;
   border: 1px solid #ccc;
   display: inline-block;
-  margin-left: 7px
+  margin-left: 1px;
 }
 .sm-review-sprite-user {
   background-image: url(../img/user-60.svg);
@@ -396,6 +396,26 @@
   background-image: url(../img/shield-green-check.svg);
   width: auto
 }
+.sm-review-sprite-asset {
+  background-image: url(../img/target.svg);
+  width: auto
+}
+.sm-review-sprite-stat-saved {
+  background-image: url(../img/save-icon-60.svg)
+}
+.sm-review-sprite-stat-submitted {
+  background-image: url(../img/ready-16.png)
+}
+.sm-review-sprite-stat-rejected {
+  background-image: url(../img/rejected-16.png)
+}
+.sm-review-sprite-stat-accepted {
+  background-image: url(../img/star.svg)
+}
+.sm-review-sprite-stat-result {
+	  padding: 1px 4px 2px 4px;
+}
+
 .x-grid3-row-selected {
   background-color: hsl(212deg 14% 85%)!important;
   background-image: none;

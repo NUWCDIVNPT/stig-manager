@@ -102,8 +102,8 @@ textarea:-webkit-autofill {
   color: #5a94b9
 }
 .sm-review-sprite {
-  background-color: hsl(0 0% 38% / 1);
-  border-color: hsl(0deg 0% 48%);
+  background-color: hsl(0 0% 14% / 1);
+  border-color: hsl(0deg 0% 35%);
   color: hsl(0deg 0% 80%)
 }
 .sm-label-sprite {
