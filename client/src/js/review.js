@@ -319,18 +319,17 @@ async function addReview( params ) {
       saved: 0,
       submitted: 0,
       rejected: 0,
-      approved: 0
+      accepted: 0
     })
-
     return `<span class="sm-review-sprite sm-review-sprite-rule" ext:qtip="Checks"> ${totalChecks}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.fail || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.pass || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.na || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.other || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected || '-'}</span>
-    <span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.approved || '-'}</span>`
+    ${stats.fail ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.fail}</span>` : ''}
+    ${stats.pass ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.pass}</span>` : ''}
+    ${stats.notapplicable ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.notapplicable}</span>` : ''}
+    ${stats.other ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.other}</span>` : ''}
+    ${stats.saved ? `<span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>` : ''}
+    ${stats.submitted ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted}</span>` : ''}
+    ${stats.rejected ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected}</span>` : ''}
+    ${stats.accepted ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.accepted}</span>` : ''}`
   };
 
   /******************************************************/
@@ -390,18 +389,6 @@ async function addReview( params ) {
     split: true,
     store: groupStore,
     stripeRows: true,
-    listeners: {
-      beforehide: {
-        fn: function (grid) {
-          var test = '1';
-        }
-      },
-      beforeshow: {
-        fn: function (grid) {
-          var test = '1';
-        }
-      }
-    },
     sm: new Ext.grid.RowSelectionModel({
       singleSelect: true,
       listeners: {
@@ -737,7 +724,12 @@ async function addReview( params ) {
       field: 'assetName',
       direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
     },
-    idProperty: 'reviewId'
+    idProperty: 'reviewId',
+    listeners: {
+      datachanged: function (store) {
+        otherGrid.totalText?.setText(getOtherStatsString(store))
+      }
+    }
   });
 
   const otherExportBtn = new Ext.ux.ExportButton({
@@ -747,6 +739,47 @@ async function addReview( params ) {
     iconCls: 'sm-export-icon',
     text: 'CSV'
   })
+
+  function getOtherStatsString (store) {
+    const totalAssets = store.getCount()
+    const stats = store.data.items.reduce((a, c) => {
+      switch (c.data.result) {
+        case 'fail':
+          a.fail++
+          break
+        case 'pass':
+          a.pass++
+          break
+        case 'notapplicable':
+          a.notapplicable++
+          break
+        default:
+          a.other++
+          break
+      }
+      if (c.data.status) a[c.data.status]++
+      return a
+    }, {
+      pass: 0,
+      fail: 0,
+      notapplicable: 0,
+      other: 0,
+      saved: 0,
+      submitted: 0,
+      rejected: 0,
+      accepted: 0
+    })
+
+    return `<span class="sm-review-sprite sm-review-sprite-asset" ext:qtip="Assets"> ${totalAssets}</span>
+    ${stats.fail ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.fail}</span>` : ''}
+    ${stats.pass ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.pass}</span>` : ''}
+    ${stats.notapplicable ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.notapplicable}</span>` : ''}
+    ${stats.other ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.other}</span>` : ''}
+    ${stats.saved ? `<span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>` : ''}
+    ${stats.submitted ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted}</span>` : ''}
+    ${stats.rejected ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected}</span>` : ''}
+    ${stats.accepted ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.accepted}</span>` : ''}`
+  }
 
   var otherGrid = new Ext.grid.GridPanel({
     enableDragDrop: true,
@@ -775,13 +808,15 @@ async function addReview( params ) {
         }
       }  
     }),
-    bbar: new Ext.Toolbar({
-      items: [
-        otherExportBtn,
-        '->',
-        new SM.RowCountTextItem({store:otherStore})
-      ]
-    }),
+    bbar: [
+      otherExportBtn,
+      '->',
+      {
+        xtype: 'tbtext',
+        ref: '../totalText',
+        id: 'otherGrid-totalText' + idAppend
+      }
+    ],
     columns: [
       {
         id: 'target' + idAppend,

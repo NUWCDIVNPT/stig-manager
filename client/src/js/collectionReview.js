@@ -267,14 +267,13 @@ async function addCollectionReview ( params ) {
 			})
 			return `<span class="sm-review-sprite sm-review-sprite-asset" ext:qtip="Assets"> ${assetCount}</span>
 			<span class="sm-review-sprite sm-review-sprite-rule" ext:qtip="Total assessments, ${assetCount} (asset) x ${totalChecks} (check)"> ${totalChecks*assetCount}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.oCnt || '-'}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.nfCnt || '-'}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.naCnt || '-'}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.otherCnt || '-'}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.readyCnt || '-'}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejectCnt || '-'}</span>
-			<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.approveCnt || '-'}</span>
-			`
+			${stats.oCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.oCnt}</span>` : ''}
+			${stats.nfCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.nfCnt}</span>` : ''}
+			${stats.naCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.naCnt}</span>` : ''}
+			${stats.otherCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.otherCnt}</span>` : ''}
+			${stats.readyCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.readyCnt}</span>` : ''}
+			${stats.rejectCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejectCnt}</span>` : ''}
+			${stats.approveCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.approveCnt}</span>` : ''}`
 		}
 
 		/******************************************************/
