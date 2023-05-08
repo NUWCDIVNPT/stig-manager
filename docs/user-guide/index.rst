@@ -22,6 +22,7 @@ These pages describe how to use STIG Manager.
 		
 	user-quickstart
 	user-guide
+	review-handling
 	rule-exceptions
 	
 	
