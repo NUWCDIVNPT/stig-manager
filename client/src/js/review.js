@@ -365,7 +365,7 @@ async function addReview( params ) {
     region: 'west',
     id: 'groupGrid' + idAppend,
     sm_benchmarkId: leaf.benchmarkId,
-    sm_revisionStr: 'latest',
+    sm_revisionStr: leaf.revisionStr,
     width: '35%',
     minWidth: 340,
     hideMode: 'offsets',

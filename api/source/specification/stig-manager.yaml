@@ -2577,6 +2577,68 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/stigs/{benchmarkId}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the STIG mapped in the specified Collection
+      operationId: getStigByCollection
+      responses:
+        '200':
+          description: Collection STIGs array response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionStig'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    post:
+      tags:
+        - Collection
+      summary: Set the default Revision and/or the Asset list of a STIG
+      operationId: writeStigPropsByCollectionStig
+      requestBody:
+        required: true
+        description: The STIG properties for this Collection
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                defaultRevisionStr:
+                  $ref: '#/components/schemas/RevisionStr'
+                assetIds:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StringIntId'
+      responses:
+        '200':
+          description: Default Revision response
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/stigs/{benchmarkId}/assets':
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
@@ -2635,47 +2697,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AssetBasicProjected'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection'
-  '/collections/{collectionId}/stigs/{benchmarkId}':
-    post:
-      tags:
-        - Collection
-      summary: EXPERIMENTAL - Set the default Revision of a STIG and/or the Asset list
-      operationId: writeStigPropsByCollectionStig
-      parameters:
-      - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdPath'
-      requestBody:
-        required: true
-        description: The STIG properties for this Collection
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              minProperties: 1
-              properties:
-                defaultRevisionStr:
-                  $ref: '#/components/schemas/RevisionStr'
-                assetIds:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/StringIntId'
-      responses:
-        '200':
-          description: Default Revision response
-          content:
-            application/json:
-              schema:
-                type: object
         default:
           description: unexpected error
           content:

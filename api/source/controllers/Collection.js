@@ -265,6 +265,24 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
   }
 }
 
+module.exports.getStigByCollection = async function getStigsByCollection (req, res, next) {
+  try {
+    const collectionId = req.params.collectionId
+    const benchmarkId = req.params.benchmarkId
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant) {
+      const response = await CollectionSvc.getStigByCollection( collectionId, benchmarkId, false, req.userObject )
+      res.json(response)
+      }
+    else {
+      throw new SmError.PrivilegeError()
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 module.exports.replaceCollection = async function replaceCollection (req, res, next) {
   try {
     const elevate = req.query.elevate

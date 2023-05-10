@@ -224,9 +224,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'count(distinct a.assetId) as assetCount'
       ]
       groupBy = [
-        'rgr.ruleId',
-        'rgr.title',
-        'rgr.severity'
+        'rgr.rgrId'
       ]
       orderBy = 'rgr.ruleId'
       break
@@ -238,9 +236,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'count(distinct a.assetId) as assetCount'
       ]
       groupBy = [
-        'rgr.groupId',
-        'rgr.groupTitle',
-        'rgr.severity'
+        'rgr.rgrId'
       ]
       orderBy = 'substring(rgr.groupId from 3) + 0'
       break
@@ -252,9 +248,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'count(distinct a.assetId) as assetCount'
       ]
       groupBy = [
-        'cci.cci',
-        'cci.definition',
-        'cci.apAcronym'
+        'cci.cci'
       ]
       orderBy = 'cci.cci'
       break
@@ -265,8 +259,9 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
+    'left join collection_rev_map crm on sa.benchmarkId = crm.benchmarkId',
     'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
-    'left join rev_group_rule_map rgr using (revId)',
+    'left join rev_group_rule_map rgr on coalesce(crm.revId, cr.revId) = rgr.revId',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
     'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
     'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
@@ -864,7 +859,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
     `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
     'st.title',
-    'cr.ruleCount',
+    'CASE WHEN crm.revId IS NOT NULL THEN defRev.ruleCount ELSE cr.ruleCount END',
     'COUNT(a.assetId) as assetCount',
     'SUM(sa.accepted) as acceptedCount',
     'SUM(sa.rejected) as rejectedCount',

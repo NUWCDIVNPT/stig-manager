@@ -282,7 +282,7 @@ async function addCollectionReview ( params ) {
 			border: false,
 			region: 'north',
 			sm_benchmarkId: leaf.benchmarkId,
-			sm_revisionStr: 'latest',
+			sm_revisionStr: leaf.revisionStr,
 			filterState: 'All',
 			title: 'Checklist',
 			split:true,
