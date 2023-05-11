@@ -250,12 +250,8 @@ async function addAppDataAdmin( params ) {
     })
     thisTab.show()
 
-
-    let detailResponseText = await getDetail()
-    detailResponseText = detailResponseText.response.responseText //used by downloadBlob
-    let opDetail = JSON.parse(detailResponseText) //used by JsonView
-
-    const detailTree = JsonView.createTree(opDetail)
+    const detailResponseText = (await getDetail()).response.responseText //used by downloadBlob
+    const detailTree = JsonView.createTree(JSON.parse(detailResponseText))
     // adjust for rendering
     // the parent and first child (dbInfo) are expanded
     detailTree.key = `GET ${STIGMAN.Env.apiBase}/op/details?elevate=true`
