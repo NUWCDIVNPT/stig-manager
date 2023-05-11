@@ -19,8 +19,8 @@ async function addAppDataAdmin( params ) {
           text: 'JSON',
           iconCls: 'sm-export-icon',
           handler: function (btn) {
-            if (opDetail) {
-              const blob = new Blob([opDetail], {type: 'application/json'})
+            if (detailResponseText) {
+              const blob = new Blob([detailResponseText], {type: 'application/json'})
               downloadBlob(blob, 'stig-manager-details.json')
             }
           }
@@ -217,7 +217,6 @@ async function addAppDataAdmin( params ) {
 
     async function getDetail () {
       return Ext.Ajax.requestPromise({
-        responseType: 'json',
         url: `${STIGMAN.Env.apiBase}/op/details`,
         params: {
           elevate: curUser.privileges.canAdmin
@@ -251,9 +250,8 @@ async function addAppDataAdmin( params ) {
     })
     thisTab.show()
 
-    let opDetail = await getDetail()
-
-    const detailTree = JsonView.createTree(opDetail)
+    const detailResponseText = (await getDetail()).response.responseText //used by downloadBlob
+    const detailTree = JsonView.createTree(JSON.parse(detailResponseText))
     // adjust for rendering
     // the parent and first child (dbInfo) are expanded
     detailTree.key = `GET ${STIGMAN.Env.apiBase}/op/details?elevate=true`
