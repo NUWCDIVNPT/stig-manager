@@ -60,7 +60,9 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         me.totalTextCmp = new SM.RowCountTextItem ({
-            store: store
+            store: store,
+            noun: 'STIG',
+            iconCls: 'sm-stig-icon'
         })
         const sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,

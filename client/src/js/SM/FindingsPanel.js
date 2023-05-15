@@ -55,10 +55,20 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			listeners: {
 				load: function (store, records) {
 					setColumnStates(me.aggValue)
+					me.statSprites?.setText(getStatSprites(store))
+				},
+				clear: function(){
+					me.statSprites?.setText(getStatSprites(store))
+				},
+				update: function(store) {
+					me.statSprites?.setText(getStatSprites(store))
+				},
+				datachanged: function(store) {
+					me.statSprites?.setText(getStatSprites(store))
 				}
 			}
 		})
-		const totalTextCmp = new SM.RowCountTextItem({ store: store })
+		const totalTextCmp = new SM.RowCountTextItem({ store: store, noun: 'finding' })
 		const renderSeverity = (val) => {
 			switch (val) {
 				case 'high':
@@ -224,41 +234,51 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 			iconCls: 'icon-excel',
 			text: 'Generate POA&M...'
 		})
-		const bbar = new Ext.Toolbar({
-			items: [
-				{
-					xtype: 'tbbutton',
-					iconCls: 'icon-refresh',
-					tooltip: 'Reload this grid',
-					width: 20,
-					handler: function (btn) {
-						store.reload();
-					}
-				},
-				{
-					xtype: 'tbseparator'
-				},
-				{
-					xtype: 'exportbutton',
-					hasMenu: false,
-					gridBasename: 'Findings',
-					gridSource: me,
-					iconCls: 'sm-export-icon',
-					text: 'CSV'
-				},
-				{
-					xtype: 'tbseparator'
-				},
-				generatePoamBtn,
-				{
-					xtype: 'tbfill'
-				},
-				{
-					xtype: 'tbseparator'
-				},
-				totalTextCmp
-			]
-		})
+		function getStatSprites (store) {
+			const stats = store.data.items.reduce((accumulator, currentValue) => {
+				for (const prop in accumulator) {
+					accumulator[prop] += currentValue.data[prop]
+				}
+				return accumulator
+			}, {
+				assetCount: 0
+			})
+			const spriteGroups = []
+			spriteGroups.push(`${stats.assetCount ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Total number of finding occurences"><span style="color:grey;font-weight:bolder;">Occurences </span>${stats.assetCount}</span>` : ''}`)
+
+			return spriteGroups.join('<span class="sm-xtb-sep"></span>')
+		}
+
+		const bbar = [
+			{
+				xtype: 'tbbutton',
+				iconCls: 'icon-refresh',
+				tooltip: 'Reload this grid',
+				width: 20,
+				handler: function (btn) {
+					store.reload();
+				}
+			},
+			'-',
+			{
+				xtype: 'exportbutton',
+				hasMenu: false,
+				gridBasename: 'Findings',
+				gridSource: me,
+				iconCls: 'sm-export-icon',
+				text: 'CSV'
+			},
+			'-',
+			generatePoamBtn,
+			'->',
+			{
+				xtype: 'tbtext',
+				ref: '../statSprites'
+			},
+			'-',
+			totalTextCmp
+		]
+		
 		const setColumnStates = (aggregator) => {
 			const colIndex = {}
 			for (const [i, v] of colModel.config.entries()) {
@@ -324,12 +344,12 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 		const config = {
 			loadMask: {msg: ''},
 			stripeRows: true,
-			store: store,
-			colModel: colModel,
-			view: view,
-			sm: sm,
-			tbar: tbar,
-			bbar: bbar,
+			store,
+			colModel,
+			view,
+			sm,
+			tbar,
+			bbar,
 			listeners: {
 				aggregatorchanged: onAggregatorChanged,
 				stigchanged: onStigChanged
@@ -388,9 +408,46 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				{ name: 'username', type: 'string' },
 				{ name: 'ts', type: 'string' },
 				{ name: 'reviewComplete', type: 'boolean' }
-			]
+			],
+			listeners: {
+				datachanged: function(store) {
+					me.statSprites?.setText(getStatSprites(store))
+				}
+			}
 		})
-		const totalTextCmp = new SM.RowCountTextItem({ store: store })
+		function getStatSprites (store) {
+			const stats = store.data.items.reduce((accumulator, currentValue) => {
+				if (currentValue.data.engineResult) accumulator[currentValue.data.engineResult]++
+				if (currentValue.data.status) accumulator[currentValue.data.status]++
+				return accumulator
+			},{
+				saved: 0,
+				submitted: 0,
+				rejected: 0,
+				accepted: 0,
+				override: 0,
+				manual: 0,
+				engine: 0
+			})
+			const spriteGroups = []
+			spriteGroups.push(
+				[
+					`${stats.manual ? `<span class="sm-review-sprite sm-engine-manual-icon" ext:qtip="Manual"> ${stats.manual}</span>` : ''}`,
+					`${stats.engine ? `<span class="sm-review-sprite sm-engine-result-icon" ext:qtip="Result engine"> ${stats.engine}</span>` : ''}`,
+					`${stats.override ? `<span class="sm-review-sprite sm-engine-override-icon" ext:qtip="Overriden result engine"> ${stats.override}</span>` : ''}`
+				].filter(Boolean).join(' '))
+	
+			spriteGroups.push(
+				[
+					`${stats.saved ? `<span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>` : ''}`,
+					`${stats.submitted ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted}</span>` : ''}`,
+					`${stats.rejected ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected}</span>` : ''}`,
+					`${stats.accepted ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.accepted}</span>` : ''}`
+				].filter(Boolean).join(' '))
+			return spriteGroups.filter(Boolean).join('<span class="sm-xtb-sep"></span>')
+			}
+
+		const totalTextCmp = new SM.RowCountTextItem({ store: store, noun: 'occurrence' })
 		const expander = new Ext.ux.grid.RowExpander2({
 			lazyRender: true,
 			tpl: new Ext.XTemplate(
@@ -497,37 +554,34 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 		const sm = new Ext.grid.RowSelectionModel({
 			singleSelect: true
 		})
-		const bbar = new Ext.Toolbar({
-			items: [
-				{
-					xtype: 'tbbutton',
-					iconCls: 'icon-refresh',
-					tooltip: 'Reload this grid',
-					width: 20,
-					handler: function (btn) {
-						store.reload();
-					}
-				},
-				{
-					xtype: 'tbseparator'
-				},
-				{
-					xtype: 'exportbutton',
-					hasMenu: false,
-					gridBasename: 'Finding Details',
-					gridSource: me,
-					iconCls: 'sm-export-icon',
-					text: 'CSV'
-				},
-				{
-					xtype: 'tbfill'
-				},
-				{
-					xtype: 'tbseparator'
-				},
-				totalTextCmp
-			]
-		})
+		const bbar = [
+			{
+				xtype: 'tbbutton',
+				iconCls: 'icon-refresh',
+				tooltip: 'Reload this grid',
+				width: 20,
+				handler: function (btn) {
+					store.reload();
+				}
+			},
+			'-',
+			{
+				xtype: 'exportbutton',
+				hasMenu: false,
+				gridBasename: 'Finding Details',
+				gridSource: me,
+				iconCls: 'sm-export-icon',
+				text: 'CSV'
+			},
+			'->',
+			{
+				xtype: 'tbtext',
+				ref: '../statSprites'
+			},
+			'-',
+			totalTextCmp
+		]
+
 
 		const config = {
 			loadMask: {msg: ''},

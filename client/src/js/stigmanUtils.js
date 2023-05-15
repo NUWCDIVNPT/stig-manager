@@ -192,6 +192,65 @@ function Sm_HistoryData (idAppend) {
       (r.result ? 'manual' : '')
   }
 
+	function getStatsString(store) {
+    const stats = store.data.items.reduce((a, c) => {
+      switch (c.data.result) {
+        case 'fail':
+          a.fail++
+          break
+        case 'pass':
+          a.pass++
+          break
+        case 'notapplicable':
+          a.notapplicable++
+          break
+        default:
+          a.other++
+          break
+      }
+      if (c.data.engineResult) a[c.data.engineResult]++
+      if (c.data.statusLabel) a[c.data.statusLabel]++
+      return a
+    }, {
+      pass: 0,
+      fail: 0,
+      notapplicable: 0,
+      other: 0,
+      saved: 0,
+      submitted: 0,
+      rejected: 0,
+      accepted: 0,
+      override: 0,
+      manual: 0,
+      engine: 0
+    })
+
+    const spriteGroups = []
+    spriteGroups.push(
+      [
+        `${stats.fail ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span class="sm-result-fail" style="font-weight:bolder;">O </span> ${stats.fail}</span>` : ''}`,
+        `${stats.pass ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span class="sm-result-pass" style="font-weight:bolder;">NF </span> ${stats.pass}</span>` : ''}`,
+        `${stats.notapplicable ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span class="sm-result-na" style="font-weight:bolder;">NA</span> ${stats.notapplicable}</span>` : ''}`,
+        `${stats.other ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span class="sm-result-nr" style="font-weight:bolder;">NR+</span> ${stats.other}</span>` : ''}`
+      ].filter(Boolean).join(' '))
+
+    spriteGroups.push(
+      [
+        `${stats.manual ? `<span class="sm-review-sprite sm-engine-manual-icon" ext:qtip="Manual"> ${stats.manual}</span>` : ''}`,
+        `${stats.engine ? `<span class="sm-review-sprite sm-engine-result-icon" ext:qtip="Result engine"> ${stats.engine}</span>` : ''}`,
+        `${stats.override ? `<span class="sm-review-sprite sm-engine-override-icon" ext:qtip="Overriden result engine"> ${stats.override}</span>` : ''}`
+      ].filter(Boolean).join(' '))
+
+    spriteGroups.push(
+        [
+          `${stats.saved ? `<span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>` : ''}`,
+          `${stats.submitted ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted}</span>` : ''}`,
+          `${stats.rejected ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected}</span>` : ''}`,
+          `${stats.accepted ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.accepted}</span>` : ''}`
+        ].filter(Boolean).join(' '))
+    return spriteGroups.filter(Boolean).join('<span class="sm-xtb-sep"></span>')
+  };
+
 	this.fields = Ext.data.Record.create([
 		{
 			name:'ruleId',
@@ -242,6 +301,11 @@ function Sm_HistoryData (idAppend) {
 			field: 'touchTs',
 			direction: 'DESC' // or 'DESC' (case sensitive for local sorting)
 		},
+		listeners: {
+      datachanged: function (store) {
+        _this.grid?.statSprites?.setText(getStatsString(store))
+      }
+    },
 		idProperty: (v) => {
 			return v.touchTs
 		}
@@ -265,7 +329,9 @@ function Sm_HistoryData (idAppend) {
 	})
 
 	const historyTotalTextCmp = new SM.RowCountTextItem ({
-    store: this.store
+    store: this.store,
+		noun: 'review',
+		iconCls: 'sm-stig-icon'
   })
 
 	const historyExportBtn = new Ext.ux.ExportButton({
@@ -295,13 +361,16 @@ function Sm_HistoryData (idAppend) {
 				}
 			}		
 		}),
-    bbar: new Ext.Toolbar({
-      items: [
-				historyExportBtn,
-				'->',
-				historyTotalTextCmp
-			]
-		}),
+    bbar: [
+			historyExportBtn,
+			'->',
+			{
+				xtype: 'tbtext',
+				ref: '../statSprites'
+			},
+			'-',	
+			historyTotalTextCmp
+		],
 		columns: [
 			expander,
 			{ 	

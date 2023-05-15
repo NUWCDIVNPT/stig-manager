@@ -338,84 +338,6 @@
   background-color: #feeecc;
   background-image: unset
 }
-.sm-review-sprite {
-  color: #161128;
-  font: 600 10px Open Sans,helvetica,sans-serif;
-  position: relative;
-  top: 0;
-  background-color: hsl(0deg 0% 100%);
-  padding: 1px 4px 2px 17px;
-  border-radius: 3px;
-  user-select: none;
-  background-size: 12px 12px;
-  background-repeat: no-repeat;
-  background-position: 2px 2px;
-  border: 1px solid #ccc;
-  display: inline-block;
-  margin-left: 1px;
-}
-.sm-review-sprite-user {
-  background-image: url(../img/user-60.svg);
-  width: auto
-}
-.sm-review-sprite-date {
-  background-image: url(../img/clock.svg);
-  width: auto
-}
-.sm-review-sprite-modified {
-  background-image: url(../img/shield-green-check.svg)
-}
-.sm-review-sprite-modified::after {
-  content: "Modified"
-}
-.sm-review-sprite-saved {
-  background-image: url(../img/save-icon-60.svg)
-}
-.sm-review-sprite-submitted {
-  background-image: url(../img/ready-16.png)
-}
-.sm-review-sprite-rejected {
-  background-image: url(../img/rejected-16.png)
-}
-.sm-review-sprite-accepted {
-  background-image: url(../img/star.svg)
-}
-.sm-review-sprite-saved::after {
-  content: "Saved"
-}
-.sm-review-sprite-submitted::after {
-  content: "Submitted"
-}
-.sm-review-sprite-rejected::after {
-  content: "Rejected"
-}
-.sm-review-sprite-accepted::after {
-  content: "Accepted"
-}
-.sm-review-sprite-rule {
-  background-image: url(../img/shield-green-check.svg);
-  width: auto
-}
-.sm-review-sprite-asset {
-  background-image: url(../img/target.svg);
-  width: auto
-}
-.sm-review-sprite-stat-saved {
-  background-image: url(../img/save-icon-60.svg)
-}
-.sm-review-sprite-stat-submitted {
-  background-image: url(../img/ready-16.png)
-}
-.sm-review-sprite-stat-rejected {
-  background-image: url(../img/rejected-16.png)
-}
-.sm-review-sprite-stat-accepted {
-  background-image: url(../img/star.svg)
-}
-.sm-review-sprite-stat-result {
-	  padding: 1px 4px 2px 4px;
-}
-
 .x-grid3-row-selected {
   background-color: hsl(212deg 14% 85%)!important;
   background-image: none;
@@ -757,7 +679,7 @@ body {
   text-align: center
 }
 .sm-result-na {
-  color: #b1b1b1;
+  color: #909090;
   text-align: center
 }
 .sm-result-nr {
@@ -1519,7 +1441,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-size: 16px 16px
 }
 .sm-database-icon {
-  background-image: url(../img/database.png)!important
+  background-image: url(../img/database.svg)!important
 }
 .sm-table-icon {
   background-image: url(../img/table.png)!important
@@ -1872,6 +1794,95 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .ext-strict .x-small-editor .x-form-text {
   line-height: 18px
+}
+.sm-review-sprite {
+  color: #161128;
+  font: 600 10px Open Sans,helvetica,sans-serif;
+  position: relative;
+  top: 0px;
+  background-color: #f2f2f2;
+  padding: 1px 4px 2px 17px;
+  border-radius: 3px;
+  user-select: none;
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  background-position: 2px 2px;
+  border: 1px solid #ccc;
+  display: inline-block;
+  margin-left: 0px;
+}
+.sm-review-sprite-user {
+  background-image: url(../img/user-60.svg);
+  width: auto
+}
+.sm-review-sprite-date {
+  background-image: url(../img/clock.svg);
+  width: auto
+}
+.sm-review-sprite-modified {
+  background-image: url(../img/shield-green-check.svg)
+}
+.sm-review-sprite-modified::after {
+  content: "Modified"
+}
+.sm-review-sprite-saved {
+  background-image: url(../img/save-icon-60.svg)
+}
+.sm-review-sprite-submitted {
+  background-image: url(../img/ready-16.png)
+}
+.sm-review-sprite-rejected {
+  background-image: url(../img/rejected-16.png)
+}
+.sm-review-sprite-accepted {
+  background-image: url(../img/star.svg)
+}
+.sm-review-sprite-saved::after {
+  content: "Saved"
+}
+.sm-review-sprite-submitted::after {
+  content: "Submitted"
+}
+.sm-review-sprite-rejected::after {
+  content: "Rejected"
+}
+.sm-review-sprite-accepted::after {
+  content: "Accepted"
+}
+.sm-review-sprite-rule {
+  background-image: url(../img/shield-green-check.svg)
+}
+.sm-assessment-icon {
+  background-image: url(../img/assessment.svg);
+}
+.sm-review-sprite-asset {
+  background-image: url(../img/target.svg)
+}
+.sm-review-sprite-stat-saved {
+  background-image: url(../img/save-icon-60.svg)
+}
+.sm-review-sprite-stat-submitted {
+  background-image: url(../img/ready-16.png)
+}
+.sm-review-sprite-stat-rejected {
+  background-image: url(../img/rejected-16.png)
+}
+.sm-review-sprite-stat-accepted {
+  background-image: url(../img/star.svg)
+}
+.sm-review-sprite-stat-result {
+	  padding: 1px 4px 2px 4px;
+}
+.xtb-text .sm-xtb-sep {
+	display: inline-block;
+	position: relative;
+	top: 2px;
+	height: 13px;
+	width: 2px;
+	margin: 0 5px 0  5px;
+	background-image: url(../ext/resources/images/default/grid/grid-split.gif);
+	background-position: center;
+	background-repeat: no-repeat;
 }
 @font-face {
   font-family: 'Open Sans';

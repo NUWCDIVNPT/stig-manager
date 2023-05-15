@@ -7,6 +7,13 @@ async function addCollectionReview ( params ) {
 	let { leaf, selectedRule, selectedAsset, treePath } = params
 	try {
 		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(".","_");
+		const tab = Ext.getCmp('main-tab-panel').getItem('collection-review-tab' + idAppend);
+		if (tab) {
+			tab.show()
+			return
+		}
+	
+	
 
 		/******************************************************/
 		// 'Global' colAssets array of objects for reviewsGrid
@@ -124,16 +131,16 @@ async function addCollectionReview ( params ) {
 					// Filter the store
 					filterGroupStore()
 					
-					Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
+					groupGrid?.statSprites?.setText(getGroupStatsString(store))
 				},
 				clear: function(){
-					Ext.getCmp('groupGrid-totalText' + idAppend).setText('0 checks');
+					groupGrid?.statSprites?.setText(getGroupStatsString(store))
 				},
 				update: function(store) {
-					Ext.getCmp('groupGrid-totalText' + idAppend).setText(getStatsString(store));
+					groupGrid?.statSprites?.setText(getGroupStatsString(store))
 				},
 				datachanged: function(store) {
-					Ext.getCmp('groupGrid-totalText' + idAppend)?.setText(getStatsString(store));
+					groupGrid?.statSprites?.setText(getGroupStatsString(store))
 				}
 			}
 		});
@@ -248,7 +255,7 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// Group grid statistics string
 		/******************************************************/
-		function getStatsString (store) {
+		function getGroupStatsString (store) {
 			const assetCount = apiAssets.length
 			const totalChecks = store.getCount()
 			const stats = store.data.items.reduce((a, c) => {
@@ -265,15 +272,29 @@ async function addCollectionReview ( params ) {
 				readyCnt: 0,
 				rejectCnt: 0
 			})
-			return `<span class="sm-review-sprite sm-review-sprite-asset" ext:qtip="Assets"> ${assetCount}</span>
-			<span class="sm-review-sprite sm-review-sprite-rule" ext:qtip="Total assessments, ${assetCount} (asset) x ${totalChecks} (check)"> ${totalChecks*assetCount}</span>
-			${stats.oCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span style="color:red;font-weight:bolder;">O</span> ${stats.oCnt}</span>` : ''}
-			${stats.nfCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span style="color:green;font-weight:bolder;">NF</span> ${stats.nfCnt}</span>` : ''}
-			${stats.naCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span style="color:grey;font-weight:bolder;">NA</span> ${stats.naCnt}</span>` : ''}
-			${stats.otherCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span style="color:grey;font-weight:bolder;">Other</span> ${stats.otherCnt}</span>` : ''}
-			${stats.readyCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.readyCnt}</span>` : ''}
-			${stats.rejectCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejectCnt}</span>` : ''}
-			${stats.approveCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.approveCnt}</span>` : ''}`
+			const spriteGroups = []
+
+
+			spriteGroups.push(`<span class="sm-review-sprite sm-review-sprite-asset" ext:qtip="Assets">${assetCount}</span> <span class="sm-review-sprite sm-assessment-icon" ext:qtip="Required assessments">${totalChecks*assetCount}</span>`)
+			
+			spriteGroups.push(
+				[
+					`${stats.oCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span class="sm-result-fail" style="font-weight:bolder;">O </span>${stats.oCnt}</span>` : ''}`,
+					`${stats.nfCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span class="sm-result-pass" style="font-weight:bolder;">NF </span>${stats.nfCnt}</span>` : ''}`,
+					`${stats.naCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span class="sm-result-na" style="font-weight:bolder;">NA </span>${stats.naCnt}</span>` : ''}`,
+					`${stats.otherCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span class="sm-result-nr" style="font-weight:bolder;">NR+ </span>${stats.otherCnt}</span>` : ''}`
+				].filter(Boolean).join(' ')
+			)
+			
+			spriteGroups.push(
+				[
+					`${stats.readyCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted">${stats.readyCnt}</span>` : ''}`,
+					`${stats.rejectCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected">${stats.rejectCnt}</span>` : ''}`,
+					`${stats.approveCnt ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted">${stats.approveCnt}</span>` : ''}`
+				].filter(Boolean).join(' ')
+			)
+			
+			return spriteGroups.filter(Boolean).join('<span class="sm-xtb-sep"></span>')
 		}
 
 		/******************************************************/
@@ -330,8 +351,8 @@ async function addCollectionReview ( params ) {
 				listeners: {
 					filterschanged: function (view, item, value) {
 						groupStore.filter(view.getFilterFns())
-						const statusText = getStatsString(groupStore)
-						Ext.getCmp('groupGrid-totalText' + idAppend).setText(statusText)
+						const statusText = getGroupStatsString(groupStore)
+						groupGrid.statSprites?.setText(statusText)
 					}
 				},		
 
@@ -438,7 +459,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'oCnt' + idAppend,
-					header: '<div style="color:red;font-weight:bolder;" exportvalue="O">O</div>', 
+					header: '<div class="sm-result-fail" style="font-weight:bolder;" exportvalue="O">O</div>', 
 					width: 40,
 					align: 'center',
 					dataIndex: 'oCnt',
@@ -448,7 +469,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'nfCnt' + idAppend,
-					header: '<div style="color:green;font-weight:bolder;" exportvalue="NF">NF</div>', 
+					header: '<div class="sm-result-pass" style="font-weight:bolder;" exportvalue="NF">NF</div>', 
 					width: 40,
 					align: 'center',
 					renderer:renderCounts,
@@ -458,7 +479,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'naCnt' + idAppend,
-					header: '<div style="color:grey;font-weight:bolder;" exportvalue="NA">NA</div>', 
+					header: '<div class="sm-result-na" style="font-weight:bolder;" exportvalue="NA">NA</div>', 
 					width: 40,
 					align: 'center',
 					renderer:renderCounts,
@@ -468,7 +489,7 @@ async function addCollectionReview ( params ) {
 				},
 				{ 	
 					id:'otherCnt' + idAppend,
-					header: '<div style="color:grey;font-weight:bolder;" exportvalue="Other">Other</div>', 
+					header: '<div class="sm-result-nr" style="font-weight:bolder;" exportvalue="NR+">NR+</div>', 
 					width: 44,
 					align: 'center',
 					renderer:renderOpen,
@@ -521,8 +542,7 @@ async function addCollectionReview ( params ) {
 					}
 				]
 			}),
-			bbar: new Ext.Toolbar({
-				items: [
+			bbar: [
 				{
 					xtype: 'tbbutton',
 					iconCls: 'icon-refresh',
@@ -539,17 +559,14 @@ async function addCollectionReview ( params ) {
 					xtype: 'tbseparator'
 				},
 				groupExportBtn,
-				// {
-				// 	xtype: 'tbseparator'
-				// },
 				'->',
 				{
 					xtype: 'tbtext',
-					id: 'groupGrid-totalText' + idAppend,
-					text: '',
-					// width: 80
-				}]
-			})
+					ref: '../statSprites'
+				},
+				'-',
+				new SM.RowCountTextItem({store:groupStore, noun:'rule', iconCls: 'sm-stig-icon'})
+			]
 		});
 		
 		var handleRevisionMenu = function (item, eventObject) {
@@ -623,6 +640,66 @@ async function addCollectionReview ( params ) {
 	/******************************************************/
 	// START Reviews Panel
 	/******************************************************/
+		function getReviewsStatsString (store) {
+			const stats = store.data.items.reduce((a, c) => {
+				switch (c.data.result) {
+					case 'fail':
+						a.fail++
+						break
+					case 'pass':
+						a.pass++
+						break
+					case 'notapplicable':
+						a.notapplicable++
+						break
+					default:
+						a.other++
+						break
+				}
+				if (c.data.engineResult) a[c.data.engineResult]++
+				if (c.data.status) a[c.data.status]++
+				return a
+			}, {
+				pass: 0,
+				fail: 0,
+				notapplicable: 0,
+				other: 0,
+				saved: 0,
+				submitted: 0,
+				rejected: 0,
+				accepted: 0,
+				override: 0,
+				manual: 0,
+				engine: 0
+			})
+			const spriteGroups = []
+
+			spriteGroups.push(
+				[
+					`${stats.manual ? `<span class="sm-review-sprite sm-engine-manual-icon" ext:qtip="Manual">${stats.manual}</span>` : ''}`,
+					`${stats.engine ? `<span class="sm-review-sprite sm-engine-result-icon" ext:qtip="Result engine">${stats.engine}</span>` : ''}`,
+					`${stats.override ? `<span class="sm-review-sprite sm-engine-override-icon" ext:qtip="Overriden result engine">${stats.override}</span>` : ''}`
+				].filter(Boolean).join(' '))
+			
+			spriteGroups.push(
+				[
+					`${stats.saved ? `<span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved">${stats.saved}</span>` : ''}`,
+					`${stats.submitted ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted">${stats.submitted}</span>` : ''}`,
+					`${stats.rejected ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected}</span>` : ''}`,
+					`${stats.accepted ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted">${stats.accepted}</span>` : ''}`
+				].filter(Boolean).join(' '))
+
+			spriteGroups.push(
+				[
+					`${stats.fail ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span class="sm-result-fail" style="font-weight:bolder;">O </span>${stats.fail}</span>` : ''}`,
+					`${stats.pass ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span class="sm-result-pass" style="font-weight:bolder;">NF </span>${stats.pass}</span>` : ''}`,
+					`${stats.notapplicable ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span class="sm-result-na" style="font-weight:bolder;">NA </span> ${stats.notapplicable}</span>` : ''}`,
+					`${stats.other ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span class="sm-result-nr" style="font-weight:bolder;">NR+ </span>${stats.other}</span>` : ''}`
+				].filter(Boolean).join(' '))
+
+			return spriteGroups.filter(Boolean).join('<span class="sm-xtb-sep"></span>')
+
+		}
 		function engineResultConverter (v,r) {
 			const conv = r.resultEngine ? 
 				(r.resultEngine.overrides?.length ? 'override' : 'engine') : 
@@ -698,9 +775,12 @@ async function addCollectionReview ( params ) {
 			fields: reviewsFields,
 			listeners: {
 				save: function ( store, batch, data ) {
-					var ourGrid = Ext.getCmp('reviewsGrid' + idAppend);
 					setReviewsGridButtonStates()
+					reviewsGrid?.statSprites?.setText(getReviewsStatsString(store))
 					Ext.getBody().unmask();
+				},
+				datachanged: function (store) {
+					reviewsGrid?.statSprites?.setText(getReviewsStatsString(store))
 				}
 			},
 			idProperty: 'assetId'
@@ -740,13 +820,12 @@ async function addCollectionReview ( params ) {
 			listeners: {
 				selectionchange: function (sm) {
 					if (sm.getCount() == 1) { //single row selected
-						selectedRecord = sm.getSelected();
-						historyData.grid.enable();
-						loadResources(selectedRecord);
+						historyData.grid.enable()
+						loadResources(sm.getSelected())
 						batchEditBtn.disable()
 					} else {
-						historyData.store.removeAll();
-						historyData.grid.disable();
+						historyData.store.removeAll()
+						historyData.grid.disable()
 						batchEditBtn.enable()
 
 					}
@@ -1257,13 +1336,16 @@ async function addCollectionReview ( params ) {
 					lineIncrementBtn
 				]
 			}),
-			bbar: new Ext.Toolbar({
-				items: [
-					reviewsExportBtn,
-					'->',
-					new SM.RowCountTextItem({store:reviewsStore})
-				]
-			}),
+			bbar: [
+				reviewsExportBtn,
+				'->',
+				{
+					xtype: 'tbtext',
+					ref: '../statSprites'
+				},
+				'-',
+				new SM.RowCountTextItem({store:reviewsStore, noun:'review', iconCls:'sm-assessment-icon'})
+			],
 			emptyText: 'No data to display'
 		});
 
