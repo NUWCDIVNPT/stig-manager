@@ -14,6 +14,19 @@ const upMigration = [
     PRIMARY KEY index1 (crId),
     UNIQUE KEY index_collection_benchmark (collectionId, benchmarkId)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`
+
+  // view: v_default_rev
+  `CREATE VIEW v_default_rev AS
+  SELECT DISTINCT
+        \`a\`.\`collectionId\` AS \`collectionId\`,
+        \`sa\`.\`benchmarkId\` AS \`benchmarkId\`,
+        COALESCE(\`crm\`.\`revId\`, \`cr\`.\`revId\`) AS \`revId\`
+    FROM
+        (((\`asset\` \`a\`
+        LEFT JOIN \`stig_asset_map\` \`sa\` ON ((\`a\`.\`assetId\` = \`sa\`.\`assetId\`)))
+        LEFT JOIN \`current_rev\` \`cr\` ON ((\`sa\`.\`benchmarkId\` = \`cr\`.\`benchmarkId\`)))
+        LEFT JOIN \`collection_rev_map\` \`crm\` ON (((\`sa\`.\`benchmarkId\` = \`crm\`.\`benchmarkId\`)
+            AND (\`a\`.\`collectionId\` = \`crm\`.\`collectionId\`))))\``
 ]
 
 const downMigration = [
