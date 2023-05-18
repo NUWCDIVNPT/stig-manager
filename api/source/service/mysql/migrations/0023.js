@@ -16,6 +16,7 @@ const upMigration = [
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`
 
   // view: v_default_rev
+  `DROP VIEW IF EXISTS v_default_rev`,
   `CREATE VIEW v_default_rev AS
   SELECT DISTINCT
         \`a\`.\`collectionId\` AS \`collectionId\`,

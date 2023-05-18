@@ -4582,13 +4582,13 @@ components:
         title:
           type: string
         defaultRevisionStr:
-          type: string
+          $ref: '#/components/schemas/RevisionStr'   
         defaultRevisionDate:
           type: string
           format: date
           nullable: true
         lastRevisionStr:
-          type: string
+          $ref: '#/components/schemas/RevisionStrRaw'   
         lastRevisionDate:
           type: string
           format: date
