@@ -5,7 +5,7 @@ STIG Review Handling
 ########################################
 
 
-STIG Manager and many other STIG tools, such as STIG Viewer, treat STIGs as checklists composed of re-usable Rules. These Rules are often re-used for each Revision of a STIG exactly as they are. However, Rules can also be changed with each STIG Revision. These changes can be significant, or quite trivial. Whenever DISA makes a change to a STIG Rule, often only the Rule ID will change to identify the new version of the Rule, but the Group Number will stay the same. 
+STIG Manager and other STIG tools, such as STIG Viewer, treat STIGs as checklists composed of individual re-usable Rules. These Rules are often re-used for each Revision of a STIG exactly as they are. However, Rules can also be changed with each STIG Revision. These changes can be significant, or quite trivial. Whenever DISA makes a change to a STIG Rule, often only the Rule ID will change to identify the new version of the Rule, but the Group Number will stay the same. 
 
 This is because DISA does not want to change the Group Number, as that would require the Rule to be re-authorized by the STIG Working Group.
 
