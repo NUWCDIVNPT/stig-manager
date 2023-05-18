@@ -26,7 +26,11 @@ const upMigration = [
         LEFT JOIN \`stig_asset_map\` \`sa\` ON ((\`a\`.\`assetId\` = \`sa\`.\`assetId\`)))
         LEFT JOIN \`current_rev\` \`cr\` ON ((\`sa\`.\`benchmarkId\` = \`cr\`.\`benchmarkId\`)))
         LEFT JOIN \`collection_rev_map\` \`crm\` ON (((\`sa\`.\`benchmarkId\` = \`crm\`.\`benchmarkId\`)
-            AND (\`a\`.\`collectionId\` = \`crm\`.\`collectionId\`))))\``
+            AND (\`a\`.\`collectionId\` = \`crm\`.\`collectionId\`))))\``,
+
+    `ALTER TABLE rev_group_rule_map
+    DROP INDEX index4 ,
+    ADD INDEX idx_version_check_digest (\`version\` ASC, checkDigest ASC) VISIBLE`
 ]
 
 const downMigration = [

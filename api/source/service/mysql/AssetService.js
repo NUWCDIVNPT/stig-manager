@@ -54,7 +54,8 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       )
       from
 		    stig_asset_map sa2
-        left join current_rev cr2 on sa2.benchmarkId = cr2.benchmarkId
+        left join asset a2 using (assetId)
+        left join v_default_rev cr2 on (sa2.benchmarkId = cr2.benchmarkId and a2.collectionId = cr2.collectionId)
 	    where
         FIND_IN_SET(sa2.saId, GROUP_CONCAT(sa.saId))
       ) as "statusStats"`)
@@ -188,11 +189,10 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
 exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, userObject) {
   const columns = [
-    'distinct cr.benchmarkId', 
-    `concat('V', cr.version, 'R', cr.release) as lastRevisionStr`, 
-    `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
-    'cr.ruleCount as ruleCount',
-    'st.title'
+    'distinct sa.benchmarkId', 
+    `concat('V', rev.version, 'R', rev.release) as revisionStr`, 
+    `date_format(rev.benchmarkDateSql,'%Y-%m-%d') as revisionDate`,
+    'rev.ruleCount as ruleCount'
   ]
   const joins = [
     'asset a',
@@ -200,8 +200,8 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'inner join current_rev cr on sa.benchmarkId=cr.benchmarkId',
-    'left join stig st on cr.benchmarkId=st.benchmarkId'
+    'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
+    'left join revision rev on dr.revId = rev.revId'
   ]
   // PREDICATES
   const predicates = {
@@ -213,13 +213,13 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
     predicates.binds.push( inPredicates.assetId )
   }
   if (inPredicates.benchmarkId) {
-    predicates.statements.push('cr.benchmarkId = ?')
+    predicates.statements.push('sa.benchmarkId = ?')
     predicates.binds.push( inPredicates.benchmarkId )
   }
   predicates.statements.push('cg.userId = ?')
   predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
   predicates.binds.push( userObject.userId )
-  const orderBy = ['cr.benchmarkId']
+  const orderBy = ['sa.benchmarkId']
 
   // CONSTRUCT MAIN QUERY
   const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})

@@ -329,9 +329,8 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        from
          asset a
          left join stig_asset_map sa using (assetId)
-         left join current_rev cr on sa.benchmarkId = cr.benchmarkId
-         left join collection_rev_map crm on (sa.benchmarkId = crm.benchmarkId and a.collectionId = crm.collectionId)
-         left join rev_group_rule_map rgr on (coalesce(crm.revId, cr.revId) = rgr.revId)
+         left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
+         left join rev_group_rule_map rgr on dr.revId = rgr.revId
          left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
          left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
     ${whereClause}
