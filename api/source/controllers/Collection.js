@@ -899,6 +899,12 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
     const benchmarkId = req.params.benchmarkId
     const assetIds = req.body.assetIds
     const defaultRevisionStr = req.body.defaultRevisionStr
+
+    // The OAS layer mandated if assetIds is absent then defaultRevisionStr must be present
+    // we do not permit setting the defaul revision of an unassigned STIG
+    if (!assetIds && !await CollectionSvc.doesCollectionIncludeStig({collectionId, benchmarkId})) {
+      throw new SmError.UnprocessableError('Cannot set the default revision of a benchmarkId without currently mapped Assets')
+    }
     if (assetIds?.length) {
       const collectionHasAssets = await CollectionSvc.doesCollectionIncludeAssets({
         collectionId,
@@ -908,7 +914,6 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
         throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
       }
     }
-
     await CollectionSvc.writeStigPropsByCollectionStig( {
       collectionId,
       benchmarkId,

@@ -2605,11 +2605,12 @@ paths:
     post:
       tags:
         - Collection
-      summary: Set the default Revision and/or the Asset list of a STIG
+      summary: Set the default Revision and/or the Asset list of a STIG in a Collection
+      description: |
+        Neither of the request body properties is required but at least one must be present. If the path parameter `{benchmarkId}` is not already mapped to at least one Asset in `{collectionId}`, then the `assetIds` property must be present.
       operationId: writeStigPropsByCollectionStig
       requestBody:
         required: true
-        description: The STIG properties for this Collection
         content:
           application/json:
             schema:

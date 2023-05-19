@@ -1588,3 +1588,15 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
   }
 }
 
+exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId}) {
+  try {
+    const [rows] = await dbUtils.pool.query(
+      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ?`,
+      [collectionId]
+    )
+    return rows.includes(benchmarkId)
+  }
+  catch (e) {
+    return false
+  }
+}
