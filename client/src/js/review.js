@@ -121,16 +121,16 @@ async function addReview( params ) {
           groupGrid.getSelectionModel().selectFirstRow();
         }
 
-        groupGrid.totalText.setText(getStatsString(store))
+        groupGrid.statSprites.setText(getStatsString(store))
       },
       clear: function () {
-        groupGrid.totalText.setText('0 rules');
+        groupGrid.statSprites.setText(getStatsString(store));
       },
       update: function (store) {
-        groupGrid.totalText.setText(getStatsString(store));
+        groupGrid.statSprites.setText(getStatsString(store));
       },
       datachanged: function (store) {
-        groupGrid?.totalText.setText(getStatsString(store));
+        groupGrid?.statSprites.setText(getStatsString(store));
       }
     }
   });
@@ -292,29 +292,63 @@ async function addReview( params ) {
   /******************************************************/
   // Group grid statistics string
   /******************************************************/
-  var getStatsString = function (store) {
-    var totalChecks = store.getCount();
-    var checksO = 0;
-    var checksNF = 0;
-    var checksNA = 0;
-    var checksOther = 0;
-    store.data.each(function (item, index, totalItems) {
-      switch (item.data.result) {
+  function getStatsString(store) {
+    const stats = store.data.items.reduce((a, c) => {
+      switch (c.data.result) {
         case 'fail':
-          checksO++;
-          break;
+          a.fail++
+          break
         case 'pass':
-          checksNF++;
-          break;
+          a.pass++
+          break
         case 'notapplicable':
-          checksNA++;
-          break;
+          a.notapplicable++
+          break
         default:
-          checksOther++;
-          break;
+          a.other++
+          break
       }
-    });
-    return totalChecks + ' checks (' + checksO + ' Open, ' + checksNF + ' NF, ' + checksNA + ' NA, ' + checksOther + ' NR/Other )';
+      if (c.data.engineResult) a[c.data.engineResult]++
+      if (c.data.status) a[c.data.status]++
+      return a
+    }, {
+      pass: 0,
+      fail: 0,
+      notapplicable: 0,
+      other: 0,
+      saved: 0,
+      submitted: 0,
+      rejected: 0,
+      accepted: 0,
+      override: 0,
+      manual: 0,
+      engine: 0
+    })
+
+    const spriteGroups = []
+    spriteGroups.push(
+      [
+        `${stats.fail ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Open"><span class="sm-result-fail" style="font-weight:bolder;">O </span> ${stats.fail}</span>` : ''}`,
+        `${stats.pass ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not a Finding"><span class="sm-result-pass" style="font-weight:bolder;">NF </span> ${stats.pass}</span>` : ''}`,
+        `${stats.notapplicable ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Applicable"><span class="sm-result-na" style="font-weight:bolder;">NA</span> ${stats.notapplicable}</span>` : ''}`,
+        `${stats.other ? `<span class="sm-review-sprite sm-review-sprite-stat-result" ext:qtip="Not Reviewed or has a non-compliance result such as informational"><span class="sm-result-nr" style="font-weight:bolder;">NR+</span> ${stats.other}</span>` : ''}`
+      ].filter(Boolean).join(' '))
+
+    spriteGroups.push(
+      [
+        `${stats.manual ? `<span class="sm-review-sprite sm-engine-manual-icon" ext:qtip="Manual"> ${stats.manual}</span>` : ''}`,
+        `${stats.engine ? `<span class="sm-review-sprite sm-engine-result-icon" ext:qtip="Result engine"> ${stats.engine}</span>` : ''}`,
+        `${stats.override ? `<span class="sm-review-sprite sm-engine-override-icon" ext:qtip="Overriden result engine"> ${stats.override}</span>` : ''}`
+      ].filter(Boolean).join(' '))
+
+    spriteGroups.push(
+      [
+        `${stats.saved ? `<span class="sm-review-sprite sm-review-sprite-stat-saved" ext:qtip="Saved"> ${stats.saved || '-'}</span>` : ''}`,
+        `${stats.submitted ? `<span class="sm-review-sprite sm-review-sprite-stat-submitted" ext:qtip="Submitted"> ${stats.submitted}</span>` : ''}`,
+        `${stats.rejected ? `<span class="sm-review-sprite sm-review-sprite-stat-rejected" ext:qtip="Rejected"> ${stats.rejected}</span>` : ''}`,
+        `${stats.accepted ? `<span class="sm-review-sprite sm-review-sprite-stat-accepted" ext:qtip="Accepted"> ${stats.accepted}</span>` : ''}`
+      ].filter(Boolean).join(' '))
+    return spriteGroups.filter(Boolean).join('<span class="sm-xtb-sep"></span>')
   };
 
   /******************************************************/
@@ -374,18 +408,6 @@ async function addReview( params ) {
     split: true,
     store: groupStore,
     stripeRows: true,
-    listeners: {
-      beforehide: {
-        fn: function (grid) {
-          var test = '1';
-        }
-      },
-      beforeshow: {
-        fn: function (grid) {
-          var test = '1';
-        }
-      }
-    },
     sm: new Ext.grid.RowSelectionModel({
       singleSelect: true,
       listeners: {
@@ -584,16 +606,13 @@ async function addReview( params ) {
         xtype: 'tbseparator'
       },
       groupExportBtn,
-      {
-        xtype: 'tbseparator'
-      },
+      '->',
       {
         xtype: 'tbtext',
-        ref: '../totalText',
-        id: 'groupGrid-totalText' + idAppend,
-        text: '0 rules',
-        width: 80
-      }
+        ref: '../statSprites'
+      },
+      '-',
+      new SM.RowCountTextItem({store:groupStore, noun:'rule', iconCls:'sm-stig-icon'})
     ]
   });
 
@@ -725,7 +744,12 @@ async function addReview( params ) {
       field: 'assetName',
       direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
     },
-    idProperty: 'reviewId'
+    idProperty: 'reviewId',
+    listeners: {
+      datachanged: function (store) {
+        otherGrid.statSprites?.setText(getStatsString(store))
+      }
+    }
   });
 
   const otherExportBtn = new Ext.ux.ExportButton({
@@ -763,13 +787,16 @@ async function addReview( params ) {
         }
       }  
     }),
-    bbar: new Ext.Toolbar({
-      items: [
-        otherExportBtn,
-        '->',
-        new SM.RowCountTextItem({store:otherStore})
-      ]
-    }),
+    bbar: [
+      otherExportBtn,
+      '->',
+      {
+        xtype: 'tbtext',
+        ref: '../statSprites'
+      },
+      '-',
+      new SM.RowCountTextItem({store:otherStore, noun:'asset', iconCls:'sm-asset-icon'})
+    ],
     columns: [
       {
         id: 'target' + idAppend,

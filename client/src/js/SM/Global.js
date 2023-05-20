@@ -194,33 +194,24 @@ SM.RuleContentTpl = new Ext.XTemplate(
     '</div>'
   )
 
-  SM.StoreRowCount = function (store) {
+  SM.StoreRowCount = function (store, noun = 'row', iconCls = 'sm-database-icon') {
     const rowCount = store.data.length || 0
     const totalCount = store.snapshot?.length || rowCount
-    return`${rowCount}${store.isFiltered() ? ' of ' + totalCount : ''} row${totalCount === 1 ? '' : 's'}`
+
+    return `<span class="sm-review-sprite ${iconCls}">${rowCount}${store.isFiltered() ? ' of ' + totalCount : ''} ${noun}${totalCount === 1 ? '' : 's'}</span>`
   }
 
   SM.RowCountTextItem = Ext.extend(Ext.Toolbar.TextItem, {
     initComponent: function () {
+        // initial configuration supports {store, noun, iconCls}
         const _this = this
         const config = {
             store: this.store
         }
-        this.store?.on('load', function (store) {
-            _this.setText(SM.StoreRowCount(store))
-        })
-        this.store?.on('datachanged', function (store) {
-            _this.setText(SM.StoreRowCount(store))
-        })
-        this.store?.on('remove', function (store) {
-            _this.setText(SM.StoreRowCount(store))
-        })
-        this.store?.on('clear', function (store) {
-            _this.setText(SM.StoreRowCount(store))
-        })
-        this.store?.on('add', function (store) {
-            _this.setText(SM.StoreRowCount(store))
-        })
+        const events = ['load', 'datachanged','remove','clear','add']
+        for (const event of events) {
+            this.store?.on(event, () => _this.setText(SM.StoreRowCount(_this.store, _this.noun, _this.iconCls)))
+        }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.RowCountTextItem.superclass.initComponent.call(this)
     }  

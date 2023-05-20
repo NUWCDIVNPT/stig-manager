@@ -102,8 +102,8 @@ textarea:-webkit-autofill {
   color: #5a94b9
 }
 .sm-review-sprite {
-  background-color: hsl(0 0% 38% / 1);
-  border-color: hsl(0deg 0% 48%);
+  background-color: hsl(0 0% 14% / 1);
+  border-color: hsl(0deg 0% 35%);
   color: hsl(0deg 0% 80%)
 }
 .sm-label-sprite {
@@ -1957,13 +1957,13 @@ a.x-menu-item {
   border-color: #414749
 }
 .sm-result-pass {
-  color: #72ff72
+  color: #12ca12
 }
 .sm-result-fail {
-  color: #ff7536
+  color: #ff5100
 }
 .sm-result-na {
-  color: #b7b0a7
+  color: #767676
 }
 .sm-result-nr {
   color: #c0bab2
@@ -2407,9 +2407,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-database-save-icon {
   background-image: url("../img/database.svg")!important
-}
-.sm-database-icon {
-  background-image: url("../img/database.png")!important
 }
 .sm-table-icon {
   background-image: url("../img/table.png")!important

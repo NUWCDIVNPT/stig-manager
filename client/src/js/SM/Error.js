@@ -161,6 +161,7 @@ SM.Error.handleError = async function (e) {
       await SM.Error.initSourceMap()
     }
     let errorObj
+    if (e instanceof ErrorEvent) e = e.error
     if (e instanceof Error) {
       if (STIGMAN.isMinimizedSource) {
         e.sourceStack = SM.Error.getOriginalSource(e.stack)
@@ -172,7 +173,7 @@ SM.Error.handleError = async function (e) {
       // errorObj = e.error ? e.error : e
     }
     else {
-      errorObj = e
+      errorObj = STIGMAN.serializeError(e.error ? e.error : e)
     }
     SM.Error.displayError({errorObj})
   }

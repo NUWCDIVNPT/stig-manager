@@ -233,6 +233,10 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       </div>`
     }
 
+    const rowCountCfg = {
+      noun: this.aggregation,
+      iconCls: `sm-${this.aggregation}-icon`
+    }
     switch (this.aggregation) {
       case 'asset':
         fields.push(
@@ -408,7 +412,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             addCollectionReview({ leaf })
           }
         }
-
+        rowCountCfg.noun = 'STIG'
         break
     }
     columns.push(...SM.CollectionPanel.CommonColumns)
@@ -433,7 +437,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     })
     this.totalTextCmp = new SM.RowCountTextItem({
-      store
+      store,
+      ...rowCountCfg
     })
 
     const config = {
@@ -592,7 +597,9 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     })
     this.totalTextCmp = new SM.RowCountTextItem({
-      store
+      store,
+      noun: 'checklist',
+      iconCls: 'sm-stig-icon'
     })
 
     const rowdblclick = (grid, rowIndex) => {
@@ -1264,7 +1271,7 @@ SM.CollectionPanel.AggAssetPanel = Ext.extend(Ext.Panel, {
       reloadBtnHandler: this.reloadBtnHandler
     })
     const unaggGrid = new SM.CollectionPanel.UnaggGrid({
-      title: 'STIGs',
+      title: 'Checklists',
       stateId: `sm-metrics-unagg-grid-asset-${collectionId}`,
       stateful: true,
       parentAggregation: 'asset',
@@ -1279,7 +1286,7 @@ SM.CollectionPanel.AggAssetPanel = Ext.extend(Ext.Panel, {
       await unaggGrid.store.loadPromise({
         assetId: record.data.assetId
       })
-      unaggGrid.setTitle(`STIGs mapped to ${record.data.name}`)
+      unaggGrid.setTitle(`Checklists for ${record.data.name}`)
     }
 
     aggAssetGrid.getSelectionModel().on('rowselect', onRowSelect)
@@ -1308,7 +1315,7 @@ SM.CollectionPanel.AggAssetPanel = Ext.extend(Ext.Panel, {
 
         const currentRecord = aggAssetGrid.store.getById(selectedRow.data.assetId)
         if (!currentRecord) {
-          unaggGrid.setTitle('STIGs')
+          unaggGrid.setTitle('Checklists')
           unaggGrid.store.removeAll()
           return
         }
@@ -1348,15 +1355,6 @@ SM.CollectionPanel.AggStigPanel = Ext.extend(Ext.Panel, {
     const _this = this
     const collectionId = this.collectionId
 
-    // const exportBtn = new Ext.Button({
-    //   iconCls: 'sm-export-icon',
-    //   text: 'Export results...',
-    //   disabled: true,
-    //   handler: function () {
-    //     SM.Exports.showExportTree(_this.collectionId, _this.collectionName, 'stig', aggStigGrid.getSelectionModel().getSelections().map(r => r.data));
-    //   }
-    // })
-
     const aggStigGrid = new SM.CollectionPanel.AggGrid({
       aggregation: 'stig',
       stateId: `sm-collection-${collectionId}-agg-grid-stig`,
@@ -1368,11 +1366,6 @@ SM.CollectionPanel.AggStigPanel = Ext.extend(Ext.Panel, {
       reloadBtnHandler: this.reloadBtnHandler,
       exportName: 'STIGs',
       region: 'center',
-      // tbar: new Ext.Toolbar({
-      //   items: [
-      //     exportBtn,
-      //   ]
-      // })
     })
 
     const unaggGrid = new SM.CollectionPanel.UnaggGrid({
@@ -1487,7 +1480,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
       region: 'center'
     })
     const unaggGrid = new SM.CollectionPanel.UnaggGrid({
-      title: 'STIGs',
+      title: 'Checklists',
       stateId: `sm-metrics-unagg-grid-label-${collectionId}`,
       stateful: true,
       border: false,
@@ -1514,7 +1507,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
       await unaggGrid.store.loadPromise({
         assetId: record.data.assetId
       })
-      unaggGrid.setTitle(`STIGs for ${record.data.name}`)
+      unaggGrid.setTitle(`Checklists for ${record.data.name}`)
     }
 
     aggLabelGrid.getSelectionModel().on('rowselect', onRowSelectLabel)
