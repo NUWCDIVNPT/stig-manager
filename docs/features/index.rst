@@ -80,6 +80,12 @@ The STIG Manager Client provides efficient workspaces for creating Collections o
 -------------------
 
 
+Sophisticated Algorithm Tracks Reviews Across STIG Revision Changes, Eliminating Redundant Work
+---------------------------------------------------------------------------------------------------
+
+STIG Manager tracks Reviews using the Rule Version and Rule Check Content, so that When STIGs are updated, all Reviews for Rules with unchanged content are carried forward to the new STIG. This allows STIG Evaluators to focus on the Rules that have changed, and not repeat work that has already been done.
+
+See our section on :ref:`Review Handling and Matching<review-handling>` for more information about how STIGMan tracks Reviews.
 
 Customizable Review Requirements to Help Progress Towards a POA&M
 ---------------------------------------------------------------------
