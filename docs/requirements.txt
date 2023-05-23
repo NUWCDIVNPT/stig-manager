@@ -1,4 +1,4 @@
-﻿alabaster==0.7.12
+alabaster==0.7.12
 Babel==2.9.1
 certifi==2022.12.7
 chardet==4.0.0
@@ -15,7 +15,7 @@ Pygments==2.7.4
 pyparsing==2.4.7
 pytz==2021.1
 recommonmark==0.7.1
-requests==2.25.1
+requests==2.31.0
 snowballstemmer==2.1.0
 sphinx-rtd-theme==0.5.1
 sphinxcontrib-applehelp==1.0.2
