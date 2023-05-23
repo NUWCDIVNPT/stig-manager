@@ -1,3 +1,14 @@
+1.3.6
+-----
+
+Changes:
+
+  - (APP) tally sprites have been added to the bottom toolbars of grids that display Review data. These sprites show the relevant counts for the various rows, results, and statuses displayed in the grids above. (#992)
+  - (App) Resolved Application Deployment Stats download issue. (#994)
+  - (App) Resolved issue causing error when persistent Collection Review tab was re-opened.(#997)
+  - (App) Resolved issue with errorEvents causing errors in error handler. (#998)
+  - (Docs) Additional info about Review handling and tracking between STIG revisions. (#999)
+
 1.3.5
 -----
 
