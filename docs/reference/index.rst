@@ -89,6 +89,8 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
         The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners (or, optionally, Managers) then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
 
+        See our section on :ref:`Review Handling and Matching<review-handling>` for more information about how STIGMan tracks Reviews.
+
     STIG
         Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
 		

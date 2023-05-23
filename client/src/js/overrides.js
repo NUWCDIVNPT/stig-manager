@@ -673,7 +673,7 @@ Ext.override(Ext.grid.RowSelectionModel, {
 
 // Add support for dismissDelay in QuickTip markup
 Ext.override(Ext.QuickTip, {
-	//dismissDelay: 0,
+	dismissDelay: 0,
     tagConfig : {
         namespace : "ext",
         attribute : "qtip",

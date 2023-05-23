@@ -4,6 +4,12 @@ $Id: findingsSummary.js 807 2017-07-27 13:04:19Z csmig $
 
 function addFindingsSummary( params ) {
 	const { collectionId, collectionName, treePath } = params
+	const tab = Ext.getCmp('main-tab-panel').getItem('findingsTab-' + collectionId)
+	if (tab) {
+		tab.show()
+		return
+	}
+
 
 	const aggregator = 'groupId'
 

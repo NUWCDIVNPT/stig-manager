@@ -103,7 +103,9 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         me.totalTextCmp = new SM.RowCountTextItem ({
-            store: assetStore
+            store: assetStore,
+            noun: 'asset',
+            iconCls: 'sm-asset-icon'
         })
         const sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,
