@@ -23,7 +23,7 @@ When DISA Reference STIG releases are imported into STIG Manager, the Check Cont
 Review Handling Comparison with STIG Viewer
 =======================================================
 
-STIG Viewer performs a similar function, matching the left-hand component of the RuleIds in older .ckl files and applying them to Rules in the current STIG. Our Sponsor and Users have rejected that approach because it applies Reviews to Rules even if the Check Content was changed. They have funded the more sophisticated approach taken by STIG Manager, that looks at whether or not the actual Check Content for a Rule has changed between Revisions.
+STIG Viewer can perform a similar function, matching the left-hand component of the RuleIds in older .ckl files and applying them to Rules in the current STIG. Our Sponsor and Users have rejected that approach because it applies Reviews to Rules even if the Check Content was changed. They have funded the more sophisticated approach taken by STIG Manager, that looks at whether or not the actual Check Content for a Rule has changed between Revisions.
 
 The STIG Viewer User Guide cautions against using their matching feature too freely, and mentions the specific use case that STIG Manager addresses with its approach:
 
@@ -40,7 +40,7 @@ Rule Matching Example
 
 STIG Viewer is limited because it operates only on the current set of STIGs, while STIG Manager has a history of older STIG Revisions. This means STIGMan can compare Rule Check Content between STIG and Rule changes, and only present Reviews that exactly match the Check Content of the Rule being evaluated.
 
-Below is a view of the STIGMan STIG Compare tool, showing a one-character difference between two versions of the same STIG Rule.
+Below is a screenshot of the STIGMan STIG Compare tool, showing a one-character difference between two related Rules from different STIG revisions.  The STIG Viewer feature would apply the Review from the previous STIG revision to the new Rule, even though the Check Content has changed.
 
 .. thumbnail:: /assets/images/check-change-example-stig-viewer-crop2.png
       :width: 50% 
@@ -51,4 +51,5 @@ Below is a view of the STIGMan STIG Compare tool, showing a one-character differ
 
 This is a small but significant change. Applying the previous Review as STIG Viewer would to the new version of the Rule would be a mistake, and could lead to a state where a system was using an invalid Certificate Authority.
 
+By contrast, STIG Manager will not present the previous Review for this related Rule, because the Check Content has changed. The Reviewer or an automated tool will need to perform a new Review for this Rule, verifying that the correct CAs are being used.
 
