@@ -575,7 +575,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
             fireSelectOnSetValue: true
         })
         stigField.addListener('select', function (combo, record, index) {
-            const revisions = [['latest', 'latest'], ...record.data.revisions.map( rev => [rev.revisionStr, `${rev.revisionStr} (${rev.revisionDate})`])]
+            const revisions = [['latest', 'latest'], ...record.data.revisions.map( rev => [rev.revisionStr, `${rev.revisionStr} (${rev.benchmarkDate})`])]
             revisionComboBox.store.loadData(revisions)
             revisionComboBox.setValue(record.data.benchmarkId === me.benchmarkId ? me.defaultRevisionStr : 'latest')
         })

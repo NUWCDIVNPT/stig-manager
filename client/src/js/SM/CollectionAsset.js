@@ -565,7 +565,7 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                 'revisions'
             ],
             autoLoad: this.autoLoad,
-            url: this.url || `${STIGMAN.Env.apiBase}/stigs`,
+            url: this.url || `${STIGMAN.Env.apiBase}/stigs?projection=revisions`,
             root: this.root || '',
             sortInfo: {
                 field: 'benchmarkId',

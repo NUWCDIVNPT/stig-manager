@@ -2894,6 +2894,8 @@ paths:
           description: A string found anywhere in a STIG title
           schema:
             type: string
+        - $ref: '#/components/parameters/StigProjectionQuery'
+        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: STIG response
@@ -3048,6 +3050,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: STIG response
@@ -3076,6 +3079,8 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/ForceQuery'
       responses:
         '200':
           description: The deleted STIG
@@ -3107,6 +3112,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: Revision response
@@ -3145,6 +3151,7 @@ paths:
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?|latest)$
             type: string
+        - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: Revision response
@@ -3180,6 +3187,8 @@ paths:
           schema:
             pattern: ^(V\d+R\d+(\.\d+)?)$
             type: string
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/ForceQuery'
       responses:
         '200':
           description: The deleted Revision
@@ -5931,6 +5940,7 @@ components:
         - status
         - statusDate
         - ruleCount
+        - collectionIds
       additionalProperties: false
       properties:
         benchmarkId:
@@ -5953,6 +5963,10 @@ components:
           format: date
         ruleCount:
           type: integer
+        collectionIds:
+          type: array
+          items:
+            type: string
     RevisionBasic:
       type: object
       required:
@@ -6095,6 +6109,7 @@ components:
         - lastRevisionStr
         - lastRevisionDate
         - ruleCount
+        - collectionIds
       additionalProperties: false
       properties:
         benchmarkId:
@@ -6112,6 +6127,10 @@ components:
           nullable: true
         ruleCount:
           type: integer
+        collectionIds:
+          type: array
+          items:
+            type: string
         revisionStrs:
           type: array
           items:
@@ -6119,15 +6138,7 @@ components:
         revisions:
           type: array
           items:
-            type: object
-            additionalProperties: false
-            properties:
-              revisionStr:
-                $ref: '#/components/schemas/RevisionStrRaw'
-              revisionDate:
-                type: string
-                format: date
-                nullable: true
+            $ref: '#/components/schemas/Revision'
     STIGPostResponse:
       type: object
     StigAsset:
@@ -6641,6 +6652,7 @@ components:
       description: Elevate the user context for this request if user is permitted (canAdmin)
       schema:
         type: boolean
+        default: false
     FindingAggregatorQuery:
       name: aggregator
       required: true
@@ -6672,6 +6684,13 @@ components:
             - rules
             - stigs
             - ccis
+    ForceQuery:
+      name: force
+      in: query
+      description: Force an action, such as a delete, that would otherwise not be permitted
+      schema:
+        type: boolean
+        default: false
     GroupIdPath:
       name: groupId
       in: path
@@ -6937,7 +6956,19 @@ components:
       in: query
       description: History entries with a timestamp before the specified start date.
       schema:
-        $ref: '#/components/schemas/Date'            
+        $ref: '#/components/schemas/Date'
+    StigProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - revisions
     StigAssetsProjectionQuery:
       name: projection
       in: query

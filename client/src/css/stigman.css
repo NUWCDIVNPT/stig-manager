@@ -290,10 +290,13 @@
 	position: absolute;
 	right: 10px;
 	margin-top: 2px;
-	cursor: pointer
+	cursor: pointer;
+	opacity: .5
 }
-.x-tree-node-el:not(.x-tree-selected):hover .sm-tree-toolbar {
-  opacity: .5
+.x-tree-node-el:hover .sm-tree-toolbar:hover,
+.x-tree-selected .sm-tree-toolbar:hover {
+	opacity: 1;
+	scale: 125%
 }
 .x-color-palette {
   height: unset;
@@ -308,6 +311,11 @@
 }
 .sm-label-icon {
   background-image: url(../img/label.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+.sm-pin-icon {
+  background-image: url(../img/pin.svg)!important;
   background-repeat: no-repeat;
   background-size: 16px 16px
 }

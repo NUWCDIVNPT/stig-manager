@@ -12,22 +12,51 @@ const upMigration = [
     benchmarkId VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs,
     revId VARCHAR(255) NOT NULL,
     PRIMARY KEY index1 (crId),
-    UNIQUE KEY index_collection_benchmark (collectionId, benchmarkId)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`
+    UNIQUE KEY index_collection_benchmark (collectionId, benchmarkId),
+    INDEX index_revId (revId)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
 
   // view: v_default_rev
   `DROP VIEW IF EXISTS v_default_rev`,
   `CREATE VIEW v_default_rev AS
   SELECT DISTINCT
-        \`a\`.\`collectionId\` AS \`collectionId\`,
-        \`sa\`.\`benchmarkId\` AS \`benchmarkId\`,
-        COALESCE(\`crm\`.\`revId\`, \`cr\`.\`revId\`) AS \`revId\`
+        a.collectionId AS collectionId,
+        sa.benchmarkId AS benchmarkId,
+        COALESCE(crm.revId, cr.revId) AS revId
     FROM
-        (((\`asset\` \`a\`
-        LEFT JOIN \`stig_asset_map\` \`sa\` ON ((\`a\`.\`assetId\` = \`sa\`.\`assetId\`)))
-        LEFT JOIN \`current_rev\` \`cr\` ON ((\`sa\`.\`benchmarkId\` = \`cr\`.\`benchmarkId\`)))
-        LEFT JOIN \`collection_rev_map\` \`crm\` ON (((\`sa\`.\`benchmarkId\` = \`crm\`.\`benchmarkId\`)
-            AND (\`a\`.\`collectionId\` = \`crm\`.\`collectionId\`))))\``,
+        asset a
+        LEFT JOIN stig_asset_map sa ON a.assetId = sa.assetId
+        LEFT JOIN current_rev cr ON sa.benchmarkId = cr.benchmarkId
+        LEFT JOIN collection_rev_map crm ON (sa.benchmarkId = crm.benchmarkId AND a.collectionId = crm.collectionId)`,
+
+  // view: v_latest_rev
+  `DROP VIEW IF EXISTS v_latest_rev`,
+  `CREATE VIEW v_latest_rev AS
+  select 
+    rr.revId AS revId, 
+    rr.benchmarkId AS benchmarkId,
+    concat('V',rr.version,'R',rr.release) as revisionStr
+  from 
+    (
+      select 
+        r.revId, 
+        r.benchmarkId,
+        r.version,
+        r.release,
+        row_number() OVER (
+          PARTITION BY r.benchmarkId 
+          ORDER BY 
+            field(
+              r.status, 'draft', 'accepted'
+            ) desc, 
+            (r.version + 0) desc, 
+            (r.release + 0) desc
+        ) AS rn 
+      from 
+        revision r
+    ) rr 
+  where 
+    (rr.rn = 1)`,
 
     `ALTER TABLE rev_group_rule_map
     DROP INDEX index4 ,
@@ -35,7 +64,8 @@ const upMigration = [
 ]
 
 const downMigration = [
-  `drop table if exists collection_rev_map`
+  `drop table if exists collection_rev_map`,
+  `DROP VIEW IF EXISTS v_default_rev`
 ]
 
 const migrationHandler = new MigrationHandler(upMigration, downMigration)

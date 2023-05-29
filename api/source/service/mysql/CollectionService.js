@@ -259,8 +259,8 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'left join v_default_rev cr on (sa.benchmarkId = cr.benchmarkId and c.collectionId = cr.collectionId)',
-    'left join rev_group_rule_map rgr on cr.revId = rgr.revId',
+    'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
+    'left join rev_group_rule_map rgr on dr.revId = rgr.revId',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
     'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
     'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
@@ -280,10 +280,10 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   // Not exposed in API, used internally
   if (inProjection.includes('stigsInfo')) {
     columns.push(`cast( concat( '[', group_concat(distinct json_object (
-      'benchmarkId', cr.benchmarkId,
-      'version', cr.version,
-      'release', cr.release,
-      'benchmarkDate', cr.benchmarkDate) order by cr.benchmarkId), ']') as json) as "stigsInfo"`)
+      'benchmarkId', dr.benchmarkId,
+      'version', dr.version,
+      'release', dr.release,
+      'benchmarkDate', dr.benchmarkDate) order by dr.benchmarkId), ']') as json) as "stigsInfo"`)
   }
   if (inProjection.includes('rules')) {
     columns.push(`cast(concat('[', group_concat(distinct json_object (
@@ -304,7 +304,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       'name', a.name) order by a.name), ']') as json) as "assets"`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+    columns.push(`cast( concat( '[', group_concat(distinct concat('"',dr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
   }
   if (inProjection.includes('ccis')) {
     columns.push(`cast(concat('[', 
@@ -341,7 +341,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     predicates.binds.push( 3 )
   }
   if ( inPredicates.benchmarkId ) {
-    predicates.statements.push('cr.benchmarkId = ?')
+    predicates.statements.push('dr.benchmarkId = ?')
     predicates.binds.push( inPredicates.benchmarkId )
   }
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -357,6 +357,125 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   }
   sql += '\ngroup by ' + groupBy.join(',')
   sql += '\norder by ' + orderBy
+  
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows)
+}
+
+exports.queryStatus = async function (inPredicates = {}, userObject) {
+  let columns = [
+    `distinct cast(a.assetId as char) as assetId`,
+    'a.name as assetName',
+    `coalesce(
+      (select
+        json_arrayagg(BIN_TO_UUID(cl.uuid,1))
+      from
+        collection_label_asset_map cla
+        left join collection_label cl on cla.clId = cl.clId
+      where
+        cla.assetId = a.assetId),
+      json_array()
+    ) as assetLabelIds`,
+    'sa.benchmarkId',
+    `json_object(
+      'total', cr.ruleCount
+    ) as rules`,
+    'sa.minTs',
+    'sa.maxTs',
+
+    `json_object(
+      'low', sa.lowCount,
+      'medium', sa.mediumCount,
+      'high', sa.highCount
+    ) as findings`,
+
+    `json_object(
+      'saved', json_object(
+        'total', sa.saved,
+        'resultEngine', sa.savedResultEngine),
+      'submitted', json_object(
+        'total', sa.submitted,
+        'resultEngine', sa.submittedResultEngine),
+      'rejected', json_object(
+        'total', sa.rejected,
+        'resultEngine', sa.rejectedResultEngine),
+      'accepted', json_object(
+        'total', sa.accepted,
+        'resultEngine', sa.acceptedResultEngine)
+    ) as status`,     
+
+    `json_object(
+      'notchecked', json_object(
+        'total', sa.notchecked ,
+        'resultEngine', sa.notcheckedResultEngine),
+      'notapplicable', json_object(
+        'total', sa.notapplicable ,
+        'resultEngine', sa.notapplicableResultEngine),
+      'pass', json_object(
+        'total', sa.pass,
+        'resultEngine', sa.passResultEngine),
+      'fail', json_object(
+        'total', sa.fail,
+        'resultEngine', sa.failResultEngine),
+      'unknown', json_object(
+        'total', sa.unknown,
+        'resultEngine', sa.unknownResultEngine),
+      'error', json_object(
+        'total', sa.error ,
+        'resultEngine', sa.errorResultEngine),
+      'notselected', json_object(
+        'total', sa.notselected,
+        'resultEngine', sa.notselectedResultEngine),
+      'informational', json_object(
+        'total', sa.informational,
+        'resultEngine', sa.informationalResultEngine),
+      'fixed', json_object(
+        'total', sa.fixed ,
+        'resultEngine', sa.fixedResultEngine)               
+    ) as result`               
+  ]
+  let joins = [
+    'collection c',
+    'left join collection_grant cg on c.collectionId = cg.collectionId',
+    'left join asset a on c.collectionId = a.collectionId',
+    'inner join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join user_stig_asset_map usa on sa.saId = usa.saId',
+    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
+  ]
+
+  // PROJECTIONS
+
+  // PREDICATES
+  let predicates = {
+    statements: [],
+    binds: []
+  }
+  
+  // collectionId predicate is mandatory per API spec
+  if ( inPredicates.collectionId ) {
+    predicates.statements.push('c.collectionId = ?')
+    predicates.binds.push( inPredicates.collectionId )
+  }
+  if ( inPredicates.benchmarkIds ) {
+    predicates.statements.push('sa.benchmarkId IN ?')
+    predicates.binds.push( [inPredicates.benchmarkIds] )
+  }
+  if ( inPredicates.assetIds ) {
+    predicates.statements.push('sa.assetId IN ?')
+    predicates.binds.push( [inPredicates.assetIds] )
+  }
+  predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
+  predicates.binds.push( userObject.userId, userObject.userId )
+  
+  // CONSTRUCT MAIN QUERY
+  let sql = 'SELECT '
+  sql+= columns.join(",\n")
+  sql += '\nFROM '
+  sql+= joins.join(" \n")
+  if (predicates.statements.length > 0) {
+    sql += "\nWHERE " + predicates.statements.join(" and ")
+  }
+  sql += '\norder by a.name, sa.benchmarkId'
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)

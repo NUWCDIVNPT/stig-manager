@@ -16,14 +16,16 @@ SM.StigRevision.RevisionMenu = Ext.extend(Ext.menu.Menu, {
   load: async function (record) {
     this.removeAll()
     const re = /^V([\d,\.]{1,5})R([\d,\.]{1,5})$/
-    for (const revisionStr of record.data.revisionStrs) {
-      const matches = re.exec(revisionStr)
+
+    for (const revision of record.data.revisions) {
+      const matches = re.exec(revision.revisionStr)
       if (matches && matches.length === 3) {
-        const text = `Version ${SM.he(matches[1])} Release ${SM.he(matches[2])}${revisionStr === record.data.lastRevisionStr ? '<span class="sm-navtree-sprite">latest</span>' : ''}`
+        const text = `Version ${SM.he(matches[1])} Release ${SM.he(matches[2])}&nbsp;&nbsp;<span class="sm-review-sprite sm-review-sprite-date">${revision.benchmarkDate}</span> <span class="sm-navtree-sprite">${revision.status}</span>${revision.revisionStr === record.data.lastRevisionStr ? '<span class="sm-navtree-sprite">latest</span>' : ''}`
         this.addItem({
-          iconCls: 'icon-del',
+          iconCls: revision.collectionIds.length ? 'sm-pin-icon' : 'icon-del',
+          disabled: !!revision.collectionIds.length,
           text,
-          revisionStr,
+          revisionStr: revision.revisionStr,
           benchmarkId: record.data.benchmarkId,
           record
         })
@@ -73,13 +75,16 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
       'status',
       'lastRevisionStr',
       'lastRevisionDate',
-      // {
-      //   name: 'lastRevisionDate',
-      //   type: 'date',
-      //   dateFormat: 'Y-m-d'
-      // },
+      'collectionIds',
+      {
+        name: 'collections',
+        convert: function (v, record) {
+          return record.collectionIds.length
+        }
+      },
       'ruleCount',
-      'revisionStrs'
+      'revisionStrs',
+      'revisions'
     ])
 
     const sm = new Ext.grid.CheckboxSelectionModel({ 
@@ -177,8 +182,15 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
         align: "center",
         dataIndex: 'ruleCount',
         sortable: true
+      },
+      { 	
+        header: "Collections",
+        width: 150,
+        align: "center",
+        dataIndex: 'collections',
+        sortable: true,
+        renderer: SM.styledZeroRenderer
       }
-
     ]
   
     const store = new Ext.data.JsonStore({
