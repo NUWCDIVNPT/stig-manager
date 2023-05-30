@@ -568,7 +568,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
             hideTrigger: false,
             anchor: '100%',
             // width: 350,
-            autoLoad: true,
+            autoLoad: false,
             allowBlank: false,
             filteringStore: this.stigFilteringStore,
             initialBenchmarkId: this.benchmarkId,
@@ -617,7 +617,9 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
                 collectionId: me.collectionId,
                 formBind: true,
                 handler: this.btnHandler || function () {}
-            }]
+            }],
+            stigField,
+            revisionComboBox
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))

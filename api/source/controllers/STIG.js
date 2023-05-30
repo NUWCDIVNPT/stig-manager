@@ -59,10 +59,10 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
 }
 
 module.exports.deleteStigById = async function deleteStigById (req, res, next) {
-  if ( req.params.elevate ) {
+  if ( req.query.elevate ) {
     try {
       const benchmarkId = req.params.benchmarkId
-      const force = req.params.force
+      const force = req.query.force
       const response = await STIG.getStigById(benchmarkId, req.userObject, true)
       if(response === undefined) {
         throw new SmError.NotFoundError('No matching benchmarkId found.')
@@ -78,7 +78,7 @@ module.exports.deleteStigById = async function deleteStigById (req, res, next) {
     }
   }
   else {
-    throw new SmError.PrivilegeError()
+    next(new SmError.PrivilegeError())
   } 
 }
 

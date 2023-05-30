@@ -41,12 +41,12 @@ SM.StigRevision.RevisionMenu = Ext.extend(Ext.menu.Menu, {
   }
 })
 
-SM.StigRevision.removeStig = async function (benchmarkId) {
-  const result = await Ext.Ajax.requestPromise({
-    url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}`,
+SM.StigRevision.removeStig = function (benchmarkId, force = false) {
+  return Ext.Ajax.requestPromise({
+    responseType: 'json',
+    url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}?elevate=true&force=${force ? 'true' : 'false'}`,
     method: 'DELETE'
   })
-  return JSON.parse(result.response.responseText)
 }
 
 SM.StigRevision.removeStigRevision = async function (benchmarkId, revisionStr) {
@@ -195,7 +195,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
   
     const store = new Ext.data.JsonStore({
       proxy: new Ext.data.HttpProxy({
-        url: `${STIGMAN.Env.apiBase}/stigs`,
+        url: `${STIGMAN.Env.apiBase}/stigs?projection=revisions`,
         method: 'GET'
       }),
       root: '',

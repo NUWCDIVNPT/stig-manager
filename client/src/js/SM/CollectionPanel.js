@@ -365,6 +365,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         fields.push(
           { name: 'benchmarkId', type: 'string' },
           { name: 'revisionStr', type: 'string' },
+          { name: 'revisionPinned' },
           'assets'
         )
         columns.push(
@@ -382,6 +383,17 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
                   return false
                 }
               }
+            }
+          },
+          {
+            header: "Revision",
+            width: 50,
+            dataIndex: 'revisionStr',
+            align: "center",
+            tooltip: "Default revision",
+            sortable: true,
+            renderer: function (v, md, r) {
+              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 4px;">' : ''}`
             }
           },
           {
@@ -512,6 +524,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
       { name: 'labelIds', type: 'string', convert: (v, r) => r.labels.map(l => l.labelId) },
       'benchmarkId',
       'revisionStr',
+      'revisionPinned',
       ...SM.CollectionPanel.CommonFields
     ]
     const columns = []
@@ -573,6 +586,17 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             sortable: true,
             filter: { type: 'string' },
             renderer: renderWithToolbar
+          },
+          {
+            header: "Revision",
+            width: 50,
+            dataIndex: 'revisionStr',
+            align: "center",
+            tooltip: "Default revision",
+            sortable: true,
+            renderer: function (v, md, r) {
+              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 4px;">' : ''}`
+            }
           }
         )
         sortField = 'benchmarkId'

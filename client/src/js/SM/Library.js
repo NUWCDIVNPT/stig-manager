@@ -313,15 +313,20 @@ SM.Library.DiffRevisionComboBox = Ext.extend(Ext.form.ComboBox, {
   initComponent: function () {
     const _this = this
 
-    this.store = new Ext.data.SimpleStore({
-      fields: ['value']
+    this.store = new Ext.data.JsonStore({
+      fields: [
+        'revisionStr', 
+        'benchmarkDate', 
+        'status',
+        {name: 'display', convert: (v, rec) => `${rec.revisionStr} (${rec.benchmarkDate})`}
+      ]
     })
 
     const data = []
 
     const config = {
-      displayField: 'value',
-      valueField: 'value',
+      displayField: 'display',
+      valueField: 'revisionStr',
       triggerAction: 'all',
       mode: 'local',
       editable: false
@@ -330,8 +335,8 @@ SM.Library.DiffRevisionComboBox = Ext.extend(Ext.form.ComboBox, {
     this.store.on('load', function (store) {
       const count = store.getCount()
       if (count > 1) {
-        const offset = _this.side === 'left' ? count - 2 : count - 1
-        _this.setValue(store.getAt(offset).get('value'))
+        const offset = _this.side === 'left' ? 1 : 0
+        _this.setValue(store.getAt(offset).get('revisionStr'))
       }
     })
 
@@ -365,7 +370,8 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
       listeners: {
         // select: this.onStigSelect || function () { }
         select: function (combo, record, index) {
-          const data = record.data.revisionStrs.map(i => [i])
+          // const data = record.data.revisionStrs.map(i => [i])
+          const data = record.data.revisions
           leftRevisionComboBox.store.loadData(data)
           rightRevisionComboBox.store.loadData(data)
           disableRevisionComboBoxes(false)
@@ -390,7 +396,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
 
     const leftRevisionComboBox = new SM.Library.DiffRevisionComboBox({
       // emptyText: 'Select a Benchmark',
-      width: 70,
+      width: 140,
       disabled: true,
       side: 'left',
       listeners: {
@@ -399,7 +405,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
     })
     const rightRevisionComboBox = new SM.Library.DiffRevisionComboBox({
       // emptyText: 'Select a Benchmark',
-      width: 70,
+      width: 140,
       disabled: true,
       listeners: {
         select: onRevisionSelect
@@ -834,9 +840,8 @@ SM.Library.DiffPanel = Ext.extend(Ext.Panel, {
     const onStigSelect = async function (combo, record, index) {
       const benchmarkId = record.data.benchmarkId
       const revisionStrs = record.data.revisionStrs
-      const l = revisionStrs.length
-      const rhRevisionStr = revisionStrs[l - 1]
-      const lhRevisionStr = revisionStrs[l - 2]
+      const rhRevisionStr = revisionStrs[0]
+      const lhRevisionStr = revisionStrs[1]
       await doDiff(benchmarkId, lhRevisionStr, rhRevisionStr)
     }
 

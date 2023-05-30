@@ -22,7 +22,8 @@ const upMigration = [
   SELECT DISTINCT
         a.collectionId AS collectionId,
         sa.benchmarkId AS benchmarkId,
-        COALESCE(crm.revId, cr.revId) AS revId
+        COALESCE(crm.revId, cr.revId) AS revId,
+        CASE WHEN crm.revId IS NOT NULL THEN cast(true as json) ELSE cast(false as json) END as pinned
     FROM
         asset a
         LEFT JOIN stig_asset_map sa ON a.assetId = sa.assetId

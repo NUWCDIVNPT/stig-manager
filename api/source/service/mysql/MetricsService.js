@@ -111,7 +111,7 @@ module.exports.queryMetrics = async function ({
       break
     case 'stig':
       predicates.statements.push('sa.benchmarkId IS NOT NULL')
-      groupBy.push('rev.revId')
+      groupBy.push('rev.revId', 'dr.pinned')
       orderBy.push('rev.benchmarkId')
       break
     case 'collection':
@@ -428,7 +428,8 @@ const baseCols = {
     'a.name',
     sqlLabels,
     'rev.benchmarkId',
-    'concat("V", rev.version, "R", rev.release) as revisionStr'
+    'concat("V", rev.version, "R", rev.release) as revisionStr',
+    'dr.pinned as revisionPinned'
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -449,6 +450,7 @@ const baseCols = {
   stig: [
     'rev.benchmarkId',
     'concat("V", rev.version, "R", rev.release) as revisionStr',
+    'dr.pinned as revisionPinned',
     'count(distinct a.assetId) as assets'
   ],
   label: [
@@ -464,7 +466,9 @@ const baseColsFlat = {
     'cast(a.assetId as char) as assetId',
     'a.name',
     sqlLabelsFlat,
-    'rev.benchmarkId'
+    'rev.benchmarkId',
+    'concat("V", rev.version, "R", rev.release) as revisionStr',
+    'dr.pinned as revisionPinned'
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -481,6 +485,7 @@ const baseColsFlat = {
   stig: [
     'rev.benchmarkId',
     'concat("V", rev.version, "R", rev.release) as revisionStr',
+    'dr.pinned as revisionPinned',
     'count(distinct a.assetId) as assets'
   ],
   label: [
