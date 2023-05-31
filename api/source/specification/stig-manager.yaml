@@ -3870,7 +3870,7 @@ components:
         - assetId
       properties:
         assetId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         stigs:
           type: array
           minItems: 1
@@ -4670,7 +4670,7 @@ components:
       additionalProperties: false
       properties:
         collectionId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         assetCnt:
           type: integer
         range01to05:
@@ -4881,6 +4881,8 @@ components:
         - name
         - labels
         - benchmarkId
+        - revisionStr
+        - revisionPinned
       properties:
         assetId:
           type: string
@@ -4892,6 +4894,10 @@ components:
             $ref: '#/components/schemas/LabelBasic'
         benchmarkId:
           $ref: '#/components/schemas/BenchmarkId'
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStrRaw'
+        revisionPinned:
+          type: boolean
     MetricsDetailUnagg:
       allOf:
         - $ref: '#/components/schemas/MetricsUnagg'
@@ -4996,9 +5002,15 @@ components:
       required:
         - benchmarkId
         - assets
+        - revisionStr
+        - revisionPinned
       properties:
         benchmarkId:
           $ref: '#/components/schemas/BenchmarkId'
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStrRaw'
+        revisionPinned:
+          type: boolean
         assets:
           type: integer
     MetricsDetailAggStig:
@@ -5277,7 +5289,7 @@ components:
         status:
           $ref: '#/components/schemas/ReviewStatusRead'
         userId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         username:
           $ref: '#/components/schemas/String255'
         ts:
@@ -5383,7 +5395,7 @@ components:
         autoResult:
           type: boolean
         userId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         username:
           $ref: '#/components/schemas/String255'
         ts:
@@ -5706,7 +5718,7 @@ components:
         status:
           $ref: '#/components/schemas/ReviewStatusRead'
         userId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         username:
           $ref: '#/components/schemas/String255'
         ts:
@@ -5888,7 +5900,7 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         assetName:
           $ref: '#/components/schemas/String255'
         assetLabelIds:
@@ -5912,7 +5924,7 @@ components:
         autoResult:
           type: boolean
         userId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         username:
           $ref: '#/components/schemas/String255'
         ts:
@@ -6198,18 +6210,14 @@ components:
       type: string
       minLength: 1
       maxLength: 10
-      pattern: "^[0-9]{1,6}$"
+      pattern: "^[0-9]{1,10}$"
     StringIntIdReadOnly:
       type: string
-      minLength: 1
-      maxLength: 10
-      pattern: "^[0-9]{1,6}$"
+      pattern: "^[0-9]{1,10}$"
       readOnly: true
     StringIntIdNullable:
       type: string
-      minLength: 1
-      maxLength: 10
-      pattern: "^[0-9]{1,6}$"
+      pattern: "^[0-9]{1,10}$"
       nullable: true
     StringMax:
       type: string
@@ -6220,10 +6228,10 @@ components:
       nullable: true
     StringUuid:
       type: string
-      maxLength: 36
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
     StringUuidReadOnly:
       type: string
-      maxLength: 36
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
       readOnly: true
     StringUuidNullable:
       type: string
@@ -6239,7 +6247,7 @@ components:
       additionalProperties: false
       properties:
         assetId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         name:
           $ref: '#/components/schemas/String255'
         labels:
@@ -6310,7 +6318,7 @@ components:
         result:
           $ref: '#/components/schemas/ChecklistResultUnreviewed'
         assetId:
-          $ref: '#/components/schemas/StringUuid'
+          $ref: '#/components/schemas/StringIntId'
         name:
           $ref: '#/components/schemas/String255'
         labels:
