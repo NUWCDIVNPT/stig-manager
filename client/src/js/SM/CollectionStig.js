@@ -435,7 +435,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                 }    
             ],
             border: true,
-            loadMask: {msg: ''},
+            loadMask: false,
             stripeRows: true,
             sm: sm,
             view: new SM.ColumnFilters.GridView({
@@ -604,7 +604,7 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
                 {
                     xtype: 'fieldset',
                     title: '<b>Asset Assignments</b>',
-                    anchor: "100% -70",
+                    anchor: "100% -95",
                     layout: 'fit',
                     items: [
                         this.stigAssetsGrid
@@ -626,20 +626,38 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
         SM.CollectionStigProperties.superclass.initComponent.call(this)
 
     },
-    initPanel: async function () {
+    initPanel: async function ({collectionId, benchmarkId}) {
         try {
-            await this.stigAssetsGrid.store.loadPromise()
+            this.el.mask('')
+            const promises = [
+                this.stigField.store.loadPromise(),
+                this.stigAssetsGrid.store.loadPromise()
+            ]
+            if (benchmarkId) {
+                promises.push(Ext.Ajax.requestPromise({
+                    responseType: 'json',
+                    url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
+                    method: 'GET'
+                }))
+            }
+            const results = await Promise.all(promises)
+            
+            this.getForm().setValues({
+                benchmarkId,
+                assets: results[2] || []
+            })
         }
-        catch (e) {
-            SM.Error.handleError(e)
+        finally {
+            this.el.unmask()
         }
     }
 })
 
 async function showCollectionStigProps( benchmarkId, defaultRevisionStr, parentGrid ) {
+    let appwindow
     try {
-        let collectionId = parentGrid.collectionId
-        let stigPropsFormPanel = new SM.CollectionStigProperties({
+        const collectionId = parentGrid.collectionId
+        const stigPropsFormPanel = new SM.CollectionStigProperties({
             collectionId,
             benchmarkId,
             defaultRevisionStr,
@@ -675,7 +693,7 @@ async function showCollectionStigProps( benchmarkId, defaultRevisionStr, parentG
         /******************************************************/
         // Form window
         /******************************************************/
-        var appwindow = new Ext.Window({
+        appwindow = new Ext.Window({
             title: 'STIG Assignments',
             cls: 'sm-dialog-window sm-round-panel',
             modal: true,
@@ -689,31 +707,17 @@ async function showCollectionStigProps( benchmarkId, defaultRevisionStr, parentG
             items: stigPropsFormPanel
         });
         
-        appwindow.render(Ext.getBody())
-        await stigPropsFormPanel.initPanel() // Load asset grid store
+        appwindow.show(document.body)
 
-        let apiStigAssets
-        if (benchmarkId) {
-            let result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
-                method: 'GET'
-            })
-            apiStigAssets = JSON.parse(result.response.responseText)            
-        }
-        else {
-            apiStigAssets = []
-        }
-
-        stigPropsFormPanel.getForm().setValues({
-            benchmarkId: benchmarkId,
-            assets: apiStigAssets
+        await stigPropsFormPanel.initPanel({
+            benchmarkId,
+            collectionId
         })
-                
-        // Ext.getBody().unmask();
-        appwindow.show(document.body);
     }
     catch (e) {
-        Ext.getBody().unmask()
         SM.Error.handleError(e)
+        if (appwindow) {
+            appwindow.close()
+        }
     }	
 }
