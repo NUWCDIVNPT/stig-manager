@@ -210,10 +210,10 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				' ', ' ', ' ',
 				{
 					xtype: 'sm-stig-selection-field',
-					url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}?projection=stigs`,
+					url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/stigs`,
 					autoLoad: true,
 					includeAllItem: this.stigAllValue,
-					root: 'stigs',
+					// root: 'stigs',
 					width: 250,
 					triggerAction: 'all',
 					allowBlank: true,

@@ -5960,7 +5960,7 @@ components:
         revisionStr:
           type: string
         version:
-          type: string
+          type: integer
         release:
           type: string
         benchmarkDate:
