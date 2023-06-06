@@ -387,13 +387,13 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
           },
           {
             header: "Revision",
-            width: 50,
+            width: 58,
             dataIndex: 'revisionStr',
             align: "center",
             tooltip: "Default revision",
             sortable: true,
             renderer: function (v, md, r) {
-              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 4px;">' : ''}`
+              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 8px;">' : ''}`
             }
           },
           {
@@ -589,13 +589,13 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
           },
           {
             header: "Revision",
-            width: 50,
+            width: 58,
             dataIndex: 'revisionStr',
             align: "center",
             tooltip: "Default revision",
             sortable: true,
             renderer: function (v, md, r) {
-              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 4px;">' : ''}`
+              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 8px;">' : ''}`
             }
           }
         )

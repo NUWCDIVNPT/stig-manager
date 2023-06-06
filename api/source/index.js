@@ -110,7 +110,7 @@ app.use((err, req, res, next) => {
     })
   }
   // Our logger will expose res.errorBody when logging the response
-  res.errorBody = { error: err.message, detail: err.detail }
+  res.errorBody = { error: err.message, detail: err.detail, stack: err.stack }
   res.status(err.status || 500).header(err.headers).json(res.errorBody)
 })
 

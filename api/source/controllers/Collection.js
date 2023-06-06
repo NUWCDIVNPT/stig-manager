@@ -253,7 +253,7 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
     const labelIds = req.query.labelId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant) {
-      const response = await CollectionSvc.getStigsByCollection( collectionId, labelIds, false, req.userObject )
+      const response = await CollectionSvc.getStigsByCollection( collectionId, labelIds, req.userObject )
       res.json(response)
       }
     else {
@@ -265,15 +265,18 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
   }
 }
 
-module.exports.getStigByCollection = async function getStigsByCollection (req, res, next) {
+module.exports.getStigByCollection = async function getStigByCollection (req, res, next) {
   try {
     const collectionId = req.params.collectionId
     const benchmarkId = req.params.benchmarkId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant) {
-      const response = await CollectionSvc.getStigByCollection( collectionId, benchmarkId, false, req.userObject )
-      res.json(response)
+      const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
+      if (!response[0]) {
+        res.status(204)
       }
+      res.json(response[0])
+    }
     else {
       throw new SmError.PrivilegeError()
     }
@@ -924,7 +927,9 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
       defaultRevisionStr,
       svcStatus: res.svcStatus
     })
-    res.json({})
+    const response = await CollectionSvc.getStigByCollection( collectionId, benchmarkId, false, req.userObject )
+
+    res.json(response)
   }
   catch (err) {
     next(err)

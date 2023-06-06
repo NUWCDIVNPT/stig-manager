@@ -823,7 +823,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     'left join rule_version_check_digest rvcd2 on (r.version = rvcd2.version and r.checkDigest = rvcd2.checkDigest)',
     'left join rev_group_rule_map rgr on rvcd.ruleId = rgr.ruleId',
     'left join revision on rgr.revId = revision.revId',
-    'left join current_rev on rgr.revId = current_rev.revId',
+    'left join v_default_rev on rgr.revId = v_default_rev.revId',
     'left join result on r.resultId = result.resultId',
     'left join status on r.statusId = status.statusId',
     'left join user_data ud on r.userId = ud.userId',
@@ -841,7 +841,24 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     groupBy.push(`r.metadata`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`coalesce(cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ),JSON_ARRAY()) as "stigs"`)
+    // columns.push(`coalesce(cast( concat( '[', group_concat(distinct concat('"',sa.benchmarkId,'"')), ']' ) as json ),JSON_ARRAY()) as "stigs"`)
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when sa.benchmarkId is not null then 
+              json_object(
+                'benchmarkId', sa.benchmarkId, 
+                'revisionStr', revision.revisionStr, 
+                'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                'revisionPinned', coalesce(v_default_rev.revisionPinned, cast(false as json)),
+                'isDefault', case when revision.revId = v_default_rev.revId then cast(true as json) else cast(false as json) end,
+                'ruleCount', revision.ruleCount)
+            else null end 
+          order by sa.benchmarkId),
+          ''),
+      ']')
+    as json) as "stigs"`)
 
   }
   if (inProjection.includes('rule')) {
@@ -908,19 +925,19 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   }
 
   switch (inPredicates.rules) {
-    case 'current-mapped':
-      predicates.statements.push(`current_rev.revId IS NOT NULL`)
+    case 'default-mapped':
+      predicates.statements.push(`v_default_rev.revId IS NOT NULL`)
       predicates.statements.push(`sa.saId IS NOT NULL`)
       break
-    case 'current':
-      predicates.statements.push(`current_rev.revId IS NOT NULL`)
+    case 'default':
+      predicates.statements.push(`v_default_rev.revId IS NOT NULL`)
       break
-    case 'not-current-mapped':
-      predicates.statements.push(`current_rev.revId IS NULL`)
+    case 'not-default-mapped':
+      predicates.statements.push(`v_default_rev.revId IS NULL`)
       predicates.statements.push(`sa.saId IS NULL`)
       break
-    case 'not-current':
-      predicates.statements.push(`current_rev.revId IS NULL`)
+    case 'not-default':
+      predicates.statements.push(`v_default_rev.revId IS NULL`)
       break
   }
 

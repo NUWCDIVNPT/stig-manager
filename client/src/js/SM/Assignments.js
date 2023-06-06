@@ -105,7 +105,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               assetId: apiAsset.assetId,
               collectionId: collectionId,
               benchmarkId: stig.benchmarkId,
-              qtip: SM.he(stig.title)
+              qtip: `Rules: ${SM.he(stig.ruleCount)}`
             }))
             cb(content, { status: true })
             return
@@ -130,7 +130,7 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
               iconCls: 'sm-stig-icon',
               id: `${collectionId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
               benchmarkId: stig.benchmarkId,
-              qtip: SM.he(stig.title)
+              qtip: `Rules: ${SM.he(stig.ruleCount)}`
             }) )
             cb( content, { status: true } )
             return

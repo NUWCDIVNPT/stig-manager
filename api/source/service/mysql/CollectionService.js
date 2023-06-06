@@ -13,14 +13,14 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     
     const queries = []
 
-    let columns = [
+    const columns = [
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
       'c.description',
       `JSON_MERGE_PATCH('${JSON.stringify(MyController.defaultSettings)}', c.settings) as settings`,
       'c.metadata'
     ]
-    let joins = [
+    const joins = [
       'collection c',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join asset a on c.collectionId = a.collectionId',
@@ -45,21 +45,21 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
-      joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
-      joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
+      joins.push('left join v_default_rev dr on (sa.benchmarkId=dr.benchmarkId and c.collectionId = dr.collectionId)')
+      joins.push('left join revision on dr.revId = revision.revId')
       columns.push(`cast(
         concat('[', 
           coalesce (
             group_concat(distinct 
-              case when cr.benchmarkId is not null then 
+              case when sa.benchmarkId is not null then 
                 json_object(
-                  'benchmarkId', cr.benchmarkId, 
-                  'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
-                  'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
-                  'title', st.title,
-                  'ruleCount', cr.ruleCount)
+                  'benchmarkId', sa.benchmarkId, 
+                  'revisionStr', revision.revisionStr, 
+                  'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                  'revisionPinned', dr.revisionPinned, 
+                  'ruleCount', revision.ruleCount)
               else null end 
-            order by cr.benchmarkId),
+            order by sa.benchmarkId),
             ''),
         ']')
       as json) as "stigs"`)
@@ -304,7 +304,25 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       'name', a.name) order by a.name), ']') as json) as "assets"`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`cast( concat( '[', group_concat(distinct concat('"',dr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+    joins.push('left join revision on dr.revId = revision.revId')
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when revision.benchmarkId is not null then 
+              json_object(
+                'benchmarkId', revision.benchmarkId, 
+                'revisionStr', revision.revisionStr, 
+                'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                'revisionPinned', dr.revisionPinned, 
+                'ruleCount', revision.ruleCount)
+            else null end 
+          order by revision.benchmarkId),
+          ''),
+      ']')
+    as json) as "stigs"`)
+
+    // columns.push(`cast( concat( '[', group_concat(distinct concat('"',dr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
   }
   if (inProjection.includes('ccis')) {
     columns.push(`cast(concat('[', 
@@ -850,22 +868,14 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
   return (rows)
 }
 
-exports.getStigsByCollection = async function( collectionId, labelIds, elevate, userObject ) {
+exports.getStigsByCollection = async function( collectionId, labelIds, userObject, benchmarkId ) {
   let columns = [
-    'cr.benchmarkId',
-    'CASE WHEN crm.revId IS NOT NULL THEN concat("V", defRev.version, "R", defRev.release) ELSE "latest" END as defaultRevisionStr',
-    `CASE WHEN crm.revId IS NOT NULL THEN date_format(defRev.benchmarkDateSql,'%Y-%m-%d') ELSE date_format(cr.benchmarkDateSql,'%Y-%m-%d') END as defaultRevisionDate`,
-    'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
-    `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
-    'st.title',
-    'CASE WHEN crm.revId IS NOT NULL THEN defRev.ruleCount ELSE cr.ruleCount END as ruleCount',
-    'COUNT(a.assetId) as assetCount',
-    'SUM(sa.accepted) as acceptedCount',
-    'SUM(sa.rejected) as rejectedCount',
-    'SUM(sa.submitted) as submittedCount',
-    'SUM(sa.saved) as savedCount',
-    `LEAST(MIN(minTs), MIN(maxTs)) as minTs`,
-    `GREATEST(MAX(minTs), MAX(maxTs)) as maxTs`
+    'sa.benchmarkId',
+    'revision.revisionStr',
+    `revision.benchmarkDateSql`,
+    'dr.revisionPinned',
+    'revision.ruleCount',
+    'count(sa.assetId) as assetCount'
   ]
 
   let joins = [
@@ -873,10 +883,8 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join current_rev cr on sa.benchmarkId=cr.benchmarkId',
-    'left join collection_rev_map crm on (sa.benchmarkId = crm.benchmarkId and c.collectionId = crm.collectionId)',
-    'left join revision defRev on crm.revId = defRev.revId',
-    'left join stig st on cr.benchmarkId=st.benchmarkId'
+    'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
+    'left join revision on dr.revId = revision.revId'
   ]
 
   // PREDICATES
@@ -894,6 +902,10 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     predicates.binds.push([uuidBinds])
 
   }
+  if (benchmarkId) {
+    predicates.statements.push('sa.benchmarkId = ?')
+    predicates.binds.push( benchmarkId )
+  }
 
   joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -906,8 +918,8 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by cr.revId, st.title, defRev.revId, crm.crId'
-  sql += ' order by cr.benchmarkId'
+  sql += ' group by sa.benchmarkId, revision.revId, dr.revisionPinned'
+  sql += ' order by sa.benchmarkId'
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)

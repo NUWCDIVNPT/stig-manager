@@ -10,11 +10,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             { name: 'revisionStr', type: 'string' },
             { name: 'revisionPinned', type: 'boolean' },
             { name: 'assets', type: 'integer' },
-            {
-                name: 'ruleCount',
-                type: 'integer',
-                convert: (v, r) => r.metrics.assessments / r.assets
-            },
+            { name: 'ruleCount', type: 'integer'},
             {
                 name: 'assessedPct',
                 convert: (v, r) => r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0
@@ -98,12 +94,12 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
 			},
             { 	
 				header: "Revision",
-				width: 100,
+				width: 70,
                 dataIndex: 'revisionStr',
-                align: "center",
+                // align: "center",
                 sortable: false,
                 renderer: function (v, md, r) {
-                    return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 4px;">' : ''}`
+                    return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 8px;">' : ''}`
                 }
 			},
             {

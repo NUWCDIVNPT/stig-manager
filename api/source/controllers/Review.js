@@ -195,7 +195,7 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
         collectionId: collectionId,
         result: req.query.result,
         status: req.query.status,
-        rules: req.query.rules || 'current-mapped',
+        rules: req.query.rules || 'default-mapped',
         ruleId: req.query.ruleId,
         groupId: req.query.groupId,
         cci: req.query.cci,
@@ -225,7 +225,7 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
       let response = await ReviewService.getReviews( projection, {
         collectionId: collectionId,
         assetId: assetId,
-        rules: req.query.rules || 'current-mapped',
+        rules: req.query.rules || 'default-mapped',
         result: req.query.result,
         status: req.query.status,
         benchmarkId: req.query.benchmarkId,

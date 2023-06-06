@@ -2675,9 +2675,6 @@ async function showImportResultFiles(collectionId) {
                     result = await Ext.Ajax.requestPromise({
                         url: url,
                         method: method,
-                        params: {
-                            projection: ['stigs', 'statusStats']
-                        },
                         headers: { 'Content-Type': 'application/json;charset=utf-8' },
                         jsonData: jsonData
                     })

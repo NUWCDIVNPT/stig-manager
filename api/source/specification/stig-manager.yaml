@@ -2567,7 +2567,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CollectionStig'
+                  $ref: '#/components/schemas/CollectionStigWithAssetCount'
         default:
           description: unexpected error
           content:
@@ -2592,7 +2592,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CollectionStig'
+                $ref: '#/components/schemas/CollectionStigWithAssetCount'
         default:
           description: unexpected error
           content:
@@ -2630,7 +2630,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/CollectionStigWithAssetCount'
         default:
           description: unexpected error
           content:
@@ -3858,7 +3858,7 @@ components:
           type: array
           description: The benchmarkIds mapped to this Asset
           items:
-            $ref: '#/components/schemas/STIG'
+            $ref: '#/components/schemas/CollectionStig'
         stigGrants:
           type: array
           items:
@@ -4408,7 +4408,7 @@ components:
         stigs:
           type: array
           items:
-            $ref: '#/components/schemas/STIG'
+            $ref: '#/components/schemas/CollectionStig'
         grants:
           type: array
           items:
@@ -4586,43 +4586,75 @@ components:
     CollectionStig:
       type: object
       additionalProperties: false
+      required:
+        - benchmarkId
+        - revisionStr
+        - benchmarkDate
+        - revisionPinned
+        - ruleCount
       properties:
         benchmarkId:
           type: string
-        title:
-          type: string
-        defaultRevisionStr:
+        revisionStr:
           $ref: '#/components/schemas/RevisionStr'   
-        defaultRevisionDate:
+        benchmarkDate:
           type: string
           format: date
           nullable: true
-        lastRevisionStr:
-          $ref: '#/components/schemas/RevisionStrRaw'   
-        lastRevisionDate:
+        revisionPinned:
+          type: boolean   
+        ruleCount:
+          type: integer
+    CollectionStigWithAssetCount:
+      type: object
+      additionalProperties: false
+      required:
+        - benchmarkId
+        - revisionStr
+        - benchmarkDate
+        - revisionPinned
+        - ruleCount
+        - assetCount
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'   
+        benchmarkDate:
           type: string
           format: date
           nullable: true
+        revisionPinned:
+          type: boolean   
         ruleCount:
           type: integer
         assetCount:
           type: integer
-        acceptedCount:
-          type: integer
-        rejectedCount:
-          type: integer
-        submittedCount:
-          type: integer
-        savedCount:
-          type: integer
-        minTs:
+    CollectionStigWithIsDefault:
+      type: object
+      additionalProperties: false
+      required:
+        - benchmarkId
+        - revisionStr
+        - benchmarkDate
+        - revisionPinned
+        - ruleCount
+        - isDefault
+      properties:
+        benchmarkId:
           type: string
-          format: date-time
-          nullable: true
-        maxTs:
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'   
+        benchmarkDate:
           type: string
-          format: date-time
+          format: date
           nullable: true
+        revisionPinned:
+          type: boolean   
+        ruleCount:
+          type: integer
+        isDefault:
+          type: boolean
     CollectionUpdate:
       type: object
       additionalProperties: false
@@ -4780,7 +4812,7 @@ components:
         stigs:
           type: array
           items:
-            $ref: '#/components/schemas/BenchmarkId'                              
+            $ref: '#/components/schemas/CollectionStig'                              
     Fix:
       type: object
       additionalProperties: false
@@ -5004,6 +5036,7 @@ components:
         - assets
         - revisionStr
         - revisionPinned
+        - ruleCount
       properties:
         benchmarkId:
           $ref: '#/components/schemas/BenchmarkId'
@@ -5012,6 +5045,8 @@ components:
         revisionPinned:
           type: boolean
         assets:
+          type: integer
+        ruleCount:
           type: integer
     MetricsDetailAggStig:
       allOf:
@@ -5305,7 +5340,7 @@ components:
         stigs:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CollectionStigWithIsDefault'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
     ReviewAssetRulePatch:
@@ -5413,7 +5448,7 @@ components:
         stigs:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CollectionStigWithIsDefault'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
     ReviewAssetWrite:
@@ -5938,7 +5973,7 @@ components:
         stigs:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CollectionStigWithIsDefault'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
     Revision:
@@ -6889,13 +6924,13 @@ components:
       in: query
       schema:
         type: string
-        default: current-mapped
+        default: default-mapped
         enum:
           - all
-          - current
-          - current-mapped
-          - not-current
-          - not-current-mapped
+          - default
+          - default-mapped
+          - not-default
+          - not-default-mapped
     ReviewStatusQuery:
       name: status
       in: query

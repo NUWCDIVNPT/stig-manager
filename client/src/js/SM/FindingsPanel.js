@@ -162,7 +162,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 120,
 				dataIndex: 'stigs',
 				renderer: function (v) {
-					v = v.join('\n')
+					v = v.map(i=>i.benchmarkId).join('\n')
 					return columnWrap.apply(this, arguments)
 				},
 				sortable: true,

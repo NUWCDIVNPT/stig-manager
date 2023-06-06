@@ -103,25 +103,44 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   }
   if (inProjection.includes('stigs')) {
     //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
-    joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
-    joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
+    joins.push('left join v_default_rev dr on (sa.benchmarkId=dr.benchmarkId and a.collectionId = dr.collectionId)')
+    joins.push('left join revision on dr.revId = revision.revId')
     columns.push(`cast(
       concat('[', 
         coalesce (
           group_concat(distinct 
-            case when cr.benchmarkId is not null then 
+            case when sa.benchmarkId is not null then 
               json_object(
-                'benchmarkId', cr.benchmarkId, 
-                'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
-                'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
-                'title', st.title,
-                'ruleCount', cr.ruleCount,
-                'revisionStrs', (select json_arrayagg(concat('V', rev2.version, 'R', rev2.release)) from revision rev2 where rev2.benchmarkId = cr.benchmarkId ))
+                'benchmarkId', sa.benchmarkId, 
+                'revisionStr', revision.revisionStr, 
+                'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                'revisionPinned', dr.revisionPinned, 
+                'ruleCount', revision.ruleCount)
             else null end 
-      order by cr.benchmarkId),
+          order by sa.benchmarkId),
           ''),
       ']')
     as json) as "stigs"`)
+
+    // joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
+    // joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
+    // columns.push(`cast(
+    //   concat('[', 
+    //     coalesce (
+    //       group_concat(distinct 
+    //         case when cr.benchmarkId is not null then 
+    //           json_object(
+    //             'benchmarkId', cr.benchmarkId, 
+    //             'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
+    //             'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
+    //             'title', st.title,
+    //             'ruleCount', cr.ruleCount,
+    //             'revisionStrs', (select json_arrayagg(concat('V', rev2.version, 'R', rev2.release)) from revision rev2 where rev2.benchmarkId = cr.benchmarkId ))
+    //         else null end 
+    //   order by cr.benchmarkId),
+    //       ''),
+    //   ']')
+    // as json) as "stigs"`)
   }
 
   // PREDICATES

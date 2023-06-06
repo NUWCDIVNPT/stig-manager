@@ -2,10 +2,12 @@ const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
 
+  // table: revision
+  `ALTER TABLE revision ADD COLUMN revisionStr VARCHAR(45) GENERATED ALWAYS AS (concat("V", \`version\`, "R", \`release\`)) AFTER \`release\``,
+  `ALTER TABLE revision ADD INDEX idx_revision_benchmark_revisionStr (benchmarkId ASC, revisionStr ASC) VISIBLE`,
+
   // table: collection_rev
-
   `drop table if exists collection_rev_map`,
-
   `CREATE TABLE collection_rev_map (
     crId INT NOT NULL AUTO_INCREMENT,
     collectionId INT NOT NULL,
@@ -23,7 +25,7 @@ const upMigration = [
         a.collectionId AS collectionId,
         sa.benchmarkId AS benchmarkId,
         COALESCE(crm.revId, cr.revId) AS revId,
-        CASE WHEN crm.revId IS NOT NULL THEN cast(true as json) ELSE cast(false as json) END as pinned
+        CASE WHEN crm.revId IS NOT NULL THEN cast(true as json) ELSE cast(false as json) END as revisionPinned
     FROM
         asset a
         LEFT JOIN stig_asset_map sa ON a.assetId = sa.assetId
