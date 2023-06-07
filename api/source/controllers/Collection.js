@@ -191,7 +191,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
           'rulesWithDiscussion',
           'groups',
           'assets',
-          'stigsInfo',
+          'stigs',
           'ccis'
         ], req.userObject )
       

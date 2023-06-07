@@ -43,21 +43,22 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   // PROJECTIONS
   if (inProjection.includes('statusStats')) {
     columns.push(`(select json_object(
-      'stigCount', COUNT(sa2.benchmarkId),
-      'ruleCount', SUM(cr2.ruleCount),
-      'acceptedCount', SUM(sa2.accepted),
-      'rejectedCount', SUM(sa2.rejected),
-      'submittedCount', SUM(sa2.submitted),
-      'savedCount', SUM(sa2.saved),
-      'minTs', DATE_FORMAT(LEAST(MIN(sa2.minTs), MIN(sa2.maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
-      'maxTs', DATE_FORMAT(GREATEST(MAX(sa2.minTs), MAX(sa2.maxTs)),'%Y-%m-%dT%H:%i:%sZ')
+      'stigCount', COUNT(saStatusStats.benchmarkId),
+      'ruleCount', SUM(rStatusStats.ruleCount),
+      'acceptedCount', SUM(saStatusStats.accepted),
+      'rejectedCount', SUM(saStatusStats.rejected),
+      'submittedCount', SUM(saStatusStats.submitted),
+      'savedCount', SUM(saStatusStats.saved),
+      'minTs', DATE_FORMAT(LEAST(MIN(saStatusStats.minTs), MIN(saStatusStats.maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
+      'maxTs', DATE_FORMAT(GREATEST(MAX(saStatusStats.minTs), MAX(saStatusStats.maxTs)),'%Y-%m-%dT%H:%i:%sZ')
       )
       from
-		    stig_asset_map sa2
-        left join asset a2 using (assetId)
-        left join v_default_rev cr2 on (sa2.benchmarkId = cr2.benchmarkId and a2.collectionId = cr2.collectionId)
+		    stig_asset_map saStatusStats
+        left join asset aStatusStats using (assetId)
+        left join v_default_rev drStatusStats on (saStatusStats.benchmarkId = drStatusStats.benchmarkId and aStatusStats.collectionId = drStatusStats.collectionId)
+        left join revision rStatusStats on drStatusStats.revId = rStatusStats.revId
 	    where
-        FIND_IN_SET(sa2.saId, GROUP_CONCAT(sa.saId))
+        FIND_IN_SET(saStatusStats.saId, GROUP_CONCAT(sa.saId))
       ) as "statusStats"`)
   }
   if (inProjection.includes('stigGrants')) {
@@ -219,7 +220,7 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
+    'inner join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
     'left join revision rev on dr.revId = rev.revId'
   ]
   // PREDICATES

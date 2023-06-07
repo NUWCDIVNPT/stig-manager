@@ -508,7 +508,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				width: 130,
 				dataIndex: 'stigs',
 				renderer: function (v) {
-					v = v.join('\n')
+					v = v.map(i=>i.benchmarkId).join('\n')
 					return columnWrap.apply(this, arguments)
 				},
 				sortable: true,
@@ -833,8 +833,9 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
 				assetId: r.data.assetId,
 				assetName: r.data.assetName,
 				assetLabelIds: r.data.assetLabelIds,
-				benchmarkId: r.data.stigs[0],
-				stigName: r.data.stigs[0],
+				benchmarkId: r.data.stigs[0]?.benchmarkId,
+				revisionStr: r.data.stigs[0]?.revisionStr,
+				stigName: r.data.stigs[0]?.benchmarkId,
 			}
 			addReview({
 				leaf,

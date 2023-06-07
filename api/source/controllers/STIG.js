@@ -54,7 +54,7 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
     }
   }
   else {
-    throw new SmError.PrivilegeError()
+    next(new SmError.PrivilegeError())
   } 
 }
 

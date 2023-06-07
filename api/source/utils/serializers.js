@@ -12,8 +12,8 @@ module.exports.poamObjectFromFindings = function ( findings, defaults = {} ) {
         date: defaults.date,
         milestone: `Resolve this finding. ${defaults.date}`,
         milestoneChanges: `Resolve this finding. ${defaults.date}`,
-        stigInfo: finding.stigsInfo.map( stig => 
-            `${stig.benchmarkId}\nVersion: ${stig.version}\nRelease: ${stig.release}\nBenchmark Date: ${stig.benchmarkDate}` ).join('\n\n'),
+        stigInfo: finding.stigs.map( stig => 
+            `${stig.benchmarkId}\n${stig.revisionStr}\nBenchmark Date: ${stig.benchmarkDate}` ).join('\n\n'),
         status: defaults.status,
         comments: finding.ccis.map( cci => `CCI-${cci.cci}`).join('\n'),
         rawSeverity: finding.severity === 'medium' ? 'II' : finding.severity === 'low' ? 'III' : finding.severity === 'high' ? 'I' : 'Mixed',
