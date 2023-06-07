@@ -872,7 +872,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
   let columns = [
     'sa.benchmarkId',
     'revision.revisionStr',
-    `revision.benchmarkDateSql`,
+    `date_format(revision.benchmarkDateSql,'%Y-%m-%d') as benchmarkDate`,
     'dr.revisionPinned',
     'revision.ruleCount',
     'count(sa.assetId) as assetCount'
