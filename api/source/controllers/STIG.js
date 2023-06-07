@@ -42,8 +42,9 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
         throw new SmError.NotFoundError('No matching revisionStr found.')
       }
       const existingRevisions = await STIG.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
-      if (existingRevisions.length == 1 && !force) {
-        throw new SmError.UnprocessableError("The revisionStr is the last remaining revision for this benchmark. Set force=true to force the delete")
+      const stigAssigned = await STIG.getStigById(benchmarkId, req.userObject, true)
+      if (stigAssigned.collectionIds.length && existingRevisions.length == 1 && !force) {
+        throw new SmError.UnprocessableError("The revisionStr is the last remaining revision for this benchmark, which is assigned to one or more Collections. Set force=true to force the delete")
       }      
       if (response.collectionIds.length && !force) {
         throw new SmError.UnprocessableError("The revisionStr is pinned to one or more Collections. Set force=true to force the delete")
