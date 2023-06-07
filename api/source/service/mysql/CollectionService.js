@@ -1725,7 +1725,7 @@ exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId})
       `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ?`,
       [collectionId]
     )
-    return rows.includes(benchmarkId)
+    return rows.some(i => i.benchmarkId === benchmarkId)
   }
   catch (e) {
     return false

@@ -927,7 +927,7 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
       defaultRevisionStr,
       svcStatus: res.svcStatus
     })
-    const response = await CollectionSvc.getStigByCollection( collectionId, benchmarkId, false, req.userObject )
+    const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
 
     res.json(response)
   }
