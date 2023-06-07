@@ -336,16 +336,18 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           dbUtils.uuidToSqlString(label.labelId)
         ])
       }
-      for (const pin of c.stigs) {
-        if (pin.revisionPinned == true){
-          let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(pin.revisionStr)
-          dml.collectionPins.insertBinds.push([
-            parseInt(c.collectionId),
-            pin.benchmarkId,
-            pin.benchmarkId + "-" + version + "-" + release
-          ])
+      if (c.stigs?.length > 0) {
+        for (const pin of c.stigs) {
+          if (pin.revisionPinned == true){
+            let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(pin.revisionStr)
+            dml.collectionPins.insertBinds.push([
+              parseInt(c.collectionId),
+              pin.benchmarkId,
+              pin.benchmarkId + "-" + version + "-" + release
+            ])
+          }
         }
-      }      
+      }
     }
 
     // Tables: asset, collection_label_asset_maps, stig_asset_map, user_stig_asset_map
@@ -478,7 +480,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'collection',
       'collectionLabel',
       'collectionGrant',
-      'collectionPins',
       'asset',
       'assetLabel',
       'stigAssetMap',
@@ -487,6 +488,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'review',
       'reviewHistory'
     ]
+
+    if (dml.collectionPins?.insertBinds?.length > 0) {
+      tableOrder.push('collectionPins')
+    }
+
     stats.tempReview = {}
     await connection.query('SET FOREIGN_KEY_CHECKS=1')
     for (const table of tableOrder) {
