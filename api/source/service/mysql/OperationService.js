@@ -336,8 +336,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           dbUtils.uuidToSqlString(label.labelId)
         ])
       }
-      if (c.stigs?.length > 0) {
-        for (const pin of c.stigs) {
+        for (const pin of c.stigs ?? []) {
           if (pin.revisionPinned == true){
             let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(pin.revisionStr)
             dml.collectionPins.insertBinds.push([
@@ -347,7 +346,6 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
             ])
           }
         }
-      }
     }
 
     // Tables: asset, collection_label_asset_maps, stig_asset_map, user_stig_asset_map

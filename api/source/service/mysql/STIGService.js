@@ -852,7 +852,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcStatus = {}) {
 
   let dmls = [
-    "DELETE from collection_rev_map where revId = SELECT revId FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
+    "DELETE from collection_rev_map where revId = (SELECT revId FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release)",
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
     "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",

@@ -32,15 +32,19 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
 
 
 module.exports.deleteRevisionByString = async function deleteRevisionByString (req, res, next) {
-  if ( req.params.elevate ) {
+  if ( req.query.elevate ) {
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
-    const force = req.params.force
+    const force = req.query.force
     try {
       const response = await STIG.getRevisionByString(benchmarkId, revisionStr, req.userObject, true)
       if(response === undefined) {
         throw new SmError.NotFoundError('No matching revisionStr found.')
       }
+      const existingRevisions = await STIG.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+      if (existingRevisions.length == 1 && !force) {
+        throw new SmError.UnprocessableError("The revisionStr is the last remaining revision for this benchmark. Set force=true to force the delete")
+      }      
       if (response.collectionIds.length && !force) {
         throw new SmError.UnprocessableError("The revisionStr is pinned to one or more Collections. Set force=true to force the delete")
       }
