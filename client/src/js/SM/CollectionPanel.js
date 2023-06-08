@@ -872,8 +872,8 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       progressBarsPanel.updateMetrics(metrics)
     }
 
-    const dataTpl = [
-      `<div class="sm-metrics-status-pct">{[values.assessments ? ( values.apiAssessed/values.assessments * 100).toFixed(0) : 0]}% assessed</div>`,
+    const dataTpl = new Ext.XTemplate(
+      `<div class="sm-metrics-status-pct">{[this.calcAssessedPct(values.apiAssessed, values.assessments)]}% assessed</div>`,
       '<table class="sm-metrics-status-table" style="margin: 0 auto;">',
       '<tbody>',
       '<tr><td class="sm-metrics-label sm-metrics-unassessed">Unassessed</td><td class="sm-metrics-value">{unassessed}</td></tr>',
@@ -883,8 +883,20 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       '<tr><td class="sm-metrics-label sm-metrics-rejected">Rejected</td><td class="sm-metrics-value">{rejected}</td></tr>',
       '<tr class="sm-metrics-total"><td>Total Checks</td><td class="sm-metrics-value">{assessments}</td></tr>',
       '</tbody>',
-      '</table>'
-    ]
+      '</table>',
+      {
+        calcAssessedPct: function (assessed, assessments) {
+          const pct = assessments ? assessed/assessments*100 : 0
+          if (pct > 99 && pct < 100) {
+            return '>99'
+          }
+          else {
+            return pct.toFixed(0).toString()
+          }
+        }
+      }
+    )
+
     const dataPanel = new Ext.Panel({
       border: false,
       tpl: dataTpl,
