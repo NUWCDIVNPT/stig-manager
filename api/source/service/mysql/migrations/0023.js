@@ -28,7 +28,7 @@ const upMigration = [
         CASE WHEN crm.revId IS NOT NULL THEN cast(true as json) ELSE cast(false as json) END as revisionPinned
     FROM
         asset a
-        LEFT JOIN stig_asset_map sa ON a.assetId = sa.assetId
+        INNER JOIN stig_asset_map sa ON a.assetId = sa.assetId
         LEFT JOIN current_rev cr ON sa.benchmarkId = cr.benchmarkId
         LEFT JOIN collection_rev_map crm ON (sa.benchmarkId = crm.benchmarkId AND a.collectionId = crm.collectionId)`,
 
