@@ -8,7 +8,7 @@ const Serialize = require(`../utils/serializers`)
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
 const Archiver = require('archiver')
-const J2X = require("fast-xml-parser").j2xParser
+const {XMLBuilder} = require("fast-xml-parser")
 const he = require('he')
 
 module.exports.defaultSettings = {
@@ -663,20 +663,18 @@ module.exports.postXccdfArchiveByCollection = async function (req, res, next) {
 
 async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRequest}) {
   req.noCompression = true
-  const j2x = new J2X({
+  const builder = new XMLBuilder({
     attributeNamePrefix : "@_",
     textNodeName : "#text",
-    ignoreAttributes : format.startsWith('ckl-'),
+    ignoreAttributes: format.startsWith('ckl-'),
     cdataTagName: "__cdata",
     cdataPositionChar: "\\c",
     format: true,
     indentBy: "  ",
     supressEmptyNode: format === 'xccdf',
-    tagValueProcessor: a => {
-      return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-    },
-    attrValueProcessor: a => he.encode(a, {isAttributeValue: true, useNamedReferences: true})
-  })
+    tagValueProcessor: (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value,
+    attrValueProcessor: (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
+})
   const zip = Archiver('zip', {zlib: {level: 9}})
   res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : 'XCCDF'}.zip`)
   zip.pipe(res)
@@ -703,7 +701,7 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
         await AssetSvc.cklFromAssetStigs(arg.assetId, arg.stigs) :
         await AssetSvc.xccdfFromAssetStig(arg.assetId, arg.stigs[0].benchmarkId, arg.stigs[0].revisionStr)
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-      xml += j2x.parse(response.xmlJs)
+      xml += builder.build(response.xmlJs)
       let filename = arg.assetName
       if (format === 'ckl-mono' || format === 'xccdf') {
         filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
