@@ -901,9 +901,9 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
     const benchmarkId = req.params.benchmarkId
     const assetIds = req.body.assetIds
     const defaultRevisionStr = req.body.defaultRevisionStr
-    //check that specified revision is valid for the benchmark
     const existingRevisions = await StigSvc.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
-    if (existingRevisions.find(benchmark => benchmark.revisionStr === defaultRevisionStr) === undefined) {
+    //if defaultRevisionStr is present, check that specified revision is valid for the benchmark
+    if (defaultRevisionStr && defaultRevisionStr !== "latest" && existingRevisions.find(benchmark => benchmark.revisionStr === defaultRevisionStr) === undefined) {
       throw new SmError.UnprocessableError("The revisionStr is is not valid for the specified benchmarkId")
     }
     // The OAS layer mandated if assetIds is absent then defaultRevisionStr must be present
