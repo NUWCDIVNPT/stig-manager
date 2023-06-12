@@ -890,34 +890,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}':
-    parameters:
-      - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdPath'
-      - $ref: '#/components/parameters/RevisionStrPath'
-    get:
-      tags:
-        - Collection
-      summary: Return the Checklist for the supplied Collection and STIG
-      operationId: getChecklistByCollectionStig
-      responses:
-        '200':
-          description: ChecklistCollectionStig response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ChecklistCollectionStig'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
   '/collections/{collectionId}/archive/ckl':
     post:
       tags:
@@ -1000,6 +972,57 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/RevisionStrPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the Checklist for the supplied Collection and STIG
+      operationId: getChecklistByCollectionStig
+      responses:
+        '200':
+          description: ChecklistCollectionStig response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChecklistCollectionStig'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/clone':
+    post:
+      tags:
+        - Collection
+      summary: Clone an existing Collection to a new Collection
+      operationId: cloneCollection
+      parameters:
+       - $ref: '#/components/parameters/CollectionIdPath'
+      requestBody:
+        required: true
+        description: CollectionClone request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionCloneRequest'
+      responses:
+        '200':
+          description: CollectionProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionProjected'
+      
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -1095,55 +1118,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/collections/{collectionId}/poam':
-    get:
-      tags:
-        - Collection
-      summary: Return a POAM-like spreadsheet for the specified Collection aggregated by groupId
-      operationId: getPoamByCollection
-      parameters:
-        - $ref: '#/components/parameters/CollectionIdPath'
-        - $ref: '#/components/parameters/PoamAggregatorQuery'
-        - name: acceptedOnly
-          in: query
-          schema:
-            type: boolean
-            default: false
-        - $ref: '#/components/parameters/BenchmarkIdQuery'
-        - $ref: '#/components/parameters/AssetIdQuery'
-        - name: date
-          description: Value for columns Scheduled Completion Date, Milestone With Completion Dates, Milestone Changes
-          in: query
-          schema:
-            type: string
-        - name: office
-          description: Value for column Office/Org
-          in: query
-          schema:
-            type: string
-          allowReserved: true
-        - name: status
-          description: Value for column Status
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: CollectionFinding response
-          content:
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-              schema:
-                type: string
-                format: binary
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
   '/collections/{collectionId}/reviews':
     get:
       tags:
@@ -2426,6 +2400,55 @@ paths:
             text/csv:
               schema:
                 type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/poam':
+    get:
+      tags:
+        - Collection
+      summary: Return a POAM-like spreadsheet for the specified Collection aggregated by groupId
+      operationId: getPoamByCollection
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/PoamAggregatorQuery'
+        - name: acceptedOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/AssetIdQuery'
+        - name: date
+          description: Value for columns Scheduled Completion Date, Milestone With Completion Dates, Milestone Changes
+          in: query
+          schema:
+            type: string
+        - name: office
+          description: Value for column Office/Org
+          in: query
+          schema:
+            type: string
+          allowReserved: true
+        - name: status
+          description: Value for column Status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CollectionFinding response
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         default:
           description: unexpected error
           content:
@@ -4266,6 +4289,57 @@ components:
           type: string
         name:
           type: string
+    CollectionCloneOptions:
+      type: object
+      additionalProperties: false
+      properties:
+        grants:
+          type: boolean
+          default: true
+        settings:
+          type: boolean
+          default: true
+        labels:
+          type: boolean
+          default: true
+        metadata:
+          type: boolean
+          default: true
+        assets:
+          type: boolean
+          default: true
+        stigMappings:
+          type: object
+          additionalProperties: false
+          properties:
+            enabled:
+              type: string
+              enum:
+                - 'no'
+                - withReviews
+                - withoutReviews
+              default: withReviews
+            defaultRevisions:
+              type: string
+              enum:
+                - latest
+                - sourceSettings
+                - currentDefaults
+              default: latest
+    CollectionCloneRequest:
+      type: object
+      required:
+        - name
+        - description
+      additionalProperties: false
+      properties:
+        name:
+          $ref: '#/components/schemas/String255'
+        description:
+          type: string
+          nullable: true
+        options:
+          $ref: '#/components/schemas/CollectionCloneOptions'
     CollectionCreateOrReplace:
       type: object
       required:

@@ -935,3 +935,15 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
     next(err)
   }
 }
+
+module.exports.cloneCollection = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const {name, description, options} = req.body
+    const result = await CollectionSvc.cloneCollection({userObject: req.userObject, ...req.body})
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }
+}
