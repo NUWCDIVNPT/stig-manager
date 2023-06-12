@@ -109,8 +109,8 @@ app.use((err, req, res, next) => {
       error: serializeError(err)
     })
   }
-  // Our logger will expose res.errorBody when logging the response
-  res.errorBody = { error: err.message, detail: err.detail }
+  // Expose selected error properties in the response
+  res.errorBody = { error: err.message, detail: err.detail, stack: err.stack}
   res.status(err.status || 500).header(err.headers).json(res.errorBody)
 })
 
