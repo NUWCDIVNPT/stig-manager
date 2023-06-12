@@ -5,7 +5,7 @@ const config = require('../utils/config')
 const Asset = require(`../service/${config.database.type}/AssetService`);
 const Collection = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
-const J2X = require("fast-xml-parser").j2xParser
+const {XMLBuilder} = require("fast-xml-parser")
 const he = require('he')
 const SmError = require('../utils/error')
 
@@ -271,56 +271,48 @@ module.exports.getStigsByAsset = async function getStigsByAsset (req, res, next)
 
 module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig (req, res, next) {
   try {
-    let assetId = req.params.assetId
-    let benchmarkId = req.params.benchmarkId
-    let revisionStr = req.params.revisionStr
-    let format = req.query.format || 'json'
+    const assetId = req.params.assetId
+    const benchmarkId = req.params.benchmarkId
+    const revisionStr = req.params.revisionStr
+    const format = req.query.format || 'json'
+    const tagValueProcessor = (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value 
+    const attrValueProcessor = (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
     if (await dbUtils.userHasAssetStigs(assetId, [benchmarkId], false, req.userObject)) {
-      let response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
+      const response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
         res.json(response)
       }
       else if (format === 'ckl') {
-        let defaultOptions = {
+        const builder = new XMLBuilder({
           attributeNamePrefix : "@_",
-          attrNodeName: "@", //default is false
           textNodeName : "#text",
           ignoreAttributes : true,
-          cdataTagName: "__cdata", //default is false
-          cdataPositionChar: "\\c",
           format: true,
           indentBy: "  ",
           supressEmptyNode: false,
-          tagValueProcessor: a => {
-            return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-          },
-          attrValueProcessor: a=> he.encode(a, {isAttributeValue: true, useNamedReferences: true})
-        }
-        const j2x = new J2X(defaultOptions)
+          tagValueProcessor,
+          attrValueProcessor
+        })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-        xml += j2x.parse(response.xmlJs)
-        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
+        xml += builder.build(response.xmlJs)
+        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'xccdf') {
-        let defaultOptions = {
+        const builder = new XMLBuilder({
           attributeNamePrefix : "@_",
-          // attrNodeName: "@", //default is false
           textNodeName : "#text",
           ignoreAttributes : false,
-          cdataTagName: "__cdata", //default is false
+          cdataTagName: "__cdata",
           cdataPositionChar: "\\c",
           format: true,
           indentBy: "  ",
           supressEmptyNode: true,
-          tagValueProcessor: a => {
-            return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-          },
-          attrValueProcessor: a => he.encode(a, {isAttributeValue: true, useNamedReferences: true})
-        }
-        const j2x = new J2X(defaultOptions)
+          tagValueProcessor,
+          attrValueProcessor
+        })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-        xml += j2x.parse(response.xmlJs)
-        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`, 'application/xml')  // revisionStrResolved provides specific rev string filename, if "latest" was asked for.
+        xml += builder.build(response.xmlJs)
+        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
     }
     else {
@@ -334,11 +326,13 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
 
 module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req, res, next) {
   try {
-    let assetId = req.params.assetId
+    const assetId = req.params.assetId
     let requestedBenchmarkIds = req.query.benchmarkId
+    const tagValueProcessor = (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value 
+    const attrValueProcessor = (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
 
     // If this user has no grants permitting access to the asset, the response will be undefined
-    let assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
+    const assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
     if (!assetResponse) {
       throw new SmError.PrivilegeError()
     }
@@ -356,25 +350,19 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
 
     const stigs = requestedBenchmarkIds.map( benchmarkId => ({benchmarkId, revisionStr: 'latest'}) )
 
-    let cklObject = await Asset.getChecklistByAsset(assetId, stigs, 'ckl', false, req.userObject )
-    let parseOptions = {
+    const cklObject = await Asset.getChecklistByAsset(assetId, stigs, 'ckl', false, req.userObject )
+    const builder = new XMLBuilder({
       attributeNamePrefix : "@_",
-      attrNodeName: "@", //default is false
       textNodeName : "#text",
       ignoreAttributes : true,
-      cdataTagName: "__cdata", //default is false
-      cdataPositionChar: "\\c",
       format: true,
       indentBy: "  ",
       supressEmptyNode: false,
-      tagValueProcessor: a => {
-        return a ? he.encode(a.toString(), { useNamedReferences: false}) : a 
-      },
-      attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})
-    }
-    const j2x = new J2X(parseOptions)
+      tagValueProcessor,
+      attrValueProcessor
+    })
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
-    xml += j2x.parse(cklObject.xmlJs)
+    xml += builder.build(cklObject.xmlJs)
     writer.writeInlineFile(res, xml, `${cklObject.assetName}.ckl`, 'application/xml')
   }
   catch (err) {
