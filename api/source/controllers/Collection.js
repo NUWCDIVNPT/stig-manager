@@ -4,6 +4,7 @@ const writer = require('../utils/writer')
 const config = require('../utils/config')
 const CollectionSvc = require(`../service/${config.database.type}/CollectionService`)
 const AssetSvc = require(`../service/${config.database.type}/AssetService`)
+const StigSvc = require(`../service/${config.database.type}/STIGService`)
 const Serialize = require(`../utils/serializers`)
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
@@ -900,9 +901,13 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
     const benchmarkId = req.params.benchmarkId
     const assetIds = req.body.assetIds
     const defaultRevisionStr = req.body.defaultRevisionStr
-
+    //check that specified revision is valid for the benchmark
+    const existingRevisions = await StigSvc.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+    if (existingRevisions.find(benchmark => benchmark.revisionStr === defaultRevisionStr) === undefined) {
+      throw new SmError.UnprocessableError("The revisionStr is is not valid for the specified benchmarkId")
+    }
     // The OAS layer mandated if assetIds is absent then defaultRevisionStr must be present
-    // we do not permit setting the defaul revision of an unassigned STIG
+    // we do not permit setting the default revision of an unassigned STIG
     if (!assetIds && !await CollectionSvc.doesCollectionIncludeStig({collectionId, benchmarkId})) {
       throw new SmError.UnprocessableError('Cannot set the default revision of a benchmarkId that has no mapped Assets')
     }
