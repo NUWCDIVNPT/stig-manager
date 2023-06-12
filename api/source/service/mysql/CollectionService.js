@@ -1731,3 +1731,12 @@ exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId})
     return false
   }
 }
+
+exports.cloneCollection = async function ({userObject, name, description, options}) {
+  try {
+    
+  }
+  catch (err) {
+    throw err
+  }
+}

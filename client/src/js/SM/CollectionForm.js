@@ -913,7 +913,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
         })          
         const delButton = new Ext.Button({
             iconCls: 'sm-trash-icon',
-            // cls: 'sm-bare-button',
+            tooltip: 'Delete',
             width: 25,
             template: new Ext.Template(
                 '<table id="{4}" cellspacing="0" class="x-btn {3}"><tbody class="{1}">',
@@ -935,6 +935,26 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                             SM.Dispatcher.fireEvent('collectiondeleted', apiCollection.collectionId)
                         }
                     })
+                }
+                catch (e) {
+                    SM.Error.handleError(e)
+                }
+            }
+        })
+        const cloneButton = new Ext.Button({
+            iconCls: 'sm-clone-icon',
+            tooltip: 'Clone',
+            width: 25,
+            template: new Ext.Template(
+                '<table id="{4}" cellspacing="0" class="x-btn {3}"><tbody class="{1}">',
+                '<tr><td class="x-btn-tl" style="background-image:none;"><i>&#160;</i></td><td class="x-btn-tc" style="background-image:none;"></td><td class="x-btn-tr" style="background-image:none;"><i>&#160;</i></td></tr>',
+                '<tr><td class="x-btn-ml" style="background-image:none;"><i>&#160;</i></td><td class="x-btn-mc" style="background-image:none;"><em class="{2} x-unselectable" unselectable="on"><button type="{0}"></button></em></td><td class="x-btn-mr" style="background-image:none;"><i>&#160;</i></td></tr>',
+                '<tr><td class="x-btn-bl" style="background-image:none;"><i>&#160;</i></td><td class="x-btn-bc" style="background-image:none;"></td><td class="x-btn-br" style="background-image:none;"><i>&#160;</i></td></tr>',
+                '</tbody></table>'),
+            border: false,
+            handler: async function () {
+                try {
+                    SM.CollectionClone.showCollectionClone()
                 }
                 catch (e) {
                     SM.Error.handleError(e)
@@ -1064,6 +1084,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
                 labelStyle: 'font-weight: 600;',
                 items: [
                     nameField,
+                    cloneButton,
                     delButton
                 ]
             }
