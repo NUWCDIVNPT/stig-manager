@@ -510,7 +510,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-stig-assets-grid', SM.StigAssetsGrid)
 
-SM.StigRevisionComboBox = Ext.extend(Ext.form.ComboBox, {
+SM.StigRevisionComboBox = Ext.extend(SM.Global.HelperComboBox, {
     initComponent: function () {
       const _this = this
 
@@ -525,7 +525,8 @@ SM.StigRevisionComboBox = Ext.extend(Ext.form.ComboBox, {
         valueField: 'value',
         triggerAction: 'all',
         mode: 'local',
-        editable: false
+        editable: false,
+        helpText: SM.TipContent.DefaultRevision
       }
 
       Ext.apply(this, Ext.apply(this.initialConfig, config))
