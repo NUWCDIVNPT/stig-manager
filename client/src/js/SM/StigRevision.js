@@ -4,9 +4,7 @@ SM.StigRevision.RevisionMenuBtn = Ext.extend(Ext.Button, {
   initComponent: function () {
     const _this = this
     menu = new SM.StigRevision.RevisionMenu( { iconCls: 'icon-del' })
-    const config = {
-      menu: menu
-    }
+    const config = { menu }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     SM.StigRevision.RevisionMenuBtn.superclass.initComponent.call(this)
   }
@@ -23,7 +21,7 @@ SM.StigRevision.RevisionMenu = Ext.extend(Ext.menu.Menu, {
         const text = `Version ${SM.he(matches[1])} Release ${SM.he(matches[2])}&nbsp;&nbsp;<span class="sm-review-sprite sm-review-sprite-date">${revision.benchmarkDate}</span> <span class="sm-navtree-sprite">${revision.status}</span>${revision.revisionStr === record.data.lastRevisionStr ? '<span class="sm-navtree-sprite">latest</span>' : ''}`
         this.addItem({
           iconCls: revision.collectionIds.length ? 'sm-pin-icon' : 'icon-del',
-          disabled: !!revision.collectionIds.length,
+          isAssigned: !!revision.collectionIds.length,
           text,
           revisionStr: revision.revisionStr,
           benchmarkId: record.data.benchmarkId,
@@ -36,6 +34,7 @@ SM.StigRevision.RevisionMenu = Ext.extend(Ext.menu.Menu, {
       iconCls: 'icon-del',
       text: 'Remove all revisions',
       benchmarkId: record.data.benchmarkId,
+      isAssigned: !!record.data.collectionIds.length,
       record
     })
   }
@@ -49,9 +48,9 @@ SM.StigRevision.removeStig = function (benchmarkId, force = false) {
   })
 }
 
-SM.StigRevision.removeStigRevision = async function (benchmarkId, revisionStr) {
+SM.StigRevision.removeStigRevision = async function (benchmarkId, revisionStr, force = false) {
   const result = await Ext.Ajax.requestPromise({
-    url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}`,
+    url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}?elevate=true&force=${force ? 'true' : 'false'}`,
     method: 'DELETE'
   })
   return JSON.parse(result.response.responseText)
@@ -266,22 +265,23 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
         try {
           const records = _this.getSelectionModel().getSelections()
           const heBenchmarkIds = records.map( r => SM.he(r.data.benchmarkId))
+          const forceRequired = records.some( r => r.data.collections > 0 )
           let benchmarkList 
-          if (heBenchmarkIds.length > 25) {
+          if (heBenchmarkIds.length > 10) {
             benchmarkList = `The ${heBenchmarkIds.length} selected STIGs`
           }
           else {
             benchmarkList = heBenchmarkIds.join('<br>')
           }
-          const savedMinWidth = Ext.MessageBox.minWidth
-          Ext.MessageBox.minWidth = 400
-          Ext.MessageBox.buttonText.yes = 'Remove'
-          Ext.MessageBox.buttonText.no = 'Cancel'
-          const id = await SM.confirmPromise('Confirm', `Do you wish to remove:<br/><br/>${benchmarkList}<br/>`)
-          if (id === 'yes') {
+          const confirmed = await SM.StigRevision.showConfirm({
+            message: `Confirm removal of:<br/><br/>${benchmarkList}<br/><br/>`,
+            forceMessage: `${heBenchmarkIds.length === 1 ? 'This STIG is' : 'Some STIGs are'} in use. Remove anyway?`,
+            forceRequired
+          })
+          if (confirmed) {
             Ext.getBody().mask('Removing')
             for (const record of records) {
-              await SM.StigRevision.removeStig(record.data.benchmarkId)
+              await SM.StigRevision.removeStig(record.data.benchmarkId, !!record.data.collections)
               _this.store.remove(record)
             }    
           }
@@ -299,19 +299,21 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
       listeners: {
         itemclick: async function (item, e) {
           try {
-            Ext.MessageBox.minWidth = 400
-            Ext.MessageBox.buttonText.yes = 'Remove'
-            Ext.MessageBox.buttonText.no = 'Cancel'
-            const id = await SM.confirmPromise('Confirm', `Do you wish to remove:<br><br>${item.benchmarkId} ${item.revisionStr ? item.revisionStr : ''}<br/>`)
-            if (id === 'yes') {
+            const confirmed = await SM.StigRevision.showConfirm({
+              message: `Confirm removal of:<br/><br/>${item.benchmarkId} ${item.revisionStr ? item.revisionStr : ''}<br/><br/>`,
+              forceMessage: `This ${item.revisionStr ? 'Revision' : 'STIG'} is in use. Remove anyway?`,
+              forceRequired: item.isAssigned
+            })
+  
+            if (confirmed) {
               Ext.getBody().mask('Removing')
               const record = item.record
               if (!item.revisionStr) { // remove STIG
-                await SM.StigRevision.removeStig(item.benchmarkId)
+                await SM.StigRevision.removeStig(item.benchmarkId, item.isAssigned)
                 _this.store.remove(record)
               }
               else {
-                await SM.StigRevision.removeStigRevision(item.benchmarkId, item.revisionStr)
+                await SM.StigRevision.removeStigRevision(item.benchmarkId, item.revisionStr, item.isAssigned)
                 const apiStig = await SM.StigRevision.getStig(item.benchmarkId)
                 record.data = apiStig
                 record.commit()
@@ -569,4 +571,78 @@ SM.StigRevision.ImportStigs = function ( grid ) {
 
   appwindow.show(document.body);
 
+}
+
+SM.StigRevision.ConfirmDeletePanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+    const items = [
+      new Ext.form.DisplayField({ 
+        value: this.message || 'Confirm delete'
+      })
+    ]
+    if (this.forceRequired) {
+      items.push(new Ext.form.Checkbox({
+        boxLabel: this.forceBoxLabel || 'Some items are in use. Confirm forced delete by checking this box.',
+        listeners: {
+          check: this.forceCheckboxHandler
+        }
+      }))
+    }
+
+    const config = {
+      baseCls: 'x-plain',
+      hideLabels: true,
+      layout: 'form',
+      items
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.StigRevision.showConfirm = function ({message, forceMessage, forceRequired}) {
+  return new Promise((resolve, reject) => {
+    const removeBtn = new Ext.Button({
+      text: forceRequired ? 'Forcibly remove' : 'Remove',
+      iconCls: 'icon-del',
+      disabled: forceRequired,
+      handler: () => { 
+        fpwindow.close()
+        resolve(true)
+      }
+    })
+    const cancelBtn = new Ext.Button({
+      text: 'Cancel',
+      handler: () => { 
+        fpwindow.close()
+        resolve(false)
+      }
+    })
+    function forceCheckboxHandler (cb, checked) {
+      removeBtn.setDisabled(!checked)
+    }
+    const fp = new SM.StigRevision.ConfirmDeletePanel({
+      message,
+      forceBoxLabel: forceMessage,
+      forceRequired,
+      forceCheckboxHandler
+    })
+    const fpwindow = new Ext.Window({
+      title: 'Confirm STIG removal',
+      cls: 'sm-dialog-window sm-round-panel',
+      modal: true,
+      resizable: false,
+      closable: false,
+      width: 300,
+      // height: 300,
+      layout: 'fit',
+      plain: true,
+      bodyStyle: 'padding:15px;',
+      buttonAlign: 'right',
+      items: fp,
+      buttons: [ cancelBtn, removeBtn ]
+    })
+    fpwindow.show(document.body)
+  })
 }

@@ -57,3 +57,5 @@ SM.TipContent.RulePropertyDiffs = `<b>Changes to these rule properties are detec
 - fix<br>
 - cci<br>
 `
+
+SM.TipContent.DefaultRevision = `Default revsision tooltip`

@@ -586,7 +586,8 @@ a.x-grid3-hd-btn:hover {
 .ext-gecko .x-btn button,
 .ext-webkit .x-btn button,
 .x-btn button {
-  font-weight: 600
+  font-weight: 600;
+  padding: 0 3px 3px 3px
 }
 .sm-export-sprite {
   font: 10px Open Sans,helvetica,sans-serif;
@@ -2067,4 +2068,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .sm-selectable, .sm-selectable * {
   user-select: text;
+}
+.x-menu-item-active {
+	background-image: none;
+	background-color: #e5e5e5
+}
+.x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
+	background-size: 14px 14px
 }

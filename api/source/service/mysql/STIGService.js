@@ -907,36 +907,42 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
     let binds = {
       benchmarkId: benchmarkId,
       version: version,
-      release: release
+      release: release,
+      revId: `${benchmarkId}-${version}-${release}`
     }
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
+    
     async function transaction () {
       await connection.query('START TRANSACTION')
 
       // note if this is the current revision
       const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
-      const isCurrentRev = !!crRows.length
-      
+      const wasCurrentRev = !!crRows.length
+      // note if this revision is used to calculate stats
+      const [drRows] = await connection.query('SELECT collectionId FROM v_default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
+      const wasDefaultRev = !!drRows.length
+
       // re-materialize current_rev and current_group_rule if we're deleteing the current revision
-      if (isCurrentRev) {
+      if (wasCurrentRev) {
         dmls = dmls.concat(currentRevDmls)
       }
   
       for (const sql of dmls) {
        await connection.query(sql, binds)
       }
+
   
       // re-calculate review statistics if we've affected current_rev
-      // NOTE: for performance we could skip this if the only revision has 
-      // been deleted (STIG itself is now deleted)
-      if (isCurrentRev) {
-        await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
+      if (wasDefaultRev && !wasCurrentRev) {
+        const collectionIds = drRows.map( row => row.collectionId)
+        await dbUtils.updateStatsAssetStig( connection, {collectionIds, benchmarkId})
       }
   
       await connection.commit()
     }
+    
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch(err) {
