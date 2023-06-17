@@ -39,41 +39,32 @@
 //   ]
 // }
 
-const parser = require('fast-xml-parser')
-const tagValueProcessor = require('he').decode
+const {XMLParser} = require('fast-xml-parser')
+const he = require('he')
 
 module.exports.benchmarkFromXccdf = function (xccdfData) {
-  const Parser = require('fast-xml-parser')
-  const he = require('he')
-  try {
-    let hrstart = process.hrtime() 
   
-    let fastparseOptions = {
+  try {  
+    const parser = new XMLParser({
+      allowBooleanAttributes: false,
       attributeNamePrefix: "",
       textNodeName: "_",
       ignoreAttributes: false,
-      ignoreNameSpace: true,
-      allowBooleanAttributes: false,
-      parseNodeValue: false,
+      removeNSPrefix: true,
+      parseTagValue: false,
       parseAttributeValue: false,
       trimValues: true,
-      cdataTagName: "__cdata", //default is 'false'
-      cdataPositionChar: "\\c",
-      localeRange: "", //To support non english character in tag/attribute values.
-      parseTrueNumberOnly: false,
-      arrayMode: true, //"strict"
-      alwaysCreateTextNode: true, //"strict"
-      attrValueProcessor: (val) => tagValueProcessor(val, {isAttributeValue: true}),
-      tagValueProcessor: (val) => tagValueProcessor(val)
-    }
+      isArray: (name, jpath, isLeafNode, isAttribute) => !isAttribute,
+      alwaysCreateTextNode: true,
+      tagValueProcessor: (name, value) => he.decode(value)
+    })
+    const j = parser.parse(xccdfData.toString())
 
-    let j = parser.parse(xccdfData.toString(), fastparseOptions)
     let bIn, isScap=false
-
     if (j['data-stream-collection'] && j['data-stream-collection'][0]) {
       // SCAP
-      let components =  j['data-stream-collection'][0].component
-      let candidate = components.find(component => 'Benchmark' in component)
+      const components =  j['data-stream-collection'][0].component
+      const candidate = components.find(component => 'Benchmark' in component)
       if (candidate.Benchmark[0]) {
         bIn = candidate.Benchmark[0]
         isScap = true
@@ -90,24 +81,24 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       throw new Error("Cannot parse XML document as STIG or SCAP.") 
     }
 
-    let groups = bIn.Group.map(group => {
-      let rules = group.Rule.map(rule => {
-        let checks = rule.check ? rule.check.map(check => ({
+    const groups = bIn.Group.map(group => {
+      const rules = group.Rule.map(rule => {
+        const checks = rule.check ? rule.check.map(check => ({
             system: check.system,
             content: isScap? check['check-content-ref']?.[0]?._ : check['check-content']?.[0]?._
           })) : []
-        let fixes = rule.fixtext ? rule.fixtext.map(fix => ({
+          const fixes = rule.fixtext ? rule.fixtext.map(fix => ({
           fixref: fix.fixref,
           text: fix._
         })) : []
-        let idents = rule.ident ? rule.ident.map(ident => ({
+        const idents = rule.ident ? rule.ident.map(ident => ({
           ident: ident._,
           system: ident.system
         })) : []
         // The description element is often not well-formed XML, so we fallback on extracting content between expected tags
         function parseRuleDescription (d) {
-          let parsed = {}
-          let propMap = {
+          const parsed = {}
+          const propMap = {
             vulnDiscussion: 'VulnDiscussion',
             falsePositives: 'FalsePositives',
             falseNegatives: 'FalseNegatives',
@@ -122,8 +113,8 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           }
 
           for (const prop in propMap) {
-            let re = new RegExp(`<${propMap[prop]}>([\\s\\S]*)</${propMap[prop]}>`)
-            let result = re.exec(d)
+            const re = new RegExp(`<${propMap[prop]}>([\\s\\S]*)</${propMap[prop]}>`)
+            const result = re.exec(d)
             parsed[propMap[prop]] = result && result.length > 1 ? result[1] : null
           }
           
@@ -133,7 +124,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           return parsed
         }
 
-        let desc = parseRuleDescription(rule.description?.[0]?._)
+        const desc = parseRuleDescription(rule.description?.[0]?._)
 
         return {
           ruleId: rule.id,
@@ -152,27 +143,19 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           mitigationControl: desc.MitigationControl || null,
           responsibility: desc.Responsibility || null,
           iacontrols: desc.IAControls || null,
-          checks: checks,
-          fixes: fixes,
-          idents: idents
+          checks,
+          fixes,
+          idents
         }
       })
-
-      // let desc
-      // if (group.description?.[0]?._) {
-      //   desc = Parser.parse(group.description[0]._, fastparseOptions)
-      // }
 
       return {
         groupId: group.id,
         title: group.title[0]._ || null,
-        // description: desc?.GroupDescription || null,
         rules: rules
       }
     })
     let [releaseInfo, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
-    let hrend = process.hrtime(hrstart)
-    // console.info(bIn.id + ' execution time (hr): %ds %dms', hrend[0], hrend[1] / 1000000)
 
     return {
       benchmarkId: bIn.id,
@@ -181,15 +164,14 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       revision: {
         revisionStr: `V${bIn.version?.[0]._}R${release}`,
         version: bIn.version?.[0]._,
-        release: release,
-        releaseInfo: releaseInfo,
-        benchmarkDate: benchmarkDate,
+        release,
+        releaseInfo,
+        benchmarkDate,
         benchmarkDate8601: benchmarkDateTo8601(benchmarkDate),
         status: bIn.status[0]._ || null,
         statusDate: bIn.status[0].date || null,
-        description: bIn.description || null,
-        // profiles: bIn.Profile,
-        groups: groups
+        description: bIn.description[0]._ || null,
+        groups
       }
     }
   }
@@ -225,7 +207,6 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       'December': '12'
     };
     let [day, monStr, year] = benchmarkDate.split(/\s+/);
-    // return sprintf("%04d-%02d-%02d",year,monthToNum[monStr],day);
     return `${year}-${monthToNum[monStr]}-${day}`
   }
 }

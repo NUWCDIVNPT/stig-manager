@@ -686,28 +686,7 @@ SM.ReviewsImport.WarningPanel = Ext.extend(Ext.Panel, {
     }
 })
 
-SM.ReviewsImport.HelperComboBox = Ext.extend(Ext.form.ComboBox, {
-    initComponent: function () {
-        const config = {
-            listeners: {
-                render: function (ta) {
-                    ta.trigger.insertHtml('afterEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
-                    const sonarCloudInsists = new Ext.ToolTip({
-                        target: ta.wrap.dom.getElementsByClassName('fa')[0],
-                        showDelay: 0,
-                        dismissDelay: 0,
-                        width: 300,
-                        html: ta.helpText
-                    }) 
-                }
-            }
-        }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ReviewsImport.HelperComboBox.superclass.initComponent.call(this)
-    }
-})
-
-SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.Global.HelperComboBox, {
     initComponent: function () {
         const _this = this
         const config = {
@@ -741,7 +720,7 @@ SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox
         this.store.loadData(data)
     }
 })
-SM.ReviewsImport.UnreviewedComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+SM.ReviewsImport.UnreviewedComboBox = Ext.extend(SM.Global.HelperComboBox, {
     initComponent: function () {
         const _this = this
         const config = {
@@ -772,7 +751,7 @@ SM.ReviewsImport.UnreviewedComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox
         this.store.loadData(data)
     }
 })
-SM.ReviewsImport.UnreviewedCommentedComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+SM.ReviewsImport.UnreviewedCommentedComboBox = Ext.extend(SM.Global.HelperComboBox, {
     initComponent: function () {
         const _this = this
         const config = {
@@ -802,7 +781,7 @@ SM.ReviewsImport.UnreviewedCommentedComboBox = Ext.extend(SM.ReviewsImport.Helpe
         this.store.loadData(data)
     }
 })
-SM.ReviewsImport.EmptyCommentComboBox = Ext.extend(SM.ReviewsImport.HelperComboBox, {
+SM.ReviewsImport.EmptyCommentComboBox = Ext.extend(SM.Global.HelperComboBox, {
     initComponent: function () {
         const _this = this
         const config = {

@@ -61,7 +61,7 @@ function cteAssetGen({assetIds, benchmarkIds, labelIds, labelNames}) {
   return `cteAsset AS (${cte})`
 }
 
-function cteRuleGen({ruleIds, benchmarkIds}) {
+function cteRuleGen({ruleIds, benchmarkIds, collectionId}) {
   let cte
   if (ruleIds?.length) {
     const json = JSON.stringify(ruleIds)
@@ -75,8 +75,8 @@ function cteRuleGen({ruleIds, benchmarkIds}) {
     cte = dbUtils.pool.format(sql,[json])
   }
   else if (benchmarkIds?.length) {
-    const sql = `select ruleId from v_current_group_rule where benchmarkId IN ?`
-    cte = dbUtils.pool.format(sql,[[benchmarkIds]])
+    const sql = `select rgr.ruleId from v_default_rev dr left join rev_group_rule_map rgr using (revId) where dr.benchmarkId IN ? and dr.collectionId = ?`
+    cte = dbUtils.pool.format(sql,[[benchmarkIds], collectionId])
   }
   return `cteRule AS (${cte})`
 }
@@ -293,6 +293,9 @@ exports.postReviewBatch = async function ({
 
   const cteReview = cteReviewGen()
   const cteAsset = cteAssetGen(assets)
+  if (rules.benchmarkIds) {
+    rules.collectionId = collectionId
+  }
   const cteRule = cteRuleGen(rules)
   let cteGrant
   if (!skipGrantCheck) {
