@@ -954,7 +954,10 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             border: false,
             handler: async function () {
                 try {
-                    SM.CollectionClone.showCollectionClone()
+                    SM.CollectionClone.showCollectionClone({
+                        collectionId: _this.collectionId,
+                        sourceName: nameField.getValue()
+                    })
                 }
                 catch (e) {
                     SM.Error.handleError(e)

@@ -942,9 +942,24 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
 module.exports.cloneCollection = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
-    const {name, description, options} = req.body
-    const result = await CollectionSvc.cloneCollection({userObject: req.userObject, ...req.body})
-    res.json(result)
+    const options = {
+      grants: true,
+      labels: true,
+      assets: true,
+      stigMappings: 'withReviews',
+      pinRevisions: 'matchSource',
+      ...req.body.options
+    }
+    const cloned = await CollectionSvc.cloneCollection({
+      collectionId, 
+      userObject: req.userObject, 
+      name: req.body.name,
+      description: req.body.description,
+      options, 
+      svcStatus: res.svcStatus
+    })
+    const response = await CollectionSvc.getCollection(cloned.destCollectionId, req.query.projection, false, req.userObject )
+    res.status(typeof response === 'undefined' ? 204 : 200).json(response)
   }
   catch (err) {
     next(err)

@@ -1,6 +1,6 @@
 Ext.ns('SM.CollectionClone')
 
-SM.CollectionClone.ComboBox = Ext.extend(Ext.form.ComboBox, {
+SM.CollectionClone.ComboBox = Ext.extend(SM.Global.HelperComboBox, {
   initComponent: function () {
     const _this = this
     const data = this.data || []
@@ -86,6 +86,7 @@ SM.CollectionClone.CloneForm = Ext.extend(Ext.form.FormPanel, {
       labelStyle: 'font-weight: 600;',
       name: 'name',
       allowBlank: false,
+      value: this.sourceName ? `Clone of ${this.sourceName}` : '',
       anchor: '100%'
     })
     const descriptionField = new Ext.form.TextArea({
@@ -93,27 +94,28 @@ SM.CollectionClone.CloneForm = Ext.extend(Ext.form.FormPanel, {
       labelStyle: 'font-weight: 600;',
       name: 'description',
       anchor: '100%',
+      value: `Cloned from ${this.sourceName} on ${new Date().toLocaleDateString('en-CA')} by ${curUser.displayName}`
     })
     const grantsCb = new Ext.form.Checkbox({
       boxLabel: 'Grants<i class= "fa fa-question-circle sm-question-circle"></i>',
       name: 'grants',
       checked: true
     })
-    const settingsCb = new Ext.form.Checkbox({
-      boxLabel: 'Settings<i class= "fa fa-question-circle sm-question-circle"></i>',
-      name: 'settings',
-      checked: true
-    })
+    // const settingsCb = new Ext.form.Checkbox({
+    //   boxLabel: 'Settings<i class= "fa fa-question-circle sm-question-circle"></i>',
+    //   name: 'settings',
+    //   checked: true
+    // })
     const labelsCb = new Ext.form.Checkbox({
       boxLabel: 'Labels<i class= "fa fa-question-circle sm-question-circle"></i>',
       name: 'labels',
       checked: true
     })
-    const metadataCb = new Ext.form.Checkbox({
-      boxLabel: 'Metadata<i class= "fa fa-question-circle sm-question-circle"></i>',
-      name: 'metadata',
-      checked: true
-    })
+    // const metadataCb = new Ext.form.Checkbox({
+    //   boxLabel: 'Metadata<i class= "fa fa-question-circle sm-question-circle"></i>',
+    //   name: 'metadata',
+    //   checked: true
+    // })
     const assetsCb = new Ext.form.Checkbox({
       boxLabel: 'Assets<i class= "fa fa-question-circle sm-question-circle"></i>',
       name: 'assets',
@@ -121,41 +123,56 @@ SM.CollectionClone.CloneForm = Ext.extend(Ext.form.FormPanel, {
     })
     const cbGroup = new Ext.form.CheckboxGroup({
       fieldLabel: 'Include',
+      name: 'include',
       columns: 1,
       items: [
         grantsCb,
-        settingsCb,
+        // settingsCb,
         labelsCb,
-        metadataCb,
+        // metadataCb,
         assetsCb
       ]
     })
-    const stigMappingsEnabledComboBox = new SM.CollectionClone.ComboBox({
-      name: 'enabled',
-      width: 250,
-      fieldLabel: 'Reviews',
+    const stigMappingsComboBox = new SM.CollectionClone.ComboBox({
+      name: 'stigMappings',
+      width: 220,
+      fieldLabel: 'STIGs',
       data: [
-        ['withReviews', 'Clone STIG assignments and all Reviews'],
-        ['withoutReviews', 'Clone STIG assignments but not Reviews'],
-        ['no', 'Do not clone STIG assignments or Reviews']
+        ['withReviews', 'Clone assignments and Reviews'],
+        ['withoutReviews', 'Clone assignments but not Reviews'],
+        ['no', 'Do not clone assignments or Reviews']
       ]
     })
-    const stigMappingsDefaultRevisionsComboBox = new SM.CollectionClone.ComboBox({
-      name: 'defaultRevisions',
-      width: 250,
-      fieldLabel: 'Revisions',
+    const pinRevisionsComboBox = new SM.CollectionClone.ComboBox({
+      name: 'pinRevisions',
+      width: 220,
+      fieldLabel: 'Pin Revisions',
       data: [
-        ['latest', 'Do not pin any revisions'],
-        ['sourceSettings', "Match the source's pinned revisions"],
-        ['currentDefauls', "Pin each of the source's default revisions"]
+        ['matchSource', "Match the source's pinned revisions"],
+        ['sourceDefaults', "Pin the source's default revisions"],
+        ['no', 'Do not pin any revisions']
       ]
     })
+    function getApiValues() {
+      return {
+        name: nameField.getValue(),
+        description: descriptionField.getValue(),
+        options: {
+          grants: grantsCb.getValue(),
+          labels: labelsCb.getValue(),
+          assets: assetsCb.getValue(),
+          stigMappings: stigMappingsComboBox.getValue(),
+          pinRevisions: pinRevisionsComboBox.getValue()
+        }
+      }
+    }
     const config = {
       baseCls: 'x-plain',
       cls: 'sm-collection-manage-layout sm-round-panel',
       bodyStyle: 'padding: 9px;',
       border: false,
       labelWidth: 100,
+      getApiValues,
       items: [
         {
           xtype: 'fieldset',
@@ -168,7 +185,7 @@ SM.CollectionClone.CloneForm = Ext.extend(Ext.form.FormPanel, {
           xtype: 'fieldset',
           region: 'center',
           title: 'Cloning Options',
-          items: [cbGroup, stigMappingsEnabledComboBox, stigMappingsDefaultRevisionsComboBox]
+          items: [cbGroup, stigMappingsComboBox, pinRevisionsComboBox]
         }
       ]
     }
@@ -177,14 +194,31 @@ SM.CollectionClone.CloneForm = Ext.extend(Ext.form.FormPanel, {
   }
 })
 
-SM.CollectionClone.showCollectionClone = function () {
+SM.CollectionClone.showCollectionClone = function ({collectionId, sourceName}) {
   try {
     const width = 420
     const height = 450
-    const fp = new SM.CollectionClone.CloneForm()
+    const fp = new SM.CollectionClone.CloneForm({sourceName})
     const cloneBtn = new Ext.Button({
       text: 'Clone',
       iconCls: 'sm-clone-icon',
+      handler: async function(btn) {
+        try {
+          const jsonData = fp.getApiValues()
+          await Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/clone`,
+            method: 'POST',
+            jsonData
+          }) 
+        }
+        catch (e) {
+          SM.Error.handleError(e)
+        }
+        finally {
+          fpwindow.close()
+        }
+      }
     })
 
     const fpwindow = new Ext.Window({

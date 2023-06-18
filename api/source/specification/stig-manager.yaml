@@ -1008,6 +1008,7 @@ paths:
       operationId: cloneCollection
       parameters:
        - $ref: '#/components/parameters/CollectionIdPath'
+       - $ref: '#/components/parameters/CollectionProjectionQuery'
       requestBody:
         required: true
         description: CollectionClone request body
@@ -1022,7 +1023,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CollectionProjected'
-      
+      security:
+      - oauth:
+          - 'stig-manager:collection'
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -4296,36 +4299,32 @@ components:
         grants:
           type: boolean
           default: true
-        settings:
-          type: boolean
-          default: true
+        # settings:
+        #   type: boolean
+        #   default: true
         labels:
           type: boolean
           default: true
-        metadata:
-          type: boolean
-          default: true
+        # metadata:
+        #   type: boolean
+        #   default: true
         assets:
           type: boolean
           default: true
         stigMappings:
-          type: object
-          additionalProperties: false
-          properties:
-            enabled:
-              type: string
-              enum:
-                - 'no'
-                - withReviews
-                - withoutReviews
-              default: withReviews
-            defaultRevisions:
-              type: string
-              enum:
-                - latest
-                - sourceSettings
-                - currentDefaults
-              default: latest
+          type: string
+          enum:
+            - 'no'
+            - withReviews
+            - withoutReviews
+          default: withReviews
+        pinRevisions:
+          type: string
+          enum:
+            - 'no'
+            - matchSource
+            - sourceDefaults
+          default: matchSource
     CollectionCloneRequest:
       type: object
       required:
