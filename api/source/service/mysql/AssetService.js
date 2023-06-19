@@ -1031,7 +1031,7 @@ exports.createAsset = async function(body, projection, elevate, userObject, svcS
 
 exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
-  const sqlDelete = `DELETE FROM asset where assetId = ?`
+  const sqlDelete = `UPDATE asset SET enabled = 0 where assetId = ?`
   await dbUtils.pool.query(sqlDelete, [assetId])
   return (rows[0])
 }

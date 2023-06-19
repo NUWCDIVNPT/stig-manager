@@ -23,7 +23,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     const joins = [
       'collection c',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join asset a on c.collectionId = a.collectionId',
+      'inner join asset a on c.collectionId = a.collectionId and a.enabled = 1',
       'left join stig_asset_map sa on a.assetId = sa.assetId'
     ]
 
@@ -131,7 +131,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
 
     // PREDICATES
     let predicates = {
-      statements: [],
+      statements: [`c.enabled = 1`],
       binds: []
     }
     if ( inPredicates.collectionId ) {
@@ -256,7 +256,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   let joins = [
     'collection c',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join asset a on c.collectionId = a.collectionId',
+    'inner join asset a on (c.collectionId = a.collectionId and a.enabled = 1)',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
     'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
@@ -341,7 +341,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: ['c.enabled = 1'],
     binds: []
   }
   
@@ -455,7 +455,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
   let joins = [
     'collection c',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join asset a on c.collectionId = a.collectionId',
+    'inner join asset a on c.collectionId = a.collectionId and a.enabled = 1 ',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
     'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
@@ -465,7 +465,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: ['c.enabled = 1'],
     binds: []
   }
   
@@ -514,7 +514,7 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   ]
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: ['c.enabled = 1'],
     binds: []
   }
   if ( inPredicates.collectionId ) {
@@ -712,7 +712,7 @@ exports.createCollection = async function(body, projection, userObject, svcStatu
  **/
 exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
   let row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
-  let sqlDelete = `DELETE FROM collection where collectionId = ?`
+  let sqlDelete = `UPDATE collection SET enabled = 0 where collectionId = ?`
   await dbUtils.pool.query(sqlDelete, [collectionId])
   return (row[0])
 }
