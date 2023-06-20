@@ -1,3 +1,12 @@
+1.3.7
+-----
+
+Changes:
+
+  - (API) Update fast-xml-parser dependency to address CVE-2023-34104 (#1012)
+  - (API) Addd stack trace to API error responses (#1011)
+
+
 1.3.6
 -----
 
