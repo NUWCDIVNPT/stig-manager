@@ -912,7 +912,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             }
         })          
         const delButton = new Ext.Button({
-            iconCls: 'sm-trash-icon',
+            iconCls: 'sm-hover-icon sm-trash-icon',
             tooltip: 'Delete',
             width: 25,
             template: new Ext.Template(
@@ -942,7 +942,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             }
         })
         const cloneButton = new Ext.Button({
-            iconCls: 'sm-clone-icon',
+            iconCls: 'sm-hover-icon sm-clone-icon',
             tooltip: 'Clone',
             width: 25,
             template: new Ext.Template(
