@@ -1750,7 +1750,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
       dropAssetMap: `DROP TEMPORARY TABLE IF EXISTS t_assetid_map`,
       createAssetMap: `CREATE TEMPORARY TABLE t_assetid_map SELECT a1.assetId as srcAssetId, a2.assetId as destAssetId FROM asset a1 left join asset a2 on (a1.collectionId =  @srcCollectionId and a1.name = a2.name) WHERE a2.collectionId = @destCollectionId`,
       cloneReviews: `INSERT INTO review (assetId, ruleId, resultId, detail, comment, autoResult, ts, userId, statusId, statusText, statusUserId, statusTs, metadata, resultEngine, version, checkDigest) SELECT am.destAssetId, r.ruleId, r.resultId, r.detail, r.comment, r.autoResult, r.ts, r.userId, r.statusId, r.statusText, r.statusUserId, r.statusTs, r.metadata, r.resultEngine, r.version, r.checkDigest FROM asset a inner join t_assetid_map am on a.assetId = am.srcAssetId inner join review r on am.srcAssetId = r.assetId`,
-      cloneRevisionsSourcePins: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM collection_rev_map where collectionId = @srcCollectionId`,
+      cloneRevisionsMatchSource: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM collection_rev_map where collectionId = @srcCollectionId`,
       cloneRevisionsSourceDefaults: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM v_default_rev where collectionId = @srcCollectionId`
     }
     connection = await dbUtils.pool.getConnection()
@@ -1783,9 +1783,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
         if (options.grants) {
           dmls.push(sql.cloneRestrictedUserGrants)
         }
-        if (options.pinRevisions !== 'no') {
-          dmls.push(options.pinRevisions === 'matchSource' ? sql.cloneRevisionsSourcePins : sql.cloneRevisionsSourceDefaults)
-        }
+        dmls.push(options.pinRevisions === 'matchSource' ? sql.cloneRevisionsMatchSource : sql.cloneRevisionsSourceDefaults)
       }
       if (options.stigMappings === 'withReviews') {
         dmls.push(sql.cloneReviews)
