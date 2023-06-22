@@ -1,6 +1,25 @@
 Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
+
+{
+    date: '2023-6-20',
+    header: `Set the Default STIG Revision for a Collection`,
+    body: `
+    <p>Collection Owners and Managers can now specify the default STIG Revision that will be used for their Collection. All Workspaces will open and all Metrics will be calculated using the "pinned" Revision. Without setting a pin, STIG Manager will always use the latest STIG Revision known to the system. The "pinned" Revision will be indicated by a pin <span class="sm-whats-new-no-border"><img src="img/pin.svg" width="14" height="14"/></span> icon in the Collection Dashboard and Management Workspaces.</p>
+
+    
+    <p><b>Note:</b> A STIG must be assigned to at least one Asset in a Collection in order to be Pinned!</p>
+
+    <p> Your options, available from the STIG Assignment Panel in the Manage Collection Workspace:</p>
+      <b>- Most Recent Revision:</b> The Collection Metrics and Workspaces will default to the latest STIG in the system as they are updated. <br>
+      <b>- Revision String (Date):</b> Pin the default to the specified STIG Revision<br><br>
+
+    <p><img src="img/whatsnew/2023-06-20-revision-pinning.png"/></p>
+
+`    
+},  
+
   {
     date: '2023-5-20',
     header: `Tally Sprites for Most Display Grids`,

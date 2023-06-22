@@ -58,4 +58,9 @@ SM.TipContent.RulePropertyDiffs = `<b>Changes to these rule properties are detec
 - cci<br>
 `
 
-SM.TipContent.DefaultRevision = `Default revsision tooltip`
+SM.TipContent.DefaultRevision = `
+<b>Set the default STIG revision to use for this Collection.</b> <br><br>
+All calculated Metrics and Workspaces for this Collection will default to the "pinned" STIG Revision specified here. <br><br>
+- <b>Most Recent Revision:</b> The Collection Metrics and Workspaces will default to the latest STIG in the system as they are updated. <br><br>
+- <b>Revision String (Date):</b> Pin the default to the specified Revision<br><br>
+`

@@ -315,13 +315,13 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
       binds = { ...assetFields}
   
       if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
-      // INSERT into assets
-      let sqlInsert =
-        `INSERT INTO
-            asset
-            (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
-          VALUES
-            (:name, :fqdn, :ip, :mac, :description, :collectionId, :noncomputing, :metadata)`
+        // INSERT into assets
+        let sqlInsert =
+          `INSERT INTO
+              asset
+              (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
+            VALUES
+              (:name, :fqdn, :ip, :mac, :description, :collectionId, :noncomputing, :metadata)`
         let [rows] = await connection.query(sqlInsert, binds)
         assetId = rows.insertId
       }
@@ -376,37 +376,42 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
             VALUES
               ?`
           await connection.query(sqlInsertBenchmarks, [stigAssetMapBinds])
-          await dbUtils.updateStatsAssetStig( connection, {
-            assetId: assetId
-          })
         }
       }
   
-        // Process labelIds, spec requires for CREATE/REPLACE not for UPDATE
-        if (labelIds) {
-          if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
-            let sqlDeleteLabels = `
-              DELETE FROM 
-                collection_label_asset_map
-              WHERE 
-                assetId = ?`
-            await connection.query(sqlDeleteLabels, [ assetId ])
-          }
-          if (labelIds.length > 0) {      
-            let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-            // INSERT into stig_asset_map
-            let sqlInsertLabels = `
-              INSERT INTO collection_label_asset_map (assetId, clId) 
-                SELECT
-                  ?,
-                  clId
-                FROM
-                  collection_label
-                WHERE
-                  uuid IN (?)`
-            await connection.query(sqlInsertLabels, [assetId, uuidBinds])
-          }
+      // Process labelIds, spec requires for CREATE/REPLACE not for UPDATE
+      if (labelIds) {
+        if (writeAction !== dbUtils.WRITE_ACTION.CREATE) {
+          let sqlDeleteLabels = `
+            DELETE FROM 
+              collection_label_asset_map
+            WHERE 
+              assetId = ?`
+          await connection.query(sqlDeleteLabels, [ assetId ])
         }
+        if (labelIds.length > 0) {      
+          let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+          // INSERT into stig_asset_map
+          let sqlInsertLabels = `
+            INSERT INTO collection_label_asset_map (assetId, clId) 
+              SELECT
+                ?,
+                clId
+              FROM
+                collection_label
+              WHERE
+                uuid IN (?)`
+          await connection.query(sqlInsertLabels, [assetId, uuidBinds])
+        }
+      }
+
+      if (stigs || transferring) {
+        await dbUtils.pruneCollectionRevMap(connection)
+        await dbUtils.updateStatsAssetStig( connection, {
+          assetId: assetId
+        }) 
+      }
+
       // Commit the changes
       await connection.commit()
     }
@@ -1033,6 +1038,8 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
   const sqlDelete = `DELETE FROM asset where assetId = ?`
   await dbUtils.pool.query(sqlDelete, [assetId])
+  // changes above might have affected need for records in collection_rev_map 
+  await dbUtils.pruneCollectionRevMap()
   return (rows[0])
 }
 
@@ -1051,6 +1058,8 @@ exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, use
   const rows = await _this.queryStigsByAsset( {
     assetId: assetId
   }, elevate, userObject)
+  // changes above might have affected need for records in collection_rev_map 
+  await dbUtils.pruneCollectionRevMap()
   return (rows)
 }
 
@@ -1058,6 +1067,8 @@ exports.removeStigsFromAsset = async function (assetId, elevate, userObject ) {
   const sqlDelete = `DELETE FROM stig_asset_map where assetId = ?`
   await dbUtils.pool.query(sqlDelete, [assetId])
   const rows = await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
+  // changes above might have affected need for records in collection_rev_map 
+  await dbUtils.pruneCollectionRevMap()
   return (rows)
 }
 
@@ -1176,6 +1187,10 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
         collectionId: collectionId,
         benchmarkId: benchmarkId
       })
+
+      // changes above might have affected need for records in collection_rev_map 
+      await dbUtils.pruneCollectionRevMap(connection)
+
       // Commit the changes
       await connection.commit()
     }

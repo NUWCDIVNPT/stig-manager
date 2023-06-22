@@ -1650,18 +1650,16 @@ exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmar
   
     async function transaction () {
       await connection.query('START TRANSACTION')
-      if (defaultRevisionStr) {
-        if (defaultRevisionStr === 'latest') {
-          await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
-        }
-        else {
-          const [revisions] = await connection.query('SELECT revId FROM revision WHERE benchmarkId = ? and `version` = ? and `release` = ?', [benchmarkId, version, release])
-          if (revisions[0]?.revId) {
-            await connection.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
-            VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
-          }
-        }  
+      if (defaultRevisionStr === 'latest' || assetIds?.length === 0) {
+        await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
       }
+      else if (defaultRevisionStr && defaultRevisionStr !== 'latest') {
+        const [revisions] = await connection.query('SELECT revId FROM revision WHERE benchmarkId = ? and `version` = ? and `release` = ?', [benchmarkId, version, release])
+        if (revisions[0]?.revId) {
+          await connection.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
+          VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+        }
+      }  
       if (assetIds) {
         let sqlDeleteStigAsset = `
         DELETE stig_asset_map FROM 

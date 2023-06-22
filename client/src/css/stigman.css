@@ -219,6 +219,9 @@
 .sm-whats-new img {
   border: 1px solid hsl(0deg 0% 65%)
 }
+.sm-whats-new-no-border img {
+  border: 0px
+}
 .x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
   background-image: url(../img/clock.svg);
   background-size: 16px 16px
