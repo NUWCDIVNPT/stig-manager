@@ -15,7 +15,8 @@ const upMigration = [
     revId VARCHAR(255) NOT NULL,
     PRIMARY KEY index1 (crId),
     UNIQUE KEY index_collection_benchmark (collectionId, benchmarkId),
-    INDEX index_revId (revId)
+    INDEX index_revId (revId),
+    CONSTRAINT fk_collection_rev_map_1 FOREIGN KEY (collectionId) REFERENCES collection (collectionId) ON DELETE CASCADE ON UPDATE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
 
   // view: v_default_rev

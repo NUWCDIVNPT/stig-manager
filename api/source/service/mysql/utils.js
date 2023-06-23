@@ -461,4 +461,9 @@ module.exports.retryOnDeadlock = async function (fn, statusObj = {}) {
   })
 }
 
-
+module.exports.pruneCollectionRevMap = async function (connection) {
+  const sql = `delete crm from collection_rev_map crm
+  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId)) maps using (collectionId, benchmarkId)
+  where maps.collectionId is null`
+  await (connection ?? _this.pool).query(sql)
+}
