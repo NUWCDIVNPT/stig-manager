@@ -4,43 +4,48 @@ Ext.ns('SM')
 
 SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function() {
-        let me = this
-        const id = Ext.id()
+        let _this = this
         let fieldsConstructor = Ext.data.Record.create([
-            {name: 'benchmarkId', type: 'string'},
-            {name: 'title', type: 'string'},
-            {name: 'lastRevisionStr', type: 'string'},
-            {name: 'lastRevisionDate', type: 'string'},
-            {name: 'ruleCount', type: 'integer'},
-            {name: 'assetCount', type: 'integer'},
-            {name: 'minTs', type: 'date'},
-            {name: 'maxTs', type: 'date'},
+            { name: 'benchmarkId', type: 'string' },
+            { name: 'revisionStr', type: 'string' },
+            { name: 'revisionPinned', type: 'boolean' },
+            { name: 'assets', type: 'integer' },
+            { name: 'ruleCount', type: 'integer'},
             {
-                name: 'checkCount',
-                type: 'integer',
-                convert: (v, r) => r.ruleCount * r.assetCount
-            },
-            {
-                name: 'acceptedPct',
-                type: 'integer',
-                convert: (v, r) => (r.acceptedCount/(r.ruleCount * r.assetCount)) * 100
-            },
-            {
-                name: 'rejectedPct',
-                type: 'integer',
-                convert: (v, r) => (r.rejectedCount/(r.ruleCount * r.assetCount)) * 100
-            },
-            {
-                name: 'submittedPct',
-                type: 'integer',
-                convert: (v, r) => ((r.rejectedCount + r.acceptedCount + r.submittedCount)/(r.ruleCount * r.assetCount)) * 100
+                name: 'assessedPct',
+                convert: (v, r) => r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0
             },
             {
                 name: 'savedPct',
-                type: 'integer',
-                convert: (v, r) => ((r.rejectedCount + r.acceptedCount + r.submittedCount + r.savedCount)/(r.ruleCount * r.assetCount)) * 100
+                convert: (v, r) => r.metrics.assessments ? ((r.metrics.statuses.saved + r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0
+            },
+            {
+                name: 'submittedPct',
+                convert: (v, r) => r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0
+            },
+            {
+                name: 'acceptedPct',
+                convert: (v, r) => r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0
+            },
+            {
+                name: 'rejectedPct',
+                convert: (v, r) => r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0
+            },
+            {
+                name: 'minTs',
+                type: 'date',
+                mapping: 'metrics.minTs'
+            },
+            {
+                name: 'maxTs',
+                type: 'date',
+                mapping: 'metrics.maxTs'
+            },
+            {
+                name: 'maxTouchTs',
+                type: 'date',
+                mapping: 'metrics.maxTouchTs'
             }
-
         ])
         this.proxy = new Ext.data.HttpProxy({
             restful: true,
@@ -59,7 +64,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
             }
         })
-        me.totalTextCmp = new SM.RowCountTextItem ({
+        this.totalTextCmp = new SM.RowCountTextItem ({
             store: store,
             noun: 'STIG',
             iconCls: 'sm-stig-icon'
@@ -88,26 +93,14 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 filter: {type:'string'}
 			},
             { 	
-				header: "Title",
-                hidden: true,
-				width: 150,
-                dataIndex: 'title',
-				sortable: true
-			},
-            { 	
 				header: "Revision",
-				width: 100,
-                dataIndex: 'lastRevisionStr',
-                align: "center",
-                sortable: true
-			},
-            { 	
-				header: "Date",
-				width: 50,
-                hidden: true,
-				dataIndex: 'lastRevisionDate',
-                align: "center",
-				sortable: true
+				width: 70,
+                dataIndex: 'revisionStr',
+                // align: "center",
+                sortable: false,
+                renderer: function (v, md, r) {
+                    return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 8px;">' : ''}`
+                }
 			},
             {
                 header: 'Rules',
@@ -119,7 +112,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             {
                 header: 'Assets',
                 width: 70,
-                dataIndex: 'assetCount',
+                dataIndex: 'assets',
                 align: "center",
                 sortable: true
             },
@@ -140,9 +133,9 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                 renderer: renderDurationToNow
             },
             { 	
-				header: "Saved",
+				header: "Assessed",
 				width: 100,
-				dataIndex: 'savedPct',
+				dataIndex: 'assessedPct',
 				align: "center",
 				sortable: true,
                 renderer: renderPct
@@ -177,7 +170,7 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             text: 'Export results...',
             disabled: true,
             handler: function() {
-                SM.Exports.showExportTree( me.collectionId, me.collectionName, 'stig', me.getSelectionModel().getSelections().map( r => r.data )  );            
+                SM.Exports.showExportTree( _this.collectionId, _this.collectionName, 'stig', _this.getSelectionModel().getSelections().map( r => r.data )  );            
             }
         })
         const modifyBtn = new Ext.Button({
@@ -185,8 +178,8 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             disabled: true,
             text: 'Modify...',
             handler: function() {
-                var r = me.getSelectionModel().getSelected();
-                showCollectionStigProps(r.get('benchmarkId'), me);
+                const r = _this.getSelectionModel().getSelected().data
+                showCollectionStigProps(r.benchmarkId, r.revisionPinned ? r.revisionStr : 'latest', _this);
             }
         })
         const deleteBtn = new Ext.Button({
@@ -198,14 +191,14 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     var confirmStr="Removing this STIG will remove all related Asset assignments. If the STIG is added in the future, the assignments will need to be established again.";
                     Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
                         if (btn == 'yes') {
-                            let stigRecord = me.getSelectionModel().getSelected()
+                            const stigRecord = _this.getSelectionModel().getSelected()
                             await Ext.Ajax.requestPromise({
-                                url: `${STIGMAN.Env.apiBase}/collections/${me.collectionId}/stigs/${stigRecord.data.benchmarkId}/assets`,
+                                url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/stigs/${stigRecord.data.benchmarkId}/assets`,
                                 method: 'PUT',
                                 jsonData: []
                             })
-                            me.store.remove(stigRecord)
-                            SM.Dispatcher.fireEvent('stigassetschanged', me.collectionId, stigRecord.data.benchmarkId, [] )
+                            _this.store.remove(stigRecord)
+                            SM.Dispatcher.fireEvent('stigassetschanged', _this.collectionId, stigRecord.data.benchmarkId, [] )
                         }
                     })
                 }
@@ -235,8 +228,8 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             listeners: {
                 rowdblclick: {
                     fn: function(grid,rowIndex,e) {
-                        var r = grid.getStore().getAt(rowIndex);
-                        showCollectionStigProps( r.get('benchmarkId'), grid );
+                        const r = grid.getStore().getAt(rowIndex).data
+                        showCollectionStigProps(r.benchmarkId, r.revisionPinned ? r.revisionStr : 'latest', _this);
                     }
                 },
                 keydown: SM.CtrlAGridHandler
@@ -246,9 +239,9 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
                     {
                         iconCls: 'icon-add',
                         text: 'Assign STIG...',
-                        grid: me,
+                        grid: this,
                         handler: function(btn) {
-                            showCollectionStigProps( null, btn.grid );            
+                            showCollectionStigProps( null, null, btn.grid );            
                         }
                     },
                     '-',
@@ -347,7 +340,6 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
         let store = new Ext.data.JsonStore({
             url: `${STIGMAN.Env.apiBase}/assets`,
             baseParams: {
-                elevate: curUser.privileges.canAdmin,
                 collectionId: this.collectionId
             },
             grid: this,
@@ -368,7 +360,9 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         const totalTextCmp = new SM.RowCountTextItem ({
-            store: store
+            store: store,
+            noun: 'asset',
+            iconCls: 'sm-asset-icon'
         })
         let sm = new Ext.grid.CheckboxSelectionModel({
             checkOnly: false,
@@ -427,7 +421,7 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
                 }    
             ],
             border: true,
-            loadMask: {msg: ''},
+            loadMask: false,
             stripeRows: true,
             sm: sm,
             view: new SM.ColumnFilters.GridView({
@@ -486,20 +480,21 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
             getValue: function() {
                 return JSON.parse(encodeSm(sm,'assetId'))
             },
-            setValue: function (resp) {
-                let sm = this.getSelectionModel()
-                let stigs = resp.map(o => o.assetId)
-                let selectedRecords = []
-                for( let i=0; i < stigs.length; i++ ) {
-                    let record = store.getById( stigs[i] )
+            setValue: function (apiAssets) {
+                const sm = this.getSelectionModel()
+                const assetIds = apiAssets.map(o => o.assetId)
+                const selectedRecords = []
+                for( let i=0; i < assetIds.length; i++ ) {
+                    let record = store.getById( assetIds[i] )
                     selectedRecords.push(record)
                 }
                 this.store.clearFilter(true)
-                let origSilent = sm.silent
+                const origSilent = sm.silent
                 sm.silent = true
                 sm.selectRecords(selectedRecords)
                 sm.silent = origSilent
-                this.filterStore.call(this)       
+                this.filterStore.call(this)
+                this.originalAssetIds = assetIds
             },
             markInvalid: function() {},
             clearInvalid: function() {},
@@ -515,18 +510,44 @@ SM.StigAssetsGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 Ext.reg('sm-stig-assets-grid', SM.StigAssetsGrid)
 
+SM.StigRevisionComboBox = Ext.extend(SM.Global.HelperComboBox, {
+    initComponent: function () {
+      const _this = this
+
+      this.store = new Ext.data.SimpleStore({
+        fields: ['value', 'display']
+      })
+
+      const data = []
+
+      const config = {
+        displayField: 'display',
+        valueField: 'value',
+        triggerAction: 'all',
+        mode: 'local',
+        editable: false,
+        helpText: SM.TipContent.DefaultRevision
+      }
+
+      Ext.apply(this, Ext.apply(this.initialConfig, config))
+      this.superclass().initComponent.call(this)
+
+      this.store.loadData(data)
+    }
+})
+
 SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
-        let me = this
-        let idAppend = Ext.id()
-        this.stigAssetsGrid = new SM.StigAssetsGrid({
+        const _this = this
+        if (! this.collectionId) {
+            throw ('missing property collectionId')
+        }
+        const stigAssetsGrid = new SM.StigAssetsGrid({
             name: 'assets',
             benchmarkId: this.benchmarkId,
             collectionId: this.collectionId
         })
-        if (! this.collectionId) {
-            throw ('missing property collectionId')
-        }
+        stigAssetsGrid.getSelectionModel().addListener('selectionchange', setButtonState)
         const stigField = new SM.StigSelectionField({
             name: 'benchmarkId',
             submitValue: false,
@@ -534,78 +555,140 @@ SM.CollectionStigProperties = Ext.extend(Ext.form.FormPanel, {
             hideTrigger: false,
             anchor: '100%',
             // width: 350,
-            autoLoad: true,
+            autoLoad: false,
             allowBlank: false,
             filteringStore: this.stigFilteringStore,
-            initialBenchmarkId: this.benchmarkId
+            initialBenchmarkId: this.benchmarkId,
+            fireSelectOnSetValue: true,
+            listeners: {
+                select: function (combo, record, index) {
+                    const revisions = [['latest', 'Most recent revision'], ...record.data.revisions.map( rev => [rev.revisionStr, `${rev.revisionStr} (${rev.benchmarkDate})`])]
+                    revisionComboBox.store.loadData(revisions)
+                    revisionComboBox.setValue(record.data.benchmarkId === _this.benchmarkId ? _this.defaultRevisionStr : 'latest')
+                    setButtonState()
+                }
+            }
+        })
+        const revisionComboBox = new SM.StigRevisionComboBox({
+            name: 'defaultRevisionStr',
+            fieldLabel: 'Default revision',
+            listeners: {
+                select: setButtonState
+            }
+        })
+
+        const saveBtn = new Ext.Button({
+            text: 'Update',
+            disabled: true,
+            collectionId: this.collectionId,
+            formBind: true,
+            handler: this.btnHandler || function () {}
         })
  
+        function setButtonState () {
+            const currentAssetIds = stigAssetsGrid.getValue()
+            const currentBenchmarkId = stigField.getValue()
+            const currentRevisionStr = revisionComboBox.getValue()
+            const originalAssetIds = stigAssetsGrid.originalAssetIds
+
+            if (!currentAssetIds.length || currentBenchmarkId === '' || currentRevisionStr === '') {
+                saveBtn.disable()
+                return
+            }
+
+            const revisionUnchanged = currentBenchmarkId === _this.benchmarkId && currentRevisionStr === _this.defaultRevisionStr
+            const assetsUnchanged = currentAssetIds.length === originalAssetIds.length && originalAssetIds.every( assetId => currentAssetIds.includes(assetId))
+
+            saveBtn.setDisabled(revisionUnchanged && assetsUnchanged)
+        }
+
         let config = {
             baseCls: 'x-plain',
             // height: 400,
-            labelWidth: 80,
-            monitorValid: true,
+            labelWidth: 100,
+            monitorValid: false,
             trackResetOnLoad: true,
             items: [
                 {
                     xtype: 'fieldset',
                     title: '<b>STIG information</b>',
                     items: [
-                        stigField
+                        stigField,
+                        revisionComboBox
                     ]
                 },
                 {
                     xtype: 'fieldset',
                     title: '<b>Asset Assignments</b>',
-                    anchor: "100% -70",
+                    anchor: "100% -95",
                     layout: 'fit',
-                    items: [
-                        this.stigAssetsGrid
-                    ]
+                    items: [stigAssetsGrid]
                 }
 
             ],
-            buttons: [{
-                text: this.btnText || 'Save',
-                collectionId: me.collectionId,
-                formBind: true,
-                handler: this.btnHandler || function () {}
-            }]
+            buttons: [saveBtn],
+            stigField,
+            revisionComboBox,
+            stigAssetsGrid
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.CollectionStigProperties.superclass.initComponent.call(this)
 
     },
-    initPanel: async function () {
+    initPanel: async function ({collectionId, benchmarkId}) {
         try {
-            await this.stigAssetsGrid.store.loadPromise()
+            this.el.mask('')
+            const promises = [
+                this.stigField.store.loadPromise(),
+                this.stigAssetsGrid.store.loadPromise()
+            ]
+            if (benchmarkId) {
+                promises.push(Ext.Ajax.requestPromise({
+                    responseType: 'json',
+                    url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
+                    method: 'GET'
+                }))
+            }
+            const results = await Promise.all(promises)
+            
+            this.getForm().setValues({
+                benchmarkId,
+                assets: results[2] || []
+            })
         }
-        catch (e) {
-            SM.Error.handleError(e)
+        finally {
+            this.el.unmask()
         }
     }
 })
 
-async function showCollectionStigProps( benchmarkId, parentGrid ) {
+async function showCollectionStigProps( benchmarkId, defaultRevisionStr, parentGrid ) {
+    let appwindow
     try {
-        let collectionId = parentGrid.collectionId
-        let stigPropsFormPanel = new SM.CollectionStigProperties({
-            collectionId: collectionId,
-            benchmarkId: benchmarkId,
+        const collectionId = parentGrid.collectionId
+        const stigPropsFormPanel = new SM.CollectionStigProperties({
+            collectionId,
+            benchmarkId,
+            defaultRevisionStr,
             stigFilteringStore: parentGrid.store,
             btnHandler: async function( btn ){
                 try {
                     if (stigPropsFormPanel.getForm().isValid()) {
-                        let values = stigPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+                        stigPropsFormPanel.el.mask('Updating')
+                        const values = stigPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+                        const jsonData = {}
+                        if (values.defaultRevisionStr) {
+                            jsonData.defaultRevisionStr = values.defaultRevisionStr
+                        }
+                        if (values.assets) {
+                            jsonData.assetIds = values.assets
+                        }
                         let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${btn.collectionId}/stigs/${values.benchmarkId}/assets`,
-                            method: 'PUT',
-                            params: {
-                                elevate: curUser.privileges.canAdmin
-                            },
+                            url: `${STIGMAN.Env.apiBase}/collections/${btn.collectionId}/stigs/${values.benchmarkId}`,
+                            method: 'POST',
                             headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                            jsonData: values.assets
+                            jsonData
                         })
                         const apiStigAssets = JSON.parse(result.response.responseText)
                         SM.Dispatcher.fireEvent('stigassetschanged', btn.collectionId, values.benchmarkId, apiStigAssets)
@@ -615,13 +698,16 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
                 catch (e) {
                     SM.Error.handleError(e)
                 }
+                finally {
+                    stigPropsFormPanel.el.unmask()
+                }
             }
         })
 
         /******************************************************/
         // Form window
         /******************************************************/
-        var appwindow = new Ext.Window({
+        appwindow = new Ext.Window({
             title: 'STIG Assignments',
             cls: 'sm-dialog-window sm-round-panel',
             modal: true,
@@ -635,34 +721,17 @@ async function showCollectionStigProps( benchmarkId, parentGrid ) {
             items: stigPropsFormPanel
         });
         
-        appwindow.render(Ext.getBody())
-        await stigPropsFormPanel.initPanel() // Load asset grid store
+        appwindow.show(document.body)
 
-        let apiStigAssets
-        if (benchmarkId) {
-            let result = await Ext.Ajax.requestPromise({
-                url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs/${benchmarkId}/assets`,
-                params: {
-                    elevate: curUser.privileges.canAdmin
-                },
-                method: 'GET'
-            })
-            apiStigAssets = JSON.parse(result.response.responseText)            
-        }
-        else {
-            apiStigAssets = []
-        }
-
-        stigPropsFormPanel.getForm().setValues({
-            benchmarkId: benchmarkId,
-            assets: apiStigAssets
+        await stigPropsFormPanel.initPanel({
+            benchmarkId,
+            collectionId
         })
-                
-        // Ext.getBody().unmask();
-        appwindow.show(document.body);
     }
     catch (e) {
-        Ext.getBody().unmask()
         SM.Error.handleError(e)
+        if (appwindow) {
+            appwindow.close()
+        }
     }	
 }

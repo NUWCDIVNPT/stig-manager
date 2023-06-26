@@ -4,6 +4,7 @@ const writer = require('../utils/writer')
 const config = require('../utils/config')
 const CollectionSvc = require(`../service/${config.database.type}/CollectionService`)
 const AssetSvc = require(`../service/${config.database.type}/AssetService`)
+const StigSvc = require(`../service/${config.database.type}/STIGService`)
 const Serialize = require(`../utils/serializers`)
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
@@ -191,7 +192,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
           'rulesWithDiscussion',
           'groups',
           'assets',
-          'stigsInfo',
+          'stigs',
           'ccis'
         ], req.userObject )
       
@@ -253,9 +254,30 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
     const labelIds = req.query.labelId
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if (collectionGrant) {
-      const response = await CollectionSvc.getStigsByCollection( collectionId, labelIds, false, req.userObject )
+      const response = await CollectionSvc.getStigsByCollection( collectionId, labelIds, req.userObject )
       res.json(response)
       }
+    else {
+      throw new SmError.PrivilegeError()
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getStigByCollection = async function getStigByCollection (req, res, next) {
+  try {
+    const collectionId = req.params.collectionId
+    const benchmarkId = req.params.benchmarkId
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant) {
+      const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
+      if (!response[0]) {
+        res.status(204)
+      }
+      res.json(response[0])
+    }
     else {
       throw new SmError.PrivilegeError()
     }
@@ -870,5 +892,49 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
       name: collectionName,
     },
     assetStigArguments
+  }
+}
+
+module.exports.writeStigPropsByCollectionStig = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    const benchmarkId = req.params.benchmarkId
+    const assetIds = req.body.assetIds
+    const defaultRevisionStr = req.body.defaultRevisionStr
+    const existingRevisions = await StigSvc.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+    //if defaultRevisionStr is present, check that specified revision is valid for the benchmark
+    if (defaultRevisionStr && defaultRevisionStr !== "latest" && existingRevisions.find(benchmark => benchmark.revisionStr === defaultRevisionStr) === undefined) {
+      throw new SmError.UnprocessableError("The revisionStr is is not valid for the specified benchmarkId")
+    }
+    // The OAS layer mandated if assetIds is absent then defaultRevisionStr must be present
+    // we do not permit setting the default revision of an unassigned STIG
+    if (!assetIds && !await CollectionSvc.doesCollectionIncludeStig({collectionId, benchmarkId})) {
+      throw new SmError.UnprocessableError('Cannot set the default revision of a benchmarkId that has no mapped Assets')
+    }
+    if (assetIds && assetIds.length === 0 && defaultRevisionStr) {
+      throw new SmError.UnprocessableError('Cannot set the default revision of a benchmarkId and also remove all mapped Assets')
+    }
+    if (assetIds?.length) {
+      const collectionHasAssets = await CollectionSvc.doesCollectionIncludeAssets({
+        collectionId,
+        assetIds
+      })
+      if (!collectionHasAssets) {
+        throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
+      }
+    }
+    await CollectionSvc.writeStigPropsByCollectionStig( {
+      collectionId,
+      benchmarkId,
+      assetIds,
+      defaultRevisionStr,
+      svcStatus: res.svcStatus
+    })
+    const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
+
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
   }
 }

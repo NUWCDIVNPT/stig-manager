@@ -245,7 +245,7 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
  * @param {string} param1.benchmarkId
  * @param {string[]} param1.rules
  */
-module.exports.updateStatsAssetStig = async function(connection, { collectionId, assetId, assetIds, assetBenchmarkIds, benchmarkId, benchmarkIds, rules }) {
+module.exports.updateStatsAssetStig = async function(connection, { collectionId, collectionIds, assetId, assetIds, assetBenchmarkIds, benchmarkId, benchmarkIds, rules }) {
   if (!connection) { throw ('Connection required')}
   // Handle optional predicates, 
   let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
@@ -253,13 +253,17 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
   let whereClause = ''
 
   if (rules && rules.length > 0) {
-    predicates.push(`sa.benchmarkId IN (SELECT DISTINCT benchmarkId from v_current_group_rule where ruleId IN ?)`)
+    predicates.push(`sa.benchmarkId IN (SELECT DISTINCT benchmarkId from rev_group_rule_map left join revision using (revId) where ruleId IN ?)`)
     binds.push( [rules] )
   }
 
   if (collectionId) {
     predicates.push('a.collectionId = ?')
     binds.push(collectionId)
+  }
+  if (collectionIds) {
+    predicates.push('a.collectionId IN ?')
+    binds.push([collectionIds])
   }
   if (assetId) {
     predicates.push('a.assetId = ?')
@@ -303,9 +307,9 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        sum(CASE WHEN review.statusId = 3 THEN 1 ELSE 0 END) as accepted,
        sum(CASE WHEN review.resultEngine is not null and review.statusId = 3 THEN 1 ELSE 0 END) as acceptedResultEngine,
 
-       sum(CASE WHEN review.resultId=4 and cgr.severity='high' THEN 1 ELSE 0 END) as highCount,
-       sum(CASE WHEN review.resultId=4 and cgr.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
-       sum(CASE WHEN review.resultId=4 and cgr.severity='low' THEN 1 ELSE 0 END) as lowCount,
+       sum(CASE WHEN review.resultId=4 and rgr.severity='high' THEN 1 ELSE 0 END) as highCount,
+       sum(CASE WHEN review.resultId=4 and rgr.severity='medium' THEN 1 ELSE 0 END) as mediumCount,
+       sum(CASE WHEN review.resultId=4 and rgr.severity='low' THEN 1 ELSE 0 END) as lowCount,
        
        sum(CASE WHEN review.resultId = 1 THEN 1 ELSE 0 END) as notchecked,
        sum(CASE WHEN review.resultEngine is not null and review.resultId = 1 THEN 1 ELSE 0 END) as notcheckedResultEngine,
@@ -329,8 +333,9 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        from
          asset a
          left join stig_asset_map sa using (assetId)
-         left join v_current_group_rule cgr using (benchmarkId)
-         left join rule_version_check_digest rvcd using (ruleId)
+         left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
+         left join rev_group_rule_map rgr on dr.revId = rgr.revId
+         left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
          left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
     ${whereClause}
     group by
@@ -456,4 +461,9 @@ module.exports.retryOnDeadlock = async function (fn, statusObj = {}) {
   })
 }
 
-
+module.exports.pruneCollectionRevMap = async function (connection) {
+  const sql = `delete crm from collection_rev_map crm
+  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId)) maps using (collectionId, benchmarkId)
+  where maps.collectionId is null`
+  await (connection ?? _this.pool).query(sql)
+}

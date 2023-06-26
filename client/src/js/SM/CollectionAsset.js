@@ -561,10 +561,11 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
                     name: 'ruleCount',
                     type: 'integer'
                 },
-                'revisionStrs'
+                'revisionStrs',
+                'revisions'
             ],
             autoLoad: this.autoLoad,
-            url: this.url || `${STIGMAN.Env.apiBase}/stigs`,
+            url: this.url || `${STIGMAN.Env.apiBase}/stigs?projection=revisions`,
             root: this.root || '',
             sortInfo: {
                 field: 'benchmarkId',
@@ -572,13 +573,13 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             },
             idProperty: 'benchmarkId',
             listeners: {
-                load: (store, records, options) => {
+                load: (store) => {
                     if (_this.includeAllItem) {
                         store.suspendEvents()
                         let allRecord = {
                             benchmarkId: _this.includeAllItem
                         }
-                        store.loadData( _this.root ? { [_this.root]: allRecord } : { allRecord }, true)
+                        store.loadData( _this.root ? { [_this.root]: allRecord } : allRecord , true)
                         store.sort('benchmarkId', 'ASC')
                         store.resumeEvents()
                     }
@@ -610,7 +611,8 @@ SM.StigSelectionField = Ext.extend(Ext.form.ComboBox, {
             listeners: {
                 afterrender: (combo) => {
                     combo.getEl().dom.setAttribute('spellcheck', 'false')
-                }
+                },
+                ...this.listeners
             },
             doQuery : (q, forceAll) => {
                 // Custom re-implementation of the original ExtJS method

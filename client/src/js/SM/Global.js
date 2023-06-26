@@ -8,6 +8,7 @@ var licenseStr = "This program is free software: you can redistribute it and/or 
 var curUser;
 
 Ext.ns('SM')
+Ext.ns('SM.Global')
 
 SM.he = Ext.util.Format.htmlEncode
 SM.hd = Ext.util.Format.htmlDecode
@@ -381,3 +382,24 @@ SM.RuleContentTpl = new Ext.XTemplate(
     }
 
   }
+
+  SM.Global.HelperComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        const config = {
+            listeners: {
+                render: function (ta) {
+                    ta.trigger.insertHtml('afterEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
+                    const sonarCloudInsists = new Ext.ToolTip({
+                        target: ta.wrap.dom.getElementsByClassName('fa')[0],
+                        showDelay: 0,
+                        dismissDelay: 0,
+                        width: 300,
+                        html: ta.helpText
+                    }) 
+                }
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Global.HelperComboBox.superclass.initComponent.call(this)
+    }
+})

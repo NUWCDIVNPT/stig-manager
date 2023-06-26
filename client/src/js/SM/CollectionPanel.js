@@ -364,6 +364,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       case 'stig':
         fields.push(
           { name: 'benchmarkId', type: 'string' },
+          { name: 'revisionStr', type: 'string' },
+          { name: 'revisionPinned' },
           'assets'
         )
         columns.push(
@@ -384,6 +386,17 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             }
           },
           {
+            header: "Revision",
+            width: 58,
+            dataIndex: 'revisionStr',
+            align: "left",
+            tooltip: "Default revision",
+            sortable: true,
+            renderer: function (v, md, r) {
+              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 8px;">' : ''}`
+            }
+          },
+          {
             header: "Assets",
             width: 50,
             dataIndex: 'assets',
@@ -398,7 +411,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
           const r = grid.getStore().getAt(rowIndex)
           const leaf = {
             collectionId: grid.collectionId,
-            benchmarkId: r.data.benchmarkId
+            benchmarkId: r.data.benchmarkId,
+            revisionStr: r.data.revisionStr
           }
           addCollectionReview({ leaf })
         }
@@ -407,7 +421,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             const r = grid.getStore().getAt(rowIndex)
             const leaf = {
               collectionId: grid.collectionId,
-              benchmarkId: r.data.benchmarkId
+              benchmarkId: r.data.benchmarkId,
+              revisionStr: r.data.revisionStr
             }
             addCollectionReview({ leaf })
           }
@@ -508,6 +523,8 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
       { name: 'name', type: 'string' },
       { name: 'labelIds', type: 'string', convert: (v, r) => r.labels.map(l => l.labelId) },
       'benchmarkId',
+      'revisionStr',
+      'revisionPinned',
       ...SM.CollectionPanel.CommonFields
     ]
     const columns = []
@@ -569,6 +586,17 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             sortable: true,
             filter: { type: 'string' },
             renderer: renderWithToolbar
+          },
+          {
+            header: "Revision",
+            width: 58,
+            dataIndex: 'revisionStr',
+            align: "center",
+            tooltip: "Default revision",
+            sortable: true,
+            renderer: function (v, md, r) {
+              return `${r.data.revisionStr}${r.data.revisionPinned ? '<img src="img/pin.svg" width="12" height="12" style="margin-left: 8px;">' : ''}`
+            }
           }
         )
         sortField = 'benchmarkId'
@@ -610,6 +638,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
         assetName: r.data.name,
         assetLabelIds: r.data.labelIds,
         benchmarkId: r.data.benchmarkId,
+        revisionStr: r.data.revisionStr,
         stigName: r.data.benchmarkId,
       }
       addReview({ leaf })
@@ -624,6 +653,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
           assetName: r.data.name,
           assetLabelIds: r.data.labelIds,
           benchmarkId: r.data.benchmarkId,
+          revisionStr: r.data.revisionStr,
           stigName: r.data.benchmarkId,
         }
         addReview({ leaf })
@@ -842,8 +872,8 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       progressBarsPanel.updateMetrics(metrics)
     }
 
-    const dataTpl = [
-      `<div class="sm-metrics-status-pct">{[values.assessments ? ( values.apiAssessed/values.assessments * 100).toFixed(0) : 0]}% assessed</div>`,
+    const dataTpl = new Ext.XTemplate(
+      `<div class="sm-metrics-status-pct">{[this.calcAssessedPct(values.apiAssessed, values.assessments)]}% assessed</div>`,
       '<table class="sm-metrics-status-table" style="margin: 0 auto;">',
       '<tbody>',
       '<tr><td class="sm-metrics-label sm-metrics-unassessed">Unassessed</td><td class="sm-metrics-value">{unassessed}</td></tr>',
@@ -853,8 +883,20 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       '<tr><td class="sm-metrics-label sm-metrics-rejected">Rejected</td><td class="sm-metrics-value">{rejected}</td></tr>',
       '<tr class="sm-metrics-total"><td>Total Checks</td><td class="sm-metrics-value">{assessments}</td></tr>',
       '</tbody>',
-      '</table>'
-    ]
+      '</table>',
+      {
+        calcAssessedPct: function (assessed, assessments) {
+          const pct = assessments ? assessed/assessments*100 : 0
+          if (pct > 99 && pct < 100) {
+            return '>99'
+          }
+          else {
+            return pct.toFixed(0).toString()
+          }
+        }
+      }
+    )
+
     const dataPanel = new Ext.Panel({
       border: false,
       tpl: dataTpl,

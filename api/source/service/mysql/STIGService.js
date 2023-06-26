@@ -7,48 +7,118 @@ let _this = this
 /**
 Generalized queries for STIGs
 **/
-exports.queryStigs = async function ( inPredicates ) {
+exports.queryStigs = async function ( inPredicates, inProjections, userObject, elevate = false ) {
   try {
-    let columns = [
+    const ctes = []
+    // cte_stig_collection is used for the base query (no projections)
+    ctes.push(`cte_stig_collection AS (select
+      sa.benchmarkId,
+      cast(concat('[', group_concat(distinct concat('"',a.collectionId,'"')),']') as json) as collectionIds
+      FROM
+      stig_asset_map sa
+      left join asset a using (assetId)
+      ${elevate ? '' : `left join collection_grant cg on a.collectionId = cg.collectionId
+      left join user_stig_asset_map usa on sa.saId = usa.saId
+      where  (cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)`}
+      group by sa.benchmarkId)`)
+
+    // cte_stig is used for the base query (no projections)
+    const cteStigColumns = [
       'b.benchmarkId',
       'b.title',
       `cr.status`,
       `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
       `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`,
       `cr.ruleCount`,
-      `JSON_ARRAYAGG(concat('V',revision.version,'R',revision.release)) as revisionStrs`
+      `coalesce(sc.collectionIds,json_array()) as collectionIds`,
+      `JSON_ARRAYAGG(concat('V',revision.version,'R',revision.release)) OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql DESC) as revisionStrs`,
+      `ROW_NUMBER() OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql ASC) as rownum`
     ]
-    let joins = [
+    const cteStigJoins = [
       'stig b',
       'left join current_rev cr on b.benchmarkId = cr.benchmarkId',
-      'left join revision on b.benchmarkId = revision.benchmarkId'
+      'left join cte_stig_collection sc on b.benchmarkId = sc.benchmarkId',
+      'left join revision on b.benchmarkId = revision.benchmarkId',
     ]
 
     // PREDICATES
-    let predicates = {
+    let cteStigPredicates = {
       statements: [],
       binds: []
     }
     if (inPredicates.title) {
-      predicates.statements.push("b.title LIKE CONCAT('%',?,'%')")
-      predicates.binds.push( inPredicates.title )
+      cteStigPredicates.statements.push("b.title LIKE CONCAT('%',?,'%')")
+      cteStigPredicates.binds.push( inPredicates.title )
     }
     if (inPredicates.benchmarkId) {
-      predicates.statements.push('b.benchmarkId = ?')
-      predicates.binds.push( inPredicates.benchmarkId )
+      cteStigPredicates.statements.push('b.benchmarkId = ?')
+      cteStigPredicates.binds.push( inPredicates.benchmarkId )
+    }
+
+    // Main query columns, can be modified by projections
+    const columns = [
+      'benchmarkId',
+      'title',
+      '`status`',
+      `lastRevisionStr`,
+      `lastRevisionDate`,
+      `ruleCount`,
+      `revisionStrs`,
+      `collectionIds`,
+    ]
+
+    if (inProjections.includes('revisions')) {
+      // add cte_rev_collection, add revision objects to cteStigColumns, add joins to cteStigJoins
+      ctes.push(`cte_rev_collection AS (select
+        r.revId,
+        cast(concat('[', group_concat(distinct concat('"',crm.collectionId,'"')),']') as json) as collectionIds
+        from
+        revision r
+        inner join collection_rev_map crm using (revId)
+        ${elevate ? '' : `left join collection_grant cg on crm.collectionId = cg.collectionId
+        left join stig_asset_map sa on r.benchmarkId = sa.benchmarkId
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+        where  (cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)`}
+        group by r.revId)`)
+      cteStigColumns.push(`JSON_ARRAYAGG(
+        json_object(
+          "benchmarkId", revision.benchmarkId,
+          "revisionStr", concat('V',revision.version,'R',revision.release),
+          "version", revision.version,
+          "release", revision.release,
+          "benchmarkDate", revision.benchmarkDateSql,
+          "status", revision.status,
+          "statusDate", revision.statusDate,
+          "ruleCount", revision .ruleCount,
+          "collectionIds", coalesce(rc.collectionIds,json_array())
+        )) OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql DESC) as revisions`)
+      cteStigJoins.push('left join cte_rev_collection rc on revision.revId = rc.revId')
+      columns.push('revisions')
+    }
+
+    ctes.push(`cte_stig AS (${dbUtils.makeQueryString({columns:cteStigColumns, joins:cteStigJoins, predicates:cteStigPredicates, orderBy:['b.benchmarkId']})})`)
+
+    let binds
+    if (elevate) {
+      binds = cteStigPredicates.binds
+    }
+    else if (inProjections.includes('revisions')){
+      binds = [userObject.userId, userObject.userId, ...cteStigPredicates.binds]
+    }
+    else {
+      binds = [userObject.userId, ...cteStigPredicates.binds]
     }
 
     // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += ' FROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
+    const joins = ['cte_stig']
+    const predicates = {
+      statements: ['rownum = 1'],
+      binds
     }
-    sql += ' group by b.benchmarkId order by b.benchmarkId'
 
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates})
+
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows)
   }
   catch (err) {
@@ -782,11 +852,11 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
 exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcStatus = {}) {
 
   let dmls = [
+    "DELETE from collection_rev_map where revId = (SELECT revId FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release)",
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
     "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
     "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
-
 ]
   let currentRevDmls = [
     "DELETE from current_rev where benchmarkId = :benchmarkId",
@@ -837,36 +907,42 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
     let binds = {
       benchmarkId: benchmarkId,
       version: version,
-      release: release
+      release: release,
+      revId: `${benchmarkId}-${version}-${release}`
     }
 
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
+    
     async function transaction () {
       await connection.query('START TRANSACTION')
 
       // note if this is the current revision
       const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
-      const isCurrentRev = !!crRows.length
-      
+      const wasCurrentRev = !!crRows.length
+      // note if this revision is used to calculate stats
+      const [drRows] = await connection.query('SELECT collectionId FROM v_default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
+      const wasDefaultRev = !!drRows.length
+
       // re-materialize current_rev and current_group_rule if we're deleteing the current revision
-      if (isCurrentRev) {
+      if (wasCurrentRev) {
         dmls = dmls.concat(currentRevDmls)
       }
   
       for (const sql of dmls) {
        await connection.query(sql, binds)
       }
+
   
       // re-calculate review statistics if we've affected current_rev
-      // NOTE: for performance we could skip this if the only revision has 
-      // been deleted (STIG itself is now deleted)
-      if (isCurrentRev) {
-        await dbUtils.updateStatsAssetStig( connection, {benchmarkId})
+      if (wasDefaultRev && !wasCurrentRev) {
+        const collectionIds = drRows.map( row => row.collectionId)
+        await dbUtils.updateStatsAssetStig( connection, {collectionIds, benchmarkId})
       }
   
       await connection.commit()
     }
+    
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch(err) {
@@ -894,6 +970,7 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
   let dmls = [
     "DELETE from stig where benchmarkId = :benchmarkId",
     "DELETE from current_rev where benchmarkId = :benchmarkId",
+    "DELETE from collection_rev_map where benchmarkId = :benchmarkId",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
     "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
     "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
@@ -902,7 +979,7 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
   let connection;
 
   try {
-    let rows = await _this.queryStigs( {benchmarkId: benchmarkId}, userObject)
+    let rows = await _this.queryStigs( {benchmarkId: benchmarkId}, [], userObject)
 
     let binds = {
       benchmarkId: benchmarkId
@@ -1166,11 +1243,22 @@ exports.getGroupsByRevision = async function(benchmarkId, revisionStr, projectio
  * revisionStr String A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
  * returns Revision
  **/
-exports.getRevisionByString = async function(benchmarkId, revisionStr, userObject) {
+exports.getRevisionByString = async function(benchmarkId, revisionStr, userObject, elevate = false) {
   try {
-    let ro = dbUtils.parseRevisionStr(revisionStr)
-    let sql = 
-    `SELECT
+    const ro = dbUtils.parseRevisionStr(revisionStr)
+    const sql = 
+    `WITH cte_rev_collection AS (select
+        r.revId,
+        cast(concat('[', group_concat(distinct concat('"',crm.collectionId,'"')),']') as json) as collectionIds
+        from
+        revision r
+        inner join collection_rev_map crm using (revId)
+        ${elevate ? '' : `left join collection_grant cg on crm.collectionId = cg.collectionId
+        left join stig_asset_map sa on r.benchmarkId = sa.benchmarkId
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+        where  (cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)`}
+        group by r.revId)
+    SELECT
       ${ro.table_alias}.benchmarkId,
       concat('V', ${ro.table_alias}.version, 'R', ${ro.table_alias}.release) as "revisionStr",
       cast(${ro.table_alias}.version as char) as version,
@@ -1178,20 +1266,22 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
       date_format(${ro.table_alias}.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       ${ro.table_alias}.status,
       ${ro.table_alias}.statusDate,
-      ${ro.table_alias}.ruleCount
+      ${ro.table_alias}.ruleCount,
+      coalesce(rc.collectionIds,json_array()) as collectionIds
     FROM
-      ${ro.table}  ${ro.table_alias}
+      ${ro.table} ${ro.table_alias}
+      left join cte_rev_collection rc on ${ro.table_alias}.revId = rc.revId
     WHERE
       ${ro.table_alias}.benchmarkId = ?
       ${ro.predicates}
     ORDER BY
       ${ro.table_alias}.benchmarkDateSql desc
     `
-    let binds = [benchmarkId]
+    const binds = elevate ? [benchmarkId] : [userObject.userId, benchmarkId]
     if (ro.version) {
       binds.push(ro.version, ro.release)
     }
-    let [rows, fields] = await dbUtils.pool.query(sql, binds)
+    const [rows] = await dbUtils.pool.query(sql, binds)
     return (rows[0])
   }
   catch(err) {
@@ -1206,10 +1296,21 @@ exports.getRevisionByString = async function(benchmarkId, revisionStr, userObjec
  * benchmarkId String A path parameter that indentifies a STIG
  * returns List
  **/
-exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
+exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject, elevate = false) {
   try {
     let sql = 
-    `SELECT
+    `WITH cte_rev_collection AS (select
+        r.revId,
+        cast(concat('[', group_concat(distinct concat('"',crm.collectionId,'"')),']') as json) as collectionIds
+        from
+        revision r
+        inner join collection_rev_map crm using (revId)
+        ${elevate ? '' : `left join collection_grant cg on crm.collectionId = cg.collectionId
+        left join stig_asset_map sa on r.benchmarkId = sa.benchmarkId
+        left join user_stig_asset_map usa on sa.saId = usa.saId
+        where  (cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)`}
+        group by r.revId)
+    SELECT
       r.benchmarkId,
       concat('V', r.version, 'R', r.release) as "revisionStr",
       CAST(r.version as char) as version,
@@ -1217,15 +1318,17 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject) {
       date_format(r.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate",
       r.status,
       r.statusDate,
-      r.ruleCount
+      r.ruleCount,
+      coalesce(rc.collectionIds,json_array()) as collectionIds
     FROM
       revision r
+      left join cte_rev_collection rc on r.revId = rc.revId
     WHERE
       r.benchmarkId = ?
     ORDER BY
-      r.benchmarkDateSql desc
-    `
-    let [rows, fields] = await dbUtils.pool.query(sql, [benchmarkId])
+      r.benchmarkDateSql desc`
+    const binds = elevate ? [benchmarkId] : [userObject.userId, benchmarkId]
+    let [rows, fields] = await dbUtils.pool.query(sql, binds)
     return (rows)
   }
   catch(err) {
@@ -1295,11 +1398,11 @@ exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection
  * title String A string found anywhere in a STIG title (optional)
  * returns List
  **/
-exports.getSTIGs = async function(title, userObject) {
+exports.getSTIGs = async function(title, projection, userObject, elevate) {
   try {
     let rows = await _this.queryStigs( {
       title: title
-    }, userObject )
+    }, projection, userObject, elevate )
     return (rows)
   }
   catch(err) {
@@ -1314,11 +1417,11 @@ exports.getSTIGs = async function(title, userObject) {
  * benchmarkId String A path parameter that indentifies a STIG
  * returns STIG
  **/
-exports.getStigById = async function(benchmarkId, userObject) {
+exports.getStigById = async function(benchmarkId, userObject, elevate) {
   try {
     let rows = await _this.queryStigs( {
       benchmarkId: benchmarkId
-    }, userObject )
+    }, ['revisions'], userObject, elevate )
     return (rows[0])
   }
   catch(err) {

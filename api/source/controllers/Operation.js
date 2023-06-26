@@ -35,7 +35,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
   try {
     let elevate = req.query.elevate
     if ( elevate ) {
-      let collections = await Collection.exportCollections( ['grants', 'labels'], elevate, req.userObject )
+      let collections = await Collection.exportCollections( ['grants', 'labels', 'stigs'], elevate, req.userObject )
       for (const collection of collections) {
           for (const grant of collection.grants) {
             grant.userId = grant.user.userId

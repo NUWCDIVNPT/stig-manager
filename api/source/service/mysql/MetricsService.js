@@ -97,7 +97,8 @@ module.exports.queryMetrics = async function ({
     'granted',
     'left join asset a on granted.assetId = a.assetId',
     'left join stig_asset_map sa on granted.saId = sa.saId',
-    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId'
+    'left join v_default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
+    'left join revision rev on dr.revId = rev.revId'
   ]
   const groupBy = []
   const orderBy = []
@@ -110,8 +111,8 @@ module.exports.queryMetrics = async function ({
       break
     case 'stig':
       predicates.statements.push('sa.benchmarkId IS NOT NULL')
-      groupBy.push('sa.benchmarkId')
-      orderBy.push('sa.benchmarkId')
+      groupBy.push('rev.revId', 'dr.revisionPinned')
+      orderBy.push('rev.benchmarkId')
       break
     case 'collection':
       joins.push('left join collection c on granted.collectionId = c.collectionId')
@@ -172,11 +173,11 @@ module.exports.queryMetrics = async function ({
 }
 
 const sqlMetricsDetail = `json_object(
-  'assessments', cr.ruleCount,
+  'assessments', rev.ruleCount,
   'assessmentsBySeverity', json_object(
-    'low', cr.lowCount,
-    'medium', cr.mediumCount,
-    'high', cr.highCount
+    'low', rev.lowCount,
+    'medium', rev.mediumCount,
+    'high', rev.highCount
   ),
   'assessed', sa.pass + sa.fail + sa.notapplicable,
   'minTs', DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ'),
@@ -206,11 +207,11 @@ const sqlMetricsDetail = `json_object(
   )
 ) as metrics`
 const sqlMetricsDetailAgg = `json_object(
-  'assessments', coalesce(sum(cr.ruleCount),0),
+  'assessments', coalesce(sum(rev.ruleCount),0),
   'assessmentsBySeverity', json_object(
-    'low', coalesce(sum(cr.lowCount),0),
-    'medium', coalesce(sum(cr.mediumCount),0),
-    'high', coalesce(sum(cr.highCount),0)
+    'low', coalesce(sum(rev.lowCount),0),
+    'medium', coalesce(sum(rev.mediumCount),0),
+    'high', coalesce(sum(rev.highCount),0)
   ),  
   'assessed', coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0),
   'minTs', DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ'),
@@ -240,7 +241,7 @@ const sqlMetricsDetailAgg = `json_object(
   )
 ) as metrics`
 const sqlMetricsSummary = `json_object(
-  'assessments', cr.ruleCount,
+  'assessments', rev.ruleCount,
   'assessed', sa.pass + sa.fail + sa.notapplicable,
   'minTs', DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ'),
@@ -264,7 +265,7 @@ const sqlMetricsSummary = `json_object(
   )
 ) as metrics`
 const sqlMetricsSummaryAgg = `json_object(
-  'assessments', coalesce(sum(cr.ruleCount),0),
+  'assessments', coalesce(sum(rev.ruleCount),0),
   'assessed', coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0),
   'minTs', DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(MAX(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ'),
@@ -288,10 +289,10 @@ const sqlMetricsSummaryAgg = `json_object(
   )
 ) as metrics`
 const colsMetricsDetail = [
-  `cr.ruleCount as assessments`,
-  `cr.lowCount as assessmentsLow`,
-  `cr.mediumCount as assessmentsMedium`,
-  `cr.highCount as assessmentsHigh`,
+  `rev.ruleCount as assessments`,
+  `rev.lowCount as assessmentsLow`,
+  `rev.mediumCount as assessmentsMedium`,
+  `rev.highCount as assessmentsHigh`,
   `sa.pass + sa.fail + sa.notapplicable as assessed`,
   `DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ') as maxTs`,
@@ -327,10 +328,10 @@ const colsMetricsDetail = [
   `sa.fixedResultEngine`,
 ]
 const colsMetricsDetailAgg = [
-  `coalesce(sum(cr.ruleCount),0) as assessments`,
-  `coalesce(sum(cr.lowCount),0) as assessmentsLow`,
-  `coalesce(sum(cr.mediumCount),0) as assessmentsMedium`,
-  `coalesce(sum(cr.highCount),0) as assessmentsHigh`,
+  `coalesce(sum(rev.ruleCount),0) as assessments`,
+  `coalesce(sum(rev.lowCount),0) as assessmentsLow`,
+  `coalesce(sum(rev.mediumCount),0) as assessmentsMedium`,
+  `coalesce(sum(rev.highCount),0) as assessmentsHigh`,
   `coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0) as assessed`,
   `DATE_FORMAT(min(sa.minTs), '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(max(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ') as maxTs`,
@@ -366,7 +367,7 @@ const colsMetricsDetailAgg = [
   `coalesce(sum(sa.fixedResultEngine),0) as fixedResultEngine`
 ]
 const colsMetricsSummary = [
-  'cr.ruleCount as "assessments"', 
+  'rev.ruleCount as "assessments"', 
   'sa.pass + sa.fail + sa.notapplicable as "assessed"', 
   `DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ') as maxTs`, 
@@ -384,7 +385,7 @@ const colsMetricsSummary = [
   'sa.rejected as "rejected"'
 ]
 const colsMetricsSummaryAgg = [
-  'coalesce(sum(cr.ruleCount),0) as "assessments"', 
+  'coalesce(sum(rev.ruleCount),0) as "assessments"', 
   'coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0) as "assessed"', 
   `DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ') as minTs`, 
   `DATE_FORMAT(MAX(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ') as maxTs`, 
@@ -426,7 +427,9 @@ const baseCols = {
     'cast(a.assetId as char) as assetId',
     'a.name',
     sqlLabels,
-    'cr.benchmarkId'
+    'rev.benchmarkId',
+    'rev.revisionStr',
+    'dr.revisionPinned'
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -445,8 +448,11 @@ const baseCols = {
     'count(sa.saId) as checklists'
   ],
   stig: [
-    'cr.benchmarkId',
-    'count(distinct a.assetId) as assets'
+    'rev.benchmarkId',
+    'rev.revisionStr',
+    'dr.revisionPinned',
+    'count(distinct a.assetId) as assets',
+    'rev.ruleCount'
   ],
   label: [
     'BIN_TO_UUID(cl.uuid,1) as labelId',
@@ -461,7 +467,9 @@ const baseColsFlat = {
     'cast(a.assetId as char) as assetId',
     'a.name',
     sqlLabelsFlat,
-    'cr.benchmarkId'
+    'rev.benchmarkId',
+    'rev.revisionStr',
+    'dr.revisionPinned'
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -476,8 +484,11 @@ const baseColsFlat = {
     'count(sa.saId) as checklists'
   ],
   stig: [
-    'cr.benchmarkId',
-    'count(distinct a.assetId) as assets'
+    'rev.benchmarkId',
+    'rev.revisionStr',
+    'dr.revisionPinned',
+    'count(distinct a.assetId) as assets',
+    'rev.ruleCount'
   ],
   label: [
     'BIN_TO_UUID(cl.uuid,1) as labelId',

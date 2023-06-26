@@ -59,7 +59,7 @@ async function addCollectionManager( params ) {
 		let stigGrid = new SM.CollectionStigsGrid({
 			collectionId: collectionId,
 			collectionName: collectionName,
-			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
+			url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary/stig`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
 			border: false,
