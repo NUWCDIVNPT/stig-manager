@@ -1036,7 +1036,7 @@ exports.createAsset = async function(body, projection, elevate, userObject, svcS
 
 exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
-  const sqlDelete = `UPDATE asset SET enabled = 0 where assetId = ?`
+  const sqlDelete = `UPDATE asset SET state = "disabled" where assetId = ?`
   await dbUtils.pool.query(sqlDelete, [assetId])
   // changes above might have affected need for records in collection_rev_map 
   await dbUtils.pruneCollectionRevMap()

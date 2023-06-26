@@ -3,16 +3,16 @@ const MigrationHandler = require('./lib/MigrationHandler')
 const upMigration = [
 
   // table: collection
-  `ALTER TABLE collection ADD COLUMN enabled TINYINT NOT NULL DEFAULT 1`,
+  `ALTER TABLE collection ADD COLUMN state ENUM('enabled','disabled','cloning') NOT NULL`,
 
   // table: asset
-  `ALTER TABLE asset ADD COLUMN enabled TINYINT NOT NULL DEFAULT 1`,
+  `ALTER TABLE asset ADD COLUMN state ENUM('enabled','disabled') NOT NULL`,
 
   // table: user_data
-  `ALTER TABLE user_data ADD COLUMN enabled TINYINT NOT NULL DEFAULT 1`,
+  `ALTER TABLE user_data ADD COLUMN state ENUM('enabled','disabled') NOT NULL`,
 
   // table: review
-  `ALTER TABLE review ADD COLUMN enabled TINYINT NOT NULL DEFAULT 1`,
+  `ALTER TABLE review ADD COLUMN state ENUM('enabled','disabled') NOT NULL`,
 
   //table: procedure_log
   `CREATE TABLE procedure_log (
@@ -29,7 +29,7 @@ const upMigration = [
       REPEAT
       START TRANSACTION;
       DELETE FROM review_history WHERE reviewId IN (
-        SELECT r.reviewId FROM review r INNER JOIN asset a using (assetId) INNER JOIN collection c using (collectionId) where c.enabled = 0
+        SELECT r.reviewId FROM review r INNER JOIN asset a using (assetId) INNER JOIN collection c using (collectionId) where c.state = "disabled"
       ) ORDER BY historyId DESC LIMIT 100000;
           SELECT ROW_COUNT() INTO @row_count;
           INSERT into procedure_log(ts, proc, msg) VALUES (CURRENT_TIMESTAMP(), 'review_history', @row_count);
