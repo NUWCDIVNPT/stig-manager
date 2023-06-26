@@ -146,7 +146,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
   // PREDICATES
   const predicates = {
-    statements: [],
+    statements: [`a.state = "enabled"`],
     binds: []
   }
   if (inPredicates.assetId) {
