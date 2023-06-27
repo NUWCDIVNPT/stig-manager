@@ -514,7 +514,10 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   ]
   // PREDICATES
   let predicates = {
-    statements: ['c.state = "enabled"'],
+    statements: [
+      'c.state = "enabled"',
+      'a.state = "enabled"'
+    ],
     binds: []
   }
   if ( inPredicates.collectionId ) {
@@ -741,7 +744,8 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     const predicates = {
       statements: [
         'a.collectionId = :collectionId',
-        'rev.benchmarkId = :benchmarkId'
+        'rev.benchmarkId = :benchmarkId',
+        'a.state = "enabled"'
       ],
       binds: {
         collectionId: collectionId,
@@ -889,7 +893,9 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: [
+      'a.state = "enabled"'
+    ],
     binds: []
   }
   predicates.statements.push('c.collectionId = ?')

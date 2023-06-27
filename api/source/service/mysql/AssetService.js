@@ -547,7 +547,9 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   }
   // PREDICATES
   const predicates = {
-    statements: [],
+    statements: [
+      'a.state = "enabled"'
+    ],
     binds: []
   }
   if (inPredicates.collectionId) {
