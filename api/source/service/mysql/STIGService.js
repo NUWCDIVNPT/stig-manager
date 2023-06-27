@@ -84,7 +84,7 @@ exports.queryStigs = async function ( inPredicates, inProjections, userObject, e
         json_object(
           "benchmarkId", revision.benchmarkId,
           "revisionStr", concat('V',revision.version,'R',revision.release),
-          "version", revision.version,
+          "version", cast(revision.version as char),
           "release", revision.release,
           "benchmarkDate", revision.benchmarkDateSql,
           "status", revision.status,

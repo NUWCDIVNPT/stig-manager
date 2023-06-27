@@ -931,8 +931,12 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
       svcStatus: res.svcStatus
     })
     const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
-
-    res.json(response)
+    if (response[0]) {
+      res.json(response[0])
+    }
+    else {
+      res.status(204).send()
+    }
   }
   catch (err) {
     next(err)

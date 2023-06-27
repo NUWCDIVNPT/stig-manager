@@ -570,7 +570,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/STIG'
+                  $ref: '#/components/schemas/AssetStigResponse'
         default:
           description: unexpected error
           content:
@@ -674,7 +674,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/STIG'
+                  $ref: '#/components/schemas/AssetStigResponse'
         default:
           description: unexpected error
           content:
@@ -1046,13 +1046,13 @@ paths:
       operationId: getStigAssetsByCollectionUser
       responses:
         '200':
-          description: Collection STIGAssetProjected array response
+          description: Collection StigAssetBasic array response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StigAssetProjected'
+                  $ref: '#/components/schemas/StigAssetBasic'
         '403':
           $ref: '#/components/responses/Forbidden'
         default:
@@ -1076,16 +1076,16 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/StigAsset'
+                $ref: '#/components/schemas/StigAssetPut'
       responses:
         '200':
-          description: StigAssetProjected array response
+          description: StigAssetBasic array response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StigAssetProjected'
+                  $ref: '#/components/schemas/StigAssetBasic'
         default:
           description: unexpected error
           content:
@@ -2631,6 +2631,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CollectionStigWithAssetCount'
+        '204':
+          description: No content because STIG is not assigned
         default:
           description: unexpected error
           content:
@@ -3862,7 +3864,25 @@ components:
         stigGrants:
           type: array
           items:
-            $ref: '#/components/schemas/StigGrantProjected'          
+            $ref: '#/components/schemas/StigUserBasic'
+    AssetStigResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - benchmarkId
+        - revisionStr
+        - revisionDate
+        - ruleCount
+      properties:
+        benchmarkId:
+          type: string
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStrRaw'
+        revisionDate:
+          type: string
+          format: date
+        ruleCount:
+          type: integer
     AssetStigSelection:
       type: object
       additionalProperties: false
@@ -5997,7 +6017,7 @@ components:
         revisionStr:
           type: string
         version:
-          type: integer
+          type: string
         release:
           type: string
         benchmarkDate:
@@ -6188,9 +6208,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Revision'
-    STIGPostResponse:
-      type: object
-    StigAsset:
+    StigAssetPut:
       type: object
       required:
         - benchmarkId
@@ -6201,7 +6219,7 @@ components:
           type: string
         assetId:
           type: string
-    StigAssetProjected:
+    StigAssetBasic:
       type: object
       required:
         - benchmarkId
@@ -6212,7 +6230,7 @@ components:
           type: string
         asset:
           $ref: '#/components/schemas/AssetBasic'
-    StigGrantProjected:
+    StigUserBasic:
       type: object
       required:
         - benchmarkId
