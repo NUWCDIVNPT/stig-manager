@@ -134,15 +134,20 @@
 									"    pm.test(\"Status code is 403\", function () {\r",
 									"        pm.response.to.have.status(403);\r",
 									"    });\r",
+									"    return;\r",
 									"}\r",
 									"if (pm.response.code !== 200) {\r",
 									"    return;\r",
 									"}\r",
 									"\r",
 									"\r",
+									"\r",
 									"let response = pm.response.text();\r",
 									"console.log(response)\r",
-									""
+									"\r",
+									"// pm.test(\"Body contains string\",() => {\r",
+									"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+									"// });"
 								],
 								"type": "text/javascript"
 							}
@@ -229,14 +234,20 @@
 									"    pm.test(\"Status code is 403\", function () {\r",
 									"        pm.response.to.have.status(403);\r",
 									"    });\r",
+									"    return;\r",
 									"}\r",
 									"if (pm.response.code !== 200) {\r",
 									"    return;\r",
 									"}\r",
 									"\r",
+									"\r",
+									"\r",
 									"let response = pm.response.text();\r",
 									"console.log(response)\r",
-									""
+									"\r",
+									"// pm.test(\"Body contains string\",() => {\r",
+									"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+									"// });"
 								],
 								"type": "text/javascript"
 							}
@@ -382,6 +393,59 @@
 									"key": "elevate",
 									"value": "true",
 									"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deletes the specified revision of a STIG v1r0 - with force - could fail if not present, so no tests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate=true&force=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"stigs",
+								":benchmarkId",
+								"revisions",
+								":revisionStr"
+							],
+							"query": [
+								{
+									"key": "elevate",
+									"value": "true"
+								},
+								{
+									"key": "force",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"key": "benchmarkId",
+									"value": "{{testBenchmark}}",
+									"description": "(Required) A path parameter that indentifies a STIG"
+								},
+								{
+									"key": "revisionStr",
+									"value": "V1R0",
+									"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
 								}
 							]
 						}
@@ -20582,6 +20646,306 @@
 					"name": "Prep Data",
 					"item": [
 						{
+							"name": "Import a new STIG - VPN  (as admin) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"// }\r",
+											"// else {\r",
+											"//     pm.test(\"Status code is 403\", function () {\r",
+											"//         pm.response.to.have.status(403);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"// if (pm.response.code !== 200) {\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"// pm.test(\"Body contains string\",() => {\r",
+											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"// });"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{vpnStig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									],
+									"query": [
+										{
+											"key": "clobber",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - Win 10  (as admin) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"// }\r",
+											"// else {\r",
+											"//     pm.test(\"Status code is 403\", function () {\r",
+											"//         pm.response.to.have.status(403);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"// if (pm.response.code !== 200) {\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"// pm.test(\"Body contains string\",() => {\r",
+											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"// });"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{win10Stig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									],
+									"query": [
+										{
+											"key": "clobber",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import a new STIG - RHEL 7 (as admin) Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"// }\r",
+											"// else {\r",
+											"//     pm.test(\"Status code is 403\", function () {\r",
+											"//         pm.response.to.have.status(403);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"// if (pm.response.code !== 200) {\r",
+											"//     return;\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"// pm.test(\"Body contains string\",() => {\r",
+											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"// });"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text"
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{rhel7Stig}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									],
+									"query": [
+										{
+											"key": "clobber",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Import and overwrite application data PREP FOR UPDATE TESTS",
 							"event": [
 								{
@@ -36359,17 +36723,17 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
-													"}\r",
-													"else {\r",
-													"    pm.test(\"Status code is 403\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"    return;\r",
-													"}\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 403\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
 													"if (pm.response.code !== 200) {\r",
 													"    return;\r",
 													"}\r",
@@ -36552,6 +36916,108 @@
 									"response": []
 								},
 								{
+									"name": "Import a new STIG - VPN R1V0 Copy",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 403\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"\r",
+													"let response = pm.response.text();\r",
+													"console.log(response)\r",
+													"\r",
+													"// pm.test(\"Body contains string\",() => {\r",
+													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+													"// });"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "replace",
+													"value": "true",
+													"description": " (This can only be one of true,false)",
+													"type": "text",
+													"disabled": true
+												},
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "./{{formDataFiles}}/{{testStigFile}}",
+													"disabled": true
+												},
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "form-data-files/U_VPN_SRG_V1R0_Manual-xccdf.xml"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"stigs"
+											],
+											"query": [
+												{
+													"key": "clobber",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
 									"name": "Import a new STIG - Win 10  (as admin)",
 									"event": [
 										{
@@ -36566,24 +37032,29 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
-													"}\r",
-													"else {\r",
-													"    pm.test(\"Status code is 403\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"}\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 403\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
 													"if (pm.response.code !== 200) {\r",
 													"    return;\r",
 													"}\r",
 													"\r",
 													"\r",
+													"\r",
 													"let response = pm.response.text();\r",
 													"console.log(response)\r",
-													""
+													"\r",
+													"// pm.test(\"Body contains string\",() => {\r",
+													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+													"// });"
 												],
 												"type": "text/javascript"
 											}
@@ -36661,23 +37132,29 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
-													"}\r",
-													"else {\r",
-													"    pm.test(\"Status code is 403\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"}\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 403\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
 													"if (pm.response.code !== 200) {\r",
 													"    return;\r",
 													"}\r",
 													"\r",
+													"\r",
+													"\r",
 													"let response = pm.response.text();\r",
 													"console.log(response)\r",
-													""
+													"\r",
+													"// pm.test(\"Body contains string\",() => {\r",
+													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+													"// });"
 												],
 												"type": "text/javascript"
 											}
@@ -37527,7 +38004,14 @@
 													"    pm.expect(jsonData).to.be.an('array');\r",
 													"});\r",
 													"\r",
+													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"let testPinnedRevStr = pm.environment.get(\"testPinnedRevStr\");\r",
 													"\r",
+													"let pinnedState = true;\r",
+													"if (user == \"lvl1\" || user == \"lvl2\" ) {\r",
+													"    pinnedState = false;\r",
+													"    testPinnedRevStr = \"V1R1\"\r",
+													"}\r",
 													"\r",
 													"// let stigKeys = [\r",
 													"//     \"title\",\r",
@@ -37544,7 +38028,7 @@
 													"//     \"maxTs\"\r",
 													"// ]\r",
 													"\r",
-													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"\r",
 													"\r",
 													"pm.test(\"Response has requested properties and values\", function () {\r",
 													"    for (let stig of jsonData){\r",
@@ -37552,12 +38036,15 @@
 													"        pm.expect(stig.benchmarkId).to.be.oneOf(validStigs);\r",
 													"        if (stig.benchmarkId ==  pm.environment.get(\"testBenchmark\"))\r",
 													"        {\r",
-													"            pm.expect(stig.revisionPinned).to.eql(true)\r",
+													"            pm.expect(stig.revisionPinned).to.eql(pinnedState)\r",
+													"            console.log(stig.revisionStr)\r",
+													"            pm.expect(stig.revisionStr).to.eql(testPinnedRevStr)\r",
 													"\r",
 													"        }\r",
 													"        else{\r",
 													"            pm.expect(stig.revisionPinned).to.eql(false)\r",
 													"        }\r",
+													"\r",
 													"\r",
 													"    };\r",
 													"\r",
@@ -37622,6 +38109,12 @@
 													"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
 													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
 													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if (user == \"lvl1\" || user == \"lvl2\" ) {\r",
+													"    pm.test(\"Status should be is 200 for user lvl1 and lvl2, but can't change pins so can't affect metrics\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
 													"    });\r",
 													"    return;\r",
 													"}\r",
@@ -38481,6 +38974,12 @@
 													"    });\r",
 													"    return;\r",
 													"}\r",
+													"else if (user == \"lvl1\" || user == \"lvl2\" ) {\r",
+													"    pm.test(\"Status should be is 200 for user lvl1 and lvl2, but can't change pins so can't affect metrics\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
 													"else {\r",
 													"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
@@ -38790,7 +39289,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+													"if ( user == \"collectioncreator\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
 													"        pm.response.to.have.status(403);\r",
 													"    });\r",
@@ -39236,7 +39735,7 @@
 												"method": "DELETE",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId?elevate=true",
+													"raw": "{{baseUrl}}/stigs/:benchmarkId?elevate={{elevated}}",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -39247,7 +39746,7 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "true"
+															"value": "{{elevated}}"
 														},
 														{
 															"key": "force",
@@ -39311,7 +39810,7 @@
 												"method": "DELETE",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate=true",
+													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate={{elevated}}",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -39324,7 +39823,7 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "true"
+															"value": "{{elevated}}"
 														}
 													],
 													"variable": [
@@ -39383,7 +39882,7 @@
 												"method": "DELETE",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate=true",
+													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate={{elevated}}",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -39396,7 +39895,7 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "true"
+															"value": "{{elevated}}"
 														},
 														{
 															"key": "force",
@@ -39460,7 +39959,7 @@
 												"method": "DELETE",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate=true&force=true",
+													"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate={{elevated}}&force=true",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -39473,7 +39972,7 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "true"
+															"value": "{{elevated}}"
 														},
 														{
 															"key": "force",
@@ -39645,7 +40144,14 @@
 											"    pm.expect(jsonData).to.be.an('array');\r",
 											"});\r",
 											"\r",
+											"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+											"let testPinnedRevStr = pm.environment.get(\"testPinnedRevStr\");\r",
 											"\r",
+											"let pinnedState = true;\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" ) {\r",
+											"    pinnedState = false;\r",
+											"    testPinnedRevStr = \"V1R1\"\r",
+											"}\r",
 											"\r",
 											"// let stigKeys = [\r",
 											"//     \"title\",\r",
@@ -39662,8 +40168,7 @@
 											"//     \"maxTs\"\r",
 											"// ]\r",
 											"\r",
-											"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
-											"let testPinnedRevStr = pm.environment.get(\"testPinnedRevStr\");\r",
+											"\r",
 											"\r",
 											"pm.test(\"Response has requested properties and values\", function () {\r",
 											"    for (let stig of jsonData){\r",
@@ -39671,7 +40176,7 @@
 											"        pm.expect(stig.benchmarkId).to.be.oneOf(validStigs);\r",
 											"        if (stig.benchmarkId ==  pm.environment.get(\"testBenchmark\"))\r",
 											"        {\r",
-											"            pm.expect(stig.revisionPinned).to.eql(true)\r",
+											"            pm.expect(stig.revisionPinned).to.eql(pinnedState)\r",
 											"            console.log(stig.revisionStr)\r",
 											"            pm.expect(stig.revisionStr).to.eql(testPinnedRevStr)\r",
 											"\r",
@@ -49292,7 +49797,7 @@
 													"}    \r",
 													"\r",
 													"pm.test(\"Response JSON is an object\", function () {\r",
-													"    pm.expect(jsonData).to.be.an('object');\r",
+													"    pm.expect(respData).to.be.an('object');\r",
 													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
 													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
 													"\r",
@@ -49855,23 +50360,23 @@
 													"    return;\r",
 													"}\r",
 													"else {\r",
-													"    pm.test(\"Status code is 200\", function () {\r",
-													"        pm.response.to.have.status(200);\r",
+													"    pm.test(\"Status code is 204\", function () {\r",
+													"        pm.response.to.have.status(204);\r",
 													"    });\r",
 													"}\r",
-													"if (pm.response.code !== 200) {\r",
+													"if (pm.response.code !== 204) {\r",
 													"    return;\r",
 													"}\r",
 													"\r",
 													"\r",
-													"let jsonData = pm.response.json();\r",
+													"// let jsonData = pm.response.json();\r",
 													"\r",
-													"pm.test(\"Response JSON is an object\", function () {\r",
-													"    pm.expect(jsonData).to.be.an('object');\r",
-													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
-													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+													"// pm.test(\"Response JSON is an object\", function () {\r",
+													"//     pm.expect(jsonData).to.be.an('object');\r",
+													"//     // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+													"//     // pm.expect(jsonData).to.have.lengthOf(1);\r",
 													"\r",
-													"});\r",
+													"// });\r",
 													""
 												],
 												"type": "text/javascript"
@@ -50185,7 +50690,7 @@
 													"}    \r",
 													"\r",
 													"pm.test(\"Response JSON is an object\", function () {\r",
-													"    pm.expect(jsonData).to.be.an('object');\r",
+													"    pm.expect(respData).to.be.an('object');\r",
 													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
 													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
 													"\r",
