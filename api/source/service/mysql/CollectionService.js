@@ -1636,8 +1636,9 @@ async function queryUnreviewedByCollection ({
 }
 
 exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmarkId, defaultRevisionStr, assetIds, svcStatus = {}}) {
+  let connection
   try {
-    let version, release, connection
+    let version, release
     if (defaultRevisionStr) {
       if (defaultRevisionStr !== 'latest') {
         const revisionParts = /V(\d+)R(\d+(\.\d+)?)/.exec(defaultRevisionStr)
