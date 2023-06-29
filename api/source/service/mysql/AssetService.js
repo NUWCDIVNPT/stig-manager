@@ -55,7 +55,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
       from
 		    stig_asset_map saStatusStats
         left join asset aStatusStats using (assetId)
-        left join v_default_rev drStatusStats on (saStatusStats.benchmarkId = drStatusStats.benchmarkId and aStatusStats.collectionId = drStatusStats.collectionId)
+        left join default_rev drStatusStats on (saStatusStats.benchmarkId = drStatusStats.benchmarkId and aStatusStats.collectionId = drStatusStats.collectionId)
         left join revision rStatusStats on drStatusStats.revId = rStatusStats.revId
 	    where
         FIND_IN_SET(saStatusStats.saId, GROUP_CONCAT(sa.saId))
@@ -104,7 +104,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   }
   if (inProjection.includes('stigs')) {
     //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
-    joins.push('left join v_default_rev dr on (sa.benchmarkId=dr.benchmarkId and a.collectionId = dr.collectionId)')
+    joins.push('left join default_rev dr on (sa.benchmarkId=dr.benchmarkId and a.collectionId = dr.collectionId)')
     joins.push('left join revision on dr.revId = revision.revId')
     columns.push(`cast(
       concat('[', 
@@ -115,7 +115,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
                 'benchmarkId', sa.benchmarkId, 
                 'revisionStr', revision.revisionStr, 
                 'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
-                'revisionPinned', dr.revisionPinned, 
+                'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
                 'ruleCount', revision.ruleCount)
             else null end 
           order by sa.benchmarkId),
@@ -220,7 +220,7 @@ exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, 
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'inner join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
+    'inner join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
     'left join revision rev on dr.revId = rev.revId'
   ]
   // PREDICATES
@@ -288,7 +288,7 @@ exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = fal
   return (rows)
 }
 
-exports.addOrUpdateAsset = async function (writeAction, assetId, body, projection, transferring, userObject, svcStatus = {}) {
+exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, projection, currentCollectionId, transferring, userObject, svcStatus = {}} ) {
   let connection
   try {
     // CREATE: assetId will be null
@@ -324,6 +324,7 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
               (:name, :fqdn, :ip, :mac, :description, :collectionId, :noncomputing, :metadata)`
         let [rows] = await connection.query(sqlInsert, binds)
         assetId = rows.insertId
+        currentCollectionId = assetFields.collectionId
       }
       else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
         if (Object.keys(binds).length > 0) {
@@ -407,9 +408,13 @@ exports.addOrUpdateAsset = async function (writeAction, assetId, body, projectio
 
       if (stigs || transferring) {
         await dbUtils.pruneCollectionRevMap(connection)
-        await dbUtils.updateStatsAssetStig( connection, {
-          assetId: assetId
-        }) 
+        if (transferring) {
+          await dbUtils.updateDefaultRev(connection, {collectionIds: [transferring.oldCollectionId, transferring.newCollectionId]})
+        }
+        else {
+          await dbUtils.updateDefaultRev(connection, {collectionId: currentCollectionId})
+        }
+        await dbUtils.updateStatsAssetStig( connection, {assetId} ) 
       }
 
       // Commit the changes
@@ -1029,9 +1034,11 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
   return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
 }
 
-exports.createAsset = async function(body, projection, elevate, userObject, svcStatus = {}) {
-  const row = await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.CREATE, null, body, projection, elevate, userObject, svcStatus)
-  return (row)
+exports.createAsset = async function({body, projection, elevate, userObject, svcStatus = {}}) {
+  return _this.addOrUpdateAsset({
+    writeAction: dbUtils.WRITE_ACTION.CREATE,
+    body, projection, elevate, userObject, svcStatus
+  })
 }
 
 exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
@@ -1040,6 +1047,7 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   await dbUtils.pool.query(sqlDelete, [assetId])
   // changes above might have affected need for records in collection_rev_map 
   await dbUtils.pruneCollectionRevMap()
+  await dbUtils.updateDefaultRev(null, {})
   return (rows[0])
 }
 
@@ -1049,6 +1057,7 @@ exports.attachStigToAsset = async function (assetId, benchmarkId, elevate, userO
   const rows = await _this.queryStigsByAsset( {
     assetId: assetId
   }, elevate, userObject)
+  await dbUtils.updateDefaultRev(null, {})
   return (rows)
 }
 
@@ -1060,6 +1069,7 @@ exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, use
   }, elevate, userObject)
   // changes above might have affected need for records in collection_rev_map 
   await dbUtils.pruneCollectionRevMap()
+  await dbUtils.updateDefaultRev(null, {})
   return (rows)
 }
 
@@ -1069,6 +1079,7 @@ exports.removeStigsFromAsset = async function (assetId, elevate, userObject ) {
   const rows = await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
   // changes above might have affected need for records in collection_rev_map 
   await dbUtils.pruneCollectionRevMap()
+  await dbUtils.updateDefaultRev(null, {})
   return (rows)
 }
 
@@ -1183,6 +1194,11 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
           ?`
         await connection.query(sqlInsertBenchmarks, [ binds ])
       }
+
+      await dbUtils.updateDefaultRev(connection, {
+        collectionId: collectionId,
+        benchmarkId: benchmarkId
+      })
       await dbUtils.updateStatsAssetStig( connection, {
         collectionId: collectionId,
         benchmarkId: benchmarkId
@@ -1209,8 +1225,11 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
   }
 }
 
-exports.updateAsset = async function( assetId, body, projection, transferring, userObject, svcStatus = {} ) {
-  return await _this.addOrUpdateAsset(dbUtils.WRITE_ACTION.UPDATE, assetId, body, projection, transferring, userObject, svcStatus)
+exports.updateAsset = async function( {assetId, body, projection, transferring, userObject, svcStatus = {}} ) {
+  return _this.addOrUpdateAsset({
+    writeAction: dbUtils.WRITE_ACTION.UPDATE,
+    assetId, body, projection, transferring, userObject, svcStatus
+  })
 }
 
 exports.getAssetMetadataKeys = async function ( assetId ) {

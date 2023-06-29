@@ -333,7 +333,7 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
        from
          asset a
          left join stig_asset_map sa using (assetId)
-         left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
+         left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
          left join rev_group_rule_map rgr on dr.revId = rgr.revId
          left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
          left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
@@ -466,4 +466,29 @@ module.exports.pruneCollectionRevMap = async function (connection) {
   left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId)) maps using (collectionId, benchmarkId)
   where maps.collectionId is null`
   await (connection ?? _this.pool).query(sql)
+}
+
+module.exports.updateDefaultRev = async function (connection, {collectionId, collectionIds, benchmarkId}) {
+  const predicates = []
+  const binds = []
+  let whereClause = ''
+  if (collectionId) {
+    predicates.push(`collectionId = ?`)
+    binds.push(collectionId)
+  }
+  if (collectionIds) {
+    predicates.push(`collectionId IN ?`)
+    binds.push([collectionIds])
+  }
+  if (benchmarkId) {
+    predicates.push(`benchmarkId = ?`)
+    binds.push(benchmarkId)
+  }
+  if (predicates.length > 0) {
+    whereClause = `where  ${predicates.join(' and ')}`
+  }
+  const sqlDelete = `DELETE FROM default_rev ${whereClause}`
+  const sqlInsert = `INSERT INTO default_rev(collectionId, benchmarkId, revId, revisionPinned) SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev ${whereClause}`
+  await (connection ?? _this.pool).query(sqlDelete, binds)
+  await (connection ?? _this.pool).query(sqlInsert, binds)
 }

@@ -19,19 +19,36 @@ const upMigration = [
     CONSTRAINT fk_collection_rev_map_1 FOREIGN KEY (collectionId) REFERENCES collection (collectionId) ON DELETE CASCADE ON UPDATE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
 
-  // view: v_default_rev
+  // view: default_rev
   `DROP VIEW IF EXISTS v_default_rev`,
   `CREATE VIEW v_default_rev AS
   SELECT DISTINCT
         a.collectionId AS collectionId,
         sa.benchmarkId AS benchmarkId,
-        COALESCE(crm.revId, cr.revId) AS revId,
-        CASE WHEN crm.revId IS NOT NULL THEN cast(true as json) ELSE cast(false as json) END as revisionPinned
+        CASE WHEN crm.revId IS NOT NULL THEN crm.revId ELSE cr.revId END as revId,
+        CASE WHEN crm.revId IS NOT NULL THEN 1 ELSE 0 END as revisionPinned
     FROM
         asset a
         INNER JOIN stig_asset_map sa ON a.assetId = sa.assetId
         LEFT JOIN current_rev cr ON sa.benchmarkId = cr.benchmarkId
         LEFT JOIN collection_rev_map crm ON (sa.benchmarkId = crm.benchmarkId AND a.collectionId = crm.collectionId)`,
+
+  // table: default_rev
+  `DROP TABLE IF EXISTS default_rev`,
+  `CREATE TABLE default_rev (
+    vdId int NOT NULL AUTO_INCREMENT,
+    collectionId int NOT NULL,
+    benchmarkId varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+    revId varchar(255) NOT NULL,
+    revisionPinned TINYINT NOT NULL,
+    PRIMARY KEY (vdId),
+    UNIQUE KEY index2 (collectionId,benchmarkId),
+    KEY index3 (benchmarkId),
+    KEY index4 (revId),
+    CONSTRAINT fk_default_rev_2 FOREIGN KEY (collectionId) REFERENCES collection (collectionId) ON DELETE CASCADE ON UPDATE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+  `INSERT INTO default_rev(collectionId, benchmarkId, revId, revisionPinned)
+  SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev`,
 
   // view: v_latest_rev
   `DROP VIEW IF EXISTS v_latest_rev`,
@@ -69,7 +86,7 @@ const upMigration = [
 
 const downMigration = [
   `drop table if exists collection_rev_map`,
-  `DROP VIEW IF EXISTS v_default_rev`
+  `DROP VIEW IF EXISTS default_rev`
 ]
 
 const migrationHandler = new MigrationHandler(upMigration, downMigration)

@@ -75,7 +75,7 @@ function cteRuleGen({ruleIds, benchmarkIds, collectionId}) {
     cte = dbUtils.pool.format(sql,[json])
   }
   else if (benchmarkIds?.length) {
-    const sql = `select rgr.ruleId from v_default_rev dr left join rev_group_rule_map rgr using (revId) where dr.benchmarkId IN ? and dr.collectionId = ?`
+    const sql = `select rgr.ruleId from default_rev dr left join rev_group_rule_map rgr using (revId) where dr.benchmarkId IN ? and dr.collectionId = ?`
     cte = dbUtils.pool.format(sql,[[benchmarkIds], collectionId])
   }
   return `cteRule AS (${cte})`
@@ -831,7 +831,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     'left join user_data ud on r.userId = ud.userId',
     'left join user_data udStatus on r.statusUserId = udStatus.userId',
     'left join asset on r.assetId = asset.assetId',
-    'left join v_default_rev on (rgr.revId = v_default_rev.revId and asset.collectionId = v_default_rev.collectionId)',
+    'left join default_rev dr on (rgr.revId = dr.revId and asset.collectionId = dr.collectionId)',
     'left join collection c on asset.collectionId = c.collectionId',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
@@ -854,8 +854,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
                 'benchmarkId', sa.benchmarkId, 
                 'revisionStr', revision.revisionStr, 
                 'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
-                'revisionPinned', coalesce(v_default_rev.revisionPinned, cast(false as json)),
-                'isDefault', case when revision.revId = v_default_rev.revId then cast(true as json) else cast(false as json) end,
+                'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
+                'isDefault', case when revision.revId = dr.revId then cast(true as json) else cast(false as json) end,
                 'ruleCount', revision.ruleCount)
             else null end 
           order by sa.benchmarkId),
@@ -929,18 +929,18 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
 
   switch (inPredicates.rules) {
     case 'default-mapped':
-      predicates.statements.push(`v_default_rev.revId IS NOT NULL`)
+      predicates.statements.push(`dr.revId IS NOT NULL`)
       predicates.statements.push(`sa.saId IS NOT NULL`)
       break
     case 'default':
-      predicates.statements.push(`v_default_rev.revId IS NOT NULL`)
+      predicates.statements.push(`dr.revId IS NOT NULL`)
       break
     case 'not-default-mapped':
-      predicates.statements.push(`v_default_rev.revId IS NULL`)
+      predicates.statements.push(`dr.revId IS NULL`)
       predicates.statements.push(`sa.saId IS NULL`)
       break
     case 'not-default':
-      predicates.statements.push(`v_default_rev.revId IS NULL`)
+      predicates.statements.push(`dr.revId IS NULL`)
       break
   }
 

@@ -18,7 +18,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
 
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       try {
-        let asset = await Asset.createAsset( body, projection, elevate, req.userObject, res.svcStatus)
+        let asset = await Asset.createAsset( {body, projection, elevate, userObject: req.userObject, svcStatus: res.svcStatus})
         res.status(201).json(asset)
       }
       catch (err) {
@@ -418,14 +418,14 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
         throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`)
       }
     }
-    const response = await Asset.updateAsset(
+    const response = await Asset.updateAsset({
       assetId,
       body,
       projection,
       transferring,
-      req.userObject,
-      res.svcStatus
-    )
+      userObject: req.userObject,
+      svcStatus: res.svcStatus
+    })
     res.json(response)
   }
   catch (err) {
@@ -616,7 +616,8 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
       throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`)
     }
     // Check if the asset's collectionId is being changed
-    const transferring = body.collectionId && currentAsset.collection.collectionId !== body.collectionId
+    const transferring = body.collectionId && currentAsset.collection.collectionId !== body.collectionId ? 
+      {oldCollectionId: currentAsset.collection.collectionId, newCollectionId: body.collectionId} : null
     if (transferring) {
       // If so, Check if the user has an appropriate grant to the asset's updated collection
       const updatedCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )
@@ -624,14 +625,15 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
         throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`)
       }
     }
-    const response = await Asset.updateAsset(
+    const response = await Asset.updateAsset({
       assetId,
       body,
       projection,
       transferring,
-      req.userObject,
-      res.svcStatus
-    )
+      currentCollectionId: currentAsset.collection.collectionId,
+      userObject: req.userObject,
+      svcStatus: res.svcStatus
+    })
     res.json(response)
   }
   catch (err) {

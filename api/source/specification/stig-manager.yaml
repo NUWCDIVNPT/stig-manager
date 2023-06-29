@@ -2593,6 +2593,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CollectionStigWithAssetCount'
+        '204':
+          description: No content because STIG is not assigned
         default:
           description: unexpected error
           content:
