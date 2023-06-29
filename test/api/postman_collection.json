@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "b41b2905-ea98-409e-ae9a-eb99d829cdd2",
-		"name": "STIGMan OSS - revision pinning",
+		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "9301046"
