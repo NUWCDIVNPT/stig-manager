@@ -406,7 +406,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             header: "Revision",
             width: 58,
             dataIndex: 'revisionStr',
-            align: "center",
+            align: "left",
             tooltip: "Default revision",
             sortable: true,
             renderer: function (v, md, r) {
