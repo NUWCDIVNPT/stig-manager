@@ -1845,7 +1845,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
         beforehide: (panel) => {
           cancelTimers()
         },
-        show: (panel) => {
+        activate: (panel) => {
           updateData({loadMasksDisabled: !panel.sm_unshown})
           panel.sm_unshown = false
         }
@@ -1959,30 +1959,28 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     async function updateData({refreshViewsOnly = false, loadMasksDisabled = false} = {}) {
       try {
         clearTimeout(gState.refreshViewTimerId)
+        const promises = []
+
         if (!refreshViewsOnly) {
           clearTimeout(gState.updateDataTimerId)
           gState.updateDataTimerId = gState.refreshViewTimerId = null
 
-          await updateFilterableLabels()
-          labelsMenu.refreshItems(gState.filterableLabels)
+          promises.push(updateFilterableLabels())
 
           gState.updateDataTimerId = setTimeout(
             updateData, 
             UPDATE_DATA_DELAY, 
             {loadMasksDisabled: true}
           )
-          // gState.lastApiRefresh = new Date()
         }
-        // clearInterval(gState.updateLastRefreshIntervalId)
-        // gState.updateLastRefreshIntervalId = null
-        // updateLastRefreshTextItem()
-        // gState.updateLastRefreshIntervalId = setInterval(updateLastRefreshTextItem, LAST_REFRESH_DELAY)
-        const apiMetricsCollection = await overviewPanel.updateData({refreshViewsOnly, loadMasksDisabled})
-        updateOverviewTitle()
+        promises.push(overviewPanel.updateData({refreshViewsOnly, loadMasksDisabled}))
         const activePanel = aggTabPanel.getActiveTab()
         if (activePanel) {
-          await activePanel.updateData({refreshViewsOnly, loadMasksDisabled})
+          promises.push(activePanel.updateData({refreshViewsOnly, loadMasksDisabled}))
         }
+
+        const [unused0, apiMetricsCollection, unused1] = await Promise.all(promises)
+        updateOverviewTitle()
 
         const refreshViewsDelay = calcRefreshDelay(apiMetricsCollection.metrics.maxTouchTs)
         if (refreshViewsDelay < UPDATE_DATA_DELAY) {

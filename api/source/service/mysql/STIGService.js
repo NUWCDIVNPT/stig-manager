@@ -84,7 +84,7 @@ exports.queryStigs = async function ( inPredicates, inProjections, userObject, e
         json_object(
           "benchmarkId", revision.benchmarkId,
           "revisionStr", concat('V',revision.version,'R',revision.release),
-          "version", revision.version,
+          "version", cast(revision.version as char),
           "release", revision.release,
           "benchmarkDate", revision.benchmarkDateSql,
           "status", revision.status,
@@ -592,6 +592,9 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
 
       // Stats
       hrstart = process.hrtime()
+      await dbUtils.updateDefaultRev(connection, {
+        benchmarkId: dml.stig.binds.benchmarkId
+      })
       await dbUtils.updateStatsAssetStig(connection, {
         benchmarkId: dml.stig.binds.benchmarkId
       })
@@ -921,7 +924,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
       const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
       const wasCurrentRev = !!crRows.length
       // note if this revision is used to calculate stats
-      const [drRows] = await connection.query('SELECT collectionId FROM v_default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
+      const [drRows] = await connection.query('SELECT collectionId FROM default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
       const wasDefaultRev = !!drRows.length
 
       // re-materialize current_rev and current_group_rule if we're deleteing the current revision
@@ -937,6 +940,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
       // re-calculate review statistics if we've affected current_rev
       if (wasDefaultRev && !wasCurrentRev) {
         const collectionIds = drRows.map( row => row.collectionId)
+        await dbUtils.updateDefaultRev( connection, {collectionIds, benchmarkId})
         await dbUtils.updateStatsAssetStig( connection, {collectionIds, benchmarkId})
       }
   
@@ -971,6 +975,7 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
     "DELETE from stig where benchmarkId = :benchmarkId",
     "DELETE from current_rev where benchmarkId = :benchmarkId",
     "DELETE from collection_rev_map where benchmarkId = :benchmarkId",
+    "DELETE from default_rev where benchmarkId = :benchmarkId",
     "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
     "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
     "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"

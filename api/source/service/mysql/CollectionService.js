@@ -45,7 +45,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
-      joins.push('left join v_default_rev dr on (sa.benchmarkId=dr.benchmarkId and c.collectionId = dr.collectionId)')
+      joins.push('left join default_rev dr on (sa.benchmarkId=dr.benchmarkId and c.collectionId = dr.collectionId)')
       joins.push('left join revision on dr.revId = revision.revId')
       columns.push(`cast(
         concat('[', 
@@ -56,7 +56,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
                   'benchmarkId', sa.benchmarkId, 
                   'revisionStr', revision.revisionStr, 
                   'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
-                  'revisionPinned', dr.revisionPinned, 
+                  'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
                   'ruleCount', revision.ruleCount)
               else null end 
             order by sa.benchmarkId),
@@ -259,7 +259,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'inner join asset a on (c.collectionId = a.collectionId and a.state = "enabled")',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
     'left join rev_group_rule_map rgr on dr.revId = rgr.revId',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
     'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
@@ -314,7 +314,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
                 'benchmarkId', revision.benchmarkId, 
                 'revisionStr', revision.revisionStr, 
                 'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
-                'revisionPinned', dr.revisionPinned, 
+                'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
                 'ruleCount', revision.ruleCount)
             else null end 
           order by revision.benchmarkId),
@@ -877,7 +877,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
     'sa.benchmarkId',
     'revision.revisionStr',
     `date_format(revision.benchmarkDateSql,'%Y-%m-%d') as benchmarkDate`,
-    'dr.revisionPinned',
+    'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'revision.ruleCount',
     'count(sa.assetId) as assetCount'
   ]
@@ -887,7 +887,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join v_default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
     'left join revision on dr.revId = revision.revId'
   ]
 
@@ -1685,6 +1685,7 @@ exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmar
           await connection.query(sqlInsertBenchmarks, [ binds ])
         }
       }
+      await dbUtils.updateDefaultRev(connection, {collectionId, benchmarkId})
       await dbUtils.updateStatsAssetStig(connection, {collectionId, benchmarkId})
       await connection.commit()
     }  
@@ -1733,90 +1734,5 @@ exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId})
   }
   catch (e) {
     return false
-  }
-}
-
-exports.cloneCollection = async function ({collectionId, userObject, name, description, options, svcStatus = {}}) {
-  let connection
-  try {
-
-    const sql = {
-      cloneCollection: `INSERT INTO collection (name, description, settings, metadata) SELECT @name,@description,settings, metadata from collection WHERE collectionId = @srcCollectionId`,
-      selectLastInsertId: 'SELECT last_insert_id() into @destCollectionId',
-      cloneGrants: `INSERT INTO collection_grant (collectionId, userId, accessLevel) SELECT @destCollectionId, userId, accessLevel FROM collection_grant where collectionId = @srcCollectionId`,
-      insertOwnerGrant: `INSERT IGNORE INTO collection_grant (collectionId, userId, accessLevel) VALUES (@destCollectionId, @userId, 4)`,
-      cloneAssets: `INSERT INTO asset (name, fqdn, collectionId, ip, mac, description, noncomputing, metadata) SELECT name,fqdn,@destCollectionId,ip,mac,description,noncomputing,metadata from asset where collectionId = @srcCollectionId`,
-      cloneLabels: `INSERT INTO collection_label (collectionId, name, description, color, uuid) SELECT @destCollectionId,name,description,color,UUID_TO_BIN(UUID(),1) FROM collection_label where collectionId = @srcCollectionId`,
-      cloneAssetLabels: `INSERT INTO collection_label_asset_map (assetId, clId) SELECT am.destAssetId,cm.destClId FROM collection_label_asset_map cla INNER JOIN t_clid_map cm on cla.clId = cm.srcClId INNER JOIN t_assetid_map am on cla.assetId = am.srcAssetId`,
-      cloneStigMappingsWithReviews: `INSERT INTO stig_asset_map (benchmarkId, assetId, minTs, maxTs, saved, savedResultEngine, submitted, submittedResultEngine, rejected, rejectedResultEngine, accepted, acceptedResultEngine, highCount, mediumCount, lowCount, notchecked, notcheckedResultEngine, notapplicable, notapplicableResultEngine, pass, passResultEngine, fail, failResultEngine, unknown, unknownResultEngine, error, errorResultEngine, notselected, notselectedResultEngine, informational, informationalResultEngine, fixed, fixedResultEngine, maxTouchTs) SELECT benchmarkId, am.destAssetId, minTs, maxTs, saved, savedResultEngine, submitted, submittedResultEngine, rejected, rejectedResultEngine, accepted, acceptedResultEngine, highCount, mediumCount, lowCount, notchecked, notcheckedResultEngine, notapplicable, notapplicableResultEngine, pass, passResultEngine, fail, failResultEngine, unknown, unknownResultEngine, error, errorResultEngine, notselected, notselectedResultEngine, informational, informationalResultEngine, fixed, fixedResultEngine, maxTouchTs FROM stig_asset_map sa INNER JOIN t_assetid_map am on sa.assetId = am.srcAssetId`,
-      cloneStigMappingsWithoutReviews: `INSERT INTO stig_asset_map (benchmarkId, assetId) SELECT benchmarkId, am.destAssetId FROM stig_asset_map sa INNER JOIN t_assetid_map am on sa.assetId = am.srcAssetId`,
-      cloneRestrictedUserGrants: `INSERT INTO user_stig_asset_map (userId, saId) SELECT usa.userId, sa2.saId FROM stig_asset_map sa1 inner join user_stig_asset_map usa on sa1.saId = usa.saId inner join t_assetid_map am on sa1.assetId = am.srcAssetId inner join stig_asset_map sa2 on (am.destAssetId = sa2.assetId and sa1.benchmarkId = sa2.benchmarkId)`,
-      dropLabelMap: `DROP TEMPORARY TABLE IF EXISTS t_clid_map`,
-      createLabelMap: `CREATE TEMPORARY TABLE t_clid_map SELECT cl1.clId as srcClId, cl2.clId as destClId FROM collection_label cl1 left join collection_label cl2 on (cl1.collectionId = @srcCollectionId and cl1.name = cl2.name) WHERE cl2.collectionId = @destCollectionId`,
-      dropAssetMap: `DROP TEMPORARY TABLE IF EXISTS t_assetid_map`,
-      createAssetMap: `CREATE TEMPORARY TABLE t_assetid_map SELECT a1.assetId as srcAssetId, a2.assetId as destAssetId FROM asset a1 left join asset a2 on (a1.collectionId =  @srcCollectionId and a1.name = a2.name) WHERE a2.collectionId = @destCollectionId`,
-      cloneReviews: `INSERT INTO review (assetId, ruleId, resultId, detail, comment, autoResult, ts, userId, statusId, statusText, statusUserId, statusTs, metadata, resultEngine, version, checkDigest) SELECT am.destAssetId, r.ruleId, r.resultId, r.detail, r.comment, r.autoResult, r.ts, r.userId, r.statusId, r.statusText, r.statusUserId, r.statusTs, r.metadata, r.resultEngine, r.version, r.checkDigest FROM asset a inner join t_assetid_map am on a.assetId = am.srcAssetId inner join review r on am.srcAssetId = r.assetId`,
-      cloneRevisionsMatchSource: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM collection_rev_map where collectionId = @srcCollectionId`,
-      cloneRevisionsSourceDefaults: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM v_default_rev where collectionId = @srcCollectionId`
-    }
-    connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = false
-    connection.query('set @srcCollectionId = ?, @userId = ?, @name = ?, @description = ?', [
-      parseInt(collectionId),
-      parseInt(userObject.userId),
-      name,
-      description
-    ])
-
-    const dmls = [sql.cloneCollection, sql.selectLastInsertId]
-
-    if (options.grants) {
-      dmls.push(sql.cloneGrants)
-    }
-    dmls.push(sql.insertOwnerGrant)
-
-    if (options.labels) {
-      dmls.push(sql.cloneLabels)
-    }
-
-    if (options.assets) {
-      dmls.push(sql.cloneAssets, sql.dropAssetMap, sql.createAssetMap)
-      if (options.labels) {
-        dmls.push(sql.dropLabelMap, sql.createLabelMap, sql.cloneAssetLabels)
-      }
-      if (options.stigMappings !== 'no') {
-        dmls.push(options.stigMappings === 'withReviews' ? sql.cloneStigMappingsWithReviews : sql.cloneStigMappingsWithoutReviews)
-        if (options.grants) {
-          dmls.push(sql.cloneRestrictedUserGrants)
-        }
-        dmls.push(options.pinRevisions === 'matchSource' ? sql.cloneRevisionsMatchSource : sql.cloneRevisionsSourceDefaults)
-      }
-      if (options.stigMappings === 'withReviews') {
-        dmls.push(sql.cloneReviews)
-      }
-    }
-
-    async function transaction () {
-      await connection.query('START TRANSACTION')
-      for (const dml of dmls) {
-        await connection.query(dml)
-      }
-      await connection.commit()
-    }
-
-    await dbUtils.retryOnDeadlock(transaction, svcStatus)
-    const [rows] = await connection.query(`SELECT @destCollectionId as destCollectionId`)
-    return rows[0]
-  }
-  catch (err) {
-    if (typeof connection !== 'undefined') {
-      await connection.rollback()
-    }
-    throw (err)
-  }
-  finally {
-    if (typeof connection !== 'undefined') {
-      await connection.release()
-    }
   }
 }

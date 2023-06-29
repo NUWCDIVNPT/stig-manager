@@ -97,7 +97,7 @@ module.exports.queryMetrics = async function ({
     'granted',
     'left join asset a on granted.assetId = a.assetId',
     'left join stig_asset_map sa on granted.saId = sa.saId',
-    'left join v_default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
+    'left join default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
     'left join revision rev on dr.revId = rev.revId'
   ]
   const groupBy = []
@@ -429,7 +429,7 @@ const baseCols = {
     sqlLabels,
     'rev.benchmarkId',
     'rev.revisionStr',
-    'dr.revisionPinned'
+    'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -450,7 +450,7 @@ const baseCols = {
   stig: [
     'rev.benchmarkId',
     'rev.revisionStr',
-    'dr.revisionPinned',
+    'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ],
@@ -469,7 +469,7 @@ const baseColsFlat = {
     sqlLabelsFlat,
     'rev.benchmarkId',
     'rev.revisionStr',
-    'dr.revisionPinned'
+    'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -486,7 +486,7 @@ const baseColsFlat = {
   stig: [
     'rev.benchmarkId',
     'rev.revisionStr',
-    'dr.revisionPinned',
+    'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ],

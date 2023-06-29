@@ -531,6 +531,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         res.write('Calculating status statistics\n')
         hrstart = process.hrtime();
         let statsConn = await dbUtils.pool.getConnection()
+        await dbUtils.updateDefaultRev( statsConn, {} )
         const statusStats = await dbUtils.updateStatsAssetStig( statsConn, {} )
         await statsConn.release()
         hrend = process.hrtime(hrstart)
