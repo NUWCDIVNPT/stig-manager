@@ -13,14 +13,14 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     
     const queries = []
 
-    let columns = [
+    const columns = [
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
       'c.description',
       `JSON_MERGE_PATCH('${JSON.stringify(MyController.defaultSettings)}', c.settings) as settings`,
       'c.metadata'
     ]
-    let joins = [
+    const joins = [
       'collection c',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
       'left join asset a on c.collectionId = a.collectionId',
@@ -45,21 +45,21 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       as json) as "assets"`)
     }
     if (inProjection.includes('stigs')) {
-      joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
-      joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
+      joins.push('left join default_rev dr on (sa.benchmarkId=dr.benchmarkId and c.collectionId = dr.collectionId)')
+      joins.push('left join revision on dr.revId = revision.revId')
       columns.push(`cast(
         concat('[', 
           coalesce (
             group_concat(distinct 
-              case when cr.benchmarkId is not null then 
+              case when sa.benchmarkId is not null then 
                 json_object(
-                  'benchmarkId', cr.benchmarkId, 
-                  'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
-                  'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
-                  'title', st.title,
-                  'ruleCount', cr.ruleCount)
+                  'benchmarkId', sa.benchmarkId, 
+                  'revisionStr', revision.revisionStr, 
+                  'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                  'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
+                  'ruleCount', revision.ruleCount)
               else null end 
-            order by cr.benchmarkId),
+            order by sa.benchmarkId),
             ''),
         ']')
       as json) as "stigs"`)
@@ -224,9 +224,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'count(distinct a.assetId) as assetCount'
       ]
       groupBy = [
-        'rgr.ruleId',
-        'rgr.title',
-        'rgr.severity'
+        'rgr.rgrId'
       ]
       orderBy = 'rgr.ruleId'
       break
@@ -238,9 +236,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'count(distinct a.assetId) as assetCount'
       ]
       groupBy = [
-        'rgr.groupId',
-        'rgr.groupTitle',
-        'rgr.severity'
+        'rgr.rgrId'
       ]
       orderBy = 'substring(rgr.groupId from 3) + 0'
       break
@@ -252,9 +248,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
         'count(distinct a.assetId) as assetCount'
       ]
       groupBy = [
-        'cci.cci',
-        'cci.definition',
-        'cci.apAcronym'
+        'cci.cci'
       ]
       orderBy = 'cci.cci'
       break
@@ -265,8 +259,8 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
-    'left join rev_group_rule_map rgr using (revId)',
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
+    'left join rev_group_rule_map rgr on dr.revId = rgr.revId',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
     'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
     'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
@@ -284,13 +278,13 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       'vulnDiscussion', rgr.vulnDiscussion) order by rgr.ruleId), ']') as json) as "rules"`)
   }
   // Not exposed in API, used internally
-  if (inProjection.includes('stigsInfo')) {
-    columns.push(`cast( concat( '[', group_concat(distinct json_object (
-      'benchmarkId', cr.benchmarkId,
-      'version', cr.version,
-      'release', cr.release,
-      'benchmarkDate', cr.benchmarkDate) order by cr.benchmarkId), ']') as json) as "stigsInfo"`)
-  }
+  // if (inProjection.includes('stigsInfo')) {
+  //   columns.push(`cast( concat( '[', group_concat(distinct json_object (
+  //     'benchmarkId', dr.benchmarkId,
+  //     'version', dr.version,
+  //     'release', dr.release,
+  //     'benchmarkDate', dr.benchmarkDate) order by dr.benchmarkId), ']') as json) as "stigsInfo"`)
+  // }
   if (inProjection.includes('rules')) {
     columns.push(`cast(concat('[', group_concat(distinct json_object (
       'ruleId', rgr.ruleId,
@@ -310,7 +304,25 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       'name', a.name) order by a.name), ']') as json) as "assets"`)
   }
   if (inProjection.includes('stigs')) {
-    columns.push(`cast( concat( '[', group_concat(distinct concat('"',cr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
+    joins.push('left join revision on dr.revId = revision.revId')
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when revision.benchmarkId is not null then 
+              json_object(
+                'benchmarkId', revision.benchmarkId, 
+                'revisionStr', revision.revisionStr, 
+                'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
+                'ruleCount', revision.ruleCount)
+            else null end 
+          order by revision.benchmarkId),
+          ''),
+      ']')
+    as json) as "stigs"`)
+
+    // columns.push(`cast( concat( '[', group_concat(distinct concat('"',dr.benchmarkId,'"')), ']' ) as json ) as "stigs"`)
   }
   if (inProjection.includes('ccis')) {
     columns.push(`cast(concat('[', 
@@ -347,7 +359,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
     predicates.binds.push( 3 )
   }
   if ( inPredicates.benchmarkId ) {
-    predicates.statements.push('cr.benchmarkId = ?')
+    predicates.statements.push('dr.benchmarkId = ?')
     predicates.binds.push( inPredicates.benchmarkId )
   }
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -856,20 +868,14 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
   return (rows)
 }
 
-exports.getStigsByCollection = async function( collectionId, labelIds, elevate, userObject ) {
+exports.getStigsByCollection = async function( collectionId, labelIds, userObject, benchmarkId ) {
   let columns = [
-    'cr.benchmarkId',
-    'concat("V", cr.version, "R", cr.release) as lastRevisionStr',
-    `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as lastRevisionDate`,
-    'st.title',
-    'cr.ruleCount',
-    'COUNT(a.assetId) as assetCount',
-    'SUM(sa.accepted) as acceptedCount',
-    'SUM(sa.rejected) as rejectedCount',
-    'SUM(sa.submitted) as submittedCount',
-    'SUM(sa.saved) as savedCount',
-    `LEAST(MIN(minTs), MIN(maxTs)) as minTs`,
-    `GREATEST(MAX(minTs), MAX(maxTs)) as maxTs`
+    'sa.benchmarkId',
+    'revision.revisionStr',
+    `date_format(revision.benchmarkDateSql,'%Y-%m-%d') as benchmarkDate`,
+    'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    'revision.ruleCount',
+    'count(sa.assetId) as assetCount'
   ]
 
   let joins = [
@@ -877,8 +883,8 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join current_rev cr on sa.benchmarkId=cr.benchmarkId',
-    'left join stig st on cr.benchmarkId=st.benchmarkId'
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
+    'left join revision on dr.revId = revision.revId'
   ]
 
   // PREDICATES
@@ -896,6 +902,10 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
     predicates.binds.push([uuidBinds])
 
   }
+  if (benchmarkId) {
+    predicates.statements.push('sa.benchmarkId = ?')
+    predicates.binds.push( benchmarkId )
+  }
 
   joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -908,8 +918,8 @@ exports.getStigsByCollection = async function( collectionId, labelIds, elevate, 
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by cr.benchmarkId, cr.version, cr.release, cr.benchmarkDateSql, st.title, cr.ruleCount '
-  sql += ' order by cr.benchmarkId'
+  sql += ' group by sa.benchmarkId, revision.revId, dr.revisionPinned'
+  sql += ' order by sa.benchmarkId'
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
@@ -1623,4 +1633,101 @@ async function queryUnreviewedByCollection ({
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy})
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
+}
+
+exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmarkId, defaultRevisionStr, assetIds, svcStatus = {}}) {
+  let connection
+  try {
+    let version, release
+    if (defaultRevisionStr) {
+      if (defaultRevisionStr !== 'latest') {
+        const revisionParts = /V(\d+)R(\d+(\.\d+)?)/.exec(defaultRevisionStr)
+        version = revisionParts[1]
+        release = revisionParts[2]
+      }
+    }
+    connection = await dbUtils.pool.getConnection()
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+  
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      if (defaultRevisionStr === 'latest' || assetIds?.length === 0) {
+        await connection.query('DELETE FROM collection_rev_map WHERE collectionId = ? and benchmarkId = ?', [collectionId, benchmarkId])
+      }
+      else if (defaultRevisionStr && defaultRevisionStr !== 'latest') {
+        const [revisions] = await connection.query('SELECT revId FROM revision WHERE benchmarkId = ? and `version` = ? and `release` = ?', [benchmarkId, version, release])
+        if (revisions[0]?.revId) {
+          await connection.query(`INSERT INTO collection_rev_map (collectionId, benchmarkId, revId)
+          VALUES (?, ?, ?) AS new ON DUPLICATE KEY UPDATE revId = new.revId`, [collectionId, benchmarkId, revisions[0].revId])
+        }
+      }  
+      if (assetIds) {
+        let sqlDeleteStigAsset = `
+        DELETE stig_asset_map FROM 
+          stig_asset_map
+          left join asset on stig_asset_map.assetId = asset.assetId
+        WHERE
+          asset.collectionId = ?
+          and stig_asset_map.benchmarkId = ?${assetIds.length > 0 ? ' and stig_asset_map.assetId NOT IN ?': ''}`
+        
+        // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
+        await connection.query( sqlDeleteStigAsset, [ collectionId, benchmarkId, [assetIds] ] )
+        
+        if (assetIds.length) {
+          const binds = assetIds.map( assetId => [benchmarkId, assetId])
+          // INSERT into stig_asset_map
+          const sqlInsertBenchmarks = `INSERT IGNORE INTO stig_asset_map (benchmarkId, assetId) VALUES ?`
+          await connection.query(sqlInsertBenchmarks, [ binds ])
+        }
+      }
+      await dbUtils.updateDefaultRev(connection, {collectionId, benchmarkId})
+      await dbUtils.updateStatsAssetStig(connection, {collectionId, benchmarkId})
+      await connection.commit()
+    }  
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
+
+exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) {
+  try {
+    const sql = `select jt.assetId, a.collectionId
+    from 
+    JSON_TABLE(
+      ?,
+      "$[*]"
+      COLUMNS(
+        assetId INT(11) PATH "$"
+      ) ) AS jt
+    left join asset a using (assetId)
+    where a.collectionId != ? or a.collectionId is null`
+
+    const [rows] = await dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
+    return rows.length === 0
+  }
+  catch (e) {
+    return false
+  }
+}
+
+exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId}) {
+  try {
+    const [rows] = await dbUtils.pool.query(
+      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ?`,
+      [collectionId]
+    )
+    return rows.some(i => i.benchmarkId === benchmarkId)
+  }
+  catch (e) {
+    return false
+  }
 }

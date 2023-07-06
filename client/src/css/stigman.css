@@ -219,6 +219,9 @@
 .sm-whats-new img {
   border: 1px solid hsl(0deg 0% 65%)
 }
+.sm-whats-new-no-border img {
+  border: 0px
+}
 .x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
   background-image: url(../img/clock.svg);
   background-size: 16px 16px
@@ -290,10 +293,13 @@
 	position: absolute;
 	right: 10px;
 	margin-top: 2px;
-	cursor: pointer
+	cursor: pointer;
+	opacity: .5
 }
-.x-tree-node-el:not(.x-tree-selected):hover .sm-tree-toolbar {
-  opacity: .5
+.x-tree-node-el:hover .sm-tree-toolbar:hover,
+.x-tree-selected .sm-tree-toolbar:hover {
+	opacity: 1;
+	scale: 125%
 }
 .x-color-palette {
   height: unset;
@@ -308,6 +314,11 @@
 }
 .sm-label-icon {
   background-image: url(../img/label.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+.sm-pin-icon {
+  background-image: url(../img/pin.svg)!important;
   background-repeat: no-repeat;
   background-size: 16px 16px
 }
@@ -578,7 +589,8 @@ a.x-grid3-hd-btn:hover {
 .ext-gecko .x-btn button,
 .ext-webkit .x-btn button,
 .x-btn button {
-  font-weight: 600
+  font-weight: 600;
+  padding: 0 3px 3px 3px
 }
 .sm-export-sprite {
   font: 10px Open Sans,helvetica,sans-serif;
@@ -1578,6 +1590,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-repeat: no-repeat;
   padding-left: 14px!important
 }
+.sm-cell-pinned {
+  background-image: url(../img/pin.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+}
 .sm-cell-asset {
   background-image: url(../img/target.svg);
   background-repeat: no-repeat;
@@ -2054,4 +2071,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .sm-selectable, .sm-selectable * {
   user-select: text;
+}
+.x-menu-item-active {
+	background-image: none;
+	background-color: #e5e5e5
+}
+.x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
+	background-size: 14px 14px
 }

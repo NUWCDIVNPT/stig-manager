@@ -328,11 +328,11 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             return
           }
           if (node === 'library-root') {
-            let result = await Ext.Ajax.requestPromise({
-              url: `${STIGMAN.Env.apiBase}/stigs`,
+            const apiStigs = await Ext.Ajax.requestPromise({
+              responseType: 'json',
+              url: `${STIGMAN.Env.apiBase}/stigs?projection=revisions`,
               method: 'GET'
             })
-            let apiStigs = JSON.parse(result.response.responseText)
             let content = SM.NavTree.LibraryNodesConfig(apiStigs)
             cb(content, { status: true })
             return

@@ -110,6 +110,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         ) VALUES ?`,
         insertBinds: []
       },
+      collectionPins: {
+        sqlDelete: `DELETE FROM collection_rev_map`,
+        sqlInsert: `INSERT INTO
+        collection_rev_map (
+          collectionId,
+          benchmarkId,
+          revId
+        ) VALUES ?`,
+        insertBinds: []
+      },      
       asset: {
         sqlDelete: `DELETE FROM asset`,
         sqlInsert: `INSERT INTO asset (
@@ -326,6 +336,16 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           dbUtils.uuidToSqlString(label.labelId)
         ])
       }
+        for (const pin of c.stigs ?? []) {
+          if (pin.revisionPinned == true){
+            let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(pin.revisionStr)
+            dml.collectionPins.insertBinds.push([
+              parseInt(c.collectionId),
+              pin.benchmarkId,
+              pin.benchmarkId + "-" + version + "-" + release
+            ])
+          }
+        }
     }
 
     // Tables: asset, collection_label_asset_maps, stig_asset_map, user_stig_asset_map
@@ -436,6 +456,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'collectionGrant',
       'assetLabel',
       'collectionLabel',
+      'collectionPins',
       'collection',
       'asset',
       'userData',
@@ -465,6 +486,11 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
       'review',
       'reviewHistory'
     ]
+
+    if (dml.collectionPins?.insertBinds?.length > 0) {
+      tableOrder.push('collectionPins')
+    }
+
     stats.tempReview = {}
     await connection.query('SET FOREIGN_KEY_CHECKS=1')
     for (const table of tableOrder) {
@@ -505,6 +531,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         res.write('Calculating status statistics\n')
         hrstart = process.hrtime();
         let statsConn = await dbUtils.pool.getConnection()
+        await dbUtils.updateDefaultRev( statsConn, {} )
         const statusStats = await dbUtils.updateStatsAssetStig( statsConn, {} )
         await statsConn.release()
         hrend = process.hrtime(hrstart)

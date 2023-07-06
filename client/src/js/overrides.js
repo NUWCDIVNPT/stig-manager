@@ -628,7 +628,7 @@ Ext.override(Ext.form.ComboBox, {
             var r = this.findRecord(this.valueField, v);
             if(r){
                 text = r.data[this.displayField];
-                if (fireSelect) {
+                if (fireSelect || this.fireSelectOnSetValue) {
 					var index = this.store.indexOf(r);
 					this.selectedIndex = index;
                     this.fireEvent('select', this, r, index);

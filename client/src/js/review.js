@@ -95,7 +95,7 @@ async function addReview( params ) {
 
   var groupStore = new Ext.data.JsonStore({
     proxy: new Ext.data.HttpProxy({
-      url: `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/latest`,
+      url: `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/${leaf.revisionStr}`,
       method: 'GET'
     }),
     root: '',
@@ -399,7 +399,7 @@ async function addReview( params ) {
     region: 'west',
     id: 'groupGrid' + idAppend,
     sm_benchmarkId: leaf.benchmarkId,
-    sm_revisionStr: 'latest',
+    sm_revisionStr: leaf.revisionStr,
     width: '35%',
     minWidth: 340,
     hideMode: 'offsets',
@@ -1277,7 +1277,7 @@ async function addReview( params ) {
   thisTab.show();
 
   groupGrid.getStore().load();
-  loadRevisionMenu(leaf.benchmarkId, 'latest', idAppend)
+  loadRevisionMenu(leaf.benchmarkId, leaf.revisionStr, idAppend)
 
   async function saveReview(saveParams) {
     // saveParams = {
