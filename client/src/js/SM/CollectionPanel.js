@@ -1265,9 +1265,8 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
     }
     const updateData = async function({refreshViewsOnly = false, loadMasksDisabled = false} = {}) {
       try {
-        const showMask = !refreshViewsOnly && !loadMasksDisabled
-        if (showMask) {
-          _this.bwrap?.mask('')
+        if (!_this.hasContent || !loadMasksDisabled) {
+            _this.bwrap?.mask('')
         }
         _this.reloadBtn.showLoadingIcon()
         if (!refreshViewsOnly) {
@@ -1280,6 +1279,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
           _this.data.date = new Date ()
         }
         updatePanels(_this.data)
+        _this.hasContent = true
         return _this.data
       }
       catch (e) {
@@ -1328,7 +1328,8 @@ SM.CollectionPanel.AggAssetPanel = Ext.extend(Ext.Panel, {
       region: 'center',
       exportName: 'Assets',
       baseParams: this.baseParams,
-      reloadBtnHandler: this.reloadBtnHandler
+      reloadBtnHandler: this.reloadBtnHandler,
+      initialized: false 
     })
     const unaggGrid = new SM.CollectionPanel.UnaggGrid({
       title: 'Checklists',
@@ -1355,6 +1356,7 @@ SM.CollectionPanel.AggAssetPanel = Ext.extend(Ext.Panel, {
     }
     const updateData = async function ({refreshViewsOnly = false, loadMasksDisabled = false} = {}) {
       try {
+        aggAssetGrid.initialized = true
         const selectedRow = aggAssetGrid.getSelectionModel().getSelected()
 
         if (refreshViewsOnly) {
@@ -1426,6 +1428,7 @@ SM.CollectionPanel.AggStigPanel = Ext.extend(Ext.Panel, {
       reloadBtnHandler: this.reloadBtnHandler,
       exportName: 'STIGs',
       region: 'center',
+      initialized: false
     })
 
     const unaggGrid = new SM.CollectionPanel.UnaggGrid({
@@ -1455,6 +1458,7 @@ SM.CollectionPanel.AggStigPanel = Ext.extend(Ext.Panel, {
     }
     const updateData = async function ({refreshViewsOnly = false, loadMasksDisabled = false} = {}) {
       try {
+        aggStigGrid.initialized = true
         const selectedRow = aggStigGrid.getSelectionModel().getSelected()
 
         if (refreshViewsOnly) {
@@ -1524,7 +1528,8 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
       exportName: 'Labels',
       region: 'north',
       split: true,
-      height: '33%'
+      height: '33%',
+      initialized: false
     })
     const aggAssetGrid = new SM.CollectionPanel.AggGrid({
       title: 'Assets',
@@ -1577,6 +1582,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
     }
     const updateData = async function ({refreshViewsOnly = false, loadMasksDisabled = false} = {}) {
       try {
+        aggLabelGrid.initialized = true
         const selectedRowLabel = aggLabelGrid.getSelectionModel().getSelected()
         const selectedRowAsset = aggAssetGrid.getSelectionModel().getSelected()
 
@@ -1665,10 +1671,8 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
 
     gState.labelIds = initialLabelIds
     gState.filterableLabels = []
-    // gState.lastApiMetricsCollection
 
     const UPDATE_DATA_DELAY = 300000
-    // const LAST_REFRESH_DELAY = 60000
 
     const overviewTitleTpl = new Ext.XTemplate(
       `Collection: {[values.labels ? values.labels : 'all']}`
@@ -1684,25 +1688,6 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
         }
       }
     })
-
-    // const lastRefreshedTextItem = new Ext.Toolbar.TextItem({
-    //   text: '',
-    //   tpl: [
-    //     'Fetched: <i>{duration}</i>'
-    //   ]
-    // })
-
-    // const overviewReloadBtn = new SM.ReloadStoreButton({
-    //   handler: async function () {
-    //     try {
-    //       await updateData()
-    //     }
-    //     catch (e) {
-    //       console.log(e)
-    //     }
-    //   }
-    // })
-
     const overviewPanel = new SM.CollectionPanel.OverviewPanel({
       cls: 'sm-round-panel sm-metrics-overview-panel',
       collectionId,
@@ -1798,16 +1783,16 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       activeTab: 0,
       border: false,
       deferredRender: false,
+      firstShow: true,
       items: [
         aggStigPanel,
         aggAssetPanel,
         aggLabelPanel
       ],
       listeners: {
-        beforetabchange: function (tp, newTab, currentTab) {
-          if (currentTab) { // after initial setup update the whole presentation
-            updateData({loadMasksDisabled: true})
-          }
+        tabchange: function (tp) {
+          updateData({event: 'tabchange'})
+          tp.firstShow = false
         }
       }
     })
@@ -1846,7 +1831,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
           cancelTimers()
         },
         activate: (panel) => {
-          updateData({loadMasksDisabled: !panel.sm_unshown})
+          updateData({event: 'activate'})
           panel.sm_unshown = false
         }
       }
@@ -1863,7 +1848,6 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     // functions
 
     function setCurrentBaseParams(labelIds) {
-      // if (!labelIds.length) return undefined
       const params = {}
       for (let x = 0, length = labelIds.length; x < length; x++) {
         if (labelIds[x] === null) {
@@ -1879,17 +1863,6 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       overviewPanel?.updateBaseParams(params)
       return params
     }
-
-    // async function getMetricsAggCollection(collectionId) {
-    //   const results = await Ext.Ajax.requestPromise({
-    //     url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary/collection`,
-    //     method: 'GET',
-    //     params: gState.baseParams
-    //   })
-    //   gState.lastApiRefresh = new Date()
-    //   gState.lastApiMetricsCollection = JSON.parse(results.response.responseText)
-    //   return gState.lastApiMetricsCollection
-    // }
 
     async function updateFilterableLabels() {
       try {
@@ -1923,13 +1896,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       overviewPanel.setTitle(overviewTitle)
     }
 
-    // function updateLastRefreshTextItem() {
-    //   overviewPanel.lastRefreshedTextItem.update({
-    //     duration: durationToNow(gState.lastApiRefresh, true)
-    //   })
-    // }
-
-    function reloadBtnHandler() { updateData() }
+    function reloadBtnHandler() { updateData({event: 'reload'}) }
 
     // handle change to label filters in NavTree
     async function onLabelFilter(srcCollectionId, srcLabelIds) {
@@ -1956,8 +1923,12 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     }
 
     // handle periodic updates
-    async function updateData({refreshViewsOnly = false, loadMasksDisabled = false} = {}) {
+    async function updateData({event} = {}) {
       try {
+        // event = activate || tabchange || reload || updateData || refreshViews
+        const refreshViewsOnly = event === 'refreshviews'
+        const loadMasksDisabled = event === 'tabchange' || event === 'updatedata' || event === 'refreshviews'
+        
         clearTimeout(gState.refreshViewTimerId)
         const promises = []
 
@@ -1970,13 +1941,13 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
           gState.updateDataTimerId = setTimeout(
             updateData, 
             UPDATE_DATA_DELAY, 
-            {loadMasksDisabled: true}
+            {event: 'updatedata'}
           )
         }
         promises.push(overviewPanel.updateData({refreshViewsOnly, loadMasksDisabled}))
         const activePanel = aggTabPanel.getActiveTab()
         if (activePanel) {
-          promises.push(activePanel.updateData({refreshViewsOnly, loadMasksDisabled}))
+          promises.push(activePanel.updateData({refreshViewsOnly, loadMasksDisabled: activePanel.items.items[0].initialized ? loadMasksDisabled : false }))
         }
 
         const [unused0, apiMetricsCollection, unused1] = await Promise.all(promises)
@@ -1987,7 +1958,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
           gState.refreshViewTimerId = setTimeout(
             updateData, 
             refreshViewsDelay, 
-            {refreshViewsOnly: true, loadMasksDisabled: true}
+            {event: 'refreshviews'}
           )
         }
       }
