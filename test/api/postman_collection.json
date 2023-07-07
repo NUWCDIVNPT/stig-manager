@@ -21112,7 +21112,7 @@
 															"raw": "[\n    \"{{scrapAsset}}\"\n    ]\n"
 														},
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?elevate={{elevated}}&projection=restrictedUserAccess",
+															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?projection=restrictedUserAccess",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -21127,7 +21127,8 @@
 																{
 																	"key": "elevate",
 																	"value": "{{elevated}}",
-																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+																	"disabled": true
 																},
 																{
 																	"key": "projection",

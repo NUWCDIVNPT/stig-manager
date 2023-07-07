@@ -1780,7 +1780,7 @@ paths:
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
-      # - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/ElevateQuery'
     get:
       tags:
         - Collection
@@ -1859,7 +1859,7 @@ paths:
   '/collections/{collectionId}/metadata/keys':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
-      # - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/ElevateQuery'
     get:
       tags:
         - Collection
@@ -1885,7 +1885,7 @@ paths:
             - 'stig-manager:collection:read'
   '/collections/{collectionId}/metadata/keys/{key}':
     parameters:
-      # - $ref: '#/components/parameters/ElevateQuery'
+      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/MetadataKeyPath'
     get:
