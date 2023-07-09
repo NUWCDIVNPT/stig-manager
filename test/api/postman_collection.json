@@ -26961,7 +26961,104 @@
 									"response": []
 								},
 								{
-									"name": "Delete a User",
+									"name": "Delete a User - fail due to user access record",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 422 when deleting a user that has accessed the system\", function () {\r",
+													"        pm.response.to.have.status(422);\r",
+													"    });\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});\r",
+													"\r",
+													"\r",
+													"pm.test(\"Check if object contains all required keys\", function () {\r",
+													"    // pm.expect(jsonData).to.have.all.keys(userKeys);\r",
+													"\r",
+													"    for (let grant of jsonData.collectionGrants){\r",
+													"        // pm.expect(grant).to.have.all.keys(collectionGrantKeys);\r",
+													"        // pm.expect(grant.collection).to.have.all.keys(collectionKeys);\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Check if object contains all required statistics keys\", function () {\r",
+													"    pm.expect(jsonData.statistics).to.exist;\r",
+													"});\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/users/:userId?elevate={{elevated}}&projection=collectionGrants&projection=statistics",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"users",
+												":userId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												},
+												{
+													"key": "projection",
+													"value": "collectionGrants",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "statistics",
+													"description": "Additional properties to include in the response.\n"
+												}
+											],
+											"variable": [
+												{
+													"key": "userId",
+													"value": "{{scrapAdmin}}",
+													"description": "(Required) A path parameter that indentifies a User"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete a User - succeed, as user has never accessed th system",
 									"event": [
 										{
 											"listen": "test",
@@ -26977,12 +27074,12 @@
 													"\r",
 													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 for users not elevated\", function () {\r",
-													"        pm.response.to.have.status(405);\r",
+													"        pm.response.to.have.status(200);\r",
 													"    });\r",
 													"}\r",
 													"else {\r",
 													"    pm.test(\"Status code is 403\", function () {\r",
-													"        pm.response.to.have.status(405);\r",
+													"        pm.response.to.have.status(403);\r",
 													"    });\r",
 													"}\r",
 													"if (pm.response.code !== 200) {\r",

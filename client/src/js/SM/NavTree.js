@@ -398,7 +398,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
               try {
                 let values = fp.getForm().getFieldValues()
                 await addOrUpdateCollection(0, values, {
-                  elevate: false,
+                  // elevate: false,
                   showManager: true
                 })
               }

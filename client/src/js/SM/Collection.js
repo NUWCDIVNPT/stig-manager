@@ -8,12 +8,13 @@ async function addOrUpdateCollection( collectionId, collectionObj, options = {} 
           delete collectionObj.metadata
           delete collectionObj.labels
       }
+      let elevateParam = options.elevate ? `?elevate=${options.elevate}` : ''
       if (collectionId) {
-        url = `${STIGMAN.Env.apiBase}/collections/${collectionId}?elevate=${options.elevate ?? false}`
+        url = `${STIGMAN.Env.apiBase}/collections/${collectionId}${elevateParam}`
         method = 'PATCH'
       }
       else {
-        url = `${STIGMAN.Env.apiBase}/collections?elevate=${options.elevate ?? false}`,
+        url = `${STIGMAN.Env.apiBase}/collections${elevateParam}`,
         method = 'POST'
       }
       let apiCollection = await Ext.Ajax.requestPromise({

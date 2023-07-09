@@ -3435,27 +3435,27 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
-    # delete:
-    #   tags:
-    #     - User
-    #   summary: Delete a User
-    #   operationId: deleteUser
-    #   responses:
-    #     '200':
-    #       description: UserProjected response
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/UserProjected'
-    #     default:
-    #       description: unexpected error
-    #       content:
-    #         application/json:
-    #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
-    #     - oauth:
-    #         - 'stig-manager:user'
+    delete:
+      tags:
+        - User
+      summary: Delete a User
+      operationId: deleteUser
+      responses:
+        '200':
+          description: UserProjected response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
 components:
   schemas:
     AccessLevel:
