@@ -3438,7 +3438,7 @@ paths:
     delete:
       tags:
         - User
-      summary: Delete a User
+      summary: Delete a User that has never accessed the system. 
       operationId: deleteUser
       responses:
         '200':
