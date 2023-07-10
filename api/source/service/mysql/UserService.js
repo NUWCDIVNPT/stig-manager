@@ -35,7 +35,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
 
     if (inProjection && inProjection.includes('collectionGrants')) {
       // joins.push('left join collection_grant cg on ud.userId = cg.userId')
-      joins.push('inner join collection c on cg.collectionId = c.collectionId and c.state = "enabled"')
+      joins.push('left join collection c on cg.collectionId = c.collectionId and c.state = "enabled"')
       columns.push(`case when count(cg.cgId) > 0 then 
       json_arrayagg(
         json_object(

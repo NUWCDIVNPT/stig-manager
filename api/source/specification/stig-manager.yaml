@@ -1000,32 +1000,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/collections/{collectionId}/clone':
-    post:
-      tags:
-        - Collection
-      summary: Clone an existing Collection to a new Collection
-      operationId: cloneCollection
-      parameters:
-       - $ref: '#/components/parameters/CollectionIdPath'
-       - $ref: '#/components/parameters/CollectionProjectionQuery'
-      requestBody:
-        required: true
-        description: CollectionClone request body
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CollectionCloneRequest'
-      responses:
-        '200':
-          description: CollectionProjected response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CollectionProjected'
-      security:
-      - oauth:
-          - 'stig-manager:collection'
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'

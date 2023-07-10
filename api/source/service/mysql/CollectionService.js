@@ -23,7 +23,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     const joins = [
       'collection c',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'inner join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
+      'left join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
       'left join stig_asset_map sa on a.assetId = sa.assetId'
     ]
 
@@ -714,9 +714,9 @@ exports.createCollection = async function(body, projection, userObject, svcStatu
  * returns CollectionInfo
  **/
 exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
-  let row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
-  let sqlDelete = `UPDATE collection SET state = "disabled" where collectionId = ?`
-  await dbUtils.pool.query(sqlDelete, [collectionId])
+  const row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
+  const sqlDelete = `UPDATE collection SET state = "disabled", stateDate = NOW(), stateUserId = ? where collectionId = ?`
+  await dbUtils.pool.query(sqlDelete, [userObject.userId, collectionId])
   return (row[0])
 }
 
