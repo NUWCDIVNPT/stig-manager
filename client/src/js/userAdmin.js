@@ -183,7 +183,7 @@ function addUserAdmin(params ) {
 					let user = userGrid.getSelectionModel().getSelected();
 					let buttons = {yes: 'Unregister', no: 'Cancel'}
 					let confirmStr=`Unregister user ${user.data.username}?<br><br>This action will remove all Collection Grants for the user. A record will be retained in the system for auditing and attribution purposes.`;
-					if (user.data.lastAccess == 0){
+					if (user.data.lastAccess === 0){
 						confirmStr=`Delete user ${user.data.username}?<br><br>This user has never accessed the system, and will be deleted from the system entirely.`;
 						buttons.yes = 'Delete'
 					}
@@ -196,7 +196,7 @@ function addUserAdmin(params ) {
 						fn: async function (btn,text) {
 							try {
 								if (btn == 'yes') {
-										if (user.data.lastAccess == 0){
+										if (user.data.lastAccess === 0){
 											const apiUser = await Ext.Ajax.requestPromise({
 												responseType: 'json',
 												url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
