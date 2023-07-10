@@ -127,7 +127,6 @@ uglifyjs \
 'SM/RowEditorToolbar.js' \
 'SM/BatchReview.js' \
 'SM/Collection.js' \
-'SM/CollectionClone.js' \
 'SM/CollectionStig.js' \
 'SM/CollectionForm.js' \
 'SM/CollectionAsset.js' \

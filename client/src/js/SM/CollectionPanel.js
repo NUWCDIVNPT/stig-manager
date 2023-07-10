@@ -222,23 +222,6 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
     let idProperty, sortField = 'name', autoExpandColumn = Ext.id()
     let rowdblclick = () => { }
     let cellmousedown = () => { }
-    let cellcontextmenu = function (grid, rowIndex, cellIndex, e) {
-      const text = grid.getView().getCell(rowIndex, cellIndex).innerText
-      const display = `"${text.length > 24 ? text.slice(0,24) + '...' : text + '"'}`
-      const menu = new Ext.menu.Menu({
-        items: [
-        {
-          text: `Copy ${display}`,
-          iconCls: 'sm-copy-icon'
-        }],
-        listeners: {
-          itemclick: function (item, e) {
-            navigator.clipboard.writeText(text)
-          }
-        }
-      })
-      menu.showAt(e.xy)
-    }
 
     function renderWithToolbar(v) {
       return `
@@ -524,8 +507,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       }),
       listeners: {
         rowdblclick,
-        cellmousedown,
-        cellcontextmenu
+        cellmousedown
       }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
