@@ -11,7 +11,6 @@ servers:
 paths:
   /assets:
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
@@ -78,7 +77,6 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
@@ -246,144 +244,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  # '/assets/{assetId}/labels':
-  #   parameters:
-  #     - $ref: '#/components/parameters/AssetIdPath'
-  #   get:
-  #     tags:
-  #       - Asset
-  #     summary: Return the Labels for Asset
-  #     operationId: getAssetLabels
-  #     responses:
-  #       '200':
-  #         description: Labels response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Label'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:collection:read'
-  #   post:
-  #     tags:
-  #       - Asset
-  #     summary: Add labels to an Asset
-  #     operationId: addAssetLabels
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: array
-  #             items:
-  #               $ref: '#/components/schemas/LabelId'
-  #     responses:
-  #       '200':
-  #         description: Labels response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Label'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:collection'
-  #   put:
-  #     tags:
-  #       - Asset
-  #     summary: Removes any previous labels and sets the new labels for an Asset
-  #     operationId: replaceAssetLabels
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: array
-  #             items:
-  #               $ref: '#/components/schemas/LabelId'
-  #     responses:
-  #       '200':
-  #         description: Labels response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Label'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:collection'
-  #   delete:
-  #     tags:
-  #       - Asset
-  #     summary: Removes all labels from an Asset
-  #     operationId: deleteAssetLabels
-  #     responses:
-  #       '200':
-  #         description: Labels response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Label'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:collection'
-  # '/assets/{assetId}/labels/{labelId}':
-  #   parameters:
-  #     - $ref: '#/components/parameters/AssetIdPath'
-  #     - $ref: '#/components/parameters/LabelIdPath'
-  #   delete:
-  #     tags:
-  #       - Asset
-  #     summary: Remove a label from an Asset
-  #     operationId: deleteAssetLabelById
-  #     responses:
-  #       '200':
-  #         description: Labels response
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Label'
-  #       default:
-  #         description: unexpected error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Error'
-  #     security:
-  #       - oauth:
-  #           - 'stig-manager:collection'
   '/assets/{assetId}/metadata':
     parameters:
       - $ref: '#/components/parameters/AssetIdPath'
@@ -543,7 +403,7 @@ paths:
       operationId: deleteAssetMetadataKey
       responses:
         '204':
-          description: Empty to avoid large response after deleteing key with large value
+          description: Empty to avoid large response after deleting key with large value
         default:
           description: unexpected error
           content:
@@ -555,7 +415,6 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/stigs':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
     get:
       tags:
@@ -635,7 +494,6 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/stigs/{benchmarkId}':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
     put:
@@ -687,7 +545,6 @@ paths:
   /collections:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      # - $ref: '#/components/parameters/CollectionsProjectionQuery'
     get:
       tags:
         - Collection
@@ -814,7 +671,7 @@ paths:
         - Collection
       summary: Merge provided properties with a Collection
       description: |
-        The `settings` property can be partially provided. If a partial `settings` object is provided, the Collection settings will be updated to the provided object merged with the **default** settings. This sets exisiting property values not specified in the partial object to their default values.
+        The `settings` property can be partially provided. If a partial `settings` object is provided, the Collection settings will be updated to the provided object merged with the **default** settings. This sets existing property values not specified in the partial object to their default values.
         
         The default settings are found in the description of `POST /collection`
       operationId: updateCollection
@@ -1192,11 +1049,11 @@ paths:
         
         Limits the Reviews to be updated, based on an array of filtering objects. If present, updates are applied to Reviews from the product `assets` x `rules` that pass each of the filters (filters are combined with logical AND). If not present, updates are applied to each Review from the product `assets` x `rules`. 
         
-        Filtering objects specify a Review `field` , a `condition`, and a `value`. See the schema defintion for further details. 
+        Filtering objects specify a Review `field` , a `condition`, and a `value`. See the schema definition for further details. 
         
         **dryRun** *(optional)*
         
-        If present with a `true` value, performs all processing and vaidation logic without actually changing any data. Useful to verify what a given request would do and to reveal any validation errors. The default value is `false`.
+        If present with a `true` value, performs all processing and validation logic without actually changing any data. Useful to verify what a given request would do and to reveal any validation errors. The default value is `false`.
         
         ## Review candidates
         
@@ -1213,7 +1070,7 @@ paths:
         
         - an absent `detail` or `comment` property will set the candidate value to the empty string.
         - an absent `status` property will set the candidate value to `{ label: "saved", text: null }`.
-        - an absent `resutEngine` property will set the candidate value to `null`.
+        - an absent `resultEngine` property will set the candidate value to `null`.
         - an absent `metadata` property will set the candidate value to `{}`
         
         ## Candidate validation
@@ -1487,8 +1344,7 @@ paths:
         - Review
       summary: Delete a Review
       operationId: deleteReviewByAssetRule
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
+      # parameters:
       responses:
         '200':
           description: ReviewProjected response
@@ -1672,7 +1528,7 @@ paths:
       operationId: deleteReviewMetadataKey
       responses:
         '204':
-          description: Empty to avoid large response after deleteing key with large value
+          description: Empty to avoid large response after deleting key with large value
         default:
           description: unexpected error
           content:
@@ -2028,7 +1884,7 @@ paths:
       operationId: deleteCollectionMetadataKey
       responses:
         '204':
-          description: Empty to avoid large response after deleteing key with large value
+          description: Empty to avoid large response after deleting key with large value
         default:
           description: unexpected error
           content:
@@ -2646,7 +2502,6 @@ paths:
             - 'stig-manager:collection'
   '/collections/{collectionId}/stigs/{benchmarkId}/assets':
     parameters:
-      - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
       - $ref: '#/components/parameters/StigAssetsProjectionQuery'
@@ -3576,7 +3431,7 @@ paths:
     delete:
       tags:
         - User
-      summary: Delete a User
+      summary: Delete a User that has never accessed the system. 
       operationId: deleteUser
       responses:
         '200':
@@ -5858,7 +5713,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReviewHistory'
-
     ReviewHistoryDeleted:     
       type: object
       required:

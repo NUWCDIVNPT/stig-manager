@@ -7201,7 +7201,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId/stigs?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/assets/:assetId/stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -7214,7 +7214,8 @@
 														{
 															"key": "elevate",
 															"value": "{{elevated}}",
-															"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+															"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+															"disabled": true
 														}
 													],
 													"variable": [
@@ -7246,7 +7247,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user === \"elevated\" || user === \"lvl3\" || user === \"lvl4\" ) {\r",
+													"if (user === \"stigmanadmin\" || user === \"lvl3\" || user === \"lvl4\" ) {\r",
 													"    pm.test(\"Status should be is 200 \", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -7327,7 +7328,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7339,7 +7340,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -7383,7 +7385,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user === \"elevated\" || user === \"lvl3\" || user === \"lvl4\" ) {\r",
+													"if (user === \"stigmanadmin\" || user === \"lvl3\" || user === \"lvl4\" ) {\r",
 													"    pm.test(\"Status should be is 200 \", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -7464,7 +7466,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7476,7 +7478,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -7595,7 +7598,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7607,7 +7610,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -7729,7 +7733,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -7741,7 +7745,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -8567,7 +8572,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -8588,7 +8593,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -8751,7 +8757,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -8773,7 +8779,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -8927,7 +8934,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&elevate={{elevated}}&projection=statusStats&projection=stigs",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&benchmarkId={{testBenchmark}}&projection=statusStats&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -8948,7 +8955,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -9116,7 +9124,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&elevate={{elevated}}&projection=statusStats&projection=stigs",
+									"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&projection=statusStats&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -9138,7 +9146,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -21103,7 +21112,7 @@
 															"raw": "[\n    \"{{scrapAsset}}\"\n    ]\n"
 														},
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?elevate={{elevated}}&projection=restrictedUserAccess",
+															"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?projection=restrictedUserAccess",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -21118,7 +21127,8 @@
 																{
 																	"key": "elevate",
 																	"value": "{{elevated}}",
-																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+																	"disabled": true
 																},
 																{
 																	"key": "projection",
@@ -23717,7 +23727,7 @@
 														"method": "DELETE",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/assets/:assetId/stigs/:benchmarkId?elevate={{elevated}}",
+															"raw": "{{baseUrl}}/assets/:assetId/stigs/:benchmarkId",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -23731,7 +23741,8 @@
 																{
 																	"key": "elevate",
 																	"value": "{{elevated}}",
-																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+																	"disabled": true
 																}
 															],
 															"variable": [
@@ -23800,7 +23811,7 @@
 												"method": "DELETE",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId/stigs?elevate={{elevated}}",
+													"raw": "{{baseUrl}}/assets/:assetId/stigs",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -23813,7 +23824,8 @@
 														{
 															"key": "elevate",
 															"value": "{{elevated}}",
-															"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+															"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+															"disabled": true
 														}
 													],
 													"variable": [
@@ -23891,7 +23903,7 @@
 													"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"{{metadataKey}}\":\"{{metadataValue}}\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}\n"
 												},
 												"url": {
-													"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+													"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -23902,7 +23914,8 @@
 													"query": [
 														{
 															"key": "elevate",
-															"value": "{{elevated}}"
+															"value": "{{elevated}}",
+															"disabled": true
 														},
 														{
 															"key": "projection",
@@ -24401,7 +24414,7 @@
 											"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -24413,7 +24426,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -24500,7 +24514,7 @@
 											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -24512,7 +24526,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -24590,7 +24605,7 @@
 										"method": "DELETE",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -24602,7 +24617,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -24708,7 +24724,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"labelIds\": [\"{{testLabel}}\"],\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets?elevate={{elevated}}&projection=stigs",
+									"raw": "{{baseUrl}}/assets?projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -24719,7 +24735,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -26045,7 +26062,7 @@
 														"method": "DELETE",
 														"header": [],
 														"url": {
-															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=rule&projection=history&projection=stigs",
+															"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
 															"host": [
 																"{{baseUrl}}"
 															],
@@ -26060,7 +26077,8 @@
 																{
 																	"key": "elevate",
 																	"value": "{{elevated}}",
-																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+																	"disabled": true
 																},
 																{
 																	"key": "projection",
@@ -26322,7 +26340,7 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=rule&projection=history&projection=stigs",
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -26337,7 +26355,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -26563,7 +26582,7 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?elevate={{elevated}}&projection=rule&projection=history&projection=stigs",
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=rule&projection=history&projection=stigs",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -26578,7 +26597,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -26941,7 +26961,104 @@
 									"response": []
 								},
 								{
-									"name": "Delete a User",
+									"name": "Delete a User - fail due to user access record",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 422 when deleting a user that has accessed the system\", function () {\r",
+													"        pm.response.to.have.status(422);\r",
+													"    });\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"});\r",
+													"\r",
+													"\r",
+													"pm.test(\"Check if object contains all required keys\", function () {\r",
+													"    // pm.expect(jsonData).to.have.all.keys(userKeys);\r",
+													"\r",
+													"    for (let grant of jsonData.collectionGrants){\r",
+													"        // pm.expect(grant).to.have.all.keys(collectionGrantKeys);\r",
+													"        // pm.expect(grant.collection).to.have.all.keys(collectionKeys);\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Check if object contains all required statistics keys\", function () {\r",
+													"    pm.expect(jsonData.statistics).to.exist;\r",
+													"});\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/users/:userId?elevate={{elevated}}&projection=collectionGrants&projection=statistics",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"users",
+												":userId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												},
+												{
+													"key": "projection",
+													"value": "collectionGrants",
+													"description": "Additional properties to include in the response.\n"
+												},
+												{
+													"key": "projection",
+													"value": "statistics",
+													"description": "Additional properties to include in the response.\n"
+												}
+											],
+											"variable": [
+												{
+													"key": "userId",
+													"value": "{{scrapAdmin}}",
+													"description": "(Required) A path parameter that indentifies a User"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete a User - succeed, as user has never accessed th system",
 									"event": [
 										{
 											"listen": "test",
@@ -27550,7 +27667,7 @@
 									"raw": "{\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -27562,7 +27679,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -27669,7 +27787,7 @@
 									"raw": "{\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -27681,7 +27799,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -27862,7 +27981,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapLvl1}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -27874,7 +27993,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -27917,7 +28037,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
 											"        pm.response.to.have.status(403);\r",
 											"    });\r",
@@ -27978,7 +28098,7 @@
 									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -27990,7 +28110,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -47433,7 +47554,7 @@
 											"raw": "[\n    \"{{scrapAsset}}\"\n    ]\n"
 										},
 										"url": {
-											"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?elevate={{elevated}}&projection=restrictedUserAccess",
+											"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId/assets?projection=restrictedUserAccess",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -47448,7 +47569,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -47907,7 +48029,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+											"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}&projection=statusStats&projection=stigs&projection=stigGrants",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -47929,7 +48051,8 @@
 												{
 													"key": "elevate",
 													"value": "{{elevated}}",
-													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
 												},
 												{
 													"key": "projection",
@@ -48404,7 +48527,7 @@
 									"raw": "{\n    \"name\": \"Collection_X_lvl1_asset-1\",\n    \"collectionId\": \"{{testCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"VPN_SRG_OTHER\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -48416,7 +48539,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
@@ -49106,7 +49230,7 @@
 									"raw": "{\n    \"name\": \"Collection_X_lvl1_asset-1\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
-									"raw": "{{baseUrl}}/assets/:assetId?elevate={{elevated}}&projection=statusStats&projection=stigs&projection=stigGrants",
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -49118,7 +49242,8 @@
 										{
 											"key": "elevate",
 											"value": "{{elevated}}",
-											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
 										},
 										{
 											"key": "projection",
