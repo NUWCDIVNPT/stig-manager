@@ -470,7 +470,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = :assetId)',
       'left join result on review.resultId=result.resultId',
       'left join status on review.statusId=status.statusId',
-      'inner join asset a on review.assetId=a.assetId and a.assetId = "enabled"'
+      'left join asset a on review.assetId=a.assetId and a.state = "enabled"'
     ]
     const predicates = {
       statements: [],
