@@ -181,23 +181,40 @@ function addUserAdmin(params ) {
 				disabled: !(curUser.privileges.canAdmin),
 				handler: function() {
 					let user = userGrid.getSelectionModel().getSelected();
-					let confirmStr=`Unregister user ${user.data.username}?<br><br>This will remove all Collection Grants for the user and is not reversable.`;
+					let buttons = {yes: 'Unregister', no: 'Cancel'}
+					let confirmStr=`Unregister user ${user.data.username}?<br><br>This action will remove all Collection Grants for the user. A record will be retained in the system for auditing and attribution purposes.`;
+					if (user.data.lastAccess === 0){
+						confirmStr=`Delete user ${user.data.username}?<br><br>This user has never accessed the system, and will be deleted from the system entirely.`;
+						buttons.yes = 'Delete'
+					}
 					
 					Ext.Msg.show({
 						title: 'Confirm unregister action',
 						icon: Ext.Msg.WARNING,
 						msg: confirmStr,
-						buttons: {yes: 'Unregister', no: 'Cancel'},
+						buttons: buttons,
 						fn: async function (btn,text) {
 							try {
 								if (btn == 'yes') {
-									const apiUser = await Ext.Ajax.requestPromise({
-										responseType: 'json',
-										url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
-										method: 'DELETE'
-									})
-									userStore.remove(user)
-									SM.Dispatcher.fireEvent('userdeleted', apiUser)
+										if (user.data.lastAccess === 0){
+											const apiUser = await Ext.Ajax.requestPromise({
+												responseType: 'json',
+												url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}`,
+												method: 'DELETE'
+											})
+											userStore.remove(user)
+											SM.Dispatcher.fireEvent('userdeleted', apiUser)
+										}
+										else {
+											const apiUser = await Ext.Ajax.requestPromise({
+												responseType: 'json',
+												url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.canAdmin}&projection=collectionGrants&projection=statistics`,
+												method: 'PATCH',
+												jsonData: {collectionGrants: []}
+											})
+										// userStore.remove(user)
+										SM.Dispatcher.fireEvent('userchanged', apiUser)									
+									}
 								}
 							}
 							catch (e) {

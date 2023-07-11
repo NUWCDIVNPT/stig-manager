@@ -1103,9 +1103,18 @@ async function showAssetProps( assetId, initialCollectionId ) {
                     }
                 }
                 catch (e) {
-                    SM.Error.handleError(e)
+                    if (e.responseText) {
+                      const response = SM.safeJSONParse(e.responseText)
+                      if (response?.detail === 'Duplicate name exists.') {
+                        Ext.Msg.alert('Name unavailable', 'The Asset name is already used in this Collection. Please try a different name.')
+                      }
+                      else {
+                        appwindow.close()
+                        await SM.Error.handleError(e)
+                      }
+                    }
+                  }
                 }
-            }
         })
 
         /******************************************************/
