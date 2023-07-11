@@ -918,7 +918,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   // PREDICATES
   let predicates = {
     statements: [
-      'asset.state = "enabled"'
+      'asset.state = "enabled"',
+      'c.state = "enabled"'
     ],
     binds: []
   }

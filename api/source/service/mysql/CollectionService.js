@@ -1305,6 +1305,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
   ]
   const predicates = {
     statements: [
+      'a_l.state = "enabled"',
       `(cg_l.userId = ? AND 
         CASE WHEN cg_l.accessLevel = 1 THEN 
           usa_l.userId = cg_l.userId
@@ -1366,7 +1367,7 @@ exports.getCollectionLabelById = async function (collectionId, labelId, userObje
   from
     collection_label cl 
     left join collection_grant cg_l on cl.collectionId = cg_l.collectionId
-    left join asset a_l on cl.collectionId = a_l.collectionId
+    left join asset a_l on cl.collectionId = a_l.collectionId and a_l.state = "enabled"
     left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId
     left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId
     left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId
@@ -1421,7 +1422,7 @@ select
 from
   collection_label cl 
   left join collection_grant cg on cl.collectionId = cg.collectionId
-  left join asset a on cl.collectionId = a.collectionId
+  left join asset a on cl.collectionId = a.collectionId and a.state = "enabled"
   left join stig_asset_map sa on a.assetId = sa.assetId
   left join user_stig_asset_map usa on sa.saId = usa.saId
   left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId
@@ -1715,7 +1716,7 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
         assetId INT(11) PATH "$"
       ) ) AS jt
     left join asset a using (assetId)
-    where a.collectionId != ? or a.collectionId is null`
+    where a.collectionId != ? or a.collectionId is null or a.state != "enabled"`
 
     const [rows] = await dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
     return rows.length === 0
@@ -1728,7 +1729,7 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
 exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId}) {
   try {
     const [rows] = await dbUtils.pool.query(
-      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ?`,
+      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ? and a.state = "enabled"`,
       [collectionId]
     )
     return rows.some(i => i.benchmarkId === benchmarkId)

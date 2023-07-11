@@ -168,7 +168,7 @@ module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkId
     distinct sa.benchmarkId
   from
     stig_asset_map sa
-    left join asset a on sa.assetId = a.assetId
+    left join asset a on sa.assetId = a.assetId and a.state = 'enabled'
     left join collection_grant cg on a.collectionId = cg.collectionId
     left join user_stig_asset_map usa on sa.saId = usa.saId
   where
