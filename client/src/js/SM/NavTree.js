@@ -391,22 +391,27 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           })
         }
         if (n.attributes.action == 'collection-create') {
-          let collectionRootNode = n.parentNode
           let fp = new SM.Collection.CreateForm({
             btnText: 'Create',
             btnHandler: async () => {
               try {
                 let values = fp.getForm().getFieldValues()
                 await addOrUpdateCollection(0, values, {
-                  elevate: false,
                   showManager: true
                 })
+                appwindow.close()
               }
               catch (e) {
-                SM.Error.handleError(e)
-              }
-              finally {
-                appwindow.close()
+                if (e.responseText) {
+                  const response = SM.safeJSONParse(e.responseText)
+                  if (response?.detail === 'Duplicate name exists.') {
+                    Ext.Msg.alert('Name unavailable', 'The Collection name is unavailable. Please try a different name.')
+                  }
+                  else {
+                    appwindow.close()
+                    await SM.Error.handleError(e)
+                  }
+                }
               }
             }
           })
