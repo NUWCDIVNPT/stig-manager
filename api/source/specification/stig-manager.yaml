@@ -11,7 +11,6 @@ servers:
 paths:
   /assets:
     parameters:
-      # - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
@@ -78,7 +77,6 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}':
     parameters:
-      # - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
@@ -417,7 +415,6 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/stigs':
     parameters:
-      # - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
     get:
       tags:
@@ -497,7 +494,6 @@ paths:
             - 'stig-manager:collection'
   '/assets/{assetId}/stigs/{benchmarkId}':
     parameters:
-      # - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
     put:
@@ -549,7 +545,6 @@ paths:
   /collections:
     parameters:
       - $ref: '#/components/parameters/ElevateQuery'
-      # - $ref: '#/components/parameters/CollectionsProjectionQuery'
     get:
       tags:
         - Collection
@@ -1399,7 +1394,6 @@ paths:
       summary: Delete a Review
       operationId: deleteReviewByAssetRule
       # parameters:
-      #   # - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: ReviewProjected response
@@ -2508,7 +2502,6 @@ paths:
             - 'stig-manager:collection'
   '/collections/{collectionId}/stigs/{benchmarkId}/assets':
     parameters:
-      # - $ref: '#/components/parameters/ElevateQuery'
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
       - $ref: '#/components/parameters/StigAssetsProjectionQuery'

@@ -405,7 +405,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 if (e.responseText) {
                   const response = SM.safeJSONParse(e.responseText)
                   if (response?.detail === 'Duplicate name exists.') {
-                    Ext.Msg.alert('Name unavailable', 'The Collection name is unavaiable, please try again.')
+                    Ext.Msg.alert('Name unavailable', 'The Collection name is unavailable. Please try a different name.')
                   }
                   else {
                     appwindow.close()
