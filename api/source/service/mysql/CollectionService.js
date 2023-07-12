@@ -1146,7 +1146,7 @@ from
     left join user_data udStatus on udStatus.userId=rh.statusUserId
 		INNER JOIN result on rh.resultId = result.resultId
 		INNER JOIN status on rh.statusId = status.statusId
-		inner join asset a on a.assetId = rv.assetId
+		inner join asset a on a.assetId = rv.assetId and a.state = 'enabled'
 	WHERE
 		rv.assetId = a.assetId
 		and a.collectionId = :collectionId`
@@ -1229,7 +1229,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
   sql += `
     FROM review_history rh
       INNER JOIN review rv on rh.reviewId = rv.reviewId
-      INNER JOIN asset a on rv.assetId = a.assetId
+      INNER JOIN asset a on rv.assetId = a.assetId and a.state = 'enabled'
     WHERE a.collectionId = :collectionId
     additionalPredicates
   `
