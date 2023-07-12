@@ -1305,7 +1305,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
   ]
   const predicates = {
     statements: [
-      'a_l.state = "enabled"',
+      // 'a_l.state = "enabled"',
       `(cg_l.userId = ? AND 
         CASE WHEN cg_l.accessLevel = 1 THEN 
           usa_l.userId = cg_l.userId
