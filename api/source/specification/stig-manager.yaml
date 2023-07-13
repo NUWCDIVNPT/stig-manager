@@ -4143,52 +4143,6 @@ components:
           type: string
         name:
           type: string
-    CollectionCloneOptions:
-      type: object
-      additionalProperties: false
-      properties:
-        grants:
-          type: boolean
-          default: true
-        # settings:
-        #   type: boolean
-        #   default: true
-        labels:
-          type: boolean
-          default: true
-        # metadata:
-        #   type: boolean
-        #   default: true
-        assets:
-          type: boolean
-          default: true
-        stigMappings:
-          type: string
-          enum:
-            - 'no'
-            - withReviews
-            - withoutReviews
-          default: withReviews
-        pinRevisions:
-          type: string
-          enum:
-            - matchSource
-            - sourceDefaults
-          default: matchSource
-    CollectionCloneRequest:
-      type: object
-      required:
-        - name
-        - description
-      additionalProperties: false
-      properties:
-        name:
-          $ref: '#/components/schemas/String255'
-        description:
-          type: string
-          nullable: true
-        options:
-          $ref: '#/components/schemas/CollectionCloneOptions'
     CollectionCreateOrReplace:
       type: object
       required:
@@ -5919,7 +5873,7 @@ components:
         revisionStr:
           type: string
         version:
-          type: integer
+          type: string
         release:
           type: string
         benchmarkDate:
