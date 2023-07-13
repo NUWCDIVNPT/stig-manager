@@ -38,23 +38,6 @@ SM.WhatsNew.Sources = [
 `    
   },  
   {
-    date: '2023-5-20',
-    header: `Tally Sprites for Most Display Grids`,
-    body: `
-    <p>New tally sprites have been added to the bottom toolbars of grids that display Review data. These sprites show the relevant counts for the various rows, results, and statuses displayed in the grids above.</p>
-
-    <p>These sprites respond to filters you have active on your view of the grid data. For example, if you have a filter active that only shows CAT 1 Rules with a Result of "Open", the tally sprite will only count Reviews for CAT 1 Rules with a Result of "Open". </p>
-
-    <p>Hover over the sprites for tooltips describing their contents.</p>
-
-    <p><img src="img/whatsnew/2023-05-20-tally-sprites.png"/></p>
-
-    <p>Note: The "Other" column in the Collection Review grid has been renamed to "NR+" to better describe its contents.</p>
-
-
-`    
-  },  
-  {
     date: '2023-4-27',
     header: `Reviews now persist across most Rule changes!`,
     body: `

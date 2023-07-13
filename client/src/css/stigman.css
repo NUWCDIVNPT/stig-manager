@@ -1303,6 +1303,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-add-icon {
   background-image: url(../img/icons8-add-16.png)!important
 }
+.sm-copy-icon {
+  background-image: url(../img/copy.svg)!important;
+  background-size: 16px 16px
+}
+.sm-clone-icon {
+  background-image: url(../img/clone.svg)!important;
+  background-size: 16px 16px
+}
 .sm-disc-drive {
   background-image: url(../img/disc_drive.png)!important
 }
@@ -2078,4 +2086,15 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
 	background-size: 14px 14px
+}
+
+.sm-hover-icon {
+	opacity: 0.75;
+	filter: grayscale(50%)
+}
+
+.sm-hover-icon:hover {
+	opacity: 1;
+	scale: 110%;
+	filter: grayscale(0%)
 }

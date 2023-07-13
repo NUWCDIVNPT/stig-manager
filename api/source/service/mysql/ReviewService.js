@@ -53,6 +53,7 @@ function cteAssetGen({assetIds, benchmarkIds, labelIds, labelNames}) {
       left join user_stig_asset_map usa on sa.saId = usa.saId
     where
       a.collectionId = @collectionId 
+      and a.state = "enabled"
       and cg.userId = @userId 
       and (CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)
       and sa.benchmarkId IN ?`
@@ -916,7 +917,10 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: [
+      'asset.state = "enabled"',
+      'c.state = "enabled"'
+    ],
     binds: []
   }
   

@@ -300,7 +300,7 @@ async function showCollectionProps(collectionId) {
       btnHandler: async () => {
         try {
           let values = fp.getForm().getFieldValues()
-          await addOrUpdateCollection(collectionId, values, {
+          await addOrUpdateCollection(0, values, {
             elevate: true,
             showManager: true
           })
