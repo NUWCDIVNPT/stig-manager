@@ -1,43 +1,44 @@
 #loading-mask {
-    position: absolute;
-    left:     0;
-    top:      0;
-    width:    100%;
-    height:   100%;
-    z-index:  20000;
-    background-color: #586574;
-    /* box-shadow: inset rgb(0 0 0 / 38%) 0px 0px 200px 200px; */
-  }
-  
-  #loading {
-    position: absolute;
-    /* border: 1px solid black; */
-    padding: 10px;
-    left: 50%;
-    top: 33%;
-    width: 500px;
-    /* height: 100px; */
-    margin-left: -250px;
-    margin-top: -50px;
-    /* background-color: #ffffff; */
-    z-index: 20001;
-    /* box-shadow: rgb(0 0 0 / 4%) 0px 0px 6px 6px; */
-  }
-  
-  #loading .loading-indicator {
-    background: url("../img/loading.svg") no-repeat;
-    background-position: center top;
-    background-size: 50px;
-    color: #d0cec5;
-    font: bold 32px helvetica,sans-serif ;
-    padding: 50px 0px;
-    margin:     0;
-    text-align: center;
-    height:     auto;
-  }
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20000;
+  background-color: #586574;
+}
 
-  #loading-text {
-    font: bold 12px helvetica,sans-serif;
-    padding-top: 8px;
-  }
-  
+#loading {
+  position: absolute;
+  padding: 10px;
+  left: 50%;
+  top: 33%;
+  width: 500px;
+  margin-left: -250px;
+  margin-top: -50px;
+  z-index: 20001;
+}
+
+#loading .loading-indicator {
+  background: url("../img/loading.svg") no-repeat;
+  background-position: center top;
+  background-size: 50px;
+  color: #d0cec5;
+  font: bold 32px helvetica, sans-serif;
+  padding: 50px 0px;
+  margin: 0;
+  text-align: center;
+  height: auto;
+}
+
+#loading-text {
+  font: bold 12px helvetica, sans-serif;
+  padding-top: 8px;
+}
+
+#loading-text a {
+  color: #d0cec5;
+  background: url("../img/external-link.svg") no-repeat 100% 0;
+  background-size: 12px 12px;
+  padding-right: 16px;
+}
