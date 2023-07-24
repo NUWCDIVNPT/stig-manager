@@ -59,5 +59,11 @@ async function authorizeOidc() {
   }
 }
 
-document.getElementById("loading-text").innerHTML = `Loading ${STIGMAN?.Env?.version}`
-authorizeOidc()
+if (window.isSecureContext) {
+  document.getElementById("loading-text").innerHTML = `Loading ${STIGMAN?.Env?.version}`
+  authorizeOidc()
+}
+else {
+  document.getElementById("loading-text").innerHTML = `SECURE CONTEXT REQUIRED<br><br>The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue. <br><br>To be considered secure, resources that are not local must be served over https:// URLs and the security properties of the network channel used to deliver the resource must not be considered deprecated.`
+}
+
