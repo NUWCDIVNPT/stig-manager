@@ -302,7 +302,7 @@ async function showCollectionProps(collectionId) {
           let values = fp.getForm().getFieldValues()
           await addOrUpdateCollection(collectionId, values, {
             elevate: true,
-            showManager: false
+            showManager: true
           })
           appwindow.close()
         }
