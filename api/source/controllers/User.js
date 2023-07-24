@@ -52,7 +52,7 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
       let userId = req.params.userId
       let projection = req.query.projection
       let userData = await User.getUserByUserId(userId, ['statistics'], elevate, req.userObject)
-      if (userData.statistics.lastAccess) {
+      if (userData?.statistics?.lastAccess) {
         // User has accessed the system, so we need to reject the request
         throw new SmError.UnprocessableError('User has accessed the system. Use PATCH to remove collection grants or configure Authentication provider to reject user entirely.')
       }

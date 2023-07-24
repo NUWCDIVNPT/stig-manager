@@ -747,34 +747,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}':
-    parameters:
-      - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdPath'
-      - $ref: '#/components/parameters/RevisionStrPath'
-    get:
-      tags:
-        - Collection
-      summary: Return the Checklist for the supplied Collection and STIG
-      operationId: getChecklistByCollectionStig
-      responses:
-        '200':
-          description: ChecklistCollectionStig response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ChecklistCollectionStig'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
   '/collections/{collectionId}/archive/ckl':
     post:
       tags:
@@ -848,6 +820,34 @@ paths:
               schema:
                 type: string
                 format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/RevisionStrPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the Checklist for the supplied Collection and STIG
+      operationId: getChecklistByCollectionStig
+      responses:
+        '200':
+          description: ChecklistCollectionStig response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChecklistCollectionStig'
         default:
           description: unexpected error
           content:
@@ -952,55 +952,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-  '/collections/{collectionId}/poam':
-    get:
-      tags:
-        - Collection
-      summary: Return a POAM-like spreadsheet for the specified Collection aggregated by groupId
-      operationId: getPoamByCollection
-      parameters:
-        - $ref: '#/components/parameters/CollectionIdPath'
-        - $ref: '#/components/parameters/PoamAggregatorQuery'
-        - name: acceptedOnly
-          in: query
-          schema:
-            type: boolean
-            default: false
-        - $ref: '#/components/parameters/BenchmarkIdQuery'
-        - $ref: '#/components/parameters/AssetIdQuery'
-        - name: date
-          description: Value for columns Scheduled Completion Date, Milestone With Completion Dates, Milestone Changes
-          in: query
-          schema:
-            type: string
-        - name: office
-          description: Value for column Office/Org
-          in: query
-          schema:
-            type: string
-          allowReserved: true
-        - name: status
-          description: Value for column Status
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: CollectionFinding response
-          content:
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-              schema:
-                type: string
-                format: binary
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
   '/collections/{collectionId}/reviews':
     get:
       tags:
@@ -2282,6 +2233,55 @@ paths:
             text/csv:
               schema:
                 type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/{collectionId}/poam':
+    get:
+      tags:
+        - Collection
+      summary: Return a POAM-like spreadsheet for the specified Collection aggregated by groupId
+      operationId: getPoamByCollection
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/PoamAggregatorQuery'
+        - name: acceptedOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/AssetIdQuery'
+        - name: date
+          description: Value for columns Scheduled Completion Date, Milestone With Completion Dates, Milestone Changes
+          in: query
+          schema:
+            type: string
+        - name: office
+          description: Value for column Office/Org
+          in: query
+          schema:
+            type: string
+          allowReserved: true
+        - name: status
+          description: Value for column Status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CollectionFinding response
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         default:
           description: unexpected error
           content:
