@@ -824,7 +824,7 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
     // create Map of the asset's mapped STIGs
     const availableRevisionsMap = new Map()
     for (const stig of assetResponse.stigs) {
-      availableRevisionsMap.set(stig.benchmarkId, stig.revisionStrs)
+      availableRevisionsMap.set(stig.benchmarkId, stig.revisionStr)
     }
 
     // create Map of the requested STIGs for the asset
@@ -832,7 +832,7 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
     if (!requested.stigs) {
       // request doesn't specify STIGs, so include all mapped STIGs and their current revision strings
       for (const stig of assetResponse.stigs) {
-        requestedRevisionsMap.set(stig.benchmarkId, [stig.lastRevisionStr])
+        requestedRevisionsMap.set(stig.benchmarkId, stig.revisionStr)
       } 
     }
     else {
@@ -840,18 +840,22 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
       for (const stig of requested.stigs) {
         if (typeof stig === 'string' && availableRevisionsMap.has(stig)) {
           // array member is a benchmarkId string that matches an available STIG mapping
-          const revisions = requestedRevisionsMap.get(stig) ?? []
-          revisions.push('latest')
+          const revisions = availableRevisionsMap.get(stig) ?? []
           requestedRevisionsMap.set(stig, revisions)
         }
-        else if ((stig.revisionStr === 'latest' && availableRevisionsMap.has(stig.benchmarkId)) || availableRevisionsMap.get(stig.benchmarkId)?.includes(stig.revisionStr)) {
-          // array member is an object that matches an available STIG/Revision mapping
-          const revisions = requestedRevisionsMap.get(stig.benchmarkId) ?? []
-          revisions.push(stig.revisionStr)
-          requestedRevisionsMap.set(stig.benchmarkId, revisions)
-        }
         else {
-          throw new SmError.UnprocessableError(`Asset id ${assetId} is not mapped to ${JSON.stringify(stig)}.`)
+          const existingRevisions = await StigSvc.getRevisionsByBenchmarkId(stig.benchmarkId, userObject)
+          
+          if ((stig.revisionStr === 'latest' && availableRevisionsMap.has(stig.benchmarkId)) || 
+            (availableRevisionsMap.has(stig.benchmarkId) && existingRevisions.find(({ revisionStr }) => revisionStr === stig.revisionStr))) {
+            // array member is an object that matches an available STIG/Revision mapping
+            const revisions = requestedRevisionsMap.get(stig.benchmarkId) ?? []
+            revisions.push(stig.revisionStr)
+            requestedRevisionsMap.set(stig.benchmarkId, revisions)
+          }
+          else {
+            throw new SmError.UnprocessableError(`Asset id ${assetId} is not mapped to ${JSON.stringify(stig)}.`)
+          }
         }
       }
     }
