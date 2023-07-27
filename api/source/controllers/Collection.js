@@ -802,6 +802,28 @@ module.exports.getUnreviewedRulesByCollection = async function (req, res, next) 
 async function processAssetStigRequests (assetStigRequests, collectionId, mode = 'mono', userObject) {
   const assetStigArguments = []
   let collectionName
+
+  // Pre-fetch the available revisions of STIGs that were accompanied by a requested revision
+
+  // Build a Set of the requested STIGs that were accomapnied by a requested revision
+  const requestedStigRevisionsSet = assetStigRequests.reduce((acc, value) => {
+    if (value.stigs) {
+      for (const item of value.stigs) {
+        if (typeof item !== 'string') {
+          acc.add(item.benchmarkId)
+        }
+      }
+    }
+    return acc
+  }, new Set())
+  const requestedStigRevisionsArray = [...requestedStigRevisionsSet]
+  // Create an object that can have benchmarkId properties and values of revisionStr arrays
+  let availableRevisions = {}
+  if (requestedStigRevisionsArray.length) {
+    availableRevisions = await StigSvc.getRevisionStrsByBenchmarkIds(requestedStigRevisionsArray)
+  }
+
+  // iterate through the request
   for (const requested of assetStigRequests) {
     const assetId = requested.assetId
     
@@ -816,38 +838,45 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
       throw new SmError.UnprocessableError(`Asset id ${assetId} is not a member of Collection id ${collectionId}.`)
     }
     if (!collectionName) { collectionName = assetResponse.collection.name } // will be identical for other assets
-    // Does the asset have STIG mappings?
+    // Does the asset have STIG assignments?
     if (assetResponse.stigs.length === 0) {
-      throw new SmError.UnprocessableError(`Asset id ${assetId} has no STIG mappings.`)
+      throw new SmError.UnprocessableError(`Asset id ${assetId} has no STIG assignments.`)
     }
 
-    // create Map of the asset's mapped STIGs
-    const availableRevisionsMap = new Map()
-    for (const stig of assetResponse.stigs) {
-      availableRevisionsMap.set(stig.benchmarkId, stig.revisionStrs)
-    }
+    // create Set with keys being the asset's benchmarkId assignments
+    const assignedStigsSet = new Set(assetResponse.stigs.map( stig => stig.benchmarkId))
 
-    // create Map of the requested STIGs for the asset
+    // create Map with keys being the requested benchmarkIds for the asset and values being an array of requested revisionStrs for that benchmarkId
     const requestedRevisionsMap = new Map()
+
     if (!requested.stigs) {
-      // request doesn't specify STIGs, so include all mapped STIGs and their current revision strings
+      // request doesn't specify STIGs, so create keys for each assigned benchmarkId and set each value to an array containing the default revision string
       for (const stig of assetResponse.stigs) {
-        requestedRevisionsMap.set(stig.benchmarkId, [stig.lastRevisionStr])
+        requestedRevisionsMap.set(stig.benchmarkId, [stig.revisionStr])
       } 
     }
     else {
       // request includes specific STIGs
       for (const stig of requested.stigs) {
-        if (typeof stig === 'string' && availableRevisionsMap.has(stig)) {
-          // array member is a benchmarkId string that matches an available STIG mapping
+        if (typeof stig === 'string' && assignedStigsSet.has(stig)) {
+          // value is a benchmarkId string that matches an available STIG mapping
+
+          // get already requested revisions for this STIG or any empty array
           const revisions = requestedRevisionsMap.get(stig) ?? []
-          revisions.push('latest')
+          // add the default revision string to the requested revisions
+          revisions.push(assetResponse.stigs.find( assetStig => assetStig.benchmarkId === stig).revisionStr)
+          // update the Map
           requestedRevisionsMap.set(stig, revisions)
         }
-        else if ((stig.revisionStr === 'latest' && availableRevisionsMap.has(stig.benchmarkId)) || availableRevisionsMap.get(stig.benchmarkId)?.includes(stig.revisionStr)) {
-          // array member is an object that matches an available STIG/Revision mapping
+        else if ((stig.revisionStr === 'latest' && assignedStigsSet.has(stig.benchmarkId)) || 
+          (assignedStigsSet.has(stig.benchmarkId) && availableRevisions[stig.benchmarkId].includes(stig.revisionStr))) {
+          // value is an object that matches an available STIG/Revision mapping
+
+          // get already requested revisions for this STIG or any empty array
           const revisions = requestedRevisionsMap.get(stig.benchmarkId) ?? []
+          // add this requested revision string to the requested revisions
           revisions.push(stig.revisionStr)
+          // update the Map
           requestedRevisionsMap.set(stig.benchmarkId, revisions)
         }
         else {

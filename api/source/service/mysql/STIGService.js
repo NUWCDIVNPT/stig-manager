@@ -1434,3 +1434,41 @@ exports.getStigById = async function(benchmarkId, userObject, elevate) {
   }
 }
 
+exports.getRevisionStrsByBenchmarkId = async function (benchmarkId) {
+  try {
+    const sql = `SELECT
+      concat('V', r.version, 'R', r.release) as "revisionStr"
+    FROM
+      revision r
+    WHERE
+      r.benchmarkId = ?`
+    const [rows] = await dbUtils.pool.query(sql, [benchmarkId])
+    return rows.map( row => row.revisionStr)
+  }
+  catch(err) {
+    throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+}
+
+exports.getRevisionStrsByBenchmarkIds = async function (benchmarkIds) {
+  try {
+    const sql = `SELECT
+      r.benchmarkId,
+      json_arrayagg(concat('V', r.version, 'R', r.release)) as "revisionStrs"
+    FROM
+      revision r
+    WHERE
+      r.benchmarkId IN ?
+    GROUP BY
+      r.benchmarkId`
+    const [rows] = await dbUtils.pool.query(sql, [[benchmarkIds]])
+    const returnObj = {}
+    for (const row of rows) {
+      returnObj[row.benchmarkId] = row.revisionStrs
+    }
+    return returnObj
+  }
+  catch(err) {
+    throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+}
