@@ -802,6 +802,28 @@ module.exports.getUnreviewedRulesByCollection = async function (req, res, next) 
 async function processAssetStigRequests (assetStigRequests, collectionId, mode = 'mono', userObject) {
   const assetStigArguments = []
   let collectionName
+
+  // Pre-fetch the available revisions of STIGs that were accompanied by a requested revision
+
+  // Build a Set of the requested STIGs that were accomapnied by a requested revision
+  const requestedStigRevisionsSet = assetStigRequests.reduce((acc, value) => {
+    if (value.stigs) {
+      for (const item of value.stigs) {
+        if (typeof item !== 'string') {
+          acc.add(item.benchmarkId)
+        }
+      }
+    }
+    return acc
+  }, new Set())
+  const requestedStigRevisionsArray = [...requestedStigRevisionsSet]
+  // Create an object that can have benchmarkId properties and values of revisionStr arrays
+  let availableRevisions = {}
+  if (requestedStigRevisionsArray.length) {
+    availableRevisions = await StigSvc.getRevisionStrsByBenchmarkIds(requestedStigRevisionsArray)
+  }
+
+  // iterate through the request
   for (const requested of assetStigRequests) {
     const assetId = requested.assetId
     
@@ -847,7 +869,7 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
           requestedRevisionsMap.set(stig, revisions)
         }
         else if ((stig.revisionStr === 'latest' && assignedStigsSet.has(stig.benchmarkId)) || 
-          (assignedStigsSet.has(stig.benchmarkId) && (await StigSvc.getRevisionStrsByBenchmarkId(stig.benchmarkId)).includes(stig.revisionStr))) {
+          (assignedStigsSet.has(stig.benchmarkId) && availableRevisions[stig.benchmarkId].includes(stig.revisionStr))) {
           // value is an object that matches an available STIG/Revision mapping
 
           // get already requested revisions for this STIG or any empty array
