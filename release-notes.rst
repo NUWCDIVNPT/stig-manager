@@ -1,10 +1,22 @@
+1.3.8
+-----
+
+Changes:
+
+  - (API/UI) Revision Pinning feature
+  - (API/UI) Modify User Delete function to retain users that have accessed the system.
+  - (API) OAS cleanup
+  - (UI) More explanatory message when User attempts to create Collections or Assets with names that already exist.
+  - (API) Dependency updates
+
+
 1.3.7
 -----
 
 Changes:
 
   - (API) Update fast-xml-parser dependency to address CVE-2023-34104 (#1012)
-  - (API) Addd stack trace to API error responses (#1011)
+  - (API) Addd stack trace to API error responses (#1011)  
 
 
 1.3.6

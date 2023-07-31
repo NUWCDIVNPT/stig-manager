@@ -1295,7 +1295,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
     'left join asset a_l on cl.collectionId = a_l.collectionId',
     'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
     'left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId',
-    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId'
+    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId and a_l.state = "enabled"'
   ]
   const groups = [
     'cl.uuid',
