@@ -912,8 +912,8 @@ SM.Collection.ManagePanel = Ext.extend(Ext.form.FormPanel, {
             }
         })          
         const delButton = new Ext.Button({
-            iconCls: 'sm-trash-icon',
-            // cls: 'sm-bare-button',
+            iconCls: 'sm-hover-icon sm-trash-icon',
+            tooltip: 'Delete',
             width: 25,
             template: new Ext.Template(
                 '<table id="{4}" cellspacing="0" class="x-btn {3}"><tbody class="{1}">',

@@ -86,7 +86,7 @@ const upMigration = [
 
 const downMigration = [
   `drop table if exists collection_rev_map`,
-  `DROP VIEW IF EXISTS default_rev`
+  `DROP VIEW IF EXISTS v_default_rev`
 ]
 
 const migrationHandler = new MigrationHandler(upMigration, downMigration)

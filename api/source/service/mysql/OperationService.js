@@ -596,7 +596,7 @@ exports.getDetails = async function() {
       COUNT(sa.assetId) as stigAssetCnt
     FROM
       collection c
-      LEFT JOIN asset a on a.collectionId = c.collectionId
+      LEFT JOIN asset a on a.collectionId = c.collectionId and a.state = "enabled"
       LEFT JOIN stig_asset_map sa on sa.assetId = a.assetId 
     GROUP BY
       c.collectionId,

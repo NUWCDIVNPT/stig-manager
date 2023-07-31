@@ -16,7 +16,8 @@ exports.queryStigs = async function ( inPredicates, inProjections, userObject, e
       cast(concat('[', group_concat(distinct concat('"',a.collectionId,'"')),']') as json) as collectionIds
       FROM
       stig_asset_map sa
-      left join asset a using (assetId)
+      inner join asset a on a.assetId=sa.assetId and a.state = "enabled"
+      inner join collection c on c.collectionId=a.collectionId and c.state = "enabled"
       ${elevate ? '' : `left join collection_grant cg on a.collectionId = cg.collectionId
       left join user_stig_asset_map usa on sa.saId = usa.saId
       where  (cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)`}
