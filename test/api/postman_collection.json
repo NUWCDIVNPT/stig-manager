@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "6bed6cc0-9b71-4692-981f-a539431133c3",
-		"name": "STIGMan OSS - collection-asset-non-delete",
+		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "9301046"
