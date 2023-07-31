@@ -22,7 +22,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     ]
     let joins = [
       'user_data ud',
-      'left join collection_grant cg on ud.userId = cg.userId'
+      'left join (select cgi.cgId, cgi.collectionId, cgi.userId, cgi.accessLevel from collection_grant cgi inner join collection c on cgi.collectionId = c.collectionId and c.state = "enabled") cg on ud.userId = cg.userId'
     ]
     let groupBy = [
       'ud.userId',
@@ -34,7 +34,6 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     }
 
     if (inProjection && inProjection.includes('collectionGrants')) {
-      // joins.push('left join collection_grant cg on ud.userId = cg.userId')
       joins.push('left join collection c on cg.collectionId = c.collectionId')
       columns.push(`case when count(cg.cgId) > 0 then 
       json_arrayagg(

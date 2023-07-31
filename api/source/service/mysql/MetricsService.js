@@ -25,7 +25,7 @@ module.exports.queryMetrics = async function ({
     joins: [
       'collection c',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join asset a on c.collectionId = a.collectionId',
+      'inner join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'left join user_stig_asset_map usa on sa.saId = usa.saId'
     ],

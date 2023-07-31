@@ -146,7 +146,10 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
 
   // PREDICATES
   const predicates = {
-    statements: [],
+    statements: [
+      `a.state = "enabled"`,
+      `c.state = "enabled"`
+    ],
     binds: []
   }
   if (inPredicates.assetId) {
@@ -466,7 +469,8 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       'left join rule_version_check_digest rvcd using (ruleId)',
       'left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = :assetId)',
       'left join result on review.resultId=result.resultId',
-      'left join status on review.statusId=status.statusId'
+      'left join status on review.statusId=status.statusId',
+      'left join asset a on review.assetId=a.assetId and a.state = "enabled"'
     ]
     const predicates = {
       statements: [],
@@ -552,7 +556,9 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   }
   // PREDICATES
   const predicates = {
-    statements: [],
+    statements: [
+      'a.state = "enabled"'
+    ],
     binds: []
   }
   if (inPredicates.collectionId) {
@@ -609,7 +615,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
       }
     }
 
-    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
+    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ? and asset.state = 'enabled'"
     const sqlGetChecklist =`SELECT 
       rgr.groupId,
       rgr.severity,
@@ -1043,8 +1049,8 @@ exports.createAsset = async function({body, projection, elevate, userObject, svc
 
 exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
-  const sqlDelete = `DELETE FROM asset where assetId = ?`
-  await dbUtils.pool.query(sqlDelete, [assetId])
+  const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId = ?`
+  await dbUtils.pool.query(sqlDelete, [userObject.userId, assetId])
   // changes above might have affected need for records in collection_rev_map 
   await dbUtils.pruneCollectionRevMap()
   await dbUtils.updateDefaultRev(null, {})

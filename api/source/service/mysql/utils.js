@@ -168,7 +168,8 @@ module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkId
     distinct sa.benchmarkId
   from
     stig_asset_map sa
-    left join asset a on sa.assetId = a.assetId
+    inner join asset a on sa.assetId = a.assetId and a.state = 'enabled'
+    inner join collection c on a.collectionId = c.collectionId and c.state = 'enabled'
     left join collection_grant cg on a.collectionId = cg.collectionId
     left join user_stig_asset_map usa on sa.saId = usa.saId
   where
@@ -463,7 +464,7 @@ module.exports.retryOnDeadlock = async function (fn, statusObj = {}) {
 
 module.exports.pruneCollectionRevMap = async function (connection) {
   const sql = `delete crm from collection_rev_map crm
-  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId)) maps using (collectionId, benchmarkId)
+  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId) where a.state = "enabled" ) maps using (collectionId, benchmarkId)
   where maps.collectionId is null`
   await (connection ?? _this.pool).query(sql)
 }

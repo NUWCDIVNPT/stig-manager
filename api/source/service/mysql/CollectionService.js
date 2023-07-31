@@ -23,7 +23,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     const joins = [
       'collection c',
       'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'left join asset a on c.collectionId = a.collectionId',
+      'left join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
       'left join stig_asset_map sa on a.assetId = sa.assetId'
     ]
 
@@ -131,7 +131,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
 
     // PREDICATES
     let predicates = {
-      statements: [],
+      statements: [`c.state = "enabled"`],
       binds: []
     }
     if ( inPredicates.collectionId ) {
@@ -256,7 +256,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   let joins = [
     'collection c',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join asset a on c.collectionId = a.collectionId',
+    'inner join asset a on (c.collectionId = a.collectionId and a.state = "enabled")',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
     'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
@@ -341,7 +341,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: ['c.state = "enabled"'],
     binds: []
   }
   
@@ -455,7 +455,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
   let joins = [
     'collection c',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join asset a on c.collectionId = a.collectionId',
+    'inner join asset a on c.collectionId = a.collectionId and a.state = "enabled" ',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join user_stig_asset_map usa on sa.saId = usa.saId',
     'left join current_rev cr on sa.benchmarkId = cr.benchmarkId',
@@ -465,7 +465,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: ['c.state = "enabled"'],
     binds: []
   }
   
@@ -514,7 +514,10 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
   ]
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: [
+      'c.state = "enabled"',
+      'a.state = "enabled"'
+    ],
     binds: []
   }
   if ( inPredicates.collectionId ) {
@@ -711,9 +714,9 @@ exports.createCollection = async function(body, projection, userObject, svcStatu
  * returns CollectionInfo
  **/
 exports.deleteCollection = async function(collectionId, projection, elevate, userObject) {
-  let row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
-  let sqlDelete = `DELETE FROM collection where collectionId = ?`
-  await dbUtils.pool.query(sqlDelete, [collectionId])
+  const row = await _this.queryCollections(projection, { collectionId: collectionId }, elevate, userObject)
+  const sqlDelete = `UPDATE collection SET state = "disabled", stateDate = NOW(), stateUserId = ? where collectionId = ?`
+  await dbUtils.pool.query(sqlDelete, [userObject.userId, collectionId])
   return (row[0])
 }
 
@@ -741,7 +744,8 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     const predicates = {
       statements: [
         'a.collectionId = :collectionId',
-        'rev.benchmarkId = :benchmarkId'
+        'rev.benchmarkId = :benchmarkId',
+        'a.state = "enabled"'
       ],
       binds: {
         collectionId: collectionId,
@@ -889,7 +893,9 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: [
+      'a.state = "enabled"'
+    ],
     binds: []
   }
   predicates.statements.push('c.collectionId = ?')
@@ -1140,7 +1146,7 @@ from
     left join user_data udStatus on udStatus.userId=rh.statusUserId
 		INNER JOIN result on rh.resultId = result.resultId
 		INNER JOIN status on rh.statusId = status.statusId
-		inner join asset a on a.assetId = rv.assetId
+		inner join asset a on a.assetId = rv.assetId and a.state = 'enabled'
 	WHERE
 		rv.assetId = a.assetId
 		and a.collectionId = :collectionId`
@@ -1223,7 +1229,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
   sql += `
     FROM review_history rh
       INNER JOIN review rv on rh.reviewId = rv.reviewId
-      INNER JOIN asset a on rv.assetId = a.assetId
+      INNER JOIN asset a on rv.assetId = a.assetId and a.state = 'enabled'
     WHERE a.collectionId = :collectionId
     additionalPredicates
   `
@@ -1289,7 +1295,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
     'left join asset a_l on cl.collectionId = a_l.collectionId',
     'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
     'left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId',
-    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId'
+    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId and a_l.state = "enabled"'
   ]
   const groups = [
     'cl.uuid',
@@ -1299,6 +1305,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
   ]
   const predicates = {
     statements: [
+      // 'a_l.state = "enabled"',
       `(cg_l.userId = ? AND 
         CASE WHEN cg_l.accessLevel = 1 THEN 
           usa_l.userId = cg_l.userId
@@ -1360,7 +1367,7 @@ exports.getCollectionLabelById = async function (collectionId, labelId, userObje
   from
     collection_label cl 
     left join collection_grant cg_l on cl.collectionId = cg_l.collectionId
-    left join asset a_l on cl.collectionId = a_l.collectionId
+    left join asset a_l on cl.collectionId = a_l.collectionId and a_l.state = "enabled"
     left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId
     left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId
     left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId
@@ -1415,7 +1422,7 @@ select
 from
   collection_label cl 
   left join collection_grant cg on cl.collectionId = cg.collectionId
-  left join asset a on cl.collectionId = a.collectionId
+  left join asset a on cl.collectionId = a.collectionId and a.state = "enabled"
   left join stig_asset_map sa on a.assetId = sa.assetId
   left join user_stig_asset_map usa on sa.saId = usa.saId
   left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId
@@ -1709,7 +1716,7 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
         assetId INT(11) PATH "$"
       ) ) AS jt
     left join asset a using (assetId)
-    where a.collectionId != ? or a.collectionId is null`
+    where a.collectionId != ? or a.collectionId is null or a.state != "enabled"`
 
     const [rows] = await dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
     return rows.length === 0
@@ -1722,7 +1729,7 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
 exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId}) {
   try {
     const [rows] = await dbUtils.pool.query(
-      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ?`,
+      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ? and a.state = "enabled"`,
       [collectionId]
     )
     return rows.some(i => i.benchmarkId === benchmarkId)
