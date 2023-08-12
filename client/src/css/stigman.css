@@ -2077,9 +2077,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   width: 12px;
 }
 
-.sm-selectable, .sm-selectable * {
-  user-select: text;
-}
 .x-menu-item-active {
 	background-image: none;
 	background-color: #e5e5e5
