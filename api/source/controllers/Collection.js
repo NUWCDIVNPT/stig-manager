@@ -971,3 +971,46 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
     next(err)
   }
 }
+
+module.exports.cloneCollection = async function (req, res, next) {
+  try {
+    function progressCb(json) {
+      res.write(JSON.stringify(json) + '\n')
+    }
+    if ( req.userObject.privileges.canCreateCollection ) {
+      const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+      const options = {
+        grants: true,
+        labels: true,
+        assets: true,
+        stigMappings: 'withReviews',
+        pinRevisions: 'matchSource',
+        ...req.body.options
+      }
+
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+      req.noCompression = true
+
+      const cloned = await CollectionSvc.cloneCollection({
+        collectionId, 
+        userObject: req.userObject, 
+        name: req.body.name,
+        description: req.body.description,
+        options, 
+        svcStatus: res.svcStatus,
+        progressCb
+      })
+      if (cloned) {
+        const collection = await CollectionSvc.getCollection(cloned.destCollectionId, req.query.projection, false, req.userObject )
+        res.write(JSON.stringify({stage: 'result', collection}) + '\n')
+      }
+      res.end()
+    }
+    else {
+      throw new SmError.PrivilegeError('User has not been granted createCollection privilege')
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}

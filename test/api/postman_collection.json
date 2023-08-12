@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "6bed6cc0-9b71-4692-981f-a539431133c3",
+		"_postman_id": "bb5e7a19-9585-4b11-a5e8-10e72525254c",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -55985,6 +55985,1538 @@
 								}
 							},
 							"response": []
+						}
+					]
+				},
+				{
+					"name": "Collection Cloning",
+					"item": [
+						{
+							"name": "clone data prep",
+							"item": [
+								{
+									"name": "Import and overwrite application data (as elevated Admin) Copy",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let response = pm.response.text();\r",
+													"console.log(response)\r",
+													"\r",
+													"pm.test(\"Body contains string\",() => {\r",
+													"  pm.expect(response).to.include(\"Commit successful\");\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "accessToken",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "./{{formDataFiles}}/{{appDataFile}}"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/op/appdata?elevate=true",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"op",
+												"appdata"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "true",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Import a new STIG - VPN R1V0 Copy",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"\r",
+													"// let jsonData = pm.response.json();\r",
+													"// let expectedRevData = \r",
+													"// {\r",
+													"//     \"benchmarkId\": \"VPN_SRG_TEST\",\r",
+													"//     \"revisionStr\": \"V1R0\",\r",
+													"//     \"action\": \"inserted\"\r",
+													"// }\r",
+													"\r",
+													"\r",
+													"// pm.test(\"Response JSON as expected)\", function () {\r",
+													"//     pm.expect(jsonData).to.be.an('object')\r",
+													"//     pm.expect(jsonData).to.eql(expectedRevData)\r",
+													"// });\r",
+													"\r",
+													"\r",
+													"// console.log(response)\r",
+													"\r",
+													"\r",
+													"\r",
+													"// pm.test(\"Body contains string\",() => {\r",
+													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+													"// });"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "replace",
+													"value": "true",
+													"description": " (This can only be one of true,false)",
+													"type": "text",
+													"disabled": true
+												},
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "./{{formDataFiles}}/{{testStigFile}}",
+													"disabled": true
+												},
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "form-data-files/U_VPN_SRG_V1R0_Manual-xccdf.xml"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"stigs"
+											],
+											"query": [
+												{
+													"key": "clobber",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Set default rev only",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"// let jsonData = pm.response.json();\r",
+													"\r",
+													"const respData = pm.response.json()\r",
+													"const reqData = JSON.parse(pm.request.body.raw)\r",
+													"const expectedResponse = {\r",
+													"  benchmarkId: pm.environment.get(\"testBenchmark\"),\r",
+													"  revisionStr: \"V1R0\",\r",
+													"  benchmarkDate: \"2010-07-19\",\r",
+													"  revisionPinned: true,\r",
+													"  ruleCount: 81,\r",
+													"  assetCount: 3,\r",
+													"\r",
+													"}    \r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(respData).to.be.an('object');\r",
+													"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+													"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+													"\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response matches expected response\", function () {\r",
+													"    try {\r",
+													"        pm.expect(respData).to.eql(expectedResponse)\r",
+													"    }\r",
+													"    catch (e) {\r",
+													"        e.message = `actual: ${JSON.stringify(e.actual)}, expected: ${JSON.stringify(e.expected)}`\r",
+													"        throw(e)\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"defaultRevisionStr\": \"V1R0\"\n}\n"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/stigs/:benchmarkId",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"stigs",
+												":benchmarkId"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "{{elevated}}",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+													"disabled": true
+												},
+												{
+													"key": "projection",
+													"value": "restrictedUserAccess",
+													"description": "Additional properties to include in the response.\n",
+													"disabled": true
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "{{testCollection}}",
+													"description": "(Required) A path parameter that indentifies a Collection"
+												},
+												{
+													"key": "benchmarkId",
+													"value": "{{testBenchmark}}",
+													"description": "(Required) A path parameter that indentifies a STIG"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "clone param variations",
+							"item": [
+								{
+									"name": "clone test collection - everything matches source",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - no grants",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": false,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - no labels",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": false,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - no assets",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": false,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - stigMappings=no",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"no\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - stigMappings= withoutReviews",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withoutReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - sourceDefaults",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"sourceDefaults\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"let user = pm.environment.get(\"user\");",
+											"console.log(\"user: \" + user);",
+											"",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {",
+											"    user = \"elevated\";",
+											"    console.log(\"setting user to 'elevated'\");",
+											"}",
+											"",
+											"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl4\" && user != \"lvl4\") { ",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), and collectioncreator\", function () {",
+											"        pm.response.to.have.status(403);",
+											"    });",
+											"    return;",
+											"}",
+											"else {",
+											"    pm.test(\"Status code is 200\", function () {",
+											"        pm.response.to.have.status(200); ",
+											"    });",
+											"}",
+											"if (pm.response.code !== 200) {",
+											"    return;",
+											"}",
+											"",
+											"",
+											"// let jsonData = JSON.parse(pm.response.text())",
+											"let jsonDataArray = pm.response.text().split(\"\\n\")",
+											"",
+											" let assetsProjected = [",
+											"            {",
+											"                name: \"ACHERNAR_Collection_X_asset\"",
+											"            },",
+											"            {",
+											"                name: \"Collection_X_asset\"",
+											"            },",
+											"            {",
+											"                name: \"Collection_X_lvl1_asset-1\"",
+											"            },",
+											"            {",
+											"                name: \"Collection_X_lvl1_asset-2\"",
+											"            }",
+											"        ]",
+											"",
+											"let grantsProjected = [",
+											"            {",
+											"                user: {",
+											"                    userId: \"86\",",
+											"                    username: \"bizarroLvl1\",",
+											"                    displayName: \"bizarroLvl1\"",
+											"                },",
+											"                accessLevel: 1",
+											"            },",
+											"            {",
+											"                user: {",
+											"                    userId: \"85\",",
+											"                    username: \"lvl1\",",
+											"                    displayName: \"lvl1\"",
+											"                },",
+											"                accessLevel: 1",
+											"            },",
+											"            {",
+											"                user: {",
+											"                    userId: \"21\",",
+											"                    username: \"lvl2\",",
+											"                    displayName: \"lvl2\"",
+											"                },",
+											"                accessLevel: 2",
+											"            },",
+											"            {",
+											"                user: {",
+											"                    userId: \"44\",",
+											"                    username: \"lvl3\",",
+											"                    displayName: \"lvl3\"",
+											"                },",
+											"                accessLevel: 3",
+											"            },",
+											"            {",
+											"                user: {",
+											"                    userId: \"87\",",
+											"                    username: \"admin\",",
+											"                    displayName: \"Admin Burke\"",
+											"                },",
+											"                accessLevel: 4",
+											"            },",
+											"            {",
+											"                user: {",
+											"                    userId: \"1\",",
+											"                    username: \"stigmanadmin\",",
+											"                    displayName: \"STIGMAN Admin\"",
+											"                },",
+											"                accessLevel: 4",
+											"            },",
+											"            {",
+											"                user: {",
+											"                    userId: \"45\",",
+											"                    username: \"lvl4\",",
+											"                    displayName: \"lvl4\"",
+											"                },",
+											"                accessLevel: 4",
+											"            }",
+											"        ]",
+											"",
+											"let ownersProjected = [",
+											"            {",
+											"                // \"email\": \"admin@admin.com\",",
+											"                userId: \"87\",",
+											"                username: \"admin\",",
+											"                displayName: \"Admin Burke\"",
+											"            },",
+											"            {",
+											"                // \"email\": null,",
+											"                userId: \"1\",",
+											"                username: \"stigmanadmin\",",
+											"                displayName: \"STIGMAN Admin\"",
+											"            },",
+											"            {",
+											"                // \"email\": null,",
+											"                userId: \"45\",",
+											"                username: \"lvl4\",",
+											"                displayName:  null",
+											"            }",
+											"        ]",
+											"",
+											"let stigsProjected = [",
+											"            {",
+											"                ruleCount: 81,",
+											"                benchmarkId: \"VPN_SRG_TEST\",",
+											"                revisionStr: \"V1R0\",",
+											"                benchmarkDate: \"2010-07-19\",",
+											"                revisionPinned: true",
+											"            },",
+											"            {",
+											"                ruleCount: 287,",
+											"                benchmarkId: \"Windows_10_STIG_TEST\",",
+											"                revisionStr: \"V1R23\",",
+											"                benchmarkDate: \"2020-06-17\",",
+											"                revisionPinned: false",
+											"            }",
+											"        ]",
+											"",
+											"let statisticsProjected = {",
+											"            assetCount: 4,",
+											"            grantCount: 7,",
+											"            checklistCount: 6",
+											"        }",
+											"let labelsProjected = [",
+											"            {",
+											"                name: \"test-label-full\",",
+											"                description: \"\",",
+											"                color: \"FF99CC\",",
+											"                uses: 2",
+											"            },",
+											"            {",
+											"                name: \"test-label-lvl1\",",
+											"                description: \"\",",
+											"                color: \"99CCFF\",",
+											"                uses: 1",
+											"            }",
+											"        ]",
+											"",
+											"pm.test(\"Response JSON is an array with expected length\", function () {",
+											"    pm.expect(jsonDataArray).to.be.an('array');",
+											"    if (user != \"collectioncreator\" ) {",
+											"        pm.expect(jsonDataArray).to.have.lengthOf.at.least(1);",
+											"    }",
+											"",
+											"});",
+											"",
+											"",
+											"const requestBody = JSON.parse(pm.request.body.raw)",
+											"// console.log(reqData)",
+											"",
+											"",
+											"if (requestBody.options.grants == false ){",
+											"    grantsProjected = [",
+											"        {",
+											"            user: {",
+											"                userId: \"1\",",
+											"                username: \"stigmanadmin\",",
+											"                displayName: \"STIGMAN Admin\"",
+											"            },",
+											"            accessLevel: 4",
+											"        }",
+											"    ]",
+											"    ownersProjected = [",
+											"        {",
+											"            userId: \"1\",",
+											"            username: \"stigmanadmin\",",
+											"            displayName: \"STIGMAN Admin\"",
+											"        }",
+											"    ]",
+											"",
+											"    statisticsProjected.grantCount = 1",
+											"",
+											"}",
+											"",
+											"if (requestBody.options.pinRevisions == \"sourceDefaults\" ){",
+											"    stigsProjected[1].revisionPinned = true               ",
+											"}",
+											"",
+											"if (requestBody.options.labels == false ){",
+											"    labelsProjected = []",
+											"}",
+											"",
+											"if (requestBody.options.assets == false ){",
+											"    assetsProjected = []",
+											"    statisticsProjected.assetCount = 0",
+											"    statisticsProjected.checklistCount = 0",
+											"    stigsProjected = []",
+											"    labelsProjected[0].uses = 0",
+											"    labelsProjected[1].uses = 0",
+											"",
+											"",
+											"}",
+											"",
+											"if (requestBody.options.stigMappings == \"no\" ){",
+											"    statisticsProjected.checklistCount = 0",
+											"    stigsProjected = []",
+											"}",
+											"",
+											"console.log(jsonDataArray)",
+											"let expectedCollectionName = \"Clone of Collection X\"",
+											"//  pm.test(\"look for stage: result and check cloned collection properties\", function () {",
+											"    for (message of jsonDataArray){",
+											"        if (message.length > 0){",
+											"            let messageObject = JSON.parse(message)",
+											"                // console.log(messageObject)",
+											"",
+											"            if (messageObject.stage == \"result\"){",
+											"                console.log(\"clone probably successful!\")",
+											"                // pm.expect(messageObject.collection.name).to.eql(expectedCollectionName);",
+											"                pm.test(\"stage: 'result' found\", function () {                ",
+											"                    console.log(messageObject.collection.name)",
+											"                    pm.expect(1).to.eql(1);",
+											"                 })",
+											"",
+											"",
+											"                if (pm.request.url.getQueryString().match(/projection=grants/)) {",
+											"",
+											"                    // if (requestBody.options.grants == false ){",
+											"                    //     console.log(\"just one grant\")",
+											"                    //     grantsProjected = [",
+											"                    //         {",
+											"                    //             user: {",
+											"                    //                 userId: \"1\",",
+											"                    //                 username: \"stigmanadmin\",",
+											"                    //                 displayName: \"STIGMAN Admin\"",
+											"                    //             },",
+											"                    //             accessLevel: 4",
+											"                    //         }",
+											"                    //     ]",
+											"                    // }",
+											"                    console.log(messageObject.collection.grants)",
+											"                    console.log(grantsProjected)",
+											"                    pm.test(\"check cloned collection grants\", function () {                    ",
+											"                        pm.expect(messageObject.collection).to.have.property('grants');",
+											"                        pm.expect(messageObject.collection.grants).to.eql(grantsProjected);",
+											"                    })",
+											"                    // for (let owner of messageObject.collection.owners){",
+											"                    //     // pm.expect(owner).to.have.all.keys(userKeys);",
+											"                    // }",
+											"                }",
+											"",
+											"                if (pm.request.url.getQueryString().match(/projection=statistics/)) {",
+											"                    // console.log(\"checking statistics projection\");",
+											"                    pm.test(\"check cloned collection stats\", function () {                    ",
+											"                        pm.expect(messageObject.collection).to.have.property('statistics');",
+											"                        pm.expect(messageObject.collection.statistics.assetCount).to.eql(statisticsProjected.assetCount);",
+											"                        pm.expect(messageObject.collection.statistics.grantCount).to.eql(statisticsProjected.grantCount);",
+											"                        pm.expect(messageObject.collection.statistics.checklistCount).to.eql(statisticsProjected.checklistCount);",
+											"                    })",
+											"                }",
+											"",
+											"                if (pm.request.url.getQueryString().match(/projection=labels/)) {",
+											"                    pm.test(\"check cloned collection labels\", function () {                    ",
+											"",
+											"                        console.log(\"checking labels projection\");",
+											"                        pm.expect(messageObject.collection).to.have.property('labels');",
+											"                        let labelProjectedResponse = []",
+											"                        for (label of messageObject.collection.labels){",
+											"                            let {labelId, ...labelCheckProps} = label",
+											"                            labelProjectedResponse.push(labelCheckProps)",
+											"                            console.log(labelCheckProps)",
+											"                        }",
+											"                        // console.log(labelProjectedResponse)",
+											"                        pm.expect(labelProjectedResponse).to.eql(labelsProjected);",
+											"                    })",
+											"",
+											"                }",
+											"                if (pm.request.url.getQueryString().match(/projection=owners/)) {",
+											"                    pm.test(\"check cloned collection owners\", function () {                    ",
+											"",
+											"                        console.log(\"checking owners projection\");",
+											"                        // console.log(messageObject.collection.owners);",
+											"                        console.log(\"checking owners projected\");",
+											"                        console.log(ownersProjected);                        ",
+											"                        pm.expect(messageObject.collection).to.have.property('owners');",
+											"                        let ownerProjectedResponse = []",
+											"                        for (owner of messageObject.collection.owners){",
+											"                            let {email, ...ownerCheckProps} = owner",
+											"                            ownerProjectedResponse.push(ownerCheckProps)",
+											"                             console.log(ownerCheckProps)",
+											"                        }",
+											"                        // console.log(labelProjectedResponse)",
+											"                        pm.expect(ownerProjectedResponse).to.eql(ownersProjected);",
+											"",
+											"",
+											"",
+											"//CHECK THAT USER THAT CLONED IS OWNER",
+											"                    })",
+											"",
+											"                }",
+											"",
+											"",
+											"                if (pm.request.url.getQueryString().match(/projection=assets/)) {",
+											"                    pm.test(\"check cloned collection assets\", function () {                    ",
+											"",
+											"                        pm.expect(messageObject.collection).to.have.property('assets');",
+											"",
+											"",
+											"",
+											"                        console.log(\"checking assets projection\");",
+											"                        pm.expect(messageObject.collection).to.have.property('labels');",
+											"                        let assetsProjectedResponse = []",
+											"                        for (asset of messageObject.collection.assets){",
+											"                            let {assetId, ...assetCheckProps} = asset",
+											"                            assetsProjectedResponse.push(assetCheckProps)",
+											"                            console.log(assetCheckProps)",
+											"                        }                    ",
+											"                        pm.expect(assetsProjectedResponse).to.eql(assetsProjected);",
+											"",
+											"                        // for (let owner of messageObject.collection.owners){",
+											"                        //     // pm.expect(owner).to.have.all.keys(userKeys);",
+											"                        // }",
+											"                    })",
+											"                }",
+											"",
+											"",
+											"                if (pm.request.url.getQueryString().match(/projection=stigs/)) {",
+											"",
+											"",
+											"                    // if (requestBody.options.pinRevisions == \"sourceDefaults\" ){",
+											"                    //     console.log(\"need to check pins\")",
+											"                    //     stigsProjected[1].revisionPinned = true               ",
+											"                    // }",
+											"",
+											"",
+											"                  pm.test(\"check cloned collection stigs\", function () {                    ",
+											"",
+											"                    pm.expect(messageObject.collection).to.have.property('stigs');",
+											"                    pm.expect(messageObject.collection.stigs).to.eql(stigsProjected);",
+											"",
+											"                    // for (let owner of messageObject.collection.owners){",
+											"                    //     // pm.expect(owner).to.have.all.keys(userKeys);",
+											"                    // }",
+											"                  })",
+											"                }",
+											"",
+											"                return;",
+											"            }",
+											"            // else if (messageObject.stage == \"collection\"){",
+											"            //     pm.expect(messageObject?.status).to.not.equal(\"error\");",
+											"            // }",
+											"",
+											"        }",
+											"        else {",
+											"        //   console.log(\"no result yet\")",
+											"        pm.expect(\"Reached end of array\").to.equal(\"with no result stage\");",
+											"",
+											"        }        ",
+											"    }",
+											"//  });",
+											"",
+											"",
+											"",
+											"// let collectionMatchString = pm.environment.get(\"collectionMatchString\");",
+											"// // console.log(\"collection string = \" + collectionMatchString);",
+											"// var regex = new RegExp(collectionMatchString);",
+											"// let collectionNames = _.map(jsonData, 'name');",
+											"// // console.log(collectionNames);",
+											"",
+											"// pm.test(\"Check that proper Collections are returned\", function () {",
+											"//     for (let name of collectionNames){",
+											"//         pm.expect(name).to.match(regex);",
+											"//         console.log(\"checking \" + name + \" against regex \" + collectionMatchString + \".\" );",
+											"",
+											"//     }",
+											" ",
+											"// })",
+											"",
+											"",
+											"",
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "clone param variations - user is either not lvl4 or not collectioncreator",
+							"item": [
+								{
+									"name": "clone test collection - lvl4 - not collectioncreator",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.lvl4}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "clone test collection - collectionCreator - no collection grant",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.collectioncreator}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "noauth"
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											""
+										]
+									}
+								}
+							]
 						}
 					]
 				}

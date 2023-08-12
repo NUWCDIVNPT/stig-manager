@@ -1,9 +1,29 @@
 Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
+  {
+    date: '2023-08-08',
+    header: `Collection Cloning`,
+    body: `
+    <p>Collection Owners and Managers can now clone their Collections! Cloning a Collection can create a new Collection that is substantially the same as the source Collection, but must have a different name. 
+    </p>
 
-{
-    date: '2023-6-20',
+    <p>Users can choose to copy the Assets, their STIGs, Labels, and/or Reviews from the original Collection into the new one. They can also choose to copy the User Grants from the original Collection into the new one, and pin STIG Revisions to their current values. The User who created the cloned Collection will always be made an Owner of the new Collection.
+    </p>
+    
+    <p><img src="img/whatsnew/2023-08-08-collection-clone-button.png"/></p>
+
+    <p><img src="img/whatsnew/2023-08-08-collection-clone-options.png"/></p>
+
+    <p><b>Note:</b><b> Large Collections can take several minutes to clone! During this time, Users will likely see a performance impact when accessing the source Collection. Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection. You may want to alert your users before cloning a large Collection!</b></p>
+
+    <p>Once the clone operation has started, a status bar will appear at the bottom of the screen.  Users can continue to use STIG Manager while the clone operation is in progress, but performance may be impacted when accessing the source Collection. The status bar will update when the clone is complete.</p>
+
+    <p><img src="img/whatsnew/2023-08-08-collection-clone-status-bar.png"/></p>`    
+  },  
+
+  {
+    date: '2023-06-20',
     header: `Set the Default STIG Revision for a Collection`,
     body: `
     <p>Collection Owners and Managers can now specify the default STIG Revision that will be used for their Collection. All Workspaces will open and all Metrics will be calculated using the "pinned" Revision. Without setting a pin, STIG Manager will always use the latest STIG Revision known to the system. The "pinned" Revision will be indicated by a pin <span class="sm-whats-new-no-border"><img src="img/pin.svg" width="14" height="14"/></span> icon in the Collection Dashboard and Management Workspaces.</p>
@@ -15,13 +35,11 @@ SM.WhatsNew.Sources = [
       <b>- Most Recent Revision:</b> The Collection Metrics and Workspaces will default to the latest STIG in the system as they are updated. <br>
       <b>- Revision String (Date):</b> Pin the default to the specified STIG Revision<br><br>
 
-    <p><img src="img/whatsnew/2023-06-20-revision-pinning.png"/></p>
-
-`    
-},  
+    <p><img src="img/whatsnew/2023-06-20-revision-pinning.png"/></p>`    
+  },  
 
   {
-    date: '2023-5-20',
+    date: '2023-05-20',
     header: `Tally Sprites for Most Display Grids`,
     body: `
     <p>New tally sprites have been added to the bottom toolbars of grids that display Review data. These sprites show the relevant counts for the various rows, results, and statuses displayed in the grids above.</p>
@@ -32,13 +50,10 @@ SM.WhatsNew.Sources = [
 
     <p><img src="img/whatsnew/2023-05-20-tally-sprites.png"/></p>
 
-    <p>Note: The "Other" column in the Collection Review grid has been renamed to "NR+" to better describe its contents.</p>
-
-
-`    
+    <p>Note: The "Other" column in the Collection Review grid has been renamed to "NR+" to better describe its contents.</p>`    
   },  
   {
-    date: '2023-4-27',
+    date: '2023-04-27',
     header: `Reviews now persist across most Rule changes!`,
     body: `
     <p>Reviews are now tracked using the specific Check Content and Version ("STIG ID") of a STIG Rule, rather than the RuleId. This new behavior will preserve Reviews when DISA STIG Releases make only minor changes to the Rule text, such as to the description, discussion, or reference elements. <b>Reviews will continue to apply to Rules in new STIG Revisions unless the actual Check Content or STIG ID for a STIG Rule changes.</b></p>
@@ -47,12 +62,11 @@ SM.WhatsNew.Sources = [
 
     <p><img src="img/whatsnew/2023-04-25-review-key-differ.png"/></p>
 
-    <p>There are a very small number of exceptions to this behavior, please see the <a target="_blank" href="docs/user-guide/rule-exceptions.html">STIG Manager Documentation for more details.</a></p>  
-`    
+    <p>There are a very small number of exceptions to this behavior, please see the <a target="_blank" href="docs/user-guide/rule-exceptions.html">STIG Manager Documentation for more details.</a></p>`    
   },
 
   {
-    date: '2023-1-11',
+    date: '2023-01-11',
     header: `New Collection Dashboard!`,
     body: `
     <p>The original Navigation Tree has been trimmed down, and all navigation to reports and workspaces within a Collection have been moved to the Collection Dashboard. The Dashboard is an enhanced version of the Metrics Report released a few months ago.</p>
@@ -92,12 +106,11 @@ SM.WhatsNew.Sources = [
     </ul>         
 
 
-    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-dashboard">STIG Manager Documentation for more details about this new feature!</a></p>
-  `
+    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-dashboard">STIG Manager Documentation for more details about this new feature!</a></p>`
   },       
 
   {
-    date: '2023-1-10',
+    date: '2023-01-10',
     header: `New STIG Revision Compare Tool!`,
     body: `
     <p>Now available for preview is our new Revision Compare tool. Select a STIG, then two Revisions, and the tool will present a list of STIG IDs and how their Rules changed between revisions. Click on Rule to see a detailed comparison of how each field that STIG Manager tracks differs between the two versions.</p>
@@ -105,10 +118,7 @@ SM.WhatsNew.Sources = [
     <p><b>The Revision Compare tool is available from the STIG Library node of the Navigation Tree.</b> </p>
 
 
-    <p><img src="img/whatsnew/2023-01-09-stig-compare-tool-crop.png" width="800"/></p>
-
-
-  `
+    <p><img src="img/whatsnew/2023-01-09-stig-compare-tool-crop.png" width="800"/></p>`
   },     
   
   {
@@ -119,8 +129,7 @@ SM.WhatsNew.Sources = [
     <p>Available to all users from the NavTree, the new Metrics Report provides a much easier to digest view of the overall Status and Evaluation progress of your entire Collection, as well as metrics export options and various pivoted presentations of your Collection's assessment statistics.</p>
     
     <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#metrics-report-workspace">STIG Manager Documentation for more details about this new feature!</a></p>
-    <p><img src="img/whatsnew/2022-10-12-metrics-report1.png"/></p>
-    `
+    <p><img src="img/whatsnew/2022-10-12-metrics-report1.png"/></p>`
   },        
   {
     date: '2022-09-12',
@@ -130,16 +139,14 @@ SM.WhatsNew.Sources = [
     <p>By default, STIG Manager caps history at 15 records for each Review.</p>
        
     <p>To find this new Collection Setting, from the <b>Collection Management</b> workspace, click the "Settings" tab. Use the pulldown to select your desired value:</p>
-    <p><img src="img/whatsnew/2022-09-12-review-history-setting.png"/></p>
-    `
+    <p><img src="img/whatsnew/2022-09-12-review-history-setting.png"/></p>`
   },      
   {
     date: '2022-08-17',
     header: `XCCDF Export Option`,
     body: `<p>This new feature allows users to export their review data in the XCCDF format. Look for this option wherever checklist result exports are offered: The Asset Review workspace, the Collection Review workspace, and the Collection Management workspace.   
     <p>For example, from the <b>Collection Management</b> workspace, click "Export Results..." and select the desired format from the pulldown menu:</p>
-    <p><img src="img/whatsnew/2022-08-17-xxcdf-archive.png"/></p>
-    `
+    <p><img src="img/whatsnew/2022-08-17-xxcdf-archive.png"/></p>`
   },    
   {
     date: '2022-07-19',
@@ -147,8 +154,7 @@ SM.WhatsNew.Sources = [
     body: `<p>This option bring users better performance when exporting large numbers of .ckl files. The application will generate the exact same .ckl files whether or not this option is selected, they are just delivered to the client in a different way.</p>
     <p><b>Note:</b> This feature is being offered in an early "experimental" capacity to determine if it serves users needs appropriately. Please report any unexpected behavior. Modifications and improvements to the feature may be made in the future. </p> 
     <p>In the <b>Collection Management</b> workspace, click "Export CKLs..." and select the "Use streaming API" checkbox:</p>
-    <p><img src="img/whatsnew/2022-07-19-streaming-archive.png"/></p>
-    `
+    <p><img src="img/whatsnew/2022-07-19-streaming-archive.png"/></p>`
   },  
   {
     date: '2022-07-18',
@@ -161,21 +167,18 @@ SM.WhatsNew.Sources = [
     <p />
     <p><img src="img/whatsnew/2022-07-18-STIG-assignment-pulldown.png"/></p>
     <p>Select your desired STIG, make any required Asset changes with the "Assign Assets" button, and hit "Save."  
-    <p>A <b>NEW</b> set of STIG-Asset Assignments will be created with the STIG you selected.</p>
-    `
+    <p>A <b>NEW</b> set of STIG-Asset Assignments will be created with the STIG you selected.</p>`
   },
   {
     date: '2022-07-14',
     header: `Checkbox Selection for Multi-select Grids`,
     body: `<p>In the <b>Collection Review</b> and <b>Collection Management</b> workspaces, grid rows can be selected with checkboxes.  Selecting the checkbox at the top of the column, or using the CTRL-A keyboard shortcut, will select all rows in the grid.</p>
-    <p><img src="img/whatsnew/2022-07-15-selection-checkboxes.png"/></p>
-    `
+    <p><img src="img/whatsnew/2022-07-15-selection-checkboxes.png"/></p>`
   },
   {
     date: '2022-07-14',
     header: `Review Detail and Comment Fields Now Capped at 32767 Characters`,
-    body: `<p>For better performance and to align with character limits enforced in Excel and the next version of Evaluate-STIG, Review Detail and Comment text fields are now capped at 32767 characters.</p>
-    `
+    body: `<p>For better performance and to align with character limits enforced in Excel and the next version of Evaluate-STIG, Review Detail and Comment text fields are now capped at 32767 characters.</p>`
   },  
   {
     date: '2022-07-11',
@@ -183,26 +186,24 @@ SM.WhatsNew.Sources = [
     body: `<p>In the Collection Grants interface, the grid and dropdown lists now show the username and display name.</p>
     <p><img src="img/whatsnew/2022-07-11-A.png"/></p>
     <p>When selecting a User from the dropdown list, it is possible to filter the list on a string that appears anywhere in either the username or display name.</p>
-    <p><img src="img/whatsnew/2022-07-11-B.png"/></p>
-    `
+    <p><img src="img/whatsnew/2022-07-11-B.png"/></p>`
   },
   {
     date: '2022-06-01',
     header: `Batch Editing Preview`,
     body: `Edit reviews for multiple Assets at once from the Collection Review workspace! This feature is offered as a preview of functionality that is actively under development, and may change somewhat before final release. <p />
 
-    <p />
+    <p/>
     <b>From the Collection Review workspace, select two or more Reviews, then click the "Batch edit" button:</b>
-    <p />
+    <p/>
     <img src="img/whatsnew/batch-edit-button.png"/>
-    <p />
+    <p/>
     <b>Make changes to any or all of the desired fields in the pop-up, and click "Apply Review." If you leave the Detail or Comment empty, Reviews will keep their existing commentary. To remove existing commentary, add a space to that field.</b>
-    <p />
+    <p/>
     <img src="img/whatsnew/batch-edit-popup.png"/>
-    <p />
+    <p/>
     <b>Your specified Result and Detail/Comment will be applied to all Assets selected!</b>
-    <p />
-    `
+    <p/>`
   },
   {
     date: '2022-05-18',
@@ -210,35 +211,32 @@ SM.WhatsNew.Sources = [
     body: `On startup, the App now displays a "What's New" dialog describing the latest features added to the App.<p />
     <ul><li>Click the <b>Don't show these features again</b> button and you will not be alerted until another new feature is added.</li>
     <li>Click <b>Close</b> and you will be shown the dialog again when you next load the App.</li></ul>
-    <p />
-    <b>The list of all recent changes is always available from Interface -> What's New.</b>
-    `
+    <p/>
+    <b>The list of all recent changes is always available from Interface -> What's New.</b>`
   },
   {
     date: '2022-05-16',
     header: 'Dark Mode Preview',
     body: `STIG Manager is now easier on the eyes! By popular request, we now provide a "Dark Mode" presentation for those STIG-ing after dark. This feature is provided as a preview which is expected to get additional aesthetic tweaks in the future. 
-    <p />
+    <p/>
     <b>Toggle Dark Mode on and off via Interface -> Dark Mode.</b>
-    <p />
-    <img src="img/whatsnew/dark-mode.png"/>
-    `
+    <p/>
+    <img src="img/whatsnew/dark-mode.png"/>`
   },
   {
     date: '2022-05-16',
     header: 'New Import Options and Additional Result Values',
     body: `The App now provides Users with more fine-grained control over the way they import .ckl and XCCDF files. Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-settings-tab">STIG Manager Documentation for more details about these new Collection Settings</a>.
-    <p />
+    <p/>
     <b>Control these Import Options from the Collection -> Manage workspace or from the import interfaces.</b>
-    <p />
+    <p/>
     <img src="img/whatsnew/import-options.gif"/>
-    <p />
+    <p/>
     <b>"Informational" and "Not Reviewed" Result values can now be selected manually:</b>
-    <p />
+    <p/>
     <img src="img/whatsnew/result-values.gif"/>
-    <p />
-    <b>Please note that only Reviews with result "Not a Finding", "Not Applicable", or "Open" can be set to a Submit status!</b>
-    `
+    <p/>
+    <b>Please note that only Reviews with result "Not a Finding", "Not Applicable", or "Open" can be set to a Submit status!</b>`
   },  
   {
     date: '2022-05-16',
@@ -249,23 +247,21 @@ SM.WhatsNew.Sources = [
     <li>the timestamp of the actual Evaluation</li>
     <li>information about any override (e.g., Evaluate-STIG "Answer File") to the engine's original result
     </ul> 
-    <p />
+    <p/>
     <b>Look for this type of sprite next to your Evaluation Result, and hover over it for more info:</b>
-    <p />
+    <p/>
     <img src="img/whatsnew/result-engine-1.png"/>
-    <p />
+    <p/>
     <b>Result Engine information for a Review is also indicated in the checklist views:</b>
-    <p />
-    <img src="img/whatsnew/result-engine-2.png"/>
-    `
+    <p/>
+    <img src="img/whatsnew/result-engine-2.png"/>`
   },
   {
     date: '2022-04-20',
     header: 'Accept Reviews from the Asset-STIG Workspace',
     body: `Users with an appropriate Grant in a Collection can now Accept individual Reviews right from the Asset-STIG Workspace:
-    <p />
-    <img src="img/whatsnew/accept-review.gif"/>
-    `
+    <p/>
+    <img src="img/whatsnew/accept-review.gif"/>`
   }
 ]
 

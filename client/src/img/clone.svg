@@ -8,44 +8,27 @@
    fill="none"
    version="1.1"
    id="svg13024"
-   sodipodi:docname="clone.svg"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
      id="defs13028" />
-  <sodipodi:namedview
-     id="namedview13026"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     showgrid="false"
-     inkscape:zoom="0.75306872"
-     inkscape:cx="526.51237"
-     inkscape:cy="475.38822"
-     inkscape:window-width="1920"
-     inkscape:window-height="1026"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg13024" />
   <g
-     id="copy">
+     id="copy"
+     transform="matrix(-1,0,0,1,23.85,0)"
+     style="fill:#7f7f7f;fill-opacity:1">
     <path
        id="Subtract"
        fill-rule="evenodd"
        clip-rule="evenodd"
        d="M 11.1667,0.25 C 8.43733,0.25 6.25,2.50265 6.25,5.25 h 6.5833 c 2.7294,0 4.9167,2.25265 4.9167,5 v 8.5 h 0.0833 c 2.7294,0 4.9167,-2.2526 4.9167,-5 v -8.5 c 0,-2.74735 -2.1873,-5 -4.9167,-5 z"
-       fill="#7f7f7f" />
+       fill="#7f7f7f"
+       style="fill:#7f7f7f;fill-opacity:1" />
     <path
        id="rec"
-       d="M 1.1,10.97 C 1.1,8.62279 2.96548,6.72 5.26667,6.72 h 6.66663 c 2.3012,0 4.1667,1.90279 4.1667,4.25 v 8.5 c 0,2.3472 -1.8655,4.25 -4.1667,4.25 H 5.26667 C 2.96548,23.72 1.1,21.8172 1.1,19.47 Z"
-       fill="#7f7f7f" />
+       style="fill:#7f7f7f;fill-opacity:1"
+       d="M 11.93332 6.72 C 14.234518 6.72 16.09998 8.6227728 16.09998 10.96998 L 16.09998 19.47 C 16.09998 21.817198 14.234518 23.71998 11.93332 23.71998 L 5.2666992 23.71998 C 2.9655115 23.71998 1.0999805 21.817198 1.0999805 19.47 L 1.0999805 10.96998 C 1.0999805 8.6227728 2.9655115 6.72 5.2666992 6.72 L 11.93332 6.72 z M 8.5999805 11.363262 A 0.80914003 0.80914003 0 0 0 7.7913867 12.171855 L 7.7913867 14.648438 L 5.3148633 14.648438 A 0.80914003 0.80914003 0 0 0 4.5042773 15.458965 A 0.80914003 0.80914003 0 0 0 5.3148633 16.267559 L 7.7913867 16.267559 L 7.7913867 18.744141 A 0.80914003 0.80914003 0 0 0 8.5999805 19.552734 A 0.80914003 0.80914003 0 0 0 9.4085742 18.744141 L 9.4085742 16.267559 L 11.885156 16.267559 A 0.80914003 0.80914003 0 0 0 12.695684 15.458965 A 0.80914003 0.80914003 0 0 0 11.885156 14.648438 L 9.4085742 14.648438 L 9.4085742 12.171855 A 0.80914003 0.80914003 0 0 0 8.5999805 11.363262 z " />
   </g>
+  <g
+     id="g909"
+     style="stroke:#000000" />
 </svg>

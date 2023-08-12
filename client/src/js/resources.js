@@ -41,6 +41,7 @@ const scripts = [
   'js/SM/RowEditorToolbar.js',
   'js/SM/BatchReview.js',
   'js/SM/Collection.js',
+  'js/SM/CollectionClone.js',
   'js/SM/CollectionStig.js',
   'js/SM/CollectionForm.js',
   'js/SM/CollectionAsset.js',

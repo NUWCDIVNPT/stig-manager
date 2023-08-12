@@ -111,7 +111,13 @@ app.use((err, req, res, next) => {
   }
   // Expose selected error properties in the response
   res.errorBody = { error: err.message, detail: err.detail, stack: err.stack}
-  res.status(err.status || 500).header(err.headers).json(res.errorBody)
+  if (!res._headerSent) {
+    res.status(err.status || 500).header(err.headers).json(res.errorBody)
+  }
+  else {
+    res.write(JSON.stringify(res.errorBody) + '\n')
+    res.end()
+  }
 })
 
 run()

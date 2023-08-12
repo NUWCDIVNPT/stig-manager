@@ -113,13 +113,15 @@ function requestLogger (req, res, next) {
   }
 
   function logResponse () {
+    res._startTime = res._startTime ?? new Date()
     if (config.log.mode === 'combined') {
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
         response: {
           date: res._startTime,
-          status: res.statusCode,
-          headers: res.getHeaders(),
+          status: res.finished ? res.statusCode : undefined,
+          clientTerminated: res.destroyed ? true : undefined,
+          headers: res.finished ? res.getHeaders() : undefined,
           errorBody: res.errorBody,
           responseBody
         },
@@ -143,7 +145,6 @@ function requestLogger (req, res, next) {
   }
   onHeaders(res, recordStartTime)
   onFinished(res, logResponse)
-
   next()
 }
 

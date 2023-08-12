@@ -822,6 +822,62 @@ This Panel allows Collection Managers and Owners to change the name of the Colle
 
 |
 
+.. _clone-collection:
+
+
+Clone Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The "Clone Collection" button allows Managers or Owners to create another Collection that is a copy of the one they are currently viewing.  
+
+
+.. thumbnail:: /assets/images/collection-manage-clone-button.png
+      :width: 50% 
+      :show_caption: True
+      :title: The Collection Clone Button
+
+|
+
+The new Collection can be substantially identical to the original, but must have a different name.
+
+Users can choose to copy the Assets, their STIGs, Labels, and/or Reviews from the original Collection into the new one.  They can also choose to copy the User Grants from the original Collection into the new one, and pin STIG Revisions to their current values. 
+
+.. note::
+   Whether or not the User Grants are copied, the User who created the new Collection will be an Owner of the new Collection.
+
+
+.. thumbnail:: /assets/images/collection-manage-clone-options.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Clone Options
+
+|
+
+Once the clone operation has started, a status bar will appear at the bottom of the screen.  The User can continue to use STIG Manager while the clone operation is in progress. The status bar will update when the clone is complete.
+
+
+.. thumbnail:: /assets/images/collection-manage-clone-status-bar.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Clone Status Bar
+
+|
+
+.. thumbnail:: /assets/images/collection-manage-clone-status-complete.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Clone Complete
+
+|
+
+
+.. warning::
+      Large Collections can take several minutes to clone! During this time, Users will likely see a performance impact when accessing the source Collection. Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.
+      
+      You may want to alert your users before cloning a large Collection.
+
+|
+
 .. _grants-panel:
 
 
