@@ -194,9 +194,9 @@ async function addReview( params ) {
         menu: {
           items: [
             {
-              text: 'CKL',
+              text: 'CKL - STIG Viewer v2',
               iconCls: 'sm-export-icon',
-              tooltip: 'Download this checklist in DISA STIG Viewer format',
+              tooltip: 'Download this checklist in DISA STIG Viewer V2 format',
               handler: async function (item, eventObject) {
                 try {
                   document.body.style.cursor = 'wait'
@@ -212,6 +212,54 @@ async function addReview( params ) {
                 return new Promise( async (resolve, reject) => {
                   var xhr = new XMLHttpRequest()
                   var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
+                  xhr.open('GET', url)
+                  xhr.responseType = 'blob'
+                  await window.oidcProvider.updateToken(10)
+                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
+                  xhr.onload = function () {
+                    if (this.status >= 200 && this.status < 300) {
+                      var contentDispo = this.getResponseHeader('Content-Disposition')
+                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                      resolve({
+                        blob: xhr.response,
+                        filename: fileName
+                      })
+                    } else {
+                      reject({
+                        status: this.status,
+                        message: xhr.statusText
+                      })
+                    }
+                  }
+                  xhr.onerror = function () {
+                    reject({
+                      status: this.status,
+                      message: xhr.responseText
+                    })
+                  }
+                  xhr.send()
+                })
+              }
+            },
+            {
+              text: 'CKLB - STIG Viewer v3',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download this checklist in DISA STIG Viewer V3 format',
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  let ckl = await item.getCklb(leaf)
+                  saveAs(ckl.blob, ckl.filename)
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  SM.Error.handleError(e)
+                }
+              },
+              getCklb: function (leaf) {
+                return new Promise( async (resolve, reject) => {
+                  var xhr = new XMLHttpRequest()
+                  var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=cklb`
                   xhr.open('GET', url)
                   xhr.responseType = 'blob'
                   await window.oidcProvider.updateToken(10)

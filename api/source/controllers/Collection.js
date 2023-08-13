@@ -667,6 +667,23 @@ module.exports.postCklArchiveByCollection = async function (req, res, next) {
   }
 }
 
+module.exports.postCklbArchiveByCollection = async function (req, res, next) {
+  try {
+    const collectionId = getCollectionIdAndCheckPermission(req)
+    const mode = req.query.mode || 'mono'
+    const parsedRequest = await processAssetStigRequests (req.body, collectionId, mode, req.userObject)
+    await postArchiveByCollection({
+      format: `cklb-${mode}`,
+      req,
+      res,
+      parsedRequest
+    })
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 module.exports.postXccdfArchiveByCollection = async function (req, res, next) {
   try {
     const collectionId = getCollectionIdAndCheckPermission(req)
@@ -699,7 +716,7 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     attrValueProcessor: escapeForXml
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
-  res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : 'XCCDF'}.zip`)
+  res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
   zip.pipe(res)
   const manifest = {
     started: new Date().toISOString(),
@@ -720,20 +737,35 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
   })
   for (const arg of parsedRequest.assetStigArguments) {
     try {
-      const response = format.startsWith('ckl-') ?
-        await AssetSvc.cklFromAssetStigs(arg.assetId, arg.stigs) :
-        await AssetSvc.xccdfFromAssetStig(arg.assetId, arg.stigs[0].benchmarkId, arg.stigs[0].revisionStr)
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
-      xml += builder.build(response.xmlJs)
+      let response
+      switch (format) {
+        case 'ckl-mono':
+        case 'ckl-multi':
+          response = await AssetSvc.cklFromAssetStigs(arg.assetId, arg.stigs)
+          break
+        case 'cklb-mono':
+        case 'cklb-multi':
+          response = await AssetSvc.cklbFromAssetStigs(arg.assetId, arg.stigs)
+          break
+        case 'xccdf':
+          response = await AssetSvc.xccdfFromAssetStig(arg.assetId, arg.stigs[0].benchmarkId, arg.stigs[0].revisionStr)
+      }
+      let data
+      if (response.xmlJs) {
+        data = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+        data += builder.build(response.xmlJs)  
+      }
+      else {
+        data = JSON.stringify(response.cklb)
+      }
       let filename = arg.assetName
-      if (format === 'ckl-mono' || format === 'xccdf') {
+      if (format === 'ckl-mono' || format === 'cklb-mono' || format === 'xccdf') {
         filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
       }
-      filename += `${format === 'xccdf' ? '-xccdf.xml' : '.ckl'}`
-      zip.append(xml, {name: filename})
+      filename += `${format === 'xccdf' ? '-xccdf.xml' : format.startsWith('ckl-') ? '.ckl' : '.cklb'}`
+      zip.append(data, {name: filename})
       manifest.members.push(filename)
       manifest.memberCount += 1
-
     }
     catch (e) {
       arg.error = {message: e.message, stack: e.stack}

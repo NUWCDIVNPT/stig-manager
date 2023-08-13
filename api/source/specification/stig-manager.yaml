@@ -179,6 +179,15 @@ paths:
     parameters:
       - $ref: '#/components/parameters/AssetIdPath'
       - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - name: format
+        in: query
+        description: The format of the response.
+        schema:
+          type: string
+          default: ckl
+          enum:
+            - ckl
+            - cklb
     get:
       tags:
         - Asset
@@ -208,18 +217,19 @@ paths:
     get:
       tags:
         - Asset
-      summary: Return JSON summary, or CKL file, or XCCDF file for an Asset and STIG
+      summary: Return JSON summary, or CKL(B) file, or XCCDF file for an Asset and STIG
       operationId: getChecklistByAssetStig
       parameters:
         - name: format
           in: query
-          description: The format of the response. Default is 'json'
+          description: The format of the response.
           schema:
             type: string
             default: json
             enum:
               - json
               - ckl
+              - cklb
               - xccdf
       responses:
         '200':
@@ -751,16 +761,16 @@ paths:
     post:
       tags:
         - Collection
-      summary: Return a ZIP archive containing CKLs for the supplied Assets and STIGs
+      summary: Return a ZIP archive containing CKL files for the supplied Assets and STIGs
       description: |
         The request body is an array that selects the Assets/STIG checklists whose results will be serialized.
         
         Each array member is an object that MUST include the property `assetId` and MIGHT include the property `stigs`.
         
-        If the `stigs` property is absent, the API serializes the latest revision of each STIG to which the requesting User
+        If the `stigs` property is absent, the API serializes the default revision of each STIG to which the requesting User
         has been granted access on the Asset.
         
-        If the `stigs` property is present, the value MUST be an array. Each array member is EITHER a string whose value is a `benchmarkId` OR an object that identifies a `benchmarkId` and `revisionStr`. When a string is provided, the API will serialize the `latest` revision of the Benchmark.
+        If the `stigs` property is present, the value MUST be an array. Each array member is EITHER a string whose value is a `benchmarkId` OR an object that identifies a `benchmarkId` and `revisionStr`. When a string is provided, the API will serialize the default revision of the Benchmark.
       operationId: postCklArchiveByCollection
       parameters:
        - $ref: '#/components/parameters/CollectionIdPath'
@@ -793,6 +803,47 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+
+  '/collections/{collectionId}/archive/cklb':
+    post:
+      tags:
+        - Collection
+      summary: Return a ZIP archive containing CKLB files for the supplied Assets and STIGs
+      description: For documentation of the request body, see the description for `POST /collections/{collectionId}/archive/ckl`
+      operationId: postCklbArchiveByCollection
+      parameters:
+       - $ref: '#/components/parameters/CollectionIdPath'
+       - $ref: '#/components/parameters/CklModeQuery'
+      requestBody:
+        required: true
+        description: AssetStigSelection
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/AssetStigSelection'
+      responses:
+        '200':
+          description: ZIP file stream
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+
+
   '/collections/{collectionId}/archive/xccdf':
     post:
       tags:

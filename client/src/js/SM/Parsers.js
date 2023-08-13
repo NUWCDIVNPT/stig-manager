@@ -683,6 +683,298 @@
     }
   }
 
+  exports.reviewsFromCklb = function (
+    {
+      data, 
+      fieldSettings,
+      allowAccept,
+      importOptions
+    }) {
+
+    const maxCommentLength = 32767
+    const resultMap = {
+      not_a_finding: 'pass',
+      open: 'fail',
+      not_applicable: 'notapplicable',
+      not_reviewed: 'notchecked'
+    }
+    let cklb
+    try {
+      cklb = JSON.parse(data)
+    }
+    catch (e) {
+      throw(new Error('Cannot parse as JSON'))
+    }
+    const validateCklb = (obj) => {
+      try {
+        if (!obj.target_data?.host_name) {
+          throw('No target_data.host_name found')
+        }
+        if (!Array.isArray(obj.stigs)) {
+          throw('No stigs array found')
+        }
+        return {valid: true}
+      }
+      catch (e) {
+        let error = e
+        if (e instanceof Error) {
+          error = e.message
+        }
+        return {valid: false, error}
+      }
+    }
+
+    const validationResult = validateCklb(cklb)
+    if (!validationResult.valid) {
+      throw(new Error(`Invalid CKLB object: ${validationResult.error}`))
+    }
+
+    const resultEngineCommon = cklb.stig_manager_engine ||  null
+    let returnObj = {}
+    returnObj.target = processTargetData(cklb.target_data)
+    if (!returnObj.target.name) {
+      throw (new Error("No host_name in target_data"))
+    }
+    returnObj.checklists = processStigs(cklb.stigs)
+    if (returnObj.checklists.length === 0) {
+      throw (new Error("stigs array is empty"))
+    }
+    return (returnObj)
+
+    function processTargetData(td) {
+      const obj =  {
+        name: td.host_name,
+        description: td.comments,
+        ip: td.ip_address || null,
+        fqdn: td.fqdn || null,
+        mac: td.mac_address || null,
+        noncomputing: td.target_type === 'Non-Computing',
+        metadata: {}
+      }
+      if (td.role) {
+        obj.metadata.cklRole = td.ROLE
+      }
+      if (td.technology_area) {
+        obj.metadata.cklTechArea = td.technology_area
+      }
+      if (td.is_web_database) {
+        obj.metadata.cklWebOrDatabase = 'true'
+        obj.metadata.cklHostName = td.host_name
+        if (td.web_db_site) {
+          obj.metadata.cklWebDbSite = td.web_db_site
+        }
+        if (td.web_db_instance) {
+          obj.metadata.cklWebDbInstance = td.web_db_instance
+        }
+      }
+      return obj
+    }
+    function processStigs(stigs) {
+      const checklistArray = []
+      for (const stig of stigs) {
+        // checklist = {
+        //   benchmarkId: 'string',
+        //   revisionStr: 'string',
+        //   reviews: [],
+        //   stats: {}
+        // }
+        const checklist = {}
+        checklist.benchmarkId = stig.stigId instanceof String ? stig.stig_id.replace('xccdf_mil.disa.stig_benchmark_', '') : ''
+        const stigVersion = '0'
+        const stigRelease = stig.release_info instanceof String ? stig.release_info.match(/Release:\s*(.+?)\s/)?.[1] : ''
+        checklist.revisionStr = stigVersion && stigRelease ? `V${stigVersion}R${stigRelease}` : null
+  
+        if (checklist.benchmarkId) {
+          const result = processRules(stig.rules)
+          checklist.reviews = result.reviews
+          checklist.stats = result.stats
+          checklistArray.push(checklist)
+        }
+
+      }
+      return checklistArray
+    }
+    function processRules(rules) {
+      const stats = {
+        pass: 0,
+        fail: 0,
+        notapplicable: 0,
+        notchecked: 0,
+        notselected: 0,
+        informational: 0,
+        error: 0,
+        fixed: 0,
+        unknown: 0
+      }
+      const reviews = []
+      for (const rule of rules) {
+        const review = generateReview(rule, resultEngineCommon)
+        if (review) {
+          reviews.push(review)
+          stats[review.result]++
+        }
+      }
+      return { reviews, stats }
+    }
+    function generateReview(rule, resultEngineCommon) {
+      let result = resultMap[rule.status]
+      if (!result) return
+      const ruleId = rule.rule_id_src
+      if (!ruleId) return
+  
+      const hasComments = !!rule.finding_details || !!rule.coments
+  
+      if (result === 'notchecked') { // unreviewed business rules
+        switch (importOptions.unreviewed) {
+          case 'never':
+            return undefined
+          case 'commented':
+            result = hasComments ? importOptions.unreviewedCommented : undefined
+            if (!result) return
+            break
+          case 'always':
+            result = hasComments ? importOptions.unreviewedCommented : 'notchecked'
+            break
+        }
+      }
+  
+      let detail = rule.finding_details?.length > maxCommentLength ? rule.finding_details.slice(0, maxCommentLength) : rule.finding_details
+      if (!rule.finding_details) {
+        switch (importOptions.emptyDetail) {
+          case 'ignore':
+            detail= null
+            break
+          case 'import':
+            detail = rule.finding_details ?? ''
+            break
+          case 'replace':
+            detail = 'There is no detail provided for the assessment'
+            break
+        }
+      }
+  
+      let comment = rule.comments?.length > maxCommentLength ? rule.comments.slice(0, maxCommentLength) : rule.comments
+      if (!rule.comments) {
+        switch (importOptions.emptyComment) {
+          case 'ignore':
+            comment = null
+            break
+          case 'import':
+            comment = rule.comments ?? ''
+            break
+          case 'replace':
+            comment = 'There is no comment provided for the assessment'
+            break
+        }
+      }
+  
+      const review = {
+        ruleId,
+        result,
+        detail,
+        comment
+      }
+  
+      // if (resultEngineCommon) {
+      //   review.resultEngine = {...resultEngineCommon}
+      //   if (rule.stig_manager_engine) {
+      //     const overrides = []
+      //     for (const comment of vuln['__comment']) {
+      //       if (comment.toString().startsWith('<Evaluate-STIG>')) {
+      //         let override
+      //         try {
+      //           override = parser.parse(comment)['Evaluate-STIG'][0]
+      //         }
+      //         catch(e) {
+      //           console.log(`Failed to parse Evaluate-STIG VULN XML comment for ${ruleId}`)
+      //         }
+      //         override = normalizeKeys(override)
+      //         if (override.afmod?.toLowerCase() === 'true') {
+      //           overrides.push({
+      //             authority: override.answerfile,
+      //             oldResult: resultMap[override.oldstatus] ?? 'unknown',
+      //             newResult: result,
+      //             remark: 'Evaluate-STIG Answer File'
+      //           })
+      //         }
+      //       } 
+      //     }
+      //     if (overrides.length) {
+      //       review.resultEngine.overrides = overrides
+      //     }  
+      //   }
+      // }
+      // else {
+      //   review.resultEngine = null
+      // }
+  
+      const status = bestStatusForReview(review)
+      if (status) {
+        review.status = status
+      }
+    
+      return review
+    }
+    function bestStatusForReview(review) {
+      if (importOptions.autoStatus === 'null') return null
+      if (importOptions.autoStatus === 'saved') return 'saved'
+  
+      let detailSubmittable = false
+      switch (fieldSettings.detail.required) {
+        case 'optional':
+          detailSubmittable = true
+          break
+        case 'findings':
+          if ((review.result !== 'fail') || (review.result === 'fail' && review.detail)) {
+            detailSubmittable = true
+          }
+          break
+        case 'always':
+          if (review.detail) {
+            detailSubmittable = true
+          }
+          break
+      } 
+  
+      let commentSubmittable = false
+      switch (fieldSettings.comment.required) {
+        case 'optional':
+          commentSubmittable = true
+          break
+        case 'findings':
+          if ((review.result !== 'fail') || (review.result === 'fail' && review.comment)) {
+            commentSubmittable = true
+          }
+          break
+        case 'always':
+          if (review.comment) {
+            commentSubmittable = true
+          }
+          break
+      }
+  
+      const resultSubmittable = review.result === 'pass' || review.result === 'fail' || review.result === 'notapplicable'
+      
+      let status = undefined
+      if (detailSubmittable && commentSubmittable && resultSubmittable) {
+        switch (importOptions.autoStatus) {
+          case 'submitted':
+            status = 'submitted'
+            break
+          case 'accepted':
+            status = allowAccept ? 'accepted' : 'submitted'
+            break
+        }
+      } 
+      else {
+        status = 'saved'
+      }
+      return status
+    }
+
+
+  }
+
   exports.reviewsFromScc = exports.reviewsFromXccdf
   
 }) (typeof exports === 'undefined'? this['ReviewParser'] = {} : exports)

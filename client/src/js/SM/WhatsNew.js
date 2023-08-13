@@ -2,6 +2,21 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2023-08-21',
+    header: `Provisional .CKLB Support`,
+    body: `
+    <p>
+    STIG Manager can now import and export data using the new .cklb file format introduced by DISA with the release of STIG Viewer 3. 
+    </p>
+
+    <p><b>Note:</b><b> .CKLB is a new format and may be subject to change. </b></p>
+
+    <p><img src="img/whatsnew/2023-08-20-cklb-export.png"/></p>
+
+    <p><img src="img/whatsnew/2023-08-20-cklb-zip-export.png"/></p>
+    `    
+  },  
+  {
     date: '2023-08-08',
     header: `Collection Cloning`,
     body: `

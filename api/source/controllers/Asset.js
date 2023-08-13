@@ -280,6 +280,10 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
       if (format === 'json') {
         res.json(response)
       }
+      else if (format === 'cklb') {
+        response.cklb.title = `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}`
+        writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+      }
       else if (format === 'ckl') {
         const builder = new XMLBuilder({
           attributeNamePrefix : "@_",

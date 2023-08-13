@@ -491,6 +491,8 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
         data: [
           ['CKL', 'ckl-mono'],
           ['CKL (multi-STIG)', 'ckl-multi'],
+          ['CKLB', 'cklb-mono'],
+          ['CKLB (multi-STIG)', 'cklb-multi'],
           ['XCCDF', 'xccdf']
         ]
       }),
@@ -588,7 +590,9 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
   const url = {
     xccdf: `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/xccdf`,
     'ckl-multi': `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/ckl?mode=multi`,
-    'ckl-mono': `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/ckl?mode=mono`
+    'ckl-mono': `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/ckl?mode=mono`,
+    'cklb-multi': `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/cklb?mode=multi`,
+    'cklb-mono': `${STIGMAN.Env.apiBase}/collections/${collectionId}/archive/cklb?mode=mono`
   }
 
   try {
