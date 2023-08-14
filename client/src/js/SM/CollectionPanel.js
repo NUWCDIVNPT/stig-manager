@@ -364,6 +364,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
       case 'stig':
         fields.push(
           { name: 'benchmarkId', type: 'string' },
+          { name: 'title', type: 'string' },
           { name: 'revisionStr', type: 'string' },
           { name: 'revisionPinned' },
           'assets'
@@ -384,6 +385,14 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
                 }
               }
             }
+          },
+          {
+            header: "Title",
+            width: 175,
+            dataIndex: 'title',
+            sortable: true,
+            filter: { type: 'string' },
+            hidden: true
           },
           {
             header: "Revision",
@@ -523,6 +532,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
       { name: 'name', type: 'string' },
       { name: 'labelIds', type: 'string', convert: (v, r) => r.labels.map(l => l.labelId) },
       'benchmarkId',
+      'title',
       'revisionStr',
       'revisionPinned',
       ...SM.CollectionPanel.CommonFields
@@ -586,6 +596,14 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             sortable: true,
             filter: { type: 'string' },
             renderer: renderWithToolbar
+          },
+          {
+            header: "Title",
+            width: 175,
+            dataIndex: 'title',
+            sortable: true,
+            filter: { type: 'string' },
+            hidden: true
           },
           {
             header: "Revision",
