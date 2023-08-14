@@ -98,7 +98,8 @@ module.exports.queryMetrics = async function ({
     'left join asset a on granted.assetId = a.assetId',
     'left join stig_asset_map sa on granted.saId = sa.saId',
     'left join default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
-    'left join revision rev on dr.revId = rev.revId'
+    'left join revision rev on dr.revId = rev.revId',
+    'left join stig on rev.benchmarkId = stig.benchmarkId'
   ]
   const groupBy = []
   const orderBy = []
@@ -428,6 +429,7 @@ const baseCols = {
     'a.name',
     sqlLabels,
     'rev.benchmarkId',
+    'stig.title',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
   ],
@@ -449,6 +451,7 @@ const baseCols = {
   ],
   stig: [
     'rev.benchmarkId',
+    'stig.title',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'count(distinct a.assetId) as assets',
@@ -468,6 +471,7 @@ const baseColsFlat = {
     'a.name',
     sqlLabelsFlat,
     'rev.benchmarkId',
+    'stig.title',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
   ],
@@ -485,6 +489,7 @@ const baseColsFlat = {
   ],
   stig: [
     'rev.benchmarkId',
+    'stig.title',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'count(distinct a.assetId) as assets',

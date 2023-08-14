@@ -424,3 +424,102 @@ SM.Global.HelperCheckbox = Ext.extend(Ext.form.Checkbox, {
         SM.Global.HelperCheckbox.superclass.initComponent.call(this)
     }
 })
+
+SM.Global.GridCellContextMenu = new Ext.menu.Menu({
+    items: [
+        {
+            text: `Copy value`,
+            itemId: 'copycell',
+            iconCls: 'sm-copy-icon'
+        },
+        '-',
+        {
+            text: `Copy row as CSV`,
+            itemId: 'copyrow',
+            iconCls: 'sm-copy-icon'
+        }
+    ],
+    onCellContextMenu: function (grid, rowIndex, cellIndex, e) {
+        const menu = SM.Global.GridCellContextMenu
+        menu.grid = grid
+        menu.rowIndex = rowIndex
+        menu.cellIndex = cellIndex
+        menu.cellText = grid.getView().getCell(rowIndex, cellIndex).innerText
+        const cellDisplay = `"${menu.cellText.length > 24 ? menu.cellText.slice(0, 24) + '...' : menu.cellText + '"'}`
+        menu.items.items[0].setText(`Copy value <b>${cellDisplay}</b>`)
+        menu.showAt(e.xy)
+    },
+    listeners: {
+        click: function (menu, item) {
+            if (item.itemId === 'copycell') {
+                navigator.clipboard.writeText(menu.cellText)
+            }
+            else {
+                let csv = ''
+                const rowArray = []
+                const columns = menu.grid.getColumnModel().getColumnsBy(() => true)
+                const rowDiv = menu.grid.getView().getRow(menu.rowIndex)
+                // headerArray[] will hold data for the CSV header row
+                const headerArray = []
+                // ci[] will hold only the column indexes for which we will encode cell data
+                const ci = []
+                for (let x = 0; x < columns.length; x++) {
+                    const c = columns[x]
+                    // Criteria for inclusion of the column
+                    if (c.dataIndex != "" && c.header != "" && !c.hidden) {
+                        // Build an element to hold the column header's HTML
+                        const el = document.createElement('html')
+                        el.innerHTML = c.header
+                        // Try to find the first child element with an 'exportvalue' attribute
+                        const ev = el.querySelector('[exportvalue]')
+                        if (ev != null) {
+                            // An element with an 'exportvalue' attribute was found. The CSV column header will be the value of 'exportvalue'
+                            headerArray.push('"' + ev.getAttribute('exportvalue') + '"')
+                        }
+                        else {
+                            // No element with an 'exportvalue' attribute was found was found. The CSV column header will be the quoted UI column header
+                            headerArray.push('"' + c.header + '"')
+                        }
+                        // Add this column index to ci[]
+                        ci.push(x)
+                    }
+                }
+                // Comma separate the header data and append to the CSV 
+                csv += headerArray.join(',') + "\n"
+                const rowCells = rowDiv.getElementsByTagName('tr')[0].cells
+                // Iterate across the included column indexes 
+                for (let x = 0; x < ci.length; x++) {
+                    const ev = rowCells[ci[x]].querySelector('[exportvalue]')
+                    if (ev != null) {
+                        // An element with an 'exportvalue' attribute was found was found. The CSV data will be the value of 'exportvalue'
+                        rowArray.push('"' + ev.getAttribute('exportvalue') + '"')
+                    }
+                    else {
+                        // No element with an 'exportvalue' attribute was found was found. The CSV data will be the quoted and escaped textContent of the <td>'s firstChild
+                        const value = '"' + rowCells[ci[x]].firstChild.textContent.replace(/"/g, '""').trim() + '"'
+                        rowArray.push(value)
+                    }
+                }
+                // Comma separate the row data and append to the CSV 
+                csv += rowArray.join(',') + "\n"
+                navigator.clipboard.writeText(csv)
+            }
+        }
+    }
+})
+
+// Global copy-to-clipboard context menu for GridPanel
+// Source: carl.a.smigielski@saic.com
+Ext.override(Ext.grid.GridPanel, {
+    initEvents: function () {
+        Ext.grid.GridPanel.superclass.initEvents.call(this)
+        // override code: add handler for cellcontextmenu event
+        this.on('cellcontextmenu', SM.Global.GridCellContextMenu.onCellContextMenu, this)
+
+        if (this.loadMask) {
+            this.loadMask = new Ext.LoadMask(this.bwrap,
+                Ext.apply({ store: this.store }, this.loadMask));
+        }
+    }
+})
+

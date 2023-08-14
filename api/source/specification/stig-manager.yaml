@@ -4902,6 +4902,7 @@ components:
         - name
         - labels
         - benchmarkId
+        - title
         - revisionStr
         - revisionPinned
       properties:
@@ -4915,6 +4916,8 @@ components:
             $ref: '#/components/schemas/LabelBasic'
         benchmarkId:
           $ref: '#/components/schemas/BenchmarkId'
+        title:
+          $ref: '#/components/schemas/String255'
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
         revisionPinned:
@@ -5022,6 +5025,7 @@ components:
       type: object
       required:
         - benchmarkId
+        - title
         - assets
         - revisionStr
         - revisionPinned
@@ -5029,6 +5033,8 @@ components:
       properties:
         benchmarkId:
           $ref: '#/components/schemas/BenchmarkId'
+        title:
+          $ref: '#/components/schemas/String255'
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
         revisionPinned:
