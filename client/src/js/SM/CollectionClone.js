@@ -12,7 +12,7 @@ SM.CollectionClone.ClickThruPanel = Ext.extend(Ext.form.FormPanel, {
       margins: '30 0 0 0',
       listeners: {
         check: function (cb, checked) {
-          curUser.noCloneWarning = checked
+          sessionStorage.setItem('noCloneWarning', checked ? 'true' : 'false')
         }
       }
     })
@@ -302,14 +302,7 @@ function NDJSONStream(separator = '\n') {
 
 SM.CollectionClone.showCollectionClone = async function ({collectionId, sourceName}) {
   try {
-    let showClickThru = !curUser.noCloneWarning
-    // if (!curUser.noCloneWarning) {
-    //   const collectionSummary = await Ext.Ajax.requestPromise({
-    //     responseType: 'json',
-    //     url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary/collection`
-    //   })
-    //   showClickThru = collectionSummary.assets > 500 || collectionSummary.metrics.assessed > 50000
-    // }
+    let showClickThru = !(sessionStorage.getItem('noCloneWarning') === 'true')
     const width = 420
     const height = 405
     const fp = new SM.CollectionClone.CloneFormPanel({
