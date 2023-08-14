@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "bb5e7a19-9585-4b11-a5e8-10e72525254c",
+		"_postman_id": "78132ee0-acb8-45bd-917e-6b4ac7330ab0",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -57315,6 +57315,366 @@
 											""
 										]
 									}
+								}
+							]
+						},
+						{
+							"name": "check clone reviews",
+							"item": [
+								{
+									"name": "clone collection for later Review check",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"// if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"collectioncreator\") { //placeholder for \"users\" that should fail\r",
+													"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), and collectioncreator\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
+													"// else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200); \r",
+													"    });\r",
+													"// }\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"// let jsonData = JSON.parse(pm.response.text())\r",
+													"let jsonDataArray = pm.response.text().split(\"\\n\")\r",
+													"\r",
+													"pm.test(\"Response JSON is an array with expected length\", function () {\r",
+													"    pm.expect(jsonDataArray).to.be.an('array');\r",
+													"    if (user != \"collectioncreator\" ) {\r",
+													"        pm.expect(jsonDataArray).to.have.lengthOf.at.least(1);\r",
+													"    }\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"// let requestToTest = JSON.parse(pm.request.body.raw)\r",
+													"\r",
+													"//Collection creator cannot see labels on collection it did not give itself a grant for\r",
+													"// if (user == \"collectioncreator\") { \r",
+													"//     requestToTest.labels = []\r",
+													"// }\r",
+													"\r",
+													"let expectedCollectionName = \"Clone of Collection X\"\r",
+													"//  pm.test(\"look for stage: result and check cloned collection properties\", function () {\r",
+													"    for (message of jsonDataArray){\r",
+													"        if (message.length > 0){\r",
+													"            let messageObject = JSON.parse(message)\r",
+													"                // console.log(messageObject)\r",
+													"\r",
+													"            if (messageObject.stage == \"result\"){\r",
+													"                console.log(\"clone probably successful!\")\r",
+													"                // pm.expect(messageObject.collection.name).to.eql(expectedCollectionName);\r",
+													"                // pm.test(\"stage: 'result' found\", function () {                \r",
+													"                //     console.log(messageObject.collection.name)\r",
+													"                //     pm.expect(1).to.eql(1);\r",
+													"                //  })\r",
+													"\r",
+													"                let clonedCollectionId = messageObject.collection.collectionId\r",
+													"                pm.environment.set(\"clonedCollectionId\", clonedCollectionId);\r",
+													"                console.log(\"created collection with id: \" + JSON.stringify(clonedCollectionId));\r",
+													"\r",
+													"                return;\r",
+													"            }\r",
+													"            // else if (messageObject.stage == \"collection\"){\r",
+													"            //     pm.expect(messageObject?.status).to.not.equal(\"error\");\r",
+													"            // }\r",
+													"\r",
+													"        }\r",
+													"        else {\r",
+													"        //   console.log(\"no result yet\")\r",
+													"        pm.expect(\"Reached end of array\").to.equal(\"with no result stage\");\r",
+													"\r",
+													"        }        \r",
+													"    }"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"withReviews\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/collections/:collectionId/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												":collectionId",
+												"clone"
+											],
+											"query": [
+												{
+													"key": "projection",
+													"value": "assets"
+												},
+												{
+													"key": "projection",
+													"value": "grants"
+												},
+												{
+													"key": "projection",
+													"value": "owners"
+												},
+												{
+													"key": "projection",
+													"value": "statistics"
+												},
+												{
+													"key": "projection",
+													"value": "stigs"
+												},
+												{
+													"key": "projection",
+													"value": "labels"
+												}
+											],
+											"variable": [
+												{
+													"key": "collectionId",
+													"value": "21"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Check Reviews in cloned collection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"pm.test(\"Response JSON is an array of length 14\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('array')\r",
+													"    pm.expect(jsonData.length).to.equal(14)\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+													"let reviewRegex = new RegExp(reviewMatchString);\r",
+													"let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+													"let assetRegex = new RegExp(assetMatchString);\r",
+													"\r",
+													"pm.test(\"Check if each review contains expected data and assets\", function () {\r",
+													"\r",
+													"    for (let review of jsonData){\r",
+													"        // if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+													"        //     pm.expect(review.stigs).to.exist;\r",
+													"        // }\r",
+													"        // if (pm.request.url.getQueryString().match(/projection=rule/)) {\r",
+													"        //     pm.expect(review.rule).to.exist;\r",
+													"        // }\r",
+													"        // if (pm.request.url.getQueryString().match(/projection=metadata/)) {\r",
+													"        //     pm.expect(review.metadata).to.exist;\r",
+													"        // }\r",
+													"        pm.expect(review.detail).to.match(reviewRegex);\r",
+													"        \r",
+													"        pm.expect(review.assetName).to.match(assetRegex);\r",
+													"\r",
+													"        // if (pm.request.url.getQueryString().match(/result=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/result=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.result).to.equal(param);\r",
+													"        // }\r",
+													"        // if (pm.request.url.getQueryString().match(/action=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/action=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.action).to.equal(param);\r",
+													"        // }\r",
+													"        // if (pm.request.url.getQueryString().match(/status=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/status=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.status.label).to.equal(param);\r",
+													"        // }    \r",
+													"        // if (pm.request.url.getQueryString().match(/ruleId=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/ruleId=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.ruleId).to.equal(param);\r",
+													"        // }    \r",
+													"        // if (pm.request.url.getQueryString().match(/groupId=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/groupId=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.rule.groupId).to.equal(param);\r",
+													"        // }    \r",
+													"        // if (pm.request.url.getQueryString().match(/cci=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/cci=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.cci).to.equal(param);\r",
+													"        // }    \r",
+													"        // if (pm.request.url.getQueryString().match(/userId=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/userId=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.userId).to.equal(param);\r",
+													"        // }    \r",
+													"        // if (pm.request.url.getQueryString().match(/assetId=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/assetId=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.assetId).to.equal(param);\r",
+													"        // }        \r",
+													"        // if (pm.request.url.getQueryString().match(/benchmarkId=/)) {\r",
+													"        //     let param = pm.request.url.getQueryString().match(/benchmarkId=([^&]+)&/)[1];\r",
+													"        //     pm.expect(review.stigs[0].benchmarkId).to.equal(param);\r",
+													"        // }    \r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/collections/{{clonedCollectionId}}/reviews",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"collections",
+												"{{clonedCollectionId}}",
+												"reviews"
+											],
+											"query": [
+												{
+													"key": "result",
+													"value": "<string>",
+													"disabled": true
+												},
+												{
+													"key": "status",
+													"value": "<string>",
+													"disabled": true
+												},
+												{
+													"key": "ruleId",
+													"value": "<string>",
+													"description": "Selects Reviews of a Rule",
+													"disabled": true
+												},
+												{
+													"key": "groupId",
+													"value": "<string>",
+													"description": "A query parameter that indentifies a Group",
+													"disabled": true
+												},
+												{
+													"key": "cci",
+													"value": "<string>",
+													"description": "A query parameter that indentifies a CCI",
+													"disabled": true
+												},
+												{
+													"key": "userId",
+													"value": "<string>",
+													"description": "A path parameter that indentifies a User",
+													"disabled": true
+												},
+												{
+													"key": "assetId",
+													"value": "<string>",
+													"description": "A query parameter that indentifies an Asset",
+													"disabled": true
+												},
+												{
+													"key": "benchmarkId",
+													"value": "<string>",
+													"description": "A query parameter that indentifies a STIG",
+													"disabled": true
+												},
+												{
+													"key": "projection",
+													"value": "rule",
+													"description": "Additional properties to include in the response.\n",
+													"disabled": true
+												},
+												{
+													"key": "projection",
+													"value": "stigs",
+													"description": "Additional properties to include in the response.\n",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
