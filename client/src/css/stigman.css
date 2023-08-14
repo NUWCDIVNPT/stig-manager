@@ -2087,18 +2087,26 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 
 .x-menu-item-active {
-	background-image: none;
-	background-color: #e5e5e5
+  background-image: none;
+  background-color: #e5e5e5
 }
 .x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
-	background-size: 14px 14px
+  background-size: 14px 14px
 }
 .sm-hover-icon {
-	opacity: 0.75;
-	filter: grayscale(50%)
+  opacity: 0.75;
+  filter: grayscale(50%)
 }
 .sm-hover-icon:hover {
-	opacity: 1;
-	scale: 110%;
-	filter: grayscale(0%)
+  opacity: 1;
+  scale: 110%;
+  filter: grayscale(0%)
+}
+.sm-warning-header {
+  background-image: url(../img/red-flag.svg);
+  background-size: 32px 32px;
+  background-repeat: no-repeat;
+  font-weight: 600;
+  font-size: 20px;
+  padding-left: 36px;
 }

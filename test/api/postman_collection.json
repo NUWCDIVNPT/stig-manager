@@ -56663,7 +56663,7 @@
 									"response": []
 								},
 								{
-									"name": "clone test collection - stigMappings=no",
+									"name": "clone test collection - stigMappings=none",
 									"event": [
 										{
 											"listen": "test",
@@ -56690,7 +56690,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"no\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
+											"raw": "{\r\n  \"name\": \"Clone_{{$randomInt}}-{{$randomInt}}_X\",\r\n  \"description\": \"clone of test collection x\",\r\n  \"options\": {\r\n    \"grants\": true,\r\n    \"labels\": true,\r\n    \"assets\": true,\r\n    \"stigMappings\": \"none\",\r\n    \"pinRevisions\": \"matchSource\"\r\n  }\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -57135,7 +57135,7 @@
 											"",
 											"}",
 											"",
-											"if (requestBody.options.stigMappings == \"no\" ){",
+											"if (requestBody.options.stigMappings == \"none\" ){",
 											"    statisticsProjected.checklistCount = 0",
 											"    stigsProjected = []",
 											"}",

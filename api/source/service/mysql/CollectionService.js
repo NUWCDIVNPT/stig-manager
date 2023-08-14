@@ -1887,7 +1887,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
       if (options.labels) {
         collectionQueries.push('dropLabelMap', 'createLabelMap', 'cloneAssetLabels')
       }
-      if (options.stigMappings !== 'no') {
+      if (options.stigMappings !== 'none') {
         collectionQueries.push(options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews')
         if (options.grants) {
           collectionQueries.push('cloneRestrictedUserGrants')

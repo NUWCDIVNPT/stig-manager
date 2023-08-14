@@ -102,7 +102,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       checked: true,
       helpText: SM.TipContent.CloneOptions.Labels,
       listeners: {
-        check: handleInput,
+        check: handleInput
       }
     })
     const assetsCb = new SM.Global.HelperCheckbox({
@@ -111,7 +111,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       checked: true,
       helpText: SM.TipContent.CloneOptions.Assets,
       listeners: {
-        check: handleInput,
+        check: handleInput
       }
     })
     const cbGroup = new Ext.form.CheckboxGroup({
@@ -133,8 +133,11 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       data: [
         ['withReviews', 'Assignments and Reviews'],
         ['withoutReviews', 'Assignments but not Reviews'],
-        ['no', 'Do not clone assignments or Reviews']
-      ]
+        ['none', 'Do not clone assignments or Reviews']
+      ],
+      listeners: {
+        select: handleInput
+      }
     })
     const pinRevisionsComboBox = new SM.CollectionClone.ComboBox({
       name: 'pinRevisions',
@@ -145,12 +148,6 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
         ['matchSource', "Match the source's pinned revisions"],
         ['sourceDefaults', "Pin the source's default revisions"]
       ]
-    })
-    const manageCb = new SM.Global.HelperCheckbox({
-      boxLabel: 'Open Collection Manager after cloning',
-      hideLabel: true,
-      checked: true,
-      helpText: 'Open Collection Manager after cloning'
     })
     const cloneBtn = new Ext.Button({
       text: 'Clone',
@@ -171,9 +168,9 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
         }
       }
     }
-    function handleInput (cb, checked) {
+    function handleInput () {
       stigMappingsComboBox.setDisabled(!assetsCb.checked)
-      pinRevisionsComboBox.setDisabled(!assetsCb.checked)
+      pinRevisionsComboBox.setDisabled(!assetsCb.checked || stigMappingsComboBox.getValue() === 'none')
       cloneBtn.setDisabled(nameField.getValue() === '' || (!assetsCb.checked && !labelsCb.checked && !grantsCb.checked))
     }
     const config = {
@@ -194,8 +191,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
           xtype: 'fieldset',
           title: 'Cloning Options',
           items: [cbGroup, stigMappingsComboBox, pinRevisionsComboBox]
-        },
-        // manageCb
+        }
       ],
       buttons: [
         cloneBtn
