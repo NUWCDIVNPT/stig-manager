@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SPHINX_IMAGE=sphinxdoc/sphinx
+SPHINX_IMAGE=sphinxdoc/sphinx:5.3.0
 
 # Change to this script directory
 cd "$(dirname "$(realpath "$0")")"
