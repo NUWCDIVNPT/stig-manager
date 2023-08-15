@@ -1090,7 +1090,7 @@ async function addReview( params ) {
           url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
           method: 'GET',
           params: { 
-            projection: ['history', 'metadata']
+            projection: ['history']
           }
         })      
       ]

@@ -826,6 +826,7 @@ async function addCollectionReview ( params ) {
 					} else {
 						historyData.store.removeAll()
 						historyData.grid.disable()
+						attachmentsGrid.getStore().removeAll()						
 						batchEditBtn.enable()
 
 					}
@@ -1766,12 +1767,13 @@ async function addCollectionReview ( params ) {
 				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
 				attachmentsGrid.assetId = record.data.assetId
 				attachmentsGrid.ruleId = record.data.ruleId
-				
+        attachmentsGrid.getStore().removeAll()
+
 				let result = await Ext.Ajax.requestPromise({
 					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
 					method: 'GET',
 					params: {
-						projection: ['history', 'metadata']
+						projection: ['history']
 					}
 				})
 				if (result.response.status === 200) {
