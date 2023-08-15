@@ -387,20 +387,41 @@ SM.RuleContentTpl = new Ext.XTemplate(
     initComponent: function () {
         const config = {
             listeners: {
-                render: function (ta) {
-                    ta.trigger.insertHtml('afterEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
+                render: function (cb) {
+                    cb.trigger.insertHtml('afterEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
                     const sonarCloudInsists = new Ext.ToolTip({
-                        target: ta.wrap.dom.getElementsByClassName('fa')[0],
+                        target: cb.wrap.dom.getElementsByClassName('fa')[0],
                         showDelay: 0,
                         dismissDelay: 0,
                         width: 300,
-                        html: ta.helpText
+                        html: cb.helpText
                     }) 
                 }
             }
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.Global.HelperComboBox.superclass.initComponent.call(this)
+    }
+})
+
+SM.Global.HelperCheckbox = Ext.extend(Ext.form.Checkbox, {
+    initComponent: function () {
+        const config = {
+            listeners: {
+                render: function (cb) {
+                    cb.wrap.first('label').insertHtml('beforeEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
+                    const sonarCloudInsists = new Ext.ToolTip({
+                        target: cb.wrap.dom.getElementsByClassName('fa')[0],
+                        showDelay: 0,
+                        dismissDelay: 0,
+                        width: 300,
+                        html: cb.helpText
+                    }) 
+                }
+            }
+        }
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        SM.Global.HelperCheckbox.superclass.initComponent.call(this)
     }
 })
 

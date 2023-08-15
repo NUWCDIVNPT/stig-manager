@@ -79,6 +79,7 @@ async function loadApp () {
 			border: false,
 			region: 'west'
 		})
+		SM.Global.mainNavTree = mainNavTree
 		const mainTabPanel = new SM.MainTabPanel({
 			id: 'main-tab-panel',
 			region: 'center',

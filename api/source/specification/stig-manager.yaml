@@ -857,6 +857,41 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/clone':
+    post:
+      tags:
+        - Collection
+      summary: Clone an existing Collection to a new Collection
+      description: |
+        Cloning large Collections can take several minutes! Users may see a performance impact when accessing the source Collection during this time.<br><br>Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.<br><br><b>Before proceeding, it is recommended you warn Users that they refrain from modifying components of the source Collection while the cloning process is underway.</b>
+      operationId: cloneCollection
+      parameters:
+       - $ref: '#/components/parameters/CollectionIdPath'
+       - $ref: '#/components/parameters/CollectionProjectionQuery'
+      requestBody:
+        required: true
+        description: CollectionClone request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionCloneRequest'
+      responses:
+        '200':
+          description: |
+            The response body is a stream of newline-delimited JSON (NDJSON) objects reporting the progress of the (possibly long running) cloning process. Each object conforms to the schema defined for this response, but not all objects will have every property.<br/><br/>The sequence of objects starts with multiple {"stage": "collection"} objects, optionally followed by multiple {"stage": "reviews"} objects if review cloning is requested, and concludes with one {"stage": "result"} object whose "collection" property value conforms to the CollectionProjected schema for the created Collection.<br/><br/>Success is indicated when the final {"stage": "result"} message is sent. Errors that prevent cloning from completing are reported with {"status": "error"} and the "result" stage is not reported. Note that the endpoint will return HTTP status 200 immediately after the request is validated and the cloning process has started, so you should not rely on status 200 for indication of cloning success. 
+          content:
+            application/x-ndjson:
+              schema:
+                $ref: '#/components/schemas/CollectionCloneResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -4150,27 +4185,28 @@ components:
         grants:
           type: boolean
           default: true
-        # settings:
-        #   type: boolean
-        #   default: true
+          description: Clone the source Collection's users and their grants. Whether this option is enabled or not, the creator of the cloned Collection (ie. you) will be given an Owner grant in the clone.
         labels:
           type: boolean
           default: true
-        # metadata:
-        #   type: boolean
-        #   default: true
+          description: Clone the source Collection's available labels. You must enable this option AND the assets option for labels to be mapped to Assets in the clone.
         assets:
           type: boolean
           default: true
+          description: Clone the source Collection's Assets and their core properties. If this option is not enabled then the stagMappings and pinRevisions options are ignored.
         stigMappings:
           type: string
           enum:
-            - 'no'
+            - none
             - withReviews
             - withoutReviews
           default: withReviews
+          description: |
+            <b>withReviews:</b> Assets will be cloned with their current STIG assignments and ALL stored Reviews. This will include Reviews that are no longer associated with a current STIG assignment or are associated with a non-default Revision of a STIG.<br><br><b>withoutReviews:</b> Assets will be cloned with their current STIG assignments but NO stored Reviews will be cloned. All Metrics will be set to zero.<br><br> <b>none:</b> Assets will be cloned with only their core properties and no STIG assignments or Reviews. The pinRevisions option will be ignored.
         pinRevisions:
           type: string
+          description: |
+            <b>matchSource:</b> STIGs in the source Collection that are pinned to a specific Revision will be pinned to that Revision in the clone. STIGs that track the latest Revision (unpinned) in the source will be unpinned in the clone.<br><br><b>sourceDefaults:</b> All STIGs in the clone will be pinned to a specific Revision. STIGs that are pinned to a specific Revision in the source Collection will be pinned to that Revision in the clone. STIGs that track the latest Revision in the source will be pinned to the current latest Revision in the clone.          
           enum:
             - matchSource
             - sourceDefaults
@@ -4189,6 +4225,33 @@ components:
           nullable: true
         options:
           $ref: '#/components/schemas/CollectionCloneOptions'
+    CollectionCloneResponse:
+      type: object
+      properties:
+        stage:
+          type: string
+          enum:
+            - collection
+            - reviews
+            - result
+        stepCount:
+          type: integer
+        step:
+          type: integer
+        message:
+          type: string
+        status:
+          type: string
+          enum:
+            - running
+            - finished
+            - error
+        error:
+          type: object
+        stack:
+          type: string
+        collection:
+          $ref: '#/components/schemas/CollectionProjected'
     CollectionCreateOrReplace:
       type: object
       required:

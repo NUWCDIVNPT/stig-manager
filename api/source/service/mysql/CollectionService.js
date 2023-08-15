@@ -1738,3 +1738,271 @@ exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId})
     return false
   }
 }
+
+exports.cloneCollection = async function ({collectionId, userObject, name, description, options, svcStatus = {}, progressCb = () => {}}) {
+  let connection, progressJson
+  try {
+    const sql = {
+      cloneCollection: {
+        query: `INSERT INTO collection (name, description, settings, metadata, state) SELECT @name,@description,settings, metadata, "cloning" from collection WHERE collectionId = @srcCollectionId`,
+        startText: 'Creating core properties',
+        finishText: 'Creating core properties'
+      },
+      selectLastInsertId: {
+        query: 'SELECT last_insert_id() into @destCollectionId',
+        startText: 'Creating core properties',
+        finishText: 'Created core properties'
+      },
+      cloneGrants: {
+        query: `INSERT INTO collection_grant (collectionId, userId, accessLevel) SELECT @destCollectionId, userId, accessLevel FROM collection_grant where collectionId = @srcCollectionId`,
+        startText: 'Creating Grants',
+        finishText: 'Creating Grants'
+      },
+      insertOwnerGrant: {
+        query: `INSERT INTO collection_grant (collectionId, userId, accessLevel) VALUES (@destCollectionId, @userId, 4) ON DUPLICATE KEY UPDATE accessLevel = 4`,
+        startText: 'Creating Grants',
+        finishText: 'Created Grants'
+      },
+      cloneLabels: {
+        query: `INSERT INTO collection_label (collectionId, name, description, color, uuid) SELECT @destCollectionId,name,description,color,UUID_TO_BIN(UUID(),1) FROM collection_label where collectionId = @srcCollectionId`,
+        startText: 'Creating Labels',
+        finishText: 'Created Labels'
+      },
+      cloneAssets: {
+        query: `INSERT INTO asset (name, fqdn, collectionId, ip, mac, description, noncomputing, metadata) SELECT name,fqdn,@destCollectionId,ip,mac,description,noncomputing,metadata from asset where state = "enabled" and collectionId = @srcCollectionId`,
+        startText: 'Creating Assets',
+        finishText: 'Creating Assets'
+      },
+      dropAssetMap: {
+        query: `DROP TEMPORARY TABLE IF EXISTS t_assetid_map`,
+        startText: 'Creating Assets',
+        finishText: 'Creating Assets'
+      },
+      createAssetMap: {
+        query: `CREATE TEMPORARY TABLE t_assetid_map SELECT a1.assetId as srcAssetId, a2.assetId as destAssetId FROM asset a1 left join asset a2 on (a1.collectionId =  @srcCollectionId and a1.name = a2.name and a1.state = "enabled") WHERE a2.collectionId = @destCollectionId`,
+        startText: 'Creating Assets',
+        finishText: 'Created Assets'
+      },
+      dropLabelMap: {
+        query: `DROP TEMPORARY TABLE IF EXISTS t_clid_map`,
+        startText: 'Creating Asset/Label mappings',
+        finishText: 'Creating Asset/Label mappings'
+      },
+      createLabelMap: {
+        query: `CREATE TEMPORARY TABLE t_clid_map SELECT cl1.clId as srcClId, cl2.clId as destClId FROM collection_label cl1 left join collection_label cl2 on (cl1.collectionId = @srcCollectionId and cl1.name = cl2.name) WHERE cl2.collectionId = @destCollectionId`,
+        startText: 'Creating Asset/Label mappings',
+        finishText: 'Creating Asset/Label mappings'
+      },
+      cloneAssetLabels: {
+        query: `INSERT INTO collection_label_asset_map (assetId, clId) SELECT am.destAssetId,cm.destClId FROM collection_label_asset_map cla INNER JOIN t_clid_map cm on cla.clId = cm.srcClId INNER JOIN t_assetid_map am on cla.assetId = am.srcAssetId`,
+        startText: 'Creating Asset/Label mappings',
+        finishText: 'Created Asset/Label mappings'
+      },
+      cloneStigMappingsWithReviews: {
+        query: `INSERT INTO stig_asset_map (benchmarkId, assetId, minTs, maxTs, saved, savedResultEngine, submitted, submittedResultEngine, rejected, rejectedResultEngine, accepted, acceptedResultEngine, highCount, mediumCount, lowCount, notchecked, notcheckedResultEngine, notapplicable, notapplicableResultEngine, pass, passResultEngine, fail, failResultEngine, unknown, unknownResultEngine, error, errorResultEngine, notselected, notselectedResultEngine, informational, informationalResultEngine, fixed, fixedResultEngine, maxTouchTs) SELECT benchmarkId, am.destAssetId, minTs, maxTs, saved, savedResultEngine, submitted, submittedResultEngine, rejected, rejectedResultEngine, accepted, acceptedResultEngine, highCount, mediumCount, lowCount, notchecked, notcheckedResultEngine, notapplicable, notapplicableResultEngine, pass, passResultEngine, fail, failResultEngine, unknown, unknownResultEngine, error, errorResultEngine, notselected, notselectedResultEngine, informational, informationalResultEngine, fixed, fixedResultEngine, maxTouchTs FROM stig_asset_map sa INNER JOIN t_assetid_map am on sa.assetId = am.srcAssetId`,
+        startText: 'Creating Asset/STIG mappings with Metrics',
+        finishText: 'Created Asset/STIG mappings with Metrics'
+      },
+      cloneStigMappingsWithoutReviews: {
+        query: `INSERT INTO stig_asset_map (benchmarkId, assetId) SELECT benchmarkId, am.destAssetId FROM stig_asset_map sa INNER JOIN t_assetid_map am on sa.assetId = am.srcAssetId`,
+        startText: 'Creating Asset/STIG mappings',
+        finishText: 'Created Asset/STIG mappings'
+      },
+      cloneRestrictedUserGrants: {
+        query: `INSERT INTO user_stig_asset_map (userId, saId) SELECT usa.userId, sa2.saId FROM stig_asset_map sa1 inner join user_stig_asset_map usa on sa1.saId = usa.saId inner join t_assetid_map am on sa1.assetId = am.srcAssetId inner join stig_asset_map sa2 on (am.destAssetId = sa2.assetId and sa1.benchmarkId = sa2.benchmarkId)`,
+        startText: 'Creating Restricted User Grants',
+        finishText: 'Created Restricted User Grants'
+      },
+      cloneRevisionsMatchSource: {
+        query: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM collection_rev_map where collectionId = @srcCollectionId`,
+        startText: 'Creating Revision pins',
+        finishText: 'Creating Revision pins'
+      },
+      cloneRevisionsSourceDefaults: {
+        query: `INSERT INTO collection_rev_map (collectionId, benchmarkId, revId) SELECT @destCollectionId, benchmarkId, revId FROM default_rev where collectionId = @srcCollectionId`,
+        startText: 'Creating Revision pins',
+        finishText: 'Creating Revision pins'
+      },
+      insertDefaultRev: {
+        query: `INSERT INTO default_rev(collectionId, benchmarkId, revId, revisionPinned) SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev WHERE collectionId = @destCollectionId`,
+        startText: 'Creating Revision pins',
+        finishText: 'Created Revision pins'
+      },
+
+      countReviewIds: {
+        query: `SELECT count(seq) as reviewCount from t_reviewId_list`,
+        startText: 'Creating Reviews',
+        finishText: 'Creating Reviews'
+      },
+      dropReviewIdList: {
+        query: `DROP TEMPORARY TABLE IF EXISTS t_reviewId_list`,
+        startText: 'Creating Reviews',
+        finishText: 'Creating Reviews'
+      },
+      createReviewIdList: {
+        query: `CREATE TEMPORARY TABLE t_reviewId_list (seq INT AUTO_INCREMENT PRIMARY KEY)
+      SELECT r.reviewId, am.destAssetId FROM asset a inner join t_assetid_map am on a.assetId = am.srcAssetId inner join review r on am.srcAssetId = r.assetId `,
+      startText: 'Creating Reviews',
+      finishText: 'Creating Reviews'
+      },
+      
+      cloneReviews: {
+        query: `INSERT INTO review (assetId, ruleId, resultId, detail, comment, autoResult, ts, userId, statusId, statusText, statusUserId, statusTs, metadata, resultEngine, version, checkDigest)
+        SELECT rl.destAssetId, r.ruleId, r.resultId, r.detail, r.comment, r.autoResult, r.ts, r.userId, r.statusId, r.statusText, r.statusUserId, r.statusTs, r.metadata, r.resultEngine, r.version, r.checkDigest
+        FROM
+        t_reviewId_list rl
+        left join review r using (reviewId)
+        WHERE
+        rl.seq >= ? and rl.seq <= ?`,
+        startText: 'Creating Reviews',
+        finishText: 'Created Reviews'
+      },
+
+      enableCollection: `UPDATE collection SET state = "enabled" WHERE collectionId = @destCollectionId`
+    }
+
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = false
+    connection.query('set @srcCollectionId = ?, @userId = ?, @name = ?, @description = ?', [
+      parseInt(collectionId),
+      parseInt(userObject.userId),
+      name,
+      description
+    ])
+
+    const collectionQueries = ['cloneCollection', 'selectLastInsertId']
+    const reviewQueries = []
+
+    if (options.grants) {
+      collectionQueries.push('cloneGrants')
+    }
+    collectionQueries.push('insertOwnerGrant')
+
+    if (options.labels) {
+      collectionQueries.push('cloneLabels')
+    }
+
+    if (options.assets) {
+      collectionQueries.push('cloneAssets', 'dropAssetMap', 'createAssetMap')
+      if (options.labels) {
+        collectionQueries.push('dropLabelMap', 'createLabelMap', 'cloneAssetLabels')
+      }
+      if (options.stigMappings !== 'none') {
+        collectionQueries.push(options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews')
+        if (options.grants) {
+          collectionQueries.push('cloneRestrictedUserGrants')
+        }
+        collectionQueries.push(options.pinRevisions === 'matchSource' ? 'cloneRevisionsMatchSource' : 'cloneRevisionsSourceDefaults')
+        collectionQueries.push('insertDefaultRev')
+      }
+      if (options.stigMappings === 'withReviews') {
+        reviewQueries.push('dropReviewIdList', 'createReviewIdList', 'cloneReviews')
+      }
+    }
+
+    async function transactionCollection () {
+      const stage = 'collection'
+      const stepCount = collectionQueries.length + 1
+      progressJson = {stage, stepCount, step: 0}
+
+      await connection.query('START TRANSACTION')
+
+      for (const query of collectionQueries) {
+        progressJson.step++
+        progressJson.stepName = query
+        progressJson.status = 'running'
+        progressJson.message = sql[query].startText
+        progressCb(progressJson) 
+
+        await connection.query(sql[query].query)
+      }
+
+      progressJson.step++
+      progressJson.stepName = 'commit'
+      progressJson.status = 'running'
+      progressJson.message = 'Saving Collection'
+      progressCb(progressJson) 
+
+      await connection.commit()
+
+      progressJson.status = 'finished'
+      progressJson.message = 'Saved Collection'
+      progressCb(progressJson) 
+    }
+
+    async function transactionReviews () {
+      const stage = 'reviews'
+      const stepCount = reviewQueries.length + 1
+      progressJson = {stage, stepCount, step: 0}
+
+      await connection.query('START TRANSACTION')
+      for (const query of reviewQueries) {
+        progressJson.stepName = query
+        progressJson.step++
+        progressJson.message = sql[query].startText
+
+        if (query === 'cloneReviews') {
+          let offset = 1
+          const chunkSize = 10000
+
+          let [result] = await connection.query(sql.countReviewIds.query)
+
+          progressJson.status = 'running'
+          progressJson.reviewsTotal = result[0].reviewCount
+          progressJson.reviewsCopied = 0
+          progressCb(progressJson) 
+
+          do {
+            [result] = await connection.query(sql[query].query, [offset, offset + chunkSize - 1])
+            if (result.affectedRows != 0) {
+              progressJson.reviewsCopied += result.affectedRows
+              progressCb(progressJson) 
+            }
+            offset += chunkSize
+          } while (result.affectedRows != 0)
+        }
+        else {
+          progressJson.status = 'running'
+          progressCb(progressJson)
+          await connection.query(sql[query].query)
+        }
+      }
+      progressJson.step++
+      progressJson.stepName = 'commit'
+      progressJson.status = 'running'
+      progressCb(progressJson) 
+
+      await connection.commit()
+
+      progressJson.status = 'finished'
+      progressCb(progressJson) 
+    }
+
+    await dbUtils.retryOnDeadlock(transactionCollection, svcStatus)
+    await dbUtils.retryOnDeadlock(transactionReviews, svcStatus)
+    await connection.query(sql.enableCollection)
+    const [rows] = await connection.query(`SELECT @destCollectionId as destCollectionId`)
+    return rows[0]
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    progressJson.status = 'error'
+    if (err.message.match(/Duplicate entry .* for key 'collection.index[2|3]'/)) {
+      progressJson.message = 'The requested Collection name is unavailable'
+    }
+    else {
+      progressJson.message = 'Unhandled error'
+      progressJson.error = err
+      progressJson.stack = err?.stack
+    }
+    progressCb(progressJson)
+    return null
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}

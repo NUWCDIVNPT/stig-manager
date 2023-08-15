@@ -20,28 +20,8 @@ const upMigration = [
   DROP INDEX INDEX_NAMECOLLECTION,
   ADD UNIQUE INDEX INDEX_NAME_COLLECTION_ENABLED (name ASC, collectionId ASC, isEnabled ASC) VISIBLE`,
 
-  //table: procedure_log
-  `CREATE TABLE procedure_log (
-    id INT NOT NULL AUTO_INCREMENT,
-    ts DATETIME NOT NULL,
-    proc VARCHAR(45) NOT NULL,
-    msg VARCHAR(45) NOT NULL,
-    PRIMARY KEY (id))`,
-
   // procedure: deleteDisabledCollections
-  `DROP procedure IF EXISTS deleteDisabledCollections`,
-  `CREATE PROCEDURE deleteDisabledCollections()
-  BEGIN
-      REPEAT
-      START TRANSACTION;
-      DELETE FROM review_history WHERE reviewId IN (
-        SELECT r.reviewId FROM review r INNER JOIN asset a using (assetId) INNER JOIN collection c using (collectionId) where c.state = "disabled"
-      ) ORDER BY historyId DESC LIMIT 100000;
-          SELECT ROW_COUNT() INTO @row_count;
-          INSERT into procedure_log(ts, proc, msg) VALUES (CURRENT_TIMESTAMP(), 'review_history', @row_count);
-          commit;
-    UNTIL @row_count < 100000 END REPEAT;
-  END`,
+  `DROP procedure IF EXISTS deleteDisabledCollections`
 ]
 
 const downMigration = [

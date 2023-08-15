@@ -64,3 +64,25 @@ All calculated Metrics and Workspaces for this Collection will default to the "p
 - <b>Most Recent Revision:</b> The Collection Metrics and Workspaces will default to the latest STIG in the system as they are updated. <br><br>
 - <b>Revision String (Date):</b> Pin the default to the specified Revision<br><br>
 `
+
+Ext.ns('SM.TipContent.CloneOptions')
+
+SM.TipContent.CloneOptions.ClickThru = `<span class="sm-warning-header">Warning</span><br><br>
+Cloning large Collections can take several minutes! Users may see performance impacts when accessing the source Collection during this time.<br><br>
+
+Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.<br><br>
+
+<b>Before proceeding, it is recommended that you warn other Users to refrain from modifying any components of the source Collection while the cloning process is underway.</b>`
+
+SM.TipContent.CloneOptions.Grants = `<b>Clone the source Collection's users and their grants.</b><br><br>Whether this option is selected or not, the creator of the cloned Collection (ie. you) will be given an Owner grant in the clone.`
+
+SM.TipContent.CloneOptions.Labels = `<b>Clone the source Collection's available labels.</b><br><br>You must select this option AND the Assets option for labels to be mapped to Assets in the clone.`
+
+SM.TipContent.CloneOptions.Assets = `<b>Clone the source Collection's Assets and their core properties.</b><br><br>This option must be selected to enable the STIGs and Pin Revisions options below.`
+
+SM.TipContent.CloneOptions.Stigs = `<b>Assignments and Reviews:</b> Assets will be cloned with their current STIG assignments and ALL stored Reviews. This will include Reviews that are no longer associated with a current STIG assignment or are associated with a non-default Revision of a STIG.<br><br>
+<b>Assignments but not Reviews:</b> Assets will be cloned with their current STIG assignments but NO stored Reviews will be cloned. All Metrics will be set to zero.<br><br> 
+<b>Do not clone assignments or Reviews:</b> Assets will be cloned with only their core properties and no STIG assignments or Reviews. The Pin Revisions option will be disabled.`
+
+SM.TipContent.CloneOptions.Revisions = `<b>Match the source's pinned Revisions:</b> STIGs in the source Collection that are pinned to a specific Revision will be pinned to that Revision in the clone. STIGs that track the latest Revision (unpinned) in the source will be unpinned in the clone.<br><br> 
+<b>Pin the source's default revisions:</b> All STIGs in the clone will be pinned to a specific Revision. STIGs that are pinned to a specific Revision in the source Collection will be pinned to that Revision in the clone. STIGs that track the latest Revision in the source will be pinned to the current latest Revision in the clone.`
