@@ -191,7 +191,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             url: `${STIGMAN.Env.apiBase}/assets/`,
             method: 'GET',
             params: { 
-              elevate: `${curUser.privileges.canAdmin}`,
               collectionId: theNode.attributes.collectionId,
               projection: 'stigs'
             }
@@ -226,7 +225,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             url: `${STIGMAN.Env.apiBase}/assets/${assetId}`,
             method: 'GET',
             params: { 
-              elevate: `${curUser.privileges.canAdmin}`,
               projection: 'stigs'
             }
           })
@@ -252,7 +250,6 @@ SM.AssignmentNavTree = Ext.extend(Ext.tree.TreePanel, {
             responseType: 'json',
             method: 'GET',
             params: { 
-              elevate: `${curUser.privileges.canAdmin}`,
               collectionId: theNode.attributes.collectionId,
               benchmarkId: theNode.attributes.benchmarkId,
               projection: 'stigs'
