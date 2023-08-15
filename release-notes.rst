@@ -1,3 +1,13 @@
+1.3.9
+-----
+
+Changes:
+
+  - (API/UI) Collection Cloning feature
+  - (API/UI) Modify Delete handling for Collections, Assets, and Users to mark records 'disabled' rather than removing them from the database.
+  - (UI) Grid text selection moved to right-click function
+  - (API/UI) Added STIG Title to metrics endpoint responses, added STIG Title column (hidden by default) to Collection Metrics grids/exports.
+
 1.3.8
 -----
 
