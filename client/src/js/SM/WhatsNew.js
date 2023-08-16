@@ -358,7 +358,12 @@ SM.WhatsNew.showDialog = function (lastDate) {
 }
 
 SM.WhatsNew.autoShow = function () {
-  const lastWhatsNew = localStorage.getItem('lastWhatsNew') || '0000-00-00'
+  let lastWhatsNew = localStorage.getItem('lastWhatsNew') || '0000-00-00'
+  
+  // transform any non-standard date from a previous release
+  const dateParts = lastWhatsNew.split('-')
+  lastWhatsNew = `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`
+  
   if (SM.WhatsNew.Sources[0].date > lastWhatsNew) {
     SM.WhatsNew.showDialog(lastWhatsNew)
   }
