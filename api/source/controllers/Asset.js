@@ -6,8 +6,8 @@ const Asset = require(`../service/${config.database.type}/AssetService`);
 const Collection = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const {XMLBuilder} = require("fast-xml-parser")
-const he = require('he')
 const SmError = require('../utils/error')
+const escapeXml = require('../utils/escape').escapeXml;
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -275,8 +275,6 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
     const format = req.query.format || 'json'
-    const tagValueProcessor = (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value 
-    const attrValueProcessor = (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
     if (await dbUtils.userHasAssetStigs(assetId, [benchmarkId], false, req.userObject)) {
       const response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
@@ -290,8 +288,9 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           format: true,
           indentBy: "  ",
           supressEmptyNode: false,
-          tagValueProcessor,
-          attrValueProcessor
+          processEntities: false,
+          tagValueProcessor: (name, value) => escapeXml(value),
+          attrValueProcessor: (name, value) => escapeXml(value)
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
@@ -307,8 +306,9 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           format: true,
           indentBy: "  ",
           supressEmptyNode: true,
-          tagValueProcessor,
-          attrValueProcessor
+          processEntities: false,
+          tagValueProcessor: (name, value) => escapeXml(value),
+          attrValueProcessor: (name, value) => escapeXml(value)
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)

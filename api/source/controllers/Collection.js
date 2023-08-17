@@ -10,7 +10,7 @@ const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
 const Archiver = require('archiver')
 const {XMLBuilder} = require("fast-xml-parser")
-const he = require('he')
+const escapeXml = require('../utils/escape').escapeXml;
 
 module.exports.defaultSettings = {
   fields: {
@@ -694,8 +694,9 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     format: true,
     indentBy: "  ",
     supressEmptyNode: format === 'xccdf',
-    tagValueProcessor: (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value,
-    attrValueProcessor: (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
+    processEntities: false,
+    tagValueProcessor: (name, value) => escapeXml(value),
+    attrValueProcessor: (name, value) => escapeXml(value)
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
   res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : 'XCCDF'}.zip`)
