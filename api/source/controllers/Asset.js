@@ -7,7 +7,7 @@ const Collection = require(`../service/${config.database.type}/CollectionService
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const {XMLBuilder} = require("fast-xml-parser")
 const SmError = require('../utils/error')
-const escapeXml = require('../utils/escape').escapeXml;
+const {escapeForXml} = require('../utils/escape')
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -289,8 +289,8 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           indentBy: "  ",
           supressEmptyNode: false,
           processEntities: false,
-          tagValueProcessor: (name, value) => escapeXml(value),
-          attrValueProcessor: (name, value) => escapeXml(value)
+          tagValueProcessor: escapeForXml,
+          attrValueProcessor: escapeForXml
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
@@ -307,8 +307,8 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           indentBy: "  ",
           supressEmptyNode: true,
           processEntities: false,
-          tagValueProcessor: (name, value) => escapeXml(value),
-          attrValueProcessor: (name, value) => escapeXml(value)
+          tagValueProcessor: escapeForXml,
+          attrValueProcessor: escapeForXml
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
