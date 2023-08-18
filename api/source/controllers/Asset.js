@@ -328,8 +328,6 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
   try {
     const assetId = req.params.assetId
     let requestedBenchmarkIds = req.query.benchmarkId
-    const tagValueProcessor = (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value 
-    const attrValueProcessor = (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
 
     // If this user has no grants permitting access to the asset, the response will be undefined
     const assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
@@ -358,8 +356,9 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
       format: true,
       indentBy: "  ",
       supressEmptyNode: false,
-      tagValueProcessor,
-      attrValueProcessor
+      processEntities: false,
+      tagValueProcessor: escapeForXml,
+      attrValueProcessor: escapeForXml
     })
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
     xml += builder.build(cklObject.xmlJs)
