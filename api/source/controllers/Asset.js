@@ -6,8 +6,8 @@ const Asset = require(`../service/${config.database.type}/AssetService`);
 const Collection = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const {XMLBuilder} = require("fast-xml-parser")
-const he = require('he')
 const SmError = require('../utils/error')
+const {escapeForXml} = require('../utils/escape')
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -275,8 +275,6 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
     const format = req.query.format || 'json'
-    const tagValueProcessor = (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value 
-    const attrValueProcessor = (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
     if (await dbUtils.userHasAssetStigs(assetId, [benchmarkId], false, req.userObject)) {
       const response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
@@ -290,8 +288,9 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           format: true,
           indentBy: "  ",
           supressEmptyNode: false,
-          tagValueProcessor,
-          attrValueProcessor
+          processEntities: false,
+          tagValueProcessor: escapeForXml,
+          attrValueProcessor: escapeForXml
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
@@ -307,8 +306,9 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
           format: true,
           indentBy: "  ",
           supressEmptyNode: true,
-          tagValueProcessor,
-          attrValueProcessor
+          processEntities: false,
+          tagValueProcessor: escapeForXml,
+          attrValueProcessor: escapeForXml
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
@@ -328,8 +328,6 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
   try {
     const assetId = req.params.assetId
     let requestedBenchmarkIds = req.query.benchmarkId
-    const tagValueProcessor = (name, value) => value ? he.encode(value.toString(), { useNamedReferences: false}) : value 
-    const attrValueProcessor = (name, value) => he.encode(value, {isAttributeValue: true, useNamedReferences: true})
 
     // If this user has no grants permitting access to the asset, the response will be undefined
     const assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
@@ -358,8 +356,9 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
       format: true,
       indentBy: "  ",
       supressEmptyNode: false,
-      tagValueProcessor,
-      attrValueProcessor
+      processEntities: false,
+      tagValueProcessor: escapeForXml,
+      attrValueProcessor: escapeForXml
     })
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
     xml += builder.build(cklObject.xmlJs)
