@@ -9,7 +9,7 @@ SM.WhatsNew.Sources = [
     STIG Manager can now import and export data using the new .cklb file format introduced by DISA with the release of STIG Viewer 3. 
     </p>
 
-    <p><b>Note:</b><b> .CKLB is a new format and may be subject to change. </b></p>
+    <p><b>Note:</b><b>.CKLB is a new format and may be subject to change without notice! </b></p>
 
     <p><img src="img/whatsnew/2023-08-20-cklb-export.png"/></p>
 

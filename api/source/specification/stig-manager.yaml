@@ -200,6 +200,9 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/ChecklistCkl'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChecklistCklb'
         default:
           description: unexpected error
           content:
@@ -237,9 +240,9 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ChecklistAssetStig'
+                oneOf:
+                  - $ref: '#/components/schemas/ChecklistAssetStig'
+                  - $ref: '#/components/schemas/ChecklistCklb'
             application/xml:
                 schema:
                   oneOf:
@@ -3976,31 +3979,33 @@ components:
         content:
           type: string
     ChecklistAssetStig:
-      type: object
-      additionalProperties: false  
-      properties:
-        assetId:
-          type: string
-        ruleId:
-          type: string
-        ruleTitle:
-          type: string
-        groupId:
-          type: string
-        groupTitle:
-          type: string
-        version:
-          type: string
-        severity:
-          $ref: '#/components/schemas/RuleSeverity'
-        result:
-          $ref: '#/components/schemas/ChecklistResult'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        autoResult:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ChecklistStatus'
+      type: array
+      items:
+        type: object
+        additionalProperties: false  
+        properties:
+          assetId:
+            type: string
+          ruleId:
+            type: string
+          ruleTitle:
+            type: string
+          groupId:
+            type: string
+          groupTitle:
+            type: string
+          version:
+            type: string
+          severity:
+            $ref: '#/components/schemas/RuleSeverity'
+          result:
+            $ref: '#/components/schemas/ChecklistResult'
+          resultEngine:
+            $ref: '#/components/schemas/ResultEngine'
+          autoResult:
+            type: boolean
+          status:
+            $ref: '#/components/schemas/ChecklistStatus'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer
@@ -4079,6 +4084,16 @@ components:
                           type: string
                         SEVERITY_JUSTIFICATION:
                           type: string
+    ChecklistCklb:
+      type: object
+      description: The CKLB format generated and read by DISA STIG VIewer 3
+      properties:
+        target_data:
+          type: object
+        stigs: 
+          type: array
+          items:
+            type: object
     ChecklistCollectionStig:
       type: object
       additionalProperties: false
