@@ -829,6 +829,7 @@ Clone Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "Clone Collection" button allows Managers or Owners to create another Collection that is a copy of the one they are currently viewing.  
+This feature can be useful for creating a "snapshot" of a Collection at a particular point in time that could be used to support certain process or reporting needs. At clone time, the new Collection can be created with all its STIGs "pinned" to the default Revisions of the Source Collection, which will ensure the Clone's reviews and metrics do not change when Reference STIGs are updated. 
 
 
 .. thumbnail:: /assets/images/collection-manage-clone-button.png
