@@ -1,44 +1,3 @@
-// const parseResult = {
-//   type: 'CKL' || 'XCCDF',
-//   target: {
-//     name: 'string',
-//     description: 'string',
-//     ip: 'string',
-//     noncomputing: 'string',
-//     fqdn: 'string',
-//     mac: 'string',
-//     metadata: {}
-//   },
-//   checklists: [
-//     {
-//       benchmrkId: 'string',
-//       revisionStr: 'string',
-//       reviews: [
-//         {
-//           ruleId: '',
-//           result: '',
-//           resultComment: '',
-//           action: '' || null,
-//           actionComment: '' || null,
-//           autoResult: false,
-//           status: ''
-//         }
-//       ],
-//       stats: {
-//          pass: 0,
-//          fail: 0,
-//          notapplicable: 0,
-//          notchecked: 0,
-//          notselected: 0,
-//          informational: 0,
-//          error: 0,
-//          fixed: 0,
-//          unknown: 0
-//       }
-//     }
-//   ]
-// }
-
 const {XMLParser} = require('fast-xml-parser')
 const he = require('he')
 
@@ -61,19 +20,19 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
     const j = parser.parse(xccdfData.toString())
 
     let bIn, isScap=false
-    if (j['data-stream-collection'] && j['data-stream-collection'][0]) {
+    if (j['data-stream-collection']?.[0]) {
       // SCAP
       const components =  j['data-stream-collection'][0].component
-      const candidate = components.find(component => 'Benchmark' in component)
-      if (candidate.Benchmark[0]) {
+      const candidate = components?.find(component => 'Benchmark' in component)
+      if (candidate?.Benchmark?.[0]) {
         bIn = candidate.Benchmark[0]
         isScap = true
       }
       else {
-        throw new Error("Cannot parse SCAP document. No Benchmark element found.")
+        throw new Error("Cannot parse as a DISA SCAP benchmark. No Benchmark element found.")
       }
     }
-    else if (j.Benchmark && j.Benchmark[0]) { 
+    else if (j.Benchmark?.[0]) { 
       // Manual STIG
       bIn = j.Benchmark[0]
     }
@@ -95,7 +54,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           ident: ident._,
           system: ident.system
         })) : []
-        // The description element is often not well-formed XML, so we fallback on extracting content between expected tags
+        // The description element's value is often not well-formed XML, so we fallback on extracting content between expected tags
         function parseRuleDescription (d) {
           const parsed = {}
           const propMap = {
@@ -155,7 +114,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         rules: rules
       }
     })
-    let [releaseInfo, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
+    const [releaseInfo, release, benchmarkDate] = /Release:\s+(\S+)\s+Benchmark Date:\s+(.*)/g.exec(bIn['plain-text'][0]._)
 
     return {
       benchmarkId: bIn.id,
@@ -168,9 +127,9 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         releaseInfo,
         benchmarkDate,
         benchmarkDate8601: benchmarkDateTo8601(benchmarkDate),
-        status: bIn.status[0]._ || null,
-        statusDate: bIn.status[0].date || null,
-        description: bIn.description[0]._ || null,
+        status: bIn.status?.[0]._ || null,
+        statusDate: bIn.status?.[0].date || null,
+        description: bIn.description?.[0]._ || null,
         groups
       }
     }
