@@ -45,6 +45,9 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
       {
         name: 'discussion',
         mapping: 'detail.vulnDiscussion'
+      },
+      {
+        name: 'ccis'
       }
     ]
     const exportBtn = new Ext.ux.ExportButton({
@@ -161,6 +164,17 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         renderer: columnWrap,
         sortable: true,
         filter: { type: 'string' }
+      },
+      {
+        header: "CCIs",
+        width: 100,
+        dataIndex: 'ccis',
+        renderer: function (v) {
+          v = v.map(v => v.cci).join('\n')
+          return columnWrap.apply(this, arguments)
+        },
+        sortable: false,
+        filter: { type: 'string' }
       }
     ]
     const view = new SM.ColumnFilters.GridView({
@@ -218,7 +232,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules`,
         method: 'GET',
         params: {
-          projection: ['check', 'fix', 'detail']
+          projection: ['check', 'fix', 'detail', 'ccis']
         }
       })
       return JSON.parse(result.response.responseText)
