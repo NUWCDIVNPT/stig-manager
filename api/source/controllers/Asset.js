@@ -280,6 +280,10 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
       if (format === 'json') {
         res.json(response)
       }
+      else if (format === 'cklb') {
+        response.cklb.title = `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}`
+        writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+      }
       else if (format === 'ckl') {
         const builder = new XMLBuilder({
           attributeNamePrefix : "@_",
@@ -328,6 +332,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
   try {
     const assetId = req.params.assetId
     let requestedBenchmarkIds = req.query.benchmarkId
+    const format = req.query.format //default of .ckl provided by EOV
 
     // If this user has no grants permitting access to the asset, the response will be undefined
     const assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
@@ -348,21 +353,27 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
 
     const stigs = requestedBenchmarkIds.map( benchmarkId => ({benchmarkId, revisionStr: 'latest'}) )
 
-    const cklObject = await Asset.getChecklistByAsset(assetId, stigs, 'ckl', false, req.userObject )
-    const builder = new XMLBuilder({
-      attributeNamePrefix : "@_",
-      textNodeName : "#text",
-      ignoreAttributes : true,
-      format: true,
-      indentBy: "  ",
-      supressEmptyNode: false,
-      processEntities: false,
-      tagValueProcessor: escapeForXml,
-      attrValueProcessor: escapeForXml
-    })
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
-    xml += builder.build(cklObject.xmlJs)
-    writer.writeInlineFile(res, xml, `${cklObject.assetName}.ckl`, 'application/xml')
+    const response = await Asset.getChecklistByAsset(assetId, stigs, format, false, req.userObject )
+
+    if (format === 'cklb') {
+      writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}.cklb`, 'application/json') 
+    }
+    else if (format === 'ckl') {
+      const builder = new XMLBuilder({
+        attributeNamePrefix : "@_",
+        textNodeName : "#text",
+        ignoreAttributes : true,
+        format: true,
+        indentBy: "  ",
+        supressEmptyNode: false,
+        processEntities: false,
+        tagValueProcessor: escapeForXml,
+        attrValueProcessor: escapeForXml
+      })
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
+      xml += builder.build(response.xmlJs)
+      writer.writeInlineFile(res, xml, `${response.assetName}.ckl`, 'application/xml')
+    }
   }
   catch (err) {
     next(err)

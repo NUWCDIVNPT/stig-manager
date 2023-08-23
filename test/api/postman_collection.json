@@ -8748,6 +8748,149 @@
 									"response": []
 								},
 								{
+									"name": "Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - specified stigs",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"const xml2js = require('xml2js');\r",
+													"\r",
+													"\r",
+													"if (user == \"bizarroLvl1\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if (user == \"collectioncreator\"  ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if ( user == \"lvl1\" ) {\r",
+													"    pm.test(\"Status should be is 400 for user  lvl1\", function () {\r",
+													"        pm.response.to.have.status(400);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let cklData;\r",
+													"\r",
+													" xml2js.parseString(pm.response.text(), function (err, result) {\r",
+													"        cklData = result;\r",
+													"        // console.log(result);\r",
+													"    });\r",
+													"\r",
+													"\r",
+													"let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]\r",
+													"let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG\r",
+													"// let cklSiData = cklData.CHECKLIST.STIGS[0].iSTIG[0].STIG_INFO[0].SI_DATA\r",
+													"// console.log(cklSiData);\r",
+													"\r",
+													"\r",
+													"let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+													"\r",
+													"pm.test(\"Response has allowed asset\", function () {\r",
+													"\r",
+													"    var regex = new RegExp(assetMatchString);\r",
+													"    pm.expect(cklHostName).to.match(regex);\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"let currentStigId;\r",
+													"\r",
+													"pm.test(\"Check each iSTIG for STIG Info element with allowed stigId, as well as vulns array of proper length.\", function () {\r",
+													"\r",
+													"    for (let iStig of cklIStigs){\r",
+													"\r",
+													"        for (let cklSiDatum of iStig.STIG_INFO[0].SI_DATA){\r",
+													"            // console.log (cklSiDatum.SID_NAME[0])\r",
+													"            if (cklSiDatum.SID_NAME[0] == 'stigid'){\r",
+													"                console.log (cklSiDatum.SID_NAME[0])\r",
+													"                console.log (cklSiDatum.SID_DATA[0])\r",
+													"                currentStigId = cklSiDatum.SID_DATA[0]\r",
+													"                pm.expect(currentStigId).to.be.oneOf(validStigs);\r",
+													"\r",
+													"            }\r",
+													"        }\r",
+													"\r",
+													"        let cklVulns = iStig.VULN;\r",
+													"\r",
+													"        pm.expect(cklVulns).to.be.an('array');\r",
+													"\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
+													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
+													"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
+													"        }\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/?benchmarkId={{testBenchmark}}&benchmarkId=Windows_10_STIG_TEST",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists",
+												""
+											],
+											"query": [
+												{
+													"key": "benchmarkId",
+													"value": "{{testBenchmark}}"
+												},
+												{
+													"key": "benchmarkId",
+													"value": "Windows_10_STIG_TEST"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId",
+													"value": "{{testAsset}}",
+													"description": "(Required) A path parameter that indentifies an Asset"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
 									"name": "Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - no specified stigs",
 									"event": [
 										{
@@ -8862,6 +9005,407 @@
 												":assetId",
 												"checklists",
 												""
+											],
+											"variable": [
+												{
+													"key": "assetId",
+													"value": "{{testAsset}}",
+													"description": "(Required) A path parameter that indentifies an Asset"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Return the Checklist for the supplied Asset and STIG XML (.cklB) - specific STIG",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (user == \"bizarroLvl1\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if (user == \"collectioncreator\" ) {\r",
+													"    pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
+													"        pm.response.to.have.status(204);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"\r",
+													"let cklbData = pm.response.json()\r",
+													"\r",
+													"\r",
+													"let cklbHostName = cklbData.target_data.host_name\r",
+													"let cklbIStigs = cklbData.stigs\r",
+													"// let cklbSiData = cklbData.CHECKLIST.STIGS[0].iSTIG[0].STIG_INFO[0].SI_DATA\r",
+													"// console.log(cklbSiData);\r",
+													"\r",
+													"console.log(cklbHostName)\r",
+													"\r",
+													"let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+													"\r",
+													"pm.test(\"Response has allowed asset\", function () {\r",
+													"\r",
+													"    var regex = new RegExp(assetMatchString);\r",
+													"    pm.expect(cklbHostName).to.match(regex);\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"let currentStigId;\r",
+													"\r",
+													"pm.test(\"Check each iSTIG for STIG Info element with allowed stigId, as well as vulns array of proper length.\", function () {\r",
+													"\r",
+													"    for (let iStig of cklbIStigs){\r",
+													"\r",
+													"        // for (let cklbSiDatum of iStig.STIG_INFO[0].SI_DATA){\r",
+													"            // console.log (cklbSiDatum.SID_NAME[0])\r",
+													"            // if (cklbSiDatum.SID_NAME[0] == 'stigid'){\r",
+													"                // console.log (cklbSiDatum.SID_NAME[0])\r",
+													"                // console.log (cklbSiDatum.SID_DATA[0])\r",
+													"                currentStigId = iStig.stig_id\r",
+													"                pm.expect(currentStigId).to.be.oneOf(validStigs);\r",
+													"\r",
+													"            // }\r",
+													"        // }\r",
+													"\r",
+													"        let cklbVulns = iStig.rules;\r",
+													"\r",
+													"        pm.expect(cklbVulns).to.be.an('array');\r",
+													"\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
+													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
+													"            pm.expect(cklbVulns).to.be.an('array').of.length(checklistLength);\r",
+													"        }\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?format=cklb",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists",
+												":benchmarkId",
+												":revisionStr"
+											],
+											"query": [
+												{
+													"key": "format",
+													"value": "cklb",
+													"description": "The format of the response. Default if missing is 'json'"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId",
+													"value": "{{testAsset}}",
+													"description": "(Required) A path parameter that indentifies an Asset"
+												},
+												{
+													"key": "benchmarkId",
+													"value": "{{testBenchmark}}",
+													"description": "(Required) A path parameter that indentifies a STIG"
+												},
+												{
+													"key": "revisionStr",
+													"value": "{{testRev}}",
+													"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Return the Checklist for the supplied Asset and MULTI-STIG JSON (.cklB) - no specified STIG",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (user == \"bizarroLvl1\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if (user == \"collectioncreator\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"let cklbData = pm.response.json()\r",
+													"\r",
+													"\r",
+													"let cklbHostName = cklbData.target_data.host_name\r",
+													"let cklbIStigs = cklbData.stigs\r",
+													"// let cklbSiData = cklbData.CHECKLIST.STIGS[0].iSTIG[0].STIG_INFO[0].SI_DATA\r",
+													"// console.log(cklbSiData);\r",
+													"\r",
+													"console.log(cklbHostName)\r",
+													"\r",
+													"let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+													"\r",
+													"pm.test(\"Response has allowed asset\", function () {\r",
+													"\r",
+													"    var regex = new RegExp(assetMatchString);\r",
+													"    pm.expect(cklbHostName).to.match(regex);\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"let currentStigId;\r",
+													"\r",
+													"pm.test(\"Check each iSTIG for STIG Info element with allowed stigId, as well as vulns array of proper length.\", function () {\r",
+													"\r",
+													"    for (let iStig of cklbIStigs){\r",
+													"\r",
+													"        // for (let cklbSiDatum of iStig.STIG_INFO[0].SI_DATA){\r",
+													"            // console.log (cklbSiDatum.SID_NAME[0])\r",
+													"            // if (cklbSiDatum.SID_NAME[0] == 'stigid'){\r",
+													"                // console.log (cklbSiDatum.SID_NAME[0])\r",
+													"                // console.log (cklbSiDatum.SID_DATA[0])\r",
+													"                currentStigId = iStig.stig_id\r",
+													"                pm.expect(currentStigId).to.be.oneOf(validStigs);\r",
+													"\r",
+													"            // }\r",
+													"        // }\r",
+													"\r",
+													"        let cklbVulns = iStig.rules;\r",
+													"\r",
+													"        pm.expect(cklbVulns).to.be.an('array');\r",
+													"\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
+													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
+													"            pm.expect(cklbVulns).to.be.an('array').of.length(checklistLength);\r",
+													"        }\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists?format=cklb",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists"
+											],
+											"query": [
+												{
+													"key": "format",
+													"value": "cklb"
+												}
+											],
+											"variable": [
+												{
+													"key": "assetId",
+													"value": "{{testAsset}}",
+													"description": "(Required) A path parameter that indentifies an Asset"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Return the Checklist for the supplied Asset and MULTI-STIG JSON (.cklB) - specific STIGs",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (user == \"bizarroLvl1\" ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if (user == \"collectioncreator\"  ) {\r",
+													"    pm.test(\"Status should be is 403 for user collectioncreator\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else if ( user == \"lvl1\" ) {\r",
+													"    pm.test(\"Status should be is 400 for user  lvl1\", function () {\r",
+													"        pm.response.to.have.status(400);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"\r",
+													"let cklbData = pm.response.json()\r",
+													"\r",
+													"\r",
+													"let cklbHostName = cklbData.target_data.host_name\r",
+													"let cklbIStigs = cklbData.stigs\r",
+													"\r",
+													"console.log(cklbHostName)\r",
+													"\r",
+													"let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
+													"\r",
+													"pm.test(\"Response has allowed asset\", function () {\r",
+													"\r",
+													"    var regex = new RegExp(assetMatchString);\r",
+													"    pm.expect(cklbHostName).to.match(regex);\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
+													"let currentStigId;\r",
+													"\r",
+													"pm.test(\"Check each iSTIG for STIG Info element with allowed stigId, as well as vulns array of proper length.\", function () {\r",
+													"\r",
+													"    for (let iStig of cklbIStigs){\r",
+													"\r",
+													"        // for (let cklbSiDatum of iStig.STIG_INFO[0].SI_DATA){\r",
+													"            // console.log (cklbSiDatum.SID_NAME[0])\r",
+													"            // if (cklbSiDatum.SID_NAME[0] == 'stigid'){\r",
+													"                // console.log (cklbSiDatum.SID_NAME[0])\r",
+													"                // console.log (cklbSiDatum.SID_DATA[0])\r",
+													"                currentStigId = iStig.stig_id\r",
+													"                pm.expect(currentStigId).to.be.oneOf(validStigs);\r",
+													"\r",
+													"            // }\r",
+													"        // }\r",
+													"\r",
+													"        let cklbVulns = iStig.rules;\r",
+													"\r",
+													"        pm.expect(cklbVulns).to.be.an('array');\r",
+													"\r",
+													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
+													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
+													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
+													"            pm.expect(cklbVulns).to.be.an('array').of.length(checklistLength);\r",
+													"        }\r",
+													"    }\r",
+													"});\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/assets/:assetId/checklists?format=cklb&benchmarkId={{testBenchmark}}&benchmarkId=Windows_10_STIG_TEST",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets",
+												":assetId",
+												"checklists"
+											],
+											"query": [
+												{
+													"key": "format",
+													"value": "cklb"
+												},
+												{
+													"key": "benchmarkId",
+													"value": "{{testBenchmark}}"
+												},
+												{
+													"key": "benchmarkId",
+													"value": "Windows_10_STIG_TEST"
+												}
 											],
 											"variable": [
 												{
@@ -9000,149 +9544,6 @@
 												{
 													"key": "benchmarkId",
 													"value": "{{testBenchmark}}"
-												}
-											],
-											"variable": [
-												{
-													"key": "assetId",
-													"value": "{{testAsset}}",
-													"description": "(Required) A path parameter that indentifies an Asset"
-												}
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Return the Checklist for the supplied Asset and MULTI-STIG XML (.CKL) - no specified stigs",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"let user = pm.environment.get(\"user\");\r",
-													"console.log(\"user: \" + user);\r",
-													"\r",
-													"const xml2js = require('xml2js');\r",
-													"\r",
-													"\r",
-													"if (user == \"bizarroLvl1\" ) {\r",
-													"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"    return;\r",
-													"}\r",
-													"else if (user == \"collectioncreator\"  ) {\r",
-													"    pm.test(\"Status should be is 403 for user collectioncreator\", function () {\r",
-													"        pm.response.to.have.status(403);\r",
-													"    });\r",
-													"    return;\r",
-													"}\r",
-													"else if ( user == \"lvl1\" ) {\r",
-													"    pm.test(\"Status should be is 400 for user  lvl1\", function () {\r",
-													"        pm.response.to.have.status(400);\r",
-													"    });\r",
-													"    return;\r",
-													"}\r",
-													"\r",
-													"\r",
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"if (pm.response.code !== 200) {\r",
-													"    return;\r",
-													"}\r",
-													"\r",
-													"\r",
-													"let cklData;\r",
-													"\r",
-													" xml2js.parseString(pm.response.text(), function (err, result) {\r",
-													"        cklData = result;\r",
-													"        // console.log(result);\r",
-													"    });\r",
-													"\r",
-													"\r",
-													"let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]\r",
-													"let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG\r",
-													"// let cklSiData = cklData.CHECKLIST.STIGS[0].iSTIG[0].STIG_INFO[0].SI_DATA\r",
-													"// console.log(cklSiData);\r",
-													"\r",
-													"\r",
-													"let assetMatchString = pm.environment.get(\"assetMatchString\");\r",
-													"\r",
-													"pm.test(\"Response has allowed asset\", function () {\r",
-													"\r",
-													"    var regex = new RegExp(assetMatchString);\r",
-													"    pm.expect(cklHostName).to.match(regex);\r",
-													"\r",
-													"});\r",
-													"\r",
-													"\r",
-													"let validStigs = JSON.parse(pm.environment.get(\"stigs.valid\"));\r",
-													"let currentStigId;\r",
-													"\r",
-													"pm.test(\"Check each iSTIG for STIG Info element with allowed stigId, as well as vulns array of proper length.\", function () {\r",
-													"\r",
-													"    for (let iStig of cklIStigs){\r",
-													"\r",
-													"        for (let cklSiDatum of iStig.STIG_INFO[0].SI_DATA){\r",
-													"            // console.log (cklSiDatum.SID_NAME[0])\r",
-													"            if (cklSiDatum.SID_NAME[0] == 'stigid'){\r",
-													"                console.log (cklSiDatum.SID_NAME[0])\r",
-													"                console.log (cklSiDatum.SID_DATA[0])\r",
-													"                currentStigId = cklSiDatum.SID_DATA[0]\r",
-													"                pm.expect(currentStigId).to.be.oneOf(validStigs);\r",
-													"\r",
-													"            }\r",
-													"        }\r",
-													"\r",
-													"        let cklVulns = iStig.VULN;\r",
-													"\r",
-													"        pm.expect(cklVulns).to.be.an('array');\r",
-													"\r",
-													"        // Right now, only VPN_SRG_TEST has a checklist length\r",
-													"        if (currentStigId == 'VPN_SRG_TEST') {\r",
-													"            let checklistLength = pm.environment.get(\"checklistLength\");\r",
-													"            pm.expect(cklVulns).to.be.an('array').of.length(checklistLength);\r",
-													"        }\r",
-													"    }\r",
-													"});\r",
-													"\r",
-													"\r",
-													"\r",
-													"\r",
-													"\r",
-													"\r",
-													"\r",
-													""
-												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{baseUrl}}/assets/:assetId/checklists/?benchmarkId={{testBenchmark}}&benchmarkId=Windows_10_STIG_TEST",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"assets",
-												":assetId",
-												"checklists",
-												""
-											],
-											"query": [
-												{
-													"key": "benchmarkId",
-													"value": "{{testBenchmark}}"
-												},
-												{
-													"key": "benchmarkId",
-													"value": "Windows_10_STIG_TEST"
 												}
 											],
 											"variable": [

@@ -1,6 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../../utils/config')
+const uuid = require('uuid')
 
 let _this = this
 
@@ -830,6 +831,232 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
 
 }
 
+exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) {
+  let connection
+  try {
+    let revisionStrResolved // Will hold specific revision string value, as opposed to "latest"
+    const createdAt = new Date().toISOString()
+    const cklb = {
+      title: '',
+      id: uuid.v1(),
+      active: false,
+      mode: 1,
+      has_path: true,
+      target_data: {
+        target_type: '',
+        host_name: '',
+        ip_address: '',
+        mac_address: '',
+        fqdn: '',
+        comments: '',
+        role: '',
+        is_web_database: false,
+        technology_area: '',
+        web_db_site: '',
+        web_db_instance: ''
+      },
+      stigs: []
+    }
+
+    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ? and asset.state = 'enabled'"
+    const sqlGetChecklist =`SELECT 
+      rgr.groupId,
+      rgr.severity,
+      rgr.groupTitle,
+      rgr.ruleId,
+      rgr.title as "ruleTitle",
+      rgr.weight,
+      rgr.version,
+      rgr.vulnDiscussion,
+      rgr.iaControls,
+      rgr.falsePositives,
+      rgr.falseNegatives,
+      rgr.documentable,
+      rgr.mitigations,
+      rgr.potentialImpacts,
+      rgr.thirdPartyTools,
+      rgr.mitigationControl,
+      rgr.responsibility,
+      rgr.severityOverrideGuidance,
+      result.cklb as "result",
+      LEFT(review.detail,32767) as "detail",
+      LEFT(review.comment,32767) as "comment",
+      review.ts as "createdAt",
+      review.touchTs as "updatedAt",
+      cc.content as "checkContent",
+      ft.text as "fixText",
+      group_concat(rgrcc.cci ORDER BY rgrcc.cci) as "ccis"
+    FROM
+      revision rev 
+      left join rev_group_rule_map rgr on rev.revId = rgr.revId 
+      left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
+      left join severity_cat_map sc on rgr.severity = sc.severity 
+      
+      left join rev_group_rule_cci_map rgrcc on rgr.rgrId = rgrcc.rgrId
+
+      left join check_content cc on rgr.checkDigest = cc.digest
+
+      left join fix_text ft on rgr.fixDigest = ft.digest
+
+      left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = ?)
+      left join result on review.resultId = result.resultId 
+      left join status on review.statusId = status.statusId 
+
+    WHERE
+      rev.revId = ?
+    GROUP BY
+      rgr.rgrId,
+      result.cklb,
+      review.reviewId
+    order by
+      substring(rgr.groupId from 3) + 0 asc
+    `
+    connection = await dbUtils.pool.getConnection()
+
+    // cklb.target_data
+    const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
+    cklb.target_data.host_name = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
+    cklb.target_data.fqdn = resultGetAsset[0].fqdn ?? ''
+    cklb.target_data.ip_address = resultGetAsset[0].ip ?? ''
+    cklb.target_data.mac_address = resultGetAsset[0].mac ?? ''
+    cklb.target_data.target_type = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
+    cklb.target_data.role = resultGetAsset[0].metadata.cklRole ?? 'None'
+    cklb.target_data.technology_area = resultGetAsset[0].metadata.cklTechArea ?? ''
+    cklb.target_data.is_web_database = resultGetAsset[0].metadata.cklHostName ?  true : false
+    cklb.target_data.web_db_site = resultGetAsset[0].metadata.cklWebDbSite ?? ''
+    cklb.target_data.web_db_instance = resultGetAsset[0].metadata.cklWebDbInstance ?? ''
+    
+    // cklb.stigs
+    for (const stigItem of stigs) {
+      const revisionStr = stigItem.revisionStr || 'latest'
+      revisionStrResolved = revisionStr
+      const benchmarkId = stigItem.benchmarkId
+      
+      let sqlGetBenchmarkId
+      if (revisionStr === 'latest') {
+        sqlGetBenchmarkId = `select
+          cr.benchmarkId, 
+          s.title, 
+          cr.revId, 
+          cr.description, 
+          cr.version, 
+          cr.release, 
+          cr.benchmarkDate,
+          cr.ruleCount
+        from
+          current_rev cr 
+          left join stig s on cr.benchmarkId = s.benchmarkId
+        where
+          cr.benchmarkId = ?`
+      }
+      else {
+        sqlGetBenchmarkId = `select
+          r.benchmarkId,
+          s.title,
+          r.description,
+          r.version,
+          r.release,
+          r.benchmarkDate,
+          r.ruleCount
+        from 
+          stig s 
+          left join revision r on s.benchmarkId=r.benchmarkId
+        where
+          r.revId = ?`  
+      }
+      // Calculate revId
+      let resultGetBenchmarkId, revId
+      if (revisionStr === 'latest') {
+        ;[resultGetBenchmarkId] = await connection.query(sqlGetBenchmarkId, [benchmarkId])
+        revId = resultGetBenchmarkId[0].revId
+        revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
+      }
+      else {
+        let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
+      }
+  
+      const stig = resultGetBenchmarkId[0]
+      const stigUuid = uuid.v1()
+      const stigObj = {
+        stig_name: stig.title,
+        display_name: stig.title.replace(' Security Technical Implementation Guide', ''),
+        stig_id: stig.benchmarkId,
+        version: stig.version,
+        release_info: `Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`,
+        uuid: stigUuid,
+        reference_identifier: '0000',
+        size: stig.ruleCount,
+        rules: []
+      }
+
+      // cklb.stigs[x].rules
+      const [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])  
+      for (const row of resultGetChecklist) {
+        const rule = {
+          uuid: uuid.v1(),
+          stig_uuid: stigUuid,
+          target_key: null,
+          stig_ref: null,
+          group_id: row.groupId,
+          rule_id: row.ruleId.replace('_rule', ''),
+          rule_id_src: row.ruleId,
+          weight: row.weight,
+          classification: config.settings.setClassification,
+          severity: row.severity,
+          rule_version: row.version,
+          group_title: row.groupTitle,
+          rule_title: row.ruleTitle,
+          fix_text: row.fixText,
+          false_positives: row.falsePositives,
+          false_negatives: row.falseNegatives,
+          discussion: row.vulnDiscussion,
+          check_content: row.checkContent,
+          documentable: row.documentable,
+          mitigations: row.mitigations,
+          potential_impacts: row.potentialImpacts,
+          third_party_tools: row.thirdPartyTools,
+          mitigation_control: row.mitigationControl,
+          responsibility: row.responsibility,
+          security_override_guidance: row.severityOverrideGuidance,
+          ia_controls: row.iaControls,
+          check_content_ref: {
+            href: '',
+            name: 'M'
+          },
+          legacy_ids: [],
+          group_tree: [
+            {
+              id: row.groupId,
+              title: row.groupTitle,
+              description: '<GroupDescription></GroupDescription>'
+            }
+          ],
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          STIGUuid: stigUuid,
+          status: row.result || 'not_reviewed',
+          overrides: {},
+          comments: row.comment ?? '',
+          finding_details: row.detail ?? ''
+        }
+
+        // CCI_REFs
+        rule.ccis = row.ccis ? row.ccis.split(',').map( cci => `CCI-${cci}`) : []
+        stigObj.rules.push(rule)
+      }
+      cklb.stigs.push(stigObj)
+    }
+    return ({assetName: resultGetAsset[0].name, cklb, revisionStrResolved})
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
+
 exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr = 'latest', includeCheckContent = true) {
     // queries and query methods
   const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
@@ -1137,12 +1364,11 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
       }, elevate, userObject)
       return (rows)
     case 'ckl':
-      const stig = {
-        benchmarkId,
-        revisionStr
-      }
-      const cklObject = await _this.cklFromAssetStigs(assetId, [stig], elevate, userObject)
+      const cklObject = await _this.cklFromAssetStigs(assetId, [{benchmarkId, revisionStr}], elevate, userObject)
       return (cklObject)
+    case 'cklb':
+      const cklbObject = await _this.cklbFromAssetStigs(assetId, [{benchmarkId, revisionStr}], elevate, userObject)
+      return (cklbObject)
     case 'xccdf':
       const xccdfObject = await _this.xccdfFromAssetStig(assetId, benchmarkId, revisionStr)
       return (xccdfObject)
@@ -1154,7 +1380,10 @@ exports.getChecklistByAsset = async function(assetId, benchmarks, format, elevat
     case 'ckl':
       let cklObject = await _this.cklFromAssetStigs(assetId, benchmarks, elevate, userObject)
       return (cklObject)
-  }
+    case 'cklb':
+      let cklbObject = await _this.cklbFromAssetStigs(assetId, benchmarks, elevate, userObject)
+      return (cklbObject)
+    }
 }
 
 exports.getAssetsByStig = async function( collectionId, benchmarkId, labelId, projection, elevate, userObject) {

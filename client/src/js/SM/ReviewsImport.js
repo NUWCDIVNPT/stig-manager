@@ -1005,7 +1005,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                 SM.Error.handleError(e)
             }
 
-            async function getAllFileEntries(dataTransferItemList, el) {
+            async function getAllFileEntries(dataTransferItemList) {
                 try {
                     let searched = 0, found = 0
                     let fileEntries = []
@@ -1018,15 +1018,13 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                     while (queue.length > 0) {
                         let entry = queue.shift()
                         searched++
-                        if (entry.isFile && (entry.name.toLowerCase().endsWith('.ckl') || entry.name.toLowerCase().endsWith('.xml'))) {
+                        if (entry.isFile && (entry.name.toLowerCase().endsWith('.ckl') || entry.name.toLowerCase().endsWith('.cklb') || entry.name.toLowerCase().endsWith('.xml'))) {
                             fileEntries.push(entry)
                             found++
-                            // el.innerText = `Searching... Searched ${searched} files, found ${found} results files`
                         } else if (entry.isDirectory) {
                             queue.push(...await readAllDirectoryEntries(entry.createReader()))
                         }
                     }
-                    // el.innerText = `Finished. Searched ${searched} files, found ${found} results files`
                     return fileEntries
                 }
                 catch (e) {
@@ -1245,7 +1243,7 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                     xtype: 'fileuploadfield',
                     buttonOnly: true,
                     na_this: 'importFile',
-                    accept: '.xml,.ckl',
+                    accept: '.xml,.ckl,.cklb',
                     webkitdirectory: false,
                     multiple: true,
                     style: 'width: 95px;',
@@ -1424,7 +1422,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                     html: "<p>&nbsp;</p>",
                 },
                 {
-                    html: `<div id="droptarget">Drop ${_this.initialConfig.multifile ? 'one or more CKL/XCCDF result files' : 'a CKL or XCCDF result file'} here</div>`,
+                    html: `<div id="droptarget">Drop ${_this.initialConfig.multifile ? 'one or more CKL(B)/XCCDF result files' : 'a CKL(B) or XCCDF result file'} here</div>`,
                     // border: false,
                     baseCls: 'sm-drop',
                     flex: 1,
@@ -1453,7 +1451,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
                     xtype: 'fileuploadfield',
                     buttonOnly: true,
                     na_this: 'importFile',
-                    accept: '.xml,.ckl',
+                    accept: '.xml,.ckl,.cklb',
                     webkitdirectory: false,
                     multiple: _this.initialConfig.multifile,
                     style: 'width: 95px;',
@@ -2100,7 +2098,7 @@ class TaskObject {
         this.parsedResults = parsedResults
         this.collectionId = collectionId
         this.config = config ?? { 
-            strictRevisionChecks: false,
+            strictRevisionCheck: false,
             createObjects: true
          } 
         // An array of assets from the API
@@ -2312,7 +2310,7 @@ async function showImportResultFiles(collectionId) {
             }
         })
         const fpwindow = new Ext.Window({
-            title: 'Import results from CKL or XCCDF files',
+            title: 'Import results from CKL(B) or XCCDF files',
             cls: 'sm-dialog-window sm-round-panel',
             modal: true,
             resizable: false,
@@ -2460,7 +2458,25 @@ async function showImportResultFiles(collectionId) {
                             })
                         }
                     }
-                    if (extension === 'xml') {
+                    else if (extension === 'cklb') {
+                        try {
+                            const r = ReviewParser.reviewsFromCklb({
+                                data, 
+                                fieldSettings: cachedCollection.settings.fields, 
+                                allowAccept: canAccept,
+                                importOptions: fp.parseOptionsFieldSet.getOptions()
+                            })
+                            r.file = file
+                            parseResults.success.push(r)
+                        }
+                        catch (e) {
+                            parseResults.fail.push({
+                                file: file,
+                                error: e.message
+                            })
+                        }
+                    }
+                    else if (extension === 'xml') {
                         try {
                             const r = ReviewParser.reviewsFromScc({
                                 data, 
@@ -2493,7 +2509,7 @@ async function showImportResultFiles(collectionId) {
 
                 const taskConfig = {
                     createObjects: true,
-                    strictRevisionCheck: fp.parseOptionsFieldSet.getOptions().strictRevisionCheck
+                    strictRevisionCheck: false
                 } 
                 const tasks = new TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, collectionId, config: taskConfig })
                 // Transform into data for SM.ReviewsImport.Grid
@@ -2905,6 +2921,14 @@ async function showImportResultFile(params) {
                     importOptions: fp.parseOptionsFieldSet.getOptions(),
                     XMLParser: fxp.XMLParser,
                     valueProcessor: tagValueProcessor
+                })
+            }
+            else if (extension === 'cklb') {
+                r = ReviewParser.reviewsFromCklb({
+                    data, 
+                    fieldSettings: cachedCollection.settings.fields, 
+                    allowAccept: canAccept,
+                    importOptions: fp.parseOptionsFieldSet.getOptions()
                 })
             }
             else if (extension === 'xml') {
