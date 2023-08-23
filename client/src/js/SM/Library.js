@@ -173,7 +173,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
           v = v.map(v => v.cci).join('\n')
           return columnWrap.apply(this, arguments)
         },
-        sortable: true,
+        sortable: false,
         filter: { type: 'string' }
       }
     ]
