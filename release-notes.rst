@@ -1,3 +1,16 @@
+1.3.10
+-----
+
+Changes:
+
+  - (API/UI) Provisional .cklb import/export feature.
+  - (UI) Added CCIs column to STIG Library grid.
+  - (API/fix) XML double-encoding regression after upgrading fast-xml-parser 
+  - (API/fix) Handle missing description in xccdf benchmark
+  - (UI/fix) Remove non-compliant elevate parameter, fix regression preventing app management interface from updating Collections
+  - (UI/fix) Workaround non-standard what's new dates
+  - (UI/fix) Duplicate collection name detection
+
 1.3.9
 -----
 
