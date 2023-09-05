@@ -872,9 +872,10 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
   return (rows)
 }
 
-exports.getStigsByCollection = async function( collectionId, labelIds, userObject, benchmarkId ) {
-  let columns = [
+exports.getStigsByCollection = async function( {collectionId, labelIds, userObject, benchmarkId, projections} ) {
+  const columns = [
     'sa.benchmarkId',
+    'stig.title',
     'revision.revisionStr',
     `date_format(revision.benchmarkDateSql,'%Y-%m-%d') as benchmarkDate`,
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
@@ -882,17 +883,18 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
     'count(sa.assetId) as assetCount'
   ]
 
-  let joins = [
+  const joins = [
     'collection c',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
     'left join asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
-    'left join revision on dr.revId = revision.revId'
+    'left join revision on dr.revId = revision.revId',
+    'left join stig on revision.benchmarkId = stig.benchmarkId'
   ]
 
   // PREDICATES
-  let predicates = {
+  const predicates = {
     statements: [
       'a.state = "enabled"'
     ],
@@ -912,6 +914,11 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
     predicates.statements.push('sa.benchmarkId = ?')
     predicates.binds.push( benchmarkId )
   }
+  if (projections?.includes('assets')) {
+    columns.push(`cast(concat('[', group_concat(distinct json_object (
+      'assetId', CAST(a.assetId as char),
+      'name', a.name) order by a.name), ']') as json) as "assets"`)
+  }
 
   joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
@@ -924,7 +931,7 @@ exports.getStigsByCollection = async function( collectionId, labelIds, userObjec
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  sql += ' group by sa.benchmarkId, revision.revId, dr.revisionPinned'
+  sql += ' group by sa.benchmarkId, revision.revId, dr.revisionPinned, stig.benchmarkId'
   sql += ' order by sa.benchmarkId'
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)

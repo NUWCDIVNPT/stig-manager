@@ -1695,6 +1695,16 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       collapseFirst: false,
       inventoryPanelTools: [
         {
+          id: 'download',
+          text: 'Export...',
+          handler: function (event, toolEl, panel, tc) {
+            SM.Inventory.showInventoryExportOptions(collectionId, collectionName)
+          }
+        },
+        {
+          id: 'spacer'
+        },
+        {
           id: 'manage',
           text: 'Manage',
           handler: (event, toolEl, panel, tc) => {
@@ -1747,10 +1757,10 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       }
     })
     overviewPanel.inventoryPanel.on('render', (panel) => {
-      if (panel.tools.manage) {
-        const collectionGrant = curUser.collectionGrants.find(g => g.collection.collectionId === collectionId)
-        panel.tools.manage.setDisplayed(collectionGrant && collectionGrant.accessLevel >= 3)
-      }
+      const collectionGrant = curUser.collectionGrants.find(g => g.collection.collectionId === collectionId)
+      const isManager = !!(collectionGrant?.accessLevel >= 3)
+      panel.tools.manage.setDisplayed(isManager)
+      panel.tools.spacer.setDisplayed(isManager)
     })
     const aggAssetPanel = new SM.CollectionPanel.AggAssetPanel({
       title: 'Assets',

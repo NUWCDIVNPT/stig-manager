@@ -144,6 +144,7 @@ uglifyjs \
 'SM/TransferAssets.js' \
 'SM/Library.js' \
 'SM/StigRevision.js' \
+'SM/Inventory.js' \
 'library.js' \
 'userAdmin.js' \
 'collectionAdmin.js' \
