@@ -252,8 +252,10 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
   try {
     const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const labelIds = req.query.labelId
+    const labelNames = req.query.labelName
+    const labelMatch = req.query.labelMatch
     const projections = req.query.projection
-    const response = await CollectionSvc.getStigsByCollection({collectionId, labelIds, projections, userObject: req.userObject})
+    const response = await CollectionSvc.getStigsByCollection({collectionId, labelIds, labelNames, labelMatch, projections, userObject: req.userObject})
     res.json(response)
   }
   catch (err) {

@@ -20,6 +20,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/CollectionIdQuery'
         - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/MetadataQuery'
@@ -2499,6 +2501,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
       - $ref: '#/components/parameters/CollectionStigProjectionQuery'
     get:
       tags:
@@ -2605,6 +2609,8 @@ paths:
       operationId: getAssetsByStig
       parameters:
         - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
       responses:
         '200':
           description: AssetBasicProjected response

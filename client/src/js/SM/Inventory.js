@@ -384,15 +384,15 @@ SM.Inventory.ExportOptionsWindow = Ext.extend(Ext.Window, {
       handler: exportHandler
     })
     // Functions
-    async function fetchApiDataAsText(groupBy, includeProjection) {
+    async function fetchApiDataAsText(groupBy, includeProjection, baseParams = {}) {
       const requests = {
         asset: {
           url: `${STIGMAN.Env.apiBase}/assets`,
-          params: { collectionId: _this.collectionId }
+          params: { collectionId: _this.collectionId, ...baseParams }
         },
         stig: {
           url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/stigs`,
-          params: {}
+          params: {...baseParams}
         }
       }
       if (includeProjection) {
@@ -416,12 +416,12 @@ SM.Inventory.ExportOptionsWindow = Ext.extend(Ext.Window, {
         if (formatItem.format === 'csv') {
           const csvFields = groupItem.groupBy === 'asset' ? csvAssetFieldSet.getFieldOptions() : csvStigFieldSet.getFieldOptions()
           const requestProjection = csvFields.some(item => item.apiProperty === 'stigs' || item.apiProperty === 'assets')
-          const apiText = await fetchApiDataAsText(groupItem.groupBy, requestProjection)
+          const apiText = await fetchApiDataAsText(groupItem.groupBy, requestProjection, _this.baseParams)
           downloadData = new Blob([SM.Inventory.apiToCsv(JSON.parse(apiText), csvFields)])
         }
         else {
           const options = (groupItem.groupBy === 'asset' ? jsonAssetFieldSet : jsonStigFieldSet).getFieldOptions()
-          const apiText = await fetchApiDataAsText(groupItem.groupBy, options.projection)
+          const apiText = await fetchApiDataAsText(groupItem.groupBy, options.projection, _this.baseParams)
           if (options.prettyPrint) {
             downloadData = new Blob([JSON.stringify(JSON.parse(apiText), null, 2)])
           }
@@ -563,13 +563,14 @@ SM.Inventory.apiToCsv = function (apiData, csvFields) {
   return csvData.join('\n')
 }
 
-SM.Inventory.showInventoryExportOptions = function (collectionId, collectionName) {
+SM.Inventory.showInventoryExportOptions = function (collectionId, collectionName, baseParams) {
   const optionsWindow = new SM.Inventory.ExportOptionsWindow({
     title: 'Inventory export options',
     modal: true,
     width: 460,
     collectionId,
-    collectionName
+    collectionName,
+    baseParams
   })
   optionsWindow.show()
 }

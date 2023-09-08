@@ -872,7 +872,7 @@ exports.getStigAssetsByCollectionUser = async function (collectionId, userId, el
   return (rows)
 }
 
-exports.getStigsByCollection = async function( {collectionId, labelIds, userObject, benchmarkId, projections} ) {
+exports.getStigsByCollection = async function( {collectionId, labelIds, labelNames, labelMatch, userObject, benchmarkId, projections} ) {
   const columns = [
     'sa.benchmarkId',
     'stig.title',
@@ -903,12 +903,26 @@ exports.getStigsByCollection = async function( {collectionId, labelIds, userObje
   predicates.statements.push('c.collectionId = ?')
   predicates.binds.push( collectionId )
 
-  if (labelIds?.length) {
-    joins.push('inner join collection_label_asset_map cla on a.assetId = cla.assetId')
-    predicates.statements.push('cla.clId IN (select clId from collection_label where uuid IN ?)')
-    const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-    predicates.binds.push([uuidBinds])
-
+  if (labelIds || labelNames || labelMatch) {
+    joins.push(
+      'left join collection_label_asset_map cla2 on a.assetId = cla2.assetId',
+      'left join collection_label cl2 on cla2.clId = cl2.clId'
+    )
+    const labelPredicates = []
+    if (labelIds) {
+      labelPredicates.push('cl2.uuid IN ?')
+      const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
+    }
+    if (labelNames) {
+      labelPredicates.push('cl2.name IN ?')
+      predicates.binds.push([labelNames])
+    }
+    if (labelMatch === 'null') {
+      labelPredicates.push('cl2.uuid IS NULL')
+    }
+    const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
+    predicates.statements.push(labelPredicatesClause)
   }
   if (benchmarkId) {
     predicates.statements.push('sa.benchmarkId = ?')

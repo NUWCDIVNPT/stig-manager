@@ -157,11 +157,26 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     predicates.statements.push('a.assetId = ?')
     predicates.binds.push(inPredicates.assetId)
   }
-  if (inPredicates.labelIds?.length) {
-    joins.push('left join collection_label_asset_map cla2 on a.assetId = cla2.assetId')
-    predicates.statements.push('cla2.clId IN (select clId from collection_label where uuid IN ?)')
-    const uuidBinds = inPredicates.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-    predicates.binds.push([uuidBinds])
+  if (inPredicates.labels?.labelNames || inPredicates.labels?.labelIds || inPredicates.labels?.labelMatch) {
+    joins.push(
+      'left join collection_label_asset_map cla2 on a.assetId = cla2.assetId',
+      'left join collection_label cl2 on cla2.clId = cl2.clId'
+    )
+    const labelPredicates = []
+    if (inPredicates.labels.labelIds) {
+      labelPredicates.push('cl2.uuid IN ?')
+      const uuidBinds = inPredicates.labels.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
+    }
+    if (inPredicates.labels.labelNames) {
+      labelPredicates.push('cl2.name IN ?')
+      predicates.binds.push([inPredicates.labels.labelNames])
+    }
+    if (inPredicates.labels.labelMatch === 'null') {
+      labelPredicates.push('cl2.uuid IS NULL')
+    }
+    const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
+    predicates.statements.push(labelPredicatesClause)
   }
   if ( inPredicates.name ) {
     let matchStr = '= ?'
@@ -202,7 +217,7 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   predicates.binds.push(userObject.userId)
 
   const groupBy = [
-    'a.assetId'     
+    'a.assetId'
   ]
   const orderBy = []
 
@@ -572,11 +587,26 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     predicates.statements.push('sa.benchmarkId = ?')
     predicates.binds.push( inPredicates.benchmarkId )
   }
-  if (inPredicates.labelId?.length) {
-    joins.push('left join collection_label_asset_map cla2 on a.assetId = cla2.assetId')
-    predicates.statements.push('cla2.clId IN (select clId from collection_label where uuid IN ?)')
-    const uuidBinds = inPredicates.labelId.map( uuid => dbUtils.uuidToSqlString(uuid))
-    predicates.binds.push([uuidBinds])
+  if (inPredicates.labels?.labelNames || inPredicates.labels?.labelIds || inPredicates.labels?.labelMatch) {
+    joins.push(
+      'left join collection_label_asset_map cla2 on a.assetId = cla2.assetId',
+      'left join collection_label cl2 on cla2.clId = cl2.clId'
+    )
+    const labelPredicates = []
+    if (inPredicates.labels.labelIds) {
+      labelPredicates.push('cl2.uuid IN ?')
+      const uuidBinds = inPredicates.labels.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
+    }
+    if (inPredicates.labels.labelNames) {
+      labelPredicates.push('cl2.name IN ?')
+      predicates.binds.push([inPredicates.labels.labelNames])
+    }
+    if (inPredicates.labels.labelMatch === 'null') {
+      labelPredicates.push('cl2.uuid IS NULL')
+    }
+    const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
+    predicates.statements.push(labelPredicatesClause)
   }
   predicates.statements.push('cg.userId = ?')
   predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
@@ -1327,10 +1357,10 @@ exports.getAsset = async function(assetId, projection, elevate, userObject) {
   return (rows[0])
 }
 
-exports.getAssets = async function(collectionId, labelIds, name, nameMatch, benchmarkId, metadata, projection, elevate, userObject) {
+exports.getAssets = async function(collectionId, labels, name, nameMatch, benchmarkId, metadata, projection, elevate, userObject) {
   const rows = await _this.queryAssets(projection, {
     collectionId,
-    labelIds,
+    labels,
     name,
     nameMatch,
     benchmarkId,
@@ -1386,11 +1416,11 @@ exports.getChecklistByAsset = async function(assetId, benchmarks, format, elevat
     }
 }
 
-exports.getAssetsByStig = async function( collectionId, benchmarkId, labelId, projection, elevate, userObject) {
+exports.getAssetsByStig = async function( collectionId, benchmarkId, labels, projection, elevate, userObject) {
   const rows = await _this.queryStigAssets(projection, {
     collectionId,
     benchmarkId,
-    labelId
+    labels
   }, elevate, userObject)
   return (rows)
 }
