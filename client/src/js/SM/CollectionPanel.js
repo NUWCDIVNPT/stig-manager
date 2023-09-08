@@ -1117,10 +1117,15 @@ SM.CollectionPanel.ExportPanel = Ext.extend(Ext.Panel, {
         left: '255px'
       },
       handler: async function () {
+        const queryParams = Object.entries(_this.baseParams ?? {}).flatMap(([k, v]) => Array.isArray(v) ? v.map((v) => [k, v]) : [[k, v]])
         const format = formatComboBox.getValue()
+        queryParams.push(['format', format])
+        const queryParamsStr = new URLSearchParams(queryParams).toString()
+
         const style = styleComboBox.getValue()
         const agg = aggComboBox.getValue()
-        const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?format=${format}`
+        const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?${queryParamsStr}`
+
         const attachment = `${agg}-${style}.${format}`
         await window.oidcProvider.updateToken(10)
         const fetchInit = {
@@ -1145,6 +1150,7 @@ SM.CollectionPanel.ExportPanel = Ext.extend(Ext.Panel, {
         saveAs(blob, attachment)
       }
     })
+
 
     const config = {
       layout: 'form',
@@ -1253,6 +1259,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
 
     const updateBaseParams = function (params) {
       _this.baseParams = params
+      _this.exportPanel.baseParams = params
     }
     const updatePanels = function (data) {
       _this.inventoryPanel.updateMetrics(data)
