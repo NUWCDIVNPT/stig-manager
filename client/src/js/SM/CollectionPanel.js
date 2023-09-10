@@ -1117,10 +1117,15 @@ SM.CollectionPanel.ExportPanel = Ext.extend(Ext.Panel, {
         left: '255px'
       },
       handler: async function () {
+        const queryParams = Object.entries(_this.baseParams ?? {}).flatMap(([k, v]) => Array.isArray(v) ? v.map((v) => [k, v]) : [[k, v]])
         const format = formatComboBox.getValue()
+        queryParams.push(['format', format])
+        const queryParamsStr = new URLSearchParams(queryParams).toString()
+
         const style = styleComboBox.getValue()
         const agg = aggComboBox.getValue()
-        const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?format=${format}`
+        const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?${queryParamsStr}`
+
         const attachment = `${agg}-${style}.${format}`
         await window.oidcProvider.updateToken(10)
         const fetchInit = {
@@ -1145,6 +1150,7 @@ SM.CollectionPanel.ExportPanel = Ext.extend(Ext.Panel, {
         saveAs(blob, attachment)
       }
     })
+
 
     const config = {
       layout: 'form',
@@ -1253,6 +1259,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
 
     const updateBaseParams = function (params) {
       _this.baseParams = params
+      _this.exportPanel.baseParams = params
     }
     const updatePanels = function (data) {
       _this.inventoryPanel.updateMetrics(data)
@@ -1695,6 +1702,16 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       collapseFirst: false,
       inventoryPanelTools: [
         {
+          id: 'download',
+          text: 'Export...',
+          handler: function (event, toolEl, panel, tc) {
+            SM.Inventory.showInventoryExportOptions(collectionId, collectionName, overviewPanel.baseParams)
+          }
+        },
+        {
+          id: 'spacer'
+        },
+        {
           id: 'manage',
           text: 'Manage',
           handler: (event, toolEl, panel, tc) => {
@@ -1747,10 +1764,10 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       }
     })
     overviewPanel.inventoryPanel.on('render', (panel) => {
-      if (panel.tools.manage) {
-        const collectionGrant = curUser.collectionGrants.find(g => g.collection.collectionId === collectionId)
-        panel.tools.manage.setDisplayed(collectionGrant && collectionGrant.accessLevel >= 3)
-      }
+      const collectionGrant = curUser.collectionGrants.find(g => g.collection.collectionId === collectionId)
+      const isManager = !!(collectionGrant?.accessLevel >= 3)
+      panel.tools.manage.setDisplayed(isManager)
+      panel.tools.spacer.setDisplayed(isManager)
     })
     const aggAssetPanel = new SM.CollectionPanel.AggAssetPanel({
       title: 'Assets',

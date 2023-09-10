@@ -20,6 +20,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/CollectionIdQuery'
         - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
         - $ref: '#/components/parameters/NameQuery'
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/MetadataQuery'
@@ -2499,6 +2501,9 @@ paths:
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
+      - $ref: '#/components/parameters/CollectionStigProjectionQuery'
     get:
       tags:
         - Collection
@@ -2526,6 +2531,7 @@ paths:
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
+      - $ref: '#/components/parameters/CollectionStigProjectionQuery'
     get:
       tags:
         - Collection
@@ -2603,6 +2609,8 @@ paths:
       operationId: getAssetsByStig
       parameters:
         - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
       responses:
         '200':
           description: AssetBasicProjected response
@@ -4670,6 +4678,8 @@ components:
       properties:
         benchmarkId:
           type: string
+        title:
+          type: string
         revisionStr:
           $ref: '#/components/schemas/RevisionStr'   
         benchmarkDate:
@@ -4682,6 +4692,10 @@ components:
           type: integer
         assetCount:
           type: integer
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetForCollection'
     CollectionStigWithIsDefault:
       type: object
       additionalProperties: false
@@ -6740,6 +6754,20 @@ components:
             - owners
             - statistics
             - labels
+    CollectionStigProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        uniqueItems: true
+        minLength: 1
+        items:
+          type: string
+          enum:
+            - assets
     EndDateQuery:
       name: endDate
       in: query

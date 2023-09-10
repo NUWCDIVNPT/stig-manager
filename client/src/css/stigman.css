@@ -1040,7 +1040,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-image: none;
   overflow: hidden;
   border-radius: 6px 6px 0 0;
-  padding: 5px 3px 4px 8px
+  padding: 5px 8px 4px 8px;
 }
 .sm-home-widget-body {
   background-color: #dedede;
@@ -2005,6 +2005,17 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-size: 10px;
   line-height: 16px;
 }
+.x-tool.x-tool-download {
+  background-image: url(../img/download.svg);
+  background-repeat: no-repeat;
+  background-size: 16px 20px;
+  background-position: left;
+  color: grey;
+  width: auto;
+  padding-left: 20px;
+  font-size: 10px;
+  line-height: 16px;
+}
 .x-tool.x-tool-report {
   background-image: url(../img/grid.svg);
   background-repeat: no-repeat;
@@ -2014,6 +2025,10 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   padding-left: 15px;
   font-size: 10px;
   line-height: 16px;
+}
+.x-tool.x-tool-spacer {
+  width: 10px;
+  background-image: unset;
 }
 .x-tool.x-tool-logout {
   background-image: url(../img/logout.svg);
@@ -2109,4 +2124,9 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-weight: 600;
   font-size: 20px;
   padding-left: 36px;
+}
+.x-panel-inline-icon {
+    vertical-align: bottom;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }

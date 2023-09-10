@@ -250,16 +250,13 @@ module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCol
 
 module.exports.getStigsByCollection = async function getStigsByCollection (req, res, next) {
   try {
-    const collectionId = req.params.collectionId
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const labelIds = req.query.labelId
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant) {
-      const response = await CollectionSvc.getStigsByCollection( collectionId, labelIds, req.userObject )
-      res.json(response)
-      }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    const labelNames = req.query.labelName
+    const labelMatch = req.query.labelMatch
+    const projections = req.query.projection
+    const response = await CollectionSvc.getStigsByCollection({collectionId, labelIds, labelNames, labelMatch, projections, userObject: req.userObject})
+    res.json(response)
   }
   catch (err) {
     next(err)
@@ -268,19 +265,14 @@ module.exports.getStigsByCollection = async function getStigsByCollection (req, 
 
 module.exports.getStigByCollection = async function getStigByCollection (req, res, next) {
   try {
-    const collectionId = req.params.collectionId
+    const collectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const benchmarkId = req.params.benchmarkId
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant) {
-      const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
-      if (!response[0]) {
-        res.status(204)
-      }
-      res.json(response[0])
+    const projections = req.query.projection
+    const response = await CollectionSvc.getStigsByCollection({collectionId, projections, userObject: req.userObject, benchmarkId})
+    if (!response[0]) {
+      res.status(204)
     }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    res.json(response[0])
   }
   catch (err) {
     next(err)
@@ -992,7 +984,7 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
       defaultRevisionStr,
       svcStatus: res.svcStatus
     })
-    const response = await CollectionSvc.getStigsByCollection( collectionId, undefined, req.userObject, benchmarkId )
+    const response = await CollectionSvc.getStigsByCollection({collectionId, userObject: req.userObject, benchmarkId})
     if (response[0]) {
       res.json(response[0])
     }

@@ -218,6 +218,8 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     let benchmarkId = req.query.benchmarkId
     let metadata = req.query.metadata
     let labelIds = req.query.labelId
+    let labelNames = req.query.labelName
+    let labelMatch = req.query.labelMatch
     let projection = req.query.projection
     let elevate = req.query.elevate
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
@@ -232,7 +234,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
           }
         }
       }
-      let response = await Asset.getAssets(collectionId, labelIds, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
+      let response = await Asset.getAssets(collectionId, {labelIds, labelNames, labelMatch}, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
       res.json(response)
     }
     else {
@@ -385,12 +387,14 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
     let elevate = req.query.elevate
     let collectionId = req.params.collectionId
     let benchmarkId = req.params.benchmarkId
-    let labelId = req.query.labelId
+    let labelIds = req.query.labelId
+    let labelNames = req.query.labelName
+    let labelMatch = req.query.labelMatch
     let projection = req.query.projection
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || collectionGrant ) {
-        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, labelId, projection, elevate, req.userObject )
+        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, {labelIds, labelNames, labelMatch}, projection, elevate, req.userObject )
         res.json(response)
     }
     else {
