@@ -358,13 +358,32 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
           await connection.query(sqlUpdate, [assetFields, assetId])
           if (transferring) {
             let sqlDeleteRestrictedUsers = 
-              `DELETE user_stig_asset_map
-              FROM user_stig_asset_map
-              INNER JOIN stig_asset_map USING (saId)
-              WHERE stig_asset_map.assetId = ?`
+              `DELETE user_stig_asset_map FROM user_stig_asset_map INNER JOIN stig_asset_map USING (saId) WHERE stig_asset_map.assetId = ?`
             await connection.query(sqlDeleteRestrictedUsers, [assetId])
+            
+            const sqlGetAssetLabels = `SELECT name, description, color FROM collection_label_asset_map inner join collection_label using (clId) WHERE assetId = ?`
+            const [assetLabels] = await connection.query(sqlGetAssetLabels, [assetId])
+            
             const sqlDeleteLabels = `DELETE FROM collection_label_asset_map WHERE assetId = ?`
             await connection.query(sqlDeleteLabels, [assetId])
+
+            if (assetLabels.length) {
+              const sqlGetCollectionLabels = `SELECT clId, name, description, color FROM collection_label WHERE collectionId = ?`
+              const [collectionLabels] = await connection.query(sqlGetCollectionLabels, [transferring.newCollectionId])
+              const collectionLabelNames = collectionLabels.reduce( (a,v) => {a[v.name] = v; return a}, {})
+              
+              for (const assetLabel of assetLabels) {
+                if (collectionLabelNames[assetLabel.name]) {
+                  await connection.query(`INSERT into collection_label_asset_map (assetId, clId) VALUES (?,?)`, [assetId, collectionLabelNames[assetLabel.name].clId])
+                }
+                else {
+                  const [resultInsert] = await connection.query(`INSERT INTO collection_label (collectionId, name, description, color, uuid) VALUES (?, ?, ?, ?, UUID_TO_BIN(UUID(),1))`, 
+                  [transferring.newCollectionId, assetLabel.name, assetLabel.description, assetLabel.color])
+                  const clId = resultInsert.insertId
+                  await connection.query(`INSERT into collection_label_asset_map (assetId, clId) VALUES (?,?)`, [assetId, clId])
+                }
+              } 
+            }
           }
         }
       }

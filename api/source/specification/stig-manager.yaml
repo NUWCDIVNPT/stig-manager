@@ -3853,6 +3853,17 @@ components:
             oneOf:
               - $ref: '#/components/schemas/RevisionBasic'
               - $ref: '#/components/schemas/String255'
+    AssetTransferSelection:
+      type: object
+      additionalProperties: false
+      required:
+        - assetIds
+      properties:
+        assetIds:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/StringIntId'
     AssetUpdate:
       additionalProperties: false
       properties:
@@ -6768,6 +6779,13 @@ components:
           type: string
           enum:
             - assets
+    DstCollectionIdPath:
+      name: dstCollectionId
+      in: path
+      description: A path parameter that identifies a Collection
+      required: true
+      schema:
+        $ref: '#/components/schemas/StringIntId'
     EndDateQuery:
       name: endDate
       in: query
