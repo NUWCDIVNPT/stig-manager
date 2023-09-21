@@ -424,7 +424,8 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
       throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${currentAsset.collection.collectionId} to modify this asset.`)
     }
     // Check if the asset is being transferred
-    const transferring = currentAsset.collection.collectionId !== body.collectionId
+    const transferring = body.collectionId && currentAsset.collection.collectionId !== body.collectionId ? 
+      {oldCollectionId: currentAsset.collection.collectionId, newCollectionId: body.collectionId} : null
     if (transferring) {
       // If so, Check if the user has an appropriate grant to the asset's updated collection
       const updatedCollectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === body.collectionId )

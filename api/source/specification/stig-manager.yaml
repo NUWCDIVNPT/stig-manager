@@ -3853,17 +3853,6 @@ components:
             oneOf:
               - $ref: '#/components/schemas/RevisionBasic'
               - $ref: '#/components/schemas/String255'
-    AssetTransferSelection:
-      type: object
-      additionalProperties: false
-      required:
-        - assetIds
-      properties:
-        assetIds:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/StringIntId'
     AssetUpdate:
       additionalProperties: false
       properties:
