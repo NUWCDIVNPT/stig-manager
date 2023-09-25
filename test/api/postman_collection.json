@@ -27199,7 +27199,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
+											"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"labelIds\": [\n        \"df4e6836-a003-11ec-b1bc-0242ac110002\"\n    ],\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 										},
 										"url": {
 											"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
@@ -30091,6 +30091,13 @@
 											"    pm.expect(jsonData.collection.collectionId).to.equal(destinationCollectionId);\r",
 											"\r",
 											"});\r",
+											"\r",
+											"pm.test(\"Response JSON indicates labelIds assigned to transfered assets\", function () {\r",
+											"    // pm.expect(jsonData).to.be.an('object');\r",
+											"    pm.expect(jsonData.labelIds).to.have.lengthOf(2);\r",
+											"\r",
+											"});\r",
+											"\r",
 											"pm.test(\"Response JSON indicates stigGrants were cleared\", function () {\r",
 											"    for (const stigGrant of jsonData.stigGrants) {\r",
 											"        pm.expect(stigGrant.users).to.have.lengthOf(0);\r",
@@ -30407,6 +30414,14 @@
 											"    pm.expect(jsonData.collection.collectionId).to.equal(destinationCollectionId);\r",
 											"\r",
 											"});\r",
+											"\r",
+											"pm.test(\"Response JSON indicates labelIds assigned to transfered assets\", function () {\r",
+											"    // pm.expect(jsonData).to.be.an('object');\r",
+											"    pm.expect(jsonData.labelIds).to.have.lengthOf(0);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"\r",
 											"pm.test(\"Response JSON indicates stigGrants were cleared\", function () {\r",
 											"    for (const stigGrant of jsonData.stigGrants) {\r",
 											"        pm.expect(stigGrant.users).to.have.lengthOf(0);\r",
@@ -30430,7 +30445,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
+									"raw": "{\n    \"name\": \"TEST_{{$randomNoun}}-{{$randomJobType}}\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {},\n    \"labelIds\": [],\n    \"stigs\": [\n        \"VPN_SRG_TEST\",\n        \"Windows_10_STIG_TEST\",\n        \"RHEL_7_STIG_TEST\"\n    ]\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
