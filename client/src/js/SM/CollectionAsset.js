@@ -329,6 +329,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                           })
                           apiAsset.collection = returnedAsset.collection
                           me.store.remove(thisRecord)
+                          SM.Cache.updateCollectionLabels(returnedAsset.collection.collectionId)
                           SM.Dispatcher.fireEvent('assetdeleted', {...apiAsset, ...{collection: {collectionId: me.collectionId}}})
                           SM.Dispatcher.fireEvent('assetcreated', apiAsset)
                       }

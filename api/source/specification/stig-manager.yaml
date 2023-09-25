@@ -6768,6 +6768,13 @@ components:
           type: string
           enum:
             - assets
+    DstCollectionIdPath:
+      name: dstCollectionId
+      in: path
+      description: A path parameter that identifies a Collection
+      required: true
+      schema:
+        $ref: '#/components/schemas/StringIntId'
     EndDateQuery:
       name: endDate
       in: query
