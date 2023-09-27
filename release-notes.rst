@@ -1,3 +1,13 @@
+1.3.11
+-----
+
+Changes:
+
+  - (API/UI) Export Reviews to another Collection feature
+  - (API) Transfer Asset Labels when moving Assets between Collections
+  - (API/UI) Inventory Export feature
+
+
 1.3.10
 -----
 
