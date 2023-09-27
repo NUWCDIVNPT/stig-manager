@@ -246,7 +246,16 @@ module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject)
  * @param {string} param1.benchmarkId
  * @param {string[]} param1.rules
  */
-module.exports.updateStatsAssetStig = async function(connection, { collectionId, collectionIds, assetId, assetIds, assetBenchmarkIds, benchmarkId, benchmarkIds, rules }) {
+module.exports.updateStatsAssetStig = async function(connection, { 
+  collectionId,
+  collectionIds,
+  assetId,
+  assetIds,
+  assetBenchmarkIds,
+  benchmarkId,
+  benchmarkIds,
+  rules,
+  saIds }) {
   if (!connection) { throw ('Connection required')}
   // Handle optional predicates, 
   let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
@@ -285,6 +294,10 @@ module.exports.updateStatsAssetStig = async function(connection, { collectionId,
   if (benchmarkIds) {
     predicates.push('sa.benchmarkId IN ?')
     binds.push([benchmarkIds])
+  }
+  if (saIds) {
+    predicates.push('sa.saId IN ?')
+    binds.push([saIds])
   }
   if (predicates.length > 0) {
     whereClause = `where  ${predicates.join(' and ')}`

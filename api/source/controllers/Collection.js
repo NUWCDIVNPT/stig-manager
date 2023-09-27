@@ -1039,3 +1039,33 @@ module.exports.cloneCollection = async function (req, res, next) {
     next(err)
   }
 }
+
+module.exports.exportToCollection = async function (req, res, next) {
+  try {
+    function progressCb(json) {
+      res.write(JSON.stringify(json) + '\n')
+    }
+
+    const srcCollectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    req.params.collectionId = req.params.dstCollectionId
+    const dstCollectionId = getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Manage)
+    req.params.collectionId = srcCollectionId
+    const parsedRequest = await processAssetStigRequests (req.body, srcCollectionId, 'multi', req.userObject)
+    
+    res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+    req.noCompression = true
+
+    await CollectionSvc.exportToCollection({
+      srcCollectionId,
+      dstCollectionId,
+      assetStigArguments: parsedRequest.assetStigArguments,
+      userObject: req.userObject, 
+      progressCb,
+      svcStatus: res.svcStatus
+    })
+    res.end()
+  }
+  catch (err) {
+    next(err)
+  }
+}

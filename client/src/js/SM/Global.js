@@ -394,7 +394,9 @@ SM.RuleContentTpl = new Ext.XTemplate(
                         showDelay: 0,
                         dismissDelay: 0,
                         width: 300,
-                        html: cb.helpText
+                        html: cb.helpText,
+                        tpl: cb.helpTpl,
+                        data: cb.helpData
                     }) 
                 }
             }
@@ -404,26 +406,34 @@ SM.RuleContentTpl = new Ext.XTemplate(
     }
 })
 
-SM.Global.HelperCheckbox = Ext.extend(Ext.form.Checkbox, {
-    initComponent: function () {
-        const config = {
-            listeners: {
-                render: function (cb) {
-                    cb.wrap.first('label').insertHtml('beforeEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
-                    const sonarCloudInsists = new Ext.ToolTip({
-                        target: cb.wrap.dom.getElementsByClassName('fa')[0],
-                        showDelay: 0,
-                        dismissDelay: 0,
-                        width: 300,
-                        html: cb.helpText
-                    }) 
-                }
+SM.Global.helperCheckboxRadioInitComponent = function () {
+    const config = {
+        listeners: {
+            render: function (cb) {
+                cb.wrap.first('label').insertHtml('beforeEnd',`<i class="fa fa-question-circle sm-question-circle"></i>`)
+                const sonarCloudInsists = new Ext.ToolTip({
+                    target: cb.wrap.dom.getElementsByClassName('fa')[0],
+                    showDelay: 0,
+                    dismissDelay: 0,
+                    width: 300,
+                    html: cb.helpText,
+                    tpl: cb.helpTpl,
+                    data: cb.helpData
+                }) 
             }
         }
-        Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.Global.HelperCheckbox.superclass.initComponent.call(this)
     }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+}
+SM.Global.HelperCheckbox = Ext.extend(Ext.form.Checkbox, {
+    initComponent: SM.Global.helperCheckboxRadioInitComponent
 })
+
+SM.Global.HelperRadio = Ext.extend(Ext.form.Radio, {
+    initComponent: SM.Global.helperCheckboxRadioInitComponent
+})
+
 
 SM.Global.GridCellContextMenu = new Ext.menu.Menu({
     items: [
