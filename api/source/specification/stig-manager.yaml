@@ -940,7 +940,7 @@ paths:
         - Collection
       summary: Export reviews from a source Collection to a destination Collection
       description: |
-        Exports reviews (result, detail and comment) from a `srcCollection` to a `dstCollection`, creating Assets in `dstCollection` if they do not exist. The `status` property of existng reviews in `dstCollection` are reset, if necessary, in accordance with the Collection settings.
+        Exports reviews (result, detail and comment) from a `srcCollection` to a `dstCollection`, creating Assets in `dstCollection` if they do not exist. The `status` property of existing reviews in `dstCollection` are reset, if necessary, in accordance with the Collection settings.
       operationId: exportToCollection
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
