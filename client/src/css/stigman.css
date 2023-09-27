@@ -1348,6 +1348,10 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-image: url(../img/download.svg);
   background-size: 16px 16px
 }
+.sm-alert-icon {
+  background-image: url(../img/alert.svg);
+  background-size: 16px 16px
+}
 .sm-import-icon {
   background-image: url(../img/upload.svg);
   background-size: 16px 16px
@@ -1824,7 +1828,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .ext-chrome .x-toolbar-cell .x-form-cb-label {
   vertical-align: bottom;
-  top: -1px
+  top: 1px;
 }
 .ext-strict .x-small-editor .x-form-text {
   line-height: 18px

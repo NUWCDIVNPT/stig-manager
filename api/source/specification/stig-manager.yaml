@@ -767,22 +767,13 @@ paths:
       tags:
         - Collection
       summary: Return a ZIP archive containing CKL files for the supplied Assets and STIGs
-      description: |
-        The request body is an array that selects the Assets/STIG checklists whose results will be serialized.
-        
-        Each array member is an object that MUST include the property `assetId` and MIGHT include the property `stigs`.
-        
-        If the `stigs` property is absent, the API serializes the default revision of each STIG to which the requesting User
-        has been granted access on the Asset.
-        
-        If the `stigs` property is present, the value MUST be an array. Each array member is EITHER a string whose value is a `benchmarkId` OR an object that identifies a `benchmarkId` and `revisionStr`. When a string is provided, the API will serialize the default revision of the Benchmark.
       operationId: postCklArchiveByCollection
       parameters:
        - $ref: '#/components/parameters/CollectionIdPath'
        - $ref: '#/components/parameters/CklModeQuery'
       requestBody:
         required: true
-        description: AssetStigSelection
+        description: An array of '#/components/schemas/AssetStigSelection'.
         content:
           application/json:
             schema:
@@ -814,14 +805,13 @@ paths:
       tags:
         - Collection
       summary: Return a ZIP archive containing CKLB files for the supplied Assets and STIGs
-      description: For documentation of the request body, see the description for `POST /collections/{collectionId}/archive/ckl`
       operationId: postCklbArchiveByCollection
       parameters:
        - $ref: '#/components/parameters/CollectionIdPath'
        - $ref: '#/components/parameters/CklModeQuery'
       requestBody:
         required: true
-        description: AssetStigSelection
+        description: An array of '#/components/schemas/AssetStigSelection'.
         content:
           application/json:
             schema:
@@ -847,20 +837,17 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-
-
   '/collections/{collectionId}/archive/xccdf':
     post:
       tags:
         - Collection
       summary: Return a ZIP archive containing XCCDF results for the supplied Assets and STIGs
-      description: For documentation of the request body, see the description for `POST /collections/{collectionId}/archive/ckl`
       operationId: postXccdfArchiveByCollection
       parameters:
        - $ref: '#/components/parameters/CollectionIdPath'
       requestBody:
         required: true
-        description: AssetStigSelection
+        description: An array of '#/components/schemas/AssetStigSelection'.
         content:
           application/json:
             schema:
@@ -933,8 +920,7 @@ paths:
               $ref: '#/components/schemas/CollectionCloneRequest'
       responses:
         '200':
-          description: |
-            The response body is a stream of newline-delimited JSON (NDJSON) objects reporting the progress of the (possibly long running) cloning process. Each object conforms to the schema defined for this response, but not all objects will have every property.<br/><br/>The sequence of objects starts with multiple {"stage": "collection"} objects, optionally followed by multiple {"stage": "reviews"} objects if review cloning is requested, and concludes with one {"stage": "result"} object whose "collection" property value conforms to the CollectionProjected schema for the created Collection.<br/><br/>Success is indicated when the final {"stage": "result"} message is sent. Errors that prevent cloning from completing are reported with {"status": "error"} and the "result" stage is not reported. Note that the endpoint will return HTTP status 200 immediately after the request is validated and the cloning process has started, so you should not rely on status 200 for indication of cloning success. 
+          description: See the description for '#/components/schemas/CollectionCloneResponse'
           content:
             application/x-ndjson:
               schema:
@@ -948,6 +934,45 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/export-to/{dstCollectionId}':
+    post:
+      tags:
+        - Collection
+      summary: Export reviews from a source Collection to a destination Collection
+      description: |
+        Exports reviews (result, detail and comment) from a `srcCollection` to a `dstCollection`, creating Assets in `dstCollection` if they do not exist. The `status` property of existing reviews in `dstCollection` are reset, if necessary, in accordance with the Collection settings.
+      operationId: exportToCollection
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/DstCollectionIdPath'       
+      requestBody:
+        required: true
+        description: An array of '#/components/schemas/AssetStigSelection'. <b>The number of array items must conform to the minItems/maxItems properties</b>
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 100
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/AssetStigSelection'
+      responses:
+        '200':
+          description: See the description for '#/components/schemas/CollectionExportToResponse'
+          content:
+            application/x-ndjson:
+              schema:
+                $ref: '#/components/schemas/CollectionExportToResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/findings':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -3838,6 +3863,17 @@ components:
         ruleCount:
           type: integer
     AssetStigSelection:
+      description: |
+        An array that specifies a list of Assets/STIG items.
+        
+        Each array item is an object that MUST include the property `assetId` and MAY include the property `stigs`.
+        
+        If the `stigs` property is absent, the default value of the property is used. The default value is an array of the default revisions of each STIG to which the requesting User
+        has been granted access on the Asset.
+        
+        If the `stigs` property is present, the value MUST be an array. Each array member is EITHER:
+        - an object that identifies both a `benchmarkId` and a specific `revisionStr`
+        - a string whose value is a `benchmarkId`. This is equivalent to specifying the object {"benchmarkId": [provided benchmarkId], "revisionStr": [default revisionStr for the provided benchmarkId]}
       type: object
       additionalProperties: false
       required:
@@ -3848,6 +3884,7 @@ components:
         stigs:
           type: array
           minItems: 1
+          maxItems: 30
           uniqueItems: true
           items:
             oneOf:
@@ -4300,6 +4337,8 @@ components:
         options:
           $ref: '#/components/schemas/CollectionCloneOptions'
     CollectionCloneResponse:
+      description: |
+        The response body is a stream of newline-delimited JSON (NDJSON) objects reporting the progress of the (possibly long running) cloning process. Each object conforms to this schema, but not all objects will have every property.<br/><br/>The sequence of objects starts with multiple {"stage": "collection"} objects, optionally followed by multiple {"stage": "reviews"} objects if review cloning is requested, and concludes with one {"stage": "result"} object whose "collection" property value conforms to the CollectionProjected schema for the created Collection.<br/><br/>Success is indicated when the final {"stage": "result"} message is sent. Errors that prevent cloning from completing are reported with {"status": "error"} and the "result" stage is not reported. Note that the endpoint will return HTTP status 200 immediately after the request is validated and the cloning process has started, so you should not rely on status 200 for indication of cloning success. 
       type: object
       properties:
         stage:
@@ -4312,6 +4351,8 @@ components:
           type: integer
         step:
           type: integer
+        stepName:
+          type: string
         message:
           type: string
         status:
@@ -4351,6 +4392,48 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelCreate'
+    CollectionExportToResponse:
+      description: |
+        The response body is a stream of newline-delimited JSON (NDJSON) objects reporting the progress of the (possibly long running) export process. Each object conforms to this schema, but not all objects will have every property.<br/><br/>The sequence of objects starts with multiple {"stage": "prepare"} objects, followed by multiple {"stage": "assets"} objects, multiple {"stage": "reviews"} objects, and multiple {"stage": "metrics"} objects. The stream concludes with one {"stage": "commit"} object and then one {"stage": "result"} object whose "counts" property value conforms to the schema below.<br/><br/>Success is indicated when the final {"stage": "result"} message is sent. Errors that prevent exporting from completing are reported with {"status": "error"} and the "result" stage is not reported. Note that the endpoint will return HTTP status 200 immediately after the request is validated and the export process has started, so you should not rely on status 200 for indication of export success. 
+      type: object
+      properties:
+        stage:
+          type: string
+          enum:
+            - prepare
+            - assets
+            - reviews
+            - metrics
+            - result
+        stepCount:
+          type: integer
+        step:
+          type: integer
+        stepName:
+          type: string
+        message:
+          type: string
+        status:
+          type: string
+          enum:
+            - running
+            - error
+        error:
+          type: object
+        stack:
+          type: string
+        counts:
+          type: object
+          additionalProperties: false
+          properties:
+            assetsCreated:
+              type: integer
+            stigsMapped:
+              type: integer
+            reviewsInserted:
+              type: integer
+            reviewsUpdated:
+              type: integer
     CollectionFieldEnabledAlways:
       type: object
       additionalProperties: false
@@ -6700,7 +6783,7 @@ components:
       description: A path parameter that identifies a Collection
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/StringIntId'
     CollectionIdQuery:
       name: collectionId
       required: true

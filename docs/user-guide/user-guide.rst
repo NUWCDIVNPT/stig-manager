@@ -1206,15 +1206,42 @@ The user is presented with the log of the import. Select an item in the top grid
 
 .. _export-by-asset:
 
-Export CKLs by Asset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Export Results by Asset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The "Export Results..." button in the Assets Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole Asset level, or every Asset in the Collection. 
+
+When Assets have been pre-selected in the Assets panel, only the selected Assets will be presented in the checkbox selection tree.
+
+Use the radio buttons in the pop-up to select the type of export you would like to perform.
+
+Export Results to Another Collection
++++++++++++++++++++++++++++++++++++++++++++++++
+
+The user can export results from Assets in the current Collection to another Collection. The user must have "Manage" or "Owner" levels of access in the destination Collection. You will only see Collections that you have sufficient access to in the "Export To" pulldown.
+If the destination Collection does not have an Asset of the same name as the one being exported, a new Asset will be created in the destination Collection. If the destination Collection already has an Asset of the same name, any STIGs that are not already assigned to the Asset in the destination Collection will be assigned to it.  Any STIGs that are already assigned to the Asset in the destination Collection will be updated with the new results in accordance with the Collection settings of the destination.
+
+.. note::
+      The "Export Results to Another Collection" option is limited to a maximum of 100 Assets at one time.
+
+
+
+.. thumbnail:: /assets/images/collection-manage-results-export-asset-collection.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export by Asset
+
+|
+
+
+
+Export Results as CKL or XCCDF Archive
++++++++++++++++++++++++++++++++++++++++++++++++
 
 The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files will be generated for every Asset selected. The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
 
-.. thumbnail:: /assets/images/checklist-archive-export-asset.png
+.. thumbnail:: /assets/images/collection-manage-results-export-asset-archive.png
       :width: 50% 
       :show_caption: True
       :title: Checklist Archive Export by Asset
@@ -1331,18 +1358,45 @@ Select "Change assigned Assets..." or double-click a STIG to change what Assets 
 .. _export-by-stig:
 
 
-Export CKL or XCCDF Files by STIG
+Export Results by STIG
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The "Export Results..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level, whole STIG level, or every STIG in the Collection. 
+The "Export Results..." button in the STIGs Panel Toolbar will open a pop-up interface with a checkbox selection tree.  Selections can be made for any combination in the tree, from the individual STIG-Asset level or every Asset in the Collection. 
+
+When STIGs have been pre-selected in the STIGs panel, only the selected STIGs will be presented in the checkbox selection tree.
+
+Use the radio buttons in the pop-up to select the type of export you would like to perform.
+
+Export Results to Another Collection
++++++++++++++++++++++++++++++++++++++++++++++++
+
+The user can export results from STIGs in the current Collection to another Collection. The user must have "Manage" or "Owner" levels of access in the destination Collection. You will only see Collections that you have sufficient access to in the "Export To" pulldown.
+If the destination Collection does not have an Asset of the same name as the one being exported, a new Asset will be created in the destination Collection. If the destination Collection already has an Asset of the same name, any STIGs that are not already assigned to the Asset in the destination Collection will be assigned to it.  Any STIGs that are already assigned to the Asset in the destination Collection will be updated with the new results in accordance with the Collection settings of the destination.
+
+.. note::
+      The "Export Results to Another Collection" option is limited to a maximum of 100 Assets at one time.
+
+
+
+.. thumbnail:: /assets/images/collection-manage-results-export-asset-collection.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export by Asset
+
+|
+
+
+
+Export Results as CKL or XCCDF Archive
++++++++++++++++++++++++++++++++++++++++++++++++
 
 The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files will be generated for every Asset selected. The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
 
-.. thumbnail:: /assets/images/checklist-archive-export-stig.png
+.. thumbnail:: /assets/images/collection-manage-results-export-asset-archive.png
       :width: 50% 
       :show_caption: True
-      :title: Checklist Archive Export by STIG
+      :title: Checklist Archive Export by Asset
 
 |
 

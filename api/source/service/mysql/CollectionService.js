@@ -2027,3 +2027,425 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
     }
   }
 }
+
+exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, assetStigArguments, userObject, svcStatus = {}, progressCb = () => {}}) {
+  let connection, progressJson
+  try {
+    const sql = {
+      dropArg: {
+        query: `drop temporary table if exists t_arg`,
+        runningText: 'Preparing data'
+      },
+      createArg: {
+        query: `create temporary table t_arg (
+          assetId INT,
+          assetName VARCHAR(255),
+          benchmarkId VARCHAR(255),
+          revisionStr VARCHAR(255),
+          UNIQUE INDEX (assetId, benchmarkId, revisionStr),
+          INDEX (assetName)
+        )
+        select * from
+        json_table(
+          @json, 
+          "$[*]"
+          COLUMNS(
+          assetId INT path "$.assetId",
+            assetName VARCHAR(255) path "$.assetName",
+            nested path "$.stigs[*]" COLUMNS(
+              benchmarkId VARCHAR(255) path "$.benchmarkId",
+              revisionStr VARCHAR(255) path "$.revisionStr"
+            )
+          )
+        ) as arg`,
+        runningText: 'Preparing data'
+      },
+      dropCollectionSetting: {
+        query: `drop temporary table if exists t_collection_setting`,
+        runningText: 'Preparing data'
+      },
+      createCollectionSetting: {
+        query: `create temporary table t_collection_setting
+        SELECT 
+          c.settings->>"$.fields.detail.required" as detailRequired,
+          c.settings->>"$.fields.comment.required" as commentRequired,
+          c.settings->>"$.status.canAccept" as canAccept,
+          c.settings->>"$.status.resetCriteria" as resetCriteria,
+          c.settings->>"$.status.minAcceptGrant" as minAcceptGrant,
+          c.settings->>"$.history.maxReviews" as historyMax
+        FROM
+          collection c
+        where
+          collectionId = @dstCollectionId`,
+          runningText: 'Preparing data'
+      },
+      dropSrcReviewId: {
+        query: `drop temporary table if exists t_src_reviewId`,
+        runningText: 'Preparing data'
+      },
+      createSrcReviewId: {
+        query: `create temporary table t_src_reviewId (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT UNIQUE )
+        select
+          r.reviewId
+        from
+          t_arg
+          left join revision rev on (t_arg.benchmarkId collate utf8mb4_0900_as_cs = rev.benchmarkId and t_arg.revisionStr = rev.revisionStr)
+          left join rev_group_rule_map rgr on (rev.revId = rgr.revId)
+          left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
+          inner join review r on (rvcd.version = r.version and rvcd.checkDigest = r.checkDigest and t_arg.assetId = r.assetId)`,
+          runningText: 'Preparing data'
+      },
+      countSrcReviewId: {
+        query: `select count(*) as total from t_src_reviewId`,
+        runningText: 'Preparing data'
+      },
+      insertAsset: {
+        query: `INSERT into asset (name, fqdn, collectionId, ip, mac, description, noncomputing, metadata, state, stateDate, stateUserId)
+        SELECT
+          srcAsset.name,
+          srcAsset.fqdn,
+          @dstCollectionId,
+          srcAsset.ip,
+          srcAsset.mac,
+          srcAsset.description,
+          srcAsset.noncomputing,
+          srcAsset.metadata,
+          'enabled',
+          NOW(),
+          @userId
+        FROM
+          t_arg
+          left join asset srcAsset on (t_arg.assetId = srcAsset.assetId and srcAsset.isEnabled = 1)
+          left join asset dstAsset on (t_arg.assetName = dstAsset.name and dstAsset.collectionId = @dstCollectionId and dstAsset.isEnabled = 1)
+        WHERE
+          dstAsset.assetId is null
+        GROUP BY
+          t_arg.assetId`,
+        runningText: "Preparing Assets"
+      },
+      dropAssetIdMap: {
+        query: `drop temporary table if exists t_assetId_map`,
+        runningText: "Preparing Assets"
+      },
+      createAssetIdMap: {
+        query: `create temporary table t_assetId_map (
+          srcAssetId INT,
+          dstAssetId INT,
+          INDEX (srcAssetId),
+          INDEX (dstAssetId)
+        )
+        select
+          srcAsset.assetId as srcAssetId,
+          dstAsset.assetId as dstAssetId
+        from
+          t_arg
+          inner join asset srcAsset on (t_arg.assetId = srcAsset.assetId)
+          inner join asset dstAsset on (t_arg.assetName = dstAsset.name and dstAsset.collectionId = @dstCollectionId)
+        group by
+          srcAsset.assetId, dstAsset.assetId`,
+          runningText: "Preparing Assets"
+      },
+      insertStigAssetMap: {
+        query: `INSERT into stig_asset_map (assetId, benchmarkId)
+        select
+          a.assetId,
+          t_arg.benchmarkId
+        from
+          t_arg
+          left join asset a on (t_arg.assetName = a.name and a.collectionId = @dstCollectionId and a.isEnabled = 1)
+          left join stig_asset_map sa on (t_arg.benchmarkId collate utf8mb4_0900_as_cs = sa.benchmarkId and a.assetId = sa.assetId)
+        where
+          sa.saId is null`,
+          runningText: "Preparing Assets"
+      },
+      selectStigAssetMap: {
+        query: `select
+          sa.saId
+        from
+          t_arg
+          left join asset a on (t_arg.assetName = a.name and a.collectionId = @dstCollectionId and a.isEnabled = 1)
+          left join stig_asset_map sa on (t_arg.benchmarkId collate utf8mb4_0900_as_cs = sa.benchmarkId and a.assetId = sa.assetId)`
+      },
+      deleteDefaultRev: {
+        query: `DELETE FROM default_rev where collectionId = @dstCollectionId`,
+        runningText: "Preparing Assets"
+      },
+      insertDefaultRev: {
+        query: `INSERT INTO default_rev(collectionId, benchmarkId, revId, revisionPinned) SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev where collectionId = @dstCollectionId`,
+        finishText: 'Created Asset/STIG maps',
+        runningText: "Preparing Assets"
+      },
+      dropIncomingReview: {
+        query: `drop temporary table if exists t_incoming_review`,
+        runningText: `Preparing reviews`,
+        finishText: `Preparing reviews`
+      },
+      createIncomingReview: {
+        query: `create temporary table t_incoming_review
+        select
+          dstReview.reviewId,
+          t_assetId_map.dstAssetId as assetId,
+          srcReview.version,
+          srcReview.checkDigest,
+          srcReview.ruleId,
+          srcReview.resultId,
+          srcReview.detail, 
+          srcReview.comment, 
+          srcReview.resultEngine, 
+          srcReview.metadata,
+          UTC_TIMESTAMP() as ts,
+          @userId as userId,
+          CASE WHEN dstReview.reviewId is null or rStatusReset.reviewId is not null
+            THEN 0
+            ELSE dstReview.statusId
+          END as statusId,	
+          CASE WHEN dstReview.reviewId is null
+            THEN ''
+            ELSE
+              CASE WHEN rStatusReset.reviewId is not null
+                THEN 'Status reset due to a Review change or Collection setting'
+                ELSE dstReview.statusText
+            END
+          END as statusText,	
+          CASE WHEN dstReview.reviewId is null or rStatusReset.reviewId is not null
+            THEN UTC_TIMESTAMP()
+          ELSE dstReview.statusTs
+          END as statusTs,	
+          CASE WHEN dstReview.reviewId is null or rStatusReset.reviewId is not null
+            THEN @userId
+          ELSE dstReview.statusUserId
+           END as statusUserId	
+        from
+          t_src_reviewId
+          left join t_collection_setting on true
+          inner join review srcReview on (t_src_reviewId.reviewId = srcReview.reviewId)
+          left join t_assetId_map on (srcReview.assetId = t_assetId_map.srcAssetId)
+          left join review dstReview on (srcReview.version = dstReview.version and srcReview.checkDigest = dstReview.checkDigest and t_assetId_map.dstAssetId = dstReview.assetId) 
+          left join review rChangedResult on (
+            dstReview.reviewId = rChangedResult.reviewId 
+            and 0 != rChangedResult.statusId
+            and srcReview.resultId != rChangedResult.resultId
+          )
+          left join review rChangedAny on (
+            dstReview.reviewId  = rChangedAny.reviewId 
+            and 0 != rChangedAny.statusId
+            and (srcReview.resultId != rChangedAny.resultId or srcReview.detail != rChangedAny.detail or srcReview.comment != rChangedAny.comment)
+          )
+          left join review rStatusReset on (
+            dstReview.reviewId = rStatusReset.reviewId and (
+              (t_collection_setting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
+            or (t_collection_setting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
+            or (t_collection_setting.detailRequired = 'always' and srcReview.detail = '')
+            or (t_collection_setting.commentRequired = 'always' and srcReview.comment = '')
+            or (t_collection_setting.detailRequired = 'findings' and srcReview.resultId = 4 and srcReview.detail = '')
+            or (t_collection_setting.commentRequired = 'findings' and srcReview.resultId = 4 and srcReview.comment = '')
+            )
+          )
+        where
+          t_src_reviewId.seq >= ? and t_src_reviewId.seq <= ?`,
+        runningText: `Preparing reviews`,
+        finishText: `Preparing reviews`
+      },
+      countIncomingReview: {
+        query: `select sum(reviewId is null) as inserted, sum(reviewId is not null) as updated from t_incoming_review`,
+        runningText: `Preparing reviews`,
+
+      },
+      pruneHistory: {
+        query: `with historyRecs AS (
+          select
+            rh.historyId,
+            ROW_NUMBER() OVER (PARTITION BY r.assetId, r.version, r.checkDigest ORDER BY rh.historyId DESC) as rowNum
+          from
+            review_history rh
+            inner join t_incoming_review r using (reviewId)
+          )
+        delete review_history
+        FROM 
+           review_history
+           left join historyRecs on review_history.historyId = historyRecs.historyId 
+        WHERE 
+           historyRecs.rowNum > ((select historyMax from t_collection_setting) - 1)`,
+           runningText: `Preparing reviews`,
+           finishText: `Preparing reviews`
+      },
+      insertHistory: {
+        query: `INSERT INTO review_history (
+            reviewId,
+            ruleId,
+            resultId,
+            detail,
+            comment,
+            autoResult,
+            ts,
+            userId,
+            statusText,
+            statusUserId,
+            statusTs,
+            statusId,
+            touchTs,
+            resultEngine)
+          SELECT 
+            r.reviewId,
+            r.ruleId,
+            r.resultId,
+            LEFT(r.detail,32767) as detail,
+            LEFT(r.comment,32767) as comment,
+            r.autoResult,
+            r.ts,
+            r.userId,
+            r.statusText,
+            r.statusUserId,
+            r.statusTs,
+            r.statusId,
+            r.touchTs,
+            r.resultEngine
+          FROM
+            review r
+            inner join t_incoming_review using (reviewId)`,
+          runningText: `Preparing reviews`,
+          finishText: `Prepared reviews`
+      },
+      upsertReview: {
+        query: `insert into review (reviewId, assetId, version, checkDigest, ruleId, resultId, detail, comment, resultEngine, metadata, ts, userId, statusId, statusText, statusTs, statusUserId)
+        select * from t_incoming_review as r
+        on duplicate key update
+          ruleId = r.ruleId,
+          resultId = r.resultId,
+          detail = r.detail,
+          comment = r.comment,
+          ts = r.ts,
+          userId = r.userId,
+          statusId = r.statusId,
+          statusText = r.statusText,
+          statusUserId = r.statusUserId,
+          statusTs = r.statusTs,
+          metadata = r.metadata,
+          resultEngine = r.resultEngine`
+      }
+    }
+    connection = await dbUtils.pool.getConnection()
+    connection.config.namedPlaceholders = false
+    connection.query('set @srcCollectionId = ?, @dstCollectionId = ?, @userId = ?, @json = ?',
+    [parseInt(srcCollectionId), parseInt(dstCollectionId), parseInt(userObject.userId), JSON.stringify(assetStigArguments)])
+    const prepQueries = ['dropArg', 'createArg', 'dropCollectionSetting', 'createCollectionSetting', 'dropSrcReviewId', 'createSrcReviewId']
+    const assetQueries = ['insertAsset', 'dropAssetIdMap', 'createAssetIdMap', 'insertStigAssetMap', 'deleteDefaultRev', 'insertDefaultRev']
+    const reviewExportQueries = ['pruneHistory', 'insertHistory', 'upsertReview']
+    const counts = {
+      assetsCreated: 0,
+      stigsMapped: 0,
+      reviewsInserted: 0,
+      reviewsUpdated: 0
+    }
+
+    async function transaction () {
+      progressJson = {
+        stage: 'prepare',
+        stepCount: prepQueries.length,
+        step: 0
+      }
+
+      await connection.query('START TRANSACTION')
+      for (const query of prepQueries) {
+        progressJson.step++
+        progressJson.stepName = query
+        progressJson.status = 'running'
+        progressJson.message = sql[query].runningText
+        progressCb(progressJson) 
+        await connection.query(sql[query].query)
+      }
+
+      progressJson.stage = 'assets'
+      progressJson.stepCount = assetQueries.length
+      progressJson.step = 0
+      for (const query of assetQueries) {
+        progressJson.step++
+        progressJson.stepName = query
+        progressJson.status = 'running'
+        progressJson.message = sql[query].runningText
+        progressCb(progressJson)
+
+        const [result] = await connection.query(sql[query].query)
+        if (query === 'insertAsset') {
+          counts.assetsCreated = result.affectedRows
+        }
+        if (query === 'insertStigAssetMap') {
+          counts.stigsMapped = result.affectedRows
+        }
+      }
+
+      const [count] = await connection.query(sql.countSrcReviewId.query)
+      let offset = 1
+      const chunkSize = 10000
+      let result
+
+      progressJson = {
+        stage: 'reviews',
+        status: 'running',
+        reviewsTotal: count[0].total,
+        reviewsExported: 0
+      }
+      progressCb(progressJson)
+      do {
+        await connection.query(sql.dropIncomingReview.query)
+        ;[result] = await connection.query(sql.createIncomingReview.query, [offset, offset + chunkSize - 1])
+        if (result.affectedRows != 0) {
+          const [count] = await connection.query(sql.countIncomingReview.query)
+          counts.reviewsInserted += count[0].inserted
+          counts.reviewsUpdated += count[0].updated
+          for (const query of reviewExportQueries) {
+            await connection.query(sql[query].query)
+          }
+          progressJson.reviewsExported += result.affectedRows
+          progressCb(progressJson) 
+        }
+        offset += chunkSize
+      } while (result.affectedRows != 0)
+
+      const [saIdResult]  = await connection.query(sql.selectStigAssetMap.query)
+      progressJson = {
+        stage: 'metrics',
+        status: 'running',
+        metricsTotal: saIdResult.length,
+        metricsUpdated: 0
+      }
+      progressCb(progressJson)
+      const increment = 1000
+      for (let i = 0; i < saIdResult.length; i+=increment) {
+        const saIds = saIdResult.slice(i, i + increment).map(row => row.saId)
+        await dbUtils.updateStatsAssetStig(connection, {saIds})
+        progressJson.metricsUpdated += saIds.length
+        progressCb(progressJson)
+      }
+
+      progressJson = {
+        stage: 'commit',
+        status: 'running'
+      }
+      progressCb(progressJson) 
+      await connection.commit()
+
+      progressCb({
+        stage: 'result',
+        counts
+      }) 
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    progressJson.status = 'error'
+    progressJson.message = 'Unhandled error'
+    progressJson.error = err
+    progressJson.stack = err?.stack
+    progressCb({progressJson})
+    return null
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}

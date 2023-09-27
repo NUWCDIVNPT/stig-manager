@@ -1,6 +1,6 @@
 Ext.ns('SM.ColumnFilters')
 
-function extend (extended = Ext.grid.GridView) {
+SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
   return Ext.extend(extended, {
     constructor: function (config) {
       // Ext.apply(this, config);
@@ -311,9 +311,8 @@ function extend (extended = Ext.grid.GridView) {
   })
 }
 
-SM.ColumnFilters.GridView = extend(Ext.grid.GridView)
-SM.ColumnFilters.GridViewBuffered = extend(Ext.ux.grid.BufferView)
-
+SM.ColumnFilters.GridView = SM.ColumnFilters.extend(Ext.grid.GridView)
+SM.ColumnFilters.GridViewBuffered = SM.ColumnFilters.extend(Ext.ux.grid.BufferView)
 
 SM.ColumnFilters.SearchTextField = Ext.extend(Ext.form.TextField, {
   initComponent: function () {

@@ -65,12 +65,23 @@ async function loadApp () {
 		Ext.data.DataProxy.on('exception', function(proxy, type, action, e) {
 			SM.Error.handleError(new SM.Error.ExtDataProxyError(e))
 		})
+
+		const opRequests = [
+			Ext.Ajax.requestPromise({
+				responseType: 'json',
+				url: `${STIGMAN.Env.apiBase}/op/configuration`,
+				method: 'GET'
+			}),
+			Ext.Ajax.requestPromise({
+				responseType: 'json',
+				url: `${STIGMAN.Env.apiBase}/op/definition`,
+				method: 'GET'
+			})
+		]
+		const opResponses = await Promise.all(opRequests)
 	
-		STIGMAN.apiConfig = await Ext.Ajax.requestPromise({
-			responseType: 'json',
-			url: `${STIGMAN.Env.apiBase}/op/configuration`,
-			method: 'GET'
-		})
+		STIGMAN.apiConfig = opResponses[0]
+		STIGMAN.apiDefinition = opResponses[1]
 		
 		const mainNavTree = new SM.NavTree.TreePanel({
 			id: 'app-nav-tree',

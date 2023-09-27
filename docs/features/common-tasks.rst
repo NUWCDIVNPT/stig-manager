@@ -84,8 +84,7 @@ Adding a user to STIG Manager will be dependent on the way your Organization has
 Export Results
 ===============================
 
-Your process may vary, but many processes have a goal of getting all Reviews in a Collection into an Accepted status. 
-You can quickly check the status of our Collection in the Collection Management screen, and create a .zip Archive of .ckl files for your entire Collection, or some portion of it.  This export will produce one .ckl file per Asset containing each STIG selected. These Multi-STIG .ckl files have been tested to be compatible with both eMASS and STIG Viewer. 
+From the Collection Management panel, you can export Results for Assets to another Collection, or download a .zip Archive of .ckl files for your entire Collection or some portion of it.  
 
 These exports are available organized :ref:`by Asset <export-by-asset>` or :ref:`by STIG. <export-by-stig>`
 

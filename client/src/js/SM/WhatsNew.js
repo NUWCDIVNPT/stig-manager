@@ -2,6 +2,20 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2023-09-26',
+    header: `Export Results to Another Collection`,
+    body: `
+    <p>
+    Collection Managers and Owners can now export results from one Collection to another Collection. This feature is available from the Manage Collection Workspace using the "Export Results..." button in both the Asset and STIG Assignment panels.  Use the radio buttons to select the desired export action. 
+    </p>
+
+    <p><b>Note:</b><b>Exporting Results to another Collection is limited to 100 Assets at a time, and the User must have "Manage" or "Owner" grants in the destination Collection.</b></p>
+
+    <p><img src="img/whatsnew/2023-09-27-results-export-collection.png"/></p>
+
+    `    
+  },    
+  {
     date: '2023-08-21',
     header: `Provisional .CKLB Support`,
     body: `
