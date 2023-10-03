@@ -294,15 +294,6 @@
 #==============================================================================
 # export STIGMAN_DOCS_DISABLED=
 
-#==============================================================================
-# STIGMAN_INIT_IMPORT_SCAP
-#
-#  | Default: "false" | Whether to fetch and import current DISA SCAP content
-#  from public.cyber.mil on initial database migration
-#
-#  Affects: API          
-#==============================================================================
-# export STIGMAN_INIT_IMPORT_SCAP=
 
 #==============================================================================
 # STIGMAN_LOG_LEVEL
