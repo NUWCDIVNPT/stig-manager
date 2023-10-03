@@ -57,7 +57,6 @@ services:
       - STIGMAN_CLASSIFICATION=U
       - STIGMAN_DB_HOST=db
       - STIGMAN_DB_PASSWORD=stigman
-      - STIGMAN_INIT_IMPORT_STIGS=true
       # Change envvar below if non-localhost browsers will access the API
       - STIGMAN_CLIENT_OIDC_PROVIDER=http://localhost:8080/realms/stigman
       # Customize the Welcome widget on the Home tab
@@ -78,7 +77,6 @@ $ docker-compose up -d && docker-compose logs -f
 ```
 - STIG Manager will wait for MySQL and Keycloak to become ready
 - When MySQL is ready, STIG Manager will perform an initial migration and create the necessary schema objects.
-- STIG Manager will then connect to [DoD Cyber Exchange](https://public.cyber.mil) and import the latest STIG Library Compilation and any available SCAP content.
 - When STIG Manager is ready to handle requests, it will output a JSON log entry similar to:
 ```
 {"date":"2022-02-18T18:25:50.749Z","level":3,"component":"index","type":"started","data":{"durationS":0.956811184,"port":"54000","api":"/api","client":"/","documentation":"/docs","swagger":"/api-docs"}}
