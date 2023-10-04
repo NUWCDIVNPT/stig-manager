@@ -29,7 +29,6 @@ const fs = require('fs')
 const multer  = require('multer')
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/${config.database.type}/OperationService`)
-const smFetch = require('./utils/fetchStigs')
 const { middleware: openApiMiddleware, resolvers } = require('express-openapi-validator')
 
 // express-openapi-validator does not expose top-level HttpError in their index.js. 
@@ -235,17 +234,7 @@ async function startServer(app) {
       logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies'});
       process.exit(1);  
     }
-
-    if (config.init.importStigs && isNewDb) {
-      try {
-        logger.writeInfo('index', 'starting', {message:'begin to import STIGs'});
-        await smFetch.fetchCompilation()
-      }
-      catch (e) {
-        logger.writeError('index', 'starting', {message:'failed to import STIGs'});
-      }
-    }
-
+  
     // Set/change classification if indicated
     if (config.settings.setClassification) {
       await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)

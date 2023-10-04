@@ -65,9 +65,6 @@ let config = {
             return props          
         }
     },
-    init: {
-        importStigs: process.env.STIGMAN_INIT_IMPORT_STIGS === "true",
-    },
     swaggerUi: {
         enabled: process.env.STIGMAN_SWAGGER_ENABLED === "true", 
         authority: process.env.STIGMAN_SWAGGER_OIDC_PROVIDER || process.env.STIGMAN_SWAGGER_AUTHORITY || process.env.STIGMAN_OIDC_PROVIDER || "http://localhost:8080/auth/realms/stigman", 
