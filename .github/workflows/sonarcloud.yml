@@ -39,11 +39,13 @@ jobs:
      - name: Download lcov artifact
        uses: actions/download-artifact@v3
        with:
-         name: coverage-report
-         path: ./downloaded-artifacts
+         name: coverage-report\
+     - name: See files in coverage-report
+       run: |
+          ls -a ./coverage-report
      - name: Extract lcov.info
        run: |
-          unzip ./downloaded-artifacts/coverage-report.zip lcov.info -d ./coverage
+          unzip ./coverage-report.zip lcov.info -d ./coverage
        
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
