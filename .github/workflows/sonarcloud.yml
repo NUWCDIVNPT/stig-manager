@@ -42,7 +42,7 @@ jobs:
          name: coverage-report
      - name: See files in coverage-report
        run: |
-        ls -l /home/runner/work/stig-manager/stig-manager/coverage-report
+        ls -l /coverage-report
      - name: Display details of lcov.info
        run: |
           ls -l /home/runner/work/stig-manager/stig-manager/coverage-report/lcov.info
