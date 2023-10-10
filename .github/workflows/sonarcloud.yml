@@ -39,7 +39,7 @@ jobs:
      - name: Download lcov artifact
        uses: actions/download-artifact@v3
        with:
-         name: coverage-report\
+         name: coverage-report
      - name: See files in coverage-report
        run: |
           ls -a ./coverage-report
