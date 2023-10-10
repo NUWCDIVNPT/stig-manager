@@ -129,9 +129,9 @@ jobs:
         run: kill -SIGINT $(ps -ef --ppid `cat /tmp/test.pid` -o pid= )
       - name: Wait until c8 process ends, or 60 seconds, whichever is shorter.
         run: timeout 60 tail --pid=`cat /tmp/test.pid` -f /dev/null
-      - name: run c8 text report
+      - name: run c8 text/lcov report
         working-directory: ./api/source
-        run: c8 report -r text
+        run: c8 report -r lcov -r text
       - name: Upload Newman artifact
         id: artifact-upload-newman
         uses: actions/upload-artifact@v3
@@ -139,13 +139,20 @@ jobs:
         with:
           name: newman-htmlextra
           path: ./test/api/newman
-      - name: Upload coverage artifact
-        id: artifact-upload-coverage
+      - name: Upload text coverage artifact
+        id: artifact-upload-text-coverage
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
-          name: coverage-report
+          name: text-coverage-report
           path: ./api/source/coverage
+      - name: Upload lcov coverage artifact
+        id: artifact-upload-lcov-coverage
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          name: lcov-coverage-report
+          path: ./api/source/lcov.info
       - name: Upload API logs
         id: artifact-upload-api-logs
         uses: actions/upload-artifact@v3

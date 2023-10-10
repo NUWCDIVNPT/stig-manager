@@ -11,10 +11,10 @@ on:
         - 'test/api/**'
         - 'Dockerfile'
         - '.github/workflows/sonarcloud.yml'
+        - '.github/workflows/api-audit-test-coverage-response.yml'
     push:
       branches:
         - main
-        - SonarCloud-Action
       paths:
         - 'api/source/**'
         - 'test/api/**'
@@ -25,14 +25,21 @@ permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
+  run-api-audit-test-coverage:
+    uses: Matte22/stig-manager/.github/workflows/api-audit-test-coverage-response.yml@SonarCloud-Action
   SonarCloudAnalysis:
+    name: SonarCloud Analysis with coverage
+    needs: run-api-audit-test-coverage
     runs-on: ubuntu-latest
     steps:
      - name: Checkout repository
        uses: actions/checkout@v3
        with:
          fetch-depth: 0 # Important to fetch all history for accurate blame information
-
+     - name: Download lcov artifact
+       uses: actions/download-artifact@v3
+       with:
+         name: lcov-coverage-report
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
        env:
@@ -43,7 +50,8 @@ jobs:
          args:
            -Dsonar.projectKey=Matte22_stig-manager
            -Dsonar.organization=stig-manager
-    
+           -Dsonar.javascript.lcov.reportPaths=./lcov-coverage-report/lcov.info
+        
       # This will fail the action if Quality Gate fails (leaving out for now )
     #  - name: Check Quality Gate
     #    uses: sonarsource/sonarqube-quality-gate-action@master
