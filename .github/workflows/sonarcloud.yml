@@ -39,7 +39,7 @@ jobs:
      - name: Download lcov artifact
        uses: actions/download-artifact@v3
        with:
-         name: lcov-coverage-report
+         name: coverage-report
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
        env:
