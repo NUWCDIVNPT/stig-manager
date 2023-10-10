@@ -40,6 +40,11 @@ jobs:
        uses: actions/download-artifact@v3
        with:
          name: coverage-report
+         path: ./downloaded-artifacts
+     - name: Extract lcov.info
+       run: |
+          unzip ./downloaded-artifacts/coverage-report.zip lcov.info -d ./coverage
+       
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
        env:
@@ -50,7 +55,7 @@ jobs:
          args:
            -Dsonar.projectKey=Matte22_stig-manager
            -Dsonar.organization=stig-manager
-           -Dsonar.javascript.lcov.reportPaths=./coverage-report/lcov.info
+           -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
         
       # This will fail the action if Quality Gate fails (leaving out for now )
     #  - name: Check Quality Gate
