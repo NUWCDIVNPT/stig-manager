@@ -42,11 +42,10 @@ jobs:
          name: coverage-report
      - name: See files in coverage-report
        run: |
-        ls -l /coverage-report
+        cd ./coverage-report
      - name: Display details of lcov.info
        run: |
-          ls -l /home/runner/work/stig-manager/stig-manager/coverage-report/lcov.info
-          cat /home/runner/work/stig-manager/stig-manager/coverage-report/lcov.info
+          ls -l
     
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
