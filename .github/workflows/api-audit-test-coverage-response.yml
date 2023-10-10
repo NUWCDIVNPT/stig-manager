@@ -139,20 +139,13 @@ jobs:
         with:
           name: newman-htmlextra
           path: ./test/api/newman
-      - name: Upload text coverage artifact
-        id: artifact-upload-text-coverage
+      - name: Upload coverage artifact
+        id: artifact-upload-coverage
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
-          name: text-coverage-report
+          name: coverage-report
           path: ./api/source/coverage
-      - name: Upload lcov coverage artifact
-        id: artifact-upload-lcov-coverage
-        uses: actions/upload-artifact@v3
-        if: ${{ always() }}
-        with:
-          name: lcov-coverage-report
-          path: ./api/source/lcov.info
       - name: Upload API logs
         id: artifact-upload-api-logs
         uses: actions/upload-artifact@v3
