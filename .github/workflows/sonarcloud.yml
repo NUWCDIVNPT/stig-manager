@@ -42,11 +42,12 @@ jobs:
          name: coverage-report
      - name: See files in coverage-report
        run: |
-          ls -a ./coverage-report
-     - name: Extract lcov.info
+        ls -l /home/runner/work/stig-manager/stig-manager/coverage-report
+     - name: Display details of lcov.info
        run: |
-          unzip ./coverage-report.zip lcov.info -d ./coverage
-       
+          ls -l /home/runner/work/stig-manager/stig-manager/coverage-report/lcov.info
+          cat /home/runner/work/stig-manager/stig-manager/coverage-report/lcov.info
+    
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
        env:
@@ -57,7 +58,7 @@ jobs:
          args:
            -Dsonar.projectKey=Matte22_stig-manager
            -Dsonar.organization=stig-manager
-           -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+           -Dsonar.javascript.lcov.reportPaths=/home/runner/work/stig-manager/stig-manager/coverage-report/lcov.info
         
       # This will fail the action if Quality Gate fails (leaving out for now )
     #  - name: Check Quality Gate
