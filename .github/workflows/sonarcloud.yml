@@ -40,6 +40,9 @@ jobs:
        uses: actions/download-artifact@v3
        with:
          name: coverage-report
+     - name: List coverage report content
+       run: ls -la coverage-report
+
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
        env:
