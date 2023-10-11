@@ -42,7 +42,7 @@ jobs:
          name: coverage-report
 
      - name: Unzip local file
-       run: unzip coverage-report -d ./coverage-report-unzipped
+       run: unzip /coverage-report -d ./coverage-report-unzipped
     
      - name: Show contents of unzipped directory
        run: ls ./coverage-report-unzipped
