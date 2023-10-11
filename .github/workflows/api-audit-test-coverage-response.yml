@@ -1,6 +1,7 @@
 name: Test Suite
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     branches:
       - main
@@ -128,9 +129,9 @@ jobs:
         run: kill -SIGINT $(ps -ef --ppid `cat /tmp/test.pid` -o pid= )
       - name: Wait until c8 process ends, or 60 seconds, whichever is shorter.
         run: timeout 60 tail --pid=`cat /tmp/test.pid` -f /dev/null
-      - name: run c8 text report
+      - name: run c8 text/lcov report
         working-directory: ./api/source
-        run: c8 report -r text
+        run: c8 report -r lcov -r text
       - name: Upload Newman artifact
         id: artifact-upload-newman
         uses: actions/upload-artifact@v3
