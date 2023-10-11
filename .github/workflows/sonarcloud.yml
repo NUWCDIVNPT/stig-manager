@@ -50,6 +50,9 @@ jobs:
          args:
            -Dsonar.projectKey=Matte22_stig-manager
            -Dsonar.organization=stig-manager
+           -Dsonar.sources=api/source,client/src/
+           -Dsonar.inclusions=client/src/js/**/*,client/src/serviceworker.js
+           -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**,**/test/**,
            -Dsonar.javascript.lcov.reportPaths=/coverage-report/lcov.info
         
       # This will fail the action if Quality Gate fails (leaving out for now )
