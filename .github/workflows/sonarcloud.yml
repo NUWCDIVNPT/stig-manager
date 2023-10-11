@@ -40,8 +40,12 @@ jobs:
        uses: actions/download-artifact@v3
        with:
          name: coverage-report
-     - name: List coverage report content
-       run: ls -la coverage-report
+         
+     - name: Unzip local file
+       run: unzip coverage-report.zip -d ./coverage-report-unzipped
+    
+     - name: Show contents of unzipped directory
+       run: ls ./coverage-report-unzipped
 
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
@@ -56,9 +60,9 @@ jobs:
            -Dsonar.sources=api/source,client/src
            -Dsonar.inclusions=**/*.js
            -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**,client/src/ext/**/*
-           -Dsonar.javascript.lcov.reportPaths=coverage-report/lcov.info
+           -Dsonar.javascript.lcov.reportPaths=./coverage-report-unzipped/lcov.info
         
-      # This will fail the action if Quality Gate fails (leaving out for now )
+    #   This will fail the action if Quality Gate fails (leaving out for now )
     #  - name: Check Quality Gate
     #    uses: sonarsource/sonarqube-quality-gate-action@master
     #    env:
