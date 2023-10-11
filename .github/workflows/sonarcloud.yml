@@ -40,9 +40,9 @@ jobs:
        uses: actions/download-artifact@v3
        with:
          name: coverage-report
-         
+
      - name: Unzip local file
-       run: unzip coverage-report.zip -d ./coverage-report-unzipped
+       run: unzip coverage-report -d ./coverage-report-unzipped
     
      - name: Show contents of unzipped directory
        run: ls ./coverage-report-unzipped
