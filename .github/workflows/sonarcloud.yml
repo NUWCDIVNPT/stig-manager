@@ -41,11 +41,9 @@ jobs:
        with:
          name: coverage-report
 
-     - name: Unzip local file
-       run: unzip /coverage-report -d ./coverage-report-unzipped
     
-     - name: Show contents of unzipped directory
-       run: ls ./coverage-report-unzipped
+     - name: Show contents of  directory
+       run: ls -R
 
      - name: Analyze with SonarCloud
        uses: SonarSource/sonarcloud-github-action@v2.0.2
