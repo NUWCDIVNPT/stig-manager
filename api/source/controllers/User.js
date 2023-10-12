@@ -1,7 +1,7 @@
 'use strict';
 
 const config = require('../utils/config')
-const User = require(`../service/${config.database.type}/UserService`)
+const UserService = require(`../service/${config.database.type}/UserService`)
 const Asset = require(`../service/${config.database.type}/AssetService`)
 const Collection = require(`../service/${config.database.type}/CollectionService`)
 const SmError = require('../utils/error')
@@ -23,7 +23,7 @@ module.exports.createUser = async function createUser (req, res, next) {
         }
       }
       try {
-        let response = await User.createUser(body, projection, elevate, req.userObject, res.svcStatus)
+        let response = await UserService.createUser(body, projection, elevate, req.userObject, res.svcStatus)
         res.status(201).json(response)
       }
       catch (err) {
@@ -51,12 +51,12 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
     if (elevate) {
       let userId = req.params.userId
       let projection = req.query.projection
-      let userData = await User.getUserByUserId(userId, ['statistics'], elevate, req.userObject)
+      let userData = await UserService.getUserByUserId(userId, ['statistics'], elevate, req.userObject)
       if (userData?.statistics?.lastAccess) {
         // User has accessed the system, so we need to reject the request
         throw new SmError.UnprocessableError('User has accessed the system. Use PATCH to remove collection grants or configure Authentication provider to reject user entirely.')
       }
-      let response = await User.deleteUser(userId, projection, elevate, req.userObject)
+      let response = await UserService.deleteUser(userId, projection, elevate, req.userObject)
       res.json(response)
     }
     else {
@@ -70,7 +70,7 @@ module.exports.deleteUser = async function deleteUser (req, res, next) {
 
 module.exports.exportUsers = async function exportUsers (projection, elevate, userObject) {
   if (elevate) {
-    return await User.getUsers(null, null, projection, elevate, userObject )
+    return await UserService.getUsers(null, null, projection, elevate, userObject )
   }
   else {
     throw new SmError.PrivilegeError()    
@@ -92,7 +92,7 @@ module.exports.getUserByUserId = async function getUserByUserId (req, res, next)
     if ( elevate ) {
       let userId = req.params.userId
       let projection = req.query.projection
-      let response = await User.getUserByUserId(userId, projection, elevate, req.userObject)
+      let response = await UserService.getUserByUserId(userId, projection, elevate, req.userObject)
       res.json(response)
     }
     else {
@@ -113,7 +113,7 @@ module.exports.getUsers = async function getUsers (req, res, next) {
     if ( !elevate && projection && projection.length > 0) {
       throw new SmError.PrivilegeError()
     }
-    let response = await User.getUsers( username, usernameMatch, projection, elevate, req.userObject)
+    let response = await UserService.getUsers( username, usernameMatch, projection, elevate, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -139,7 +139,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
         }
       }
 
-      let response = await User.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
+      let response = await UserService.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
       res.json(response)
     }
     else {
@@ -169,7 +169,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
         }
       }
 
-      let response = await User.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
+      let response = await UserService.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
       res.json(response)
     }
     else {
@@ -184,8 +184,8 @@ module.exports.updateUser = async function updateUser (req, res, next) {
 /* c8 ignore start */
 module.exports.setUserData = async function setUserData (username, fields) {
   try {
-    await User.setUserData(username, fields)
-    return await User.getUserByUsername(username)
+    await UserService.setUserData(username, fields)
+    return await UserService.getUserByUsername(username)
   }
   catch (e) {
     next(err)
