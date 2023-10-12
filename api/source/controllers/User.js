@@ -2,10 +2,10 @@
 
 const config = require('../utils/config')
 const UserService = require(`../service/${config.database.type}/UserService`)
-const Asset = require(`../service/${config.database.type}/AssetService`)
-const Collection = require(`../service/${config.database.type}/CollectionService`)
+const AssetService = require(`../service/${config.database.type}/AssetService`)
+const CollectionService = require(`../service/${config.database.type}/CollectionService`)
 const SmError = require('../utils/error')
-
+/*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
     let elevate = req.query.elevate
@@ -16,7 +16,7 @@ module.exports.createUser = async function createUser (req, res, next) {
       if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
         let requestedIds = body.collectionGrants.map( g => g.collectionId )
-        let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
+        let availableCollections = await CollectionService.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
           throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
@@ -132,7 +132,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
         let requestedIds = body.collectionGrants.map( g => g.collectionId )
-        let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
+        let availableCollections = await CollectionService.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
           throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
@@ -162,7 +162,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
       if (body.hasOwnProperty('collectionGrants') ) {
         // Verify each grant for a valid collectionId
         let requestedIds = body.collectionGrants.map( g => g.collectionId )
-        let availableCollections = await Collection.getCollections({}, [], elevate, req.userObject)
+        let availableCollections = await CollectionService.getCollections({}, [], elevate, req.userObject)
         let availableIds = availableCollections.map( c => c.collectionId)
         if (! requestedIds.every( id => availableIds.includes(id) ) ) {
           throw new SmError.UnprocessableError('One or more collectionIds are invalid.')

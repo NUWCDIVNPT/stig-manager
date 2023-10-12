@@ -3,7 +3,7 @@
 const writer = require('../utils/writer');
 const config = require('../utils/config')
 const AssetService = require(`../service/${config.database.type}/AssetService`);
-const Collection = require(`../service/${config.database.type}/CollectionService`);
+const CollectionService = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const {XMLBuilder} = require("fast-xml-parser")
 const SmError = require('../utils/error')
@@ -458,7 +458,7 @@ module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res,
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let collection = await Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
+      let collection = await CollectionService.getCollection( collectionId, ['assets'], elevate, req.userObject)
       let collectionAssets = collection.assets.map( a => a.assetId)
       if (assetIds.every( a => collectionAssets.includes(a))) {
         await AssetService.attachAssetsToStig( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
@@ -549,7 +549,7 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
     // is the requester's granted accessLevel high enough?
     if ( elevate || (requesterCollectionGrant && requesterCollectionGrant.accessLevel >= 3) ) {
       // Verify the userId has accessLevel 1 on the Asset's Collection
-      const collectionObj = await Collection.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
+      const collectionObj = await CollectionService.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
       // Filter out users with incompatible grants (accessLevels != 1)
       const collectionUsers = collectionObj.grants.filter(g => g.accessLevel === 1)
       const collectionUserIds = collectionUsers.map(g => g.user.userId)
@@ -588,7 +588,7 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
     // is the requester's granted accessLevel high enough?
     if ( elevate || (requesterCollectionGrant && requesterCollectionGrant.accessLevel >= 3) ) {
       // Verify all the userIds have accessLevel 1 on the Asset's Collection
-      const collectionObj = await Collection.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
+      const collectionObj = await CollectionService.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
       let userIdsFromRequest = body
       if (userIdsFromRequest.length > 0) {
         // Filter out users with incompatible grants (accessLevels != 1)

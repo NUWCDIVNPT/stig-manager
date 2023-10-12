@@ -3,8 +3,8 @@
 const writer = require('../utils/writer')
 const config = require('../utils/config')
 const CollectionService = require(`../service/${config.database.type}/CollectionService`)
-const AssetSvc = require(`../service/${config.database.type}/AssetService`)
-const StigSvc = require(`../service/${config.database.type}/STIGService`)
+const AssetService = require(`../service/${config.database.type}/AssetService`)
+const STIGService = require(`../service/${config.database.type}/STIGService`)
 const Serialize = require(`../utils/serializers`)
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
@@ -733,14 +733,14 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
       switch (format) {
         case 'ckl-mono':
         case 'ckl-multi':
-          response = await AssetSvc.cklFromAssetStigs(arg.assetId, arg.stigs)
+          response = await AssetService.cklFromAssetStigs(arg.assetId, arg.stigs)
           break
         case 'cklb-mono':
         case 'cklb-multi':
-          response = await AssetSvc.cklbFromAssetStigs(arg.assetId, arg.stigs)
+          response = await AssetService.cklbFromAssetStigs(arg.assetId, arg.stigs)
           break
         case 'xccdf':
-          response = await AssetSvc.xccdfFromAssetStig(arg.assetId, arg.stigs[0].benchmarkId, arg.stigs[0].revisionStr)
+          response = await AssetService.xccdfFromAssetStig(arg.assetId, arg.stigs[0].benchmarkId, arg.stigs[0].revisionStr)
       }
       let data
       if (response.xmlJs) {
@@ -845,7 +845,7 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
   // Create an object that can have benchmarkId properties and values of revisionStr arrays
   let availableRevisions = {}
   if (requestedStigRevisionsArray.length) {
-    availableRevisions = await StigSvc.getRevisionStrsByBenchmarkIds(requestedStigRevisionsArray)
+    availableRevisions = await STIGService.getRevisionStrsByBenchmarkIds(requestedStigRevisionsArray)
   }
 
   // iterate through the request
@@ -853,7 +853,7 @@ async function processAssetStigRequests (assetStigRequests, collectionId, mode =
     const assetId = requested.assetId
     
     // Try to fetch asset as this user.
-    const assetResponse = await AssetSvc.getAsset(assetId, ['stigs'], false, userObject )
+    const assetResponse = await AssetService.getAsset(assetId, ['stigs'], false, userObject )
     // Does user have a grant permitting access to the asset?
     if (!assetResponse) {
       throw new SmError.PrivilegeError()
@@ -955,7 +955,7 @@ module.exports.writeStigPropsByCollectionStig = async function (req, res, next) 
     const benchmarkId = req.params.benchmarkId
     const assetIds = req.body.assetIds
     const defaultRevisionStr = req.body.defaultRevisionStr
-    const existingRevisions = await StigSvc.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+    const existingRevisions = await STIGService.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
     //if defaultRevisionStr is present, check that specified revision is valid for the benchmark
     if (defaultRevisionStr && defaultRevisionStr !== "latest" && existingRevisions.find(benchmark => benchmark.revisionStr === defaultRevisionStr) === undefined) {
       throw new SmError.UnprocessableError("The revisionStr is is not valid for the specified benchmarkId")
