@@ -1,6 +1,6 @@
 const writer = require('../utils/writer.js')
 const config = require('../utils/config')
-const Operation = require(`../service/${config.database.type}/OperationService`)
+const OperationService = require(`../service/${config.database.type}/OperationService`)
 const Asset = require(`./Asset`)
 const Collection = require(`./Collection`)
 const User = require(`./User`)
@@ -11,7 +11,7 @@ const SmError = require('../utils/error.js')
 
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
-    let dbConfigs = await Operation.getConfiguration()
+    let dbConfigs = await OperationService.getConfiguration()
     let version = {version: config.version}
     let commit = {commit: config.commit}
     let response = { ...version, ...commit, ...dbConfigs }
@@ -103,7 +103,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
         appdata = req.body
       }
       let options = []
-      let response = await Operation.replaceAppData(options, appdata, req.userObject, res )
+      let response = await OperationService.replaceAppData(options, appdata, req.userObject, res )
     }
     else {
       throw new SmError.PrivilegeError()
@@ -133,7 +133,7 @@ module.exports.getDetails = async function getDetails (req, res, next) {
   try {
     let elevate = req.query.elevate
     if ( elevate ) {
-      const response = await Operation.getDetails()
+      const response = await OperationService.getDetails()
       res.json(response)
     }
     else {
