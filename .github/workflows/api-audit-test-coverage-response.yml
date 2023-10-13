@@ -198,8 +198,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage-report
-      - name: Show Contents
-        run: ls -R
+      - name: Move lcov.info to api/source
+        run: mv lcov.info ./api/source/
+        
       - name: Analyze API with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
