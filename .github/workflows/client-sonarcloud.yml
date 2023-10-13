@@ -1,0 +1,47 @@
+name: Test Client, Generate Coverage, and Run SonarCloud Analysis
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "client/src/**"
+      - ".github/workflows/client-sonarcloud.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "client/src/**"
+      - ".github/workflows/client-sonarcloud.yml"
+
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+
+jobs:
+  SonarCloudAnalysis-Client:
+    name: SonarCloud Analysis client
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important to fetch all history for accurate blame information
+      - name: Analyze client with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+        with:
+          projectBaseDir: ./client/src
+          # Additional arguments for the sonarcloud scanner
+          args: -Dsonar.projectKey=Matte22_stig-manager
+            -Dsonar.organization=stig-manager
+            -Dsonar.sources=client/src
+            -Dsonar.inclusions=**/*.js,**/*.html
+            -Dsonar.exclusions=**/node_modules/**
+
+    #   This will fail the action if Quality Gate fails (leaving out for now )
+    #  - name: Check Quality Gate
+    #    uses: sonarsource/sonarqube-quality-gate-action@master
+    #    env:
+    #      SONAR_TOKEN:
