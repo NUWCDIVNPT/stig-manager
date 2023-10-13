@@ -842,7 +842,7 @@ async function addCollectionReview ( params ) {
 				selectionchange: function (sm) {
 					if (sm.getCount() == 1) { //single row selected
 						historyData.grid.enable()
-						loadResources(sm.getSelected())
+						loadResources(sm.getSelected().data.assetId, sm.grid.currentRuleId)
 						batchEditBtn.disable()
 					} else {
 						historyData.store.removeAll()
@@ -1204,7 +1204,7 @@ async function addCollectionReview ( params ) {
 							}
 							apiReview = await Ext.Ajax.requestPromise({
 								responseType: 'json',
-								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
+								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.grid.currentRuleId}`,
 								method: 'PATCH',
 								jsonData
 							})
@@ -1220,7 +1220,7 @@ async function addCollectionReview ( params ) {
 							}
 							apiReview = await Ext.Ajax.requestPromise({
 								responseType: 'json',
-								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.record.data.ruleId}`,
+								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${e.record.data.assetId}/${e.grid.currentRuleId}`,
 								method: 'PUT',
 								jsonData
 							})
@@ -1236,7 +1236,7 @@ async function addCollectionReview ( params ) {
 
 						// hack to reselect the record for setReviewsGridButtonStates()
 						e.grid.getSelectionModel().onRefresh()
-						loadResources(e.grid.getStore().getById(apiReview.assetId))
+						loadResources(e.record.data.assetId, e.grid.currentRuleId)
 
 						setReviewsGridButtonStates()
 		
@@ -1440,6 +1440,7 @@ async function addCollectionReview ( params ) {
 				reviewsGrid.getStore().loadData(colReviews)
 				reviewsGrid.setTitle(`Reviews of ${SM.he(record.data.ruleId)}`)
 				reviewsGrid.currentChecklistRecord = record
+				reviewsGrid.currentRuleId = record.data.ruleId
 				reviewsExportBtn.gridBasename = `${leaf.benchmarkId}-${record.data.ruleId}`
 			}
 			catch (e) {
@@ -1708,9 +1709,8 @@ async function addCollectionReview ( params ) {
 				}
 				const selections = sm.getSelections()
 				if (selections.length === 1) {
-					const record = selections[0]
 					await Ext.Ajax.requestPromise({
-						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+						url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${selections[0].data.assetId}/${grid.currentRuleId}`,
 						method: 'PATCH',
 						jsonData: {
 							status
@@ -1718,7 +1718,7 @@ async function addCollectionReview ( params ) {
 					})
 				}
 				if (selections.length > 1) {
-					const ruleIds = [selections[0].data.ruleId]
+					const ruleIds = [grid.currentRuleId]
 					const assetIds = selections.map( record => record.data.assetId)
 					const review = {status}
 					const jsonData = {
@@ -1742,7 +1742,7 @@ async function addCollectionReview ( params ) {
 				}
 
 				if (selections.length === 1) {
-					loadResources(selections[0])
+					loadResources(selections[0].data.assetId, grid.currentRuleId)
 				}
 				// ugly code follows
 				const record = groupGrid.getSelectionModel().getSelected()
@@ -1780,18 +1780,18 @@ async function addCollectionReview ( params ) {
 	/******************************************************/
 	// START Resources Panel
 	/******************************************************/
-		async function loadResources (record) {
+		async function loadResources (assetId, ruleId) {
 			let activeTab
 			try {
 				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
 				// activeTab.getEl().mask('Loading...')
 				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
-				attachmentsGrid.assetId = record.data.assetId
-				attachmentsGrid.ruleId = record.data.ruleId
+				attachmentsGrid.assetId = assetId
+				attachmentsGrid.ruleId = ruleId
         attachmentsGrid.getStore().removeAll()
 
 				let result = await Ext.Ajax.requestPromise({
-					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${record.data.assetId}/${record.data.ruleId}`,
+					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${assetId}/${ruleId}`,
 					method: 'GET',
 					params: {
 						projection: ['history']
