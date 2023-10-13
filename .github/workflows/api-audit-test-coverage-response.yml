@@ -208,7 +208,7 @@ jobs:
           projectBaseDir: ./api/source
           args: -Dsonar.projectKey=Matte22_stig-manager
             -Dsonar.organization=stig-manager
-            -Dsonar.sources=api/source
+         
             -Dsonar.inclusions=**/*.js
             -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
             -Dsonar.javascript.lcov.reportPaths=./lcov.info

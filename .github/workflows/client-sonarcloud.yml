@@ -36,7 +36,6 @@ jobs:
           # Additional arguments for the sonarcloud scanner
           args: -Dsonar.projectKey=Matte22_stig-manager
             -Dsonar.organization=stig-manager
-            -Dsonar.sources=client/src
             -Dsonar.inclusions=**/*.js,**/*.html
             -Dsonar.exclusions=**/node_modules/**
 
