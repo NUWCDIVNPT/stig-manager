@@ -34,7 +34,9 @@ jobs:
         with:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
-          args: -Dsonar.projectKey=Matte22_stig-manager
+          args:
+            -Dsonar.projectKey=Matte22_stig-manager:client
+            -Dsonar.projectName=Matte22_stig-manager - Client
             -Dsonar.organization=stig-manager
             -Dsonar.inclusions=**/*.js,**/*.html
             -Dsonar.exclusions=**/node_modules/**
