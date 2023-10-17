@@ -205,13 +205,13 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Needed to push to SonarCloud
         with:
           # Additional arguments for the sonarcloud scanner
           projectBaseDir: ./api/source
-          args: -Dsonar.projectKey=Matte22_stig-manager
+          args: -Dsonar.projectKey=stig-manager
+            -Dsonar.projectName=stig-manager-API
             -Dsonar.organization=stig-manager
-            -Dsonar.projectName=Matte22_stig-manager-API
             -Dsonar.inclusions=**/*.js
             -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
             -Dsonar.javascript.lcov.reportPaths=./lcov.info

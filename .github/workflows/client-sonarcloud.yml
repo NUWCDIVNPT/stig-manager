@@ -30,13 +30,13 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Needed to push to SonarCloud
         with:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
           args:
-            -Dsonar.projectKey=Matte22_stig-manager:client
-            -Dsonar.projectName=Matte22_stig-manager-Client
+            -Dsonar.projectKey=stig-manager:client
+            -Dsonar.projectName=stig-manager-Client
             -Dsonar.organization=stig-manager
             -Dsonar.inclusions=**/*.js,**/*.html
             -Dsonar.exclusions=**/node_modules/**
