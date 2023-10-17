@@ -5,28 +5,43 @@ on:
     branches:
       - main
     paths:
-      - 'api/source/**'
-      - 'test/api/**'
-      - 'Dockerfile'
-      - '.github/workflows/api-container-tests.yml'
+      - "api/source/**"
+      - "test/api/**"
+      - "Dockerfile"
+      - ".github/workflows/api-container-tests.yml"
 
 jobs:
   test_api:
-    name: Postman tests
+    name: Postman tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        container:
+          - name: "stig-manager"
+            build_arg: "node:lts-alpine"
+          - name: "stig-manager-ironbank"
+            # build_arg: "registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.16.0"
+            build_arg: "node:lts-alpine"
+        mysql_version: ["8.0.32", "8.0.33", "8.0.34"]
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Build image
+        uses: actions/checkout@v3
+      # - name: Login to Iron Bank
+      #   uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # pin@v2
+      #   with:
+      #     registry: registry1.dso.mil
+      #     username: ${{ secrets.IRONBANK_USERNAME }}
+      #     password: ${{ secrets.IRONBANK_CLI_TOKEN }}
+      - name: Build image for ${{ matrix.container.name }}
         id: image-build
         run: |
-          docker build -t stig-manager .
+          docker build -t ${{ matrix.container.name }} --build-arg BASE_IMAGE=${{ matrix.container.build_arg }} .
       - name: Run mock Keycloak
-        id: idp-run
+        id: id-run
         working-directory: ./test/api/mock-keycloak
         run: |
           python3 -m http.server 8080 &
-      - name: Run MySQL container
+      - name: Run MySQL container version ${{ matrix.mysql_version }}
         id: mysql-run
         run: |
           docker run -d --name stig-manager-db \
@@ -35,8 +50,8 @@ jobs:
           -e MYSQL_DATABASE=stigman \
           -e MYSQL_USER=stigman \
           -e MYSQL_PASSWORD=stigman \
-          mysql:8.0.21
-      - name: Run STIG Manager container
+          mysql:${{ matrix.mysql_version }}
+      - name: Run STIG Manager container ${{ matrix.container.name }}
         id: api-run
         run: |
           docker run -d --name stig-manager-api \
@@ -47,11 +62,12 @@ jobs:
           -e STIGMAN_DB_PASSWORD=stigman \
           -e STIGMAN_API_AUTHORITY=http://127.0.0.1:8080/auth/realms/stigman \
           -e STIGMAN_DEV_RESPONSE_VALIDATION=logOnly \
-          stig-manager
+          ${{ matrix.container.name }}
+
       - name: Install Newman reporter
         id: newman-reporter-install
         run: |
-          sudo npm install -g newman-reporter-htmlextra          
+          sudo npm install -g newman-reporter-htmlextra
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
       - name: Run Newman Collection LoadTestData
@@ -59,73 +75,74 @@ jobs:
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Run Newman Collection GETS
         id: newman-run-gets
         if: steps.newman-run-loadTestData.conclusion == 'success'
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Run Newman Collection Posts, Puts, Patches, Deletes
         id: newman-run-pppd
         if: steps.newman-run-loadTestData.conclusion == 'success'
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Run Newman Collection STIGS
         id: newman-run-stigs
         if: steps.newman-run-loadTestData.conclusion == 'success'
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Run Newman Collection LVL1 Cross-Boundary Tests
         id: newman-run-lvl1-cross-boundary
         if: steps.newman-run-loadTestData.conclusion == 'success'
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "LVL1 cross-boundary tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/lvl1Report.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "LVL1 cross-boundary tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/lvl1Report-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Run Newman Collection Additional Sundry Tests
         id: newman-run-additional-sundry
         if: steps.newman-run-loadTestData.conclusion == 'success'
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport.html | grep -A18 '┌─────'
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Upload Newman artifact
         id: artifact-upload
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
-          name: newman-htmlextra
+          name: newman-htmlextra-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}
           path: ./test/api/newman
       - name: Extract API container log
         id: api-log-extract
         if: ${{ always() }}
         working-directory: ./test/api
         run: |
-          docker logs stig-manager-api > api-log.json
+          docker logs stig-manager-api > api-log-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.json
       - name: Upload API log artifact
         uses: actions/upload-artifact@v3
         id: api-log-upload
         if: ${{ always() }}
         with:
-          name: api-log
-          path: ./test/api/api-log.json
+          name: api-log-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}
+          path: ./test/api/api-log-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.json
       - name: Collect all container logs on failure
         if: ${{ cancelled() || failure() }}
         uses: jwalton/gh-docker-logs@54a2a89cd6a2c929525f26ca67a7a4857a5dc1d9 # pin@v1
         with:
-          dest: './logs'
+          dest: "./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}"
       - name: Tar container logs
         if: ${{ cancelled() || failure() }}
-        run: tar cvzf ./logs.tgz ./logs
+        run: tar cvzf ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}
       - name: Upload container logs artifact
         if: ${{ cancelled() || failure() }}
         uses: actions/upload-artifact@master
         with:
-          name: logs.tgz
-          path: ./logs.tgz
+          name: logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz
+          path: ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz
+      
