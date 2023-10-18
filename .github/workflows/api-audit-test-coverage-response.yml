@@ -209,8 +209,8 @@ jobs:
         with:
           # Additional arguments for the sonarcloud scanner
           projectBaseDir: ./api/source
-          args: -Dsonar.projectKey=NUWCDIVNPT_stig-manager:api
-            -Dsonar.projectName=stig-manager-API
+          args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-api
+            -Dsonar.projectName=nuwcdivnpt_stig-manager-api
             -Dsonar.organization=nuwcdivnpt
             -Dsonar.inclusions=**/*.js
             -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
