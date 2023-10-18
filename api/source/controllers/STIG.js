@@ -3,7 +3,7 @@
 const config = require('../utils/config');
 const SmError = require('../utils/error');
 const parsers = require('../utils/parsers.js')
-const STIG = require(`../service/${config.database.type}/STIGService`)
+const STIGService = require(`../service/${config.database.type}/STIGService`)
 
 module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
   try {
@@ -22,7 +22,7 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
     if (benchmark.scap) {
       throw new SmError.UnprocessableError('SCAP Benchmarks are not imported.')
     }
-    const revision = await STIG.insertManualBenchmark(benchmark, clobber, res.svcStatus)
+    const revision = await STIGService.insertManualBenchmark(benchmark, clobber, res.svcStatus)
     res.json(revision)
   }
   catch(err) {
@@ -37,12 +37,12 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
     const revisionStr = req.params.revisionStr
     const force = req.query.force
     try {
-      const response = await STIG.getRevisionByString(benchmarkId, revisionStr, req.userObject, true)
+      const response = await STIGService.getRevisionByString(benchmarkId, revisionStr, req.userObject, true)
       if(response === undefined) {
         throw new SmError.NotFoundError('No matching revisionStr found.')
       }
-      const existingRevisions = await STIG.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
-      const stigAssigned = await STIG.getStigById(benchmarkId, req.userObject, true)
+      const existingRevisions = await STIGService.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
+      const stigAssigned = await STIGService.getStigById(benchmarkId, req.userObject, true)
       if (stigAssigned.collectionIds.length && existingRevisions.length == 1 && !force) {
         throw new SmError.UnprocessableError("The revisionStr is the last remaining revision for this benchmark, which is assigned to one or more Collections. Set force=true to force the delete")
       }      
@@ -50,7 +50,7 @@ module.exports.deleteRevisionByString = async function deleteRevisionByString (r
         throw new SmError.UnprocessableError("The revisionStr is pinned to one or more Collections. Set force=true to force the delete")
       }
       else {
-        await STIG.deleteRevisionByString(benchmarkId, revisionStr, res.svcStatus)
+        await STIGService.deleteRevisionByString(benchmarkId, revisionStr, res.svcStatus)
         res.json(response)
       }
     }
@@ -68,14 +68,14 @@ module.exports.deleteStigById = async function deleteStigById (req, res, next) {
     try {
       const benchmarkId = req.params.benchmarkId
       const force = req.query.force
-      const response = await STIG.getStigById(benchmarkId, req.userObject, true)
+      const response = await STIGService.getStigById(benchmarkId, req.userObject, true)
       if(response === undefined) {
         throw new SmError.NotFoundError('No matching benchmarkId found.')
       }
       if (response.collectionIds.length && !force) {
         throw new SmError.UnprocessableError("The benchmarkId is assigned to one or more Collections. Set force=true to force the delete")
       }
-      await STIG.deleteStigById(benchmarkId, res.svcStatus)
+      await STIGService.deleteStigById(benchmarkId, res.svcStatus)
       res.json(response)
     }
     catch (err) {
@@ -91,7 +91,7 @@ module.exports.getCci = async function getCci (req, res, next) {
   let cci = req.params.cci
   let projection = req.query.projection
   try {
-    let response = await STIG.getCci(cci, projection, req.userObject)
+    let response = await STIGService.getCci(cci, projection, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -103,7 +103,7 @@ module.exports.getCcisByRevision = async function getCcisByRevision (req, res, n
   let benchmarkId = req.params.benchmarkId
   let revisionStr = req.params.revisionStr
   try {
-    let response = await STIG.getCcisByRevision(benchmarkId, revisionStr, req.userObject)
+    let response = await STIGService.getCcisByRevision(benchmarkId, revisionStr, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -117,7 +117,7 @@ module.exports.getGroupByRevision = async function getGroupByRevision (req, res,
   let revisionStr = req.params.revisionStr
   let groupId = req.params.groupId
   try {
-    let response = await STIG.getGroupByRevision(benchmarkId, revisionStr, groupId, projection, req.userObject)
+    let response = await STIGService.getGroupByRevision(benchmarkId, revisionStr, groupId, projection, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -130,7 +130,7 @@ module.exports.getGroupsByRevision = async function getGroupsByRevision (req, re
   let benchmarkId = req.params.benchmarkId
   let revisionStr = req.params.revisionStr
   try {
-    let response = await STIG.getGroupsByRevision(benchmarkId, revisionStr, projection, req.userObject)
+    let response = await STIGService.getGroupsByRevision(benchmarkId, revisionStr, projection, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -143,7 +143,7 @@ module.exports.getRevisionByString = async function getRevisionByString (req, re
   const revisionStr = req.params.revisionStr
   const elevate = req.query.elevate
   try {
-    const response = await STIG.getRevisionByString(benchmarkId, revisionStr, req.userObject, elevate)
+    const response = await STIGService.getRevisionByString(benchmarkId, revisionStr, req.userObject, elevate)
     res.json(response)
   }
   catch(err) {
@@ -155,7 +155,7 @@ module.exports.getRevisionsByBenchmarkId = async function getRevisionsByBenchmar
   const benchmarkId = req.params.benchmarkId
   const elevate = req.query.elevate
   try {
-    const response = await STIG.getRevisionsByBenchmarkId(benchmarkId, req.userObject, elevate)
+    const response = await STIGService.getRevisionsByBenchmarkId(benchmarkId, req.userObject, elevate)
     res.json(response)
   }
   catch(err) {
@@ -167,7 +167,7 @@ module.exports.getRuleByRuleId = async function getRuleByRuleId (req, res, next)
   let projection = req.query.projection
   let ruleId = req.params.ruleId
   try {
-    let response = await STIG.getRuleByRuleId(ruleId, projection, req.userObject)
+    let response = await STIGService.getRuleByRuleId(ruleId, projection, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -181,7 +181,7 @@ module.exports.getRuleByRevision = async function getRulesByRevision (req, res, 
   let revisionStr = req.params.revisionStr
   let ruleId = req.params.ruleId
   try {
-    let response = await STIG.getRuleByRevision(benchmarkId, revisionStr, ruleId, projection, req.userObject)
+    let response = await STIGService.getRuleByRevision(benchmarkId, revisionStr, ruleId, projection, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -194,7 +194,7 @@ module.exports.getRulesByRevision = async function getRulesByRevision (req, res,
   let benchmarkId = req.params.benchmarkId
   let revisionStr = req.params.revisionStr
   try {
-    let response = await STIG.getRulesByRevision(benchmarkId, revisionStr, projection, req.userObject)
+    let response = await STIGService.getRulesByRevision(benchmarkId, revisionStr, projection, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -207,7 +207,7 @@ module.exports.getSTIGs = async function getSTIGs (req, res, next) {
   const elevate = req.query.elevate
   const projection = req.query.projection || []
   try {
-    let response = await STIG.getSTIGs(title, projection, req.userObject, elevate)
+    let response = await STIGService.getSTIGs(title, projection, req.userObject, elevate)
     res.json(response)
   }
   catch(err) {
@@ -219,7 +219,7 @@ module.exports.getStigById = async function getStigById (req, res, next) {
   let benchmarkId = req.params.benchmarkId
   const elevate = req.query.elevate
   try {
-    let response = await STIG.getStigById(benchmarkId, req.userObject, elevate)
+    let response = await STIGService.getStigById(benchmarkId, req.userObject, elevate)
     res.json(response)
   }
   catch(err) {

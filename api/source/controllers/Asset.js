@@ -2,8 +2,8 @@
 
 const writer = require('../utils/writer');
 const config = require('../utils/config')
-const Asset = require(`../service/${config.database.type}/AssetService`);
-const Collection = require(`../service/${config.database.type}/CollectionService`);
+const AssetService = require(`../service/${config.database.type}/AssetService`);
+const CollectionService = require(`../service/${config.database.type}/CollectionService`);
 const dbUtils = require(`../service/${config.database.type}/utils`)
 const {XMLBuilder} = require("fast-xml-parser")
 const SmError = require('../utils/error')
@@ -18,7 +18,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
 
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
       try {
-        let asset = await Asset.createAsset( {body, projection, elevate, userObject: req.userObject, svcStatus: res.svcStatus})
+        let asset = await AssetService.createAsset( {body, projection, elevate, userObject: req.userObject, svcStatus: res.svcStatus})
         res.status(201).json(asset)
       }
       catch (err) {
@@ -48,7 +48,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     let projection = req.query.projection
 
     // fetch the Asset for access control checks and the response
-    let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, projection, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -56,7 +56,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      await Asset.deleteAsset( assetId, projection, elevate, req.userObject )
+      await AssetService.deleteAsset( assetId, projection, elevate, req.userObject )
       res.json(assetToAffect)
     }
     else {
@@ -75,7 +75,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
     let elevate = req.query.elevate
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -83,7 +83,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await Asset.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject )
+      let response = await AssetService.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -101,7 +101,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
     let elevate = req.query.elevate
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, undefined, elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, undefined, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -109,7 +109,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await Asset.removeStigsFromAsset(assetId, elevate, req.userObject )
+      let response = await AssetService.removeStigsFromAsset(assetId, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -156,7 +156,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
     let elevate = req.query.elevate
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -164,7 +164,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await Asset.removeUsersFromAssetStig(assetId, benchmarkId, elevate, req.userObject )
+      let response = await AssetService.removeUsersFromAssetStig(assetId, benchmarkId, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -177,7 +177,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
 }
 
 module.exports.exportAssets = async function exportAssets (projection, elevate, userObject) {
-  let assets =  await Asset.getAssets(null, null, null, null, null, null, projection, elevate, userObject )
+  let assets =  await AssetService.getAssets(null, null, null, null, null, null, projection, elevate, userObject )
   return assets
 } 
 
@@ -188,7 +188,7 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     let elevate = req.query.elevate
     
     // If this user has no grants permitting access to the asset, the response will be undefined
-    let response = await Asset.getAsset(assetId, projection, elevate, req.userObject )
+    let response = await AssetService.getAsset(assetId, projection, elevate, req.userObject )
     if (!response) {
       throw new SmError.PrivilegeError()
     }
@@ -234,7 +234,7 @@ module.exports.getAssets = async function getAssets (req, res, next) {
           }
         }
       }
-      let response = await Asset.getAssets(collectionId, {labelIds, labelNames, labelMatch}, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
+      let response = await AssetService.getAssets(collectionId, {labelIds, labelNames, labelMatch}, name, nameMatch, benchmarkId, metadata, projection, elevate, req.userObject )
       res.json(response)
     }
     else {
@@ -250,7 +250,7 @@ module.exports.getStigsByAsset = async function getStigsByAsset (req, res, next)
   try {
     let assetId = req.params.assetId
     let elevate = req.query.elevate
-    let response = await Asset.getStigsByAsset(assetId, elevate, req.userObject )
+    let response = await AssetService.getStigsByAsset(assetId, elevate, req.userObject )
     res.json(response)
   }
   catch (err) {
@@ -278,7 +278,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const revisionStr = req.params.revisionStr
     const format = req.query.format || 'json'
     if (await dbUtils.userHasAssetStigs(assetId, [benchmarkId], false, req.userObject)) {
-      const response = await Asset.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
+      const response = await AssetService.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
         res.json(response)
       }
@@ -337,7 +337,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
     const format = req.query.format //default of .ckl provided by EOV
 
     // If this user has no grants permitting access to the asset, the response will be undefined
-    const assetResponse = await Asset.getAsset(assetId, ['stigs'], false, req.userObject )
+    const assetResponse = await AssetService.getAsset(assetId, ['stigs'], false, req.userObject )
     if (!assetResponse) {
       throw new SmError.PrivilegeError()
     }
@@ -355,7 +355,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
 
     const stigs = requestedBenchmarkIds.map( benchmarkId => ({benchmarkId, revisionStr: 'latest'}) )
 
-    const response = await Asset.getChecklistByAsset(assetId, stigs, format, false, req.userObject )
+    const response = await AssetService.getChecklistByAsset(assetId, stigs, format, false, req.userObject )
 
     if (format === 'cklb') {
       writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}.cklb`, 'application/json') 
@@ -394,7 +394,7 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || collectionGrant ) {
-        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, {labelIds, labelNames, labelMatch}, projection, elevate, req.userObject )
+        let response = await AssetService.getAssetsByStig( collectionId, benchmarkId, {labelIds, labelNames, labelMatch}, projection, elevate, req.userObject )
         res.json(response)
     }
     else {
@@ -414,7 +414,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
     const body = req.body
 
     // If this user has no grants permitting access to the asset, the response will be undefined
-    const currentAsset = await Asset.getAsset(assetId, projection, elevate, req.userObject )
+    const currentAsset = await AssetService.getAsset(assetId, projection, elevate, req.userObject )
     if (!currentAsset) {
       throw new SmError.PrivilegeError('User has insufficient privilege to modify this asset.')
     }
@@ -433,7 +433,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
         throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`)
       }
     }
-    const response = await Asset.updateAsset({
+    const response = await AssetService.updateAsset({
       assetId,
       body,
       projection,
@@ -458,11 +458,11 @@ module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res,
 
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let collection = await Collection.getCollection( collectionId, ['assets'], elevate, req.userObject)
+      let collection = await CollectionService.getCollection( collectionId, ['assets'], elevate, req.userObject)
       let collectionAssets = collection.assets.map( a => a.assetId)
       if (assetIds.every( a => collectionAssets.includes(a))) {
-        await Asset.attachAssetsToStig( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
-        let response = await Asset.getAssetsByStig( collectionId, benchmarkId, null, projection, elevate, req.userObject )
+        await AssetService.attachAssetsToStig( collectionId, benchmarkId, assetIds, projection, elevate, req.userObject )
+        let response = await AssetService.getAssetsByStig( collectionId, benchmarkId, null, projection, elevate, req.userObject )
         res.json(response)
       }
       else {
@@ -485,7 +485,7 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
     let elevate = req.query.elevate
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -493,7 +493,7 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await Asset.attachStigToAsset(assetId, benchmarkId, elevate, req.userObject )
+      let response = await AssetService.attachStigToAsset(assetId, benchmarkId, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -512,7 +512,7 @@ module.exports.attachStigsToAsset = async function attachStigsToAsset (req, res,
     let body = req.body
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, [], elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, [], elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -520,7 +520,7 @@ module.exports.attachStigsToAsset = async function attachStigsToAsset (req, res,
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await Asset.attachStigsToAsset(assetId, body, elevate, req.userObject )
+      let response = await AssetService.attachStigsToAsset(assetId, body, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -540,7 +540,7 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
     let elevate = req.query.elevate
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, projection, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -549,7 +549,7 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
     // is the requester's granted accessLevel high enough?
     if ( elevate || (requesterCollectionGrant && requesterCollectionGrant.accessLevel >= 3) ) {
       // Verify the userId has accessLevel 1 on the Asset's Collection
-      const collectionObj = await Collection.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
+      const collectionObj = await CollectionService.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
       // Filter out users with incompatible grants (accessLevels != 1)
       const collectionUsers = collectionObj.grants.filter(g => g.accessLevel === 1)
       const collectionUserIds = collectionUsers.map(g => g.user.userId)
@@ -559,7 +559,7 @@ module.exports.setAssetStigGrant = async function setAssetStigGrant (req, res, n
         // Can only map Users with an existing grant
         throw new SmError.ClientError(`The user has an incompatible or missing grant in collectionId ${body.collectionId}.`)
       }
-      let response = await Asset.setAssetStigGrant(assetId, benchmarkId, userId, elevate, req.userObject )
+      let response = await AssetService.setAssetStigGrant(assetId, benchmarkId, userId, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -579,7 +579,7 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
     let elevate = req.query.elevate
 
     // fetch the Asset for access control checks
-    let assetToAffect = await Asset.getAsset(assetId, projection, elevate, req.userObject)
+    let assetToAffect = await AssetService.getAsset(assetId, projection, elevate, req.userObject)
     // can the user fetch this Asset?
     if (!assetToAffect) {
       throw new SmError.PrivilegeError()
@@ -588,7 +588,7 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
     // is the requester's granted accessLevel high enough?
     if ( elevate || (requesterCollectionGrant && requesterCollectionGrant.accessLevel >= 3) ) {
       // Verify all the userIds have accessLevel 1 on the Asset's Collection
-      const collectionObj = await Collection.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
+      const collectionObj = await CollectionService.getCollection(assetToAffect.collection.collectionId, ['grants'], elevate, req.userObject)
       let userIdsFromRequest = body
       if (userIdsFromRequest.length > 0) {
         // Filter out users with incompatible grants (accessLevels != 1)
@@ -601,7 +601,7 @@ module.exports.setAssetStigGrants = async function setAssetStigGrants (req, res,
           throw new SmError.ClientError(`One or more users have incompatible or missing grants in collectionId ${body.collectionId}.`)
         }
       }
-      let response = await Asset.setAssetStigGrants(assetId, benchmarkId, body, elevate, req.userObject )
+      let response = await AssetService.setAssetStigGrants(assetId, benchmarkId, body, elevate, req.userObject )
       res.json(response)
       }
     else {
@@ -621,7 +621,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
     const body = req.body
 
     // If this user has no grants permitting access to the asset, the response will be undefined
-    const currentAsset = await Asset.getAsset(assetId, projection, elevate, req.userObject )
+    const currentAsset = await AssetService.getAsset(assetId, projection, elevate, req.userObject )
     if (!currentAsset) {
       throw new SmError.PrivilegeError('User has insufficient privilege to modify this asset.')
     }
@@ -640,7 +640,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
         throw new SmError.PrivilegeError(`User has insufficient privilege in collectionId ${body.collectionId} to transfer this asset.`)
       }
     }
-    const response = await Asset.updateAsset({
+    const response = await AssetService.updateAsset({
       assetId,
       body,
       projection,
@@ -662,7 +662,7 @@ async function getAssetIdAndCheckPermission(request) {
   let assetId = request.params.assetId
 
   // fetch the Asset for access control checks and the response
-  let assetToAffect = await Asset.getAsset(assetId, [], elevate, request.userObject)
+  let assetToAffect = await AssetService.getAsset(assetId, [], elevate, request.userObject)
   // can the user fetch this Asset?
   if (!assetToAffect) {
     throw new SmError.PrivilegeError()
@@ -679,7 +679,7 @@ async function getAssetIdAndCheckPermission(request) {
 module.exports.getAssetMetadata = async function (req, res, next) {
   try {
     let assetId = await getAssetIdAndCheckPermission(req)
-    let result = await Asset.getAssetMetadata(assetId, req.userObject)
+    let result = await AssetService.getAssetMetadata(assetId, req.userObject)
     res.json(result)
   }
   catch (err) {
@@ -691,8 +691,8 @@ module.exports.patchAssetMetadata = async function (req, res, next) {
   try {
     let assetId = await getAssetIdAndCheckPermission(req)
     let metadata = req.body
-    await Asset.patchAssetMetadata(assetId, metadata)
-    let result = await Asset.getAssetMetadata(assetId)
+    await AssetService.patchAssetMetadata(assetId, metadata)
+    let result = await AssetService.getAssetMetadata(assetId)
     res.json(result)
   }
   catch (err) {
@@ -704,8 +704,8 @@ module.exports.putAssetMetadata = async function (req, res, next) {
   try {
     let assetId = await getAssetIdAndCheckPermission(req)
     let body = req.body
-    await Asset.putAssetMetadata(assetId, body)
-    let result = await Asset.getAssetMetadata(assetId)
+    await AssetService.putAssetMetadata(assetId, body)
+    let result = await AssetService.getAssetMetadata(assetId)
     res.json(result)
   }
   catch (err) {
@@ -716,7 +716,7 @@ module.exports.putAssetMetadata = async function (req, res, next) {
 module.exports.getAssetMetadataKeys = async function (req, res, next) {
   try {
     let assetId = await getAssetIdAndCheckPermission(req)
-    let result = await Asset.getAssetMetadataKeys(assetId, req.userObject)
+    let result = await AssetService.getAssetMetadataKeys(assetId, req.userObject)
     if (!result) {
       throw new SmError.NotFoundError('metadata keys not found')
     }
@@ -731,7 +731,7 @@ module.exports.getAssetMetadataValue = async function (req, res, next) {
   try {
     let assetId = await getAssetIdAndCheckPermission(req)
     let key = req.params.key
-    let result = await Asset.getAssetMetadataValue(assetId, key, req.userObject)
+    let result = await AssetService.getAssetMetadataValue(assetId, key, req.userObject)
     if (!result) { 
       throw new SmError.NotFoundError('metadata key not found')
     }
@@ -747,7 +747,7 @@ module.exports.putAssetMetadataValue = async function (req, res, next) {
     let assetId = await getAssetIdAndCheckPermission(req)
     let key = req.params.key
     let value = req.body
-    let result = await Asset.putAssetMetadataValue(assetId, key, value)
+    let result = await AssetService.putAssetMetadataValue(assetId, key, value)
     res.status(204).send()
   }
   catch (err) {
@@ -761,7 +761,7 @@ module.exports.deleteAssetMetadataKey = async function (req, res, next) {
     let assetId = await getAssetIdAndCheckPermission(req)
     let key = req.params.key
 
-    let result = await Asset.deleteAssetMetadataKey(assetId, key, req.userObject)
+    let result = await AssetService.deleteAssetMetadataKey(assetId, key, req.userObject)
     res.status(204).send()
   }
   catch (err) {
