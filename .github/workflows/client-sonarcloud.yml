@@ -35,9 +35,9 @@ jobs:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
           args:
-            -Dsonar.projectKey=stig-manager:client
+            -Dsonar.projectKey=NUWCDIVNPT_stig-manager:client
             -Dsonar.projectName=stig-manager-Client
-            -Dsonar.organization=stig-manager
+            -Dsonar.organization=nuwcdivnpt
             -Dsonar.inclusions=**/*.js,**/*.html
             -Dsonar.exclusions=**/node_modules/**
 
