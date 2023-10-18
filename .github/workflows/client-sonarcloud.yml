@@ -30,7 +30,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Needed to push to SonarCloud
+          SONAR_TOKEN: ${{ secrets.CLIENT_SONAR_TOKEN }} # Needed to push to SonarCloud
         with:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
