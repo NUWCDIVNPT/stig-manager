@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         container:
-          - name: "stig-manager"
+          - name: "stig-manager-api"
             build_arg: "node:lts-alpine"
           - name: "stig-manager-ironbank"
             build_arg: "registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.16.0"
