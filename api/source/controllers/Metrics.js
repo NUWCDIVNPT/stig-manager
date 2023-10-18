@@ -1,5 +1,5 @@
 const config = require('../utils/config')
-const MetricsSvc = require(`../service/${config.database.type}/MetricsService`)
+const MetricsService = require(`../service/${config.database.type}/MetricsService`)
 const Collection = require('./Collection')
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
@@ -17,7 +17,7 @@ async function getCollectionMetrics (req, res, next, {style, aggregation, firstR
       assetIds: req.query.assetId,
       benchmarkIds: req.query.benchmarkId,
     }
-    const rows = await MetricsSvc.queryMetrics({
+    const rows = await MetricsService.queryMetrics({
       inPredicates,
       userId: req.userObject.userId,
       style,
