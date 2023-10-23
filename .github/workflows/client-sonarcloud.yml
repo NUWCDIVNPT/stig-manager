@@ -1,18 +1,10 @@
-name: Test Client, Generate Coverage, and Run SonarCloud Analysis
+name: Client SonarCloud CI
+
 on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "client/src/**"
-      - ".github/workflows/client-sonarcloud.yml"
-  push:
-    branches:
-      - main
-    paths:
-      - "client/src/**"
-      - ".github/workflows/client-sonarcloud.yml"
+  workflow_run:
+    workflows: ["Test API, Generate Coverage, and Validate Responses"]
+    types:
+      - completed
 
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
