@@ -17,9 +17,9 @@ jobs:
     strategy:
       matrix:
         container:
-          - name: "stig-manager:alpine"
+          - name: "stig-manager-alpine"
             build_arg: "node:lts-alpine"
-          - name: "stig-manager:ironbank"
+          - name: "stig-manager-ironbank"
             build_arg: "registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.16.0"
         mysql_version: ["8.0.32", "8.0.33", "8.0.34"]
     steps:
