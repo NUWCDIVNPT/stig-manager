@@ -145,6 +145,7 @@ uglifyjs \
 'SM/Library.js' \
 'SM/StigRevision.js' \
 'SM/Inventory.js' \
+'SM/AssetSelection.js' \
 'library.js' \
 'userAdmin.js' \
 'collectionAdmin.js' \
