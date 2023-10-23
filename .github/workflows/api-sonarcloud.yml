@@ -2,9 +2,8 @@ name: Api SonarCloud CI
 
 on:
     workflow_run:
-      workflows: ["Test API, Generate Coverage, and Validate Responses"]
-      types:
-        - completed
+      workflows: [Test API, Generate Coverage, and Validate Responses]
+      types: [completed]
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
