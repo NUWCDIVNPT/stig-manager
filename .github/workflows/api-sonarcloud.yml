@@ -2,15 +2,16 @@ name: Api SonarCloud CI
 
 on:
     workflow_run:
-      workflows: [Test API Generate Coverage and Validate Responses]
-      types: [completed]
+        workflows: ["Test API Generate Coverage and Validate Responses"]
+        types: [completed]
+        branches: [main]
+
 permissions:
   pull-requests: read # allows SonarCloud to deWcorate PRs with analysis results
 
 jobs:
     SonarCloudAnalysis-API:
         name: SonarCloud Analysis API
-        # Note: No need for 'needs: test_api' since it's in another workflow now
         runs-on: ubuntu-latest
         steps:
           - name: Checkout repository
