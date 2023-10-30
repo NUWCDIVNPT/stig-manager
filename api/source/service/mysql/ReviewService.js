@@ -614,9 +614,10 @@ const writeQueries = {
     autoResult json,
     statusId int,
     statusText varchar(255),
-    PRIMARY KEY (ruleId)
+    PRIMARY KEY (ruleId),
+    UNIQUE KEY (\`version\`, checkDigest)
   ) 
-    SELECT
+    REPLACE SELECT
       jt.ruleId,
       jtrvcd.version,
       jtrvcd.checkDigest,
