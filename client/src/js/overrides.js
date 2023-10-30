@@ -644,7 +644,17 @@ Ext.override(Ext.form.ComboBox, {
         Ext.form.ComboBox.superclass.setValue.call(this, text);
         this.value = v;
         return this;
-    }
+    },
+    onSelect : function(record, index){
+        if(this.fireEvent('beforeselect', this, record, index) !== false){
+            this.setValue(record.data[this.valueField || this.displayField]);
+            this.collapse();
+            if (!this.fireSelectOnSetValue) {
+                this.fireEvent('select', this, record, index);
+            }
+        }
+    },
+
 });
 // END enable comboBox setValue() to fire the select event
 

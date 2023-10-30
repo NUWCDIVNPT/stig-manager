@@ -330,6 +330,9 @@
   margin-left: 3px;
   white-space: nowrap
 }
+.sm-jumbo-sprite {
+	font-size: 12px;
+}
 .sm-diff-sprite {
   background-color: hsl(207deg 100% 84%);
   color: #000;
@@ -2133,4 +2136,68 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
     vertical-align: bottom;
     margin-top: 0px;
     margin-bottom: 0px;
+}
+.sm-add-assignment-icon {
+  background-image: url(../img/add-assignment.svg);
+  background-size: 32px 32px;
+  background-repeat: no-repeat;
+}
+.x-item-disabled .sm-add-assignment-icon, .x-item-disabled .sm-remove-assignment-icon {
+  filter: grayscale(1);
+}
+.sm-remove-assignment-icon {
+  background-image: url(../img/remove-assignment.svg);
+  background-size: 32px 32px;
+  background-repeat: no-repeat;
+}
+.x-dd-drop-nodrop .x-dd-drop-icon {
+  background-image: url("../img/remove.svg");
+  background-size: 16px 16px;
+}
+.x-dd-drop-ok .x-dd-drop-icon {
+  background-image: url("../img/add.svg");
+  background-size: 16px 16px;
+}
+
+.x-dd-drop-ok-add .x-dd-drop-icon {
+  background-image: url("../img/add.svg");
+  background-size: 16px 16px;
+}
+.sm-round-panel .x-panel-header.sm-selections-panel-header {
+  background-color: #c3deab;
+}
+.sm-fieldset-title-with-icon {
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  padding-left: 20px;
+}
+.sm-stig-information-title {
+  background-image: url(../img/shield-green-check.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14x;
+  padding-left: 20px;
+
+}
+.sm-asset-assignments-title {
+  background-image: url(../img/target.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  padding-left: 20px;
+}
+.sm-label-title {
+  background-image: url(../img/label.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  padding-left: 20px;
+}
+
+.sm-grid3-draggable .x-grid3-row-selected .x-grid3-td-checker *{
+  cursor: default;
+}
+
+.sm-grid3-draggable .x-grid3-row-selected *, .sm-grid3-draggable .x-grid3-row-selected {
+  cursor: grab;
+}
+.sm-grabbing *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected {
+  cursor: url("../img/drag-drop-light.svg"), grabbing;
 }

@@ -1365,18 +1365,6 @@ td.sort-asc .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.x-grid3-hd-men
     background-color: #181a1b
 }
 
-.x-dd-drop-nodrop .x-dd-drop-icon {
-    background-image: url("../ext/resources/images/default/dd/drop-no.gif")
-}
-
-.x-dd-drop-ok .x-dd-drop-icon {
-    background-image: url("../ext/resources/images/default/dd/drop-yes.gif")
-}
-
-.x-dd-drop-ok-add .x-dd-drop-icon {
-    background-image: url("../ext/resources/images/default/dd/drop-add.gif")
-}
-
 .x-view-selector {
     background-color: #2f3335;
     border-color: #52585c
@@ -3184,3 +3172,10 @@ embed[type="application/pdf"] {
 .sm-diff-del {
     background-color: hsl(0deg 71% 25%)
 }
+.sm-round-panel .x-panel-header.sm-selections-panel-header {
+	background-color: #425722;
+}
+.sm-grabbing *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected {
+    cursor: url("../img/drag-drop-dark.svg"), grabbing;
+}
+  
