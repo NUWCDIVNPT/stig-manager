@@ -9,8 +9,8 @@ on:
       - "client/src/css/**"
       - "client/src/serviceWorker.js"
       - ".github/workflows/client-sonarcloud.yml"
-    paths-ignore:
-      - "client/src/js/third-party/node_modules/**"
+      - "!client/src/js/third-party/node_modules/**"
+
   push:
     branches:
       - main
@@ -19,8 +19,7 @@ on:
       - "client/src/css/**"
       - "client/src/serviceWorker.js"
       - ".github/workflows/client-sonarcloud.yml"
-    paths-ignore:
-      - "client/src/js/third-party/node_modules/**"
+      - "!client/src/js/third-party/node_modules/**"
 
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results

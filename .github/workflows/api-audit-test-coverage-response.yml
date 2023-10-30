@@ -9,8 +9,8 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
-    paths-ignore:
-      - "api/source/node_modules/**"
+      - "!api/source/node_modules/**"
+
   push:
     branches:
       - main
@@ -19,8 +19,8 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
-    paths-ignore:
-      - "api/source/node_modules/**"
+      - "!api/source/node_modules/**"
+
 
 env:
   STIGMAN_API_PORT: 64001
