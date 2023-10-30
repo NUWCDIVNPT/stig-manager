@@ -1333,29 +1333,29 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   return (rows[0])
 }
 
-exports.attachStigToAsset = async function (assetId, benchmarkId, elevate, userObject, svcStatus = {} ) {
+
+exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId, elevate, userObject, svcStatus = {}} ) {
 
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
     async function transaction () {
       await connection.query('START TRANSACTION')
       const sqlInsert = `INSERT IGNORE INTO stig_asset_map (assetId, benchmarkId) VALUES (?, ?)`
-      const resultInsert = await dbUtils.pool.query(sqlInsert, [assetId, benchmarkId])
+      const resultInsert = await connection.query(sqlInsert, [assetId, benchmarkId])
       if (resultInsert[0].affectedRows != 0) {
         // Inserted a new row, so update stats and default rev
-        await dbUtils.updateStatsAssetStig( connection, {
+        await dbUtils.updateStatsAssetStig(connection, {
           assetId: assetId,
           benchmarkId: benchmarkId
         })
-        await dbUtils.updateDefaultRev(null, {})
+        await dbUtils.updateDefaultRev(connection, {})
       }   
       await connection.commit()  
     }
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
     //Transaction complete, now get the updated stig_asset_map rows
-    const rows = await connection.queryStigsByAsset( {
+    const rows = await _this.queryStigsByAsset( {
       assetId: assetId
     }, elevate, userObject)
     return (rows)          
