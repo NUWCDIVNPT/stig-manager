@@ -9,6 +9,8 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
+    paths-ignore:
+      - "api/source/node_modules/**"
   push:
     branches:
       - main
@@ -17,6 +19,8 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
+    paths-ignore:
+      - "api/source/node_modules/**"
 
 env:
   STIGMAN_API_PORT: 64001
@@ -205,7 +209,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.API_SONAR_TOKEN }} # Needed to push to SonarCloud
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }} # Needed to push to SonarCloud
         with:
           # Additional arguments for the sonarcloud scanner
           projectBaseDir: ./api/source

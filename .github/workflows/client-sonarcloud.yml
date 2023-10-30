@@ -5,14 +5,22 @@ on:
     branches:
       - main
     paths:
-      - "client/src/**"
+      - "client/src/js/**"
+      - "client/src/css/**"
+      - "client/src/serviceWorker.js"
       - ".github/workflows/client-sonarcloud.yml"
+    paths-ignore:
+      - "client/src/js/third-party/node_modules/**"
   push:
     branches:
       - main
     paths:
-      - "client/src/**"
+      - "client/src/js/**"
+      - "client/src/css/**"
+      - "client/src/serviceWorker.js"
       - ".github/workflows/client-sonarcloud.yml"
+    paths-ignore:
+      - "client/src/js/third-party/node_modules/**"
 
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
@@ -22,6 +30,7 @@ jobs:
     name: SonarCloud Analysis client
     runs-on: ubuntu-latest
     steps:
+      #checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -30,15 +39,14 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.CLIENT_SONAR_TOKEN }} # Needed to push to SonarCloud
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_CLIENT }} # Needed to push to SonarCloud
         with:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
-          args:
-            -Dsonar.projectKey=nuwcdivnpt_stig-manager-client
+          args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-client
             -Dsonar.projectName=nuwcdivnpt_stig-manager-client
             -Dsonar.organization=nuwcdivnpt
-            -Dsonar.inclusions=**/*.js,**/*.html
+            -Dsonar.inclusions=**/*.js,**/*.html,**/*.css
             -Dsonar.exclusions=**/node_modules/**
 
     #   This will fail the action if Quality Gate fails (leaving out for now )
