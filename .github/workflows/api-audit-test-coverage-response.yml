@@ -9,7 +9,6 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
-      - "!api/source/node_modules/**"
 
   push:
     branches:
@@ -19,8 +18,6 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
-      - "!api/source/node_modules/**"
-
 
 env:
   STIGMAN_API_PORT: 64001
@@ -204,7 +201,7 @@ jobs:
           name: coverage-report
       - name: Move lcov.info to api/source
         run: mv lcov.info ./api/source/
-        
+
       - name: Analyze API with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
