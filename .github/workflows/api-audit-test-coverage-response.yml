@@ -1,4 +1,4 @@
-name: Test Suite
+name: Test API Generate Coverage, and Run SonarCloud Analysis
 on:
   workflow_dispatch:
   pull_request:
@@ -6,9 +6,18 @@ on:
       - main
       - test-coverage
     paths:
-      - 'api/source/**'
-      - 'test/api/**'
-      - '.github/workflows/api-audit-test-coverage-response.yml'
+      - "api/source/**"
+      - "test/api/**"
+      - ".github/workflows/api-audit-test-coverage-response.yml"
+
+  push:
+    branches:
+      - main
+      - test-coverage
+    paths:
+      - "api/source/**"
+      - "test/api/**"
+      - ".github/workflows/api-audit-test-coverage-response.yml"
 
 env:
   STIGMAN_API_PORT: 64001
@@ -21,6 +30,9 @@ env:
   STIGMAN_SWAGGER_REDIRECT: http://localhost:64001/api-docs/oauth2-redirect.html
   STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
   NODE_V8_COVERAGE: /home/runner/work/stig-manager/stig-manager/api/source/coverage/tmp/
+
+permissions:
+  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
   npm_audit:
@@ -73,7 +85,7 @@ jobs:
       - name: Install Newman reporter
         id: newman-reporter-install
         run: |
-          sudo npm install -g newman-reporter-htmlextra                
+          sudo npm install -g newman-reporter-htmlextra
       - name: Run app and echo pid
         working-directory: ./api/source
         run: sh -c 'echo $$ > /tmp/test.pid ; exec c8 -r html node index.js > api-log.json 2>&1' &
@@ -122,15 +134,15 @@ jobs:
         working-directory: ./test/api
         run: |
           set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport.html | grep -A18 '┌─────'             
+          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport.html | grep -A18 '┌─────'
       - name: Kill child pid
         working-directory: ./api/source
         run: kill -SIGINT $(ps -ef --ppid `cat /tmp/test.pid` -o pid= )
       - name: Wait until c8 process ends, or 60 seconds, whichever is shorter.
         run: timeout 60 tail --pid=`cat /tmp/test.pid` -f /dev/null
-      - name: run c8 text report
+      - name: run c8 text/lcov report
         working-directory: ./api/source
-        run: c8 report -r text
+        run: c8 report -r lcov -r text
       - name: Upload Newman artifact
         id: artifact-upload-newman
         uses: actions/upload-artifact@v3
@@ -174,3 +186,39 @@ jobs:
         with:
           name: response-validation
           path: ./logs/response-validation.json
+  SonarCloudAnalysis-API:
+    name: SonarCloud Analysis API
+    needs: test_api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important to fetch all history for accurate blame information
+      - name: Download lcov artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report
+      - name: Move lcov.info to api/source
+        run: mv lcov.info ./api/source/
+
+      - name: Analyze API with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }} # Needed to push to SonarCloud
+        with:
+          # Additional arguments for the sonarcloud scanner
+          projectBaseDir: ./api/source
+          args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-api
+            -Dsonar.projectName=nuwcdivnpt_stig-manager-api
+            -Dsonar.organization=nuwcdivnpt
+            -Dsonar.inclusions=**/*.js
+            -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
+            -Dsonar.javascript.lcov.reportPaths=./lcov.info
+
+    #   This will fail the action if Quality Gate fails (leaving out for now )
+    #  - name: Check Quality Gate
+    #    uses: sonarsource/sonarqube-quality-gate-action@master
+    #    env:
+    #      SONAR_TOKEN:

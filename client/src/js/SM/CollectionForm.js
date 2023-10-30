@@ -1769,7 +1769,7 @@ SM.getContrastYIQ = function (hexcolor){
 	return (yiq >= 128) ? '#080808' : '#f7f7f7';
 }
 
-SM.Collection.LabelSpriteHtml = `<span class=sm-label-sprite style="color:
+SM.Collection.LabelSpriteHtml = `<span class="sm-label-sprite {extraCls}" style="color:
     {[SM.getContrastYIQ(values.color)]};background-color: #{color};" 
     ext:qtip="{[SM.he(SM.he(values.description))]}">
     <tpl if="values.isUnlabeled===true"><i></tpl>
@@ -2341,29 +2341,19 @@ SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
 
 SM.Collection.LabelAssetsForm = Ext.extend(Ext.form.FormPanel, {
     initComponent: function () {
-        let me = this
-        this.assetsGrid = new SM.StigAssetsGrid({
-            name: 'assets',
-            collectionId: this.collectionId,
-            isValid: () => {
-                // override of SM.StigAssetsGrid
-                return true
-            },
-        })
-        this.assetsGrid.getSelectionModel().addListener('rowselect', function (sm, rowIndex, record) {
-            if (!record.data.labelIds.includes(me.labelId)) {
-                record.data.labelIds.push(me.labelId)
-                record.commit()    
-            }
-        })
-        this.assetsGrid.getSelectionModel().addListener('rowdeselect', function (sm, rowIndex, record) {
-            record.data.labelIds = record.data.labelIds.filter( i => i !== me.labelId)
-            record.commit()
-        })
+        let _this = this
         if (! this.collectionId) {
             throw ('missing property collectionId')
         }
-        const labelSpan = SM.Collection.LabelTpl.apply(SM.Cache.CollectionMap.get(this.collectionId).labelMap.get(this.labelId))
+        const assetSelectionPanel = new SM.AssetSelection.SelectingPanel({
+            name: 'assets',
+            collectionId: this.collectionId,
+            isFormField: true,
+            selectionsGridTitle: 'Tagged'
+        })
+        const labelData = {...SM.Cache.CollectionMap.get(this.collectionId).labelMap.get(this.labelId)}
+        labelData.extraCls = 'sm-jumbo-sprite'
+        const labelSpan = SM.Collection.LabelTpl.apply(labelData)
         const labelField = new Ext.form.DisplayField({
             fieldLabel: 'Label',
             hideLabel: true,
@@ -2380,28 +2370,29 @@ SM.Collection.LabelAssetsForm = Ext.extend(Ext.form.FormPanel, {
             items: [
                 {
                     xtype: 'fieldset',
-                    title: '<b>Label</b>',
+                    title: '<span class="sm-label-title">Label</span>',
                     items: [
                         labelField
                     ]
                 },
                 {
                     xtype: 'fieldset',
-                    title: '<b>Tagged Assets</b>',
+                    title: '<span class="sm-asset-assignments-title">Tagged Assets</span>',
                     anchor: "100% -70",
                     layout: 'fit',
                     items: [
-                        this.assetsGrid
+                        assetSelectionPanel
                     ]
                 }
 
             ],
             buttons: [{
                 text: this.btnText || 'Save',
-                collectionId: me.collectionId,
+                collectionId: _this.collectionId,
                 formBind: true,
                 handler: this.btnHandler || function () {}
-            }]
+            }],
+            assetSelectionPanel
         }
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -2410,10 +2401,14 @@ SM.Collection.LabelAssetsForm = Ext.extend(Ext.form.FormPanel, {
     },
     initPanel: async function () {
         try {
-            await this.assetsGrid.store.loadPromise()
+            this.el.mask('')
+            await this.assetSelectionPanel.initPanel({labelId: this.labelId})
         }
         catch (e) {
             SM.Error.handleError(e)
+        }
+        finally {
+            this.el.unmask()
         }
     }
 })
@@ -2422,21 +2417,19 @@ SM.Collection.showLabelAssetsWindow = async function ( collectionId, labelId ) {
     try {
         let labelAssetsFormPanel = new SM.Collection.LabelAssetsForm({
             collectionId,
-            labelId: labelId,
+            labelId,
             btnHandler: async function( btn ){
                 try {
-                    if (labelAssetsFormPanel.getForm().isValid()) {
-                        let values = labelAssetsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-                        let result = await Ext.Ajax.requestPromise({
-                            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels/${labelId}/assets`,
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json;charset=utf-8' },
-                            jsonData: values.assets
-                        })
-                        const apiLabelAssets = JSON.parse(result.response.responseText)
-                        SM.Dispatcher.fireEvent('labelassetschanged', collectionId, labelId, apiLabelAssets)
-                        appwindow.close()
-                    }
+                    let values = labelAssetsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+                    let result = await Ext.Ajax.requestPromise({
+                        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels/${labelId}/assets`,
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json;charset=utf-8' },
+                        jsonData: values.assets
+                    })
+                    const apiLabelAssets = JSON.parse(result.response.responseText)
+                    SM.Dispatcher.fireEvent('labelassetschanged', collectionId, labelId, apiLabelAssets)
+                    appwindow.close()
                 }
                 catch (e) {
                     SM.Error.handleError(e)
@@ -2447,13 +2440,19 @@ SM.Collection.showLabelAssetsWindow = async function ( collectionId, labelId ) {
         /******************************************************/
         // Form window
         /******************************************************/
+        const height = Ext.getBody().getHeight() - 80
+        const width = Math.min(Math.floor(Ext.getBody().getWidth() * 0.75), 1280)
         var appwindow = new Ext.Window({
-            title: 'Tagged Assets, Label ID ' + labelId,
+            title: 'Tagged Assets',
+            resizable: true,
             cls: 'sm-dialog-window sm-round-panel',
             modal: true,
             hidden: true,
-            width: 510,
-            height:660,
+            width,
+            height,
+            minWidth: 810,
+            minHeight: 460,
+            maximizable: true,
             layout: 'fit',
             plain:true,
             bodyStyle:'padding:10px;',
@@ -2461,23 +2460,10 @@ SM.Collection.showLabelAssetsWindow = async function ( collectionId, labelId ) {
             items: labelAssetsFormPanel
         });
         
-        appwindow.render(Ext.getBody())
+        appwindow.show(Ext.getBody())
         await labelAssetsFormPanel.initPanel() // Load asset grid store
 
-        let result = await Ext.Ajax.requestPromise({
-            url: `${STIGMAN.Env.apiBase}/assets`,
-            method: 'GET',
-            params: {
-                collectionId,
-                labelId
-            }
-        })
-        const apiLabelAssets = JSON.parse(result.response.responseText)            
-        labelAssetsFormPanel.getForm().setValues({
-            labelId,
-            assets: apiLabelAssets
-        })
-                
+               
         appwindow.show(document.body);
     }
     catch (e) {

@@ -2,6 +2,25 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2023-10-31',
+    header: `New Interfaces for Managing Asset Labels and STIG Assignments`,
+    body: `
+    <p>
+    Managing a Collection's Asset Labels and STIG Assignments should now be a more streamlined and informative experience.  Just drag and drop Assets between the two panels to add or remove the selected Label or STIG:
+
+    <p><img src="img/whatsnew/2023-10-31-new-label-interface-w-arrow.png"/></p>
+
+    <p>The new interface also provides additional information about your Assets to help find what you're looking for. Hover over the Asset's name to see its currently assigned STIGs:</p>
+
+    <p><img src="img/whatsnew/2023-10-31-new-label-interface-with-popup-crop.png"/></p>
+
+    <p>Click on a column header to filter on that column's data, or to add or remove columns of Asset information:</p>
+
+    <p><img src="img/whatsnew/2023-10-31-new-label-interface-filters-columns-crop.png"/></p>
+
+    `    
+  },      
+  {
     date: '2023-09-26',
     header: `Export Results to Another Collection`,
     body: `
