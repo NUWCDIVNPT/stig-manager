@@ -1345,14 +1345,15 @@ exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId,
       const resultInsert = await connection.query(sqlInsert, [assetId, benchmarkId])
       if (resultInsert[0].affectedRows != 0) {
         // Inserted a new row, so update stats and default rev
+        await dbUtils.updateDefaultRev(connection, {
+          collectionId: collectionId,
+          benchmarkId: benchmarkId
+        })        
         await dbUtils.updateStatsAssetStig(connection, {
           assetId: assetId,
           benchmarkId: benchmarkId
         })
-        await dbUtils.updateDefaultRev(connection, {
-          collectionId: collectionId,
-          benchmarkId: benchmarkId
-        })
+
       }   
       await connection.commit()  
     }
