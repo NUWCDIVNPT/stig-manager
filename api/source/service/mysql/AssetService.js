@@ -1349,7 +1349,10 @@ exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId,
           assetId: assetId,
           benchmarkId: benchmarkId
         })
-        await dbUtils.updateDefaultRev(connection, {})
+        await dbUtils.updateDefaultRev(connection, {
+          collectionId: collectionId,
+          benchmarkId: benchmarkId
+        })
       }   
       await connection.commit()  
     }
