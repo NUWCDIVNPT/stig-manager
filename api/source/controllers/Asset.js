@@ -493,7 +493,14 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
     // is the granted accessLevel high enough?
     if ( elevate || (collectionGrant?.accessLevel >= 3) ) {
-      let response = await AssetService.attachStigToAsset(assetId, benchmarkId, elevate, req.userObject )
+      let response = await AssetService.attachStigToAsset({
+        assetId,
+        benchmarkId,
+        collectionId: collectionGrant.collection.collectionId,
+        elevate,
+        userObject: req.userObject,
+        svcStatus: res.svcStatus
+      })      
       res.json(response)
       }
     else {

@@ -1333,14 +1333,48 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   return (rows[0])
 }
 
-exports.attachStigToAsset = async function (assetId, benchmarkId, elevate, userObject ) {
-  const sqlInsert = `INSERT IGNORE INTO stig_asset_map (assetId, benchmarkId) VALUES (?, ?)`
-  await dbUtils.pool.query(sqlInsert, [assetId, benchmarkId])
-  const rows = await _this.queryStigsByAsset( {
-    assetId: assetId
-  }, elevate, userObject)
-  await dbUtils.updateDefaultRev(null, {})
-  return (rows)
+
+exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId, elevate, userObject, svcStatus = {}} ) {
+
+  let connection
+  try {
+    connection = await dbUtils.pool.getConnection()
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      const sqlInsert = `INSERT IGNORE INTO stig_asset_map (assetId, benchmarkId) VALUES (?, ?)`
+      const resultInsert = await connection.query(sqlInsert, [assetId, benchmarkId])
+      if (resultInsert[0].affectedRows != 0) {
+        // Inserted a new row, so update stats and default rev
+        await dbUtils.updateDefaultRev(connection, {
+          collectionId: collectionId,
+          benchmarkId: benchmarkId
+        })        
+        await dbUtils.updateStatsAssetStig(connection, {
+          assetId: assetId,
+          benchmarkId: benchmarkId
+        })
+
+      }   
+      await connection.commit()  
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    //Transaction complete, now get the updated stig_asset_map rows
+    const rows = await _this.queryStigsByAsset( {
+      assetId: assetId
+    }, elevate, userObject)
+    return (rows)          
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw ( {status: 500, message: err.message, stack: err.stack} )
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
 }
 
 exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, userObject ) {
