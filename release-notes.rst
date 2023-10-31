@@ -1,3 +1,19 @@
+1.3.12
+-----
+
+Changes:
+
+  - (UI) Asset Label and STIG Assignment interface update
+  - (UI) Resolved issue affecting updating reviews from Collection Review Workspace that were created with old RuleIds. 
+  - (UI) Addressed issue affecting delimiter handling for inventory exports 
+  - (API) Resolved issue that could be created when submitting Reviews for Rules with identical ids/fingerprints
+  - (API) Statistics were not being recalculated when STIG Assignments were made using PUT endpoint
+  - (Workflows) Refactored to incorporate SonarCloud analysis and matrix testing
+  - (API) Remove automatic STIG download on first start
+  - (Docs) Build dependency update
+  - (API) Refactoring service references for clarity
+
+
 1.3.11
 -----
 
