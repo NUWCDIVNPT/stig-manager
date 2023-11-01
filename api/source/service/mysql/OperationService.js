@@ -1,6 +1,8 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../../utils/config')
+const CollectionService = require(`./CollectionService`)
+
 
 
 /**
@@ -607,12 +609,58 @@ exports.getDetails = async function() {
     ORDER BY
       sub.collectionId`
 
+
+      const sqlDisabledCollectionCount = `
+      select 
+        c.collectionId,
+        count(distinct a.assetId) as assetCnt,
+        count(r.reviewId) as reviewCnt
+      from 
+        collection c
+      left join asset a on a.collectionId = c.collectionId
+      left join review r on r.assetId = a.assetId
+      where 
+        c.state = "disabled"
+      group by 
+        c.collectionId
+      `
+
+      const sqlDisabledAssetsInEnabledCollections = `
+      select 
+        c.collectionId,
+        count(distinct a.assetId) as disabledAssetCnt,
+        count(r.reviewId) as reviewCnt
+      from 
+        collection c
+      left join asset a on a.collectionId = c.collectionId
+      left join review r on r.assetId = a.assetId
+      where 
+        a.state = "disabled" and 
+        c.state = "enabled"
+      group by 
+        c.collectionId
+      `
+
+
     await dbUtils.pool.query(sqlAnalyze)
 
-    const [[schemaInfoArray], [assetStig]] = await Promise.all([
+    const [[schemaInfoArray], [assetStig], [disabledCollections], [disabledAssetsInEnabledCollections]] = await Promise.all([
       dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
-      dbUtils.pool.query(sqlCollectionAssetStigs)
+      dbUtils.pool.query(sqlCollectionAssetStigs),
+      dbUtils.pool.query(sqlDisabledCollectionCount),
+      dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections)
+
+
     ])
+
+    let reviewHistoryStatsResult = await CollectionService.getReviewHistoryStatsByCollection(11)
+    // // res.json(reviewHistoryStatsresult)
+
+    let endDate = '2021-01-01'
+    let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
+
+
+
 
     const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
@@ -621,6 +669,10 @@ exports.getDetails = async function() {
       dbInfo: {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
-      assetStig
+      assetStig,
+      disabledCollections,
+      disabledAssetsInEnabledCollections,
+      reviewHistoryStatsResult,
+      reviewHistoryStatsOld
     })
 }
