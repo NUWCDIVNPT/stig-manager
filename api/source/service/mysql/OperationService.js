@@ -614,11 +614,13 @@ exports.getDetails = async function() {
       select 
         c.collectionId,
         count(distinct a.assetId) as assetCnt,
-        count(r.reviewId) as reviewCnt
+        count(r.reviewId) as reviewCnt,
+        count(rh.historyId) as historyCnt
       from 
         collection c
       left join asset a on a.collectionId = c.collectionId
       left join review r on r.assetId = a.assetId
+      left join review_history rh on rh.reviewId = r.reviewId
       where 
         c.state = "disabled"
       group by 
@@ -629,11 +631,13 @@ exports.getDetails = async function() {
       select 
         c.collectionId,
         count(distinct a.assetId) as disabledAssetCnt,
-        count(r.reviewId) as reviewCnt
+        count(r.reviewId) as reviewCnt,
+        count(rh.historyId) as historyCnt
       from 
         collection c
       left join asset a on a.collectionId = c.collectionId
       left join review r on r.assetId = a.assetId
+      left join review_history rh on rh.reviewId = r.reviewId
       where 
         a.state = "disabled" and 
         c.state = "enabled"
@@ -641,6 +645,8 @@ exports.getDetails = async function() {
         c.collectionId
       `
 
+
+      //orphaned reviews!
 
     await dbUtils.pool.query(sqlAnalyze)
 
