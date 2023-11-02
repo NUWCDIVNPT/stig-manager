@@ -5,11 +5,25 @@ Documentation
 ########################################
 
 
-The STIG Manager OSS Documentation is written in reStructuredText. Sphinx and the Read The Docs theme is used to generate the site, which is located in the project repo and hosted on Read The Docs: `stig-manager.readthedocs.io <https://stig-manager.readthedocs.io/>`_ and on GitHub Pages: `nuwcdivnpt.github.io <https://nuwcdivnpt.github.io/stig-manager/#/>`_
+The STIG Manager OSS Documentation is written in reStructuredText. Sphinx and the Read The Docs theme is used to generate the site, which is located in the project repo and hosted on Read The Docs: `stig-manager.readthedocs.io <https://stig-manager.readthedocs.io/>`_ 
 
 
 Documentation Build
 ----------------------
+
+Build with Docker
++++++++++++++++++++++
+
+#. Clone the STIG Manager repository from GitHub.
+#. Navigate to /docs folder of the repository. 
+#. Build the Docker image using the following command: ``docker build -t stig-manager-docs .``
+#. Run the Docker image using the following command: ``docker run --rm -v "$(pwd):/docs" stig-manager-docs make html``
+#. The build product is located in ``_build`` in the docs directory.
+
+
+
+Build with Docker
++++++++++++++++++++++
 
 To build the documentation locally:
 
