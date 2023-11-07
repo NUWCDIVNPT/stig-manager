@@ -822,7 +822,7 @@
       const ruleId = rule.rule_id_src
       if (!ruleId) return
   
-      const hasComments = !!rule.finding_details || !!rule.coments
+      const hasComments = !!rule.finding_details || !!rule.comments
   
       if (result === 'notchecked') { // unreviewed business rules
         switch (importOptions.unreviewed) {
