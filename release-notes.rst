@@ -1,3 +1,11 @@
+1.3.13
+-----
+
+Changes:
+
+  - (UI/fix) Addressed bug in .cklb parsing preventing import.
+
+
 1.3.12
 -----
 
