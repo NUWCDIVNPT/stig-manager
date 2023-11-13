@@ -27,9 +27,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.03375"
      inkscape:cx="400"
-     inkscape:cy="400"
-     inkscape:window-width="1920"
-     inkscape:window-height="1022"
+     inkscape:cy="400.48368"
+     inkscape:window-width="3440"
+     inkscape:window-height="1372"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -41,7 +41,7 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="path1"
-     style="stroke:#d92626;stroke-opacity:1" />
+     style="stroke:#903d3d;stroke-opacity:1" />
   <circle
      cx="12"
      cy="12"
@@ -51,5 +51,5 @@
      stroke-linecap="round"
      stroke-linejoin="round"
      id="circle1"
-     style="stroke:#d92626;stroke-opacity:1" />
+     style="stroke:#903d3d;stroke-opacity:1" />
 </svg>

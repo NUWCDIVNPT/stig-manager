@@ -1217,5 +1217,37 @@ Ext.Element.addMethods({
             me.removeClass([XMASKED, XMASKEDRELATIVE]);
         }
     },
+    // addStyles : function(sides, styles){
+    //     var ttlSize = 0,
+    //         sidesArr = sides.match(wordsRe),
+    //         side,
+    //         size,
+    //         i,
+    //         len = sidesArr.length;
+    //     for (i = 0; i < len; i++) {
+    //         side = sidesArr[i];
+    //         size = side && parseInt(this.getStyle(styles[side]), 10);
+    //         if (size) {
+    //             ttlSize += MATH.abs(size);
+    //         }
+    //     }
+    //     return ttlSize;
+    // },
 
 })
+Ext.Element.prototype.addStyles = function(sides, styles){
+    var ttlSize = 0,
+        sidesArr = sides.match(/\w/g),
+        side,
+        size,
+        i,
+        len = sidesArr.length;
+    for (i = 0; i < len; i++) {
+        side = sidesArr[i];
+        size = side && parseFloat(this.getStyle(styles[side]));
+        if (size) {
+            ttlSize += Math.abs(size);
+        }
+    }
+    return ttlSize;
+}

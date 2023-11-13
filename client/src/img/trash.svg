@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="Layer_1"
    enable-background="new 0 0 512 512"
    height="512"
@@ -14,7 +7,14 @@
    width="512"
    version="1.1"
    sodipodi:docname="trash.svg"
-   inkscape:version="1.0.1 (1.0.1+r73)">
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata13">
     <rdf:RDF>
@@ -37,27 +37,31 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1015"
+     inkscape:window-width="1720"
+     inkscape:window-height="1372"
      id="namedview9"
      showgrid="false"
      inkscape:zoom="1.6484375"
-     inkscape:cx="256.60664"
-     inkscape:cy="231.7346"
+     inkscape:cx="256.90995"
+     inkscape:cy="232.34123"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="Layer_1" />
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
   <g
      id="g6"
-     style="fill:#bb2d15;fill-opacity:1">
+     style="fill:#8f3d3d;fill-opacity:1">
     <path
        d="m424 64h-88v-16c0-26.51-21.49-48-48-48h-64c-26.51 0-48 21.49-48 48v16h-88c-22.091 0-40 17.909-40 40v32c0 8.837 7.163 16 16 16h384c8.837 0 16-7.163 16-16v-32c0-22.091-17.909-40-40-40zm-216-16c0-8.82 7.18-16 16-16h64c8.82 0 16 7.18 16 16v16h-96z"
        id="path2"
-       style="fill:#bb2d15;fill-opacity:1" />
+       style="fill:#8f3d3d;fill-opacity:1" />
     <path
-       d="m78.364 184c-2.855 0-5.13 2.386-4.994 5.238l13.2 277.042c1.22 25.64 22.28 45.72 47.94 45.72h242.98c25.66 0 46.72-20.08 47.94-45.72l13.2-277.042c.136-2.852-2.139-5.238-4.994-5.238zm241.636 40c0-8.84 7.16-16 16-16s16 7.16 16 16v208c0 8.84-7.16 16-16 16s-16-7.16-16-16zm-80 0c0-8.84 7.16-16 16-16s16 7.16 16 16v208c0 8.84-7.16 16-16 16s-16-7.16-16-16zm-80 0c0-8.84 7.16-16 16-16s16 7.16 16 16v208c0 8.84-7.16 16-16 16s-16-7.16-16-16z"
+       d="m 78.364,184 c -2.855,0 -5.13,2.386 -4.994,5.238 l 13.2,277.042 c 1.22,25.64 22.28,45.72 47.94,45.72 h 242.98 c 25.66,0 46.72,-20.08 47.94,-45.72 l 13.2,-277.042 C 438.766,186.386 436.491,184 433.636,184 Z"
        id="path4"
-       style="fill:#bb2d15;fill-opacity:1" />
+       style="fill:#8f3d3d;fill-opacity:1"
+       sodipodi:nodetypes="sccssccss" />
   </g>
 </svg>

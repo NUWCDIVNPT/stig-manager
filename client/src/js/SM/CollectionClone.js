@@ -74,7 +74,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       name: 'name',
       allowBlank: false,
       value: this.sourceName ? `Clone of ${this.sourceName}` : '',
-      anchor: '100%',
+      anchor: '-5',
       listeners: {
         keyup: handleInput
       }
@@ -83,7 +83,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       fieldLabel: 'Description',
       labelStyle: 'font-weight: 600;',
       name: 'description',
-      anchor: '100%',
+      anchor: '-5',
       value: `Cloned from ${this.sourceName} on ${new Date().toLocaleDateString('en-CA')} by ${curUser.displayName}`
     })
     const grantsCb = new SM.Global.HelperCheckbox({

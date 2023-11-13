@@ -1050,7 +1050,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   border-radius: 25px;
   border: none;
   margin: 10px;
-  height: 400px
+  height: 400px;
+  width: 380px
 }
 .sm-home-widget-header {
   background-color: #d3d3d3
@@ -1149,7 +1150,10 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background: url(../img/edit.svg) 0 no-repeat!important
 }
 .icon-del {
-  background: url(../img/remove.svg) 0 0/16px 16px
+  background: url(../img/trash.svg) 0 0/16px 16px
+}
+.icon-remove {
+  background: url(../img/remove.svg);
 }
 .icon-save {
   background: url(../img/save.gif) 0 no-repeat!important
@@ -2033,6 +2037,26 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   font-size: 10px;
   line-height: 16px;
 }
+.x-tool.x-tool-trash {
+  background-image: url(../img/trash.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
+.x-tool.x-tool-clone {
+  background-image: url(../img/clone.svg);
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
 .x-tool.x-tool-spacer {
   width: 10px;
   background-image: unset;
@@ -2040,7 +2064,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .x-tool.x-tool-logout {
   background-image: url(../img/logout.svg);
   background-repeat: no-repeat;
-  background-size: 12px 15px;
+  background-size: 14px 14px;
 }
 .x-tool.x-tool-toggle.x-tool-collapse-west {
   background-image: url(../img/collapse-left.svg);
@@ -2113,7 +2137,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-color: #e5e5e5
 }
 .x-btn-text-icon .x-btn-icon-small-left .x-btn-text {
-  background-size: 14px 14px
+  background-size: 14px 14px;
+  background-position: 0px 1px;
 }
 .sm-hover-icon {
   opacity: 0.75;
@@ -2200,4 +2225,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-grabbing *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected {
   cursor: url("../img/drag-drop-light.svg"), grabbing;
+}
+.x-item-disabled {
+	filter: saturate(0)
 }
