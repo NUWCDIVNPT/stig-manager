@@ -1216,27 +1216,11 @@ Ext.Element.addMethods({
             data(dom, 'mask', undefined);
             me.removeClass([XMASKED, XMASKEDRELATIVE]);
         }
-    },
-    // addStyles : function(sides, styles){
-    //     var ttlSize = 0,
-    //         sidesArr = sides.match(wordsRe),
-    //         side,
-    //         size,
-    //         i,
-    //         len = sidesArr.length;
-    //     for (i = 0; i < len; i++) {
-    //         side = sidesArr[i];
-    //         size = side && parseInt(this.getStyle(styles[side]), 10);
-    //         if (size) {
-    //             ttlSize += MATH.abs(size);
-    //         }
-    //     }
-    //     return ttlSize;
-    // },
-
+    }
 })
+// fix addStyles to account for fractional scaling
 Ext.Element.prototype.addStyles = function(sides, styles){
-    var ttlSize = 0,
+    let ttlSize = 0,
         sidesArr = sides.match(/\w/g),
         side,
         size,
@@ -1244,6 +1228,7 @@ Ext.Element.prototype.addStyles = function(sides, styles){
         len = sidesArr.length;
     for (i = 0; i < len; i++) {
         side = sidesArr[i];
+        // replace parseInt call with parseFloat to account for fractional scaling
         size = side && parseFloat(this.getStyle(styles[side]));
         if (size) {
             ttlSize += Math.abs(size);
