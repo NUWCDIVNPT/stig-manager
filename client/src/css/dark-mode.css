@@ -253,8 +253,7 @@ fieldset.x-panel-collapsed {
 }
 
 .x-btn button.sm-error-icon {
-    background-color: #602020;
-    background-image: url("../img/remove.svg")
+    background-color: #602020
 }
 
 .x-btn-bc, .x-btn-bl, .x-btn-br, .x-btn-mc, .x-btn-ml, .x-btn-mr, .x-btn-tc, .x-btn-tl, .x-btn-tr {
@@ -2419,11 +2418,6 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
 .icon-edit {
     background-image: url("../img/edit.svg")!important;
     background-color: initial!important
-}
-
-.icon-del {
-    background-image: url("../img/remove.svg");
-    background-color: initial
 }
 
 .icon-save {
