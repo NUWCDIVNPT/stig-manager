@@ -750,7 +750,7 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
     }
     initProgress("Downloading checklists", "Initializing...")
     updateStatusText(`When the stream has finished you will be prompted to save the data to disk. The final size of the archive is unknown during streaming.`, true)
-    const filename = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+    const filename = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^\r\n"']*)['"]?;?/)[1]
     const reader = response.body.getReader()
     let receivedLength = 0; // received that many bytes at the moment
     let chunks = []; // array of received binary chunks (comprises the body)

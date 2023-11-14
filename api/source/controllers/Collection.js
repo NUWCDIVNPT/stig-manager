@@ -2,6 +2,7 @@
 
 const writer = require('../utils/writer')
 const config = require('../utils/config')
+const escape = require('../utils/escape')
 const CollectionService = require(`../service/${config.database.type}/CollectionService`)
 const AssetService = require(`../service/${config.database.type}/AssetService`)
 const STIGService = require(`../service/${config.database.type}/STIGService`)
@@ -708,7 +709,9 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     attrValueProcessor: escapeForXml
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
-  res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
+  const attachmentName = escape.escapeFilename(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
+    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
+  res.attachment(attachmentName)
   zip.pipe(res)
   const manifest = {
     started: new Date().toISOString(),
@@ -755,6 +758,7 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
         filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
       }
       filename += `${format === 'xccdf' ? '-xccdf.xml' : format.startsWith('ckl-') ? '.ckl' : '.cklb'}`
+      filename = escape.escapeFilename(filename)
       zip.append(data, {name: filename})
       manifest.members.push(filename)
       manifest.memberCount += 1
