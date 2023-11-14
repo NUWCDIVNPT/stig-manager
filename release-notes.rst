@@ -1,3 +1,14 @@
+1.3.14
+-----
+
+Changes:
+
+  - (API/UI) Fixed issue that could create invalid filenames for export when Asset/Collection names used reserved characters
+  - (UI) Fixed issue that caused borders of certain UI elements to disappear when zoomed
+  - (API) Refactored post/put/patch asset review handling
+  - (API) Fixed issue that could cause Review status to not reset in certain cases
+  - (API/Dependency) Updated axios dependency in response to vulnerability
+
 1.3.13
 -----
 
