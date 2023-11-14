@@ -62701,7 +62701,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"TxxxxxEST_\\\\slash:colon..x2\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"labelIds\": [\n        \"{{testLabel}}\"\n    ],\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"{{testBenchmark}}\",\n        \"Windows_10_STIG_TEST\"\n    ]\n}",
+									"raw": "{\n    \"name\": \"TxxxxxEST_\\\\slash:colon..x2\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"{{testBenchmark}}\",\n        \"Windows_10_STIG_TEST\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
