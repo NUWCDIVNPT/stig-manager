@@ -62600,6 +62600,431 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "valid filename from Asset with reserved chars",
+					"item": [
+						{
+							"name": "Create an Asset in collection to be deleted Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"// if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"//     pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"//         pm.response.to.have.status(403);\r",
+											"//     });\r",
+											"//     return;\r",
+											"// }\r",
+											"// else {\r",
+											"    pm.test(\"Status code is 201\", function () {\r",
+											"        pm.response.to.have.status(201);\r",
+											"    });\r",
+											"// }\r",
+											"if (pm.response.code !== 201) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let respJson = pm.response.json();\r",
+											"let assetInCollectionWithReservedChars = respJson.assetId\r",
+											"pm.environment.set(\"assetInCollectionWithReservedChars\", assetInCollectionWithReservedChars);\r",
+											"\r",
+											"console.log(\"created asset with id: \" + JSON.stringify(assetInCollectionWithReservedChars));\r",
+											"\r",
+											"\r",
+											"// pm.test(\"Response matches request\", function () {\r",
+											"//     pm.expect(assetGetToPost(respJson))\r",
+											"//     .to.eql(JSON.parse(pm.request.body.raw))\r",
+											"// })\r",
+											"\r",
+											"// function assetGetToPost(assetGet) {\r",
+											"//     // extract the transformed and unposted properties\r",
+											"//     const {assetId, collection, stigs, mac, fqdn, ...assetPost} = assetGet\r",
+											"    \r",
+											"//     // add transformed properties to the derived post  \r",
+											"//     assetPost.collectionId = collection.collectionId\r",
+											"//     assetPost.stigs = stigsGetToPost(stigs)\r",
+											"\r",
+											"//     // the derived post object\r",
+											"//     return assetPost\r",
+											"// }\r",
+											"\r",
+											"// function stigsGetToPost(stigsGetArray) {\r",
+											"//     const stigsPostArray = []\r",
+											"//     for (const stig of stigsGetArray) {\r",
+											"//         stigsPostArray.push(stig.benchmarkId)\r",
+											"//     }\r",
+											"//     return stigsPostArray\r",
+											"// }\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"TxxxxxEST_\\\\slash:colon..x2\",\n    \"collectionId\": \"{{scrapCollection}}\",\n    \"description\": \"test desc\",\n    \"ip\": \"1.1.1.1\",\n    \"labelIds\": [\n        \"{{testLabel}}\"\n    ],\n    \"noncomputing\": true,\n    \"metadata\": {\n        \"pocName\": \"poc2Put\",\n        \"pocEmail\": \"pocEmailPut@email.com\",\n        \"pocPhone\": \"12342\",\n        \"reqRar\": \"true\"\n    },\n    \"stigs\": [\n        \"{{testBenchmark}}\",\n        \"Windows_10_STIG_TEST\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets?projection=stigs",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return the ckl for Asset with reserved chars",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"\r",
+											"\r",
+											"if (user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else if (user == \"collectioncreator\" ) {\r",
+											"    pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(204);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1.ckl\\\"\");\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?format=ckl",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId",
+										"checklists",
+										":benchmarkId",
+										":revisionStr"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "ckl",
+											"description": "The format of the response. Default if missing is 'json'"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{assetInCollectionWithReservedChars}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "benchmarkId",
+											"value": "{{testBenchmark}}",
+											"description": "(Required) A path parameter that indentifies a STIG"
+										},
+										{
+											"key": "revisionStr",
+											"value": "{{testRev}}",
+											"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return the cklB for Asset with reserved chars",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"\r",
+											"if (user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else if (user == \"collectioncreator\" ) {\r",
+											"    pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(204);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1.cklb\\\"\");\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?format=cklb",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId",
+										"checklists",
+										":benchmarkId",
+										":revisionStr"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "cklb",
+											"description": "The format of the response. Default if missing is 'json'"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{assetInCollectionWithReservedChars}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "benchmarkId",
+											"value": "{{testBenchmark}}",
+											"description": "(Required) A path parameter that indentifies a STIG"
+										},
+										{
+											"key": "revisionStr",
+											"value": "{{testRev}}",
+											"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return the cklB for Asset with reserved chars Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"\r",
+											"if (user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else if (user == \"collectioncreator\" ) {\r",
+											"    pm.test(\"Status should be is 204 for user collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(204);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1-xccdf.xml\\\"\");\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId/checklists/:benchmarkId/:revisionStr?format=xccdf",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId",
+										"checklists",
+										":benchmarkId",
+										":revisionStr"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "xccdf",
+											"description": "The format of the response. Default if missing is 'json'"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{assetInCollectionWithReservedChars}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "benchmarkId",
+											"value": "{{testBenchmark}}",
+											"description": "(Required) A path parameter that indentifies a STIG"
+										},
+										{
+											"key": "revisionStr",
+											"value": "{{testRev}}",
+											"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			],
 			"description": "These tests should be self contained, provide their own authorization, and repopulate test data if required.",
