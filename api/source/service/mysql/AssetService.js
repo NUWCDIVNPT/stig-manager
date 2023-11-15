@@ -440,7 +440,7 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
                 collection_label
               WHERE
                 uuid IN (?) and collectionId = ?`
-          await connection.query(sqlInsertLabels, [assetId, uuidBinds, collectionId])
+          await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
         }
       }
 
