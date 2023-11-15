@@ -628,8 +628,11 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
     const labelId = req.params.labelId
     const assetIds = req.body
     let collection = await CollectionService.getCollection( collectionId, ['assets'], false, req.userObject)
+
+    const collectionLabel = await CollectionService.getCollectionLabelById( collectionId, labelId, req.userObject )
+
     let collectionAssets = collection.assets.map( a => a.assetId)
-    if (assetIds.every( a => collectionAssets.includes(a))) {
+    if (collectionLabel && assetIds.every( a => collectionAssets.includes(a))) {
       await CollectionService.putAssetsByCollectionLabelId( collectionId, labelId, assetIds, res.svcStatus )
       const response = await CollectionService.getAssetsByCollectionLabelId( collectionId, req.params.labelId, req.userObject )
       res.json(response)
