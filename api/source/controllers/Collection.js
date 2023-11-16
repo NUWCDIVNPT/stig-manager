@@ -627,10 +627,9 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
     const collectionId = getCollectionIdAndCheckPermission(req)
     const labelId = req.params.labelId
     const assetIds = req.body
-    let collection = await CollectionService.getCollection( collectionId, ['assets'], false, req.userObject)
+    let collection = await CollectionService.getCollection( collectionId, ['assets','labels'], false, req.userObject)
 
-    const collectionLabel = await CollectionService.getCollectionLabelById( collectionId, labelId, req.userObject )
-    if (!collectionLabel) {
+    if (!collection.labels.find( l => l.labelId === labelId)) {
       throw new SmError.PrivilegeError('The labelId is not associated with this Collection.')
     }
 
