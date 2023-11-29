@@ -41,17 +41,6 @@
       Not_Applicable: 'notapplicable',
       Not_Reviewed: 'notchecked'
     }
-    const resultStats = {
-      pass: 0,
-      fail: 0,
-      notapplicable: 0,
-      notchecked: 0,
-      notselected: 0,
-      informational: 0,
-      error: 0,
-      fixed: 0,
-      unknown: 0
-    }  
     const parseOptions = {
       allowBooleanAttributes: false,
       attributeNamePrefix: "",
@@ -155,6 +144,17 @@
       // }
   
       let vulnArray = []
+      let resultStats = {
+        pass: 0,
+        fail: 0,
+        notapplicable: 0,
+        notchecked: 0,
+        notselected: 0,
+        informational: 0,
+        error: 0,
+        fixed: 0,
+        unknown: 0
+      }        
       vulnElements?.forEach(vuln => {
         const review = generateReview(vuln, resultEngineCommon)
         if (review) {
