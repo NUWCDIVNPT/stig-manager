@@ -255,15 +255,6 @@
 :: set STIGMAN_DB_TLS_KEY_FILE=
 
 ::==============================================================================
-:: STIGMAN_DB_TYPE
-::
-::  | Default: "mysql" | The database type. Valid values are "mysql"
-::
-::  Affects: API          
-::==============================================================================
-:: set STIGMAN_DB_TYPE=
-
-::==============================================================================
 :: STIGMAN_DB_USER
 ::
 ::  | Default: "stigman" | The user account used to login to the database
