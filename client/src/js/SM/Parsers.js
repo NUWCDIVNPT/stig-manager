@@ -41,17 +41,6 @@
       Not_Applicable: 'notapplicable',
       Not_Reviewed: 'notchecked'
     }
-    const resultStats = {
-      pass: 0,
-      fail: 0,
-      notapplicable: 0,
-      notchecked: 0,
-      notselected: 0,
-      informational: 0,
-      error: 0,
-      fixed: 0,
-      unknown: 0
-    }  
     const parseOptions = {
       allowBooleanAttributes: false,
       attributeNamePrefix: "",
@@ -155,6 +144,17 @@
       // }
   
       let vulnArray = []
+      let resultStats = {
+        pass: 0,
+        fail: 0,
+        notapplicable: 0,
+        notchecked: 0,
+        notselected: 0,
+        informational: 0,
+        error: 0,
+        fixed: 0,
+        unknown: 0
+      }        
       vulnElements?.forEach(vuln => {
         const review = generateReview(vuln, resultEngineCommon)
         if (review) {
@@ -779,10 +779,10 @@
         //   stats: {}
         // }
         const checklist = {}
-        checklist.benchmarkId = stig.stigId instanceof String ? stig.stig_id.replace('xccdf_mil.disa.stig_benchmark_', '') : ''
+        checklist.benchmarkId = typeof stig?.stig_id === 'string' ? stig.stig_id.replace('xccdf_mil.disa.stig_benchmark_', '') : ''
         const stigVersion = '0'
-        const stigRelease = stig.release_info instanceof String ? stig.release_info.match(/Release:\s*(.+?)\s/)?.[1] : ''
-        checklist.revisionStr = stigVersion && stigRelease ? `V${stigVersion}R${stigRelease}` : null
+        const stigRelease = typeof stig?.release_info === 'string' ? stig.release_info.match(/Release:\s*(.+?)\s/)?.[1] : ''
+        checklist.revisionStr = checklist.benchmarkId && stigRelease ? `V${stigVersion}R${stigRelease}` : null
   
         if (checklist.benchmarkId) {
           const result = processRules(stig.rules)
@@ -822,7 +822,7 @@
       const ruleId = rule.rule_id_src
       if (!ruleId) return
   
-      const hasComments = !!rule.finding_details || !!rule.coments
+      const hasComments = !!rule.finding_details || !!rule.comments
   
       if (result === 'notchecked') { // unreviewed business rules
         switch (importOptions.unreviewed) {

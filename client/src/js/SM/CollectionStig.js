@@ -183,12 +183,12 @@ SM.CollectionStigsGrid = Ext.extend(Ext.grid.GridPanel, {
             }
         })
         const deleteBtn = new Ext.Button({
-            iconCls: 'icon-del',
+            iconCls: 'icon-remove',
             text: 'Unassign STIG...',
             disabled: true,
             handler: function() {
                 try {
-                    var confirmStr="Removing this STIG will remove all related Asset assignments. If the STIG is added in the future, the assignments will need to be established again.";
+                    var confirmStr="Unassigning this STIG will remove all related Asset assignments. If the STIG is added in the future, the assignments will need to be established again.";
                     Ext.Msg.confirm("Confirm", confirmStr, async function (btn,text) {
                         if (btn == 'yes') {
                             const stigRecord = _this.getSelectionModel().getSelected()

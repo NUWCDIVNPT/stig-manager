@@ -2,6 +2,7 @@
 
 const writer = require('../utils/writer')
 const config = require('../utils/config')
+const escape = require('../utils/escape')
 const CollectionService = require(`../service/${config.database.type}/CollectionService`)
 const AssetService = require(`../service/${config.database.type}/AssetService`)
 const STIGService = require(`../service/${config.database.type}/STIGService`)
@@ -626,7 +627,12 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
     const collectionId = getCollectionIdAndCheckPermission(req)
     const labelId = req.params.labelId
     const assetIds = req.body
-    let collection = await CollectionService.getCollection( collectionId, ['assets'], false, req.userObject)
+    let collection = await CollectionService.getCollection( collectionId, ['assets','labels'], false, req.userObject)
+
+    if (!collection.labels.find( l => l.labelId === labelId)) {
+      throw new SmError.PrivilegeError('The labelId is not associated with this Collection.')
+    }
+
     let collectionAssets = collection.assets.map( a => a.assetId)
     if (assetIds.every( a => collectionAssets.includes(a))) {
       await CollectionService.putAssetsByCollectionLabelId( collectionId, labelId, assetIds, res.svcStatus )
@@ -708,7 +714,9 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     attrValueProcessor: escapeForXml
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
-  res.attachment(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
+  const attachmentName = escape.escapeFilename(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
+    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
+  res.attachment(attachmentName)
   zip.pipe(res)
   const manifest = {
     started: new Date().toISOString(),
@@ -755,6 +763,7 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
         filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
       }
       filename += `${format === 'xccdf' ? '-xccdf.xml' : format.startsWith('ckl-') ? '.ckl' : '.cklb'}`
+      filename = escape.escapeFilename(filename)
       zip.append(data, {name: filename})
       manifest.members.push(filename)
       manifest.memberCount += 1
