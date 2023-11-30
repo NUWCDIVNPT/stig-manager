@@ -1,7 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
-const config = require('../../utils/config.js')
-const MyController = require('../../controllers/Collection')
+const config = require('../utils/config.js')
+const MyController = require('../controllers/Collection')
 
 const _this = this
 
