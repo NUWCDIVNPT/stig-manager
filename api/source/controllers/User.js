@@ -1,9 +1,9 @@
 'use strict';
 
 const config = require('../utils/config')
-const UserService = require(`../service/mysql/UserService`)
-const AssetService = require(`../service/mysql/AssetService`)
-const CollectionService = require(`../service/mysql/CollectionService`)
+const UserService = require(`../service/UserService`)
+const AssetService = require(`../service/AssetService`)
+const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {

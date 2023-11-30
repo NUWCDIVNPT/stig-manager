@@ -28,7 +28,7 @@ const jsyaml = require('js-yaml');
 const fs = require('fs')
 const multer  = require('multer')
 const writer = require('./utils/writer.js')
-const OperationSvc = require(`./service/mysql/OperationService`)
+const OperationSvc = require(`./service/OperationService`)
 const { middleware: openApiMiddleware, resolvers } = require('express-openapi-validator')
 
 // express-openapi-validator does not expose top-level HttpError in their index.js. 
@@ -224,7 +224,7 @@ const STIGMAN = {
 }
 
 async function startServer(app) {
-    let db = require(`./service/mysql/utils`)
+    let db = require(`./service/utils`)
     let isNewDb
     try {
       let authReturn
