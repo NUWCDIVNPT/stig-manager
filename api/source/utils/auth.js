@@ -7,6 +7,7 @@ const _ = require('lodash')
 const {promisify} = require('util')
 const User = require(`../service/${config.database.type}/UserService`)
 const axios = require('axios')
+const SmError = require('./error')
 
 let jwksUri
 let client
@@ -17,7 +18,7 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
     
         const token = getBearerToken(req)
         if (!token) {
-            throw({status: 401, message: 'OIDC bearer token must be provided'})
+            throw(new SmError.AuthorizeError("OIDC bearer token must be provided"))
         }
         const options = {
             algorithms: ['RS256']
@@ -25,12 +26,21 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         const decoded = await verifyAndDecodeToken (token, getKey, options)
         req.access_token = decoded
         req.bearer = token
-        req.userObject = {
-            username: decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'null',
-            displayName: decoded[config.oauth.claims.name] || decoded[config.oauth.claims.username] || decoded[config.oauth.claims.servicename] || 'USER',
-            email: decoded[config.oauth.claims.email] ||  'None Provided'
+        // Get username from configured claim in token, or fall back through precedence list
+        const usernamePrecedence = [config.oauth.claims.username, config.oauth.claims.servicename, "azp", "client_id", "clientId"]
+        for (const precedence of usernamePrecedence) {
+            if (decoded[precedence]) {
+                req.userObject.username = decoded[precedence];
+                break;
+            }
         }
-
+        if (req.userObject.username === undefined) {
+            throw(new SmError.PrivilegeError("No token claim mappable to username found"))
+        }    
+        // Get display name from specified claim in token, or use username
+        req.userObject.displayName = decoded[config.oauth.claims.name] || req.userObject.username
+        req.userObject.email = decoded[config.oauth.claims.email] ||  'None Provided'
+        // Check scopes
         const grantedScopes = typeof decoded[config.oauth.claims.scope] === 'string' ? 
             decoded[config.oauth.claims.scope].split(' ') : 
             decoded[config.oauth.claims.scope]
@@ -46,7 +56,7 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
             }
         })
         if (commonScopes.length == 0) {
-            throw({status: 403, message: 'Not in scope'})
+            throw(new SmError.PrivilegeError("Not in scope"))
         }
         else {      
             // Get privileges      
@@ -78,7 +88,7 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
                 }
             }
             if ('elevate' in req.query && (req.query.elevate === 'true' && !req.userObject.privileges.canAdmin)) {
-                throw({status: 403, message: 'User has insufficient privilege to complete this request.'})
+                throw(new SmError.PrivilegeError("User has insufficient privilege to complete this request."))
             }
             return true;
         }

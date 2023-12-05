@@ -11,13 +11,6 @@ class SmError extends Error {
   }
 }
 
-class PrivilegeError extends SmError {
-  constructor(detail) {
-    super('User has insufficient privilege to complete this request.')
-    this.status = 403
-    this.detail = detail
-  }
-}
 
 class ClientError extends SmError {
   constructor(detail) {
@@ -27,6 +20,21 @@ class ClientError extends SmError {
   }
 }
 
+class AuthorizeError extends SmError {
+  constructor(detail) {
+    super('Request not authorized.')
+    this.status = 401
+    this.detail = detail
+  }
+}
+
+class PrivilegeError extends SmError {
+  constructor(detail) {
+    super('User has insufficient privilege to complete this request.')
+    this.status = 403
+    this.detail = detail
+  }
+}
 class NotFoundError extends SmError {
   constructor(detail) {
     super('Resource not found.')
@@ -52,6 +60,7 @@ class InternalError extends SmError {
 
 module.exports = {
   SmError,
+  AuthorizeError,  
   PrivilegeError,
   NotFoundError,
   ClientError,
