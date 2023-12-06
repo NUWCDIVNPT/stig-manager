@@ -1,5 +1,5 @@
 const Importer = require('./lib/mysql-import.js')
-const logger = require('../../../utils/logger')
+const logger = require('../../utils/logger')
 const path = require('path')
 const fs = require('fs')
 

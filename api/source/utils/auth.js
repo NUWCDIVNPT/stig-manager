@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 const retry = require('async-retry')
 const _ = require('lodash')
 const {promisify} = require('util')
-const User = require(`../service/${config.database.type}/UserService`)
+const User = require(`../service/UserService`)
 const axios = require('axios')
 
 let jwksUri

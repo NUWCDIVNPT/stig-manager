@@ -1,5 +1,5 @@
 const config = require('../utils/config')
-const MetricsService = require(`../service/${config.database.type}/MetricsService`)
+const MetricsService = require(`../service/MetricsService`)
 const Collection = require('./Collection')
 const Security = require('../utils/accessLevels')
 const SmError = require('../utils/error')
