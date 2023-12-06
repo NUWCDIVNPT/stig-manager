@@ -1,6 +1,5 @@
 #!/bin/bash
 
-SPHINX_IMAGE=sphinxdoc/sphinx:7.1.2
 SPHINX_IMAGE_W_REQUIREMENTS=sphinx-w-requirements
 
 # Change to this script directory
