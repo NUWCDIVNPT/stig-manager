@@ -26,6 +26,9 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         const decoded = await verifyAndDecodeToken (token, getKey, options)
         req.access_token = decoded
         req.bearer = token
+        req.userObject = {
+            email: decoded[config.oauth.claims.email] ||  'None Provided'
+        }        
         // Get username from configured claim in token, or fall back through precedence list
         const usernamePrecedence = [config.oauth.claims.username, config.oauth.claims.servicename, "azp", "client_id", "clientId"]
         for (const precedence of usernamePrecedence) {
