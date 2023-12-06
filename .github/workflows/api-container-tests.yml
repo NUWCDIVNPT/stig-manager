@@ -19,18 +19,10 @@ jobs:
         container:
           - name: "stig-manager-alpine"
             build_arg: "node:lts-alpine"
-          - name: "stig-manager-ironbank"
-            build_arg: "registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.16.0"
         mysql_version: ["8.0.33", "8.0.34", "8.0.35"]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      - name: Login to Iron Bank
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # pin@v2
-        with:
-          registry: registry1.dso.mil
-          username: ${{ secrets.IRONBANK_USERNAME }}
-          password: ${{ secrets.IRONBANK_CLI_TOKEN }}
       - name: Build image for ${{ matrix.container.name }}
         id: image-build
         run: |
