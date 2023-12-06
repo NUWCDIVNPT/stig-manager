@@ -1,6 +1,6 @@
 const writer = require('../utils/writer.js')
 const config = require('../utils/config')
-const OperationService = require(`../service/${config.database.type}/OperationService`)
+const OperationService = require(`../service/OperationService`)
 const Asset = require(`./Asset`)
 const Collection = require(`./Collection`)
 const User = require(`./User`)

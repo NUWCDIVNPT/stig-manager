@@ -1,8 +1,8 @@
 'use strict';
 
 const config = require('../utils/config')
-const ReviewService = require(`../service/${config.database.type}/ReviewService`)
-const CollectionService = require(`../service/${config.database.type}/CollectionService`)
+const ReviewService = require(`../service/ReviewService`)
+const CollectionService = require(`../service/CollectionService`)
 const Collection = require(`./Collection`)
 const SmError = require('../utils/error')
 const Security = require('../utils/accessLevels')

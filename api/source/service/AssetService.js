@@ -1,6 +1,6 @@
 'use strict';
 const dbUtils = require('./utils')
-const config = require('../../utils/config')
+const config = require('../utils/config')
 const uuid = require('uuid')
 
 let _this = this

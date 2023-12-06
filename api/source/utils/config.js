@@ -46,7 +46,6 @@ let config = {
         maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824"
     },
     database: {
-        type: process.env.STIGMAN_DB_TYPE || "mysql",
         host: process.env.STIGMAN_DB_HOST || "localhost",
         port: process.env.STIGMAN_DB_PORT || 3306,
         schema: process.env.STIGMAN_DB_SCHEMA || "stigman",
