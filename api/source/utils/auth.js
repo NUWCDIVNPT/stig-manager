@@ -29,20 +29,15 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         req.userObject = {
             email: decoded[config.oauth.claims.email] ||  'None Provided'
         }        
-        // Get username from configured claim in token, or fall back through precedence list
-        const usernamePrecedence = [config.oauth.claims.username, config.oauth.claims.servicename, "azp", "client_id", "clientId"]
-        for (const precedence of usernamePrecedence) {
-            if (decoded[precedence]) {
-                req.userObject.username = decoded[precedence];
-                break;
-            }
-        }
+        // Get username from configured claims in token, or fall back through precedence list. 
+        const usernamePrecedence = [config.oauth.claims.username, "preferred_username", config.oauth.claims.servicename, "azp", "client_id", "clientId"]
+        req.userObject.username = decoded[usernamePrecedence.find(element => !!decoded[element])]
+        // If no username found, throw Privilege error
         if (req.userObject.username === undefined) {
             throw(new SmError.PrivilegeError("No token claim mappable to username found"))
         }    
-        // Get display name from specified claim in token, or use username
+        // Get display name from configured claim in token, or use username
         req.userObject.displayName = decoded[config.oauth.claims.name] || req.userObject.username
-        req.userObject.email = decoded[config.oauth.claims.email] ||  'None Provided'
         // Check scopes
         const grantedScopes = typeof decoded[config.oauth.claims.scope] === 'string' ? 
             decoded[config.oauth.claims.scope].split(' ') : 
