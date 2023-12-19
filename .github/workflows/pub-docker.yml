@@ -174,7 +174,7 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.16.0
+            BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.18
             COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
             COMMIT_SHA=${{ steps.prep.outputs.sha }}
             COMMIT_TAG=${{ steps.prep.outputs.tag }}
