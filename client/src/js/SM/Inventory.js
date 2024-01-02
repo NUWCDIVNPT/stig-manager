@@ -86,7 +86,7 @@ SM.Inventory.CsvAssetFieldSet = Ext.extend(Ext.form.FieldSet, {
         apiProperty: 'stigs',
         header: 'STIGs',
         delimitedProperty: 'benchmarkId',
-        delimiter: ','
+        delimiter: this.state.stigsDelimiter
       },
       checked: this.state.stigs,
       listeners: {
@@ -201,7 +201,7 @@ SM.Inventory.CsvStigFieldSet = Ext.extend(Ext.form.FieldSet, {
         apiProperty: 'assets',
         header: 'Assets',
         delimitedProperty: 'name',
-        delimiter: ','
+        delimiter: this.state.assetsDelimiter
       },
       checked: this.state.assets,
       listeners: {

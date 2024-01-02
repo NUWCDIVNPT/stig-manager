@@ -253,8 +253,7 @@ fieldset.x-panel-collapsed {
 }
 
 .x-btn button.sm-error-icon {
-    background-color: #602020;
-    background-image: url("../img/remove.svg")
+    background-color: #602020
 }
 
 .x-btn-bc, .x-btn-bl, .x-btn-br, .x-btn-mc, .x-btn-ml, .x-btn-mr, .x-btn-tc, .x-btn-tl, .x-btn-tr {
@@ -1365,18 +1364,6 @@ td.sort-asc .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.x-grid3-hd-men
     background-color: #181a1b
 }
 
-.x-dd-drop-nodrop .x-dd-drop-icon {
-    background-image: url("../ext/resources/images/default/dd/drop-no.gif")
-}
-
-.x-dd-drop-ok .x-dd-drop-icon {
-    background-image: url("../ext/resources/images/default/dd/drop-yes.gif")
-}
-
-.x-dd-drop-ok-add .x-dd-drop-icon {
-    background-image: url("../ext/resources/images/default/dd/drop-add.gif")
-}
-
 .x-view-selector {
     background-color: #2f3335;
     border-color: #52585c
@@ -2433,11 +2420,6 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
     background-color: initial!important
 }
 
-.icon-del {
-    background-image: url("../img/remove.svg");
-    background-color: initial
-}
-
 .icon-save {
     background-image: url("../img/save.gif")!important;
     background-color: initial!important
@@ -3184,3 +3166,10 @@ embed[type="application/pdf"] {
 .sm-diff-del {
     background-color: hsl(0deg 71% 25%)
 }
+.sm-round-panel .x-panel-header.sm-selections-panel-header {
+	background-color: #425722;
+}
+.sm-grabbing *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected {
+    cursor: url("../img/drag-drop-dark.svg"), grabbing;
+}
+  

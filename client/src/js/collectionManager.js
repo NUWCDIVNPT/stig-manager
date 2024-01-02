@@ -28,7 +28,7 @@ async function addCollectionManager( params ) {
 		let collectionPanel = new SM.Collection.ManagePanel({
 			collectionId: collectionId,
 			apiCollection: apiCollection,
-			title: `Collection Properties (ID ${collectionId})`,
+			title: `Manage Collection (${collectionId})`,
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			region: 'west',

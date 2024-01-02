@@ -1058,19 +1058,12 @@ Double-click an existing label to edit it.
 
 -------------------------------
 
-When a Label is selected in Label tab of the Collection Properties Panel, the "Tag Assets..." button is enabled. Click the "Tag Assets..." button to view the Assets that are tagged with that label. Click the "Assign Assets" button on this screen to tag new Assets with that label. 
+When a Label is selected in Label tab of the Collection Properties Panel, the "Tag Assets..." button is enabled. Click the "Tag Assets..." button to view and tag Assets with the selected Label. Hover over the Asset's name to see its currently assigned STIGs. Click on a column header to filter on that column's data, or to add or remove columns of Asset information.
 
 .. thumbnail:: /assets/images/collection-manage-tag-assets-modal.png
       :width: 50% 
       :show_caption: True
-      :title: View the Assets tagged with a Particular Label
-
-|
-
-.. thumbnail:: /assets/images/collection-manage-tag-assets-assign-label-modal.png
-      :width: 50% 
-      :show_caption: True
-      :title: Tag new Assets with a Label      
+      :title: View and tag Assets with the selected Label
 
 |
 
@@ -1307,7 +1300,7 @@ This panel lists all the STIGs that have been assigned to at least one Asset in 
 
 Assign STIG
 ~~~~~~~~~~~~~~~~~~~~~~
-Select Assign STIG to add a new STIG to the Collection. A popup will allow you to select a STIG that is not yet assigned to an Asset. Click the Assign STIG button on this popup to select Assets that should have this STIG assigned to them. 
+Select Assign STIG to add a new STIG to the Collection. A popup will allow you to view any Assets that are assigned the selected STIG, and to assign that STIG to new Assets. Hover over the Asset's name to see its currently assigned STIGs. Click on a column header to filter on that column's data, or to add or remove columns of Asset information.
 
 .. thumbnail:: /assets/images/stig-assignments.png
       :width: 50% 

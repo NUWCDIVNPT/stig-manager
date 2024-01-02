@@ -1,3 +1,38 @@
+1.3.14
+-----
+
+Changes:
+
+  - (API/UI) Fixed issue that could create invalid filenames for export when Asset/Collection names used reserved characters
+  - (UI) Fixed issue that caused borders of certain UI elements to disappear when zoomed
+  - (API) Refactored post/put/patch asset review handling
+  - (API) Fixed issue that could cause Review status to not reset in certain cases
+  - (API/Dependency) Updated axios dependency in response to vulnerability
+
+1.3.13
+-----
+
+Changes:
+
+  - (UI/fix) Addressed bug in .cklb parsing preventing import.
+
+
+1.3.12
+-----
+
+Changes:
+
+  - (UI) Asset Label and STIG Assignment interface update
+  - (UI) Resolved issue affecting updating reviews from Collection Review Workspace that were created with old RuleIds. 
+  - (UI) Addressed issue affecting delimiter handling for inventory exports 
+  - (API) Resolved issue that could be created when submitting Reviews for Rules with identical ids/fingerprints
+  - (API) Statistics were not being recalculated when STIG Assignments were made using PUT endpoint
+  - (Workflows) Refactored to incorporate SonarCloud analysis and matrix testing
+  - (API) Remove automatic STIG download on first start
+  - (Docs) Build dependency update
+  - (API) Refactoring service references for clarity
+
+
 1.3.11
 -----
 

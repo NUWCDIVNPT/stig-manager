@@ -1,4 +1,4 @@
-name: Test API, Generate Coverage, and Run SonarCloud Analysis
+name: Test API Generate Coverage, and Run SonarCloud Analysis
 on:
   workflow_dispatch:
   pull_request:
@@ -9,6 +9,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
+
   push:
     branches:
       - main
@@ -198,17 +199,20 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage-report
+      - name: Move lcov.info to api/source
+        run: mv lcov.info ./api/source/
+
       - name: Analyze API with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }} # Needed to push to SonarCloud
         with:
           # Additional arguments for the sonarcloud scanner
           projectBaseDir: ./api/source
-          args: -Dsonar.projectKey=Matte22_stig-manager
-            -Dsonar.organization=stig-manager
-         
+          args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-api
+            -Dsonar.projectName=nuwcdivnpt_stig-manager-api
+            -Dsonar.organization=nuwcdivnpt
             -Dsonar.inclusions=**/*.js
             -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
             -Dsonar.javascript.lcov.reportPaths=./lcov.info

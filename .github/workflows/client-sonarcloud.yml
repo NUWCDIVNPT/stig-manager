@@ -1,17 +1,22 @@
-name: Test Client, Generate Coverage, and Run SonarCloud Analysis
+name: Client SonarCloud
 on:
   workflow_dispatch:
   pull_request:
     branches:
       - main
     paths:
-      - "client/src/**"
+      - "client/src/js/**"
+      - "client/src/css/**"
+      - "client/src/serviceWorker.js"
       - ".github/workflows/client-sonarcloud.yml"
+
   push:
     branches:
       - main
     paths:
-      - "client/src/**"
+      - "client/src/js/**"
+      - "client/src/css/**"
+      - "client/src/serviceWorker.js"
       - ".github/workflows/client-sonarcloud.yml"
 
 permissions:
@@ -20,8 +25,9 @@ permissions:
 jobs:
   SonarCloudAnalysis-Client:
     name: SonarCloud Analysis client
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest 
     steps:
+      #checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -30,13 +36,14 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_CLIENT }} # Needed to push to SonarCloud
         with:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
-          args: -Dsonar.projectKey=Matte22_stig-manager
-            -Dsonar.organization=stig-manager
-            -Dsonar.inclusions=**/*.js,**/*.html
+          args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-client
+            -Dsonar.projectName=nuwcdivnpt_stig-manager-client
+            -Dsonar.organization=nuwcdivnpt
+            -Dsonar.inclusions=**/*.js,**/*.html,**/*.css
             -Dsonar.exclusions=**/node_modules/**
 
     #   This will fail the action if Quality Gate fails (leaving out for now )

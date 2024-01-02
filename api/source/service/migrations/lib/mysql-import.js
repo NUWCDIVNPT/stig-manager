@@ -6,7 +6,7 @@
  * @license MIT
  * 
  * Modified to support mysql2 PromisePool
- * https://github.com/NUWCDIVNPT/stig-manager/api/source/service/mysql/migrations/lib/mysql-import.js
+ * https://github.com/NUWCDIVNPT/stig-manager/api/source/service/migrations/lib/mysql-import.js
  **/
 
 'use strict';

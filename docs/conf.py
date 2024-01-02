@@ -34,10 +34,8 @@ extensions = [
     'sphinx_rtd_theme',
     'sphinxcontrib.images',
     'sphinx.ext.todo',
-    'recommonmark',
+    'myst_parser',    
     'sphinx_tabs.tabs'
-    # ,
-    # 'sphinx_markdown_tables',
 ]
 
 todo_include_todos = True
