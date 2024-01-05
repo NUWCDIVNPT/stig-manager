@@ -231,7 +231,7 @@ async function startServer(app) {
       ;[authReturn, isNewDb] = await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
     }
     catch (e) {
-      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies'});
+      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)});
       process.exit(1);  
     }
   
