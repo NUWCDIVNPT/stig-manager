@@ -1,4 +1,12 @@
-1.4.0
+1.4.1
+-----
+
+Changes:
+
+  - (API) Fix regression preventing TLS connection to MySQL database
+
+
+  1.4.0
 -----
 
 Changes:
