@@ -41,13 +41,13 @@ function getPoolConfig() {
   if (config.database.tls.ca_file || config.database.tls.cert_file || config.database.tls.key_file) {
     const sslConfig = {}
     if (config.database.tls.ca_file) {
-      sslConfig.ca = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.ca_file))
+      sslConfig.ca = fs.readFileSync(path.join(__dirname, '..', 'tls', config.database.tls.ca_file))
     }
     if (config.database.tls.cert_file) {
-      sslConfig.cert = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.cert_file))
+      sslConfig.cert = fs.readFileSync(path.join(__dirname, '..', 'tls', config.database.tls.cert_file))
     }
     if (config.database.tls.key_file) {
-      sslConfig.key = fs.readFileSync(path.join(__dirname, '..', '..', 'tls', config.database.tls.key_file))
+      sslConfig.key = fs.readFileSync(path.join(__dirname, '..', 'tls', config.database.tls.key_file))
     }
     poolConfig.ssl = sslConfig
   }
