@@ -1,6 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../utils/config')
+const CollectionService = require(`./CollectionService`)
 
 
 /**
@@ -607,20 +608,124 @@ exports.getDetails = async function() {
     ORDER BY
       sub.collectionId`
 
+
+      const sqlDisabledCollectionCount = `
+      select 
+        c.collectionId,
+        count(distinct a.assetId) as assetCnt,
+        count(r.reviewId) as reviewCnt,
+        count(rh.historyId) as historyCnt
+      from 
+        collection c
+      left join asset a on a.collectionId = c.collectionId
+      left join review r on r.assetId = a.assetId
+      left join review_history rh on rh.reviewId = r.reviewId
+      where 
+        c.state = "disabled"
+      group by 
+        c.collectionId
+      `
+
+      const sqlDisabledAssetsInEnabledCollections = `
+      select 
+        c.collectionId,
+        count(distinct a.assetId) as disabledAssetCnt,
+        count(r.reviewId) as reviewCnt,
+        count(rh.historyId) as historyCnt
+      from 
+        collection c
+      left join asset a on a.collectionId = c.collectionId
+      left join review r on r.assetId = a.assetId
+      left join review_history rh on rh.reviewId = r.reviewId
+      where 
+        a.state = "disabled" and 
+        c.state = "enabled"
+      group by 
+        c.collectionId
+      `
+
+      
+      const sqlCountsByCollection = `
+      select 
+        c.collectionId,
+        c.state,
+        count(distinct a.assetId) as assetCnt,
+        count(distinct r.reviewId) as reviewCnt,
+        count(rh.historyId) as historyCnt
+      from 
+        collection c
+      left join asset a on a.collectionId = c.collectionId
+      left join review r on r.assetId = a.assetId
+      left join review_history rh on rh.reviewId = r.reviewId
+      group by 
+        c.collectionId
+      `
+
+      const sqlOverallTotals = `
+      select 
+        count(distinct c.collectionId) as collectionCnt,
+        count(distinct a.assetId) as assetCnt,
+        count(distinct r.reviewId) as reviewCnt,
+        count(rh.historyId) as historyCnt
+      from 
+        collection c
+      left join asset a on a.collectionId = c.collectionId
+      left join review r on r.assetId = a.assetId
+      left join review_history rh on rh.reviewId = r.reviewId
+      `
+
+      //orphaned reviews!
+
     await dbUtils.pool.query(sqlAnalyze)
 
-    const [[schemaInfoArray], [assetStig]] = await Promise.all([
+    const [[schemaInfoArray], [assetStig], [disabledCollections], [disabledAssetsInEnabledCollections], [countsByCollection],[overallTotals]] = await Promise.all([
       dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
-      dbUtils.pool.query(sqlCollectionAssetStigs)
+      dbUtils.pool.query(sqlCollectionAssetStigs),
+      dbUtils.pool.query(sqlDisabledCollectionCount),
+      dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections),
+      dbUtils.pool.query(sqlCountsByCollection),
+      dbUtils.pool.query(sqlOverallTotals)
+
+
     ])
 
-    const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
+
+    // call reviewHistoryStatsByCollection for each collection:
+    let elevate = true;
+    const collections = await CollectionService.getCollections({}, '', elevate)
+    let collectionIds = collections.map(collection => collection.collectionId);
+    let reviewHistoryStatsResults = []
+    for (const collection of collectionIds) {
+      let stats = await CollectionService.getReviewHistoryStatsByCollection(collection)
+      reviewHistoryStatsResults.push(
+        {
+          collectionId: collection, 
+          historyEntryCount: stats.collectionHistoryEntryCount,
+          oldestHistoryEntry: stats.oldestHistoryEntryDate
+        })
+    }
+    // let reviewHistoryStatsResult = await CollectionService.getReviewHistoryStatsByCollection(collections[0].collectionId)
+    // // res.json(reviewHistoryStatsresult)
+
+    let endDate = '2021-01-01'
+    let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
+
+
+
+
+    // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
 
     return ({
       dbInfo: {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
-      assetStig
+      assetStig,
+      disabledCollections,
+      disabledAssetsInEnabledCollections,
+      reviewHistoryStatsResults,
+      reviewHistoryStatsOld,
+      countsByCollection,
+      overallTotals
     })
 }
