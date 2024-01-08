@@ -2,12 +2,14 @@
 
 const writer = require('../utils/writer');
 const config = require('../utils/config')
-const AssetService = require(`../service/${config.database.type}/AssetService`);
-const CollectionService = require(`../service/${config.database.type}/CollectionService`);
-const dbUtils = require(`../service/${config.database.type}/utils`)
+const escape = require('../utils/escape')
+const AssetService = require(`../service/AssetService`);
+const CollectionService = require(`../service/CollectionService`);
+const dbUtils = require(`../service/utils`)
 const {XMLBuilder} = require("fast-xml-parser")
 const SmError = require('../utils/error')
 const {escapeForXml} = require('../utils/escape')
+
 
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
@@ -284,7 +286,8 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
       }
       else if (format === 'cklb') {
         response.cklb.title = `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}`
-        writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.cklb`)
+        writer.writeInlineFile(res, JSON.stringify(response.cklb), filename, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'ckl') {
         const builder = new XMLBuilder({
@@ -300,7 +303,8 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
-        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`)
+        writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'xccdf') {
         const builder = new XMLBuilder({
@@ -318,7 +322,8 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
-        writer.writeInlineFile(res, xml, `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`)
+        writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
     }
     else {
@@ -358,7 +363,8 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
     const response = await AssetService.getChecklistByAsset(assetId, stigs, format, false, req.userObject )
 
     if (format === 'cklb') {
-      writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}.cklb`, 'application/json') 
+      let filename = escape.escapeFilename(`${response.assetName}.cklb`)
+      writer.writeInlineFile(res, JSON.stringify(response.cklb), filename, 'application/json') 
     }
     else if (format === 'ckl') {
       const builder = new XMLBuilder({
@@ -374,7 +380,8 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
       })
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
       xml += builder.build(response.xmlJs)
-      writer.writeInlineFile(res, xml, `${response.assetName}.ckl`, 'application/xml')
+      let filename = escape.escapeFilename(`${response.assetName}.ckl`)
+      writer.writeInlineFile(res, xml, filename, 'application/xml')
     }
   }
   catch (err) {

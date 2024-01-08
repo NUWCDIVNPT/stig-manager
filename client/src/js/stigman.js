@@ -118,7 +118,6 @@ async function loadApp () {
 			layoutConfig: {
 				tableAttrs: {
 					style: {
-						width: '100%',
 						padding: '20px',
 						"table-layout": 'fixed'
 

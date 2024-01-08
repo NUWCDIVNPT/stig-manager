@@ -1,3 +1,46 @@
+1.4.1
+-----
+
+Changes:
+
+  - (API) Fix regression preventing TLS connection to MySQL database
+
+
+  1.4.0
+-----
+
+Changes:
+
+  - (API/UI) Prevent invalid label assignments that could occur in some circumstances
+  - (API) Fix for incorrect import statistics when importing multi-STIG ckl files
+  - (API) Remove STIGMAN_DB_TYPE configuration option
+  - (API) Refactor service folder structure and references
+  - (Docs) Refactor documentation build process
+  - (Workflows) Remove Iron Bank images from matrix testing workflow
+  - (API) Change default behavior for STIGMAN_JWT_SERVICENAME_CLAIM processing to prefer standard OIDC claim
+  - (API) Reject requests when valid username cannot be identified
+  - (API/Dependency) Change default Iron Bank base image tag in response to vulnerability
+
+
+1.3.14
+-----
+
+Changes:
+
+  - (API/UI) Fixed issue that could create invalid filenames for export when Asset/Collection names used reserved characters
+  - (UI) Fixed issue that caused borders of certain UI elements to disappear when zoomed
+  - (API) Refactored post/put/patch asset review handling
+  - (API) Fixed issue that could cause Review status to not reset in certain cases
+  - (API/Dependency) Updated axios dependency in response to vulnerability
+
+1.3.13
+-----
+
+Changes:
+
+  - (UI/fix) Addressed bug in .cklb parsing preventing import.
+
+
 1.3.12
 -----
 

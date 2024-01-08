@@ -1,6 +1,6 @@
 'use strict';
 const dbUtils = require('./utils')
-const config = require('../../utils/config')
+const config = require('../utils/config')
 const uuid = require('uuid')
 
 let _this = this
@@ -439,8 +439,8 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
               FROM
                 collection_label
               WHERE
-                uuid IN (?)`
-          await connection.query(sqlInsertLabels, [assetId, uuidBinds])
+                uuid IN (?) and collectionId = ?`
+          await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
         }
       }
 

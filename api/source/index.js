@@ -28,7 +28,7 @@ const jsyaml = require('js-yaml');
 const fs = require('fs')
 const multer  = require('multer')
 const writer = require('./utils/writer.js')
-const OperationSvc = require(`./service/${config.database.type}/OperationService`)
+const OperationSvc = require(`./service/OperationService`)
 const { middleware: openApiMiddleware, resolvers } = require('express-openapi-validator')
 
 // express-openapi-validator does not expose top-level HttpError in their index.js. 
@@ -224,14 +224,14 @@ const STIGMAN = {
 }
 
 async function startServer(app) {
-    let db = require(`./service/${config.database.type}/utils`)
+    let db = require(`./service/utils`)
     let isNewDb
     try {
       let authReturn
       ;[authReturn, isNewDb] = await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
     }
     catch (e) {
-      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies'});
+      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)});
       process.exit(1);  
     }
   

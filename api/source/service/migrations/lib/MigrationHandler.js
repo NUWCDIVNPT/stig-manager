@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require('path')
-const logger = require('../../../../utils/logger')
+const logger = require('../../../utils/logger')
 
 module.exports = class MigrationHandler {
     constructor(upCommands = [], downCommands = []) {

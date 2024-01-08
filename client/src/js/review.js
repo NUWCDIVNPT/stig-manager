@@ -219,7 +219,7 @@ async function addReview( params ) {
                   xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                       var contentDispo = this.getResponseHeader('Content-Disposition')
-                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^\r\n"']*)['"]?;?/)[1]
                       resolve({
                         blob: xhr.response,
                         filename: fileName
@@ -267,7 +267,7 @@ async function addReview( params ) {
                   xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                       var contentDispo = this.getResponseHeader('Content-Disposition')
-                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                      var fileName = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^\r\n"']*)['"]?;?/)[1]
                       resolve({
                         blob: xhr.response,
                         filename: fileName
@@ -314,7 +314,7 @@ async function addReview( params ) {
                 })
                 const contentDispo = response.headers.get("content-disposition")
                 if (contentDispo) {
-                  const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)[1]
+                  const filename = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^\r\n"']*)['"]?;?/)[1]
                   console.log(filename)
                   const blob = await response.blob()
                   saveAs(blob, filename)

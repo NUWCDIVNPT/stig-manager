@@ -3,7 +3,7 @@
 const config = require('../utils/config');
 const SmError = require('../utils/error');
 const parsers = require('../utils/parsers.js')
-const STIGService = require(`../service/${config.database.type}/STIGService`)
+const STIGService = require(`../service/STIGService`)
 
 module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
   try {
