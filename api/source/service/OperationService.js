@@ -691,24 +691,24 @@ exports.getDetails = async function() {
 
 
     // call reviewHistoryStatsByCollection for each collection:
-    let elevate = true;
-    const collections = await CollectionService.getCollections({}, '', elevate)
-    let collectionIds = collections.map(collection => collection.collectionId);
-    let reviewHistoryStatsResults = []
-    for (const collection of collectionIds) {
-      let stats = await CollectionService.getReviewHistoryStatsByCollection(collection)
-      reviewHistoryStatsResults.push(
-        {
-          collectionId: collection, 
-          historyEntryCount: stats.collectionHistoryEntryCount,
-          oldestHistoryEntry: stats.oldestHistoryEntryDate
-        })
-    }
-    // let reviewHistoryStatsResult = await CollectionService.getReviewHistoryStatsByCollection(collections[0].collectionId)
-    // // res.json(reviewHistoryStatsresult)
+    // let elevate = true;
+    // const collections = await CollectionService.getCollections({}, '', elevate)
+    // let collectionIds = collections.map(collection => collection.collectionId);
+    // let reviewHistoryStatsResults = []
+    // for (const collection of collectionIds) {
+    //   let stats = await CollectionService.getReviewHistoryStatsByCollection(collection)
+    //   reviewHistoryStatsResults.push(
+    //     {
+    //       collectionId: collection, 
+    //       historyEntryCount: stats.collectionHistoryEntryCount,
+    //       oldestHistoryEntry: stats.oldestHistoryEntryDate
+    //     })
+    // }
+    // // let reviewHistoryStatsResult = await CollectionService.getReviewHistoryStatsByCollection(collections[0].collectionId)
+    // // // res.json(reviewHistoryStatsresult)
 
-    let endDate = '2021-01-01'
-    let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
+    // let endDate = '2021-01-01'
+    // let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
 
 
 
@@ -723,8 +723,8 @@ exports.getDetails = async function() {
       assetStig,
       disabledCollections,
       disabledAssetsInEnabledCollections,
-      reviewHistoryStatsResults,
-      reviewHistoryStatsOld,
+      // reviewHistoryStatsResults,
+      // reviewHistoryStatsOld,
       countsByCollection,
       overallTotals
     })
