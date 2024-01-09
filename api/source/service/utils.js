@@ -52,6 +52,7 @@ function getPoolConfig() {
     poolConfig.ssl = sslConfig
   }
   return poolConfig
+}
 
 module.exports.initializeDatabase = async function () {
   // Create the connection pool
@@ -504,4 +505,5 @@ module.exports.updateDefaultRev = async function (connection, {collectionId, col
   const sqlInsert = `INSERT INTO default_rev(collectionId, benchmarkId, revId, revisionPinned) SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev ${whereClause}`
   await (connection ?? _this.pool).query(sqlDelete, binds)
   await (connection ?? _this.pool).query(sqlInsert, binds)
+  
 }
