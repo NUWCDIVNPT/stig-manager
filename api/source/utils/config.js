@@ -74,8 +74,8 @@ let config = {
         authority: process.env.STIGMAN_OIDC_PROVIDER || process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/auth/realms/stigman",
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
-            username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
-            servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM || "clientId",
+            username: process.env.STIGMAN_JWT_USERNAME_CLAIM,
+            servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
