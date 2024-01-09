@@ -225,10 +225,8 @@ const STIGMAN = {
 
 async function startServer(app) {
     let db = require(`./service/utils`)
-    let isNewDb
     try {
-      let authReturn
-      ;[authReturn, isNewDb] = await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
+      await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
     }
     catch (e) {
       logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies'});
@@ -240,18 +238,24 @@ async function startServer(app) {
       await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
     }
 
-    // Start the server
-    const server = http.createServer(app).listen(config.http.port, function () {
-      const endTime = process.hrtime.bigint()
-      logger.writeInfo('index', 'started', {
-        durationS: Number(endTime - startTime) / 1e9, 
-        port: config.http.port,
-        api: '/api',
-        client: config.client.disabled ? undefined : '/',
-        documentation: config.docs.disabled ? undefined : '/docs',
-        swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
-      })
-    })
+    try {
+      // Start the server
+      http.createServer(app).listen(config.http.port, function () {
+        const endTime = process.hrtime.bigint()
+        logger.writeInfo('index', 'started', {
+          durationS: Number(endTime - startTime) / 1e9, 
+          port: config.http.port,
+          api: '/api',
+          client: config.client.disabled ? undefined : '/',
+          documentation: config.docs.disabled ? undefined : '/docs',
+          swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
+        })
+      });
+    } catch (error) {
+      // Handle the error
+      console.error('Error during server startup:', error);
+    }
+
 }
 
 function modulePathResolver( handlersPath, route, apiDoc ) {

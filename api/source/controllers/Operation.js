@@ -103,7 +103,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
         appdata = req.body
       }
       let options = []
-      let response = await OperationService.replaceAppData(options, appdata, req.userObject, res )
+      await OperationService.replaceAppData(options, appdata, req.userObject, res )
     }
     else {
       throw new SmError.PrivilegeError()
