@@ -493,7 +493,8 @@ from
     await connection.query(sqlTempTable)
     
     let validationErrors = []
-    let [table] = await connection.query('select * from validated_reviews')
+    // let [table] = await connection.query('select * from validated_reviews')
+    
     let [counts] = await connection.query(`select
     coalesce(sum(case when error is not null then 1 else 0 end),0) as failedValidations,
     coalesce(sum(case when error is null and reviewId is null then 1 else 0 end),0) as inserts,
