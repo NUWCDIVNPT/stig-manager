@@ -30,10 +30,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     ]
 
     // PROJECTIONS
-    if (inProjection && inProjection.includes('privileges')) {
-    }
-
-    if (inProjection && inProjection.includes('collectionGrants')) {
+    if (inProjection?.includes('collectionGrants')) {
       joins.push('left join collection c on cg.collectionId = c.collectionId')
       columns.push(`case when count(cg.cgId) > 0 then 
       json_arrayagg(
@@ -47,7 +44,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       ) else json_array() end as collectionGrants`)
     }
 
-    if (inProjection && inProjection.includes('statistics')) {
+    if (inProjection?.includes('statistics')) {
       columns.push(`json_object(
           'created', date_format(ud.created, '%Y-%m-%dT%TZ'),
           'collectionGrantCount', count(cg.cgId),

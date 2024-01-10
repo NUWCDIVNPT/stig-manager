@@ -1421,7 +1421,7 @@ exports.patchReviewMetadata = async function ( assetId, ruleId, metadata ) {
       review.assetId = ?
       and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 
@@ -1437,7 +1437,7 @@ exports.putReviewMetadata = async function ( assetId, ruleId, metadata ) {
       review.assetId = ?
       and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 

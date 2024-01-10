@@ -187,7 +187,7 @@ module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkId
 // @param elevate Boolean 
 // @param userObject Object
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
-  const permitted = [], rejected = []
+  let permitted = [], rejected = []
   if (elevate) {
     permitted = reviews
   }
@@ -256,7 +256,7 @@ module.exports.updateStatsAssetStig = async function(connection, {
   benchmarkIds,
   rules,
   saIds }) {
-  if (!connection) { throw ('Connection required')}
+  if (!connection) { throw new Error ('Connection required')}
   // Handle optional predicates, 
   let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
   let binds = []
