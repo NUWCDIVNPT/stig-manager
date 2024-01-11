@@ -238,24 +238,18 @@ async function startServer(app) {
       await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
     }
 
-    try {
-      // Start the server
-      http.createServer(app).listen(config.http.port, function () {
-        const endTime = process.hrtime.bigint()
-        logger.writeInfo('index', 'started', {
-          durationS: Number(endTime - startTime) / 1e9, 
-          port: config.http.port,
-          api: '/api',
-          client: config.client.disabled ? undefined : '/',
-          documentation: config.docs.disabled ? undefined : '/docs',
-          swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
-        })
-      });
-    } catch (error) {
-      // Handle the error
-      console.error('Error during server startup:', error);
-    }
-
+    // Start the server
+    const server = http.createServer(app).listen(config.http.port, function () {
+      const endTime = process.hrtime.bigint()
+      logger.writeInfo('index', 'started', {
+        durationS: Number(endTime - startTime) / 1e9, 
+        port: config.http.port,
+        api: '/api',
+        client: config.client.disabled ? undefined : '/',
+        documentation: config.docs.disabled ? undefined : '/docs',
+        swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
+      })
+    })
 }
 
 function modulePathResolver( handlersPath, route, apiDoc ) {
