@@ -511,14 +511,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       }
     }
-
-    // // Commit
-    // hrstart = process.hrtime() 
-    // res.write(`Starting commit\n`)
-    // await connection.query('COMMIT')
     res.write(`Commit successful\n`)
-    // hrend = process.hrtime(hrstart)
-    // stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
         // Stats
         res.write('Calculating status statistics\n')
