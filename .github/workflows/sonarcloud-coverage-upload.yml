@@ -1,4 +1,4 @@
-name: Comment on the pull request
+name: Comment on the pull request, grab coverage report and upload to SonarCloud
 
 # read-write repo token
 # access to secrets
@@ -11,9 +11,9 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.conclusion == 'success'
+    # if: >
+    #   github.event.workflow_run.event == 'pull_request' &&
+    #   github.event.workflow_run.conclusion == 'success'
     steps:
       - name: 'Download artifact'
         uses: actions/github-script@v3.1.0
@@ -58,10 +58,10 @@ jobs:
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'    
     steps:
-      # - name: Checkout repository
-      #   uses: actions/checkout@v3
-      #   with:
-      #     fetch-depth: 0 # Important to fetch all history for accurate blame information
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important to fetch all history for accurate blame information
       - name: Download lcov artifact
         uses: actions/download-artifact@v3
         with:

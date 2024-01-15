@@ -9,6 +9,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
+      - ".github/workflows/**"
 
   push:
     branches:
@@ -18,6 +19,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-audit-test-coverage-response.yml"
+      - ".github/workflows/**"
 
 env:
   STIGMAN_API_PORT: 64001
