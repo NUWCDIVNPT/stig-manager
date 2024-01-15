@@ -1,4 +1,4 @@
-name: Test API Generate Coverage, and Run SonarCloud Analysis
+name: Test API Generate Coverage, and Upload Newman and Coverage Artifacts
 on:
   workflow_dispatch:
   pull_request:
@@ -186,36 +186,46 @@ jobs:
         with:
           name: response-validation
           path: ./logs/response-validation.json
-  SonarCloudAnalysis-API:
-    name: SonarCloud Analysis API
-    needs: test_api
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Save PR number
+        run: |
+          mkdir -p ./pr
+          echo ${{ github.event.number }} > ./pr/NR
+      - uses: actions/upload-artifact@v2
         with:
-          fetch-depth: 0 # Important to fetch all history for accurate blame information
-      - name: Download lcov artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: coverage-report
-      - name: Move lcov.info to api/source
-        run: mv lcov.info ./api/source/
+          name: pr
+          path: pr/
+            
+            
+  # SonarCloudAnalysis-API:
+  #   name: SonarCloud Analysis API
+  #   needs: test_api
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0 # Important to fetch all history for accurate blame information
+  #     - name: Download lcov artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: coverage-report
+  #     - name: Move lcov.info to api/source
+  #       run: mv lcov.info ./api/source/
 
-      - name: Analyze API with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@v2.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }} # Needed to push to SonarCloud
-        with:
-          # Additional arguments for the sonarcloud scanner
-          projectBaseDir: ./api/source
-          args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-api
-            -Dsonar.projectName=nuwcdivnpt_stig-manager-api
-            -Dsonar.organization=nuwcdivnpt
-            -Dsonar.inclusions=**/*.js
-            -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
-            -Dsonar.javascript.lcov.reportPaths=./lcov.info
+  #     - name: Analyze API with SonarCloud
+  #       uses: SonarSource/sonarcloud-github-action@v2.0.2
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }} # Needed to push to SonarCloud
+  #       with:
+  #         # Additional arguments for the sonarcloud scanner
+  #         projectBaseDir: ./api/source
+  #         args: -Dsonar.projectKey=nuwcdivnpt_stig-manager-api
+  #           -Dsonar.projectName=nuwcdivnpt_stig-manager-api
+  #           -Dsonar.organization=nuwcdivnpt
+  #           -Dsonar.inclusions=**/*.js
+  #           -Dsonar.exclusions=**/node_modules/**,**/coverage-report/**
+  #           -Dsonar.javascript.lcov.reportPaths=./lcov.info
 
     #   This will fail the action if Quality Gate fails (leaving out for now )
     #  - name: Check Quality Gate
