@@ -48,7 +48,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number,
-              body: 'Everything is OK. Thank you for the PR!'
+              body: 'Everything is OK. Thank you for the PR! - another test'
             });
   SonarCloudAnalysis-API:
     name: SonarCloud Analysis API
