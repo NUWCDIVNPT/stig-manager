@@ -54,11 +54,14 @@ jobs:
     name: SonarCloud Analysis API
     # needs: test_api
     runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Important to fetch all history for accurate blame information
+      # - name: Checkout repository
+      #   uses: actions/checkout@v3
+      #   with:
+      #     fetch-depth: 0 # Important to fetch all history for accurate blame information
       - name: Download lcov artifact
         uses: actions/download-artifact@v3
         with:
