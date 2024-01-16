@@ -1659,8 +1659,6 @@ async function queryUnreviewedByCollection ({
     predicates.statements.push('rgr.severity IN ?')
     predicates.binds.push([severities])
   }
-
-  //const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})  // conflict possbility with groupBy
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy})
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
