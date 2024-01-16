@@ -337,7 +337,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         ])
       }
         for (const pin of c.stigs ?? []) {
-          if (pin.revisionPinned == true){
+          if (pin.revisionPinned){
             let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(pin.revisionStr)
             dml.collectionPins.insertBinds.push([
               parseInt(c.collectionId),
@@ -511,21 +511,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       }
     }
-
-    // // Stats
-    // res.write('Calculating status statistics\n')
-    // hrstart = process.hrtime();
-    // const statusStats = await dbUtils.updateStatsAssetStig( connection, {} )
-    // hrend = process.hrtime(hrstart)
-    // stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    // // Commit
-    // hrstart = process.hrtime() 
-    // res.write(`Starting commit\n`)
-    // await connection.query('COMMIT')
     res.write(`Commit successful\n`)
-    // hrend = process.hrtime(hrstart)
-    // stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
         // Stats
         res.write('Calculating status statistics\n')
@@ -614,7 +600,6 @@ exports.getDetails = async function() {
       dbUtils.pool.query(sqlCollectionAssetStigs)
     ])
 
-    const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
 
     return ({

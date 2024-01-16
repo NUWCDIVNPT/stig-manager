@@ -187,7 +187,7 @@ module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkId
 // @param elevate Boolean 
 // @param userObject Object
 module.exports.scrubReviewsByUser = async function(reviews, elevate, userObject) {
-  const permitted = [], rejected = []
+  let permitted = [], rejected = []
   if (elevate) {
     permitted = reviews
   }
@@ -256,7 +256,7 @@ module.exports.updateStatsAssetStig = async function(connection, {
   benchmarkIds,
   rules,
   saIds }) {
-  if (!connection) { throw ('Connection required')}
+  if (!connection) { throw new Error ('Connection required')}
   // Handle optional predicates, 
   let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
   let binds = []
@@ -505,4 +505,5 @@ module.exports.updateDefaultRev = async function (connection, {collectionId, col
   const sqlInsert = `INSERT INTO default_rev(collectionId, benchmarkId, revId, revisionPinned) SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev ${whereClause}`
   await (connection ?? _this.pool).query(sqlDelete, binds)
   await (connection ?? _this.pool).query(sqlInsert, binds)
+  
 }

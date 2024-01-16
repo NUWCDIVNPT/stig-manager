@@ -165,8 +165,8 @@ module.exports.queryMetrics = async function ({
     groupBy,
     orderBy
   })
-
-  let [rows, fields] = await dbUtils.pool.query(
+  
+  let [ rows ] = await dbUtils.pool.query(
     query, 
     [...cteProps.predicates.binds, ...predicates.binds]
   )
