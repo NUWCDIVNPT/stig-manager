@@ -506,3 +506,11 @@ module.exports.updateDefaultRev = async function (connection, {collectionId, col
   await (connection ?? _this.pool).query(sqlDelete, binds)
   await (connection ?? _this.pool).query(sqlInsert, binds)
 }
+
+export function extractVersionAndRelease (revisionStr) {
+  const match = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr);
+  if (!match) {
+    throw new Error(`Invalid revision string: ${revisionStr}`);
+  }
+  return [match[1], match[2]]; // Return version and release
+}
