@@ -1671,8 +1671,8 @@ exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmar
     if (defaultRevisionStr) {
       if (defaultRevisionStr !== 'latest') {
         const revisionParts = dbUtils.extractRevisionDetails(defaultRevisionStr)
-        version = revisionParts[1]
-        release = revisionParts[2]
+        version = revisionParts[0]
+        release = revisionParts[1]
       }
     }
     connection = await dbUtils.pool.getConnection()

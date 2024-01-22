@@ -144,8 +144,8 @@ module.exports.parseRevisionStr = function (revisionStr) {
   let ro = {}
   if (revisionStr !== 'latest') {
     let results = extractRevisionDetails(revisionStr)
-    ro.version = results[1]
-    ro.release = results[2]
+    ro.version = results[0]
+    ro.release = results[1]
     ro.table = 'revision'
     ro.table_alias = 'r'
     ro.predicates = ' and r.version = ? and r.release = ? '
