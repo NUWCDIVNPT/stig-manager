@@ -143,7 +143,7 @@ module.exports.initializeDatabase = async function () {
 module.exports.parseRevisionStr = function (revisionStr) {
   let ro = {}
   if (revisionStr !== 'latest') {
-    let results = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    let results = extractRevisionDetails(revisionStr)
     ro.version = results[1]
     ro.release = results[2]
     ro.table = 'revision'
@@ -507,3 +507,14 @@ module.exports.updateDefaultRev = async function (connection, {collectionId, col
   await (connection ?? _this.pool).query(sqlInsert, binds)
   
 }
+
+function extractRevisionDetails(revisionStr) {
+  const regex = /V(\d+)R(\d+(\.\d+)?)/;
+  const [results, version, release] = regex.exec(revisionStr);
+
+  if (!results) {
+    throw new Error(`Invalid revision string: ${revisionStr}`);
+  }
+
+  return [version, release];
+} 
