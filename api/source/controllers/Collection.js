@@ -314,7 +314,7 @@ module.exports.setStigAssetsByCollectionUser = async function setStigAssetsByCol
     if ( collectionGrant?.accessLevel >= 3 ) {
       const collectionResponse = await CollectionService.getCollection(collectionId, ['grants'], false, req.userObject )
       if (collectionResponse.grants.filter( grant => grant.accessLevel === 1 && grant.user.userId === userId).length > 0) {
-        const setResponse = await CollectionService.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, res.svcStatus ) 
+        await CollectionService.setStigAssetsByCollectionUser(collectionId, userId, stigAssets, res.svcStatus ) 
         const getResponse = await CollectionService.getStigAssetsByCollectionUser(collectionId, userId, req.userObject )
         res.json(getResponse)    
       }
@@ -476,7 +476,7 @@ module.exports.putCollectionMetadataValue = async function (req, res, next) {
     let collectionId = getCollectionIdAndCheckPermission(req)
     let key = req.params.key
     let value = req.body
-    let result = await CollectionService.putCollectionMetadataValue(collectionId, key, value)
+    await CollectionService.putCollectionMetadataValue(collectionId, key, value)
     res.status(204).send()
   }
   catch (err) {
@@ -488,7 +488,7 @@ module.exports.deleteCollectionMetadataKey = async function (req, res, next) {
   try {
     let collectionId = getCollectionIdAndCheckPermission(req)
     let key = req.params.key
-    let result = await CollectionService.deleteCollectionMetadataKey(collectionId, key, req.userObject)
+    await CollectionService.deleteCollectionMetadataKey(collectionId, key, req.userObject)
     res.status(204).send()
   }
   catch (err) {

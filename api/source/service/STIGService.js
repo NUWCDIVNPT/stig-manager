@@ -165,7 +165,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   }
 
   // PROJECTIONS
-  if (inProjection && inProjection.includes('rules')) {
+  if (inProjection?.includes('rules')) {
     columns.push(`json_arrayagg(json_object(
       'ruleId', rgr.ruleId, 
       'version', rgr.version, 
@@ -187,7 +187,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   sql += ` order by substring(rgr.groupId from 3) + 0`
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows.length > 0 ? rows : null)
   }
   catch (err) {
@@ -249,7 +249,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   joins.push('left join rev_group_rule_map rgr using (revId)' )
 
   // PROJECTIONS
-  if ( inProjection && inProjection.includes('detail') ) {
+  if ( inProjection?.includes('detail') ) {
     columns.push(`json_object(
       'weight', rgr.weight,
       'vulnDiscussion', rgr.vulnDiscussion,
@@ -280,7 +280,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     )
   }
 
-  if ( inProjection && inProjection.includes('ccis') ) {
+  if ( inProjection?.includes('ccis') ) {
     columns.push(`(select 
       coalesce
       (
@@ -303,13 +303,13 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       )
     ) as "ccis"`)
   }
-  if ( inProjection && inProjection.includes('check') ) {
+  if ( inProjection?.includes('check') ) {
     joins.push('left join check_content cc on rgr.checkDigest = cc.digest' )
     columns.push(`json_object(
       'system', rgr.checkSystem,
       'content', cc.content) as \`check\``)
     }
-  if ( inProjection && inProjection.includes('fix') ) {
+  if ( inProjection?.includes('fix') ) {
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest' )
     columns.push(`json_object(
       'fixref', rgr.fixref,
@@ -325,7 +325,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   if (predicates.statements.length > 0) {
     sql += "\nWHERE " + predicates.statements.join(" and ")
   }
-  if (inProjection && inProjection.includes('cci')) {
+  if (inProjection?.includes('cci')) {
     sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
   }  
   sql += ` order by substring(rgr.ruleId from 4) + 0`
@@ -373,7 +373,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   
 
   // PROJECTIONS
-  if ( inProjection && inProjection.includes('detail') ) {
+  if ( inProjection?.includes('detail') ) {
     columns.push(`json_object(
       'weight', rgr.weight,
       'vulnDiscussion', rgr.vulnDiscussion,
@@ -403,7 +403,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     // groupBy.push(...detailColumns)
   }
 
-  if ( inProjection && inProjection.includes('ccis') ) {
+  if ( inProjection?.includes('ccis') ) {
     columns.push(`CASE WHEN count(rgrcc.cci) = 0 
     THEN json_array()
     ELSE CAST(CONCAT('[', GROUP_CONCAT(distinct json_object('cci', rgrcc.cci,'apAcronym',cci.apAcronym,'definition',cci.definition)), ']') as json) 
@@ -414,12 +414,12 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     )
   }
 
-  if ( inProjection && inProjection.includes('check') ) {
+  if ( inProjection?.includes('check') ) {
     columns.push(`json_object('system', rgr.checkSystem,'content', cc.content) as \`check\``)
     joins.push('left join check_content cc on rgr.checkDigest = cc.digest')
   }
 
-  if ( inProjection && inProjection.includes('fix') ) {
+  if ( inProjection?.includes('fix') ) {
     columns.push(`json_object('fixref', rgr.fixref,'text', ft.text) as fix`)
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest')
   }
@@ -440,7 +440,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   sql += ` ORDER BY substring(rgr.ruleId from 4) + 0`
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows[0])
   }
   catch (err) {
@@ -1050,11 +1050,11 @@ exports.getCci = async function(cci, inProjection, userObject) {
   predicates.statements.push('c.cci = ?')
   predicates.binds.push(cci)
 
-  if ( inProjection && inProjection.includes('emassAp') ) {
+  if ( inProjection?.includes('emassAp') ) {
     columns.push(`case when c.apAcronym is null then null else json_object("apAcronym", c.apAcronym, "implementation", c.implementation, "assessmentProcedure", c.assessmentProcedure) END  as "emassAp"`)
   }
 
-  if ( inProjection && inProjection.includes('references') ) {
+  if ( inProjection?.includes('references') ) {
     columns.push(`(select 
       coalesce
       (
@@ -1076,7 +1076,7 @@ exports.getCci = async function(cci, inProjection, userObject) {
     ) as "references"`)
   }
 
-  if ( inProjection && inProjection.includes('stigs') ) {
+  if ( inProjection?.includes('stigs') ) {
     columns.push(`(select 
       coalesce
       (
@@ -1112,7 +1112,7 @@ exports.getCci = async function(cci, inProjection, userObject) {
   sql += ` order by c.cci`
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
     return (rows[0])
   }
@@ -1188,7 +1188,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   sql += ` ORDER BY c.cci`
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return rows
   }
   catch(err) {
@@ -1334,7 +1334,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject, elev
     ORDER BY
       r.benchmarkDateSql desc`
     const binds = elevate ? [benchmarkId] : [userObject.userId, benchmarkId]
-    let [rows, fields] = await dbUtils.pool.query(sql, binds)
+    let [rows] = await dbUtils.pool.query(sql, binds)
     return (rows)
   }
   catch(err) {

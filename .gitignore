@@ -32,3 +32,6 @@ clients/extjs/js/keycloak.json
 .gitignore
 newman/
 /docs/_build/doctrees/
+
+# macOS file
+.DS_Store

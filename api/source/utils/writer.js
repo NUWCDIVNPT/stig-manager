@@ -1,4 +1,4 @@
-var ResponsePayload = function(code, payload) {
+let ResponsePayload = function(code, payload) {
   this.code = code;
   this.payload = payload;
 }
@@ -7,9 +7,9 @@ exports.respondWithCode = function(code, payload) {
   return new ResponsePayload(code, payload);
 }
 
-var writeJson = exports.writeJson = function(response, arg1, arg2) {
-  var code;
-  var payload;
+let writeJson = exports.writeJson = function(response, arg1, arg2) {
+  let code;
+  let payload;
 
   if(arg1 && arg1 instanceof ResponsePayload) {
     writeJson(response, arg1.payload, arg1.code);
@@ -43,7 +43,6 @@ var writeJson = exports.writeJson = function(response, arg1, arg2) {
     code = 500
   }
   else {
-    // payload = JSON.stringify(payload, null, 2);
     payload = JSON.stringify(payload);
   }
   response.writeHead(code, {

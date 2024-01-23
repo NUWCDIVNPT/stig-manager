@@ -571,7 +571,7 @@ exports.setStigAssetsByCollectionUser = async function(collectionId, userId, sti
         }
         let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
         sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
-        let [result] = await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
+        await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
       }
       await connection.commit()
     }
@@ -1015,7 +1015,7 @@ exports.patchCollectionMetadata = async function ( collectionId, metadata ) {
     where 
       collectionId = ?`
   binds.push(JSON.stringify(metadata), collectionId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 
@@ -1029,7 +1029,7 @@ exports.putCollectionMetadata = async function ( collectionId, metadata ) {
     where 
       collectionId = ?`
   binds.push(JSON.stringify(metadata), collectionId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 
@@ -1223,8 +1223,9 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
   }
 
   let sql = 'SELECT COUNT(*) as collectionHistoryEntryCount, MIN(rh.touchTs) as oldestHistoryEntryDate'
-
-  if (projection && projection.includes('asset')) {
+  
+  // If there is a response and the request included the asset projection
+  if (projection?.includes('asset')) {
     sql += `, coalesce(
       (SELECT json_arrayagg(
         json_object(

@@ -971,7 +971,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
     cklb.target_data.target_type = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
     cklb.target_data.role = resultGetAsset[0].metadata.cklRole ?? 'None'
     cklb.target_data.technology_area = resultGetAsset[0].metadata.cklTechArea ?? ''
-    cklb.target_data.is_web_database = resultGetAsset[0].metadata.cklHostName ?  true : false
+    cklb.target_data.is_web_database = !!resultGetAsset[0].metadata.cklHostName
     cklb.target_data.web_db_site = resultGetAsset[0].metadata.cklWebDbSite ?? ''
     cklb.target_data.web_db_instance = resultGetAsset[0].metadata.cklWebDbInstance ?? ''
     

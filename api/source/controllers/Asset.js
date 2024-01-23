@@ -194,9 +194,9 @@ module.exports.getAsset = async function getAsset (req, res, next) {
     if (!response) {
       throw new SmError.PrivilegeError()
     }
-    
-    // If there is a response, check if the request included the stigGrants projection
-    if (projection && projection.includes('stigGrants')) {
+
+    // If there is a response and the request included the stigGrants projection
+    if (projection?.includes('stigGrants')) {
       // Check if the stigGrants projection is forbidden
       if (!elevate) {
         const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === response.collection.collectionId )
@@ -227,8 +227,9 @@ module.exports.getAssets = async function getAssets (req, res, next) {
     const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
 
     if ( collectionGrant || elevate ) {
-      // Check if the request includes the stigGrants projection
-      if (projection && projection.includes('stigGrants')) {
+  
+      // If there is a response and the request included the stigGrants projection
+      if (projection?.includes('stigGrants')) {
         // Check if the stigGrants projection is forbidden
         if (!elevate) {
           if (collectionGrant?.accessLevel < 3)  {
@@ -761,7 +762,8 @@ module.exports.putAssetMetadataValue = async function (req, res, next) {
     let assetId = await getAssetIdAndCheckPermission(req)
     let key = req.params.key
     let value = req.body
-    let result = await AssetService.putAssetMetadataValue(assetId, key, value)
+
+    await AssetService.putAssetMetadataValue(assetId, key, value)
     res.status(204).send()
   }
   catch (err) {
@@ -775,7 +777,7 @@ module.exports.deleteAssetMetadataKey = async function (req, res, next) {
     let assetId = await getAssetIdAndCheckPermission(req)
     let key = req.params.key
 
-    let result = await AssetService.deleteAssetMetadataKey(assetId, key, req.userObject)
+    await AssetService.deleteAssetMetadataKey(assetId, key, req.userObject)
     res.status(204).send()
   }
   catch (err) {

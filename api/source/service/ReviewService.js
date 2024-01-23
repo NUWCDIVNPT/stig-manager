@@ -493,7 +493,7 @@ from
     await connection.query(sqlTempTable)
     
     let validationErrors = []
-    let [table] = await connection.query('select * from validated_reviews')
+    
     let [counts] = await connection.query(`select
     coalesce(sum(case when error is not null then 1 else 0 end),0) as failedValidations,
     coalesce(sum(case when error is null and reviewId is null then 1 else 0 end),0) as inserts,
@@ -1420,7 +1420,7 @@ exports.patchReviewMetadata = async function ( assetId, ruleId, metadata ) {
       review.assetId = ?
       and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 
@@ -1436,7 +1436,7 @@ exports.putReviewMetadata = async function ( assetId, ruleId, metadata ) {
       review.assetId = ?
       and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 
