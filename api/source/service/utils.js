@@ -508,7 +508,7 @@ module.exports.updateDefaultRev = async function (connection, {collectionId, col
   
 }
 
-function extractRevisionDetails(revisionStr) {
+module.exports.extractRevisionDetails = function (revisionStr) {
   const regex = /V(\d+)R(\d+(\.\d+)?)/;
   const [results, version, release] = regex.exec(revisionStr);
 
@@ -518,5 +518,3 @@ function extractRevisionDetails(revisionStr) {
 
   return [version, release];
 } 
-
-module.exports = { extractRevisionDetails };
