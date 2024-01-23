@@ -521,7 +521,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     if (inPredicates.revisionStr !== 'latest') {
       joins.splice(0, 1, 'revision rev')
       const results = dbUtils.extractRevisionDetails(inPredicates.revisionStr)
-      const revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+      const revId =  `${inPredicates.benchmarkId}-${results[0]}-${results[1]}`
       predicates.statements.push('rev.revId = :revId')
       predicates.binds.revId = revId
     }
@@ -777,7 +777,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
       }
       else {
         let revParse = dbUtils.extractRevisionDetails(revisionStr)
-        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        revId =  `${benchmarkId}-${revParse[0]}-${revParse[1]}`
         ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
       }
   
@@ -1022,7 +1022,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       }
       else {
         let revParse = dbUtils.extractRevisionDetails(revisionStr)
-        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        revId =  `${benchmarkId}-${revParse[0]}-${revParse[1]}`
         ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
       }
   
@@ -1182,7 +1182,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
     }
     else {
       let revParse = dbUtils.extractRevisionDetails(revisionStr)
-      revId = `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+      revId = `${benchmarkId}-${revParse[0]}-${revParse[1]}`
       ;[result] = await connection.query(sqlGetRevision, [revId])
       revisionStrResolved = revisionStr
     }

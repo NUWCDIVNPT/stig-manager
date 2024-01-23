@@ -759,8 +759,8 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       const results = dbUtils.extractRevisionDetails(revisionStr)
       predicates.statements.push('rev.version = :version')
       predicates.statements.push('rev.release = :release')
-      predicates.binds.version = results[1]
-      predicates.binds.release = results[2]
+      predicates.binds.version = results[0]
+      predicates.binds.release = results[1]
     }
 
     // Access control
