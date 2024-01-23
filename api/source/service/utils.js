@@ -518,3 +518,5 @@ function extractRevisionDetails(revisionStr) {
 
   return [version, release];
 } 
+
+module.exports = { extractRevisionDetails };
