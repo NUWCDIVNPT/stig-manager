@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
    id="Capa_1"
    x="0px"
    y="0px"
-   viewBox="0 0 512.002 512.002"
-   style="enable-background:new 0 0 512.002 512.002;"
+   viewBox="0 0 16 16"
    xml:space="preserve"
    sodipodi:docname="gear.svg"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"><metadata
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   width="16"
+   height="16"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata
    id="metadata39"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
@@ -28,64 +29,82 @@
    guidetolerance="10"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
-   inkscape:window-width="1920"
-   inkscape:window-height="1029"
+   inkscape:window-width="3432"
+   inkscape:window-height="1364"
    id="namedview35"
    showgrid="false"
-   inkscape:zoom="1.1918569"
-   inkscape:cx="202.43939"
-   inkscape:cy="289.54524"
-   inkscape:window-x="1920"
+   inkscape:zoom="19.06971"
+   inkscape:cx="43.629399"
+   inkscape:cy="15.679315"
+   inkscape:window-x="0"
    inkscape:window-y="0"
    inkscape:window-maximized="1"
-   inkscape:current-layer="Capa_1" />
+   inkscape:current-layer="Capa_1"
+   inkscape:showpageshadow="2"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1" />
 <path
-   style="fill:#808080;fill-opacity:1"
-   d="M496.647,312.107l-47.061-36.8c1.459-12.844,1.459-25.812,0-38.656l47.104-36.821  c8.827-7.109,11.186-19.575,5.568-29.419l-48.96-84.629c-5.639-9.906-17.649-14.232-28.309-10.197l-55.467,22.315  c-10.423-7.562-21.588-14.045-33.323-19.349l-8.512-58.923c-1.535-11.312-11.24-19.72-22.656-19.627h-98.133  c-11.321-0.068-20.948,8.246-22.528,19.456l-8.533,59.093c-11.699,5.355-22.846,11.843-33.28,19.371L86.94,75.563  c-10.55-4.159-22.549,0.115-28.096,10.005L9.841,170.347c-5.769,9.86-3.394,22.463,5.568,29.547l47.061,36.8  c-1.473,12.843-1.473,25.813,0,38.656l-47.104,36.8c-8.842,7.099-11.212,19.572-5.589,29.419l48.939,84.651  c5.632,9.913,17.649,14.242,28.309,10.197l55.467-22.315c10.432,7.566,21.604,14.056,33.344,19.371l8.533,58.88  c1.502,11.282,11.147,19.694,22.528,19.648h98.133c11.342,0.091,21-8.226,22.592-19.456l8.533-59.093  c11.698-5.357,22.844-11.845,33.28-19.371l55.68,22.379c10.55,4.149,22.543-0.122,28.096-10.005l49.152-85.12  C507.866,331.505,505.447,319.139,496.647,312.107z M255.964,362.667c-58.91,0-106.667-47.756-106.667-106.667  s47.756-106.667,106.667-106.667s106.667,47.756,106.667,106.667C362.56,314.882,314.845,362.597,255.964,362.667z"
+   style="fill:#808080;fill-opacity:1;stroke-width:0.0316672"
+   d="M 15.722386,9.753309 14.21219,8.6033146 c 0.04682,-0.4013664 0.04682,-0.806622 0,-1.2079883 l 1.511575,-1.1506591 c 0.283261,-0.222154 0.358962,-0.6117173 0.178679,-0.9193359 L 14.331309,2.6806776 C 14.150352,2.3711144 13.764949,2.2359266 13.422868,2.362019 L 11.642922,3.0593609 C 11.308446,2.8230531 10.950159,2.620456 10.573581,2.4547083 L 10.30043,0.61336572 C 10.25117,0.2598763 9.9397362,-0.00288076 9.5733952,2.3846903e-5 H 6.4242899 C 6.0609976,-0.00243769 5.7520647,0.25771014 5.7013631,0.60802417 L 5.4275367,2.4546836 C 5.0521139,2.6220191 4.6944056,2.8247638 4.359576,3.0600132 L 2.5748167,2.3613297 C 2.2362653,2.2313604 1.8512152,2.3650221 1.6732112,2.6739822 L 0.10069625,5.3233252 C -0.084432,5.6314484 -0.00821822,6.0252948 0.27937428,6.2466733 L 1.7895701,7.3966678 c -0.047269,0.4013417 -0.047269,0.8066466 0,1.2079883 L 0.27799447,9.7546506 c -0.2837413,0.2218463 -0.35979509,0.6116314 -0.17935201,0.9193474 l 1.57046094,2.645343 c 0.180732,0.309773 0.5663596,0.445059 0.9084408,0.318647 l 1.7799457,-0.697342 c 0.3347655,0.236443 0.6932763,0.439249 1.0700148,0.605341 l 0.2738264,1.840001 c 0.048197,0.352567 0.3577083,0.615435 0.7229268,0.613995 h 3.1491053 c 0.3639668,0.0025 0.6738938,-0.257059 0.7249808,-0.608001 l 0.273825,-1.846647 c 0.375391,-0.167409 0.733068,-0.370154 1.067962,-0.605342 l 1.78678,0.699348 c 0.338552,0.12965 0.723409,-0.0037 0.901606,-0.312664 l 1.577296,-2.659989 C 16.082405,10.3595 16.00478,9.973063 15.722386,9.753309 Z m -7.7235594,1.58 c -1.8904321,0 -3.4229626,-1.4923691 -3.4229626,-3.3333301 0,-1.840961 1.5324985,-3.3333433 3.4229626,-3.3333433 1.890464,0 3.4229624,1.4923823 3.4229624,3.3333433 -0.0022,1.8400502 -1.5334608,3.3311401 -3.4229624,3.3333301 z"
    id="path2" />
 <g
-   id="g4">
+   id="g4"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g6">
+   id="g6"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g8">
+   id="g8"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g10">
+   id="g10"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g12">
+   id="g12"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g14">
+   id="g14"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g16">
+   id="g16"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g18">
+   id="g18"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g20">
+   id="g20"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g22">
+   id="g22"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g24">
+   id="g24"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g26">
+   id="g26"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g28">
+   id="g28"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g30">
+   id="g30"
+   transform="translate(-1.5,-1.5)">
 </g>
 <g
-   id="g32">
+   id="g32"
+   transform="translate(-1.5,-1.5)">
 </g>
 </svg>
