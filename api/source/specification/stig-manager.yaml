@@ -524,7 +524,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/STIG'
+                  $ref: '#/components/schemas/AssetStigResponse'
         default:
           description: unexpected error
           content:
