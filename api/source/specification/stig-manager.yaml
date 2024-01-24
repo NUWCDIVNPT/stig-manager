@@ -2358,6 +2358,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+
   '/collections/{collectionId}/poam':
     get:
       tags:
@@ -2752,6 +2753,192 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+
+  '/collections/meta/metrics/detail':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdArrayQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return fully aggregated meta-metrics
+      operationId: getMetricsDetailByMeta
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsDetailAggMeta'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/meta/metrics/detail/collection':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdArrayQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/RevisionIdArrayQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return meta-metrics aggregated by Collection
+      operationId: getMetricsDetailByMetaAggCollection
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsDetailAggCollection'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/meta/metrics/detail/stig':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdArrayQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return meta-metrics aggregated by STIG
+      operationId: getMetricsDetailByMetaAggStig
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsDetailAggStig'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/meta/metrics/summary':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdArrayQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return fully aggregated meta-metrics
+      operationId: getMetricsSummaryByMeta
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsSummaryAggMeta'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/meta/metrics/summary/collection':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdArrayQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/RevisionIdArrayQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return meta-metrics aggregated by Collection
+      operationId: getMetricsSummaryByMetaAggCollection
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsSummaryAggCollection'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+  '/collections/meta/metrics/summary/stig':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdArrayQuery'
+      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
+      - $ref: '#/components/parameters/MetricsFormatQuery'
+    get:
+      tags:
+        - Metrics
+      summary: Return meta-metrics aggregated by STIG
+      operationId: getMetricsSummaryByMetaAggStig
+      responses:
+        '200':
+          description: Metrics response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricsSummaryAggStig'
+            text/csv:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+
   /op/appdata:
     get:
       tags:
@@ -5190,7 +5377,6 @@ components:
         - title
         - assets
         - revisionStr
-        - revisionPinned
         - ruleCount
       properties:
         benchmarkId:
@@ -5201,6 +5387,8 @@ components:
           $ref: '#/components/schemas/RevisionStrRaw'
         revisionPinned:
           type: boolean
+        collections:
+          type: integer
         assets:
           type: integer
         ruleCount:
@@ -5212,6 +5400,30 @@ components:
     MetricsSummaryAggStig:
       allOf:
         - $ref: '#/components/schemas/MetricsAggStig'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsAggMeta:
+      type: object
+      required:
+        - collections
+        - assets
+        - stigs
+        - checklists
+      properties:
+        collections:
+          type: integer
+        assets:
+          type: integer
+        stigs:
+          type: integer
+        checklists:
+          type: integer
+    MetricsDetailAggMeta:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggMeta'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummaryAggMeta:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggMeta'
         - $ref: '#/components/schemas/MetricsSummary'
     MetricsDetail:
       type: object
@@ -6662,7 +6874,7 @@ components:
     AssetIdArrayQuery:
       name: assetId
       in: query
-      description: A query parameter that identifies an Asset
+      description: A query parameter that identifies a list of Assets
       schema:
         type: array
         uniqueItems: true
@@ -6701,7 +6913,7 @@ components:
     BenchmarkIdArrayQuery:
       name: benchmarkId
       in: query
-      description: A query parameter that identifies a STIG
+      description: Filter by one or more benchmarkIds
       schema:
         type: array
         uniqueItems: true
@@ -6795,7 +7007,7 @@ components:
       name: collectionId
       required: false
       in: query
-      description: A query parameter that identifies a Collection
+      description: Filter by one or more collectionIds
       schema:
         type: array
         uniqueItems: true
@@ -7111,6 +7323,16 @@ components:
       in: query
       schema:
         $ref: '#/components/schemas/ReviewStatusLabel'
+    RevisionIdArrayQuery:
+      name: revisionId
+      in: query
+      description: Filter by one or more revisionIds (benchmarkId-version-release)  If Revision specified is not the default rev for at least one Collection, response will be empty.
+      schema:
+        type: array
+        uniqueItems: true
+        minLength: 1
+        items:
+          type: string
     RevisionStrPath:
       name: revisionStr
       in: path

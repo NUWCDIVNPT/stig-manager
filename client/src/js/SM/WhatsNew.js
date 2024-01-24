@@ -2,6 +2,23 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2024-01-17',
+    header: `New Meta Dashboard`,
+    body: `
+    <p>
+    The new Meta Dashboard provides totals and metrics for some or all of your Collections at a glance. The Collections Tab shows top-level metrics for each Collection, while the STIGs tab shows metrics for each STIG across Collections.  
+    <p>
+    Access the Meta Dashboard by clicking on the Report icon in the top-level Collections node of the Navigation Tree:
+    <p>
+    <p><img src="img/whatsnew/2024-01-17-meta-collection-icon.png"/></p>
+
+    <p>Control which Collections are included in the Meta Dashboard with the filters at the top of the Overview panel:</p>
+
+    <p><img src="img/whatsnew/2024-01-17-meta-collection-panel-overview-filters.png"/></p>
+    `    
+  },      
+  
+  {
     date: '2023-10-31',
     header: `New Interfaces for Managing Asset Labels and STIG Assignments`,
     body: `
