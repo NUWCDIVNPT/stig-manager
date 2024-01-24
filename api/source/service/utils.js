@@ -143,7 +143,7 @@ module.exports.initializeDatabase = async function () {
 module.exports.parseRevisionStr = function (revisionStr) {
   let ro = {}
   if (revisionStr !== 'latest') {
-    let results = extractRevisionDetails(revisionStr)
+    let results = _this.extractRevisionDetails(revisionStr)
     ro.version = results[0]
     ro.release = results[1]
     ro.table = 'revision'
