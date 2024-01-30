@@ -1,3 +1,15 @@
+1.4.2
+-----
+
+Changes:
+
+  - (API/UI) Meta-Collection Dashboard feature
+  - (Docs) Documentation updates
+  - (Demo/Docs) Demo data updates, include STIGs for demo data.
+  - (API) Code cleanup
+  - (API/Dependency) Dependency updates
+
+  
 1.4.1
 -----
 

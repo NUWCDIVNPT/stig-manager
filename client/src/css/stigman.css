@@ -13,6 +13,9 @@
   --metrics-status-chart-rejected-dark: hsl(5deg 90% 25%)
 }
 
+.x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
+	width: 22px;
+}
 .sm-grid-cell-with-toolbar {
 	position: relative;
 }
@@ -40,7 +43,7 @@
 }
 
 .x-grid3-row-over .sm-grid-cell-with-toolbar .sm-static-width:hover {
-	scale: 125%;
+	scale: 110%;
 	filter: brightness(100%);
 }
 
@@ -1998,6 +2001,16 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .x-tool.x-tool-label {
   background-image: url(../img/label.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
+.x-tool.x-tool-collection {
+  background-image: url(../img/collection.svg);
   background-repeat: no-repeat;
   background-size: 12px 16px;
   color: grey;

@@ -47,6 +47,7 @@ const scripts = [
   'js/SM/CollectionAsset.js',
   'js/SM/CollectionGrant.js',
   'js/SM/CollectionPanel.js',
+  'js/SM/MetaPanel.js',
   'js/SM/ColumnFilters.js',
   'js/SM/FindingsPanel.js',
   'js/SM/Assignments.js',

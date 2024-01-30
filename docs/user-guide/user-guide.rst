@@ -430,7 +430,7 @@ STIGs Tab
 The STIGs tab on the right of the Collection Dashboard provides a list of every STIG that is assigned to at least one Asset in this Collection (that the User has access to). 
 
 
-Double-clock a STIG, or click the Shield icon when hovering over a STIG, to access to the :ref:`Collection Review Workspace`, from which the User can review ALL the assets they have access to for the STIG selected.
+Double-click a STIG, or click the Shield icon when hovering over a STIG, to access to the :ref:`Collection Review Workspace`, from which the User can review ALL the assets they have access to for the STIG selected.
 
 See :ref:`Collection Review Workspace` for more info.
 
@@ -487,7 +487,80 @@ Double-click on a STIG, or click on the Shield icon, to access the :ref:`Asset R
 
 
 
+===================================
 
+.. index::
+   single: Meta Collection Dashboard
+
+.. _meta collection dashboard:
+
+Meta-Collection Dashboard 
+======================================
+
+The Meta Dashboard provides totals and metrics for some or all of your Collections at a glance. The Collections Tab shows top-level metrics for each Collection, while the STIGs tab shows metrics for each STIG across Collections. The dashboard also allows you to open up individual Collection, Asset, or STIG Review Workspaces.
+
+Access the Meta Dashboard by clicking on the Report icon in the top-level Collections node of the Navigation Tree.
+
+
+.. thumbnail:: /assets/images/meta-collection-icon.png
+      :width: 50% 
+      :show_caption: True
+      :title: Click to open the Meta Dashboard
+
+|
+
+.. thumbnail:: /assets/images/meta-collection-dashboard.png
+      :width: 50% 
+      :show_caption: True
+      :title: The Meta Dashboard
+
+
+|      
+
+
+Meta-Collection Overview 
+----------------------------
+
+The Meta-Collection Overview section at the left of the Meta Dashboard provides high-level statistics about your Collections. 
+
+The Collections presented in the Meta-Collection Dashboard can be filtered by clicking on the Collection icon at the top of the Overview Panel. 
+
+
+.. note::
+      Any filters applied to the Meta Dashboard Overview panel carry forward to the presentation of Collections, STIGs, and Assets on the right of the Dashboard. 
+      
+      .. thumbnail:: /assets/images/meta-collection-panel-overview-filters.png
+                  :width: 25% 
+                  :show_caption: True
+                  :title: Meta-Collection Overview with Filters
+
+|
+
+
+Collections Tab
+----------------------
+
+The Collections Tab on the right of the Collection Dashboard provides a list of every Collection that the User has been granted access to in the system.  Select a Collection to populate the STIGs panel with every STIG assigned to any Asset in that Collection. Select a STIG to see the Assets assigned that STIG.
+
+.. thumbnail:: /assets/images/meta-collection-dashboard-collections-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collections Tab of the Meta-Collection Dashboard
+
+|
+
+
+STIGs Tab
+-------------------------
+
+The STIGs tab on the right of the Collection Dashboard provides a list of every STIG that is assigned to any Asset in any Collection that the User has access to. Clicking on a STIG will load any Collections that contain Assets that have been assigned that STIG into the center panel. Selecting a Collection from the center panel will populate the Assets panel with a list of every Asset in that Collection that has been assigned the selected STIG.
+
+.. thumbnail:: /assets/images/meta-collection-dashboard-stigs-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collections Tab of the Meta-Collection Dashboard
+
+|
 
 ===================================
 

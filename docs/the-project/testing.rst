@@ -1,10 +1,8 @@
 .. _testing:
 
 
-Testing Guide
+API Testing Guide
 ########################################
-
-
 
 
 The STIG Manager project currently tests its API using a Postman Collection and specific test data, which can be found in the repo.
@@ -16,5 +14,7 @@ The tests run in several iterations, simulating Users accessing the system with 
 
 
 
+Running the API Tests Locally
+=============================================
 
-
+See the test `README.md <https://github.com/NUWCDIVNPT/stig-manager/tree/main/test/api/README.md>`_ for more information on running the tests and test data.
