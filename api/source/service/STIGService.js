@@ -148,7 +148,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   
   if (inPredicates.revisionStr != 'latest') {
     joins = ['revision r']
-    let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(inPredicates.revisionStr)
     predicates.statements.push('r.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('r.release = ?')
@@ -232,7 +232,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   
   if (revisionStr != 'latest') {
     joins = ['revision rev']
-    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     predicates.statements.push('rev.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('rev.release = ?')
@@ -907,7 +907,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
 
   let connection;
   try {
-    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     let binds = {
       benchmarkId: benchmarkId,
       version: version,
@@ -1161,7 +1161,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   if (revisionStr != 'latest') {
     joins = ['revision r']
 
-    let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     predicates.statements.push('r.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('r.release = ?')

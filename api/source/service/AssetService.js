@@ -520,8 +520,8 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     }
     if (inPredicates.revisionStr !== 'latest') {
       joins.splice(0, 1, 'revision rev')
-      const results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-      const revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+      const {version, release} = dbUtils.parseRevisionStr(inPredicates.revisionStr)
+      const revId =  `${inPredicates.benchmarkId}-${version}-${release}`
       predicates.statements.push('rev.revId = :revId')
       predicates.binds.revId = revId
     }
@@ -776,8 +776,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
         revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
       }
       else {
-        let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+        revId =  `${benchmarkId}-${version}-${release}`
         ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
       }
   
@@ -1021,8 +1021,8 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
         revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
       }
       else {
-        let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+        revId =  `${benchmarkId}-${version}-${release}`
         ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
       }
   
@@ -1181,8 +1181,8 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
       revisionStrResolved = `V${result[0].version}R${result[0].release}`
     }
     else {
-      let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-      revId = `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+      const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+      revId = `${benchmarkId}-${version}-${release}`
       ;[result] = await connection.query(sqlGetRevision, [revId])
       revisionStrResolved = revisionStr
     }
