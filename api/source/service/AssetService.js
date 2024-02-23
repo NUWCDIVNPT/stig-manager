@@ -1333,6 +1333,13 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   return (rows[0])
 }
 
+exports.deleteAssets = async function(assetIds, userObject) {
+  const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId IN ?`
+  await dbUtils.pool.query(sqlDelete, [userObject.userId, [assetIds]])
+  // changes above might have affected need for records in collection_rev_map 
+  await dbUtils.pruneCollectionRevMap()
+  await dbUtils.updateDefaultRev(null, {})
+}
 
 exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId, elevate, userObject, svcStatus = {}} ) {
 
