@@ -14,7 +14,7 @@ const scripts = [
   'ext/adapter/ext/ext-base.js',
   'ext/ext-all.js',
   'ext/ux/GroupSummary.js',
-  'js/third-party/source-map/source-map.js',
+  'js/modules/source-map/source-map.js',
   'js/stig-manager.min.js'
 ]
 

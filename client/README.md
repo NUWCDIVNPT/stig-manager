@@ -1,17 +1,32 @@
-# STIG Manager Reference UI
+# STIG Manager Web App
 
-The reference UI client provided by the project is implemented as a Single Page Application (SPA) using ExtJS 3.4.  It exercises most, but not all of the API endpoints. 
+### Running the STIG Manager API and Web App from source
 
-## Setting Up the Client for Development
+You must build the web app prior to starting the API. Assuming your shell is at the root of this repository:
 
-- From the `/client/src/js/third-party/` directory, run `npm ci` to install the required dependencies.
-- For development, in most cases the API configuration should specify the following envvar and value: `STIGMAN_CLIENT_DIRECTORY: "../../client/src"`.
+```
+$ cd client
+$ ./build.sh
+$ cd ../api/source
+$ npm ci
+$ node index.js
 
+```
 
-## Building the Client for Distribution
+### If you wish to develop or modify the web app code
 
-Requires:
-- nodejs
-- uglify-js
+You must install the required modules. Assuming your shell is at the root of this repository:
 
-From the `/client` directory, run the `build.sh` bash script.  The output will be in the `/client/dist` directory.
+```
+$ cd client/src/js/modules
+$ npm ci
+```
+
+and invoke the API with the envar `STIGMAN_CLIENT_DIRECTORY` set to `../../client/src`
+
+```
+$ cd ../api/source
+$ npm ci
+$ STIGMAN_CLIENT_DIRECTORY=../../client/src node index.js
+```
+

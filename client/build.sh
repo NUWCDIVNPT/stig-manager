@@ -10,7 +10,10 @@
 echo "Client build starting"
 
 # Change to this script directory
-cd "$(dirname "$(realpath "$0")")"
+ScriptDir=$(dirname "$(realpath "$0")") 
+cd $ScriptDir
+echo "Changed to $ScriptDir"
+
 
 SrcDir=src
 DistDir=dist
@@ -87,16 +90,17 @@ cp -r $SrcDir/serviceWorker.js $DistDir/serviceWorker.js
 
 # npm
 echo "Preparing npm resources"
-npm --prefix $SrcDir/js/third-party ci
+cd $SrcDir/js/modules
+npm install
+cd $ScriptDir
 
 # JS
 echo "Preparing JavaScript resources"
 mkdir $DistDir/js
 cp $SrcDir/js/resources-dist.js $DistDir/js/resources.js
 cp $SrcDir/js/init.js $DistDir/js/init.js
-cp $SrcDir/js/oidcProvider.js $DistDir/js
 cp $SrcDir/js/Env.js.example $DistDir/js
-cp -r $SrcDir/js/third-party $DistDir/js/third-party
+cp -r $SrcDir/js/modules $DistDir/js/modules
 cd $SrcDir/js
 uglifyjs \
 'chart.min.js' \
@@ -139,7 +143,6 @@ uglifyjs \
 'SM/Assignments.js' \
 'SM/Attachments.js' \
 'SM/Exports.js' \
-'SM/Parsers.js' \
 'SM/Review.js' \
 'SM/ReviewsImport.js' \
 'SM/TransferAssets.js' \
@@ -160,7 +163,6 @@ uglifyjs \
 'ExportButton.js' \
 'jszip.min.js' \
 'FileSaver.js' \
-'fast-xml-parser.min.js' \
 'jsonview.bundle.js' \
 'stigman.js' -o ../../$DistDir/js/stig-manager.min.js -m -c --source-map "root='src',url='stig-manager.min.js.map'"
 

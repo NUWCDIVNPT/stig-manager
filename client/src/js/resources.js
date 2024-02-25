@@ -53,7 +53,6 @@ const scripts = [
   'js/SM/Assignments.js',
   'js/SM/Attachments.js',
   'js/SM/Exports.js',
-  'js/SM/Parsers.js',
   'js/SM/Review.js',
   'js/SM/ReviewsImport.js',
   'js/SM/TransferAssets.js',
@@ -74,7 +73,6 @@ const scripts = [
   'js/ExportButton.js',
   'js/jszip.min.js',
   'js/FileSaver.js',
-  'js/fast-xml-parser.min.js',
   'js/jsonview.bundle.js',
   'js/stigman.js'
 ]
