@@ -809,7 +809,7 @@ module.exports.patchAssets = async function (req, res, next) {
 function getCollectionIdAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage) {
   let collectionId = request.query.collectionId
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-  if (collectionGrant?.accessLevel < minimumAccessLevel) {
+  if (collectionGrant?.accessLevel < minimumAccessLevel || !collectionGrant) {
     throw new SmError.PrivilegeError()
   }
   return collectionId
